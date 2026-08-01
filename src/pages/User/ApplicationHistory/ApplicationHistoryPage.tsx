@@ -11,6 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
@@ -24,7 +32,6 @@ import {
   Clock,
   Search,
   Star,
-  Trophy,
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -339,83 +346,126 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
 }
 
 // ============================================================
-// Enhanced Completed Application Card (Redesigned & High Craft)
+// Standard Table Component for Completed Applications (Khảo thí UI Rule)
 // ============================================================
 
-function CompletedApplicationCard({ application }: { application: EnrichedApplication }) {
+function CompletedApplicationsTable({ applications }: { applications: EnrichedApplication[] }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const isValidScore =
-    typeof application.overallScore === "number" &&
-    application.overallScore >= 0 &&
-    application.overallScore <= 100;
-
   return (
-    <Card className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-slate-800/90 dark:bg-slate-900 dark:hover:border-slate-700">
-      <div className="space-y-4">
-        {/* Card Header */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3.5">
-            <CompanyAvatar
-              logoUrl={application.logoUrl}
-              companyName={application.companyName}
-              className="h-11 w-11 rounded-xl"
-              textClassName="text-sm font-bold"
-            />
+    <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-slate-800/90 dark:bg-slate-900">
+      <Table>
+        <TableHeader className="bg-slate-50/70 hover:bg-slate-50/70 dark:bg-slate-800/50 dark:hover:bg-slate-800/50">
+          <TableRow className="border-b border-slate-200/80 hover:bg-transparent dark:border-slate-800 dark:hover:bg-transparent">
+            <TableHead className="h-11 pl-6 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+              #ID
+            </TableHead>
+            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+              Công ty & Vị trí ứng tuyển
+            </TableHead>
+            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+              Cấp bậc
+            </TableHead>
+            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+              Trạng thái
+            </TableHead>
+            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+              Điểm số
+            </TableHead>
+            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+              Ngày nộp
+            </TableHead>
+            <TableHead className="h-11 pr-6 text-right text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+              Thao tác
+            </TableHead>
+          </TableRow>
+        </TableHeader>
 
-            <div className="min-w-0 flex-1">
-              <h4 className="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
-                {application.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
-              </h4>
-              <p className="mt-0.5 truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {application.companyName ?? t("userApplicationhistory.company", "Công ty")}
-              </p>
-            </div>
-          </div>
+        <TableBody>
+          {applications.map((app) => {
+            const isValidScore =
+              typeof app.overallScore === "number" &&
+              app.overallScore >= 0 &&
+              app.overallScore <= 100;
 
-          <ApplicationStatusBadge status={application.status as ApplicationStatus} />
-        </div>
+            return (
+              <TableRow
+                key={`completed-row-${app.id}`}
+                onClick={() => navigate(`/user/application/${app.id}`)}
+                className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/60">
+                {/* ID Column */}
+                <TableCell className="pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  #{app.id}
+                </TableCell>
 
-        {/* Highlight Score / Achievement Strip */}
-        <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-800/50">
-          <div className="flex items-center justify-between text-xs">
-            <JobLevelBadge level={application.level} />
+                {/* Company & Job Title */}
+                <TableCell className="py-3">
+                  <div className="flex items-center gap-3">
+                    <CompanyAvatar
+                      logoUrl={app.logoUrl}
+                      companyName={app.companyName}
+                      className="h-9 w-9 rounded-lg"
+                    />
+                    <div className="min-w-0">
+                      <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
+                        {app.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
+                      </h4>
+                      <p className="truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        {app.companyName ?? t("userApplicationhistory.company", "Công ty")}
+                      </p>
+                    </div>
+                  </div>
+                </TableCell>
 
-            {isValidScore ? (
-              <div className="flex items-center gap-1 font-extrabold text-indigo-600 dark:text-indigo-400">
-                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                <span>{application.overallScore}</span>
-                <span className="text-[10px] font-normal text-slate-400">/100</span>
-              </div>
-            ) : (
-              <span className="font-mono text-[11px] text-slate-400">
-                {application.createdAt ? formatDateTime(application.createdAt) : ""}
-              </span>
-            )}
-          </div>
-        </div>
+                {/* Level */}
+                <TableCell>
+                  <JobLevelBadge level={app.level} />
+                </TableCell>
 
-        {/* Special Passed Banner */}
-        {application.status === "PASSED" && (
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-            <Trophy className="h-3.5 w-3.5 text-emerald-600" />
-            <span>Đã vượt qua quy trình tuyển dụng</span>
-          </div>
-        )}
-      </div>
+                {/* Status */}
+                <TableCell>
+                  <ApplicationStatusBadge status={app.status as ApplicationStatus} />
+                </TableCell>
 
-      {/* Button Action */}
-      <div className="pt-4">
-        <Button
-          onClick={() => navigate(`/user/application/${application.id}`)}
-          variant="outline"
-          className="h-9 w-full justify-between rounded-xl border-slate-200/90 px-3.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800">
-          <span>{t("userApplicationhistory.viewResultDetail", "Xem báo cáo & Chi tiết")}</span>
-          <ChevronRight className="h-4 w-4 text-slate-400" />
-        </Button>
-      </div>
-    </Card>
+                {/* Score */}
+                <TableCell>
+                  {isValidScore ? (
+                    <div className="flex items-center gap-1 text-xs font-extrabold text-indigo-600 dark:text-indigo-400">
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <span>{app.overallScore}</span>
+                      <span className="text-[10px] font-normal text-slate-400">/100</span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-slate-400">---</span>
+                  )}
+                </TableCell>
+
+                {/* Date */}
+                <TableCell className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                  {app.createdAt ? formatDateTime(app.createdAt) : "---"}
+                </TableCell>
+
+                {/* Action */}
+                <TableCell className="pr-6 text-right">
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/user/application/${app.id}`);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 rounded-lg px-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/50">
+                    <span>Xem báo cáo</span>
+                    <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 
@@ -717,7 +767,14 @@ export function ApplicationHistoryPage() {
           </Select>
         </div>
 
-        {/* Content Display */}
+        {/* Filter Result Count (Above table per Khảo thí rule) */}
+        {statusFilter !== "all" && (
+          <div className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Hiển thị {completedApplications.length} kết quả phù hợp
+          </div>
+        )}
+
+        {/* Content Display: Standard Table */}
         {appsLoading ? (
           <LoadingCardList count={3} />
         ) : appsError ? (
@@ -752,11 +809,7 @@ export function ApplicationHistoryPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-            {completedApplications.map((app) => (
-              <CompletedApplicationCard key={`completed-app-${app.id}`} application={app} />
-            ))}
-          </div>
+          <CompletedApplicationsTable applications={completedApplications} />
         )}
       </div>
     </div>
