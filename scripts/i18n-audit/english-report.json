@@ -2112,14 +2112,6 @@
     "text": "EN"
   },
   {
-    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 357,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "#ID"
-  },
-  {
     "file": "src/pages/User/ApplicationHistory/ApplicationMentorReviewPage.tsx",
     "line": 654,
     "character": 23,

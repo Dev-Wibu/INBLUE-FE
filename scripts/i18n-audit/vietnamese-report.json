@@ -736,6 +736,38 @@
     "text": "Khôi phục mặc định"
   },
   {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 760,
+    "character": 13,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Hiển thị"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 760,
+    "character": 53,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "kết quả phù hợp"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 771,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Không thể tải danh sách ứng tuyển"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 778,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Thử lại"
+  },
+  {
     "file": "src/pages/User/ApplicationHistory/ApplicationMentorReviewPage.tsx",
     "line": 559,
     "character": 48,
@@ -862,6 +894,14 @@
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "giây"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 167,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Không thể tải thông tin workspace ứng tuyển"
   },
   {
     "file": "src/pages/User/Kiosk/KioskEntryPage.tsx",
