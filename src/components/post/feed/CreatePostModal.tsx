@@ -94,7 +94,9 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
         status: "DRAFT",
       });
       if (response.success) {
-        toast.success(t("compPost.postedSuccessfully"));
+        toast.success(
+          t("compPost.draftSubmittedNotice", "Bài viết của bạn đã được gửi và đang chờ phê duyệt")
+        );
         invalidatePostFeedQueries();
         resetForm();
         onOpenChange(false);

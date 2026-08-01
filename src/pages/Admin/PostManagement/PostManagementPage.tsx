@@ -435,12 +435,12 @@ export function PostManagementPage() {
         <LikeListModal likes={detailLikes} open={likesOpen} onOpenChange={setLikesOpen} />
 
         <Dialog open={commentToDeleteId !== null} onOpenChange={() => setCommentToDeleteId(null)}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>{t("common.confirmCommentDeletion")}</DialogTitle>
               <DialogDescription>
                 {commentToDelete?.content
-                  ? t("general.areYouSureYouWant", {
+                  ? t("adminPostmanagement.areYouSureYouWant", {
                       var_0: commentToDelete.content,
                     })
                   : t("adminPostmanagement.areYouSureYouWant")}

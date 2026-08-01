@@ -48,6 +48,10 @@ export function CommunityFeedPage({ title, description }: CommunityFeedPageProps
     return posts
       .filter((item) => {
         const post = item.post;
+        // Only display posts with status PUBLISHED
+        const isPublished = !post?.status || post.status === "PUBLISHED";
+        if (!isPublished) return false;
+
         const matchSearch =
           !search ||
           post?.title?.toLowerCase().includes(lower) ||
