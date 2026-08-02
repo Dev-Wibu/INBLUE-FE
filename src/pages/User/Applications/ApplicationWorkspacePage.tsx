@@ -291,7 +291,7 @@ export function ApplicationWorkspacePage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-[1700px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-28 w-full rounded-[20px]" />
         <Skeleton className="h-96 w-full rounded-[20px]" />
@@ -330,7 +330,7 @@ export function ApplicationWorkspacePage() {
     <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">
       {/* Top Header Navigation (Single Sleek 1-Line Breadcrumb Standard) */}
       <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1700px] items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           {/* Sleek 1-Line Inline Breadcrumb & Title */}
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
             <Button
@@ -379,8 +379,8 @@ export function ApplicationWorkspacePage() {
         </div>
       </div>
 
-      {/* Main Centered Studio Body (Max-Width 6XL Bounded) */}
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
+      {/* Main Studio Body (Widescreen Full Width Container) */}
+      <div className="mx-auto w-full max-w-[1700px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         {/* Horizontal Pipeline Bar */}
         <Card className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-3 flex items-center justify-between px-1">
@@ -411,7 +411,7 @@ export function ApplicationWorkspacePage() {
         {/* Workspace Main Grid */}
         {activeRound ? (
           isCvScreeningRound ? (
-            /* CV Screening Round: Pure Studio Full Width (CvScreeningModule handles its own 7:5 Grid + JD Context) */
+            /* CV Screening Round: 3-Column Widescreen Studio (5:4:3 ratio) */
             <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
               <div className="border-b border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-[#0F172A]/70">
                 <div className="flex items-start justify-between gap-4">

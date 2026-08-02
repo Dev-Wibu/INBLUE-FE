@@ -6,10 +6,12 @@ import {
   AlertTriangle,
   BadgeCheck,
   CheckCircle2,
+  Clock,
   Download,
   ExternalLink,
   FileCheck2,
   FileText,
+  HelpCircle,
   Sparkles,
   Tag,
   Upload,
@@ -83,6 +85,47 @@ function CompanyAvatar({
       ) : (
         <span className={textClassName}>{initials}</span>
       )}
+    </div>
+  );
+}
+
+/** Circular AI Match Score Clock ("Đồng hồ AI") */
+function CircularMatchGauge({ score }: { score: number }) {
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+
+  return (
+    <div className="relative flex flex-col items-center justify-center py-2">
+      <svg className="h-36 w-36 -rotate-90 transform">
+        <circle
+          cx="72"
+          cy="72"
+          r={radius}
+          stroke="currentColor"
+          strokeWidth="10"
+          className="text-slate-100 dark:text-slate-800"
+          fill="transparent"
+        />
+        <circle
+          cx="72"
+          cy="72"
+          r={radius}
+          stroke="currentColor"
+          strokeWidth="10"
+          className="text-indigo-600 transition-all duration-1000 ease-out dark:text-indigo-400"
+          fill="transparent"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute flex flex-col items-center justify-center text-center">
+        <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">{score}%</span>
+        <span className="text-[9px] font-extrabold tracking-widest text-slate-400 uppercase">
+          MATCH SCORE
+        </span>
+      </div>
     </div>
   );
 }
@@ -180,10 +223,10 @@ export function CvScreeningModule({
         </div>
       </div>
 
-      {/* Pure 2-Column Studio Grid Layout (7:5 Ratio - No Nested Grid Void) */}
+      {/* 3-Column Studio Grid Layout (5:4:3 ratio across widescreen container) */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        {/* Left Side (7 Cols): Document Viewer / Upload Dropzone */}
-        <Card className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs lg:col-span-7 dark:border-slate-800/60 dark:bg-slate-900/40">
+        {/* Column 1 (Left - 5 Cols): Document Viewer / Upload Dropzone */}
+        <Card className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs lg:col-span-5 dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
@@ -214,7 +257,7 @@ export function CvScreeningModule({
           {/* Document Previewer or Dropzone */}
           {fileUrl ? (
             <div className="flex-1 space-y-3">
-              <div className="relative h-[620px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900/90 shadow-inner dark:border-slate-800">
+              <div className="relative h-[680px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900/90 shadow-inner dark:border-slate-800">
                 <iframe
                   src={`${fileUrl}#toolbar=0`}
                   title="CV Document Preview"
@@ -233,7 +276,7 @@ export function CvScreeningModule({
           ) : (
             <div className="flex flex-1 flex-col justify-between space-y-4">
               {!isCompleted && isCurrent && (
-                <div className="relative flex min-h-[380px] flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition-colors hover:border-indigo-400 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-500/50">
+                <div className="relative flex min-h-[420px] flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition-colors hover:border-indigo-400 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-500/50">
                   <input
                     type="file"
                     accept=".pdf,.docx,.doc"
@@ -286,38 +329,99 @@ export function CvScreeningModule({
           )}
         </Card>
 
-        {/* Right Side (5 Cols): Job Context & Requirements + AI Keyword Visualizer + Gauge Score */}
-        <div className="space-y-6 lg:col-span-5">
-          {/* Card 1: Enterprise Job Context & Requirements Inspector (Đối chiếu Yêu cầu Tuyển dụng) */}
-          <Card className="space-y-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
-              <CompanyAvatar
-                logoUrl={jdInfo?.logoUrl}
-                companyName={jdInfo?.companyName}
-                className="h-10 w-10 rounded-[12px]"
-              />
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  {jdInfo?.companyName}
-                </h3>
-                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                  {jdInfo?.title}
-                </p>
+        {/* Column 2 (Center - 4 Cols): AI Gauge Score Clock + Keyword Matching + AI Feedback */}
+        <div className="space-y-6 lg:col-span-4">
+          {/* Card 1: Circular AI Match Score Clock ("Đồng hồ AI") & Sub-scores */}
+          <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>AI Match Gauge Clock</span>
               </div>
+              {detail?.finalResult && (
+                <span
+                  className={
+                    detail.finalResult === "PASSED"
+                      ? "rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                      : "rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-extrabold text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                  }>
+                  {detail.finalResult}
+                </span>
+              )}
             </div>
 
-            {/* Job Requirements Info Box */}
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Yêu cầu Tuyển dụng Đối chiếu:</span>
+            {matchScore !== null ? (
+              <div className="space-y-4 text-center">
+                {/* Circular Gauge Clock */}
+                <CircularMatchGauge score={matchScore} />
+
+                {/* Sub-Metrics Progress Bars */}
+                <div className="space-y-2.5 border-t border-slate-100 pt-3 text-left text-xs dark:border-slate-800">
+                  {extraMetrics ? (
+                    <>
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                          <span>Kỹ năng chuyên môn (Skills):</span>
+                          <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                            {extraMetrics["Skills Match Score"] ?? 60}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-indigo-600"
+                            style={{ width: `${extraMetrics["Skills Match Score"] ?? 60}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                          <span>Nền tảng Học vấn (Education):</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                            {extraMetrics["Education Match Score"] ?? 60}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-emerald-500"
+                            style={{ width: `${extraMetrics["Education Match Score"] ?? 60}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                          <span>Độ rõ ràng CV (Readability):</span>
+                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                            {extraMetrics["CV Readability Score"] ?? 90}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-blue-500"
+                            style={{ width: `${extraMetrics["CV Readability Score"] ?? 90}%` }}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Skeleton className="h-3 w-full rounded-md" />
+                      <Skeleton className="h-3 w-full rounded-md" />
+                      <Skeleton className="h-3 w-full rounded-md" />
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-[11px] leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
-                {jdInfo?.requirements ||
-                  jdInfo?.description ||
-                  "Yêu cầu tối thiểu 1+ năm kinh nghiệm Java / Spring Boot, thành thạo REST API, SQL và có tư duy thiết kế hệ thống vững chắc."}
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/60 bg-slate-50/50 p-6 text-center dark:border-slate-800/60 dark:bg-slate-900/30">
+                <Skeleton className="mb-3 h-4 w-28 rounded-md" />
+                <Skeleton className="mb-2 h-10 w-20 rounded-xl" />
+                <span className="text-[10px] font-medium text-slate-400">
+                  Tải CV để kích hoạt Match Score
+                </span>
               </div>
-            </div>
+            )}
           </Card>
 
           {/* Card 2: Live AI Keyword Matching Visualizer */}
@@ -327,7 +431,7 @@ export function CvScreeningModule({
                 <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <span>Live AI Keyword Matching Visualizer</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">Tỉ lệ từ khóa</span>
+              <span className="text-[10px] font-semibold text-slate-400">Từ khóa CV</span>
             </div>
 
             {Object.keys(keywordDensity).length > 0 ? (
@@ -362,112 +466,8 @@ export function CvScreeningModule({
             )}
           </Card>
 
-          {/* Card 3: Match Gauge Score Breakdown */}
+          {/* Card 3: AI Assessment & HR Review Notes Accordion */}
           <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Match Gauge Score</span>
-              </div>
-              {detail?.finalResult && (
-                <span
-                  className={
-                    detail.finalResult === "PASSED"
-                      ? "rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                      : "rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-extrabold text-rose-700 dark:bg-rose-950 dark:text-rose-300"
-                  }>
-                  {detail.finalResult}
-                </span>
-              )}
-            </div>
-
-            {matchScore !== null ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-12 sm:items-center">
-                {/* Big Score Ring */}
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 text-center sm:col-span-5 dark:border-indigo-950/60 dark:bg-indigo-950/30">
-                  <span className="text-[10px] font-bold text-indigo-600 uppercase dark:text-indigo-400">
-                    MATCH SCORE
-                  </span>
-                  <p className="mt-1 text-3xl font-black text-indigo-600 dark:text-indigo-400">
-                    {matchScore}%
-                  </p>
-                  <span className="mt-0.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                    {matchScore >= 70 ? "Phù hợp Cao" : "Cần Cải Thiện"}
-                  </span>
-                </div>
-
-                {/* Sub-Metrics Progress Bars */}
-                <div className="space-y-2 text-xs sm:col-span-7">
-                  {extraMetrics ? (
-                    <>
-                      <div>
-                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                          <span>Kỹ năng (Skills):</span>
-                          <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                            {extraMetrics["Skills Match Score"] ?? 60}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                          <div
-                            className="h-full rounded-full bg-indigo-600"
-                            style={{ width: `${extraMetrics["Skills Match Score"] ?? 60}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                          <span>Học vấn (Education):</span>
-                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                            {extraMetrics["Education Match Score"] ?? 60}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                          <div
-                            className="h-full rounded-full bg-emerald-500"
-                            style={{ width: `${extraMetrics["Education Match Score"] ?? 60}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                          <span>Trình bày CV (Readability):</span>
-                          <span className="font-bold text-blue-600 dark:text-blue-400">
-                            {extraMetrics["CV Readability Score"] ?? 90}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                          <div
-                            className="h-full rounded-full bg-blue-500"
-                            style={{ width: `${extraMetrics["CV Readability Score"] ?? 90}%` }}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="space-y-2">
-                      <Skeleton className="h-3 w-full rounded-md" />
-                      <Skeleton className="h-3 w-full rounded-md" />
-                      <Skeleton className="h-3 w-full rounded-md" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/60 bg-slate-50/50 p-6 text-center dark:border-slate-800/60 dark:bg-slate-900/30">
-                <Skeleton className="mb-3 h-4 w-28 rounded-md" />
-                <Skeleton className="mb-2 h-10 w-20 rounded-xl" />
-                <span className="text-[10px] font-medium text-slate-400">
-                  Tải CV để kích hoạt Match Score
-                </span>
-              </div>
-            )}
-          </Card>
-
-          {/* Card 4: AI Assessment & HR Review Notes Accordion */}
-          <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            {/* Tabs Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
               <div className="flex items-center gap-1.5">
                 <button
@@ -582,6 +582,91 @@ export function CvScreeningModule({
                 </div>
               </div>
             )}
+          </Card>
+        </div>
+
+        {/* Column 3 (Right - 3 Cols): Enterprise Info & Job Requirements Inspector & FAQ */}
+        <div className="space-y-6 lg:col-span-3">
+          {/* Card 1: Enterprise Job Context & Requirements Inspector */}
+          <Card className="space-y-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
+              <CompanyAvatar
+                logoUrl={jdInfo?.logoUrl}
+                companyName={jdInfo?.companyName}
+                className="h-10 w-10 rounded-[12px]"
+              />
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  {jdInfo?.companyName}
+                </h3>
+                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                  {jdInfo?.title}
+                </p>
+              </div>
+            </div>
+
+            {/* Job Requirements Box */}
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
+                <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Yêu cầu Tuyển dụng Đối chiếu:</span>
+              </div>
+              <div className="max-h-[300px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-[11px] leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
+                {jdInfo?.requirements ||
+                  jdInfo?.description ||
+                  "Yêu cầu tối thiểu 1+ năm kinh nghiệm Java / Spring Boot, thành thạo REST API, SQL và có tư duy thiết kế hệ thống vững chắc."}
+              </div>
+            </div>
+          </Card>
+
+          {/* Card 2: Round Benchmark */}
+          <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+              <Clock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Tiêu chuẩn Đạt Vòng {round.roundOrder}</span>
+            </div>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
+                <span className="text-slate-500">Điểm sàn qua vòng:</span>
+                <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                  {round.passThreshold ?? 70}/100
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Thời gian quy định:</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {round.configData?.timeLimitMinutes
+                    ? `${round.configData.timeLimitMinutes} phút`
+                    : "Không giới hạn"}
+                </span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Card 3: FAQ Trợ giúp */}
+          <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+              <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <span>Trợ giúp nhanh</span>
+            </div>
+            <div className="space-y-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+              <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
+                <p className="font-bold text-slate-800 dark:text-slate-200">
+                  ⚡ AI chấm điểm mất bao lâu?
+                </p>
+                <p className="mt-0.5 text-slate-500 dark:text-slate-400">
+                  Hệ thống tự động chấm điểm và tổng hợp kết quả chỉ trong 30-60 giây.
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
+                <p className="font-bold text-slate-800 dark:text-slate-200">
+                  🔒 Có được thi lại không?
+                </p>
+                <p className="mt-0.5 text-slate-500 dark:text-slate-400">
+                  Mỗi vòng chỉ thực hiện 1 lần duy nhất.
+                </p>
+              </div>
+            </div>
           </Card>
         </div>
       </div>
