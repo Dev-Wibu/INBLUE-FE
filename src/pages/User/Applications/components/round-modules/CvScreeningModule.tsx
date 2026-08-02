@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import {
   AlertTriangle,
-  Briefcase,
+  BadgeCheck,
   CheckCircle2,
   Download,
   ExternalLink,
@@ -21,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
+import type { JdInfoPayload } from "../RoundWorkspaceDispatcher";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -39,6 +39,16 @@ export interface AiFeedbackPayload {
   };
 }
 
+interface CvScreeningModuleProps {
+  round: JdRound;
+  detail?: ApplicationDetail;
+  applicationId: number;
+  jdInfo?: JdInfoPayload | null;
+  isCompleted: boolean;
+  isCurrent: boolean;
+  onSuccess?: () => void;
+}
+
 function getCompanyInitials(name?: string): string {
   if (!name) return "CO";
   const words = name.trim().split(/\s+/);
@@ -49,7 +59,7 @@ function getCompanyInitials(name?: string): string {
 function CompanyAvatar({
   logoUrl,
   companyName,
-  className = "h-10 w-10 rounded-xl",
+  className = "h-9 w-9 rounded-xl",
   textClassName = "text-xs font-bold",
 }: {
   logoUrl?: string | null;
@@ -62,10 +72,7 @@ function CompanyAvatar({
 
   return (
     <div
-      className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden border border-slate-100 bg-slate-50 text-indigo-600 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400",
-        className
-      )}>
+      className={`flex shrink-0 items-center justify-center overflow-hidden border border-slate-100 bg-slate-50 text-indigo-600 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400 ${className}`}>
       {logoUrl && !imgError ? (
         <img
           src={logoUrl}
@@ -78,55 +85,6 @@ function CompanyAvatar({
       )}
     </div>
   );
-}
-
-function JobLevelBadge({ level }: { level?: string }) {
-  if (!level) return null;
-  const normalizedLevel = level.toUpperCase();
-
-  const levelStyles: Record<string, string> = {
-    INTERN:
-      "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800/60",
-    FRESHER:
-      "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800/60",
-    JUNIOR:
-      "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/60",
-    MID: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800/60",
-    MIDDLE:
-      "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800/60",
-    SENIOR:
-      "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800/60",
-    LEAD: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800/60",
-  };
-
-  const style =
-    levelStyles[normalizedLevel] ||
-    "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300";
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-extrabold uppercase",
-        style
-      )}>
-      {normalizedLevel}
-    </span>
-  );
-}
-
-interface CvScreeningModuleProps {
-  round: JdRound;
-  detail?: ApplicationDetail;
-  applicationId: number;
-  jdInfo?: {
-    title?: string;
-    companyName?: string;
-    logoUrl?: string | null;
-    level?: string;
-  };
-  isCompleted: boolean;
-  isCurrent: boolean;
-  onSuccess?: () => void;
 }
 
 export function CvScreeningModule({
@@ -208,70 +166,6 @@ export function CvScreeningModule({
 
   return (
     <div className="space-y-6">
-      {/* SECTION 1: JD Requirements & Skill Targets Brief Card (For easy cross-referencing) */}
-      <Card className="rounded-[20px] border border-indigo-100 bg-gradient-to-r from-indigo-50/70 via-blue-50/40 to-slate-50 p-4.5 shadow-2xs dark:border-indigo-950/60 dark:from-indigo-950/30 dark:via-slate-900/40 dark:to-slate-900/60">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <CompanyAvatar
-              logoUrl={jdInfo?.logoUrl}
-              companyName={jdInfo?.companyName}
-              className="h-10 w-10 rounded-xl"
-            />
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
-                  {jdInfo?.title || "Vị trí tuyển dụng"}
-                </h3>
-                <JobLevelBadge level={jdInfo?.level} />
-              </div>
-              <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                🏢 {jdInfo?.companyName || "Doanh nghiệp tuyển dụng"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 rounded-xl bg-indigo-100/60 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-            <Briefcase className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span>Đối chiếu CV với Yêu cầu tuyển dụng JD</span>
-          </div>
-        </div>
-
-        {/* Requirements Summary & Target Skills */}
-        <div className="mt-3.5 grid grid-cols-1 gap-3 border-t border-indigo-100/80 pt-3 text-xs sm:grid-cols-12 dark:border-slate-800">
-          <div className="flex items-start gap-2 text-slate-700 sm:col-span-6 dark:text-slate-300">
-            <span className="shrink-0 font-bold text-indigo-600 dark:text-indigo-400">
-              📌 Yêu cầu kinh nghiệm:
-            </span>
-            <span>
-              Tối thiểu 1+ năm làm phát triển phần mềm, tư duy OOP vững & thành thạo Git workflow.
-            </span>
-          </div>
-
-          <div className="flex items-start gap-2 text-slate-700 sm:col-span-6 dark:text-slate-300">
-            <span className="shrink-0 font-bold text-indigo-600 dark:text-indigo-400">
-              🎯 Skills cần khớp:
-            </span>
-            <div className="flex flex-wrap gap-1">
-              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                Java
-              </span>
-              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                Spring Boot
-              </span>
-              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                PostgreSQL
-              </span>
-              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                RESTful API
-              </span>
-              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                Docker
-              </span>
-            </div>
-          </div>
-        </div>
-      </Card>
-
       {/* Instruction Box */}
       <div className="space-y-2">
         <h4 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
@@ -286,8 +180,8 @@ export function CvScreeningModule({
         </div>
       </div>
 
-      {/* SECTION 2: 7:5 Studio Layout (Left PDF Previewer 7 Cols | Right AI Intelligence 5 Cols) */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      {/* Pure 2-Column Studio Grid Layout (7:5 Ratio - No Nested Grid Void) */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         {/* Left Side (7 Cols): Document Viewer / Upload Dropzone */}
         <Card className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs lg:col-span-7 dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
@@ -297,10 +191,10 @@ export function CvScreeningModule({
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Khung Xem Trước CV PDF
+                  Hồ sơ CV Ứng tuyển
                 </h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {fileUrl ? "File CV chính thức đã nộp" : "Hỗ trợ PDF, DOCX (Tối đa 10MB)"}
+                  {fileUrl ? "Đã nộp & Phân tích AI" : "Hỗ trợ PDF, DOCX (Tối đa 10MB)"}
                 </p>
               </div>
             </div>
@@ -339,7 +233,7 @@ export function CvScreeningModule({
           ) : (
             <div className="flex flex-1 flex-col justify-between space-y-4">
               {!isCompleted && isCurrent && (
-                <div className="relative flex min-h-[360px] flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition-colors hover:border-indigo-400 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-500/50">
+                <div className="relative flex min-h-[380px] flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition-colors hover:border-indigo-400 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-500/50">
                   <input
                     type="file"
                     accept=".pdf,.docx,.doc"
@@ -392,14 +286,46 @@ export function CvScreeningModule({
           )}
         </Card>
 
-        {/* Right Side (5 Cols): AI Keyword Visualizer, Gauge Score & Feedback */}
+        {/* Right Side (5 Cols): Job Context & Requirements + AI Keyword Visualizer + Gauge Score */}
         <div className="space-y-6 lg:col-span-5">
-          {/* Card 1: Live AI Keyword Matching Visualizer */}
+          {/* Card 1: Enterprise Job Context & Requirements Inspector (Đối chiếu Yêu cầu Tuyển dụng) */}
+          <Card className="space-y-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
+              <CompanyAvatar
+                logoUrl={jdInfo?.logoUrl}
+                companyName={jdInfo?.companyName}
+                className="h-10 w-10 rounded-[12px]"
+              />
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  {jdInfo?.companyName}
+                </h3>
+                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                  {jdInfo?.title}
+                </p>
+              </div>
+            </div>
+
+            {/* Job Requirements Info Box */}
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
+                <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Yêu cầu Tuyển dụng Đối chiếu:</span>
+              </div>
+              <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-[11px] leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
+                {jdInfo?.requirements ||
+                  jdInfo?.description ||
+                  "Yêu cầu tối thiểu 1+ năm kinh nghiệm Java / Spring Boot, thành thạo REST API, SQL và có tư duy thiết kế hệ thống vững chắc."}
+              </div>
+            </div>
+          </Card>
+
+          {/* Card 2: Live AI Keyword Matching Visualizer */}
           <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                 <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Live AI Keyword Density Visualizer</span>
+                <span>Live AI Keyword Matching Visualizer</span>
               </div>
               <span className="text-[10px] font-semibold text-slate-400">Tỉ lệ từ khóa</span>
             </div>
@@ -436,7 +362,7 @@ export function CvScreeningModule({
             )}
           </Card>
 
-          {/* Card 2: Match Gauge Score Breakdown */}
+          {/* Card 3: Match Gauge Score Breakdown */}
           <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
@@ -506,7 +432,7 @@ export function CvScreeningModule({
 
                       <div>
                         <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                          <span>Trình bày (Readability):</span>
+                          <span>Trình bày CV (Readability):</span>
                           <span className="font-bold text-blue-600 dark:text-blue-400">
                             {extraMetrics["CV Readability Score"] ?? 90}%
                           </span>
@@ -539,7 +465,7 @@ export function CvScreeningModule({
             )}
           </Card>
 
-          {/* Card 3: AI Assessment & HR Review Notes Accordion */}
+          {/* Card 4: AI Assessment & HR Review Notes Accordion */}
           <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
             {/* Tabs Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">

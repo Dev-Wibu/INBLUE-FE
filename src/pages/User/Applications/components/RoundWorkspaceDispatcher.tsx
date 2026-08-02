@@ -10,17 +10,22 @@ import { QuizModule } from "./round-modules/QuizModule";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
+export interface JdInfoPayload {
+  title?: string;
+  companyName?: string;
+  logoUrl?: string | null;
+  level?: string;
+  description?: string;
+  requirements?: string;
+  rounds?: JdRound[];
+}
+
 interface RoundWorkspaceDispatcherProps {
   round: JdRound;
   detail?: ApplicationDetail;
   applicationId: number;
   jdId?: number;
-  jdInfo?: {
-    title?: string;
-    companyName?: string;
-    logoUrl?: string | null;
-    level?: string;
-  };
+  jdInfo?: JdInfoPayload | null;
   currentRoundOrder: number;
   appStatus?: string;
   onRefresh?: () => void;
@@ -38,17 +43,11 @@ export function RoundWorkspaceDispatcher({
 }: RoundWorkspaceDispatcherProps) {
   const roundOrder = round.roundOrder ?? 1;
 
-  // SOFT_FAILED means "failed one round but you may continue the next one",
-  // so we must NOT lock every round downstream. Only PASSED/FAILED end the
-  // application from the candidate's perspective.
   const isAppCompleted = appStatus === "PASSED" || appStatus === "FAILED";
 
   const detailStatus = detail?.status as string | undefined;
   const isCompleted =
-    isAppCompleted ||
-    detailStatus === "COMPLETED" ||
-    detailStatus === "AI_EVALUATED" ||
-    roundOrder < currentRoundOrder;
+    isAppCompleted || detailStatus === "COMPLETED" || roundOrder < currentRoundOrder;
 
   const isCurrent = !isCompleted && roundOrder === currentRoundOrder;
 
