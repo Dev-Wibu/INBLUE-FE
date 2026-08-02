@@ -1,4 +1,3 @@
-import { API_BASE_URL } from "@/constants/api.config";
 import type { ApiResponse } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
 import i18n from "@/lib/i18n";
@@ -92,37 +91,22 @@ export class ApplicationDetailManager {
         formData.append("compileRequest", JSON.stringify(params.compileRequest));
       }
 
-      const { useAuthStore } = await import("@/stores/authStore");
-      const token = useAuthStore.getState().token;
-
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const rawRes = await fetch(`${API_BASE_URL}/api/application-details/submit`, {
-        method: "POST",
-        headers,
-        body: formData,
-      });
-
-      const resData = await rawRes.json();
-
-      if (!rawRes.ok) {
-        return {
-          success: false,
-          error:
-            resData?.message ||
-            resData?.error ||
-            this.extractErrorMessage({ response: { data: resData } }),
-        };
-      }
-
-      const data = resData?.data ?? resData;
+      const response = await fetchClient
+        .POST("/api/application-details/submit", {
+          headers: {
+            "Content-Type": undefined,
+          },
+          body: formData as unknown as Record<string, unknown>,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
 
       return {
         success: true,
-        data: data as SubmissionResult,
+        data: response.data as SubmissionResult,
       };
     } catch (error) {
       console.error("[ApplicationDetailManager] submit error:", error);
