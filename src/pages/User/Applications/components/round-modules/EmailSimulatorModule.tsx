@@ -142,7 +142,7 @@ export function EmailSimulatorModule({
   const [sampleBody, setSampleBody] = useState(
     "Kính gửi Anh/Chị,\n\nEm xin phép phản hồi email của Anh/Chị về vấn đề đang xảy ra...\n\nTrân trọng,\n[Tên của bạn]"
   );
-  const [phase, setPhase] = useState<Phase>({ kind: "DRAFT" });
+  const [userWaiting, setUserWaiting] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewEmailId, setPreviewEmailId] = useState<number | null>(null);
 
@@ -174,7 +174,62 @@ export function EmailSimulatorModule({
   // Auto-fetch email submission for preview modal when opened
   useEmailSubmission(previewEmailId ?? 0, previewOpen && previewEmailId != null);
 
-  // 3. Tự động poll refetch detail từ parent mỗi 5s nếu candidate đã bấm gửi (WAITING_FOR_FIRST_EMAIL) hoặc đang PENDING
+  // 3. Tính toán Phase thuần túy (Derived State) dựa trên emailSubmissionId, emailSubmission và detail status
+  const phase = useMemo<Phase>(() => {
+    const detailStatus = detail?.status as string | undefined;
+
+    // Nếu detail đã COMPLETED hoặc AI_EVALUATED
+    if (detail && (detailStatus === "AI_EVALUATED" || detailStatus === "COMPLETED")) {
+      if (emailSubmission?.status === "IGNORED") {
+        return {
+          kind: "REJECTED",
+          reason: "IGNORED",
+          message: emailSubmission.errorMessage || "Email thiếu mã subject",
+        };
+      }
+      if (emailSubmission?.status === "ERROR") {
+        return {
+          kind: "REJECTED",
+          reason: "ERROR",
+          message: emailSubmission.errorMessage || "Có lỗi khi chấm email",
+        };
+      }
+      return { kind: "EMAIL_RECEIVED" };
+    }
+
+    // Nếu emailSubmissionId là null (hệ thống chưa ghi nhận/chưa quét được email)
+    if (emailSubmissionId == null) {
+      if (userWaiting) return { kind: "WAITING_FOR_FIRST_EMAIL" };
+      return { kind: "DRAFT" };
+    }
+
+    // Khi emailSubmissionId khác null
+    if (!emailSubmission) {
+      return { kind: "PENDING" };
+    }
+
+    if (emailSubmission.status === "PENDING") {
+      return { kind: "PENDING" };
+    } else if (emailSubmission.status === "PROCESSED") {
+      return { kind: "EMAIL_RECEIVED" };
+    } else if (emailSubmission.status === "IGNORED") {
+      return {
+        kind: "REJECTED",
+        reason: "IGNORED",
+        message: emailSubmission.errorMessage || "Email thiếu mã subject",
+      };
+    } else if (emailSubmission.status === "ERROR") {
+      return {
+        kind: "REJECTED",
+        reason: "ERROR",
+        message: emailSubmission.errorMessage || "Có lỗi khi chấm email",
+      };
+    }
+
+    return { kind: "DRAFT" };
+  }, [detail, emailSubmissionId, emailSubmission, userWaiting]);
+
+  // 4. Tự động poll refetch detail từ parent mỗi 5s nếu candidate đã bấm gửi (WAITING_FOR_FIRST_EMAIL) hoặc đang PENDING
   useEffect(() => {
     if (phase.kind !== "WAITING_FOR_FIRST_EMAIL" && phase.kind !== "PENDING") return;
     const interval = setInterval(() => {
@@ -183,79 +238,8 @@ export function EmailSimulatorModule({
     return () => clearInterval(interval);
   }, [phase.kind, onSuccess]);
 
-  // 4. Cập nhật Phase dựa trên emailSubmissionId, emailSubmission và detail status
-  useEffect(() => {
-    const detailStatus = detail?.status as string | undefined;
-
-    // Nếu detail đã COMPLETED hoặc AI_EVALUATED
-    if (detail && (detailStatus === "AI_EVALUATED" || detailStatus === "COMPLETED")) {
-      if (emailSubmission?.status === "IGNORED") {
-        if (phase.kind !== "REJECTED") {
-          setPhase({
-            kind: "REJECTED",
-            reason: "IGNORED",
-            message: emailSubmission.errorMessage || "Email thiếu mã subject",
-          });
-        }
-        return;
-      }
-      if (emailSubmission?.status === "ERROR") {
-        if (phase.kind !== "REJECTED") {
-          setPhase({
-            kind: "REJECTED",
-            reason: "ERROR",
-            message: emailSubmission.errorMessage || "Có lỗi khi chấm email",
-          });
-        }
-        return;
-      }
-      if (phase.kind !== "EMAIL_RECEIVED") {
-        setPhase({ kind: "EMAIL_RECEIVED" });
-      }
-      return;
-    }
-
-    // Nếu emailSubmissionId là null (hệ thống chưa ghi nhận/chưa quét được email)
-    if (emailSubmissionId == null) {
-      if (phase.kind === "WAITING_FOR_FIRST_EMAIL") return;
-      if (phase.kind !== "DRAFT") setPhase({ kind: "DRAFT" });
-      return;
-    }
-
-    // Khi emailSubmissionId khác null
-    if (!emailSubmission) {
-      if (phase.kind !== "PENDING" && phase.kind !== "EMAIL_RECEIVED") {
-        setPhase({ kind: "PENDING" });
-      }
-      return;
-    }
-
-    if (emailSubmission.status === "PENDING") {
-      if (phase.kind !== "PENDING") setPhase({ kind: "PENDING" });
-    } else if (emailSubmission.status === "PROCESSED") {
-      if (phase.kind !== "EMAIL_RECEIVED") setPhase({ kind: "EMAIL_RECEIVED" });
-    } else if (emailSubmission.status === "IGNORED") {
-      if (phase.kind !== "REJECTED") {
-        setPhase({
-          kind: "REJECTED",
-          reason: "IGNORED",
-          message: emailSubmission.errorMessage || "Email thiếu mã subject",
-        });
-      }
-    } else if (emailSubmission.status === "ERROR") {
-      if (phase.kind !== "REJECTED") {
-        setPhase({
-          kind: "REJECTED",
-          reason: "ERROR",
-          message: emailSubmission.errorMessage || "Có lỗi khi chấm email",
-        });
-      }
-    }
-  }, [detail, emailSubmissionId, emailSubmission, phase.kind]);
-
   const finalScore = detail?.finalScore ?? detail?.aiScore;
   const aiScoreVal = detail?.aiScore ?? finalScore ?? 0;
-  const hrScoreVal = detail?.hrScore ?? finalScore ?? 0;
 
   const aiFeedback = detail?.aiFeedback as
     | {
@@ -274,16 +258,15 @@ export function EmailSimulatorModule({
     // Không có submit endpoint — vòng này hoàn toàn dựa vào cronjob server quét email.
     // Chỉ chuyển phase sang WAITING để app bắt đầu poll trạng thái.
     toast.success(t("userApplicationhistory.emailSubmitted", "Xác nhận đã gửi email thành công"));
-    setPhase({ kind: "WAITING_FOR_FIRST_EMAIL" });
+    setUserWaiting(true);
     onSuccess?.();
   };
 
   const openGmailPopup = () => {
     // Chuyển phase sang WAITING để hệ thống bắt đầu poll kết quả từ application detail
-    if (phase.kind === "DRAFT") {
-      setPhase({ kind: "WAITING_FOR_FIRST_EMAIL" });
-      onSuccess?.();
-    }
+    setUserWaiting(true);
+    onSuccess?.();
+
     // Đóng popup cũ nếu còn mở
     if (popupRef.current && !popupRef.current.closed) {
       popupRef.current.focus();
