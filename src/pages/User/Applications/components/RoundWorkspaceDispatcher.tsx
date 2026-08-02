@@ -89,6 +89,7 @@ export function RoundWorkspaceDispatcher({
           jdId={jdId}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
+          onSuccess={onRefresh}
         />
       );
 

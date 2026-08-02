@@ -24,7 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SpinnerBlock } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { questionBankManager, type QuestionBank } from "@/services/question-bank.manager";
 import { useTranslation } from "react-i18next";
 
 export interface QuizQuestion {
@@ -47,85 +49,6 @@ interface QuizEditorProps {
   onTimeLimitMinutesChange: (val: number) => void;
 }
 
-const getMockQuestionBank = (t: (key: string) => string) => [
-  {
-    questionText: t("compQuizEditor.mockQ1"),
-    options: ['"number"', '"NaN"', '"undefined"', '"object"'],
-    correctAnswer: '"number"',
-    points: 10,
-    category: "JavaScript",
-    difficulty: t("common.difficultyEasy"),
-  },
-  {
-    questionText: t("compQuizEditor.mockQ2"),
-    options: ["3", "4", "5", "Undefined"],
-    correctAnswer: "4",
-    points: 10,
-    category: "JavaScript",
-    difficulty: t("common.difficultyMedium"),
-  },
-  {
-    questionText: t("compQuizEditor.mockQ3"),
-    options: [
-      "top: 50%; left: 50%; transform: translate(-50%, -50%);",
-      "align-items: center; justify-content: center;",
-      "margin: auto;",
-      "vertical-align: middle;",
-    ],
-    correctAnswer: "top: 50%; left: 50%; transform: translate(-50%, -50%);",
-    points: 15,
-    category: "CSS",
-    difficulty: t("common.difficultyMedium"),
-  },
-  {
-    questionText: t("compQuizEditor.mockQ4"),
-    options: [
-      t("compQuizEditor.mockQ4A"),
-      t("compQuizEditor.mockQ4B"),
-      t("compQuizEditor.mockQ4C"),
-      t("compQuizEditor.mockQ4D"),
-    ],
-    correctAnswer: t("compQuizEditor.mockQ4A"),
-    points: 10,
-    category: "React",
-    difficulty: t("common.difficultyEasy"),
-  },
-  {
-    questionText: t("compQuizEditor.mockQ5"),
-    options: ["COUNT(column_name)", "COUNT(*)", "SUM(column_name)", "TOTAL(column_name)"],
-    correctAnswer: "COUNT(column_name)",
-    points: 10,
-    category: "SQL",
-    difficulty: t("common.difficultyEasy"),
-  },
-  {
-    questionText: t("compQuizEditor.mockQ6"),
-    options: [
-      t("compQuizEditor.mockQ6A"),
-      t("compQuizEditor.mockQ6B"),
-      t("compQuizEditor.mockQ6C"),
-      "Recursive CTE",
-    ],
-    correctAnswer: t("compQuizEditor.mockQ6A"),
-    points: 20,
-    category: "SQL",
-    difficulty: t("common.difficultyHard"),
-  },
-  {
-    questionText: t("compQuizEditor.mockQ7"),
-    options: [
-      t("compQuizEditor.mockQ7A"),
-      t("compQuizEditor.mockQ7B"),
-      t("compQuizEditor.mockQ7C"),
-      t("compQuizEditor.mockQ7D"),
-    ],
-    correctAnswer: t("compQuizEditor.mockQ7A"),
-    points: 10,
-    category: "OOP",
-    difficulty: t("common.difficultyEasy"),
-  },
-];
-
 type RightPaneView = "idle" | "view" | "edit" | "bank";
 
 export function QuizEditor({
@@ -140,7 +63,26 @@ export function QuizEditor({
   onTimeLimitMinutesChange,
 }: QuizEditorProps) {
   const { t } = useTranslation();
-  const MOCK_QUESTION_BANK = React.useMemo(() => getMockQuestionBank(t), [t]);
+  // Question Bank API state
+  const [bankQuestions, setBankQuestions] = React.useState<QuestionBank[]>([]);
+  const [isLoadingBank, setIsLoadingBank] = React.useState(false);
+  const [hasFetchedBank, setHasFetchedBank] = React.useState(false);
+
+  const fetchBankQuestions = React.useCallback(async () => {
+    setIsLoadingBank(true);
+    try {
+      const res = await questionBankManager.getAll();
+      if (res.success && res.data) {
+        setBankQuestions(res.data.filter((q) => !q.isDeleted));
+      }
+    } catch (err) {
+      console.error("Failed to load question bank:", err);
+    } finally {
+      setIsLoadingBank(false);
+      setHasFetchedBank(true);
+    }
+  }, []);
+
   // Right pane state
   const [rightView, setRightView] = React.useState<RightPaneView>("idle");
   const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
@@ -161,7 +103,15 @@ export function QuizEditor({
   // Time edit inline
   const [editingTime, setEditingTime] = React.useState(false);
 
-  const categories = ["All", "JavaScript", "CSS", "React", "SQL", "OOP"];
+  const categories = React.useMemo(() => {
+    const set = new Set<string>();
+    bankQuestions.forEach((q) => {
+      if (q.questionCategory?.categoryName) {
+        set.add(q.questionCategory.categoryName);
+      }
+    });
+    return ["All", ...Array.from(set)];
+  }, [bankQuestions]);
 
   // --- Left column actions ---
 
@@ -231,14 +181,20 @@ export function QuizEditor({
     setBankSearch("");
     setBankCategory("All");
     setRightView("bank");
+    if (!hasFetchedBank) {
+      fetchBankQuestions();
+    }
   };
 
   // Question bank filters
-  const filteredBank = MOCK_QUESTION_BANK.filter((q) => {
-    const matchesSearch = (q.questionText || "").toLowerCase().includes(bankSearch.toLowerCase());
-    const matchesCategory = bankCategory === "All" || q.category === bankCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredBank = React.useMemo(() => {
+    return bankQuestions.filter((q) => {
+      const matchesSearch = (q.questionText || "").toLowerCase().includes(bankSearch.toLowerCase());
+      const matchesCategory =
+        bankCategory === "All" || q.questionCategory?.categoryName === bankCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [bankQuestions, bankSearch, bankCategory]);
 
   const toggleBankSelection = (index: number) => {
     setSelectedBankIndexes((prev) =>
@@ -247,13 +203,13 @@ export function QuizEditor({
   };
 
   const addSelectedFromBank = () => {
-    const selectedQuestions = selectedBankIndexes.map((idx) => {
-      const q = MOCK_QUESTION_BANK[idx];
+    const selectedQuestions: QuizQuestion[] = selectedBankIndexes.map((idx) => {
+      const q = bankQuestions[idx];
       return {
-        questionText: q.questionText,
-        options: [...q.options],
-        correctAnswer: q.correctAnswer,
-        points: q.points,
+        questionText: q?.questionText || "",
+        options: q?.options && q.options.length > 0 ? [...q.options] : ["", "", "", ""],
+        correctAnswer: q?.correctAnswer || (q?.options ? q.options[0] : ""),
+        points: 10,
       };
     });
     onChange([...questions, ...selectedQuestions]);
@@ -716,70 +672,87 @@ export function QuizEditor({
               </div>
 
               {/* Questions list */}
-              <div className="max-h-[340px] space-y-2.5 overflow-y-auto pr-1">
-                {filteredBank.map((q, idx) => {
-                  const originalIndex = MOCK_QUESTION_BANK.findIndex(
-                    (bq) => bq.questionText === q.questionText
-                  );
-                  const isSelected = selectedBankIndexes.includes(originalIndex);
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => toggleBankSelection(originalIndex)}
-                      className={cn(
-                        "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-all",
-                        isSelected
-                          ? "border-indigo-500 bg-indigo-500/[0.04] dark:bg-indigo-950/15"
-                          : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/20 dark:hover:border-slate-700"
-                      )}>
-                      <div className="mt-0.5">
-                        <div
-                          className={cn(
-                            "flex h-4 w-4 items-center justify-center rounded border transition-colors",
-                            isSelected
-                              ? "border-indigo-600 bg-indigo-600 text-white"
-                              : "border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950"
-                          )}>
-                          {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
-                        </div>
-                      </div>
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-700 ring-1 ring-indigo-600/10 ring-inset dark:bg-indigo-950/30 dark:text-indigo-400">
-                            {q.category}
-                          </span>
-                          <span
-                            className={cn(
-                              "inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold ring-1 ring-inset",
-                              q.difficulty === t("common.difficultyEasy") &&
-                                "bg-green-50 text-green-700 ring-green-600/10 dark:bg-green-950/20 dark:text-green-400",
-                              q.difficulty === t("common.difficultyMedium") &&
-                                "bg-amber-50 text-amber-700 ring-amber-600/10 dark:bg-amber-950/20 dark:text-amber-400",
-                              q.difficulty === t("common.difficultyHard") &&
-                                "bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-950/20 dark:text-red-400"
-                            )}>
-                            {q.difficulty}
-                          </span>
-                          <span className="ml-auto text-[10px] font-semibold text-slate-400">
-                            {q.points} {t("common.score")}
-                          </span>
-                        </div>
-                        <p className="rounded-lg border border-slate-100 bg-slate-50 p-2 font-mono text-xs leading-relaxed font-semibold whitespace-pre-wrap dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-200">
-                          {q.questionText.length > 120
-                            ? q.questionText.substring(0, 120) + "..."
-                            : q.questionText}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+              {isLoadingBank ? (
+                <div className="flex h-48 items-center justify-center">
+                  <SpinnerBlock size="sm" />
+                </div>
+              ) : (
+                <div className="max-h-[340px] space-y-2.5 overflow-y-auto pr-1">
+                  {filteredBank.map((q, idx) => {
+                    const originalIndex = bankQuestions.findIndex((bq) => bq === q);
+                    const isSelected = selectedBankIndexes.includes(originalIndex);
+                    const qText = q.questionText || "";
+                    const categoryName = q.questionCategory?.categoryName;
+                    const difficultyLabel =
+                      q.questionLevel === "EASY"
+                        ? t("common.difficultyEasy")
+                        : q.questionLevel === "MEDIUM"
+                          ? t("common.difficultyMedium")
+                          : q.questionLevel === "HARD"
+                            ? t("common.difficultyHard")
+                            : q.questionLevel;
 
-                {filteredBank.length === 0 && (
-                  <div className="py-10 text-center text-xs text-slate-500">
-                    {t("adminQuizProblem.noMatchingQuestion")}
-                  </div>
-                )}
-              </div>
+                    return (
+                      <div
+                        key={q.id ?? idx}
+                        onClick={() => toggleBankSelection(originalIndex)}
+                        className={cn(
+                          "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-all",
+                          isSelected
+                            ? "border-indigo-500 bg-indigo-500/[0.04] dark:bg-indigo-950/15"
+                            : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/20 dark:hover:border-slate-700"
+                        )}>
+                        <div className="mt-0.5">
+                          <div
+                            className={cn(
+                              "flex h-4 w-4 items-center justify-center rounded border transition-colors",
+                              isSelected
+                                ? "border-indigo-600 bg-indigo-600 text-white"
+                                : "border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950"
+                            )}>
+                            {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                          </div>
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {categoryName && (
+                              <span className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-700 ring-1 ring-indigo-600/10 ring-inset dark:bg-indigo-950/30 dark:text-indigo-400">
+                                {categoryName}
+                              </span>
+                            )}
+                            {difficultyLabel && (
+                              <span
+                                className={cn(
+                                  "inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold ring-1 ring-inset",
+                                  q.questionLevel === "EASY" &&
+                                    "bg-green-50 text-green-700 ring-green-600/10 dark:bg-green-950/20 dark:text-green-400",
+                                  q.questionLevel === "MEDIUM" &&
+                                    "bg-amber-50 text-amber-700 ring-amber-600/10 dark:bg-amber-950/20 dark:text-amber-400",
+                                  q.questionLevel === "HARD" &&
+                                    "bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-950/20 dark:text-red-400"
+                                )}>
+                                {difficultyLabel}
+                              </span>
+                            )}
+                            <span className="ml-auto text-[10px] font-semibold text-slate-400">
+                              10 {t("common.score")}
+                            </span>
+                          </div>
+                          <p className="rounded-lg border border-slate-100 bg-slate-50 p-2 font-mono text-xs leading-relaxed font-semibold whitespace-pre-wrap dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-200">
+                            {qText.length > 120 ? qText.substring(0, 120) + "..." : qText}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {filteredBank.length === 0 && (
+                    <div className="py-10 text-center text-xs text-slate-500">
+                      {t("adminQuizProblem.noMatchingQuestion")}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Footer */}
               <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800/60">

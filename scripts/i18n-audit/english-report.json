@@ -257,7 +257,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorDialog.tsx",
-    "line": 1201,
+    "line": 1277,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -265,7 +265,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorWorkspace.tsx",
-    "line": 1250,
+    "line": 1342,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -960,6 +960,14 @@
     "text": "MB"
   },
   {
+    "file": "src/components/ui/email-preview-dialog.tsx",
+    "line": 211,
+    "character": 59,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Captured Body"
+  },
+  {
     "file": "src/components/ui/image-carousel.tsx",
     "line": 66,
     "character": 21,
@@ -1121,7 +1129,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1136,
+    "line": 1158,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -1521,7 +1529,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 799,
+    "line": 947,
     "character": 21,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1529,7 +1537,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 826,
+    "line": 974,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1537,7 +1545,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 839,
+    "line": 987,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1545,7 +1553,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 847,
+    "line": 995,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1953,7 +1961,7 @@
   },
   {
     "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 661,
+    "line": 667,
     "character": 62,
     "type": "JsxText",
     "category": "english",
@@ -1961,7 +1969,7 @@
   },
   {
     "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 666,
+    "line": 672,
     "character": 64,
     "type": "JsxText",
     "category": "english",
@@ -1969,7 +1977,7 @@
   },
   {
     "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 672,
+    "line": 678,
     "character": 64,
     "type": "JsxText",
     "category": "english",
@@ -1977,7 +1985,7 @@
   },
   {
     "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 674,
+    "line": 680,
     "character": 49,
     "type": "JsxText",
     "category": "english",
@@ -1985,7 +1993,7 @@
   },
   {
     "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 674,
+    "line": 680,
     "character": 73,
     "type": "JsxText",
     "category": "english",
@@ -2145,35 +2153,51 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 581,
-    "character": 21,
+    "line": 626,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "ReactJS / TypeScript"
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 584,
-    "character": 21,
+    "line": 629,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "Java Spring Boot"
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 587,
-    "character": 21,
+    "line": 632,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "PostgreSQL / Redis"
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 590,
-    "character": 21,
+    "line": 635,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "RESTful API Architecture"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 689,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "hanptse184261@fpt.edu.vn"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 693,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "[INBLUE-APP-"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
@@ -2193,119 +2217,463 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 93,
+    "line": 769,
     "character": 19,
     "type": "JsxText",
     "category": "english",
-    "text": "Target Code Snippet (Contains 3 BUGS)"
+    "text": "Total"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 110,
-    "character": 15,
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 777,
+    "character": 19,
     "type": "JsxText",
     "category": "english",
-    "text": "IDE Coding Playground"
+    "text": "CRITICAL"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 785,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "WARNING"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 793,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INFO"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 1207,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "L"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 1382,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "✓ PASSED"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 1387,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "✗ FAILED"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 120,
+    "line": 634,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Lines"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 642,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Chars"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1156,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "IN"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1164,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "OUT"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1185,
+    "character": 57,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms / test"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1190,
+    "character": 51,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MB"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1236,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "solution."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1245,
     "character": 48,
     "type": "JsxText",
     "category": "english",
-    "text": "TypeScript"
+    "text": "lines ·"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 121,
-    "character": 48,
+    "line": 1245,
+    "character": 77,
     "type": "JsxText",
     "category": "english",
-    "text": "JavaScript"
+    "text": "chars"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 122,
-    "character": 42,
+    "line": 1371,
+    "character": 90,
     "type": "JsxText",
     "category": "english",
-    "text": "Java 17"
+    "text": "ms"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 123,
-    "character": 44,
+    "line": 1380,
+    "character": 63,
     "type": "JsxText",
     "category": "english",
-    "text": "Python 3.10"
+    "text": "Input"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 151,
-    "character": 43,
+    "line": 1381,
+    "character": 63,
     "type": "JsxText",
     "category": "english",
-    "text": "Execution Console"
+    "text": "Expected"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1382,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Actual"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1383,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Status"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1384,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Time"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1417,
+    "character": 41,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 154,
+    "line": 393,
+    "character": 21,
+    "type": "JsxAttribute[title]",
+    "category": "english",
+    "text": "Resume Preview"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 602,
+    "character": 74,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI vs HR"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 608,
+    "character": 17,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "AI Score"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 614,
+    "character": 17,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "HR Score"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 375,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TICKET #INC-"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 378,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "HIGH PRIORITY"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 381,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "CLIENT ESCALATION"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 423,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "● Interactive Editor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 459,
     "character": 23,
     "type": "JsxText",
     "category": "english",
-    "text": "AI Fit Score"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 185,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "TypeScript / ReactJS"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 189,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "REST API & OpenAPI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 193,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Git & CI/CD Basics"
+    "text": "Subject:"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 104,
-    "character": 15,
+    "line": 486,
+    "character": 68,
     "type": "JsxText",
     "category": "english",
-    "text": "✉️ Inblue Corporate Mail Client Simulator"
+    "text": "Sans Serif"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 121,
-    "character": 15,
+    "line": 494,
+    "character": 74,
     "type": "JsxText",
     "category": "english",
-    "text": "hiring-manager@enterprise-domain.com"
+    "text": "Live Draft"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 62,
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 527,
     "character": 19,
     "type": "JsxText",
     "category": "english",
-    "text": "Senior Technical Lead Mentor"
+    "text": "#APP-"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 566,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "IMAP Live"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 573,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "THỜI GIAN"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 601,
+    "character": 45,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Gmail"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 601,
+    "character": 73,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Outlook"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 735,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI EVALUATED"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 831,
+    "character": 76,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI vs HR"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 837,
+    "character": 19,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "AI Score"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 843,
+    "character": 19,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "HR Score"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 876,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "From:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 884,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Subject:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 248,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "✓ PASSED"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 253,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "✗ FAILED"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 364,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "B"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 423,
+    "character": 11,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ApplicationDetail #"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 787,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Online (Daily.co)"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 814,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Offline"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1019,
+    "character": 13,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1126,
+    "character": 15,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Mentor tham gia"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1185,
+    "character": 32,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Situation"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1187,
+    "character": 50,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Task"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1188,
+    "character": 52,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Action"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1189,
+    "character": 52,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Result"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 83,
+    "line": 95,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2313,7 +2681,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 86,
+    "line": 98,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2321,7 +2689,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 89,
+    "line": 101,
     "character": 17,
     "type": "JsxText",
     "category": "english",
