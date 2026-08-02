@@ -15,6 +15,12 @@ interface RoundWorkspaceDispatcherProps {
   detail?: ApplicationDetail;
   applicationId: number;
   jdId?: number;
+  jdInfo?: {
+    title?: string;
+    companyName?: string;
+    logoUrl?: string | null;
+    level?: string;
+  };
   currentRoundOrder: number;
   appStatus?: string;
   onRefresh?: () => void;
@@ -25,6 +31,7 @@ export function RoundWorkspaceDispatcher({
   detail,
   applicationId,
   jdId,
+  jdInfo,
   currentRoundOrder,
   appStatus,
   onRefresh,
@@ -54,6 +61,7 @@ export function RoundWorkspaceDispatcher({
           round={round}
           detail={detail}
           applicationId={applicationId}
+          jdInfo={jdInfo}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
           onSuccess={onRefresh}

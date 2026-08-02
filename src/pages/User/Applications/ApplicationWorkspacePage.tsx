@@ -514,6 +514,7 @@ export function ApplicationWorkspacePage() {
                     detail={activeDetail}
                     applicationId={applicationId}
                     jdId={app.jdId}
+                    jdInfo={jdInfo ?? undefined}
                     currentRoundOrder={apiCurrentRoundOrder}
                     appStatus={app.status}
                     onRefresh={loadData}

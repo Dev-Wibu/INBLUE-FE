@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import {
   AlertTriangle,
+  Briefcase,
   CheckCircle2,
   Download,
   ExternalLink,
@@ -37,10 +39,91 @@ export interface AiFeedbackPayload {
   };
 }
 
+function getCompanyInitials(name?: string): string {
+  if (!name) return "CO";
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
+
+function CompanyAvatar({
+  logoUrl,
+  companyName,
+  className = "h-10 w-10 rounded-xl",
+  textClassName = "text-xs font-bold",
+}: {
+  logoUrl?: string | null;
+  companyName?: string;
+  className?: string;
+  textClassName?: string;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const initials = getCompanyInitials(companyName);
+
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center overflow-hidden border border-slate-100 bg-slate-50 text-indigo-600 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400",
+        className
+      )}>
+      {logoUrl && !imgError ? (
+        <img
+          src={logoUrl}
+          alt={companyName || "Logo"}
+          onError={() => setImgError(true)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <span className={textClassName}>{initials}</span>
+      )}
+    </div>
+  );
+}
+
+function JobLevelBadge({ level }: { level?: string }) {
+  if (!level) return null;
+  const normalizedLevel = level.toUpperCase();
+
+  const levelStyles: Record<string, string> = {
+    INTERN:
+      "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800/60",
+    FRESHER:
+      "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800/60",
+    JUNIOR:
+      "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/60",
+    MID: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800/60",
+    MIDDLE:
+      "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800/60",
+    SENIOR:
+      "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800/60",
+    LEAD: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800/60",
+  };
+
+  const style =
+    levelStyles[normalizedLevel] ||
+    "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300";
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-extrabold uppercase",
+        style
+      )}>
+      {normalizedLevel}
+    </span>
+  );
+}
+
 interface CvScreeningModuleProps {
   round: JdRound;
   detail?: ApplicationDetail;
   applicationId: number;
+  jdInfo?: {
+    title?: string;
+    companyName?: string;
+    logoUrl?: string | null;
+    level?: string;
+  };
   isCompleted: boolean;
   isCurrent: boolean;
   onSuccess?: () => void;
@@ -50,6 +133,7 @@ export function CvScreeningModule({
   round,
   detail,
   applicationId,
+  jdInfo,
   isCompleted,
   isCurrent,
   onSuccess,
@@ -124,6 +208,70 @@ export function CvScreeningModule({
 
   return (
     <div className="space-y-6">
+      {/* SECTION 1: JD Requirements & Skill Targets Brief Card (For easy cross-referencing) */}
+      <Card className="rounded-[20px] border border-indigo-100 bg-gradient-to-r from-indigo-50/70 via-blue-50/40 to-slate-50 p-4.5 shadow-2xs dark:border-indigo-950/60 dark:from-indigo-950/30 dark:via-slate-900/40 dark:to-slate-900/60">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <CompanyAvatar
+              logoUrl={jdInfo?.logoUrl}
+              companyName={jdInfo?.companyName}
+              className="h-10 w-10 rounded-xl"
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                  {jdInfo?.title || "Vị trí tuyển dụng"}
+                </h3>
+                <JobLevelBadge level={jdInfo?.level} />
+              </div>
+              <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                🏢 {jdInfo?.companyName || "Doanh nghiệp tuyển dụng"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 rounded-xl bg-indigo-100/60 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+            <Briefcase className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <span>Đối chiếu CV với Yêu cầu tuyển dụng JD</span>
+          </div>
+        </div>
+
+        {/* Requirements Summary & Target Skills */}
+        <div className="mt-3.5 grid grid-cols-1 gap-3 border-t border-indigo-100/80 pt-3 text-xs sm:grid-cols-12 dark:border-slate-800">
+          <div className="flex items-start gap-2 text-slate-700 sm:col-span-6 dark:text-slate-300">
+            <span className="shrink-0 font-bold text-indigo-600 dark:text-indigo-400">
+              📌 Yêu cầu kinh nghiệm:
+            </span>
+            <span>
+              Tối thiểu 1+ năm làm phát triển phần mềm, tư duy OOP vững & thành thạo Git workflow.
+            </span>
+          </div>
+
+          <div className="flex items-start gap-2 text-slate-700 sm:col-span-6 dark:text-slate-300">
+            <span className="shrink-0 font-bold text-indigo-600 dark:text-indigo-400">
+              🎯 Skills cần khớp:
+            </span>
+            <div className="flex flex-wrap gap-1">
+              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                Java
+              </span>
+              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                Spring Boot
+              </span>
+              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                PostgreSQL
+              </span>
+              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                RESTful API
+              </span>
+              <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                Docker
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       {/* Instruction Box */}
       <div className="space-y-2">
         <h4 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
@@ -138,10 +286,10 @@ export function CvScreeningModule({
         </div>
       </div>
 
-      {/* Main Rich CV Screening Workspace Studio (Grid Layout Matching Mockup) */}
+      {/* SECTION 2: 7:5 Studio Layout (Left PDF Previewer 7 Cols | Right AI Intelligence 5 Cols) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left Side (6 Cols): Document Viewer / Upload Dropzone */}
-        <Card className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs lg:col-span-6 dark:border-slate-800/60 dark:bg-slate-900/40">
+        {/* Left Side (7 Cols): Document Viewer / Upload Dropzone */}
+        <Card className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs lg:col-span-7 dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
@@ -149,10 +297,10 @@ export function CvScreeningModule({
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Hồ sơ CV Ứng tuyển
+                  Khung Xem Trước CV PDF
                 </h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {fileUrl ? "Đã nộp & Phân tích AI" : "Hỗ trợ PDF, DOCX (Tối đa 10MB)"}
+                  {fileUrl ? "File CV chính thức đã nộp" : "Hỗ trợ PDF, DOCX (Tối đa 10MB)"}
                 </p>
               </div>
             </div>
@@ -172,7 +320,7 @@ export function CvScreeningModule({
           {/* Document Previewer or Dropzone */}
           {fileUrl ? (
             <div className="flex-1 space-y-3">
-              <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900/90 shadow-inner dark:border-slate-800">
+              <div className="relative h-[620px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900/90 shadow-inner dark:border-slate-800">
                 <iframe
                   src={`${fileUrl}#toolbar=0`}
                   title="CV Document Preview"
@@ -191,7 +339,7 @@ export function CvScreeningModule({
           ) : (
             <div className="flex flex-1 flex-col justify-between space-y-4">
               {!isCompleted && isCurrent && (
-                <div className="relative flex min-h-[300px] flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition-colors hover:border-indigo-400 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-500/50">
+                <div className="relative flex min-h-[360px] flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition-colors hover:border-indigo-400 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-500/50">
                   <input
                     type="file"
                     accept=".pdf,.docx,.doc"
@@ -244,18 +392,16 @@ export function CvScreeningModule({
           )}
         </Card>
 
-        {/* Right Side (6 Cols): AI Keyword Visualizer, Gauge Score & Feedback */}
-        <div className="space-y-6 lg:col-span-6">
+        {/* Right Side (5 Cols): AI Keyword Visualizer, Gauge Score & Feedback */}
+        <div className="space-y-6 lg:col-span-5">
           {/* Card 1: Live AI Keyword Matching Visualizer */}
           <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                 <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Live AI Keyword Matching Visualizer</span>
+                <span>Live AI Keyword Density Visualizer</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">
-                Tỉ lệ xuất hiện kỹ năng
-              </span>
+              <span className="text-[10px] font-semibold text-slate-400">Tỉ lệ từ khóa</span>
             </div>
 
             {Object.keys(keywordDensity).length > 0 ? (
@@ -320,7 +466,7 @@ export function CvScreeningModule({
                     {matchScore}%
                   </p>
                   <span className="mt-0.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                    {matchScore >= 70 ? "Phù hợp Cao (Excellent)" : "Cần Cải Thiện"}
+                    {matchScore >= 70 ? "Phù hợp Cao" : "Cần Cải Thiện"}
                   </span>
                 </div>
 
@@ -360,7 +506,7 @@ export function CvScreeningModule({
 
                       <div>
                         <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                          <span>Trình bày CV (Readability):</span>
+                          <span>Trình bày (Readability):</span>
                           <span className="font-bold text-blue-600 dark:text-blue-400">
                             {extraMetrics["CV Readability Score"] ?? 90}%
                           </span>
