@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Copy,
   ExternalLink,
-  FileCheck2,
   Inbox,
   Mail,
   RefreshCw,
@@ -38,7 +37,7 @@ interface EmailSimulatorModuleProps {
 }
 
 const RECRUITER_EMAIL = "hanptse184261@fpt.edu.vn";
-const POLL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes per backend cron
+const POLL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes background scheduler window
 
 type Phase =
   | { kind: "DRAFT" }
@@ -274,16 +273,16 @@ export function EmailSimulatorModule({
       });
       if (res.success) {
         toast.success(
-          t("userApplicationhistory.emailSubmitted", "Đã phát tín hiệu nộp bài thành công")
+          t("userApplicationhistory.emailSubmitted", "Xác nhận đã gửi email thành công")
         );
         setPhase({ kind: "WAITING_FOR_FIRST_EMAIL" });
         onSuccess?.();
       } else {
-        toast.error(res.error || "Gửi yêu cầu chấm thất bại");
+        toast.error(res.error || "Gửi yêu cầu xác nhận thất bại");
       }
     } catch (err) {
       console.error("[EmailSimulatorModule] Submit error:", err);
-      toast.error("Có lỗi xảy ra khi nộp bài");
+      toast.error("Có lỗi xảy ra khi xác nhận");
     } finally {
       setSubmitting(false);
     }
@@ -308,17 +307,17 @@ export function EmailSimulatorModule({
               <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                 {phase.kind === "EMAIL_RECEIVED" || isCompleted
                   ? "BÁO CÁO ĐÁNH GIÁ MÔ PHỎNG EMAIL"
-                  : "VÒNG 2: MÔ PHỎNG EMAIL • TRẠM LÀM BÀI"}
+                  : "VÒNG 2: MÔ PHỎNG EMAIL • HƯỚNG DẪN LÀM BÀI"}
               </span>
               <span className="text-slate-600">•</span>
               <span className="text-xs font-semibold text-indigo-400">Vòng 2</span>
             </div>
             <p className="mt-0.5 text-sm font-semibold text-slate-200">
               {phase.kind === "EMAIL_RECEIVED" || isCompleted
-                ? "Email ứng viên đã được CronJob thu thập và AI hoàn tất chấm điểm giao tiếp công sở."
+                ? "Email của bạn đã được hệ thống thu thập và AI hoàn tất chấm điểm giao tiếp công sở."
                 : phase.kind === "PENDING" || phase.kind === "WAITING_FOR_FIRST_EMAIL"
-                  ? "CronJob Server đang quét tự động hộp thư đến IMAP để thu thập bài làm của bạn..."
-                  : "Gửi email trực tiếp từ Gmail/Outlook của bạn tới hệ thống nhà tuyển dụng theo mã định danh duy nhất."}
+                  ? "Hệ thống background scheduler trên Server đang tự động quét hộp thư IMAP để thu thập email của bạn..."
+                  : "Gửi email trực tiếp từ Gmail/Outlook của bạn tới hệ thống nhà tuyển dụng theo mã subject định danh duy nhất."}
             </p>
           </div>
         </div>
@@ -342,7 +341,7 @@ export function EmailSimulatorModule({
           ) : phase.kind === "PENDING" || phase.kind === "WAITING_FOR_FIRST_EMAIL" ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-4 py-1.5 text-xs font-extrabold text-amber-300 shadow-sm shadow-amber-950/40">
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-              <span>CRONJOB ĐANG QUÉT MAIL</span>
+              <span>SERVER DANG QUÉT BACKGROUND</span>
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
@@ -353,10 +352,10 @@ export function EmailSimulatorModule({
         </div>
       </div>
 
-      {/* 📐 MAIN STUDIO CONTENT */}
+      {/* 📐 MAIN STUDIO CONTENT (DRAFT MODE) */}
       {phase.kind === "DRAFT" && (
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-          {/* 👈 LEFT COLUMN (45% - lg:col-span-5): Recruiter Target & Step-by-Step Hub */}
+          {/* 👈 LEFT COLUMN (40% - lg:col-span-5): Task Description & Workflow Steps */}
           <div className="space-y-5 lg:col-span-5">
             {/* TASK & SCENARIO CARD */}
             <Card className="space-y-4 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-md backdrop-blur-md">
@@ -387,96 +386,103 @@ export function EmailSimulatorModule({
               </div>
             </Card>
 
-            {/* RECRUITER TARGET ADDRESS & SUBJECT TOKEN CARD */}
-            <Card className="space-y-4 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-lg shadow-indigo-950/20 backdrop-blur-md">
-              <div className="flex items-center gap-2 border-b border-indigo-500/20 pb-3">
+            {/* WORKFLOW STEPS CARD */}
+            <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-md">
+              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
                 <Send className="h-4 w-4 text-indigo-400" />
-                <h4 className="text-xs font-extrabold tracking-wider text-indigo-300 uppercase">
-                  ĐỊA CHỈ NHẬN BÀI & MÃ ĐỊNH DANH
+                <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
+                  CÁC BƯỚC NỘP BÀI EMAIL
                 </h4>
               </div>
 
-              {/* Step 1: Destination Email */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-semibold text-slate-300">
-                  1. Gửi tới địa chỉ Email Nhà tuyển dụng:
-                </span>
-                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-2.5">
-                  <code className="font-mono text-xs font-bold text-indigo-300">
-                    {RECRUITER_EMAIL}
-                  </code>
+              <ol className="space-y-3 text-xs leading-relaxed text-slate-300">
+                <li className="flex items-start gap-2.5">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
+                    1
+                  </span>
+                  <span>Mở Gmail hoặc Outlook để tiến hành soạn bài.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
+                    2
+                  </span>
+                  <span>
+                    Gửi tới địa chỉ{" "}
+                    <code className="font-mono text-indigo-300">{RECRUITER_EMAIL}</code> và đặt tiêu
+                    đề chứa mã <code className="font-mono text-amber-300">{subjectToken}</code>.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
+                    3
+                  </span>
+                  <span>
+                    Sau khi gửi xong, quay lại màn hình này bấm <strong>"Tôi đã gửi email"</strong>{" "}
+                    để xác nhận. Server sẽ tự động quét email và trả kết quả.
+                  </span>
+                </li>
+              </ol>
+            </Card>
+          </div>
+
+          {/* 👉 RIGHT COLUMN (60% - lg:col-span-7): Single Unified Workstation Card */}
+          <div className="space-y-5 lg:col-span-7">
+            <Card className="space-y-4 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 via-slate-900/90 to-slate-900/90 p-5 shadow-lg backdrop-blur-md">
+              <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-indigo-400" />
+                  <h4 className="text-xs font-extrabold tracking-wider text-indigo-300 uppercase">
+                    KHUNG SOẠN & NỘP EMAIL TRỰC TUYẾN
+                  </h4>
+                </div>
+                <span className="font-mono text-[10px] text-slate-400">Workstation</span>
+              </div>
+
+              {/* Unified Headers (To & Subject with Copy Buttons) */}
+              <div className="space-y-2.5">
+                {/* Receiver Row */}
+                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="w-16 text-[10px] font-bold text-slate-400 uppercase">
+                      Gửi tới:
+                    </span>
+                    <code className="truncate font-mono font-bold text-indigo-300">
+                      {RECRUITER_EMAIL}
+                    </code>
+                  </div>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => copyToClipboard(RECRUITER_EMAIL, "Địa chỉ email")}
-                    className="h-7 gap-1 px-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <Copy className="h-3.5 w-3.5" />
+                    className="h-6 gap-1 px-2 text-[10px] font-semibold text-slate-400 hover:text-white">
+                    <Copy className="h-3 w-3" />
                     <span>Sao chép</span>
                   </Button>
                 </div>
-              </div>
 
-              {/* Step 2: Subject Token */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-semibold text-slate-300">
-                  2. Tiêu đề (Subject) BẮT BUỘC chứa mã định danh:
-                </span>
-                <div className="flex items-center justify-between rounded-xl border border-amber-500/40 bg-amber-950/40 p-2.5">
-                  <code className="font-mono text-xs font-black text-amber-300">
-                    {subjectToken}
-                  </code>
+                {/* Subject Row */}
+                <div className="flex items-center justify-between rounded-xl border border-amber-500/40 bg-amber-950/30 px-3 py-2 text-xs">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="w-16 text-[10px] font-bold text-amber-400 uppercase">
+                      Subject:
+                    </span>
+                    <code className="truncate font-mono font-extrabold text-amber-300">
+                      {subjectToken}
+                    </code>
+                  </div>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => copyToClipboard(subjectToken, "Mã subject")}
-                    className="h-7 gap-1 px-2 text-[11px] font-semibold text-amber-300 hover:bg-amber-900/50">
-                    <Copy className="h-3.5 w-3.5" />
+                    className="h-6 gap-1 px-2 text-[10px] font-semibold text-amber-300 hover:bg-amber-900/40">
+                    <Copy className="h-3 w-3" />
                     <span>Sao chép mã</span>
                   </Button>
                 </div>
-                <p className="text-[10px] text-slate-400">
-                  ⚠️ CronJob của Server dùng mã định danh này để gán email đúng vào bài thi của bạn.
-                </p>
-              </div>
 
-              {/* Quick Action Button */}
-              <a
-                href={mailtoHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:bg-indigo-500">
-                <ExternalLink className="h-4 w-4" />
-                <span>Soạn nhanh bằng Gmail với mẫu sẵn</span>
-              </a>
-            </Card>
-          </div>
-
-          {/* 👉 RIGHT COLUMN (55% - lg:col-span-7): Interactive Live Drafter & Dispatcher */}
-          <div className="space-y-5 lg:col-span-7">
-            <Card className="space-y-4 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-md backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <FileCheck2 className="h-4 w-4 text-indigo-400" />
-                  <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
-                    BẢN THẢO NỘI DUNG (THAM KHẢO & SOẠN BÀI)
-                  </h4>
-                </div>
-                <span className="font-mono text-[10px] text-slate-400">Draft Mode</span>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 p-2.5 text-xs">
-                  <span className="w-16 font-bold text-slate-400 uppercase">Gửi tới:</span>
-                  <code className="font-mono text-indigo-300">{RECRUITER_EMAIL}</code>
-                </div>
-
-                <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 p-2.5 text-xs">
-                  <span className="w-16 font-bold text-slate-400 uppercase">Subject:</span>
-                  <code className="font-mono font-bold text-amber-300">{subjectToken}</code>
-                </div>
-
+                {/* Drafter Textarea */}
                 <Textarea
-                  rows={10}
+                  rows={9}
                   value={sampleBody}
                   onChange={(e) => setSampleBody(e.target.value)}
                   disabled={isCompleted || !isCurrent}
@@ -484,24 +490,30 @@ export function EmailSimulatorModule({
                 />
               </div>
 
-              <div className="flex items-center justify-between border-t border-slate-800 pt-4">
-                <div className="text-[11px] text-slate-400">
-                  <span>Sau khi đã bấm gửi email từ Gmail/Outlook của bạn:</span>
-                </div>
+              {/* Bottom Action Row */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
+                <a
+                  href={mailtoHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700">
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>Mở Gmail với nội dung mẫu</span>
+                </a>
 
                 <Button
                   onClick={handleSubmit}
                   disabled={submitting || isCompleted || !isCurrent}
-                  className="h-10 gap-2 bg-indigo-600 px-6 text-xs font-bold text-white shadow-md hover:bg-indigo-500">
+                  className="h-9 gap-2 bg-indigo-600 px-5 text-xs font-bold text-white shadow-md hover:bg-indigo-500">
                   {submitting ? (
                     <>
-                      <Sparkles className="h-4 w-4 animate-spin" />
-                      <span>Đang kích hoạt CronJob...</span>
+                      <Sparkles className="h-3.5 w-3.5 animate-spin" />
+                      <span>Đang xác nhận...</span>
                     </>
                   ) : (
                     <>
-                      <Send className="h-4 w-4" />
-                      <span>Tôi đã gửi email, kích hoạt Robot chấm bài</span>
+                      <Send className="h-3.5 w-3.5" />
+                      <span>Tôi đã gửi email</span>
                     </>
                   )}
                 </Button>
@@ -511,7 +523,7 @@ export function EmailSimulatorModule({
         </div>
       )}
 
-      {/* 📡 CRONJOB LIVE POLLING RADAR STATE (WAITING / PENDING) */}
+      {/* 📡 BACKGROUND SCHEDULER POLLING STATE (WAITING / PENDING) */}
       {(phase.kind === "WAITING_FOR_FIRST_EMAIL" || phase.kind === "PENDING") && (
         <Card className="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-amber-950/30 to-slate-900 p-6 shadow-xl backdrop-blur-md">
           <div className="flex flex-col items-center justify-center space-y-4 py-6 text-center">
@@ -524,10 +536,10 @@ export function EmailSimulatorModule({
 
             <div className="max-w-md space-y-1.5">
               <h3 className="text-base font-extrabold text-amber-300">
-                ROBOT CRONJOB ĐANG QUÉT HỘP THƯ IMAP SERVER...
+                BACKGROUND SCHEDULER ĐANG CHẠY QUÉT MAIL...
               </h3>
               <p className="text-xs leading-relaxed text-slate-300">
-                Hệ thống tự động quét hộp thư mỗi 1–3 phút để thu thập email có mã{" "}
+                Hệ thống Server tự động quét định kỳ hộp thư IMAP để thu thập email gửi tới có mã{" "}
                 <code className="font-mono font-bold text-amber-300">{subjectToken}</code>.
               </p>
             </div>
@@ -535,11 +547,11 @@ export function EmailSimulatorModule({
             {/* Stepper Progress */}
             <div className="flex items-center justify-center gap-2 pt-4 text-xs font-semibold">
               <span className="flex items-center gap-1 text-emerald-400">
-                <CheckCircle2 className="h-4 w-4" /> 1. Đã phát tín hiệu
+                <CheckCircle2 className="h-4 w-4" /> 1. Đã xác nhận gửi
               </span>
               <ArrowRight className="h-3.5 w-3.5 text-slate-600" />
               <span className="flex animate-pulse items-center gap-1 text-amber-400">
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" /> 2. CronJob đang thu thập
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" /> 2. Server đang quét IMAP
               </span>
               <ArrowRight className="h-3.5 w-3.5 text-slate-600" />
               <span className="text-slate-500">3. AI Chấm điểm</span>
@@ -555,13 +567,12 @@ export function EmailSimulatorModule({
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-amber-300 uppercase">
-                QUÁ THỜI GIAN CHỜ CRONJOB (5 PHÚT)
+                QUÁ THỜI GIAN CHỜ BACKGROUND SCHEDULER (5 PHÚT)
               </h4>
               <p className="text-xs leading-relaxed text-slate-300">
-                Chưa tìm thấy email trong hệ thống. Vui lòng kiểm tra lại xem bạn đã gửi email tới
-                đúng địa chỉ <code className="font-mono text-amber-300">{RECRUITER_EMAIL}</code> và
-                tiêu đề có chứa mã <code className="font-mono text-amber-300">{subjectToken}</code>{" "}
-                chưa.
+                Hệ thống chưa tìm thấy email. Vui lòng kiểm tra xem bạn đã gửi email tới đúng địa
+                chỉ <code className="font-mono text-amber-300">{RECRUITER_EMAIL}</code> và tiêu đề
+                có chứa mã <code className="font-mono text-amber-300">{subjectToken}</code> chưa.
               </p>
             </div>
           </div>
@@ -571,7 +582,7 @@ export function EmailSimulatorModule({
             disabled={submitting}
             className="h-9 gap-2 bg-amber-600 text-xs font-bold text-white hover:bg-amber-500">
             <RefreshCw className="h-3.5 w-3.5" />
-            <span>Kích hoạt quét lại lần nữa</span>
+            <span>Thử lại lần nữa</span>
           </Button>
         </Card>
       )}
