@@ -111,13 +111,11 @@ function ModernGaugeClock({
           ring: "text-emerald-400",
           text: "text-emerald-400",
           bg: "border-emerald-500/20 bg-emerald-950/20",
-          badge: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
         }
       : {
           ring: "text-indigo-400",
           text: "text-indigo-400",
           bg: "border-indigo-500/20 bg-indigo-950/20",
-          badge: "bg-indigo-500/10 text-indigo-300 border-indigo-500/20",
         };
 
   return (
@@ -210,6 +208,22 @@ export function CvScreeningModule({
     return Math.round((matchedKeywordsCount / totalKeywordsCount) * 100);
   }, [matchedKeywordsCount, totalKeywordsCount]);
 
+  // Parse Requirements string into clean individual line items
+  const parsedRequirements = useMemo(() => {
+    const raw = jdInfo?.requirements || jdInfo?.description || "";
+    if (!raw.trim()) {
+      return [
+        "1+ năm kinh nghiệm lập trình Java / Spring Boot",
+        "Thành thạo REST API, SQL và thiết kế Database",
+        "Có tư duy thiết kế hệ thống và làm việc nhóm tốt",
+      ];
+    }
+    return raw
+      .split(/\r?\n/)
+      .map((line) => line.replace(/^[\s•*-]+/, "").trim())
+      .filter((line) => line.length > 0);
+  }, [jdInfo?.requirements, jdInfo?.description]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -276,8 +290,8 @@ export function CvScreeningModule({
             <span
               className={
                 detail.finalResult === "PASSED"
-                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-extrabold text-emerald-400 shadow-xs"
-                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-3.5 py-1 text-xs font-extrabold text-rose-400 shadow-xs"
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40"
+                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-300 shadow-sm shadow-rose-950/40"
               }>
               {detail.finalResult === "PASSED" ? (
                 <CheckCircle2 className="h-4 w-4" />
@@ -287,7 +301,7 @@ export function CvScreeningModule({
               <span>KẾT QUẢ: {detail.finalResult}</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-1 text-xs font-bold text-indigo-300">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
               <span>SẴN SÀNG PHÂN TÍCH</span>
             </span>
@@ -429,8 +443,8 @@ export function CvScreeningModule({
                 </h3>
               </div>
 
-              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-bold text-indigo-300">
-                <Sparkles className="h-3 w-3 text-indigo-400" />
+              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-400/40 bg-indigo-500/15 px-3 py-1 text-[11px] font-extrabold text-indigo-200 shadow-xs">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-300" />
                 <span>AI RECOMMENDATION</span>
               </span>
             </div>
@@ -636,7 +650,8 @@ export function CvScreeningModule({
                 <Tag className="h-4 w-4 text-indigo-400" />
                 <h4 className="text-xs font-bold text-slate-200">ATS Keyword Match</h4>
               </div>
-              <span className="font-mono text-[10px] font-semibold text-emerald-400">
+              {/* Prominent High-Contrast ATS Match Percentage Badge */}
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 font-mono text-xs font-extrabold text-emerald-300 shadow-xs shadow-emerald-950/40">
                 {matchedKeywordsCount}/{totalKeywordsCount || 5} ({keywordCoveragePct}%)
               </span>
             </div>
@@ -650,8 +665,8 @@ export function CvScreeningModule({
                       key={kw}
                       className={
                         isMatched
-                          ? "inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-300"
-                          : "inline-flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 px-2 py-0.5 text-[11px] font-medium text-slate-500"
+                          ? "inline-flex items-center gap-1 rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-extrabold text-emerald-300 shadow-2xs"
+                          : "inline-flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-[11px] font-medium text-slate-500"
                       }>
                       {isMatched ? (
                         <CheckCircle2 className="h-3 w-3" />
@@ -672,7 +687,7 @@ export function CvScreeningModule({
             )}
           </Card>
 
-          {/* WIDGET 4: Job Requirements Matrix & Context */}
+          {/* WIDGET 4: Job Requirements Structured Item List Matrix */}
           <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-2.5">
               <CompanyAvatar
@@ -680,27 +695,34 @@ export function CvScreeningModule({
                 companyName={jdInfo?.companyName}
                 className="h-8 w-8 rounded-lg"
               />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h4 className="truncate text-xs font-bold text-slate-100">{jdInfo?.companyName}</h4>
                 <p className="truncate text-[11px] font-medium text-indigo-400">{jdInfo?.title}</p>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 font-bold text-slate-300">
-                  <BadgeCheck className="h-3.5 w-3.5 text-indigo-400" />
-                  <span>Requirement Coverage:</span>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between border-b border-slate-800/60 pb-2">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
+                  <BadgeCheck className="h-4 w-4 text-indigo-400" />
+                  <span>Requirement Coverage</span>
                 </span>
-                <span className="font-mono text-[11px] font-bold text-indigo-400">
+                {/* Prominent High-Contrast Requirement Coverage Percentage Badge */}
+                <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-3 py-0.5 font-mono text-xs font-extrabold text-indigo-300 shadow-xs shadow-indigo-950/40">
                   {keywordCoveragePct}% Match
                 </span>
               </div>
 
-              <div className="max-h-[280px] overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 pr-1 text-xs leading-relaxed whitespace-pre-line text-slate-300">
-                {jdInfo?.requirements ||
-                  jdInfo?.description ||
-                  "Yêu cầu tối thiểu 1+ năm kinh nghiệm Java / Spring Boot, thành thạo REST API, SQL và có tư duy thiết kế hệ thống vững chắc."}
+              {/* Structured Individual Line Item Badge List (No raw textarea!) */}
+              <div className="max-h-[320px] space-y-2 overflow-y-auto pr-1">
+                {parsedRequirements.map((req, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-2.5 rounded-xl border border-slate-800/80 bg-slate-950/80 p-2.5 text-xs leading-relaxed text-slate-200 shadow-2xs transition-colors hover:border-indigo-500/30">
+                    <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
+                    <span>{req}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </Card>
