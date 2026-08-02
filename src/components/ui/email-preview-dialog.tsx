@@ -84,8 +84,8 @@ export function EmailPreviewDialog({
                 <Mail className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <DialogPrimitive.Title className="text-xs font-extrabold tracking-wider text-slate-100 uppercase">
-                  {t("emailPreview.title", "Chi Tiết Email Bài Làm")}
+                <DialogPrimitive.Title className="truncate font-mono text-xs font-extrabold text-amber-300">
+                  {email?.subject || t("emailPreview.title", "Chi Tiết Email Bài Làm")}
                 </DialogPrimitive.Title>
                 <p className="text-[11px] text-slate-400">
                   {t("emailPreview.subtitle", "Nội dung email bài thi đã được hệ thống thu thập")}
@@ -173,16 +173,6 @@ export function EmailPreviewDialog({
             {/* Content */}
             {email && !isLoading && (
               <div className="space-y-4">
-                {/* Subject Header Card */}
-                <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-4 shadow-inner">
-                  <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                    TIÊU ĐỀ EMAIL (SUBJECT)
-                  </span>
-                  <h2 className="mt-1 font-mono text-sm font-extrabold text-amber-300">
-                    {email.subject || t("emailPreview.noSubject", "(Không có tiêu đề)")}
-                  </h2>
-                </div>
-
                 {/* Sender & Receiver Meta Box */}
                 <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-xs">
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
