@@ -276,7 +276,7 @@ export function CvScreeningModule({
 
   return (
     <div className="space-y-6">
-      {/* 🌟 Top Recruitment Narrative Bar (Storytelling Overview) */}
+      {/* 🌟 Single Unified Top Storyline Banner (Consolidated Instruction & Report Bar) */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
@@ -285,19 +285,23 @@ export function CvScreeningModule({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
-                BÁO CÁO ĐÁNH GIÁ CV HỒ SƠ AI
+                {fileUrl || isCompleted
+                  ? "BÁO CÁO ĐÁNH GIÁ CV HỒ SƠ AI"
+                  : "VÒNG 1: LỌC CV • HƯỚNG DẪN LÀM BÀI"}
               </span>
               <span className="text-slate-600">•</span>
-              <span className="text-xs font-semibold text-indigo-400">
-                Vòng 1: Lọc CV (CV Screening)
-              </span>
+              <span className="text-xs font-semibold text-indigo-400">Vòng 1: Lọc CV</span>
             </div>
-            <p className="text-sm font-semibold text-slate-200">
-              {detail?.finalResult === "PASSED" || isCompleted
-                ? "Ứng viên đạt yêu cầu lọc hồ sơ và đủ điều kiện bước vào vòng đánh giá tiếp theo."
-                : fileUrl
-                  ? "Hồ sơ đã nộp thành công, hệ thống AI đã trích xuất báo cáo phân tích."
-                  : "Hồ sơ ứng viên đang chờ tải lên và phân tích AI."}
+            <p className="mt-0.5 text-sm font-semibold text-slate-200">
+              {fileUrl || isCompleted
+                ? detail?.finalResult === "PASSED" || isCompleted
+                  ? "Ứng viên đạt yêu cầu lọc hồ sơ và đủ điều kiện bước vào vòng đánh giá tiếp theo."
+                  : "Hồ sơ đã nộp thành công, hệ thống AI đã trích xuất báo cáo phân tích."
+                : round.configData?.instruction ||
+                  t(
+                    "userApplicationhistory.cvInstructionDefault",
+                    "Vui lòng tải lên CV định dạng PDF của bạn. Hệ thống AI sẽ tự động phân tích hồ sơ và so sánh mức độ phù hợp (Match Score) với yêu cầu tuyển dụng."
+                  )}
             </p>
           </div>
         </div>
@@ -321,27 +325,11 @@ export function CvScreeningModule({
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-              <span>SẴN SÀNG PHÂN TÍCH</span>
+              <span>{fileUrl ? "ĐÃ NỘP CV" : "SẮN SÀNG PHÂN TÍCH"}</span>
             </span>
           )}
         </div>
       </div>
-
-      {/* Instruction Box (Only show when NOT completed) */}
-      {!isCompleted && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-xs leading-relaxed text-slate-300">
-          <h4 className="mb-1 text-xs font-bold tracking-wider text-slate-400 uppercase">
-            {t("userApplicationhistory.instructionsTitle", "Hướng dẫn làm bài")}
-          </h4>
-          <p>
-            {round.configData?.instruction ||
-              t(
-                "userApplicationhistory.cvInstructionDefault",
-                "Hệ thống AI sẽ tự động phân tích CV của bạn để so sánh mức độ phù hợp (Match Score) với yêu cầu tuyển dụng của doanh nghiệp."
-              )}
-          </p>
-        </div>
-      )}
 
       {/* 📐 3-Column Redesigned Layout (Left 30% | Center 45% | Right 25%) */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
