@@ -682,7 +682,10 @@ function ScheduleStep({
   const now = new Date();
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const defaultDate = tomorrow.toISOString().slice(0, 10);
+  // Use LOCAL date for the default (not toISOString which is UTC-based and
+  // can roll over to the previous day for users in positive offsets like
+  // Vietnam UTC+7).
+  const defaultDate = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
   const defaultTime = "14:00";
 
   const [date, setDate] = useState(defaultDate);
@@ -695,7 +698,19 @@ function ScheduleStep({
       toast.error("Vui lòng chọn ngày giờ");
       return;
     }
-    const joinTime = `${date}T${time}:00`;
+    // Build joinTime with an explicit timezone offset so the BE knows the
+    // candidate's intended wall-clock time. Without the offset, the BE
+    // (Spring Boot/Jackson default) treats the naive string as UTC, which
+    // shifts the stored time by 7h for users in Vietnam (UTC+7) — e.g.
+    // picking 01:46 lands the session at 08:46 local.
+    // The offset is derived from the user's browser timezone (read from
+    // `<input type="datetime-local">` semantics: naive local pick).
+    const offsetMinutes = now.getTimezoneOffset();
+    const sign = offsetMinutes > 0 ? "-" : "+";
+    const absOffset = Math.abs(offsetMinutes);
+    const offsetHours = String(Math.floor(absOffset / 60)).padStart(2, "0");
+    const offsetMins = String(absOffset % 60).padStart(2, "0");
+    const joinTime = `${date}T${time}:00${sign}${offsetHours}:${offsetMins}`;
     onSubmit({ joinTime, duration, offline });
   };
 
