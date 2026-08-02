@@ -99,7 +99,7 @@ function CircularGaugeClock({
   label: string;
   color?: "indigo" | "emerald";
 }) {
-  const radius = 46;
+  const radius = 42;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset =
     circumference - (Math.min(100, Math.max(0, score)) / 100) * circumference;
@@ -119,12 +119,12 @@ function CircularGaugeClock({
 
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-2xl border p-3 text-center transition-all ${colorStyles.bg}`}>
-      <div className="relative flex h-32 w-32 items-center justify-center">
-        <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90 transform">
+      className={`flex flex-col items-center justify-center rounded-2xl border p-2.5 text-center transition-all ${colorStyles.bg}`}>
+      <div className="relative flex h-28 w-28 items-center justify-center">
+        <svg viewBox="0 0 110 110" className="h-full w-full -rotate-90 transform">
           <circle
-            cx="60"
-            cy="60"
+            cx="55"
+            cy="55"
             r={radius}
             stroke="currentColor"
             strokeWidth="8"
@@ -132,8 +132,8 @@ function CircularGaugeClock({
             fill="transparent"
           />
           <circle
-            cx="60"
-            cy="60"
+            cx="55"
+            cy="55"
             r={radius}
             stroke="currentColor"
             strokeWidth="8"
@@ -145,8 +145,8 @@ function CircularGaugeClock({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className={`text-2xl font-black tracking-tight ${colorStyles.text}`}>{score}%</span>
-          <span className="mt-0.5 text-[9px] font-extrabold tracking-widest text-slate-400 uppercase">
+          <span className={`text-xl font-black tracking-tight ${colorStyles.text}`}>{score}%</span>
+          <span className="mt-0.5 text-[8px] font-extrabold tracking-widest text-slate-400 uppercase">
             {label}
           </span>
         </div>
@@ -285,7 +285,7 @@ export function CvScreeningModule({
           {/* Document Previewer Scaled Fit-Width */}
           {fileUrl ? (
             <div className="flex-1 space-y-3">
-              <div className="relative h-[740px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-inner dark:border-slate-800 dark:bg-slate-950">
+              <div className="relative h-[780px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-inner dark:border-slate-800 dark:bg-slate-950">
                 <iframe
                   src={`${fileUrl}#toolbar=0&navpanes=0&view=FitH`}
                   title="CV Document Preview"
@@ -357,147 +357,8 @@ export function CvScreeningModule({
           )}
         </Card>
 
-        {/* Column 2 (Center - 4 Cols): Dual Gauge Score Clocks + AI Keyword Matching + AI Feedback Studio */}
+        {/* Column 2 (Center - 4 Cols): AI Assessment & HR Review Notes Studio (Spacious Legibility) */}
         <div className="space-y-6 lg:col-span-4">
-          {/* Card 1: Dual Gauge Score Clocks (1 AI Clock + 1 HR Clock) */}
-          <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Dual Match Score Gauge Clocks</span>
-              </div>
-              {detail?.finalResult && (
-                <span
-                  className={
-                    detail.finalResult === "PASSED"
-                      ? "rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                      : "rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-extrabold text-rose-700 dark:bg-rose-950 dark:text-rose-300"
-                  }>
-                  {detail.finalResult}
-                </span>
-              )}
-            </div>
-
-            {matchScore !== null ? (
-              <div className="space-y-4">
-                {/* 2 Dual Gauge Clocks Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  <CircularGaugeClock score={aiScoreVal} label="AI Score" color="indigo" />
-                  <CircularGaugeClock score={hrScoreVal} label="HR Score" color="emerald" />
-                </div>
-
-                {/* Sub-Metrics Progress Bars */}
-                <div className="space-y-2.5 border-t border-slate-100 pt-3 text-left text-xs dark:border-slate-800">
-                  {extraMetrics ? (
-                    <>
-                      <div>
-                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                          <span>Kỹ năng chuyên môn (Skills):</span>
-                          <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                            {extraMetrics["Skills Match Score"] ?? 60}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                          <div
-                            className="h-full rounded-full bg-indigo-600"
-                            style={{ width: `${extraMetrics["Skills Match Score"] ?? 60}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                          <span>Nền tảng Học vấn (Education):</span>
-                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                            {extraMetrics["Education Match Score"] ?? 60}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                          <div
-                            className="h-full rounded-full bg-emerald-500"
-                            style={{ width: `${extraMetrics["Education Match Score"] ?? 60}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                          <span>Độ rõ ràng CV (Readability):</span>
-                          <span className="font-bold text-blue-600 dark:text-blue-400">
-                            {extraMetrics["CV Readability Score"] ?? 90}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                          <div
-                            className="h-full rounded-full bg-blue-500"
-                            style={{ width: `${extraMetrics["CV Readability Score"] ?? 90}%` }}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="space-y-2">
-                      <Skeleton className="h-3 w-full rounded-md" />
-                      <Skeleton className="h-3 w-full rounded-md" />
-                      <Skeleton className="h-3 w-full rounded-md" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/60 bg-slate-50/50 p-6 text-center dark:border-slate-800/60 dark:bg-slate-900/30">
-                <Skeleton className="mb-3 h-4 w-28 rounded-md" />
-                <Skeleton className="mb-2 h-10 w-20 rounded-xl" />
-                <span className="text-[10px] font-medium text-slate-400">
-                  Tải CV để kích hoạt Match Score
-                </span>
-              </div>
-            )}
-          </Card>
-
-          {/* Card 2: Live AI Keyword Matching Visualizer */}
-          <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Live AI Keyword Matching Visualizer</span>
-              </div>
-              <span className="text-[10px] font-semibold text-slate-400">Từ khóa CV</span>
-            </div>
-
-            {Object.keys(keywordDensity).length > 0 ? (
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {Object.entries(keywordDensity).map(([kw, count]) => {
-                  const isMatched = count > 0;
-                  return (
-                    <span
-                      key={kw}
-                      className={
-                        isMatched
-                          ? "inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300"
-                          : "inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-500"
-                      }>
-                      {isMatched ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        <XCircle className="h-3 w-3" />
-                      )}
-                      {kw} {isMatched ? `(${count})` : "(0)"}
-                    </span>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2 pt-1">
-                <Skeleton className="h-7 w-28 rounded-lg" />
-                <Skeleton className="h-7 w-24 rounded-lg" />
-                <Skeleton className="h-7 w-32 rounded-lg" />
-                <Skeleton className="h-7 w-20 rounded-lg" />
-              </div>
-            )}
-          </Card>
-
-          {/* Card 3: AI Assessment & HR Review Notes Studio (High Legibility & Spacious Typography) */}
           <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
               <Bot className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
@@ -506,7 +367,7 @@ export function CvScreeningModule({
               </h4>
             </div>
 
-            <div className="space-y-3.5 text-xs leading-relaxed sm:text-sm">
+            <div className="space-y-4 text-xs leading-relaxed sm:text-sm">
               {/* AI General Comment */}
               <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-slate-800 dark:border-slate-800/80 dark:bg-slate-800/50 dark:text-slate-200">
                 <p className="mb-2 flex items-center gap-2 text-xs font-bold tracking-wider text-indigo-600 text-slate-900 uppercase dark:text-indigo-400 dark:text-white">
@@ -585,9 +446,9 @@ export function CvScreeningModule({
           </Card>
         </div>
 
-        {/* Standalone Column 3 (Right - 3 Cols): Enterprise Info & Job Requirements Inspector */}
+        {/* Column 3 (Right - 3 Cols): Enterprise Info + Dual Match Score Clocks + Keyword Matching */}
         <div className="space-y-6 lg:col-span-3">
-          {/* Card 1: Enterprise Job Context & Requirements Inspector (with whitespace-pre-line formatting) */}
+          {/* Card 1: Enterprise Job Context & Requirements Inspector */}
           <Card className="space-y-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
               <CompanyAvatar
@@ -605,18 +466,156 @@ export function CvScreeningModule({
               </div>
             </div>
 
-            {/* Job Requirements Box with whitespace-pre-line formatting */}
+            {/* Job Requirements Box */}
             <div className="space-y-2 text-xs">
               <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
                 <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <span>Yêu cầu Tuyển dụng Đối chiếu:</span>
               </div>
-              <div className="max-h-[560px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/80 p-3.5 pr-1 text-xs leading-relaxed whitespace-pre-line text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
+              <div className="max-h-[260px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/80 p-3.5 pr-1 text-xs leading-relaxed whitespace-pre-line text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
                 {jdInfo?.requirements ||
                   jdInfo?.description ||
                   "Yêu cầu tối thiểu 1+ năm kinh nghiệm Java / Spring Boot, thành thạo REST API, SQL và có tư duy thiết kế hệ thống vững chắc."}
               </div>
             </div>
+          </Card>
+
+          {/* Card 2: Dual Gauge Score Clocks (Placed under Company Info Card) */}
+          <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Dual Match Score Gauge Clocks</span>
+              </div>
+              {detail?.finalResult && (
+                <span
+                  className={
+                    detail.finalResult === "PASSED"
+                      ? "rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                      : "rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-extrabold text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                  }>
+                  {detail.finalResult}
+                </span>
+              )}
+            </div>
+
+            {matchScore !== null ? (
+              <div className="space-y-4">
+                {/* 2 Dual Gauge Clocks Grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  <CircularGaugeClock score={aiScoreVal} label="AI Score" color="indigo" />
+                  <CircularGaugeClock score={hrScoreVal} label="HR Score" color="emerald" />
+                </div>
+
+                {/* Sub-Metrics Progress Bars */}
+                <div className="space-y-2.5 border-t border-slate-100 pt-3 text-left text-xs dark:border-slate-800">
+                  {extraMetrics ? (
+                    <>
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                          <span>Kỹ năng (Skills):</span>
+                          <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                            {extraMetrics["Skills Match Score"] ?? 60}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-indigo-600"
+                            style={{ width: `${extraMetrics["Skills Match Score"] ?? 60}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                          <span>Học vấn (Education):</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                            {extraMetrics["Education Match Score"] ?? 60}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-emerald-500"
+                            style={{ width: `${extraMetrics["Education Match Score"] ?? 60}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                          <span>Trình bày CV (Readability):</span>
+                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                            {extraMetrics["CV Readability Score"] ?? 90}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-blue-500"
+                            style={{ width: `${extraMetrics["CV Readability Score"] ?? 90}%` }}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Skeleton className="h-3 w-full rounded-md" />
+                      <Skeleton className="h-3 w-full rounded-md" />
+                      <Skeleton className="h-3 w-full rounded-md" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/60 bg-slate-50/50 p-6 text-center dark:border-slate-800/60 dark:bg-slate-900/30">
+                <Skeleton className="mb-3 h-4 w-28 rounded-md" />
+                <Skeleton className="mb-2 h-10 w-20 rounded-xl" />
+                <span className="text-[10px] font-medium text-slate-400">
+                  Tải CV để kích hoạt Match Score
+                </span>
+              </div>
+            )}
+          </Card>
+
+          {/* Card 3: Live AI Keyword Matching Visualizer (Placed under Score Clocks) */}
+          <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Live AI Keyword Matching Visualizer</span>
+              </div>
+              <span className="text-[10px] font-semibold text-slate-400">Từ khóa CV</span>
+            </div>
+
+            {Object.keys(keywordDensity).length > 0 ? (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {Object.entries(keywordDensity).map(([kw, count]) => {
+                  const isMatched = count > 0;
+                  return (
+                    <span
+                      key={kw}
+                      className={
+                        isMatched
+                          ? "inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300"
+                          : "inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-500"
+                      }>
+                      {isMatched ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      {kw} {isMatched ? `(${count})` : "(0)"}
+                    </span>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Skeleton className="h-7 w-28 rounded-lg" />
+                <Skeleton className="h-7 w-24 rounded-lg" />
+                <Skeleton className="h-7 w-32 rounded-lg" />
+                <Skeleton className="h-7 w-20 rounded-lg" />
+              </div>
+            )}
           </Card>
         </div>
       </div>
