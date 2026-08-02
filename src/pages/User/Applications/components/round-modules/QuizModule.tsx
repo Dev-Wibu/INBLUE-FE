@@ -1058,38 +1058,35 @@ export function QuizModule({
 
       {/* ⚠️ CONFIRMATION START MODAL */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="max-w-md border-slate-800 bg-slate-900 text-slate-100 shadow-2xl">
-          <DialogHeader className="space-y-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
-              <AlertTriangle className="h-6 w-6" />
+        <DialogContent className="max-w-sm border-slate-800 bg-slate-900/95 text-slate-100 shadow-2xl backdrop-blur-xl">
+          <DialogHeader className="space-y-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/15 text-indigo-400">
+              <Play className="h-5 w-5 fill-current" />
             </div>
-            <DialogTitle className="text-base font-extrabold text-slate-100">
-              XÁC NHẬN BẮT ĐẦU LÀM BÀI THI TRẮC NGHIỆM
+            <DialogTitle className="text-sm font-bold text-slate-100">
+              Bắt đầu bài thi trắc nghiệm?
             </DialogTitle>
-            <DialogDescription className="text-xs leading-relaxed text-slate-300">
-              Bạn có chắc chắn muốn bắt đầu bài thi ngay bây giờ không?
-              <br />
-              <strong className="text-amber-300">
-                • Thời gian làm bài ({timeLimitMinutes} phút) sẽ bắt đầu đếm ngược ngay lập tức.
-                <br />• Bài thi chỉ có thể thực hiện 01 lần duy nhất.
-              </strong>
+            <DialogDescription className="text-xs leading-relaxed text-slate-400">
+              Thời gian đếm ngược sẽ bắt đầu ngay khi bạn xác nhận.
             </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+          <DialogFooter className="mt-3 flex items-center justify-end gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
+              size="sm"
               onClick={() => setShowConfirmDialog(false)}
-              className="border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white">
-              Hủy bỏ
+              className="h-8 text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200">
+              Hủy
             </Button>
             <Button
               type="button"
+              size="sm"
               onClick={handleConfirmStartExam}
-              className="gap-2 bg-indigo-600 text-xs font-bold text-white shadow-lg hover:bg-indigo-500">
-              <Play className="h-4 w-4 fill-current" />
-              <span>Xác nhận & Bắt đầu ngay</span>
+              className="h-8 gap-1.5 bg-indigo-600 px-4 text-xs font-bold text-white shadow-md hover:bg-indigo-500">
+              <Play className="h-3.5 w-3.5 fill-current" />
+              <span>Bắt đầu</span>
             </Button>
           </DialogFooter>
         </DialogContent>
