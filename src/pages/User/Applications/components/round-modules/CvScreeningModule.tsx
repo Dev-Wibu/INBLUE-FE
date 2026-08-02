@@ -5,6 +5,7 @@ import { applicationDetailManager } from "@/services/application-detail.manager"
 import {
   AlertTriangle,
   BadgeCheck,
+  Bot,
   CheckCircle2,
   Download,
   ExternalLink,
@@ -13,6 +14,7 @@ import {
   Sparkles,
   Tag,
   Upload,
+  UserCheck,
   XCircle,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -166,7 +168,6 @@ export function CvScreeningModule({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "strengths" | "redflags">("overview");
 
   // Safe parse aiFeedback JSON if object or string
   const aiFeedback = useMemo<AiFeedbackPayload | null>(() => {
@@ -252,7 +253,7 @@ export function CvScreeningModule({
 
       {/* 3 Standalone Column Grid (5:4:3 ratio - Pure Widescreen Studio) */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        {/* Standalone Column 1 (Left - 5 Cols): Document Viewer / Upload Dropzone */}
+        {/* Column 1 (Left - 5 Cols): Document Viewer (Fit-Width Scaled PDF Canvas) */}
         <Card className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs lg:col-span-5 dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
             <div className="flex items-center gap-2.5">
@@ -281,20 +282,20 @@ export function CvScreeningModule({
             )}
           </div>
 
-          {/* Document Previewer or Dropzone */}
+          {/* Document Previewer Scaled Fit-Width */}
           {fileUrl ? (
             <div className="flex-1 space-y-3">
-              <div className="relative h-[720px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900/90 shadow-inner dark:border-slate-800">
+              <div className="relative h-[740px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-inner dark:border-slate-800 dark:bg-slate-950">
                 <iframe
-                  src={`${fileUrl}#toolbar=0`}
+                  src={`${fileUrl}#toolbar=0&navpanes=0&view=FitH`}
                   title="CV Document Preview"
-                  className="h-full w-full border-none"
+                  className="h-full w-full rounded-2xl border-none bg-white dark:bg-slate-950"
                 />
                 <a
                   href={fileUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-lg bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md hover:bg-black/80">
+                  className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-lg bg-slate-900/80 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md hover:bg-slate-900">
                   <ExternalLink className="h-3 w-3" />
                   <span>Mở tab mới</span>
                 </a>
@@ -356,7 +357,7 @@ export function CvScreeningModule({
           )}
         </Card>
 
-        {/* Standalone Column 2 (Center - 4 Cols): Dual Gauge Score Clocks + Keyword Matching */}
+        {/* Column 2 (Center - 4 Cols): Dual Gauge Score Clocks + AI Keyword Matching + AI Feedback Studio */}
         <div className="space-y-6 lg:col-span-4">
           {/* Card 1: Dual Gauge Score Clocks (1 AI Clock + 1 HR Clock) */}
           <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
@@ -495,11 +496,98 @@ export function CvScreeningModule({
               </div>
             )}
           </Card>
+
+          {/* Card 3: AI Assessment & HR Review Notes Studio (High Legibility & Spacious Typography) */}
+          <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
+              <Bot className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                Báo cáo Đánh giá AI & Nhận xét từ Hội đồng HR
+              </h4>
+            </div>
+
+            <div className="space-y-3.5 text-xs leading-relaxed sm:text-sm">
+              {/* AI General Comment */}
+              <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-slate-800 dark:border-slate-800/80 dark:bg-slate-800/50 dark:text-slate-200">
+                <p className="mb-2 flex items-center gap-2 text-xs font-bold tracking-wider text-indigo-600 text-slate-900 uppercase dark:text-indigo-400 dark:text-white">
+                  <Bot className="h-4 w-4" />
+                  <span>AI General Comment</span>
+                </p>
+                <p className="text-xs leading-relaxed text-slate-700 sm:text-sm dark:text-slate-300">
+                  {aiFeedback?.generalComment || "Vui lòng nộp CV để nhận đánh giá chi tiết từ AI."}
+                </p>
+              </div>
+
+              {/* HR Council Note */}
+              {detail?.hrNote && (
+                <div className="rounded-2xl border border-indigo-200/80 bg-indigo-50/80 p-4 text-indigo-950 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-200">
+                  <p className="mb-1.5 flex items-center gap-2 text-xs font-bold tracking-wider text-indigo-900 uppercase dark:text-indigo-300">
+                    <UserCheck className="h-4 w-4" />
+                    <span>Nhận xét từ Hội đồng HR</span>
+                  </p>
+                  <p className="text-xs leading-relaxed font-medium sm:text-sm">{detail.hrNote}</p>
+                </div>
+              )}
+
+              {/* Strengths & Weaknesses Breakdown */}
+              {strengths.length > 0 && (
+                <div className="space-y-2 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 dark:border-emerald-950/60 dark:bg-emerald-950/20">
+                  <p className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-emerald-700 uppercase dark:text-emerald-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>Điểm mạnh nổi bật</span>
+                  </p>
+                  <ul className="space-y-1.5 pl-1 text-xs text-slate-700 sm:text-sm dark:text-slate-300">
+                    {strengths.map((st, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="font-bold text-emerald-500">•</span>
+                        <span>{st}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {weaknesses.length > 0 && (
+                <div className="space-y-2 rounded-2xl border border-amber-100 bg-amber-50/40 p-4 dark:border-amber-950/60 dark:bg-amber-950/20">
+                  <p className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-amber-700 uppercase dark:text-amber-400">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>Điểm cần bổ sung & Cải thiện</span>
+                  </p>
+                  <ul className="space-y-1.5 pl-1 text-xs text-slate-700 sm:text-sm dark:text-slate-300">
+                    {weaknesses.map((wk, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="font-bold text-amber-500">•</span>
+                        <span>{wk}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {redFlags.length > 0 && (
+                <div className="space-y-2 rounded-2xl border border-rose-200 bg-rose-50/80 p-4 dark:border-rose-950/60 dark:bg-rose-950/30">
+                  <p className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-rose-700 uppercase dark:text-rose-400">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>Các yếu tố rủi ro tiềm ẩn (Red Flags)</span>
+                  </p>
+                  <div className="space-y-2">
+                    {redFlags.map((rf, i) => (
+                      <p
+                        key={i}
+                        className="text-xs leading-relaxed text-rose-900 sm:text-sm dark:text-rose-300">
+                        • {rf}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
         </div>
 
-        {/* Standalone Column 3 (Right - 3 Cols): Enterprise Info & AI Feedback Tabs Card */}
+        {/* Standalone Column 3 (Right - 3 Cols): Enterprise Info & Job Requirements Inspector */}
         <div className="space-y-6 lg:col-span-3">
-          {/* Card 1: Enterprise Job Context & Requirements Inspector */}
+          {/* Card 1: Enterprise Job Context & Requirements Inspector (with whitespace-pre-line formatting) */}
           <Card className="space-y-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
               <CompanyAvatar
@@ -517,136 +605,18 @@ export function CvScreeningModule({
               </div>
             </div>
 
-            {/* Job Requirements Box */}
+            {/* Job Requirements Box with whitespace-pre-line formatting */}
             <div className="space-y-2 text-xs">
               <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
                 <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <span>Yêu cầu Tuyển dụng Đối chiếu:</span>
               </div>
-              <div className="max-h-[220px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-[11px] leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
+              <div className="max-h-[560px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/80 p-3.5 pr-1 text-xs leading-relaxed whitespace-pre-line text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
                 {jdInfo?.requirements ||
                   jdInfo?.description ||
                   "Yêu cầu tối thiểu 1+ năm kinh nghiệm Java / Spring Boot, thành thạo REST API, SQL và có tư duy thiết kế hệ thống vững chắc."}
               </div>
             </div>
-          </Card>
-
-          {/* Card 2: AI Assessment & HR Review Notes Accordion Card (Moved to Column 3) */}
-          <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("overview")}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-colors ${
-                    activeTab === "overview"
-                      ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
-                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
-                  }`}>
-                  Tổng quan AI
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("strengths")}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-colors ${
-                    activeTab === "strengths"
-                      ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
-                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
-                  }`}>
-                  Điểm mạnh/Yếu
-                </button>
-                {redFlags.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("redflags")}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-colors ${
-                      activeTab === "redflags"
-                        ? "bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-400"
-                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
-                    }`}>
-                    Cảnh báo ({redFlags.length})
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Tab Content */}
-            {activeTab === "overview" && (
-              <div className="space-y-3 text-xs leading-relaxed">
-                <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3.5 text-slate-700 dark:border-slate-800/80 dark:bg-slate-800/40 dark:text-slate-300">
-                  <p className="mb-1 font-semibold text-slate-900 dark:text-white">
-                    🤖 AI General Comment:
-                  </p>
-                  <p>
-                    {aiFeedback?.generalComment ||
-                      "Vui lòng nộp CV để nhận đánh giá chi tiết từ AI."}
-                  </p>
-                </div>
-
-                {detail?.hrNote && (
-                  <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/70 p-3.5 dark:border-indigo-900/50 dark:bg-indigo-950/30">
-                    <p className="mb-0.5 font-bold text-indigo-900 dark:text-indigo-300">
-                      👤 Nhận xét từ Hội đồng HR:
-                    </p>
-                    <p className="text-indigo-800 dark:text-indigo-300">{detail.hrNote}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === "strengths" && (
-              <div className="space-y-3 text-xs">
-                {strengths.length > 0 && (
-                  <div className="space-y-1.5">
-                    <p className="font-bold text-emerald-600 dark:text-emerald-400">
-                      ✓ Điểm mạnh nổi bật:
-                    </p>
-                    <ul className="space-y-1 pl-1 text-slate-700 dark:text-slate-300">
-                      {strengths.map((st, i) => (
-                        <li key={i} className="flex items-start gap-1.5">
-                          <span className="font-bold text-emerald-500">•</span>
-                          <span>{st}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {weaknesses.length > 0 && (
-                  <div className="space-y-1.5 border-t border-slate-100 pt-2 dark:border-slate-800">
-                    <p className="font-bold text-amber-600 dark:text-amber-400">
-                      ⚠️ Điểm cần bổ sung & Cải thiện:
-                    </p>
-                    <ul className="space-y-1 pl-1 text-slate-700 dark:text-slate-300">
-                      {weaknesses.map((wk, i) => (
-                        <li key={i} className="flex items-start gap-1.5">
-                          <span className="font-bold text-amber-500">•</span>
-                          <span>{wk}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === "redflags" && (
-              <div className="space-y-2 text-xs">
-                <p className="flex items-center gap-1 font-bold text-rose-600 dark:text-rose-400">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  <span>Các yếu tố rủi ro tiềm ẩn (Red Flags):</span>
-                </p>
-                <div className="space-y-2">
-                  {redFlags.map((rf, i) => (
-                    <div
-                      key={i}
-                      className="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
-                      {rf}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </Card>
         </div>
       </div>
