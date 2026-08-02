@@ -330,7 +330,8 @@ export function ApplicationWorkspacePage() {
     activeRound?.roundType?.toUpperCase() === "EMAIL_SIMULATION" ||
     activeRound?.roundType?.toUpperCase() === "EMAIL_SIMULATOR" ||
     activeRound?.roundType?.toUpperCase() === "EMAIL";
-  const isStandaloneLayout = isCvScreeningRound || isEmailSimulatorRound;
+  const isQuizRound = activeRound?.roundType?.toUpperCase() === "QUIZ";
+  const isStandaloneLayout = isCvScreeningRound || isEmailSimulatorRound || isQuizRound;
 
   return (
     <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">

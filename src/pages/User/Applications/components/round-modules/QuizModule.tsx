@@ -1,12 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   useQuizConfig,
   useQuizResult,
   useSubmitQuiz,
   type QuizQuestion,
 } from "@/hooks/useApplicationQuiz";
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Award,
@@ -16,8 +25,11 @@ import {
   Flag,
   HelpCircle,
   Layers,
+  Lock,
+  Play,
   RefreshCw,
   Send,
+  ShieldAlert,
   Sparkles,
   Target,
   UserCheck,
@@ -198,7 +210,16 @@ export function QuizModule({
   // Quiz result breakdown hook (parsed from ApplicationDetail)
   const quizResultData = useQuizResult(detail);
 
-  // Exam state
+  // Check if test has already been completed or evaluated
+  const isFinished =
+    isCompleted ||
+    detail?.finalScore != null ||
+    (quizResultData.results && quizResultData.results.length > 0);
+
+  // Exam execution state
+  const [hasStarted, setHasStarted] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [bookmarked, setBookmarked] = useState<Record<number, boolean>>({});
@@ -208,12 +229,6 @@ export function QuizModule({
   const [remainingSeconds, setRemainingSeconds] = useState(timeLimitMinutes * 60);
 
   const submitMutation = useSubmitQuiz();
-
-  // Check if test has already been completed or evaluated
-  const isFinished =
-    isCompleted ||
-    detail?.finalScore != null ||
-    (quizResultData.results && quizResultData.results.length > 0);
 
   const handleSubmitQuiz = useCallback(async () => {
     if (submitMutation.isPending) return;
@@ -238,9 +253,9 @@ export function QuizModule({
     await handleSubmitQuiz();
   }, [handleSubmitQuiz]);
 
-  // Countdown Timer Effect (only when taking exam and not finished)
+  // Countdown Timer Effect (only runs when candidate has explicitly started the exam)
   useEffect(() => {
-    if (isFinished) return;
+    if (!hasStarted || isFinished) return;
     const timer = setInterval(() => {
       setRemainingSeconds((prev) => {
         if (prev <= 1) {
@@ -252,10 +267,16 @@ export function QuizModule({
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [isFinished, handleAutoSubmit]);
+  }, [hasStarted, isFinished, handleAutoSubmit]);
+
+  const handleConfirmStartExam = () => {
+    setShowConfirmDialog(false);
+    setHasStarted(true);
+    toast.success("Bắt đầu thời gian làm bài! Chúc bạn làm bài tốt.");
+  };
 
   const handleSelectOption = (option: string) => {
-    if (isFinished) return;
+    if (isFinished || !hasStarted) return;
     setSelectedAnswers((prev) => ({
       ...prev,
       [currentIndex]: option,
@@ -283,7 +304,7 @@ export function QuizModule({
 
   return (
     <div className="space-y-6">
-      {/* 🎯 TOP HEADER: Shared Sub-header & Status Badge */}
+      {/* 🎯 TOP HEADER: Single Standalone Sub-header & Status Badge */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-lg backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/20 text-indigo-400">
@@ -309,10 +330,15 @@ export function QuizModule({
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>ĐÃ HOÀN THÀNH BÀI THI</span>
             </span>
-          ) : (
+          ) : hasStarted ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
               <span>ĐANG TRONG THỜI GIAN LÀM BÀI</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-4 py-1.5 text-xs font-extrabold text-amber-300 shadow-sm shadow-amber-950/40">
+              <Lock className="h-3.5 w-3.5" />
+              <span>SẴN SÀNG BẮT ĐẦU</span>
             </span>
           )}
         </div>
@@ -340,19 +366,22 @@ export function QuizModule({
               {/* Grid matrix of question numbers */}
               <div className="grid grid-cols-5 gap-2">
                 {questions.map((_, idx) => {
-                  const isCurrent = currentIndex === idx;
-                  const isAnswered = selectedAnswers[idx] != null && selectedAnswers[idx] !== "";
-                  const isBookmarked = bookmarked[idx] === true;
+                  const isCurr = currentIndex === idx;
+                  const isAns = selectedAnswers[idx] != null && selectedAnswers[idx] !== "";
+                  const isBm = bookmarked[idx] === true;
 
                   let btnStyle =
                     "border-slate-800 bg-slate-950/80 text-slate-400 hover:border-slate-700";
 
-                  if (isCurrent) {
+                  if (!hasStarted) {
+                    btnStyle =
+                      "border-slate-800/60 bg-slate-950/40 text-slate-600 opacity-60 cursor-not-allowed";
+                  } else if (isCurr) {
                     btnStyle =
                       "border-indigo-500 bg-indigo-600/30 text-indigo-300 font-bold ring-2 ring-indigo-500/40";
-                  } else if (isAnswered) {
+                  } else if (isAns) {
                     btnStyle = "border-emerald-500/40 bg-emerald-500/20 text-emerald-300 font-bold";
-                  } else if (isBookmarked) {
+                  } else if (isBm) {
                     btnStyle = "border-amber-500/40 bg-amber-500/20 text-amber-300 font-bold";
                   }
 
@@ -360,14 +389,21 @@ export function QuizModule({
                     <button
                       key={idx}
                       type="button"
+                      disabled={!hasStarted}
                       onClick={() => setCurrentIndex(idx)}
                       className={`relative flex h-10 items-center justify-center rounded-xl border font-mono text-xs transition-all ${btnStyle}`}>
                       <span>{idx + 1}</span>
-                      {isBookmarked && (
-                        <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-amber-400" />
-                      )}
-                      {isAnswered && !isCurrent && (
-                        <Check className="absolute right-0.5 bottom-0.5 h-3 w-3 text-emerald-400" />
+                      {!hasStarted ? (
+                        <Lock className="absolute right-1 bottom-1 h-2.5 w-2.5 text-slate-600" />
+                      ) : (
+                        <>
+                          {isBm && (
+                            <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-amber-400" />
+                          )}
+                          {isAns && !isCurr && (
+                            <Check className="absolute right-0.5 bottom-0.5 h-3 w-3 text-emerald-400" />
+                          )}
+                        </>
                       )}
                     </button>
                   );
@@ -396,7 +432,7 @@ export function QuizModule({
               <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                 <div className="flex items-center gap-2">
                   <Clock
-                    className={`h-4 w-4 ${isLowTime ? "animate-pulse text-rose-400" : "text-amber-400"}`}
+                    className={`h-4 w-4 ${hasStarted && isLowTime ? "animate-pulse text-rose-400" : "text-amber-400"}`}
                   />
                   <h4 className="text-xs font-bold text-slate-200">Thời gian làm bài</h4>
                 </div>
@@ -406,9 +442,11 @@ export function QuizModule({
               </div>
 
               <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <span className="text-xs font-medium text-slate-400">Còn lại:</span>
+                <span className="text-xs font-medium text-slate-400">
+                  {hasStarted ? "Còn lại:" : "Thời lượng:"}
+                </span>
                 <span
-                  className={`font-mono text-xl font-black ${isLowTime ? "animate-pulse text-rose-400" : "text-amber-300"}`}>
+                  className={`font-mono text-xl font-black ${hasStarted && isLowTime ? "animate-pulse text-rose-400" : "text-amber-300"}`}>
                   {formatTimer(remainingSeconds)}
                 </span>
               </div>
@@ -416,7 +454,9 @@ export function QuizModule({
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-950">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    isLowTime ? "bg-rose-500" : "bg-gradient-to-r from-indigo-500 to-blue-500"
+                    hasStarted && isLowTime
+                      ? "bg-rose-500"
+                      : "bg-gradient-to-r from-indigo-500 to-blue-500"
                   }`}
                   style={{ width: `${(remainingSeconds / (timeLimitMinutes * 60)) * 100}%` }}
                 />
@@ -425,126 +465,233 @@ export function QuizModule({
 
             {/* Card 3: Submit Action Card */}
             <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
-              <Button
-                onClick={handleSubmitQuiz}
-                disabled={submitMutation.isPending || !isCurrent}
-                className="h-10 w-full gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-xs font-bold text-white shadow-lg transition-all hover:from-indigo-500 hover:to-blue-500">
-                {submitMutation.isPending ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                    <span>Đang nộp bài...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4" />
-                    <span>Nộp bài thi trắc nghiệm</span>
-                  </>
-                )}
-              </Button>
+              {hasStarted ? (
+                <Button
+                  onClick={handleSubmitQuiz}
+                  disabled={submitMutation.isPending || !isCurrent}
+                  className="h-10 w-full gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-xs font-bold text-white shadow-lg transition-all hover:from-indigo-500 hover:to-blue-500">
+                  {submitMutation.isPending ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      <span>Đang nộp bài...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      <span>Nộp bài thi trắc nghiệm</span>
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={!isCurrent}
+                  className="h-10 w-full gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-xs font-bold text-white shadow-lg transition-all hover:from-indigo-500 hover:to-blue-500">
+                  <Play className="h-4 w-4 fill-current" />
+                  <span>Bắt đầu làm bài thi</span>
+                </Button>
+              )}
             </Card>
           </div>
 
-          {/* 👉 RIGHT COLUMN (70% - lg:col-span-8): Active Question & Option Choices */}
+          {/* 👉 RIGHT COLUMN (70% - lg:col-span-8): Lock Gate OR Active Question Screen */}
           <div className="space-y-4 lg:col-span-8">
-            <Card className="space-y-6 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-6 shadow-xl backdrop-blur-md">
-              {/* Question Header Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 font-mono text-xs font-bold text-indigo-300">
-                    CÂU HỎI {currentIndex + 1} / {totalQuestions}
-                  </span>
-                  <span className="rounded-md border border-slate-800 bg-slate-950 px-2.5 py-1 text-[11px] font-semibold text-slate-400">
-                    Chuyên môn
-                  </span>
+            {!hasStarted ? (
+              /* 🔒 START LOCK SCREEN / CHALLENGE GATE CARD */
+              <Card className="space-y-6 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 via-slate-900/90 to-slate-900/90 p-8 shadow-2xl backdrop-blur-md">
+                <div className="flex flex-col items-center justify-center space-y-4 py-4 text-center">
+                  {/* Glowing Lock Badge Icon */}
+                  <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl border border-indigo-500/40 bg-gradient-to-br from-indigo-600/30 to-blue-600/30 text-indigo-400 shadow-xl shadow-indigo-500/10">
+                    <Lock className="h-10 w-10" />
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 font-mono text-[9px] font-bold text-slate-950">
+                      1
+                    </span>
+                  </div>
+
+                  <div className="max-w-xl space-y-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 font-mono text-[10px] font-extrabold text-indigo-300 uppercase">
+                      <ShieldAlert className="h-3.5 w-3.5" />
+                      <span>BẢO MẬT & GIÁM SÁT TỰ ĐỘNG</span>
+                    </span>
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-100">
+                      XÁC NHẬN BẮT ĐẦU THI TRẮC NGHIỆM
+                    </h3>
+                    <p className="text-xs leading-relaxed text-slate-300">
+                      {round.configData?.instruction ||
+                        "Bài thi trắc nghiệm nhằm đánh giá kiến thức chuyên môn cốt lõi, tư duy kỹ thuật và khả năng xử lý tình huống thực tế của ứng viên."}
+                    </p>
+                  </div>
                 </div>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleToggleBookmark(currentIndex)}
-                  className={`h-8 gap-1.5 text-xs font-semibold ${
-                    bookmarked[currentIndex]
-                      ? "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
-                      : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-                  }`}>
-                  <Flag className="h-3.5 w-3.5" />
-                  <span>
-                    {bookmarked[currentIndex] ? "Đã đánh dấu xem lại" : "Đánh dấu xem lại"}
-                  </span>
-                </Button>
-              </div>
+                {/* Test Parameters Overview Grid */}
+                <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-950/80 p-4 sm:grid-cols-4">
+                  <div className="space-y-1 border-r border-slate-800/80 text-center last:border-r-0">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">
+                      Số lượng câu
+                    </span>
+                    <p className="font-mono text-base font-extrabold text-indigo-300">
+                      {totalQuestions} Câu
+                    </p>
+                  </div>
+                  <div className="space-y-1 border-r border-slate-800/80 text-center last:border-r-0">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">
+                      Thời gian
+                    </span>
+                    <p className="font-mono text-base font-extrabold text-amber-300">
+                      {timeLimitMinutes} Phút
+                    </p>
+                  </div>
+                  <div className="space-y-1 border-r border-slate-800/80 text-center last:border-r-0">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">
+                      Điểm sàn đạt
+                    </span>
+                    <p className="font-mono text-base font-extrabold text-emerald-300">
+                      {round.passThreshold ?? 70}/100
+                    </p>
+                  </div>
+                  <div className="space-y-1 text-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">
+                      Lần làm bài
+                    </span>
+                    <p className="font-mono text-base font-extrabold text-rose-300">
+                      01 Lần duy nhất
+                    </p>
+                  </div>
+                </div>
 
-              {/* Question Prompt */}
-              <div className="space-y-3">
-                <h3 className="text-sm leading-relaxed font-bold text-slate-100 md:text-base">
-                  {currentQuestion.questionText}
-                </h3>
-              </div>
+                {/* Important Regulations Notice */}
+                <div className="space-y-2.5 rounded-xl border border-amber-500/30 bg-amber-950/15 p-4 text-xs leading-relaxed text-slate-200">
+                  <div className="flex items-center gap-2 font-bold text-amber-400">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>LƯU Ý QUAN TRỌNG TRƯỚC KHI BẮT ĐẦU:</span>
+                  </div>
+                  <ul className="list-disc space-y-1.5 pl-6 text-slate-300">
+                    <li>
+                      Đồng hồ đếm ngược sẽ bắt đầu chạy **ngay lập tức** sau khi bấm xác nhận.
+                    </li>
+                    <li>
+                      Bài thi chỉ có thể thực hiện **01 lần duy nhất**, không thể tạm dừng hay làm
+                      lại.
+                    </li>
+                    <li>Khi hết thời gian, hệ thống sẽ tự động thu bài và chấm điểm tự động.</li>
+                  </ul>
+                </div>
 
-              {/* Answer Options List */}
-              <div className="space-y-3">
-                {currentQuestion.options.map((opt, oIdx) => {
-                  const isSelected = selectedAnswers[currentIndex] === opt;
-                  return (
-                    <div
-                      key={oIdx}
-                      onClick={() => handleSelectOption(opt)}
-                      className={`group flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
-                        isSelected
-                          ? "border-indigo-500 bg-indigo-950/40 text-slate-100 shadow-md ring-1 ring-indigo-500/50"
-                          : "border-slate-800/80 bg-slate-950/70 text-slate-300 hover:border-slate-700 hover:bg-slate-950"
-                      }`}>
+                {/* Center Start Button */}
+                <div className="flex justify-center pt-2">
+                  <Button
+                    onClick={() => setShowConfirmDialog(true)}
+                    disabled={!isCurrent}
+                    className="h-12 gap-3 bg-gradient-to-r from-indigo-600 via-indigo-500 to-blue-600 px-10 text-sm font-extrabold text-white shadow-xl shadow-indigo-600/20 transition-all hover:scale-105 hover:from-indigo-500 hover:to-blue-500">
+                    <Play className="h-5 w-5 fill-current" />
+                    <span>BẮT ĐẦU LÀM BÀI THI NGAY</span>
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              /* 📝 ACTIVE QUESTION & OPTION CHOICES CARD */
+              <Card className="space-y-6 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-6 shadow-xl backdrop-blur-md">
+                {/* Question Header Toolbar */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 font-mono text-xs font-bold text-indigo-300">
+                      CÂU HỎI {currentIndex + 1} / {totalQuestions}
+                    </span>
+                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2.5 py-1 text-[11px] font-semibold text-slate-400">
+                      Chuyên môn
+                    </span>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleToggleBookmark(currentIndex)}
+                    className={`h-8 gap-1.5 text-xs font-semibold ${
+                      bookmarked[currentIndex]
+                        ? "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
+                        : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                    }`}>
+                    <Flag className="h-3.5 w-3.5" />
+                    <span>
+                      {bookmarked[currentIndex] ? "Đã đánh dấu xem lại" : "Đánh dấu xem lại"}
+                    </span>
+                  </Button>
+                </div>
+
+                {/* Question Prompt */}
+                <div className="space-y-3">
+                  <h3 className="text-sm leading-relaxed font-bold text-slate-100 md:text-base">
+                    {currentQuestion.questionText}
+                  </h3>
+                </div>
+
+                {/* Answer Options List */}
+                <div className="space-y-3">
+                  {currentQuestion.options.map((opt, oIdx) => {
+                    const isSelected = selectedAnswers[currentIndex] === opt;
+                    return (
                       <div
-                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                        key={oIdx}
+                        onClick={() => handleSelectOption(opt)}
+                        className={`group flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
                           isSelected
-                            ? "border-indigo-400 bg-indigo-600 text-white"
-                            : "border-slate-700 bg-slate-900 group-hover:border-slate-500"
+                            ? "border-indigo-500 bg-indigo-950/40 text-slate-100 shadow-md ring-1 ring-indigo-500/50"
+                            : "border-slate-800/80 bg-slate-950/70 text-slate-300 hover:border-slate-700 hover:bg-slate-950"
                         }`}>
-                        {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                        <div
+                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                            isSelected
+                              ? "border-indigo-400 bg-indigo-600 text-white"
+                              : "border-slate-700 bg-slate-900 group-hover:border-slate-500"
+                          }`}>
+                          {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                        </div>
+                        <span className="text-xs leading-relaxed font-medium md:text-sm">
+                          {opt}
+                        </span>
                       </div>
-                      <span className="text-xs leading-relaxed font-medium md:text-sm">{opt}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Bottom Navigation Controls */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={currentIndex === 0}
-                  onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-                  className="h-9 gap-2 border-slate-700 bg-slate-800 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white">
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Câu trước</span>
-                </Button>
-
-                <div className="flex items-center gap-2">
-                  {currentIndex < totalQuestions - 1 ? (
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        setCurrentIndex((prev) => Math.min(totalQuestions - 1, prev + 1))
-                      }
-                      className="h-9 gap-2 bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-500">
-                      <span>Câu tiếp theo</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={handleSubmitQuiz}
-                      disabled={submitMutation.isPending || !isCurrent}
-                      className="h-9 gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-xs font-bold text-white shadow-lg hover:from-emerald-500 hover:to-teal-500">
-                      <Send className="h-4 w-4" />
-                      <span>Hoàn tất & Nộp bài</span>
-                    </Button>
-                  )}
+                    );
+                  })}
                 </div>
-              </div>
-            </Card>
+
+                {/* Bottom Navigation Controls */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={currentIndex === 0}
+                    onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+                    className="h-9 gap-2 border-slate-700 bg-slate-800 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span>Câu trước</span>
+                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    {currentIndex < totalQuestions - 1 ? (
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          setCurrentIndex((prev) => Math.min(totalQuestions - 1, prev + 1))
+                        }
+                        className="h-9 gap-2 bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-500">
+                        <span>Câu tiếp theo</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        onClick={handleSubmitQuiz}
+                        disabled={submitMutation.isPending || !isCurrent}
+                        className="h-9 gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-xs font-bold text-white shadow-lg hover:from-emerald-500 hover:to-teal-500">
+                        <Send className="h-4 w-4" />
+                        <span>Hoàn tất & Nộp bài</span>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       ) : (
@@ -692,6 +839,45 @@ export function QuizModule({
           </div>
         </div>
       )}
+
+      {/* ⚠️ CONFIRMATION START MODAL */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="max-w-md border-slate-800 bg-slate-900 text-slate-100 shadow-2xl">
+          <DialogHeader className="space-y-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <DialogTitle className="text-base font-extrabold text-slate-100">
+              XÁC NHẬN BẮT ĐẦU LÀM BÀI THI TRẮC NGHIỆM
+            </DialogTitle>
+            <DialogDescription className="text-xs leading-relaxed text-slate-300">
+              Bạn có chắc chắn muốn bắt đầu bài thi ngay bây giờ không?
+              <br />
+              <strong className="text-amber-300">
+                • Thời gian làm bài ({timeLimitMinutes} phút) sẽ bắt đầu đếm ngược ngay lập tức.
+                <br />• Bài thi chỉ có thể thực hiện 01 lần duy nhất.
+              </strong>
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              className="border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white">
+              Hủy bỏ
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmStartExam}
+              className="gap-2 bg-indigo-600 text-xs font-bold text-white shadow-lg hover:bg-indigo-500">
+              <Play className="h-4 w-4 fill-current" />
+              <span>Xác nhận & Bắt đầu ngay</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
