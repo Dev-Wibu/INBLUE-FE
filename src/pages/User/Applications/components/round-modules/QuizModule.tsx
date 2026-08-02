@@ -87,9 +87,9 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
   const lines = code.split("\n");
 
   return (
-    <div className="my-4 overflow-hidden rounded-xl border border-indigo-500/20 bg-slate-950/95 shadow-xl backdrop-blur-md">
+    <div className="my-4 overflow-hidden rounded-xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
       {/* IDE Code Header */}
-      <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/90 px-4 py-2 text-xs">
+      <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/95 px-4 py-2 text-xs">
         <div className="flex items-center gap-2.5">
           {/* Mac window dots */}
           <div className="flex items-center gap-1.5">
@@ -126,7 +126,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
         <div className="table w-full">
           {lines.map((line, lineIdx) => {
             const tokenRegex =
-              /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\/\/.*|@[A-Za-z0-9_]+|\b(?:public|private|protected|class|interface|enum|static|final|void|int|double|float|long|boolean|char|String|byte|short|return|if|else|for|while|do|switch|case|break|continue|new|this|super|import|package|try|catch|finally|throw|throws|const|let|var|function|async|await|select|from|where|join|insert|update|delete|group|by|order|having)\b|\b\d+\b|\b[A-Za-z_][A-Za-z0-9_]*(?=\s*\())/g;
+              /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\/\/.*|@[A-Za-z0-9_]+|\b(?:public|private|protected|class|interface|enum|static|final|void|int|double|float|long|boolean|char|String|byte|short|return|if|else|for|while|do|switch|case|break|continue|new|this|super|import|package|try|catch|finally|throw|throws|const|let|var|function|async|await|select|from|where|join|insert|update|delete|group|by|order|having)\b|\b\d+\b|[{}()[\]]|[;=.+*/,<>])/g;
 
             const parts: React.ReactNode[] = [];
             let lastIndex = 0;
@@ -141,7 +141,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
 
               if (token.startsWith('"') || token.startsWith("'")) {
                 parts.push(
-                  <span key={match.index} className="text-emerald-300">
+                  <span key={match.index} className="font-medium text-emerald-300">
                     {token}
                   </span>
                 );
@@ -154,6 +154,18 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
               } else if (token.startsWith("//")) {
                 parts.push(
                   <span key={match.index} className="text-slate-500 italic">
+                    {token}
+                  </span>
+                );
+              } else if (/^[{}()[\]]$/.test(token)) {
+                parts.push(
+                  <span key={match.index} className="font-extrabold text-amber-300">
+                    {token}
+                  </span>
+                );
+              } else if (/^[;=.+*/,<>]$/.test(token)) {
+                parts.push(
+                  <span key={match.index} className="font-bold text-slate-300">
                     {token}
                   </span>
                 );
@@ -171,7 +183,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
                   .startsWith("(")
               ) {
                 parts.push(
-                  <span key={match.index} className="font-semibold text-sky-300">
+                  <span key={match.index} className="font-bold text-sky-300">
                     {token}
                   </span>
                 );
