@@ -394,8 +394,8 @@ export function CvScreeningModule({
                       onChange={handleFileChange}
                       className="absolute inset-0 cursor-pointer opacity-0"
                     />
-                    <Upload className="mb-3 h-9 w-9 text-indigo-400" />
-                    <p className="text-xs font-bold text-slate-200">
+                    <Upload className="pointer-events-none mb-3 h-9 w-9 text-indigo-400" />
+                    <p className="pointer-events-none text-xs font-bold text-slate-200">
                       {selectedFileName ? (
                         <span className="font-mono text-xs text-indigo-400">
                           📄 {selectedFileName}
@@ -407,13 +407,18 @@ export function CvScreeningModule({
                         )
                       )}
                     </p>
-                    <p className="mt-1 text-[10px] text-slate-500">
+                    <p className="pointer-events-none mt-1 text-[10px] text-slate-500">
                       Hỗ trợ định dạng PDF, DOCX (Tối đa 10MB)
                     </p>
                     <Button
-                      onClick={handleAnalyzeCV}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleAnalyzeCV();
+                      }}
                       disabled={analyzing}
-                      className="mt-4 h-9 gap-2 bg-indigo-600 px-5 text-xs font-bold text-white hover:bg-indigo-700">
+                      className="relative z-10 mt-4 h-9 gap-2 bg-indigo-600 px-5 text-xs font-bold text-white hover:bg-indigo-700">
                       {analyzing ? (
                         <>
                           <Sparkles className="h-3.5 w-3.5 animate-spin" />
