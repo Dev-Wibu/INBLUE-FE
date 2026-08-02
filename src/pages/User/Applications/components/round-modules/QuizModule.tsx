@@ -643,42 +643,60 @@ export function QuizModule({
               </div>
             </Card>
 
-            {/* Card 2: Timer & Progress Countdown */}
-            <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <Clock
-                    className={`h-4 w-4 ${hasStarted && isLowTime ? "animate-pulse text-rose-400" : "text-amber-400"}`}
-                  />
-                  <h4 className="text-xs font-bold text-slate-200">Thời gian làm bài</h4>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <span className="text-xs font-medium text-slate-400">
-                  {hasStarted ? "Còn lại:" : "Thời lượng:"}
-                </span>
-                <span
-                  className={`font-mono text-xl font-black ${hasStarted && isLowTime ? "animate-pulse text-rose-400" : "text-amber-300"}`}>
-                  {formatTimer(remainingSeconds)}
-                </span>
-              </div>
-
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-950">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    hasStarted && isLowTime
-                      ? "bg-rose-500"
-                      : "bg-gradient-to-r from-indigo-500 to-blue-500"
-                  }`}
-                  style={{ width: `${(remainingSeconds / (timeLimitMinutes * 60)) * 100}%` }}
+            {/* Card 2: Circular Progress Timer Clock */}
+            <Card className="flex flex-col items-center justify-center space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-5 text-center shadow-md backdrop-blur-md">
+              <div className="flex w-full items-center justify-center gap-2 border-b border-slate-800/80 pb-2">
+                <Clock
+                  className={`h-4 w-4 ${hasStarted && isLowTime ? "animate-pulse text-rose-400" : "text-amber-400"}`}
                 />
+                <h4 className="text-xs font-bold text-slate-200">Thời gian làm bài</h4>
+              </div>
+
+              {/* Circular Countdown Ring */}
+              <div className="relative my-1 flex h-32 w-32 items-center justify-center">
+                <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 transform">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    className="text-slate-950"
+                    fill="transparent"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke={hasStarted && isLowTime ? "#f43f5e" : "#f59e0b"}
+                    strokeWidth="6"
+                    strokeDasharray={2 * Math.PI * 40}
+                    strokeDashoffset={
+                      2 * Math.PI * 40 -
+                      (remainingSeconds / (timeLimitMinutes * 60)) * (2 * Math.PI * 40)
+                    }
+                    strokeLinecap="round"
+                    fill="transparent"
+                    className="transition-all duration-1000 ease-linear"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">
+                    {hasStarted ? "Còn lại" : "Thời lượng"}
+                  </span>
+                  <span
+                    className={`font-mono text-xl font-black ${
+                      hasStarted && isLowTime ? "animate-pulse text-rose-400" : "text-amber-300"
+                    }`}>
+                    {formatTimer(remainingSeconds)}
+                  </span>
+                </div>
               </div>
             </Card>
 
-            {/* Card 3: Submit Action Card */}
-            <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
-              {hasStarted ? (
+            {/* Card 3: Submit Action Card (Only shown when candidate has started the exam) */}
+            {hasStarted && (
+              <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
                 <Button
                   onClick={handleSubmitQuiz}
                   disabled={submitMutation.isPending || !isCurrent}
@@ -695,16 +713,8 @@ export function QuizModule({
                     </>
                   )}
                 </Button>
-              ) : (
-                <Button
-                  onClick={() => setShowConfirmDialog(true)}
-                  disabled={!isCurrent}
-                  className="h-10 w-full gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-xs font-bold text-white shadow-lg transition-all hover:from-indigo-500 hover:to-blue-500">
-                  <Play className="h-4 w-4 fill-current" />
-                  <span>Bắt đầu làm bài thi</span>
-                </Button>
-              )}
-            </Card>
+              </Card>
+            )}
           </div>
 
           {/* 👉 RIGHT COLUMN (70% - lg:col-span-8): Lock Gate OR Active Question Screen */}
