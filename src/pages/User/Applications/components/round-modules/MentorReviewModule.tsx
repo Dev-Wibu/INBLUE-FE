@@ -151,9 +151,18 @@ export function MentorReviewModule({
       return "WAITING";
     }
     // 4. No session yet: show pre-session steps
+    // Note: Option 2 (multi-mentor proposal) flips detail.status to
+    // "PENDING" once the candidate confirms their pick — at that point
+    // the session doesn't exist yet and the candidate still needs to
+    // schedule an interview slot. Treat PENDING the same as SLOT_PICKED
+    // so the ScheduleStep renders instead of falling through to the
+    // AWAITING_MENTOR default (which previously trapped candidates in
+    // "Đang chờ Admin gán mentor" forever after they'd already picked).
     if (status === "AWAITING_MENTOR") return "AWAITING_MENTOR";
     if (status === "AWAITING_CANDIDATE_SELECT_MENTOR") return "SELECT_MENTOR";
-    if (status === "SLOT_PICKED" || status === "SUBMITTED") return "SCHEDULE";
+    if (status === "PENDING" || status === "SLOT_PICKED" || status === "SUBMITTED") {
+      return "SCHEDULE";
+    }
     return "AWAITING_MENTOR";
   }, [status, sessionId, sessionStatus]);
 
