@@ -325,6 +325,10 @@ export function ApplicationWorkspacePage() {
   const isRoundLocked = !isRoundCompleted && (activeRound?.roundOrder ?? 0) > apiCurrentRoundOrder;
 
   const isCvScreeningRound = activeRound?.roundType?.toUpperCase() === "CV_SCREENING";
+  const isEmailSimulatorRound =
+    activeRound?.roundType?.toUpperCase() === "EMAIL_SIMULATION" ||
+    activeRound?.roundType?.toUpperCase() === "EMAIL";
+  const isStandaloneLayout = isCvScreeningRound || isEmailSimulatorRound;
 
   return (
     <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">
@@ -410,8 +414,8 @@ export function ApplicationWorkspacePage() {
 
         {/* Workspace Main Grid */}
         {activeRound ? (
-          isCvScreeningRound ? (
-            /* CV Screening Round: Render 3 Standalone Column Containers directly without outer Card wrapper */
+          isStandaloneLayout ? (
+            /* Standalone Rounds (CV Screening, Email Simulation): Render 3 Standalone Column Containers directly without outer Card wrapper */
             <RoundWorkspaceDispatcher
               round={activeRound}
               detail={activeDetail}

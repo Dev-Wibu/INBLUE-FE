@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Inbox,
   Mail,
+  MessageSquareText,
   RefreshCw,
   Send,
   Sparkles,
@@ -37,7 +38,7 @@ interface EmailSimulatorModuleProps {
 }
 
 const RECRUITER_EMAIL = "hanptse184261@fpt.edu.vn";
-const POLL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes background scheduler window
+const POLL_TIMEOUT_MS = 5 * 60 * 1000;
 
 type Phase =
   | { kind: "DRAFT" }
@@ -296,7 +297,7 @@ export function EmailSimulatorModule({
 
   return (
     <div className="space-y-6">
-      {/* 🌟 Single Unified Top Recruitment Storyline Banner */}
+      {/* 🌟 Single Unified Top Storyline Banner */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
@@ -307,7 +308,7 @@ export function EmailSimulatorModule({
               <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                 {phase.kind === "EMAIL_RECEIVED" || isCompleted
                   ? "BÁO CÁO ĐÁNH GIÁ MÔ PHỎNG EMAIL"
-                  : "VÒNG 2: MÔ PHỎNG EMAIL • HƯỚNG DẪN LÀM BÀI"}
+                  : "VÒNG 2: MÔ PHỎNG EMAIL • TRẠM THI TRỰC TUYẾN"}
               </span>
               <span className="text-slate-600">•</span>
               <span className="text-xs font-semibold text-indigo-400">Vòng 2</span>
@@ -317,7 +318,7 @@ export function EmailSimulatorModule({
                 ? "Email của bạn đã được hệ thống thu thập và AI hoàn tất chấm điểm giao tiếp công sở."
                 : phase.kind === "PENDING" || phase.kind === "WAITING_FOR_FIRST_EMAIL"
                   ? "Hệ thống background scheduler trên Server đang tự động quét hộp thư IMAP để thu thập email của bạn..."
-                  : "Gửi email trực tiếp từ Gmail/Outlook của bạn tới hệ thống nhà tuyển dụng theo mã subject định danh duy nhất."}
+                  : "Đọc kỹ Đề bài & Tình huống bên dưới, sau đó gửi email trực tiếp từ Gmail/Outlook theo đúng mã định danh."}
             </p>
           </div>
         </div>
@@ -341,7 +342,7 @@ export function EmailSimulatorModule({
           ) : phase.kind === "PENDING" || phase.kind === "WAITING_FOR_FIRST_EMAIL" ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-4 py-1.5 text-xs font-extrabold text-amber-300 shadow-sm shadow-amber-950/40">
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-              <span>SERVER DANG QUÉT BACKGROUND</span>
+              <span>SERVER ĐANG QUÉT BACKGROUND</span>
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
@@ -355,15 +356,19 @@ export function EmailSimulatorModule({
       {/* 📐 MAIN STUDIO CONTENT (DRAFT MODE) */}
       {phase.kind === "DRAFT" && (
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-          {/* 👈 LEFT COLUMN (40% - lg:col-span-5): Task Description & Workflow Steps */}
+          {/* 👈 LEFT COLUMN (45% - lg:col-span-5): Prominent Task Description & Scenario Card */}
           <div className="space-y-5 lg:col-span-5">
-            {/* TASK & SCENARIO CARD */}
-            <Card className="space-y-4 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-md backdrop-blur-md">
-              <div>
-                <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                  {t("userApplicationhistory.emailTaskTitle", "Đề bài (Task)")}
-                </span>
-                <p className="mt-1 text-xs leading-relaxed text-slate-200">
+            {/* PROMINENT TASK & SCENARIO CARD (High Visual Hierarchy & Comfort Reading Measure) */}
+            <Card className="space-y-5 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-6 shadow-md backdrop-blur-md">
+              {/* Task Section */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+                  <Sparkles className="h-4 w-4 text-indigo-400" />
+                  <h3 className="text-xs font-extrabold tracking-wider text-indigo-300 uppercase">
+                    {t("userApplicationhistory.emailTaskTitle", "ĐỀ BÀI (TASK)")}
+                  </h3>
+                </div>
+                <p className="text-sm leading-relaxed font-bold text-slate-100">
                   {round.configData?.instruction ||
                     t(
                       "userApplicationhistory.emailInstructionDefault",
@@ -372,26 +377,33 @@ export function EmailSimulatorModule({
                 </p>
               </div>
 
-              <div className="border-t border-slate-800 pt-3">
-                <span className="text-[10px] font-bold tracking-wider text-indigo-400 uppercase">
-                  {t("userApplicationhistory.emailScenarioTitle", "Tình huống giao tiếp")}
-                </span>
-                <p className="mt-1 text-xs leading-relaxed text-slate-300">
+              {/* Scenario Section (Notion/Linear Highlight Callout) */}
+              <div className="space-y-2.5 rounded-xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-950 to-slate-950 p-4.5 shadow-inner">
+                <div className="flex items-center gap-2 border-b border-indigo-500/20 pb-2">
+                  <MessageSquareText className="h-4 w-4 text-amber-400" />
+                  <h3 className="text-xs font-extrabold tracking-wider text-amber-300 uppercase">
+                    {t(
+                      "userApplicationhistory.emailScenarioTitle",
+                      "TÌNH HUỐNG GIAO TIẾP CHI TIẾT"
+                    )}
+                  </h3>
+                </div>
+                <div className="space-y-2 text-sm leading-relaxed font-normal whitespace-pre-line text-slate-200">
                   {round.configData?.evaluationCriteria ||
                     t(
                       "userApplicationhistory.emailInstructionDefault",
                       "Email từ cấp trên / khách hàng — đóng vai ứng viên phản hồi chuyên nghiệp, đề xuất giải pháp."
                     )}
-                </p>
+                </div>
               </div>
             </Card>
 
             {/* WORKFLOW STEPS CARD */}
-            <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-md">
+            <Card className="space-y-3.5 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-md">
               <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
                 <Send className="h-4 w-4 text-indigo-400" />
                 <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
-                  CÁC BƯỚC NỘP BÀI EMAIL
+                  HƯỚNG DẪN CÁC BƯỚC NỘP BÀI
                 </h4>
               </div>
 
@@ -425,7 +437,7 @@ export function EmailSimulatorModule({
             </Card>
           </div>
 
-          {/* 👉 RIGHT COLUMN (60% - lg:col-span-7): Single Unified Workstation Card */}
+          {/* 👉 RIGHT COLUMN (55% - lg:col-span-7): Single Unified Workstation Card */}
           <div className="space-y-5 lg:col-span-7">
             <Card className="space-y-4 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 via-slate-900/90 to-slate-900/90 p-5 shadow-lg backdrop-blur-md">
               <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
@@ -482,7 +494,7 @@ export function EmailSimulatorModule({
 
                 {/* Drafter Textarea */}
                 <Textarea
-                  rows={9}
+                  rows={12}
                   value={sampleBody}
                   onChange={(e) => setSampleBody(e.target.value)}
                   disabled={isCompleted || !isCurrent}
