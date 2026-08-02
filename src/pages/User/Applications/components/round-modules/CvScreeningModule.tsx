@@ -274,7 +274,9 @@ export function CvScreeningModule({
                 BÁO CÁO ĐÁNH GIÁ CV HỒ SƠ AI
               </span>
               <span className="text-slate-600">•</span>
-              <span className="text-xs font-semibold text-indigo-400">Vòng 1: CV Screening</span>
+              <span className="text-xs font-semibold text-indigo-400">
+                Vòng 1: Lọc CV (CV Screening)
+              </span>
             </div>
             <p className="text-sm font-semibold text-slate-200">
               {detail?.finalResult === "PASSED" || isCompleted
@@ -431,7 +433,7 @@ export function CvScreeningModule({
 
         {/* 🧠 CENTER COLUMN (45% - lg:col-span-5): Main Storytelling Area */}
         <div className="space-y-5 lg:col-span-5">
-          {/* SECTION 1: AI Executive Summary (Priority 1 - Purple/Blue Notion AI Theme) */}
+          {/* SECTION 1: AI Executive Summary (Priority 1 - Notion AI Theme) */}
           <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-lg shadow-indigo-950/20 backdrop-blur-md">
             <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
               <div className="flex items-center gap-2">
@@ -439,13 +441,13 @@ export function CvScreeningModule({
                   <Bot className="h-4 w-4" />
                 </div>
                 <h3 className="text-xs font-extrabold tracking-wider text-indigo-300 uppercase">
-                  NOTION AI EXECUTIVE SUMMARY
+                  BÁO CÁO TỔNG QUAN AI
                 </h3>
               </div>
 
               <span className="inline-flex items-center gap-1 rounded-full border border-indigo-400/40 bg-indigo-500/15 px-3 py-1 text-[11px] font-extrabold text-indigo-200 shadow-xs">
                 <Sparkles className="h-3.5 w-3.5 text-indigo-300" />
-                <span>AI RECOMMENDATION</span>
+                <span>ĐỀ XUẤT TỪ AI</span>
               </span>
             </div>
 
@@ -462,7 +464,7 @@ export function CvScreeningModule({
                 <CheckCircle2 className="h-3.5 w-3.5" />
               </div>
               <h4 className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
-                ĐIỂM MẠNH NỔI BẬT (STRENGTHS)
+                Điểm mạnh nổi bật
               </h4>
             </div>
 
@@ -489,7 +491,7 @@ export function CvScreeningModule({
                 <AlertTriangle className="h-3.5 w-3.5" />
               </div>
               <h4 className="text-xs font-bold tracking-wider text-amber-400 uppercase">
-                ĐIỂM CẦN BỔ SUNG & CẢI THIỆN (WEAKNESSES)
+                Điểm cần bổ sung & Cải thiện
               </h4>
             </div>
 
@@ -515,7 +517,7 @@ export function CvScreeningModule({
                   <ShieldAlert className="h-4 w-4" />
                 </div>
                 <h4 className="text-xs font-bold tracking-wider text-rose-300 uppercase">
-                  CẢNH BÁO RỦI RO TIỀM ẨN (RED FLAGS)
+                  Cảnh báo rủi ro tiềm ẩn
                 </h4>
               </div>
 
@@ -544,7 +546,7 @@ export function CvScreeningModule({
                 </h4>
               </div>
 
-              <span className="text-[10px] font-medium text-slate-400">HUMAN REVIEW</span>
+              <span className="text-[10px] font-medium text-slate-400">HR ĐÁNH GIÁ</span>
             </div>
 
             {detail?.hrNote ? (
@@ -566,7 +568,7 @@ export function CvScreeningModule({
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-indigo-400" />
-                <h4 className="text-xs font-bold text-slate-200">Match Score Analytics</h4>
+                <h4 className="text-xs font-bold text-slate-200">Chỉ số Match Score</h4>
               </div>
               <span className="text-[10px] font-semibold text-slate-400">AI vs HR</span>
             </div>
@@ -579,13 +581,13 @@ export function CvScreeningModule({
             {/* WIDGET 2: Full 5-Metrics Criteria Breakdown Progress Bars */}
             <div className="space-y-2.5 border-t border-slate-800 pt-3 text-xs">
               <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                Phân tích tiêu chí (5 Metrics)
+                Phân tích tiêu chí chi tiết
               </span>
 
               {/* 1. Overall CV Match */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
-                  <span>Độ phù hợp tổng thể (Overall):</span>
+                  <span>Độ phù hợp tổng thể:</span>
                   <span className="font-bold text-indigo-400">
                     {(extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] as number) ??
                       matchScore ??
@@ -606,7 +608,7 @@ export function CvScreeningModule({
               {/* 2. Skills Match Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
-                  <span>Kỹ năng chuyên môn (Skills):</span>
+                  <span>Kỹ năng chuyên môn:</span>
                   <span className="font-bold text-violet-400">
                     {(extraMetrics?.[
                       "Skills Match Score" as keyof typeof extraMetrics
@@ -627,7 +629,7 @@ export function CvScreeningModule({
               {/* 3. Experience Match Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
-                  <span>Kinh nghiệm làm việc (Experience):</span>
+                  <span>Kinh nghiệm làm việc:</span>
                   <span className="font-bold text-amber-400">
                     {(extraMetrics?.[
                       "Experience Match Score" as keyof typeof extraMetrics
@@ -648,7 +650,7 @@ export function CvScreeningModule({
               {/* 4. Education Match Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
-                  <span>Trình độ học vấn (Education):</span>
+                  <span>Trình độ học vấn:</span>
                   <span className="font-bold text-emerald-400">
                     {(extraMetrics?.[
                       "Education Match Score" as keyof typeof extraMetrics
@@ -669,7 +671,7 @@ export function CvScreeningModule({
               {/* 5. CV Readability Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
-                  <span>Trình bày & Cấu trúc (Readability):</span>
+                  <span>Trình bày & Cấu trúc:</span>
                   <span className="font-bold text-blue-400">
                     {(extraMetrics?.[
                       "CV Readability Score" as keyof typeof extraMetrics
@@ -694,7 +696,7 @@ export function CvScreeningModule({
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-indigo-400" />
-                <h4 className="text-xs font-bold text-slate-200">ATS Keyword Match</h4>
+                <h4 className="text-xs font-bold text-slate-200">Từ khóa ATS</h4>
               </div>
               {/* Prominent High-Contrast ATS Match Percentage Badge */}
               <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 font-mono text-xs font-extrabold text-emerald-300 shadow-xs shadow-emerald-950/40">
@@ -751,7 +753,7 @@ export function CvScreeningModule({
               <div className="flex items-center justify-between border-b border-slate-800/60 pb-2">
                 <span className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
                   <BadgeCheck className="h-4 w-4 text-indigo-400" />
-                  <span>Requirement Coverage</span>
+                  <span>Độ khớp Yêu cầu</span>
                 </span>
                 {/* Prominent High-Contrast Requirement Coverage Percentage Badge */}
                 <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-3 py-0.5 font-mono text-xs font-extrabold text-indigo-300 shadow-xs shadow-indigo-950/40">
