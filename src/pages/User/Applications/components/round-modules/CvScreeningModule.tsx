@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import {
   AlertTriangle,
@@ -95,15 +94,17 @@ function ModernGaugeClock({
   score,
   label,
   color = "indigo",
+  hasData = true,
 }: {
   score: number;
   label: string;
   color?: "indigo" | "emerald";
+  hasData?: boolean;
 }) {
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset =
-    circumference - (Math.min(100, Math.max(0, score)) / 100) * circumference;
+  const displayScore = hasData ? Math.min(100, Math.max(0, score)) : 0;
+  const strokeDashoffset = circumference - (displayScore / 100) * circumference;
 
   const styles =
     color === "emerald"
@@ -132,21 +133,26 @@ function ModernGaugeClock({
             className="text-slate-800"
             fill="transparent"
           />
-          <circle
-            cx="50"
-            cy="50"
-            r={radius}
-            stroke="currentColor"
-            strokeWidth="7"
-            className={`${styles.ring} transition-all duration-1000 ease-out`}
-            fill="transparent"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-          />
+          {hasData && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              stroke="currentColor"
+              strokeWidth="7"
+              className={`${styles.ring} transition-all duration-1000 ease-out`}
+              fill="transparent"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+            />
+          )}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className={`text-xl font-black tracking-tight ${styles.text}`}>{score}%</span>
+          <span
+            className={`text-xl font-black tracking-tight ${hasData ? styles.text : "text-slate-500"}`}>
+            {hasData ? `${displayScore}%` : "--"}
+          </span>
           <span className="text-[8px] font-extrabold tracking-wider text-slate-400 uppercase">
             {label}
           </span>
@@ -188,9 +194,17 @@ export function CvScreeningModule({
   const submissionData = detail?.submissionData as any;
   const fileUrl = submissionData?.fileUrl || submissionData?.url || null;
 
-  const matchScore = detail?.finalScore ?? detail?.aiScore ?? (isCompleted ? 85 : null);
-  const aiScoreVal = detail?.aiScore ?? matchScore ?? 0;
-  const hrScoreVal = detail?.hrScore ?? detail?.finalScore ?? matchScore ?? 0;
+  // Strict check if real AI feedback or submission exists
+  const hasAiData = Boolean(
+    fileUrl ||
+    detail?.aiFeedback ||
+    detail?.aiScore !== undefined ||
+    detail?.finalScore !== undefined ||
+    isCompleted
+  );
+
+  const aiScoreVal = detail?.aiScore ?? detail?.finalScore ?? (isCompleted ? 85 : 0);
+  const hrScoreVal = detail?.hrScore ?? detail?.finalScore ?? (isCompleted ? 85 : 0);
 
   const extraMetrics = aiFeedback?.extraMetrics;
   const keywordDensity = extraMetrics?.["Keyword Density"] || {};
@@ -204,9 +218,9 @@ export function CvScreeningModule({
   }, [keywordDensity]);
   const totalKeywordsCount = useMemo(() => Object.keys(keywordDensity).length, [keywordDensity]);
   const keywordCoveragePct = useMemo(() => {
-    if (totalKeywordsCount === 0) return 80;
+    if (!hasAiData || totalKeywordsCount === 0) return null;
     return Math.round((matchedKeywordsCount / totalKeywordsCount) * 100);
-  }, [matchedKeywordsCount, totalKeywordsCount]);
+  }, [hasAiData, matchedKeywordsCount, totalKeywordsCount]);
 
   // Parse Requirements string into clean individual line items
   const parsedRequirements = useMemo(() => {
@@ -281,7 +295,9 @@ export function CvScreeningModule({
             <p className="text-sm font-semibold text-slate-200">
               {detail?.finalResult === "PASSED" || isCompleted
                 ? "Ứng viên đạt yêu cầu lọc hồ sơ và đủ điều kiện bước vào vòng đánh giá tiếp theo."
-                : "Hồ sơ ứng viên đang chờ tải lên và phân tích AI."}
+                : fileUrl
+                  ? "Hồ sơ đã nộp thành công, hệ thống AI đã trích xuất báo cáo phân tích."
+                  : "Hồ sơ ứng viên đang chờ tải lên và phân tích AI."}
             </p>
           </div>
         </div>
@@ -453,7 +469,9 @@ export function CvScreeningModule({
 
             <p className="text-sm leading-relaxed font-normal text-slate-200">
               {aiFeedback?.generalComment ||
-                "Vui lòng tải lên CV ứng tuyển để hệ thống AI tự động trích xuất báo cáo phân tích tổng quan."}
+                (hasAiData
+                  ? "Báo cáo phân tích đang được cập nhật..."
+                  : "Vui lòng tải lên CV ứng tuyển để hệ thống AI tự động chấm điểm và trích xuất báo cáo tổng quan.")}
             </p>
           </Card>
 
@@ -479,7 +497,7 @@ export function CvScreeningModule({
               </ul>
             ) : (
               <p className="text-xs text-slate-400 italic">
-                Chưa ghi nhận điểm mạnh nổi bật từ AI.
+                {hasAiData ? "Chưa ghi nhận điểm mạnh nổi bật." : "Chưa có dữ liệu (Cần nộp CV)"}
               </p>
             )}
           </Card>
@@ -505,7 +523,9 @@ export function CvScreeningModule({
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-slate-400 italic">Chưa ghi nhận điểm yếu cần bổ sung.</p>
+              <p className="text-xs text-slate-400 italic">
+                {hasAiData ? "Chưa ghi nhận điểm yếu cần bổ sung." : "Chưa có dữ liệu (Cần nộp CV)"}
+              </p>
             )}
           </Card>
 
@@ -574,8 +594,18 @@ export function CvScreeningModule({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <ModernGaugeClock score={aiScoreVal} label="AI Score" color="indigo" />
-              <ModernGaugeClock score={hrScoreVal} label="HR Score" color="emerald" />
+              <ModernGaugeClock
+                score={aiScoreVal}
+                label="AI Score"
+                color="indigo"
+                hasData={hasAiData}
+              />
+              <ModernGaugeClock
+                score={hrScoreVal}
+                label="HR Score"
+                color="emerald"
+                hasData={hasAiData}
+              />
             </div>
 
             {/* WIDGET 2: Full 5-Metrics Criteria Breakdown Progress Bars */}
@@ -588,18 +618,17 @@ export function CvScreeningModule({
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
                   <span>Độ phù hợp tổng thể:</span>
-                  <span className="font-bold text-indigo-400">
-                    {(extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] as number) ??
-                      matchScore ??
-                      85}
-                    %
+                  <span className={`font-bold ${hasAiData ? "text-indigo-400" : "text-slate-500"}`}>
+                    {hasAiData
+                      ? `${extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] ?? aiScoreVal}%`
+                      : "--"}
                   </span>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                   <div
-                    className="h-full rounded-full bg-indigo-500"
+                    className="h-full rounded-full bg-indigo-500 transition-all duration-500"
                     style={{
-                      width: `${(extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] as number) ?? matchScore ?? 85}%`,
+                      width: `${hasAiData ? ((extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] as number) ?? aiScoreVal) : 0}%`,
                     }}
                   />
                 </div>
@@ -609,18 +638,17 @@ export function CvScreeningModule({
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
                   <span>Kỹ năng chuyên môn:</span>
-                  <span className="font-bold text-violet-400">
-                    {(extraMetrics?.[
-                      "Skills Match Score" as keyof typeof extraMetrics
-                    ] as number) ?? 60}
-                    %
+                  <span className={`font-bold ${hasAiData ? "text-violet-400" : "text-slate-500"}`}>
+                    {hasAiData
+                      ? `${extraMetrics?.["Skills Match Score" as keyof typeof extraMetrics] ?? 0}%`
+                      : "--"}
                   </span>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                   <div
-                    className="h-full rounded-full bg-violet-500"
+                    className="h-full rounded-full bg-violet-500 transition-all duration-500"
                     style={{
-                      width: `${(extraMetrics?.["Skills Match Score" as keyof typeof extraMetrics] as number) ?? 60}%`,
+                      width: `${hasAiData ? ((extraMetrics?.["Skills Match Score" as keyof typeof extraMetrics] as number) ?? 0) : 0}%`,
                     }}
                   />
                 </div>
@@ -630,18 +658,17 @@ export function CvScreeningModule({
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
                   <span>Kinh nghiệm làm việc:</span>
-                  <span className="font-bold text-amber-400">
-                    {(extraMetrics?.[
-                      "Experience Match Score" as keyof typeof extraMetrics
-                    ] as number) ?? 50}
-                    %
+                  <span className={`font-bold ${hasAiData ? "text-amber-400" : "text-slate-500"}`}>
+                    {hasAiData
+                      ? `${extraMetrics?.["Experience Match Score" as keyof typeof extraMetrics] ?? 0}%`
+                      : "--"}
                   </span>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                   <div
-                    className="h-full rounded-full bg-amber-500"
+                    className="h-full rounded-full bg-amber-500 transition-all duration-500"
                     style={{
-                      width: `${(extraMetrics?.["Experience Match Score" as keyof typeof extraMetrics] as number) ?? 50}%`,
+                      width: `${hasAiData ? ((extraMetrics?.["Experience Match Score" as keyof typeof extraMetrics] as number) ?? 0) : 0}%`,
                     }}
                   />
                 </div>
@@ -651,18 +678,18 @@ export function CvScreeningModule({
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
                   <span>Trình độ học vấn:</span>
-                  <span className="font-bold text-emerald-400">
-                    {(extraMetrics?.[
-                      "Education Match Score" as keyof typeof extraMetrics
-                    ] as number) ?? 60}
-                    %
+                  <span
+                    className={`font-bold ${hasAiData ? "text-emerald-400" : "text-slate-500"}`}>
+                    {hasAiData
+                      ? `${extraMetrics?.["Education Match Score" as keyof typeof extraMetrics] ?? 0}%`
+                      : "--"}
                   </span>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                   <div
-                    className="h-full rounded-full bg-emerald-400"
+                    className="h-full rounded-full bg-emerald-400 transition-all duration-500"
                     style={{
-                      width: `${(extraMetrics?.["Education Match Score" as keyof typeof extraMetrics] as number) ?? 60}%`,
+                      width: `${hasAiData ? ((extraMetrics?.["Education Match Score" as keyof typeof extraMetrics] as number) ?? 0) : 0}%`,
                     }}
                   />
                 </div>
@@ -672,18 +699,17 @@ export function CvScreeningModule({
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
                   <span>Trình bày & Cấu trúc:</span>
-                  <span className="font-bold text-blue-400">
-                    {(extraMetrics?.[
-                      "CV Readability Score" as keyof typeof extraMetrics
-                    ] as number) ?? 90}
-                    %
+                  <span className={`font-bold ${hasAiData ? "text-blue-400" : "text-slate-500"}`}>
+                    {hasAiData
+                      ? `${extraMetrics?.["CV Readability Score" as keyof typeof extraMetrics] ?? 0}%`
+                      : "--"}
                   </span>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                   <div
-                    className="h-full rounded-full bg-blue-400"
+                    className="h-full rounded-full bg-blue-400 transition-all duration-500"
                     style={{
-                      width: `${(extraMetrics?.["CV Readability Score" as keyof typeof extraMetrics] as number) ?? 90}%`,
+                      width: `${hasAiData ? ((extraMetrics?.["CV Readability Score" as keyof typeof extraMetrics] as number) ?? 0) : 0}%`,
                     }}
                   />
                 </div>
@@ -699,8 +725,15 @@ export function CvScreeningModule({
                 <h4 className="text-xs font-bold text-slate-200">Từ khóa ATS</h4>
               </div>
               {/* Prominent High-Contrast ATS Match Percentage Badge */}
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 font-mono text-xs font-extrabold text-emerald-300 shadow-xs shadow-emerald-950/40">
-                {matchedKeywordsCount}/{totalKeywordsCount || 5} ({keywordCoveragePct}%)
+              <span
+                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-xs font-extrabold ${
+                  hasAiData && keywordCoveragePct !== null
+                    ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300 shadow-xs shadow-emerald-950/40"
+                    : "border-slate-800 bg-slate-950 text-slate-500"
+                }`}>
+                {hasAiData && keywordCoveragePct !== null
+                  ? `${matchedKeywordsCount}/${totalKeywordsCount} (${keywordCoveragePct}%)`
+                  : "Chờ nộp CV"}
               </span>
             </div>
 
@@ -727,10 +760,10 @@ export function CvScreeningModule({
                 })}
               </div>
             ) : (
-              <div className="flex flex-wrap gap-1.5">
-                <Skeleton className="h-6 w-20 rounded-lg bg-slate-800" />
-                <Skeleton className="h-6 w-24 rounded-lg bg-slate-800" />
-                <Skeleton className="h-6 w-16 rounded-lg bg-slate-800" />
+              <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 p-3 text-center text-[11px] text-slate-500">
+                {hasAiData
+                  ? "Chưa trích xuất từ khóa ATS từ CV."
+                  : "Vui lòng tải lên CV để hệ thống phân tích mật độ từ khóa."}
               </div>
             )}
           </Card>
@@ -756,8 +789,15 @@ export function CvScreeningModule({
                   <span>Độ khớp Yêu cầu</span>
                 </span>
                 {/* Prominent High-Contrast Requirement Coverage Percentage Badge */}
-                <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-3 py-0.5 font-mono text-xs font-extrabold text-indigo-300 shadow-xs shadow-indigo-950/40">
-                  {keywordCoveragePct}% Match
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full border px-3 py-0.5 font-mono text-xs font-extrabold ${
+                    hasAiData && keywordCoveragePct !== null
+                      ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-300 shadow-xs shadow-indigo-950/40"
+                      : "border-slate-800 bg-slate-950 text-slate-500"
+                  }`}>
+                  {hasAiData && keywordCoveragePct !== null
+                    ? `${keywordCoveragePct}% Match`
+                    : "--%"}
                 </span>
               </div>
 
