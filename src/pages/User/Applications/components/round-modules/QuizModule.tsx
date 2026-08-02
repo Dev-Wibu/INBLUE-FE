@@ -207,7 +207,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
                 <span className="table-cell border-r border-slate-800/60 pr-4 text-right font-mono text-[11px] text-slate-600 select-none">
                   {lineIdx + 1}
                 </span>
-                <span className="table-cell pl-4 font-mono text-xs text-slate-200">
+                <span className="table-cell pl-4 font-mono text-xs whitespace-pre text-slate-200">
                   {parts.length > 0 ? parts : " "}
                 </span>
               </div>
