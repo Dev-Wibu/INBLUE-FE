@@ -356,7 +356,8 @@ export function UserDashboardPage() {
               typedActiveTab === "mentors" ||
               typedActiveTab === "jobSearch" ||
               typedActiveTab === "applicationHistory" ||
-              typedActiveTab === "aiInterview"
+              typedActiveTab === "aiInterview" ||
+              location.pathname.startsWith("/user/application")
               ? "overflow-auto p-0"
               : location.pathname.startsWith("/user/account") ||
                   location.pathname.startsWith("/user/settings")
