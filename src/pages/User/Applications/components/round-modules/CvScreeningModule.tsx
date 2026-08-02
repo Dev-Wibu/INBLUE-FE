@@ -576,15 +576,38 @@ export function CvScreeningModule({
               <ModernGaugeClock score={hrScoreVal} label="HR Score" color="emerald" />
             </div>
 
-            {/* WIDGET 2: Skills Breakdown Progress Bars */}
+            {/* WIDGET 2: Full 5-Metrics Criteria Breakdown Progress Bars */}
             <div className="space-y-2.5 border-t border-slate-800 pt-3 text-xs">
               <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                Phân tích tiêu chí
+                Phân tích tiêu chí (5 Metrics)
               </span>
+
+              {/* 1. Overall CV Match */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
-                  <span>Kỹ năng (Skills):</span>
+                  <span>Độ phù hợp tổng thể (Overall):</span>
                   <span className="font-bold text-indigo-400">
+                    {(extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] as number) ??
+                      matchScore ??
+                      85}
+                    %
+                  </span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full bg-indigo-500"
+                    style={{
+                      width: `${(extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] as number) ?? matchScore ?? 85}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* 2. Skills Match Score */}
+              <div>
+                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
+                  <span>Kỹ năng chuyên môn (Skills):</span>
+                  <span className="font-bold text-violet-400">
                     {(extraMetrics?.[
                       "Skills Match Score" as keyof typeof extraMetrics
                     ] as number) ?? 60}
@@ -593,7 +616,7 @@ export function CvScreeningModule({
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                   <div
-                    className="h-full rounded-full bg-indigo-500"
+                    className="h-full rounded-full bg-violet-500"
                     style={{
                       width: `${(extraMetrics?.["Skills Match Score" as keyof typeof extraMetrics] as number) ?? 60}%`,
                     }}
@@ -601,9 +624,31 @@ export function CvScreeningModule({
                 </div>
               </div>
 
+              {/* 3. Experience Match Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
-                  <span>Học vấn (Education):</span>
+                  <span>Kinh nghiệm làm việc (Experience):</span>
+                  <span className="font-bold text-amber-400">
+                    {(extraMetrics?.[
+                      "Experience Match Score" as keyof typeof extraMetrics
+                    ] as number) ?? 50}
+                    %
+                  </span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full bg-amber-500"
+                    style={{
+                      width: `${(extraMetrics?.["Experience Match Score" as keyof typeof extraMetrics] as number) ?? 50}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* 4. Education Match Score */}
+              <div>
+                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
+                  <span>Trình độ học vấn (Education):</span>
                   <span className="font-bold text-emerald-400">
                     {(extraMetrics?.[
                       "Education Match Score" as keyof typeof extraMetrics
@@ -621,9 +666,10 @@ export function CvScreeningModule({
                 </div>
               </div>
 
+              {/* 5. CV Readability Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
-                  <span>Trình bày (Readability):</span>
+                  <span>Trình bày & Cấu trúc (Readability):</span>
                   <span className="font-bold text-blue-400">
                     {(extraMetrics?.[
                       "CV Readability Score" as keyof typeof extraMetrics
@@ -687,7 +733,7 @@ export function CvScreeningModule({
             )}
           </Card>
 
-          {/* WIDGET 4: Job Requirements Structured Item List Matrix */}
+          {/* WIDGET 4: Job Requirements Matrix (Full Length - No Inner Scrollbar!) */}
           <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-2.5">
               <CompanyAvatar
@@ -713,8 +759,8 @@ export function CvScreeningModule({
                 </span>
               </div>
 
-              {/* Structured Individual Line Item Badge List (No raw textarea!) */}
-              <div className="max-h-[320px] space-y-2 overflow-y-auto pr-1">
+              {/* Full Length Individual Line Item Badge List (No Max Height or Inner Scrollbar!) */}
+              <div className="space-y-2">
                 {parsedRequirements.map((req, idx) => (
                   <div
                     key={idx}
