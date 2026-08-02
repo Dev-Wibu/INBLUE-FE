@@ -1,22 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import {
-  AlertCircle,
+  AlertTriangle,
   CheckCircle2,
+  Download,
   ExternalLink,
   FileCheck2,
   FileText,
-  Lightbulb,
-  ShieldAlert,
   Sparkles,
-  ThumbsDown,
-  ThumbsUp,
+  Tag,
   Upload,
+  XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
@@ -24,30 +22,19 @@ import type { JdRound } from "../HorizontalPipeline";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
-/**
- * Shape of `detail.aiFeedback` from BE. The OpenAPI generator often emits
- * `unknown` for free-form objects so we declare the local shape we depend
- * on. All fields are optional because BE may return either the legacy
- * (just `generalComment`) or the new (with `extraMetrics`) payload.
- */
-interface AiFeedbackKeywordDensity {
-  [skill: string]: number | undefined;
-}
-interface AiFeedbackExtraMetrics {
-  "Keyword Density"?: AiFeedbackKeywordDensity;
-  "Overall CV Match"?: number;
-  "Skills Match Score"?: number;
-  "Potential Red Flags"?: string[];
-  "CV Readability Score"?: number;
-  "Education Match Score"?: number;
-  "Experience Match Score"?: number;
-  [metric: string]: unknown;
-}
-interface AiFeedbackPayload {
+export interface AiFeedbackPayload {
   generalComment?: string;
   strengths?: string[];
   weaknesses?: string[];
-  extraMetrics?: AiFeedbackExtraMetrics;
+  extraMetrics?: {
+    "Overall CV Match"?: number;
+    "Skills Match Score"?: number;
+    "CV Readability Score"?: number;
+    "Education Match Score"?: number;
+    "Experience Match Score"?: number;
+    "Keyword Density"?: Record<string, number>;
+    "Potential Red Flags"?: string[];
+  };
 }
 
 interface CvScreeningModuleProps {
@@ -71,18 +58,33 @@ export function CvScreeningModule({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "strengths" | "redflags">("overview");
+
+  // Safe parse aiFeedback JSON if object or string
+  const aiFeedback = useMemo<AiFeedbackPayload | null>(() => {
+    if (!detail?.aiFeedback) return null;
+    if (typeof detail.aiFeedback === "object") {
+      return detail.aiFeedback as AiFeedbackPayload;
+    }
+    try {
+      return JSON.parse(detail.aiFeedback as string) as AiFeedbackPayload;
+    } catch {
+      return null;
+    }
+  }, [detail?.aiFeedback]);
+
+  // Extract Cloudinary / Submission File URL
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const submissionData = detail?.submissionData as any;
+  const fileUrl = submissionData?.fileUrl || submissionData?.url || null;
 
   const matchScore = detail?.finalScore ?? detail?.aiScore ?? (isCompleted ? 85 : null);
-  // 2026-08-02: extract extra fields from the new BE shape so the UI can
-  //   show the AI evaluation breakdown after submission (general comment,
-  //   strengths/weaknesses, keyword density, red flags, score breakdown,
-  //   uploaded CV file URL, HR note, final result).
-  const aiFeedback = (detail as { aiFeedback?: AiFeedbackPayload | null })?.aiFeedback ?? null;
-  const fileUrl =
-    (detail as { submissionData?: { fileUrl?: string | null } | null })?.submissionData?.fileUrl ??
-    null;
-  const hrNote = (detail as { hrNote?: string | null })?.hrNote ?? null;
-  const finalResult = (detail as { finalResult?: string | null })?.finalResult ?? null;
+
+  const extraMetrics = aiFeedback?.extraMetrics;
+  const keywordDensity = extraMetrics?.["Keyword Density"] || {};
+  const redFlags = extraMetrics?.["Potential Red Flags"] || [];
+  const strengths = aiFeedback?.strengths || [];
+  const weaknesses = aiFeedback?.weaknesses || [];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -136,360 +138,381 @@ export function CvScreeningModule({
         </div>
       </div>
 
-      {/* CV Analyzer Workspace */}
-      <Card className="overflow-hidden border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          {/* Upload Area */}
-          <div className="flex-1 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+      {/* Main Rich CV Screening Workspace Studio (Grid Layout Matching Mockup) */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Left Side (6 Cols): Document Viewer / Upload Dropzone */}
+        <Card className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs lg:col-span-6 dark:border-slate-800/60 dark:bg-slate-900/40">
+          <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                 <FileCheck2 className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  {t("userApplicationhistory.cvUploadTitle")}
+                  Hồ sơ CV Ứng tuyển
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {t("userApplicationhistory.cvUploadFormatHint")}
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {fileUrl ? "Đã nộp & Phân tích AI" : "Hỗ trợ PDF, DOCX (Tối đa 10MB)"}
                 </p>
               </div>
             </div>
 
-            {/* Dropzone */}
-            {!isCompleted && isCurrent && (
-              <div className="relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition-colors hover:border-indigo-400 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-500/50">
-                <input
-                  type="file"
-                  accept=".pdf,.docx,.doc"
-                  onChange={handleFileChange}
-                  className="absolute inset-0 cursor-pointer opacity-0"
+            {fileUrl && (
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-indigo-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60 dark:text-indigo-400">
+                <Download className="h-3.5 w-3.5" />
+                <span>Tải CV</span>
+              </a>
+            )}
+          </div>
+
+          {/* Document Previewer or Dropzone */}
+          {fileUrl ? (
+            <div className="flex-1 space-y-3">
+              <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900/90 shadow-inner dark:border-slate-800">
+                <iframe
+                  src={`${fileUrl}#toolbar=0`}
+                  title="CV Document Preview"
+                  className="h-full w-full border-none"
                 />
-                <Upload className="mb-2 h-8 w-8 text-indigo-500" />
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  {selectedFileName ? (
-                    <span className="text-indigo-600 dark:text-indigo-400">
-                      📄 {selectedFileName}
-                    </span>
-                  ) : (
-                    t(
-                      "userApplicationhistory.dropCvHint",
-                      "Kéo thả file CV vào đây hoặc bấm để chọn file"
-                    )
-                  )}
-                </p>
-                <p className="mt-1 text-[11px] text-slate-400">
-                  {t(
-                    "userApplicationhistory.autoSyncProfile",
-                    "Hoặc sử dụng CV mặc định trong hồ sơ cá nhân"
-                  )}
-                </p>
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-lg bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md hover:bg-black/80">
+                  <ExternalLink className="h-3 w-3" />
+                  <span>Mở tab mới</span>
+                </a>
               </div>
-            )}
-          </div>
-
-          {/* AI Match Score Display (Shows Skeleton if CV is not submitted yet) */}
-          {analyzing ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50/40 p-6 text-center lg:w-56 dark:border-indigo-950/40 dark:bg-indigo-950/20">
-              <Sparkles className="mb-2 h-6 w-6 animate-spin text-indigo-500" />
-              <Skeleton className="mb-2 h-8 w-24 rounded-lg" />
-              <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
-                Đang phân tích CV bằng AI...
-              </span>
-            </div>
-          ) : matchScore !== null ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50/60 p-6 text-center lg:w-56 dark:border-indigo-950/60 dark:bg-indigo-950/30">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                <Sparkles className="h-4 w-4" />
-                <span>{t("userApplicationhistory.cvAiFitScore")}</span>
-              </div>
-              <p className="mt-2 text-4xl font-black text-indigo-600 dark:text-indigo-400">
-                {matchScore}%
-              </p>
-              <p className="mt-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                {t("userApplicationhistory.cvCompatibilityLevel")}
-              </p>
             </div>
           ) : (
-            /* Skeleton Placeholder State when CV is not yet uploaded */
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/60 bg-slate-50/50 p-6 text-center lg:w-56 dark:border-slate-800/60 dark:bg-slate-900/30">
-              <Skeleton className="mb-3 h-4 w-28 rounded-md" />
-              <Skeleton className="mb-2 h-10 w-20 rounded-xl" />
-              <span className="text-[10px] font-medium text-slate-400">
-                Tải CV để kích hoạt Match Score
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Skill Keyword Match Breakdown */}
-        <div className="mt-6 space-y-3 border-t border-slate-100 pt-6 dark:border-slate-800">
-          <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-            {t("userApplicationhistory.cvSkillBreakdown")}
-          </h4>
-
-          {matchScore !== null ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                TypeScript / ReactJS
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                REST API & OpenAPI
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Git & CI/CD Basics
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
-                <AlertCircle className="h-3.5 w-3.5" />
-                Docker & Kubernetes (Cần bổ sung)
-              </span>
-            </div>
-          ) : (
-            /* Skeleton Placeholder Chips when CV is not submitted */
-            <div className="flex flex-wrap items-center gap-2">
-              <Skeleton className="h-7 w-36 rounded-lg" />
-              <Skeleton className="h-7 w-32 rounded-lg" />
-              <Skeleton className="h-7 w-28 rounded-lg" />
-              <Skeleton className="h-7 w-40 rounded-lg" />
-            </div>
-          )}
-        </div>
-
-        {/* Action Button */}
-        {!isCompleted && isCurrent && (
-          <div className="mt-6 flex justify-end">
-            <Button
-              onClick={handleAnalyzeCV}
-              disabled={analyzing}
-              className="h-9.5 gap-2 bg-indigo-600 px-6 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700">
-              {analyzing ? (
-                <>
-                  <Sparkles className="h-4 w-4 animate-spin" />
-                  <span>{t("userApplicationhistory.cvAnalyzeAi")}</span>
-                </>
-              ) : (
-                <>
-                  <FileText className="h-4 w-4" />
-                  <span>{t("userApplicationhistory.cvSubmitAi")}</span>
-                </>
-              )}
-            </Button>
-          </div>
-        )}
-      </Card>
-
-      {/* AI Evaluation Details (only after submission) */}
-      {(aiFeedback || fileUrl || hrNote || finalResult) && (
-        <Card className="space-y-5 border border-indigo-200/70 bg-gradient-to-br from-indigo-50/40 via-white to-sky-50/40 p-6 shadow-xs dark:border-indigo-900/40 dark:from-indigo-950/20 dark:via-slate-900/40 dark:to-sky-950/20">
-          <div className="flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
-              <Sparkles className="h-4 w-4 text-indigo-500" />
-              {t("userApplicationhistory.cvAiEvaluationTitle")}
-            </h3>
-            {finalResult && (
-              <span
-                className={cn(
-                  "rounded-full px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase",
-                  finalResult === "PASSED"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
-                    : finalResult === "FAILED"
-                      ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
-                      : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                )}>
-                {finalResult}
-              </span>
-            )}
-          </div>
-
-          {/* Uploaded CV link */}
-          {fileUrl && (
-            <a
-              href={fileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-              <FileText className="h-3.5 w-3.5" />
-              {t("userApplicationhistory.cvViewSubmittedFile")}
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          )}
-
-          {/* AI General Comment */}
-          {aiFeedback?.generalComment && (
-            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900/40">
-              <h4 className="mb-2 flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                <Lightbulb className="h-3 w-3" />
-                {t("userApplicationhistory.cvAiGeneralComment")}
-              </h4>
-              <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                {aiFeedback.generalComment}
-              </p>
-            </div>
-          )}
-
-          {/* Strengths + Weaknesses */}
-          {(aiFeedback?.strengths?.length || aiFeedback?.weaknesses?.length) && (
-            <div className="grid gap-4 md:grid-cols-2">
-              {aiFeedback?.strengths && aiFeedback.strengths.length > 0 && (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-                  <h4 className="mb-2 flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-emerald-700 uppercase dark:text-emerald-300">
-                    <ThumbsUp className="h-3 w-3" />
-                    {t("userApplicationhistory.cvAiStrengths")}
-                  </h4>
-                  <ul className="space-y-1.5 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                    {aiFeedback.strengths.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-emerald-500" />
-                        <span>{s}</span>
-                      </li>
-                    ))}
-                  </ul>
+            <div className="flex flex-1 flex-col justify-between space-y-4">
+              {!isCompleted && isCurrent && (
+                <div className="relative flex min-h-[300px] flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition-colors hover:border-indigo-400 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-500/50">
+                  <input
+                    type="file"
+                    accept=".pdf,.docx,.doc"
+                    onChange={handleFileChange}
+                    className="absolute inset-0 cursor-pointer opacity-0"
+                  />
+                  <Upload className="mb-3 h-10 w-10 text-indigo-500" />
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {selectedFileName ? (
+                      <span className="font-mono text-sm text-indigo-600 dark:text-indigo-400">
+                        📄 {selectedFileName}
+                      </span>
+                    ) : (
+                      t(
+                        "userApplicationhistory.dropCvHint",
+                        "Kéo thả file CV vào đây hoặc bấm để chọn file"
+                      )
+                    )}
+                  </p>
+                  <p className="mt-1.5 text-[11px] text-slate-400">
+                    {t(
+                      "userApplicationhistory.autoSyncProfile",
+                      "Hoặc sử dụng CV mặc định trong hồ sơ cá nhân"
+                    )}
+                  </p>
                 </div>
               )}
-              {aiFeedback?.weaknesses && aiFeedback.weaknesses.length > 0 && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
-                  <h4 className="mb-2 flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-amber-700 uppercase dark:text-amber-300">
-                    <ThumbsDown className="h-3 w-3" />
-                    {t("userApplicationhistory.cvAiWeaknesses")}
-                  </h4>
-                  <ul className="space-y-1.5 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                    {aiFeedback.weaknesses.map((w, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <AlertCircle className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
-                        <span>{w}</span>
-                      </li>
-                    ))}
-                  </ul>
+
+              {!isCompleted && isCurrent && (
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={handleAnalyzeCV}
+                    disabled={analyzing}
+                    className="h-10 gap-2 bg-indigo-600 px-6 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700">
+                    {analyzing ? (
+                      <>
+                        <Sparkles className="h-4 w-4 animate-spin" />
+                        <span>Đang phân tích CV bằng AI...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-4 w-4" />
+                        <span>Gửi CV & Chấm điểm AI</span>
+                      </>
+                    )}
+                  </Button>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Keyword Density */}
-          {aiFeedback?.extraMetrics?.["Keyword Density"] && (
-            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900/40">
-              <h4 className="mb-3 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {t("userApplicationhistory.cvAiKeywordDensity")}
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(aiFeedback.extraMetrics["Keyword Density"]).map(([kw, count]) => {
-                  const n = typeof count === "number" ? count : 0;
-                  return (
-                    <span
-                      key={kw}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-bold",
-                        n > 0
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300"
-                          : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400"
-                      )}>
-                      {kw}
-                      <span className="font-extrabold tabular-nums">{n}</span>
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Score Breakdown */}
-          {aiFeedback?.extraMetrics && (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                {
-                  label: t("userApplicationhistory.cvAiOverall"),
-                  value: aiFeedback.extraMetrics["Overall CV Match"],
-                  max: 100,
-                },
-                {
-                  label: t("userApplicationhistory.cvAiSkillsMatch"),
-                  value: aiFeedback.extraMetrics["Skills Match Score"],
-                  max: 100,
-                },
-                {
-                  label: t("userApplicationhistory.cvAiReadability"),
-                  value: aiFeedback.extraMetrics["CV Readability Score"],
-                  max: 100,
-                },
-                {
-                  label: t("userApplicationhistory.cvAiEducationMatch"),
-                  value: aiFeedback.extraMetrics["Education Match Score"],
-                  max: 100,
-                },
-                {
-                  label: t("userApplicationhistory.cvAiExperienceMatch"),
-                  value: aiFeedback.extraMetrics["Experience Match Score"],
-                  max: 100,
-                },
-              ]
-                .filter((m) => typeof m.value === "number")
-                .map((m) => {
-                  const v = typeof m.value === "number" ? m.value : 0;
-                  const pct = Math.min(100, Math.max(0, v));
-                  return (
-                    <div
-                      key={m.label}
-                      className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900/40">
-                      <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                        {m.label}
-                      </div>
-                      <div className="mt-1 flex items-baseline gap-1">
-                        <span className="text-xl font-black text-slate-900 tabular-nums dark:text-white">
-                          {v}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-400">/{m.max}</span>
-                      </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                        <div
-                          className={cn(
-                            "h-full rounded-full transition-all",
-                            pct >= 70
-                              ? "bg-emerald-500"
-                              : pct >= 40
-                                ? "bg-amber-500"
-                                : "bg-rose-500"
-                          )}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-
-          {/* Potential Red Flags */}
-          {aiFeedback?.extraMetrics?.["Potential Red Flags"] &&
-            aiFeedback.extraMetrics["Potential Red Flags"].length > 0 && (
-              <div className="rounded-xl border border-rose-200 bg-rose-50/40 p-4 dark:border-rose-900/40 dark:bg-rose-950/20">
-                <h4 className="mb-2 flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-rose-700 uppercase dark:text-rose-300">
-                  <ShieldAlert className="h-3 w-3" />
-                  {t("userApplicationhistory.cvAiRedFlags")}
-                </h4>
-                <ul className="space-y-1.5 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                  {aiFeedback.extraMetrics["Potential Red Flags"].map((flag, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <AlertCircle className="mt-0.5 h-3 w-3 shrink-0 text-rose-500" />
-                      <span>{flag}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-          {/* HR Note */}
-          {hrNote && (
-            <div className="rounded-xl border border-sky-200 bg-sky-50/40 p-4 dark:border-sky-900/40 dark:bg-sky-950/20">
-              <h4 className="mb-1 text-[11px] font-extrabold tracking-wider text-sky-700 uppercase dark:text-sky-300">
-                {t("userApplicationhistory.cvHrNote")}
-              </h4>
-              <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">{hrNote}</p>
             </div>
           )}
         </Card>
-      )}
+
+        {/* Right Side (6 Cols): AI Keyword Visualizer, Gauge Score & Feedback */}
+        <div className="space-y-6 lg:col-span-6">
+          {/* Card 1: Live AI Keyword Matching Visualizer */}
+          <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Live AI Keyword Matching Visualizer</span>
+              </div>
+              <span className="text-[10px] font-semibold text-slate-400">
+                Tỉ lệ xuất hiện kỹ năng
+              </span>
+            </div>
+
+            {Object.keys(keywordDensity).length > 0 ? (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {Object.entries(keywordDensity).map(([kw, count]) => {
+                  const isMatched = count > 0;
+                  return (
+                    <span
+                      key={kw}
+                      className={
+                        isMatched
+                          ? "inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300"
+                          : "inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-500"
+                      }>
+                      {isMatched ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      {kw} {isMatched ? `(${count})` : "(0)"}
+                    </span>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Skeleton className="h-7 w-28 rounded-lg" />
+                <Skeleton className="h-7 w-24 rounded-lg" />
+                <Skeleton className="h-7 w-32 rounded-lg" />
+                <Skeleton className="h-7 w-20 rounded-lg" />
+              </div>
+            )}
+          </Card>
+
+          {/* Card 2: Match Gauge Score Breakdown */}
+          <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Match Gauge Score</span>
+              </div>
+              {detail?.finalResult && (
+                <span
+                  className={
+                    detail.finalResult === "PASSED"
+                      ? "rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                      : "rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-extrabold text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                  }>
+                  {detail.finalResult}
+                </span>
+              )}
+            </div>
+
+            {matchScore !== null ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-12 sm:items-center">
+                {/* Big Score Ring */}
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 text-center sm:col-span-5 dark:border-indigo-950/60 dark:bg-indigo-950/30">
+                  <span className="text-[10px] font-bold text-indigo-600 uppercase dark:text-indigo-400">
+                    MATCH SCORE
+                  </span>
+                  <p className="mt-1 text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                    {matchScore}%
+                  </p>
+                  <span className="mt-0.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                    {matchScore >= 70 ? "Phù hợp Cao (Excellent)" : "Cần Cải Thiện"}
+                  </span>
+                </div>
+
+                {/* Sub-Metrics Progress Bars */}
+                <div className="space-y-2 text-xs sm:col-span-7">
+                  {extraMetrics ? (
+                    <>
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                          <span>Kỹ năng (Skills):</span>
+                          <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                            {extraMetrics["Skills Match Score"] ?? 60}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-indigo-600"
+                            style={{ width: `${extraMetrics["Skills Match Score"] ?? 60}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                          <span>Học vấn (Education):</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                            {extraMetrics["Education Match Score"] ?? 60}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-emerald-500"
+                            style={{ width: `${extraMetrics["Education Match Score"] ?? 60}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                          <span>Trình bày CV (Readability):</span>
+                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                            {extraMetrics["CV Readability Score"] ?? 90}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-blue-500"
+                            style={{ width: `${extraMetrics["CV Readability Score"] ?? 90}%` }}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Skeleton className="h-3 w-full rounded-md" />
+                      <Skeleton className="h-3 w-full rounded-md" />
+                      <Skeleton className="h-3 w-full rounded-md" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/60 bg-slate-50/50 p-6 text-center dark:border-slate-800/60 dark:bg-slate-900/30">
+                <Skeleton className="mb-3 h-4 w-28 rounded-md" />
+                <Skeleton className="mb-2 h-10 w-20 rounded-xl" />
+                <span className="text-[10px] font-medium text-slate-400">
+                  Tải CV để kích hoạt Match Score
+                </span>
+              </div>
+            )}
+          </Card>
+
+          {/* Card 3: AI Assessment & HR Review Notes Accordion */}
+          <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            {/* Tabs Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("overview")}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-colors ${
+                    activeTab === "overview"
+                      ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                  }`}>
+                  Tổng quan AI
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("strengths")}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-colors ${
+                    activeTab === "strengths"
+                      ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                  }`}>
+                  Điểm mạnh & Yếu
+                </button>
+                {redFlags.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("redflags")}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-colors ${
+                      activeTab === "redflags"
+                        ? "bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-400"
+                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                    }`}>
+                    Cảnh báo ({redFlags.length})
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === "overview" && (
+              <div className="space-y-3 text-xs leading-relaxed">
+                <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3.5 text-slate-700 dark:border-slate-800/80 dark:bg-slate-800/40 dark:text-slate-300">
+                  <p className="mb-1 font-semibold text-slate-900 dark:text-white">
+                    🤖 AI General Comment:
+                  </p>
+                  <p>
+                    {aiFeedback?.generalComment ||
+                      "Vui lòng nộp CV để nhận đánh giá chi tiết từ AI."}
+                  </p>
+                </div>
+
+                {detail?.hrNote && (
+                  <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/70 p-3.5 dark:border-indigo-900/50 dark:bg-indigo-950/30">
+                    <p className="mb-0.5 font-bold text-indigo-900 dark:text-indigo-300">
+                      👤 Nhận xét từ Hội đồng HR:
+                    </p>
+                    <p className="text-indigo-800 dark:text-indigo-300">{detail.hrNote}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "strengths" && (
+              <div className="space-y-3 text-xs">
+                {strengths.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="font-bold text-emerald-600 dark:text-emerald-400">
+                      ✓ Điểm mạnh nổi bật:
+                    </p>
+                    <ul className="space-y-1 pl-1 text-slate-700 dark:text-slate-300">
+                      {strengths.map((st, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <span className="font-bold text-emerald-500">•</span>
+                          <span>{st}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {weaknesses.length > 0 && (
+                  <div className="space-y-1.5 border-t border-slate-100 pt-2 dark:border-slate-800">
+                    <p className="font-bold text-amber-600 dark:text-amber-400">
+                      ⚠️ Điểm cần bổ sung & Cải thiện:
+                    </p>
+                    <ul className="space-y-1 pl-1 text-slate-700 dark:text-slate-300">
+                      {weaknesses.map((wk, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <span className="font-bold text-amber-500">•</span>
+                          <span>{wk}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "redflags" && (
+              <div className="space-y-2 text-xs">
+                <p className="flex items-center gap-1 font-bold text-rose-600 dark:text-rose-400">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  <span>Các yếu tố rủi ro tiềm ẩn (Red Flags):</span>
+                </p>
+                <div className="space-y-2">
+                  {redFlags.map((rf, i) => (
+                    <div
+                      key={i}
+                      className="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
+                      {rf}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
