@@ -689,7 +689,6 @@ export function EmailSimulatorModule({
 
           <Button
             onClick={handleSubmit}
-            disabled={submitting}
             className="h-9 gap-2 bg-amber-600 text-xs font-bold text-white hover:bg-amber-500">
             <RefreshCw className="h-3.5 w-3.5" />
             <span>Thử lại lần nữa</span>
@@ -713,7 +712,6 @@ export function EmailSimulatorModule({
 
           <Button
             onClick={handleSubmit}
-            disabled={submitting}
             className="h-9 gap-2 bg-rose-600 text-xs font-bold text-white hover:bg-rose-500">
             <RefreshCw className="h-3.5 w-3.5" />
             <span>Thử gửi lại email khác</span>

@@ -2096,6 +2096,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/candidate-profiles/application/{applicationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy thông tin candidate profile theo application ID */
+        get: operations["getByApplicationId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login-with-google": {
         parameters: {
             query?: never;
@@ -2337,6 +2354,67 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CandidateProfile: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            targetRole?: string;
+            targetLevel?: string;
+            introduction?: string;
+            technicalSkills?: string[];
+            softSkills?: string[];
+            tools?: string[];
+            projects?: components["schemas"]["ProjectDetail"][];
+            workExperiences?: components["schemas"]["WorkExperience"][];
+            educations?: components["schemas"]["EducationEntry"][];
+            certifications?: string[];
+            achievements?: string[];
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        EducationEntry: {
+            school?: string;
+            major?: string;
+            degree?: string;
+            gpa?: string;
+            start_date?: string;
+            end_date?: string;
+        };
+        ProjectDetail: {
+            name?: string;
+            description?: string;
+            role?: string;
+            /** Format: int32 */
+            teamSize?: number;
+            usedTools?: string[];
+            outcome?: string;
+        };
+        User: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            email?: string;
+            password?: string;
+            /** @enum {string} */
+            role?: "MENTOR" | "ADMIN" | "STAFF" | "USER";
+            isActive?: boolean;
+            avatarUrl?: string;
+            public_id?: string;
+            cvUrl?: string;
+            cv_public_id?: string;
+            phone?: string;
+            address?: string;
+            linkedInUrl?: string;
+            githubUrl?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            candidates?: components["schemas"]["CandidateProfile"][];
+        };
         UserResponse: {
             /** Format: int32 */
             id?: number;
@@ -2349,6 +2427,14 @@ export interface components {
             public_id?: string;
             cvUrl?: string;
             cv_public_id?: string;
+            candidates?: components["schemas"]["CandidateProfile"][];
+        };
+        WorkExperience: {
+            company?: string;
+            position?: string;
+            description?: string;
+            start_date?: string;
+            end_date?: string;
         };
         CodeFile: {
             filename?: string;
@@ -2579,28 +2665,6 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
-        User: {
-            /** Format: int32 */
-            id?: number;
-            name?: string;
-            email?: string;
-            password?: string;
-            /** @enum {string} */
-            role?: "MENTOR" | "ADMIN" | "STAFF" | "USER";
-            isActive?: boolean;
-            avatarUrl?: string;
-            public_id?: string;
-            cvUrl?: string;
-            cv_public_id?: string;
-            phone?: string;
-            address?: string;
-            linkedInUrl?: string;
-            githubUrl?: string;
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-        };
         UpdateMentorRequest: {
             name?: string;
             email?: string;
@@ -2818,50 +2882,6 @@ export interface components {
             updatedAt?: string;
             /** Format: date-time */
             deletedAt?: string;
-        };
-        CandidateProfile: {
-            /** Format: int32 */
-            id?: number;
-            user?: components["schemas"]["User"];
-            targetRole?: string;
-            targetLevel?: string;
-            introduction?: string;
-            technicalSkills?: string[];
-            softSkills?: string[];
-            tools?: string[];
-            projects?: components["schemas"]["ProjectDetail"][];
-            workExperiences?: components["schemas"]["WorkExperience"][];
-            educations?: components["schemas"]["EducationEntry"][];
-            certifications?: string[];
-            achievements?: string[];
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-        };
-        EducationEntry: {
-            school?: string;
-            major?: string;
-            degree?: string;
-            gpa?: string;
-            start_date?: string;
-            end_date?: string;
-        };
-        ProjectDetail: {
-            name?: string;
-            description?: string;
-            role?: string;
-            /** Format: int32 */
-            teamSize?: number;
-            usedTools?: string[];
-            outcome?: string;
-        };
-        WorkExperience: {
-            company?: string;
-            position?: string;
-            description?: string;
-            start_date?: string;
-            end_date?: string;
         };
         AiFeedback: {
             generalComment?: string;
@@ -3683,10 +3703,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3698,17 +3718,17 @@ export interface components {
         PageableObject: {
             /** Format: int32 */
             pageNumber?: number;
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3934,10 +3954,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
+            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            applicationName?: string;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -4015,8 +4035,8 @@ export interface components {
             defaultProfiles?: string[];
         };
         FilterRegistration: {
-            urlPatternMappings?: string[];
             servletNameMappings?: string[];
+            urlPatternMappings?: string[];
             initParameters?: {
                 [key: string]: string;
             };
@@ -4034,22 +4054,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            elIgnored?: string;
+            isXml?: string;
+            trimDirectiveWhitespaces?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            trimDirectiveWhitespaces?: string;
-            errorOnUndeclaredNamespace?: string;
             deferredSyntaxAllowedAsLiteral?: string;
-            elIgnored?: string;
-            urlPatterns?: string[];
-            isXml?: string;
+            errorOnUndeclaredNamespace?: string;
             defaultContentType?: string;
+            urlPatterns?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -4073,8 +4093,8 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
+            propagateQueryProperties?: boolean;
             attributesCSV?: string;
             attributesMap?: {
                 [key: string]: unknown;
@@ -4084,12 +4104,17 @@ export interface components {
             };
         };
         ServletContext: {
+            virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            /** Format: int32 */
+            sessionTimeout?: number;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
-            serverInfo?: string;
             /** Format: int32 */
             effectiveMinorVersion?: number;
             servletContextName?: string;
@@ -4100,15 +4125,10 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
+            serverInfo?: string;
             initParameterNames?: unknown;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
-            attributeNames?: unknown;
             contextPath?: string;
+            attributeNames?: unknown;
             classLoader?: {
                 name?: string;
                 registeredAsParallelCapable?: boolean;
@@ -4186,9 +4206,9 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
+            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -4197,8 +4217,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
         AdminOpenJdResponseDto: {
             /** Format: int64 */
@@ -5481,6 +5501,8 @@ export interface operations {
                 "multipart/form-data": {
                     /** @example 1 */
                     userId: string;
+                    /** Format: int64 */
+                    applicationId?: number;
                     /** Format: binary */
                     cvFile?: string;
                 };
@@ -7823,6 +7845,28 @@ export interface operations {
             header?: never;
             path: {
                 userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CandidateProfile"];
+                };
+            };
+        };
+    };
+    getByApplicationId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: number;
             };
             cookie?: never;
         };
