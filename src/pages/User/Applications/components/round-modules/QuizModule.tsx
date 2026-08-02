@@ -14,6 +14,7 @@ import {
   useSubmitQuiz,
   type QuizQuestion,
 } from "@/hooks/useApplicationQuiz";
+import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -51,6 +52,73 @@ interface QuizModuleProps {
   isCompleted: boolean;
   isCurrent: boolean;
   onSuccess?: () => void;
+}
+
+/** Helper component to parse and format question text containing markdown code blocks (```lang ... ```) */
+function FormattedQuestionText({ text, className }: { text: string; className?: string }) {
+  const blocks = useMemo(() => {
+    if (!text) return [];
+    const raw = text.replace(/\\n/g, "\n");
+    const parts = raw.split(/(```[\s\S]*?```)/g);
+
+    const result: { type: "text" | "code"; lang?: string; content: string }[] = [];
+
+    parts.forEach((part) => {
+      if (!part) return;
+      if (part.startsWith("```") && part.endsWith("```")) {
+        const firstNewline = part.indexOf("\n");
+        let lang = "code";
+        let code = "";
+        if (firstNewline !== -1) {
+          lang = part.slice(3, firstNewline).trim() || "code";
+          code = part.slice(firstNewline + 1, -3);
+        } else {
+          code = part.slice(3, -3);
+        }
+        if (code.endsWith("\n")) {
+          code = code.slice(0, -1);
+        }
+        result.push({ type: "code", lang, content: code });
+      } else {
+        result.push({ type: "text", content: part });
+      }
+    });
+
+    return result;
+  }, [text]);
+
+  return (
+    <div className={cn("space-y-3", className)}>
+      {blocks.map((block, idx) => {
+        if (block.type === "code") {
+          return (
+            <div
+              key={idx}
+              className="my-3 overflow-hidden rounded-xl border border-slate-800 bg-[#0F172A] shadow-md">
+              <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-3.5 py-1.5 font-mono text-[11px] font-bold text-slate-400">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="font-mono text-emerald-400 uppercase">
+                    {block.lang || "code"}
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-500 uppercase">CODE SNIPPET</span>
+              </div>
+              <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed whitespace-pre text-emerald-300">
+                <code>{block.content}</code>
+              </pre>
+            </div>
+          );
+        }
+
+        return (
+          <p key={idx} className="leading-relaxed font-normal whitespace-pre-line">
+            {block.content}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 /** Modern Circular Gauge Clock Component */
@@ -610,9 +678,9 @@ export function QuizModule({
 
                 {/* Question Prompt */}
                 <div className="space-y-3">
-                  <h3 className="text-sm leading-relaxed font-bold text-slate-100 md:text-base">
-                    {currentQuestion.questionText}
-                  </h3>
+                  <div className="text-sm leading-relaxed font-bold text-slate-100 md:text-base">
+                    <FormattedQuestionText text={currentQuestion.questionText} />
+                  </div>
                 </div>
 
                 {/* Answer Options List */}
@@ -794,9 +862,10 @@ export function QuizModule({
                         ) : (
                           <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
                         )}
-                        <h5 className="text-xs leading-relaxed font-bold text-slate-100">
-                          Câu {i + 1}: {res.questionText}
-                        </h5>
+                        <div className="flex-1 text-xs leading-relaxed font-bold text-slate-100">
+                          <span className="mr-1 font-extrabold text-indigo-400">Câu {i + 1}:</span>
+                          <FormattedQuestionText text={res.questionText} className="mt-1" />
+                        </div>
                       </div>
                       <span
                         className={`shrink-0 rounded px-2 py-0.5 font-mono text-[10px] font-extrabold ${
