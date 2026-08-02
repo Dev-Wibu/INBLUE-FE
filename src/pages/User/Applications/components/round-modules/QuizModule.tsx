@@ -181,7 +181,7 @@ export function QuizModule({
   const { t } = useTranslation();
 
   // Fetch quiz questions from JD configuration if available
-  const { data: quizConfig } = useQuizConfig(jdId ?? 0, round.id);
+  const { data: quizConfig } = useQuizConfig(jdId ?? 0, round.id ?? 0);
 
   // Resolved list of questions
   const questions: QuizQuestion[] = useMemo(() => {
