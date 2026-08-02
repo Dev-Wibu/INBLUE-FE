@@ -368,6 +368,11 @@ export function EmailSimulatorModule({
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
               <span>SERVER ĐANG QUÉT BACKGROUND</span>
             </span>
+          ) : phase.kind === "EMAIL_RECEIVED" ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+              <UserCheck className="h-3.5 w-3.5 text-indigo-400" />
+              <span>ĐANG CHỜ HR RÀ SOÁT & CHẤM ĐIỂM</span>
+            </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
@@ -828,7 +833,7 @@ export function EmailSimulatorModule({
                   {round.configData?.instruction ||
                     "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng."}
                 </p>
-                <div className="rounded-xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/30 via-slate-950 to-slate-950 p-3.5 text-xs leading-relaxed font-normal whitespace-pre-line text-slate-300">
+                <div className="rounded-xl border border-indigo-500/30 bg-slate-950/90 p-4 text-xs leading-relaxed font-medium whitespace-pre-line text-slate-100 shadow-inner">
                   {round.configData?.evaluationCriteria || "Nội dung tình huống được giao."}
                 </div>
               </div>

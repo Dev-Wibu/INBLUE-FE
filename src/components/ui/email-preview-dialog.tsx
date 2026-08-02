@@ -63,7 +63,7 @@ export function EmailPreviewDialog({
           className={cn(
             "fixed z-50 flex flex-col overflow-hidden border border-slate-800 bg-slate-900/95 text-slate-100 shadow-2xl backdrop-blur-xl transition-all duration-200",
             "inset-2 sm:inset-auto",
-            "sm:top-1/2 sm:left-1/2 sm:h-[88vh] sm:w-full sm:max-w-4xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl",
+            "sm:top-1/2 sm:left-1/2 sm:max-h-[85vh] sm:w-full sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl",
             isFullscreen && [
               "inset-0 !top-0 !left-0 !h-screen !w-screen !max-w-none !-translate-x-0 !-translate-y-0 !rounded-none !border-0",
             ],
