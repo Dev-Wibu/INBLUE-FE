@@ -793,19 +793,46 @@ export function EmailSimulatorModule({
               </Card>
             )}
 
-            {detail?.hrNote && (
-              <Card className="space-y-3 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-md">
-                <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
+            <Card className="space-y-3 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-md">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4 text-indigo-300" />
                   <h4 className="text-xs font-bold tracking-wider text-indigo-300 uppercase">
                     NHẬN XÉT TRỰC TIẾP TỪ HỘI ĐỒNG HR
                   </h4>
                 </div>
+                <span className="text-[10px] font-medium text-slate-400">HR ĐÁNH GIÁ</span>
+              </div>
+
+              {detail?.hrNote ? (
                 <div className="rounded-xl border-l-2 border-indigo-500 bg-slate-950/60 p-3.5 text-sm leading-relaxed text-slate-200 italic">
                   "{detail.hrNote}"
                 </div>
-              </Card>
-            )}
+              ) : (
+                <p className="text-xs leading-relaxed text-slate-400 italic">
+                  Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay
+                  khi HR hoàn tất rà soát).
+                </p>
+              )}
+            </Card>
+
+            <Card className="space-y-3.5 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-5 shadow-md">
+              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
+                <Target className="h-4 w-4 text-indigo-400" />
+                <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
+                  ĐỀ BÀI & TÌNH HUỐNG BAN ĐẦU
+                </h4>
+              </div>
+              <div className="space-y-2.5">
+                <p className="text-xs leading-relaxed font-bold text-slate-100">
+                  {round.configData?.instruction ||
+                    "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng."}
+                </p>
+                <div className="rounded-xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/30 via-slate-950 to-slate-950 p-3.5 text-xs leading-relaxed font-normal whitespace-pre-line text-slate-300">
+                  {round.configData?.evaluationCriteria || "Nội dung tình huống được giao."}
+                </div>
+              </div>
+            </Card>
           </div>
 
           <div className="space-y-5 lg:col-span-5">
@@ -826,10 +853,10 @@ export function EmailSimulatorModule({
                   hasData={true}
                 />
                 <ModernGaugeClock
-                  score={hrScoreVal}
+                  score={detail?.hrScore ?? 0}
                   label="HR Score"
                   color="emerald"
-                  hasData={true}
+                  hasData={detail?.hrScore != null && (detail?.hrScore ?? 0) > 0}
                 />
               </div>
             </Card>
