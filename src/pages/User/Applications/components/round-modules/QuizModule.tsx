@@ -436,9 +436,6 @@ export function QuizModule({
                   />
                   <h4 className="text-xs font-bold text-slate-200">Thời gian làm bài</h4>
                 </div>
-                <span className="font-mono text-[11px] text-slate-400">
-                  {timeLimitMinutes} Phút
-                </span>
               </div>
 
               <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
@@ -524,7 +521,7 @@ export function QuizModule({
                 </div>
 
                 {/* Test Parameters Overview Grid */}
-                <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-950/80 p-4 sm:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-800 bg-slate-950/80 p-4 sm:grid-cols-3">
                   <div className="space-y-1 border-r border-slate-800/80 text-center last:border-r-0">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
                       Số lượng câu
@@ -541,20 +538,12 @@ export function QuizModule({
                       {timeLimitMinutes} Phút
                     </p>
                   </div>
-                  <div className="space-y-1 border-r border-slate-800/80 text-center last:border-r-0">
+                  <div className="space-y-1 text-center">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
                       Điểm sàn đạt
                     </span>
                     <p className="font-mono text-base font-extrabold text-emerald-300">
                       {round.passThreshold ?? 70}/100
-                    </p>
-                  </div>
-                  <div className="space-y-1 text-center">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">
-                      Lần làm bài
-                    </span>
-                    <p className="font-mono text-base font-extrabold text-rose-300">
-                      01 Lần duy nhất
                     </p>
                   </div>
                 </div>
