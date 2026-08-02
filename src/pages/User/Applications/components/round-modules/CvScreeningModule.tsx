@@ -209,23 +209,25 @@ export function CvScreeningModule({
 
   return (
     <div className="space-y-6">
-      {/* Instruction Box */}
-      <div className="space-y-2">
-        <h4 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-          {t("userApplicationhistory.instructionsTitle", "Hướng dẫn làm bài")}
-        </h4>
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-xs leading-relaxed text-slate-700 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A]/90 dark:text-slate-300">
-          {round.configData?.instruction ||
-            t(
-              "userApplicationhistory.cvInstructionDefault",
-              "Hệ thống AI sẽ tự động phân tích CV của bạn để so sánh mức độ phù hợp (Match Score) với yêu cầu tuyển dụng của doanh nghiệp."
-            )}
+      {/* Instruction Box (Only show when NOT completed) */}
+      {!isCompleted && (
+        <div className="space-y-2">
+          <h4 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            {t("userApplicationhistory.instructionsTitle", "Hướng dẫn làm bài")}
+          </h4>
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-xs leading-relaxed text-slate-700 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A]/90 dark:text-slate-300">
+            {round.configData?.instruction ||
+              t(
+                "userApplicationhistory.cvInstructionDefault",
+                "Hệ thống AI sẽ tự động phân tích CV của bạn để so sánh mức độ phù hợp (Match Score) với yêu cầu tuyển dụng của doanh nghiệp."
+              )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* 3-Column Studio Grid Layout (5:4:3 ratio across widescreen container) */}
+      {/* 3 Standalone Column Grid (5:4:3 ratio - Pure Widescreen Studio) */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        {/* Column 1 (Left - 5 Cols): Document Viewer / Upload Dropzone */}
+        {/* Standalone Column 1 (Left - 5 Cols): Document Viewer / Upload Dropzone */}
         <Card className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs lg:col-span-5 dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
             <div className="flex items-center gap-2.5">
@@ -257,7 +259,7 @@ export function CvScreeningModule({
           {/* Document Previewer or Dropzone */}
           {fileUrl ? (
             <div className="flex-1 space-y-3">
-              <div className="relative h-[680px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900/90 shadow-inner dark:border-slate-800">
+              <div className="relative h-[720px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900/90 shadow-inner dark:border-slate-800">
                 <iframe
                   src={`${fileUrl}#toolbar=0`}
                   title="CV Document Preview"
@@ -329,7 +331,7 @@ export function CvScreeningModule({
           )}
         </Card>
 
-        {/* Column 2 (Center - 4 Cols): AI Gauge Score Clock + Keyword Matching + AI Feedback */}
+        {/* Standalone Column 2 (Center - 4 Cols): AI Gauge Score Clock + Keyword Matching + AI Feedback */}
         <div className="space-y-6 lg:col-span-4">
           {/* Card 1: Circular AI Match Score Clock ("Đồng hồ AI") & Sub-scores */}
           <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
@@ -585,7 +587,7 @@ export function CvScreeningModule({
           </Card>
         </div>
 
-        {/* Column 3 (Right - 3 Cols): Enterprise Info & Job Requirements Inspector & FAQ */}
+        {/* Standalone Column 3 (Right - 3 Cols): Enterprise Info & Job Requirements Inspector & FAQ */}
         <div className="space-y-6 lg:col-span-3">
           {/* Card 1: Enterprise Job Context & Requirements Inspector */}
           <Card className="space-y-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">

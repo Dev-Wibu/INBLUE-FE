@@ -411,68 +411,17 @@ export function ApplicationWorkspacePage() {
         {/* Workspace Main Grid */}
         {activeRound ? (
           isCvScreeningRound ? (
-            /* CV Screening Round: 3-Column Widescreen Studio (5:4:3 ratio) */
-            <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-              <div className="border-b border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-[#0F172A]/70">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white shadow-sm">
-                      <RoundIcon className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-extrabold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
-                          {t("userApplicationhistory.round", "Vòng")} {activeRound.roundOrder}
-                        </span>
-                        {isRoundCompleted && (
-                          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                            ✓ {t("userApplicationhistory.completedBadge", "Hoàn thành")}
-                          </span>
-                        )}
-                        {isRoundCurrent && (
-                          <span className="animate-pulse rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                            ▶ {t("userApplicationhistory.currentRoundBadge", "Vòng hiện tại")}
-                          </span>
-                        )}
-                      </div>
-                      <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
-                        {activeRound.roundType
-                          ? t(
-                              `common.roundType.${activeRound.roundType.replace("MENTROR", "MENTOR")}`,
-                              activeRound.name || ""
-                            )
-                          : activeRound.name}
-                      </h2>
-                    </div>
-                  </div>
-
-                  {activeDetail?.finalScore !== undefined && activeDetail?.finalScore !== null && (
-                    <div className="text-right">
-                      <span className="text-[10px] font-semibold text-slate-400 uppercase">
-                        {t("userApplicationhistory.scoreLabel", "Điểm số")}
-                      </span>
-                      <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
-                        {activeDetail.finalScore}
-                        <span className="text-xs font-normal text-slate-400">/100</span>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-6">
-                <RoundWorkspaceDispatcher
-                  round={activeRound}
-                  detail={activeDetail}
-                  applicationId={applicationId}
-                  jdId={app.jdId}
-                  jdInfo={jdInfo}
-                  currentRoundOrder={apiCurrentRoundOrder}
-                  appStatus={app.status}
-                  onRefresh={loadData}
-                />
-              </div>
-            </Card>
+            /* CV Screening Round: Render 3 Standalone Column Containers directly without outer Card wrapper */
+            <RoundWorkspaceDispatcher
+              round={activeRound}
+              detail={activeDetail}
+              applicationId={applicationId}
+              jdId={app.jdId}
+              jdInfo={jdInfo}
+              currentRoundOrder={apiCurrentRoundOrder}
+              appStatus={app.status}
+              onRefresh={loadData}
+            />
           ) : (
             /* Other Rounds: Standard 8:4 Grid */
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
