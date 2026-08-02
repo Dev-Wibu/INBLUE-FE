@@ -73,6 +73,7 @@ export function RoundWorkspaceDispatcher({
           round={round}
           detail={detail}
           applicationId={applicationId}
+          jdInfo={jdInfo}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
           onSuccess={onRefresh}

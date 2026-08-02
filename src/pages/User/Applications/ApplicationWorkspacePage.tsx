@@ -24,6 +24,7 @@ import {
   Lock,
   Mail,
   RotateCw,
+  Send,
   Sparkles,
   UserCheck,
 } from "lucide-react";
@@ -327,6 +328,7 @@ export function ApplicationWorkspacePage() {
   const isCvScreeningRound = activeRound?.roundType?.toUpperCase() === "CV_SCREENING";
   const isEmailSimulatorRound =
     activeRound?.roundType?.toUpperCase() === "EMAIL_SIMULATION" ||
+    activeRound?.roundType?.toUpperCase() === "EMAIL_SIMULATOR" ||
     activeRound?.roundType?.toUpperCase() === "EMAIL";
   const isStandaloneLayout = isCvScreeningRound || isEmailSimulatorRound;
 
@@ -430,112 +432,127 @@ export function ApplicationWorkspacePage() {
             /* Other Rounds: Standard 8:4 Grid */
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
               {/* Main Round Content (Left 8 Cols) */}
-              <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs lg:col-span-8 dark:border-slate-800/60 dark:bg-slate-900/40">
-                {/* Header Vòng thi */}
-                <div className="border-b border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-[#0F172A]/70">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3.5">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white shadow-sm">
-                        <RoundIcon className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-extrabold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
-                            {t("userApplicationhistory.round", "Vòng")} {activeRound.roundOrder}
-                          </span>
-                          {isRoundCompleted && (
-                            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                              ✓ {t("userApplicationhistory.completedBadge", "Hoàn thành")}
-                            </span>
-                          )}
-                          {isRoundCurrent && (
-                            <span className="animate-pulse rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                              ▶ {t("userApplicationhistory.currentRoundBadge", "Vòng hiện tại")}
-                            </span>
-                          )}
-                        </div>
-                        <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
-                          {activeRound.roundType
-                            ? t(
-                                `common.roundType.${activeRound.roundType.replace("MENTROR", "MENTOR")}`,
-                                activeRound.name || ""
-                              )
-                            : activeRound.name}
-                        </h2>
-                      </div>
-                    </div>
-
-                    {activeDetail?.finalScore !== undefined &&
-                      activeDetail?.finalScore !== null && (
-                        <div className="text-right">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase">
-                            {t("userApplicationhistory.scoreLabel", "Điểm số")}
-                          </span>
-                          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
-                            {activeDetail.finalScore}
-                            <span className="text-xs font-normal text-slate-400">/100</span>
-                          </p>
-                        </div>
-                      )}
-                  </div>
+              {isEmailSimulatorRound ? (
+                <div className="space-y-6 lg:col-span-8">
+                  <RoundWorkspaceDispatcher
+                    round={activeRound}
+                    detail={activeDetail}
+                    applicationId={applicationId}
+                    jdId={app.jdId}
+                    jdInfo={jdInfo}
+                    currentRoundOrder={apiCurrentRoundOrder}
+                    appStatus={app.status}
+                    onRefresh={loadData}
+                  />
                 </div>
-
-                {/* Main Interactive Round Workspace Module */}
-                <div className="p-6">
-                  {isRoundLocked ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                      <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
-                        <Lock className="h-7 w-7 text-slate-400" />
+              ) : (
+                <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs lg:col-span-8 dark:border-slate-800/60 dark:bg-slate-900/40">
+                  {/* Header Vòng thi */}
+                  <div className="border-b border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-[#0F172A]/70">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3.5">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white shadow-sm">
+                          <RoundIcon className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-extrabold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
+                              {t("userApplicationhistory.round", "Vòng")} {activeRound.roundOrder}
+                            </span>
+                            {isRoundCompleted && (
+                              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                                ✓ {t("userApplicationhistory.completedBadge", "Hoàn thành")}
+                              </span>
+                            )}
+                            {isRoundCurrent && (
+                              <span className="animate-pulse rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                                ▶ {t("userApplicationhistory.currentRoundBadge", "Vòng hiện tại")}
+                              </span>
+                            )}
+                          </div>
+                          <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
+                            {activeRound.roundType
+                              ? t(
+                                  `common.roundType.${activeRound.roundType.replace("MENTROR", "MENTOR")}`,
+                                  activeRound.name || ""
+                                )
+                              : activeRound.name}
+                          </h2>
+                        </div>
                       </div>
-                      <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
-                        {t(
-                          "userApplicationhistory.roundLockedTitle",
-                          "Vòng thi này chưa được mở khóa"
+
+                      {activeDetail?.finalScore !== undefined &&
+                        activeDetail?.finalScore !== null && (
+                          <div className="text-right">
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase">
+                              {t("userApplicationhistory.scoreLabel", "Điểm số")}
+                            </span>
+                            <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                              {activeDetail.finalScore}
+                              <span className="text-xs font-normal text-slate-400">/100</span>
+                            </p>
+                          </div>
                         )}
-                      </h3>
-                      <p className="mt-1 max-w-md text-xs text-slate-500">
-                        {t("userApplicationhistory.roundLockedHint", {
-                          current: apiCurrentRoundOrder,
-                          defaultValue: `Vui lòng hoàn thành vòng ${apiCurrentRoundOrder} để tiếp tục mở khóa vòng này.`,
-                        })}
-                      </p>
                     </div>
-                  ) : (
-                    <RoundWorkspaceDispatcher
-                      round={activeRound}
-                      detail={activeDetail}
-                      applicationId={applicationId}
-                      jdId={app.jdId}
-                      jdInfo={jdInfo}
-                      currentRoundOrder={apiCurrentRoundOrder}
-                      appStatus={app.status}
-                      onRefresh={loadData}
-                    />
-                  )}
+                  </div>
 
-                  {/* Report CTA when Round is completed */}
-                  {isRoundCompleted && (
-                    <div className="mt-6 flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          navigate(
-                            `/user/application/${applicationId}/round/${activeRound.roundOrder}/result`
-                          )
-                        }
-                        className="h-9 gap-2 border-emerald-300 text-xs font-bold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/40">
-                        <span>
+                  {/* Main Interactive Round Workspace Module */}
+                  <div className="p-6">
+                    {isRoundLocked ? (
+                      <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+                          <Lock className="h-7 w-7 text-slate-400" />
+                        </div>
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
                           {t(
-                            "userApplicationhistory.viewDetailedReport",
-                            "Xem báo cáo phân tích chi tiết"
+                            "userApplicationhistory.roundLockedTitle",
+                            "Vòng thi này chưa được mở khóa"
                           )}
-                        </span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </Card>
+                        </h3>
+                        <p className="mt-1 max-w-md text-xs text-slate-500">
+                          {t("userApplicationhistory.roundLockedHint", {
+                            current: apiCurrentRoundOrder,
+                            defaultValue: `Vui lòng hoàn thành vòng ${apiCurrentRoundOrder} để tiếp tục mở khóa vòng này.`,
+                          })}
+                        </p>
+                      </div>
+                    ) : (
+                      <RoundWorkspaceDispatcher
+                        round={activeRound}
+                        detail={activeDetail}
+                        applicationId={applicationId}
+                        jdId={app.jdId}
+                        jdInfo={jdInfo}
+                        currentRoundOrder={apiCurrentRoundOrder}
+                        appStatus={app.status}
+                        onRefresh={loadData}
+                      />
+                    )}
+
+                    {/* Report CTA when Round is completed */}
+                    {isRoundCompleted && (
+                      <div className="mt-6 flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            navigate(
+                              `/user/application/${applicationId}/round/${activeRound.roundOrder}/result`
+                            )
+                          }
+                          className="h-9 gap-2 border-emerald-300 text-xs font-bold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/40">
+                          <span>
+                            {t(
+                              "userApplicationhistory.viewDetailedReport",
+                              "Xem báo cáo phân tích chi tiết"
+                            )}
+                          </span>
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )}
 
               {/* Rich Sidebar Summary (Right 4 Cols - Rich Multi-Widget System) */}
               <div className="space-y-4 lg:col-span-4">
@@ -645,32 +662,78 @@ export function ApplicationWorkspacePage() {
                   </div>
                 </Card>
 
-                {/* Widget 4: Candidate Q&A & Support */}
-                <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                    <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    <span>Trợ giúp & Giải đáp nhanh</span>
-                  </div>
-                  <div className="space-y-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
-                    <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
-                      <p className="font-bold text-slate-800 dark:text-slate-200">
-                        ⚡ AI chấm điểm mất bao lâu?
-                      </p>
-                      <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-                        Hệ thống tự động chấm điểm và tổng hợp kết quả chỉ trong 30-60 giây.
-                      </p>
+                {/* Widget 4: Candidate Q&A & Support OR Email Instruction */}
+                {isEmailSimulatorRound ? (
+                  <Card className="space-y-3.5 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-md">
+                    <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
+                      <Send className="h-4 w-4 text-indigo-400" />
+                      <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
+                        HƯỚNG DẪN CÁC BƯỚC NỘP BÀI
+                      </h4>
                     </div>
-                    <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
-                      <p className="font-bold text-slate-800 dark:text-slate-200">
-                        🔒 Có được thi lại không?
-                      </p>
-                      <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-                        Mỗi vòng chỉ thực hiện 1 lần duy nhất trừ trường hợp sự cố được nhà tuyển
-                        dụng duyệt cấp lại.
-                      </p>
+
+                    <ol className="space-y-3 text-xs leading-relaxed text-slate-300">
+                      <li className="flex items-start gap-2.5">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
+                          1
+                        </span>
+                        <span>Mở Gmail hoặc Outlook để tiến hành soạn bài.</span>
+                      </li>
+                      <li className="flex items-start gap-2.5">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
+                          2
+                        </span>
+                        <span>
+                          Gửi tới địa chỉ{" "}
+                          <code className="font-mono text-indigo-300">
+                            hanptse184261@fpt.edu.vn
+                          </code>{" "}
+                          và đặt tiêu đề chứa mã{" "}
+                          <code className="font-mono text-amber-300">
+                            [INBLUE-APP-{applicationId}]
+                          </code>
+                          .
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-2.5">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
+                          3
+                        </span>
+                        <span>
+                          Sau khi gửi xong, quay lại màn hình này bấm{" "}
+                          <strong>"Tôi đã gửi email"</strong> để xác nhận. Server sẽ tự động quét
+                          email và trả kết quả.
+                        </span>
+                      </li>
+                    </ol>
+                  </Card>
+                ) : (
+                  <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                      <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span>Trợ giúp & Giải đáp nhanh</span>
                     </div>
-                  </div>
-                </Card>
+                    <div className="space-y-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+                      <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
+                        <p className="font-bold text-slate-800 dark:text-slate-200">
+                          ⚡ AI chấm điểm mất bao lâu?
+                        </p>
+                        <p className="mt-0.5 text-slate-500 dark:text-slate-400">
+                          Hệ thống tự động chấm điểm và tổng hợp kết quả chỉ trong 30-60 giây.
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
+                        <p className="font-bold text-slate-800 dark:text-slate-200">
+                          🔒 Có được thi lại không?
+                        </p>
+                        <p className="mt-0.5 text-slate-500 dark:text-slate-400">
+                          Mỗi vòng chỉ thực hiện 1 lần duy nhất trừ trường hợp sự cố được nhà tuyển
+                          dụng duyệt cấp lại.
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
               </div>
             </div>
           )

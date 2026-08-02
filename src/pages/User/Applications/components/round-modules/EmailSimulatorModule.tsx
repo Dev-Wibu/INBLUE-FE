@@ -2,43 +2,50 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { useEmailSubmission, useEmailSubmissionsForApplication } from "@/hooks/useEmailSubmission";
-import { applicationDetailManager } from "@/services/application-detail.manager";
+import { useEmailSubmission } from "@/hooks/useEmailSubmission";
 import {
+  AlertCircle,
   AlertTriangle,
   ArrowRight,
+  Bold,
   Bot,
   CheckCircle2,
   Copy,
-  ExternalLink,
+  Globe,
   Inbox,
+  Italic,
+  Link2,
+  List,
   Mail,
-  MessageSquareText,
+  Paperclip,
   RefreshCw,
   Send,
+  ShieldCheck,
   Sparkles,
+  Target,
   UserCheck,
+  X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
+import type { JdInfoPayload } from "../RoundWorkspaceDispatcher";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
-type EmailSubmission = components["schemas"]["EmailSubmission"];
 
 interface EmailSimulatorModuleProps {
   round: JdRound;
   detail?: ApplicationDetail;
   applicationId: number;
+  jdInfo?: JdInfoPayload | null;
   isCompleted: boolean;
   isCurrent: boolean;
   onSuccess?: () => void;
 }
 
 const RECRUITER_EMAIL = "hanptse184261@fpt.edu.vn";
-const POLL_TIMEOUT_MS = 5 * 60 * 1000;
 
 type Phase =
   | { kind: "DRAFT" }
@@ -125,6 +132,7 @@ export function EmailSimulatorModule({
   round,
   detail,
   applicationId,
+  jdInfo,
   isCompleted,
   isCurrent,
   onSuccess,
@@ -134,10 +142,14 @@ export function EmailSimulatorModule({
   const [sampleBody, setSampleBody] = useState(
     "Kính gửi Anh/Chị,\n\nEm xin phép phản hồi email của Anh/Chị về vấn đề đang xảy ra...\n\nTrân trọng,\n[Tên của bạn]"
   );
-  const [submitting, setSubmitting] = useState(false);
   const [phase, setPhase] = useState<Phase>({ kind: "DRAFT" });
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewEmailId, setPreviewEmailId] = useState<number | null>(null);
+
+  const [copiedRecipient, setCopiedRecipient] = useState(false);
+  const [copiedSubject, setCopiedSubject] = useState(false);
+  const [popupLaunched, setPopupLaunched] = useState(false);
+  const popupRef = React.useRef<Window | null>(null);
 
   const subjectToken = `[INBLUE-APP-${applicationId}]`;
   const mailtoHref = useMemo(
@@ -146,78 +158,100 @@ export function EmailSimulatorModule({
     [sampleBody, subjectToken]
   );
 
-  const { data: emails = [], dataUpdatedAt } = useEmailSubmissionsForApplication(
-    applicationId,
-    isCurrent || isCompleted
-  );
-
-  const latest = emails[0] as EmailSubmission | undefined;
-
-  useEmailSubmission(previewEmailId ?? 0, previewOpen && previewEmailId != null);
-
+  // 1. Lấy emailSubmissionId trực tiếp từ application detail object (GET /api/application-details/application/{applicationId})
   const emailSubmissionId: number | null =
-    latest?.id ??
+    (detail as { emailSubmissionId?: number | null } | undefined)?.emailSubmissionId ??
     (detail?.submissionData as { emailSubmissionId?: number | null } | undefined)
       ?.emailSubmissionId ??
     null;
 
+  // 2. Nếu emailSubmissionId khác null/undefined, gọi GET /api/email-submissions/{id} để lấy kết quả chi tiết
+  const { data: emailSubmission } = useEmailSubmission(
+    emailSubmissionId ?? 0,
+    emailSubmissionId != null && emailSubmissionId > 0
+  );
+
+  // Auto-fetch email submission for preview modal when opened
+  useEmailSubmission(previewEmailId ?? 0, previewOpen && previewEmailId != null);
+
+  // 3. Tự động poll refetch detail từ parent mỗi 5s nếu candidate đã bấm gửi (WAITING_FOR_FIRST_EMAIL) hoặc đang PENDING
+  useEffect(() => {
+    if (phase.kind !== "WAITING_FOR_FIRST_EMAIL" && phase.kind !== "PENDING") return;
+    const interval = setInterval(() => {
+      onSuccess?.();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [phase.kind, onSuccess]);
+
+  // 4. Cập nhật Phase dựa trên emailSubmissionId, emailSubmission và detail status
   useEffect(() => {
     const detailStatus = detail?.status as string | undefined;
 
+    // Nếu detail đã COMPLETED hoặc AI_EVALUATED
     if (detail && (detailStatus === "AI_EVALUATED" || detailStatus === "COMPLETED")) {
-      if (latest?.status === "IGNORED") {
-        setPhase({
-          kind: "REJECTED",
-          reason: "IGNORED",
-          message: latest.errorMessage || "Email thiếu mã subject",
-        });
+      if (emailSubmission?.status === "IGNORED") {
+        if (phase.kind !== "REJECTED") {
+          setPhase({
+            kind: "REJECTED",
+            reason: "IGNORED",
+            message: emailSubmission.errorMessage || "Email thiếu mã subject",
+          });
+        }
         return;
       }
-      if (latest?.status === "ERROR") {
-        setPhase({
-          kind: "REJECTED",
-          reason: "ERROR",
-          message: latest.errorMessage || "Có lỗi khi chấm email",
-        });
+      if (emailSubmission?.status === "ERROR") {
+        if (phase.kind !== "REJECTED") {
+          setPhase({
+            kind: "REJECTED",
+            reason: "ERROR",
+            message: emailSubmission.errorMessage || "Có lỗi khi chấm email",
+          });
+        }
         return;
       }
-      if (phase.kind !== "EMAIL_RECEIVED") setPhase({ kind: "EMAIL_RECEIVED" });
+      if (phase.kind !== "EMAIL_RECEIVED") {
+        setPhase({ kind: "EMAIL_RECEIVED" });
+      }
       return;
     }
 
-    if (!latest) {
+    // Nếu emailSubmissionId là null (hệ thống chưa ghi nhận/chưa quét được email)
+    if (emailSubmissionId == null) {
       if (phase.kind === "WAITING_FOR_FIRST_EMAIL") return;
       if (phase.kind !== "DRAFT") setPhase({ kind: "DRAFT" });
       return;
     }
-    if (latest.status === "PENDING" || latest.status === "PROCESSED") {
-      if (phase.kind !== "PENDING") setPhase({ kind: "PENDING" });
-    } else if (latest.status === "IGNORED") {
-      setPhase({
-        kind: "REJECTED",
-        reason: "IGNORED",
-        message: latest.errorMessage || "Email thiếu mã subject",
-      });
-    } else if (latest.status === "ERROR") {
-      setPhase({
-        kind: "REJECTED",
-        reason: "ERROR",
-        message: latest.errorMessage || "Có lỗi khi chấm email",
-      });
-    }
-  }, [detail, latest, phase.kind]);
 
-  useEffect(() => {
-    if (phase.kind !== "WAITING_FOR_FIRST_EMAIL" && phase.kind !== "PENDING") return;
-    if (!dataUpdatedAt) return;
-    const remaining = POLL_TIMEOUT_MS - (Date.now() - dataUpdatedAt);
-    if (remaining <= 0) {
-      setPhase({ kind: "POLL_TIMEOUT" });
+    // Khi emailSubmissionId khác null
+    if (!emailSubmission) {
+      if (phase.kind !== "PENDING" && phase.kind !== "EMAIL_RECEIVED") {
+        setPhase({ kind: "PENDING" });
+      }
       return;
     }
-    const id = setTimeout(() => setPhase({ kind: "POLL_TIMEOUT" }), remaining);
-    return () => clearTimeout(id);
-  }, [phase.kind, dataUpdatedAt]);
+
+    if (emailSubmission.status === "PENDING") {
+      if (phase.kind !== "PENDING") setPhase({ kind: "PENDING" });
+    } else if (emailSubmission.status === "PROCESSED") {
+      if (phase.kind !== "EMAIL_RECEIVED") setPhase({ kind: "EMAIL_RECEIVED" });
+    } else if (emailSubmission.status === "IGNORED") {
+      if (phase.kind !== "REJECTED") {
+        setPhase({
+          kind: "REJECTED",
+          reason: "IGNORED",
+          message: emailSubmission.errorMessage || "Email thiếu mã subject",
+        });
+      }
+    } else if (emailSubmission.status === "ERROR") {
+      if (phase.kind !== "REJECTED") {
+        setPhase({
+          kind: "REJECTED",
+          reason: "ERROR",
+          message: emailSubmission.errorMessage || "Có lỗi khi chấm email",
+        });
+      }
+    }
+  }, [detail, emailSubmissionId, emailSubmission, phase.kind]);
 
   const finalScore = detail?.finalScore ?? detail?.aiScore;
   const aiScoreVal = detail?.aiScore ?? finalScore ?? 0;
@@ -236,68 +270,59 @@ export function EmailSimulatorModule({
     | null
     | undefined;
 
-  const renderMetricValue = (
-    v: string | number | boolean | { score?: number; comment?: string; maxScore?: number }
-  ): React.ReactNode => {
-    if (typeof v === "object" && v !== null) {
-      const score = v.score ?? 0;
-      const max = v.maxScore ?? 0;
-      return (
-        <div className="flex flex-col items-end gap-1">
-          <span className="text-sm font-bold text-slate-100">
-            {score}
-            {max > 0 && <span className="ml-1 text-xs font-normal text-slate-400">/{max}</span>}
-          </span>
-          {v.comment && (
-            <span className="max-w-[280px] text-right text-xs leading-snug text-slate-400 italic">
-              {v.comment}
-            </span>
-          )}
-        </div>
-      );
-    }
-    return String(v);
+  const handleSubmit = () => {
+    // Không có submit endpoint — vòng này hoàn toàn dựa vào cronjob server quét email.
+    // Chỉ chuyển phase sang WAITING để app bắt đầu poll trạng thái.
+    toast.success(t("userApplicationhistory.emailSubmitted", "Xác nhận đã gửi email thành công"));
+    setPhase({ kind: "WAITING_FOR_FIRST_EMAIL" });
+    onSuccess?.();
   };
 
-  const handleSubmit = async () => {
-    setSubmitting(true);
-    try {
-      const payload = JSON.stringify({
-        to: RECRUITER_EMAIL,
-        subject: subjectToken,
-        body: sampleBody,
-        sentAt: new Date().toISOString(),
-      });
-      const res = await applicationDetailManager.submit({
-        applicationId,
-        textContent: payload,
-      });
-      if (res.success) {
-        toast.success(
-          t("userApplicationhistory.emailSubmitted", "Xác nhận đã gửi email thành công")
-        );
-        setPhase({ kind: "WAITING_FOR_FIRST_EMAIL" });
-        onSuccess?.();
-      } else {
-        toast.error(res.error || "Gửi yêu cầu xác nhận thất bại");
-      }
-    } catch (err) {
-      console.error("[EmailSimulatorModule] Submit error:", err);
-      toast.error("Có lỗi xảy ra khi xác nhận");
-    } finally {
-      setSubmitting(false);
+  const openGmailPopup = () => {
+    // Chuyển phase sang WAITING để hệ thống bắt đầu poll kết quả từ application detail
+    if (phase.kind === "DRAFT") {
+      setPhase({ kind: "WAITING_FOR_FIRST_EMAIL" });
+      onSuccess?.();
+    }
+    // Đóng popup cũ nếu còn mở
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.focus();
+      return;
+    }
+    const width = 1000;
+    const height = 720;
+    const left = Math.round(window.screenX + (window.outerWidth - width) / 2);
+    const top = Math.round(window.screenY + (window.outerHeight - height) / 2);
+    const features = `width=${width},height=${height},left=${left},top=${top},toolbar=0,menubar=0,scrollbars=1,resizable=1`;
+    const popup = window.open(mailtoHref, "gmail_compose_popup", features);
+    if (popup) {
+      popupRef.current = popup;
+      setPopupLaunched(true);
+      // Poll mỗi 500ms để detect khi user đóng popup
+      const interval = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(interval);
+          setPopupLaunched(false);
+        }
+      }, 500);
     }
   };
 
-  const copyToClipboard = (text: string, label: string) => {
+  const copyToClipboard = (text: string, label: string, type?: "recipient" | "subject") => {
     void navigator.clipboard.writeText(text).then(() => {
       toast.success(t("common.copied", "Đã sao chép") + ` ${label}`);
+      if (type === "recipient") {
+        setCopiedRecipient(true);
+        setTimeout(() => setCopiedRecipient(false), 2000);
+      } else if (type === "subject") {
+        setCopiedSubject(true);
+        setTimeout(() => setCopiedSubject(false), 2000);
+      }
     });
   };
 
   return (
     <div className="space-y-6">
-      {/* 🌟 Single Unified Top Storyline Banner */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
@@ -323,7 +348,6 @@ export function EmailSimulatorModule({
           </div>
         </div>
 
-        {/* Dynamic Action Status Pill */}
         <div className="flex items-center gap-2">
           {detail?.finalResult ? (
             <span
@@ -353,189 +377,277 @@ export function EmailSimulatorModule({
         </div>
       </div>
 
-      {/* 📐 MAIN STUDIO CONTENT (DRAFT MODE) */}
       {phase.kind === "DRAFT" && (
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-          {/* 👈 LEFT COLUMN (45% - lg:col-span-5): Prominent Task Description & Scenario Card */}
-          <div className="space-y-5 lg:col-span-5">
-            {/* PROMINENT TASK & SCENARIO CARD (High Visual Hierarchy & Comfort Reading Measure) */}
-            <Card className="space-y-5 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-6 shadow-md backdrop-blur-md">
-              {/* Task Section */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
-                  <Sparkles className="h-4 w-4 text-indigo-400" />
-                  <h3 className="text-xs font-extrabold tracking-wider text-indigo-300 uppercase">
-                    {t("userApplicationhistory.emailTaskTitle", "ĐỀ BÀI (TASK)")}
-                  </h3>
+          <div className="space-y-4 lg:col-span-4">
+            <Card className="space-y-5 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-5 shadow-lg backdrop-blur-md">
+              <div className="space-y-2 border-b border-slate-800 pb-3.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-400">
+                    TICKET #INC-{applicationId || 892}
+                  </span>
+                  <span className="rounded border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[10px] font-extrabold text-rose-400 uppercase">
+                    HIGH PRIORITY
+                  </span>
+                  <span className="rounded border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-extrabold text-amber-400 uppercase">
+                    CLIENT ESCALATION
+                  </span>
                 </div>
-                <p className="text-sm leading-relaxed font-bold text-slate-100">
+                <h3 className="mt-1 text-sm leading-snug font-bold text-slate-100">
                   {round.configData?.instruction ||
-                    t(
-                      "userApplicationhistory.emailInstructionDefault",
-                      "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng theo đúng chuẩn mực giao tiếp công sở."
-                    )}
-                </p>
+                    "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng theo đúng chuẩn mực giao tiếp công sở."}
+                </h3>
               </div>
 
-              {/* Scenario Section (Notion/Linear Highlight Callout) */}
-              <div className="space-y-2.5 rounded-xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-950 to-slate-950 p-4.5 shadow-inner">
+              <div className="space-y-2.5 rounded-xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-950 to-slate-950 p-4 shadow-inner">
                 <div className="flex items-center gap-2 border-b border-indigo-500/20 pb-2">
-                  <MessageSquareText className="h-4 w-4 text-amber-400" />
-                  <h3 className="text-xs font-extrabold tracking-wider text-amber-300 uppercase">
-                    {t(
-                      "userApplicationhistory.emailScenarioTitle",
-                      "TÌNH HUỐNG GIAO TIẾP CHI TIẾT"
-                    )}
-                  </h3>
+                  <AlertCircle className="h-4 w-4 text-amber-400" />
+                  <span className="text-xs font-extrabold tracking-wider text-amber-300 uppercase">
+                    Tình Huống & Bối Cảnh (Scenario Context)
+                  </span>
                 </div>
-                <div className="space-y-2 text-sm leading-relaxed font-normal whitespace-pre-line text-slate-200">
+                <div className="text-xs leading-relaxed font-normal whitespace-pre-line text-slate-200">
                   {round.configData?.evaluationCriteria ||
-                    t(
-                      "userApplicationhistory.emailInstructionDefault",
-                      "Email từ cấp trên / khách hàng — đóng vai ứng viên phản hồi chuyên nghiệp, đề xuất giải pháp."
-                    )}
+                    "Email từ cấp trên / khách hàng — đóng vai ứng viên phản hồi chuyên nghiệp, đề xuất giải pháp."}
                 </div>
               </div>
-            </Card>
-
-            {/* WORKFLOW STEPS CARD */}
-            <Card className="space-y-3.5 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-md">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-                <Send className="h-4 w-4 text-indigo-400" />
-                <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
-                  HƯỚNG DẪN CÁC BƯỚC NỘP BÀI
-                </h4>
-              </div>
-
-              <ol className="space-y-3 text-xs leading-relaxed text-slate-300">
-                <li className="flex items-start gap-2.5">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
-                    1
-                  </span>
-                  <span>Mở Gmail hoặc Outlook để tiến hành soạn bài.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
-                    2
-                  </span>
-                  <span>
-                    Gửi tới địa chỉ{" "}
-                    <code className="font-mono text-indigo-300">{RECRUITER_EMAIL}</code> và đặt tiêu
-                    đề chứa mã <code className="font-mono text-amber-300">{subjectToken}</code>.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
-                    3
-                  </span>
-                  <span>
-                    Sau khi gửi xong, quay lại màn hình này bấm <strong>"Tôi đã gửi email"</strong>{" "}
-                    để xác nhận. Server sẽ tự động quét email và trả kết quả.
-                  </span>
-                </li>
-              </ol>
             </Card>
           </div>
 
-          {/* 👉 RIGHT COLUMN (55% - lg:col-span-7): Single Unified Workstation Card */}
-          <div className="space-y-5 lg:col-span-7">
-            <Card className="space-y-4 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 via-slate-900/90 to-slate-900/90 p-5 shadow-lg backdrop-blur-md">
+          <div className="space-y-4 lg:col-span-5">
+            <Card className="relative space-y-4 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/20 via-slate-900/95 to-slate-900/95 p-5 shadow-2xl backdrop-blur-md">
               <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-indigo-400" />
-                  <h4 className="text-xs font-extrabold tracking-wider text-indigo-300 uppercase">
-                    KHUNG SOẠN & NỘP EMAIL TRỰC TUYẾN
-                  </h4>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block h-3 w-3 rounded-full bg-rose-500/80" />
+                    <span className="inline-block h-3 w-3 rounded-full bg-amber-500/80" />
+                    <span className="inline-block h-3 w-3 rounded-full bg-emerald-500/80" />
+                  </div>
+                  <span className="text-slate-700 dark:text-slate-600">|</span>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-indigo-400" />
+                    <h4 className="text-xs font-extrabold tracking-wider text-slate-200 uppercase">
+                      KHUNG SOẠN EMAIL
+                    </h4>
+                  </div>
                 </div>
-                <span className="font-mono text-[10px] text-slate-400">Workstation</span>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] font-bold text-emerald-400">
+                  ● Interactive Editor
+                </span>
               </div>
 
-              {/* Unified Headers (To & Subject with Copy Buttons) */}
-              <div className="space-y-2.5">
-                {/* Receiver Row */}
-                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="w-16 text-[10px] font-bold text-slate-400 uppercase">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 shadow-inner">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="w-14 font-mono text-[11px] font-bold text-slate-400 uppercase">
                       Gửi tới:
                     </span>
-                    <code className="truncate font-mono font-bold text-indigo-300">
+                    <code className="truncate font-mono text-xs font-extrabold text-indigo-300">
                       {RECRUITER_EMAIL}
                     </code>
                   </div>
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => copyToClipboard(RECRUITER_EMAIL, "Địa chỉ email")}
-                    className="h-6 gap-1 px-2 text-[10px] font-semibold text-slate-400 hover:text-white">
-                    <Copy className="h-3 w-3" />
-                    <span>Sao chép</span>
+                    onClick={() => copyToClipboard(RECRUITER_EMAIL, "Địa chỉ email", "recipient")}
+                    className="h-7 gap-1.5 px-2.5 text-[11px] font-semibold text-indigo-300 transition-all hover:bg-indigo-950/60 hover:text-white">
+                    {copiedRecipient ? (
+                      <>
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                        <span className="font-bold text-emerald-400">Đã chép</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" />
+                        <span>Sao chép</span>
+                      </>
+                    )}
                   </Button>
                 </div>
 
-                {/* Subject Row */}
-                <div className="flex items-center justify-between rounded-xl border border-amber-500/40 bg-amber-950/30 px-3 py-2 text-xs">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="w-16 text-[10px] font-bold text-amber-400 uppercase">
+                <div className="flex items-center justify-between rounded-xl border border-amber-500/40 bg-amber-950/30 px-3.5 py-2.5 shadow-inner">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="w-14 font-mono text-[11px] font-bold text-amber-400 uppercase">
                       Subject:
                     </span>
-                    <code className="truncate font-mono font-extrabold text-amber-300">
+                    <code className="truncate font-mono text-xs font-black text-amber-300">
                       {subjectToken}
                     </code>
                   </div>
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => copyToClipboard(subjectToken, "Mã subject")}
-                    className="h-6 gap-1 px-2 text-[10px] font-semibold text-amber-300 hover:bg-amber-900/40">
-                    <Copy className="h-3 w-3" />
-                    <span>Sao chép mã</span>
+                    onClick={() => copyToClipboard(subjectToken, "Mã subject", "subject")}
+                    className="h-7 gap-1.5 px-2.5 text-[11px] font-semibold text-amber-300 transition-all hover:bg-amber-900/50">
+                    {copiedSubject ? (
+                      <>
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                        <span className="font-bold text-emerald-400">Đã chép mã</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" />
+                        <span>Sao chép mã</span>
+                      </>
+                    )}
                   </Button>
                 </div>
 
-                {/* Drafter Textarea */}
+                <div className="flex items-center justify-between rounded-t-xl border-x border-t border-slate-800 bg-slate-950/90 px-3 py-1.5 text-slate-400">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-semibold text-slate-300">Sans Serif</span>
+                    <span className="text-slate-600">|</span>
+                    <Bold className="h-3.5 w-3.5 cursor-pointer hover:text-slate-200" />
+                    <Italic className="h-3.5 w-3.5 cursor-pointer hover:text-slate-200" />
+                    <List className="h-3.5 w-3.5 cursor-pointer hover:text-slate-200" />
+                    <Link2 className="h-3.5 w-3.5 cursor-pointer hover:text-slate-200" />
+                    <Paperclip className="h-3.5 w-3.5 cursor-pointer hover:text-slate-200" />
+                  </div>
+                  <span className="font-mono text-[10px] text-slate-500">Live Draft</span>
+                </div>
+
                 <Textarea
-                  rows={12}
+                  rows={13}
                   value={sampleBody}
                   onChange={(e) => setSampleBody(e.target.value)}
                   disabled={isCompleted || !isCurrent}
-                  className="resize-y rounded-xl border-slate-800 bg-slate-950 font-sans text-xs leading-relaxed text-slate-200 focus:border-indigo-500"
+                  className="resize-y rounded-t-none rounded-b-xl border-x border-b border-slate-800 bg-slate-950 font-sans text-xs leading-relaxed text-slate-200 shadow-inner focus:border-indigo-500"
                 />
               </div>
 
-              {/* Bottom Action Row */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
-                <a
-                  href={mailtoHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  <span>Mở Gmail với nội dung mẫu</span>
-                </a>
-
+              <div className="flex items-center justify-end border-t border-slate-800/80 pt-4">
                 <Button
-                  onClick={handleSubmit}
-                  disabled={submitting || isCompleted || !isCurrent}
-                  className="h-9 gap-2 bg-indigo-600 px-5 text-xs font-bold text-white shadow-md hover:bg-indigo-500">
-                  {submitting ? (
-                    <>
-                      <Sparkles className="h-3.5 w-3.5 animate-spin" />
-                      <span>Đang xác nhận...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-3.5 w-3.5" />
-                      <span>Tôi đã gửi email</span>
-                    </>
-                  )}
+                  onClick={openGmailPopup}
+                  disabled={isCompleted || !isCurrent}
+                  className="h-9 gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 px-6 text-xs font-bold text-white shadow-lg transition-all hover:from-indigo-500 hover:to-blue-500">
+                  <Globe className="h-3.5 w-3.5" />
+                  <span>Mở Gmail</span>
                 </Button>
+              </div>
+            </Card>
+          </div>
+
+          {/* 👉 RIGHT SIDEBAR (25% - lg:col-span-3): Unified Assessment Guide & Profile */}
+          <div className="space-y-4 lg:col-span-3">
+            {/* Card 1: Executive Profile Card */}
+            <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-br from-slate-900/90 via-indigo-950/20 to-slate-900/90 p-4 shadow-md backdrop-blur-md">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+                <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                  VỊ TRÍ ỨNG TUYỂN
+                </span>
+                <span className="rounded bg-indigo-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold text-indigo-400">
+                  #APP-{applicationId}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 pt-0.5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-indigo-500/20 bg-slate-950 shadow-inner">
+                  {jdInfo?.logoUrl ? (
+                    <img
+                      src={jdInfo.logoUrl}
+                      alt={jdInfo.companyName || "Logo"}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs font-extrabold text-indigo-400">
+                      {jdInfo?.companyName?.slice(0, 2).toUpperCase() ?? "CO"}
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-extrabold text-slate-100">
+                    {jdInfo?.companyName ?? "Công ty"}
+                  </p>
+                  <p className="mt-0.5 truncate text-[11px] font-semibold text-indigo-300">
+                    {jdInfo?.title ?? "Vị trí ứng tuyển"}
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Card 2: Unified Rules & Stepper Guide */}
+            <Card className="space-y-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-indigo-400" />
+                  <h4 className="text-xs font-extrabold tracking-wider text-slate-200 uppercase">
+                    THÔNG TIN & QUY ĐỊNH
+                  </h4>
+                </div>
+                <span className="flex items-center gap-1 font-mono text-[10px] font-bold text-emerald-400">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                  IMAP Live
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-slate-800/80 bg-slate-950/70 p-2.5">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase">
+                    THỜI GIAN
+                  </span>
+                  <span className="mt-1 block text-xs font-extrabold text-slate-200">
+                    Không giới hạn
+                  </span>
+                </div>
+                <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 p-2.5">
+                  <span className="block text-[10px] font-bold text-amber-400 uppercase">
+                    LƯỢT NỘP
+                  </span>
+                  <span className="mt-1 block text-xs font-extrabold text-amber-300">
+                    1 lần duy nhất
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-3 border-t border-slate-800/80 pt-3.5">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                  <Send className="h-3.5 w-3.5 text-indigo-400" />
+                  <span className="tracking-wider uppercase">BƯỚC THỰC HIỆN NỘP BÀI</span>
+                </div>
+
+                <div className="relative space-y-3.5 pl-5 before:absolute before:top-2 before:bottom-2 before:left-2 before:w-0.5 before:bg-slate-800">
+                  <div className="relative">
+                    <span className="absolute top-0.5 -left-5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 font-mono text-[9px] font-bold text-white ring-4 ring-slate-900">
+                      1
+                    </span>
+                    <p className="text-xs leading-relaxed font-medium text-slate-200">
+                      Soạn email từ <strong>Gmail</strong> hoặc <strong>Outlook</strong> cá nhân.
+                    </p>
+                  </div>
+
+                  <div className="relative">
+                    <span className="absolute top-0.5 -left-5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 font-mono text-[9px] font-bold text-white ring-4 ring-slate-900">
+                      2
+                    </span>
+                    <div className="space-y-1 text-xs leading-relaxed font-medium text-slate-200">
+                      <p>
+                        Gửi tới{" "}
+                        <code className="font-mono font-bold text-indigo-300">
+                          {RECRUITER_EMAIL}
+                        </code>
+                      </p>
+                      <p className="text-[11px] text-slate-400">
+                        Tiêu đề chứa mã{" "}
+                        <code className="font-mono font-bold text-amber-300">{subjectToken}</code>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <span className="absolute top-0.5 -left-5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 font-mono text-[9px] font-bold text-white ring-4 ring-slate-900">
+                      3
+                    </span>
+                    <p className="text-xs leading-relaxed font-medium text-slate-200">
+                      Bấm nút <strong>"Mở Gmail"</strong> để soạn & gửi mail. Hệ thống sẽ tự động
+                      chấm điểm khi nhận mail.
+                    </p>
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
         </div>
       )}
 
-      {/* 📡 BACKGROUND SCHEDULER POLLING STATE (WAITING / PENDING) */}
       {(phase.kind === "WAITING_FOR_FIRST_EMAIL" || phase.kind === "PENDING") && (
         <Card className="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-amber-950/30 to-slate-900 p-6 shadow-xl backdrop-blur-md">
           <div className="flex flex-col items-center justify-center space-y-4 py-6 text-center">
@@ -556,7 +668,6 @@ export function EmailSimulatorModule({
               </p>
             </div>
 
-            {/* Stepper Progress */}
             <div className="flex items-center justify-center gap-2 pt-4 text-xs font-semibold">
               <span className="flex items-center gap-1 text-emerald-400">
                 <CheckCircle2 className="h-4 w-4" /> 1. Đã xác nhận gửi
@@ -572,7 +683,6 @@ export function EmailSimulatorModule({
         </Card>
       )}
 
-      {/* WATCHDOG TIMEOUT STATE */}
       {phase.kind === "POLL_TIMEOUT" && (
         <Card className="space-y-4 rounded-2xl border border-amber-500/50 bg-amber-950/30 p-5 shadow-lg">
           <div className="flex items-start gap-3">
@@ -599,7 +709,6 @@ export function EmailSimulatorModule({
         </Card>
       )}
 
-      {/* REJECTED / ERROR STATE */}
       {phase.kind === "REJECTED" && (
         <Card className="space-y-4 rounded-2xl border border-rose-500/50 bg-rose-950/30 p-5 shadow-lg">
           <div className="flex items-start gap-3">
@@ -624,12 +733,9 @@ export function EmailSimulatorModule({
         </Card>
       )}
 
-      {/* 📊 RESULT STATE (EMAIL_RECEIVED / AI_EVALUATED) */}
       {phase.kind === "EMAIL_RECEIVED" && (
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-          {/* 🧠 LEFT NARRATIVE COLUMN (60% - lg:col-span-7) */}
           <div className="space-y-5 lg:col-span-7">
-            {/* AI Executive Summary Card */}
             <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-lg backdrop-blur-md">
               <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
                 <div className="flex items-center gap-2">
@@ -649,7 +755,6 @@ export function EmailSimulatorModule({
               </p>
             </Card>
 
-            {/* Strengths */}
             {aiFeedback?.strengths && aiFeedback.strengths.length > 0 && (
               <Card className="space-y-3 rounded-2xl border border-emerald-500/30 bg-slate-900/80 p-5 shadow-md">
                 <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
@@ -669,7 +774,6 @@ export function EmailSimulatorModule({
               </Card>
             )}
 
-            {/* Weaknesses */}
             {aiFeedback?.weaknesses && aiFeedback.weaknesses.length > 0 && (
               <Card className="space-y-3 rounded-2xl border border-amber-500/30 bg-slate-900/80 p-5 shadow-md">
                 <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
@@ -689,7 +793,6 @@ export function EmailSimulatorModule({
               </Card>
             )}
 
-            {/* HR Note */}
             {detail?.hrNote && (
               <Card className="space-y-3 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-md">
                 <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
@@ -705,9 +808,7 @@ export function EmailSimulatorModule({
             )}
           </div>
 
-          {/* 📊 RIGHT ANALYTICS COLUMN (40% - lg:col-span-5) */}
           <div className="space-y-5 lg:col-span-5">
-            {/* Dual Gauge Score Clocks */}
             <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
@@ -733,7 +834,6 @@ export function EmailSimulatorModule({
               </div>
             </Card>
 
-            {/* Candidate Sent Email Viewer Card */}
             <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                 <div className="flex items-center gap-2">
@@ -756,40 +856,104 @@ export function EmailSimulatorModule({
                 </Button>
               </div>
 
-              {latest && (
+              {emailSubmission && (
                 <div className="space-y-1.5 text-xs">
                   <div className="flex items-baseline gap-2">
                     <span className="w-12 text-[10px] font-bold text-slate-400 uppercase">
                       From:
                     </span>
-                    <span className="truncate font-mono text-slate-200">{latest.senderEmail}</span>
+                    <span className="truncate font-mono text-slate-200">
+                      {emailSubmission.senderEmail}
+                    </span>
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="w-12 text-[10px] font-bold text-slate-400 uppercase">
                       Subject:
                     </span>
                     <span className="truncate font-mono font-bold text-amber-300">
-                      {latest.subject}
+                      {emailSubmission.subject}
                     </span>
                   </div>
                 </div>
               )}
             </Card>
 
-            {/* Extra Criteria Matrix */}
             {aiFeedback?.extraMetrics && Object.keys(aiFeedback.extraMetrics).length > 0 && (
-              <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
-                <span className="block border-b border-slate-800 pb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                  Tiêu chí chấm điểm chi tiết
-                </span>
+              <Card className="space-y-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-indigo-400" />
+                    <h4 className="text-xs font-extrabold tracking-wider text-slate-200 uppercase">
+                      TIÊU CHÍ CHẤM ĐIỂM CHI TIẾT
+                    </h4>
+                  </div>
+                  <span className="rounded bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-400">
+                    {Object.keys(aiFeedback.extraMetrics).length} Tiêu chí
+                  </span>
+                </div>
 
-                <div className="divide-y divide-slate-800 text-xs">
-                  {Object.entries(aiFeedback.extraMetrics).map(([k, v]) => (
-                    <div key={k} className="flex items-start justify-between py-2">
-                      <span className="font-medium text-slate-300">{k}</span>
-                      {renderMetricValue(v)}
-                    </div>
-                  ))}
+                <div className="space-y-3">
+                  {Object.entries(aiFeedback.extraMetrics).map(([key, val]) => {
+                    if (typeof val === "object" && val !== null) {
+                      const score = val.score ?? 0;
+                      const maxScore = val.maxScore ?? 0;
+                      const comment = val.comment;
+                      const pct =
+                        maxScore > 0
+                          ? Math.min(100, Math.max(0, Math.round((score / maxScore) * 100)))
+                          : 0;
+
+                      let badgeStyle = "border-indigo-500/30 bg-indigo-500/10 text-indigo-300";
+                      let barStyle = "bg-gradient-to-r from-indigo-500 to-blue-500";
+
+                      if (pct >= 80) {
+                        badgeStyle = "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
+                        barStyle = "bg-gradient-to-r from-emerald-500 to-teal-400";
+                      } else if (pct < 50) {
+                        badgeStyle = "border-amber-500/30 bg-amber-500/10 text-amber-300";
+                        barStyle = "bg-gradient-to-r from-amber-500 to-rose-500";
+                      }
+
+                      return (
+                        <div
+                          key={key}
+                          className="space-y-2 rounded-xl border border-slate-800/80 bg-slate-950/70 p-3 shadow-inner">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-slate-100">{key}</span>
+                            <span
+                              className={`rounded-md border px-2 py-0.5 font-mono text-xs font-extrabold ${badgeStyle}`}>
+                              {score}
+                              {maxScore > 0 ? `/${maxScore}` : ""}
+                            </span>
+                          </div>
+
+                          {maxScore > 0 && (
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-900">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${barStyle}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          )}
+
+                          {comment && (
+                            <p className="text-[11px] leading-relaxed text-slate-300">{comment}</p>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-950/70 p-3">
+                        <span className="text-xs font-bold text-slate-100">{key}</span>
+                        <span className="font-mono text-xs font-semibold text-slate-300">
+                          {String(val)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </Card>
             )}
@@ -797,15 +961,45 @@ export function EmailSimulatorModule({
         </div>
       )}
 
+      {/* 🌐 Gmail Popup Active Banner */}
+      {popupLaunched && (
+        <div className="animate-in slide-in-from-bottom-4 fixed bottom-6 left-1/2 z-50 -translate-x-1/2 duration-300">
+          <div className="flex items-center gap-4 rounded-2xl border border-emerald-500/30 bg-slate-900/95 px-5 py-3.5 shadow-2xl ring-1 shadow-slate-950/60 ring-emerald-500/20 backdrop-blur-xl">
+            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/20" />
+              <Globe className="h-5 w-5 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-100">Gmail đang mở trong cửa sổ riêng</p>
+              <p className="mt-0.5 text-[11px] text-slate-400">
+                Hãy gửi email từ Gmail. Hệ thống sẽ tự động nhận diện và cập nhật kết quả.
+              </p>
+            </div>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => {
+                popupRef.current?.close();
+                setPopupLaunched(false);
+              }}
+              className="ml-2 h-7 w-7 shrink-0 text-slate-400 hover:bg-slate-800 hover:text-white">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Email Preview Modal */}
-      <EmailPreviewDialog
-        open={previewOpen}
-        onOpenChange={(open) => {
-          setPreviewOpen(open);
-          if (!open) setPreviewEmailId(null);
-        }}
-        emailSubmissionId={previewEmailId}
-      />
+      {previewEmailId != null && (
+        <EmailPreviewDialog
+          open={previewOpen}
+          onOpenChange={(open) => {
+            setPreviewOpen(open);
+            if (!open) setPreviewEmailId(null);
+          }}
+          emailSubmissionId={previewEmailId}
+        />
+      )}
     </div>
   );
 }

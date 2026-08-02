@@ -3678,15 +3678,15 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3934,10 +3934,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             /** Format: int64 */
             startupDate?: number;
+            applicationName?: string;
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -4015,8 +4015,8 @@ export interface components {
             defaultProfiles?: string[];
         };
         FilterRegistration: {
-            servletNameMappings?: string[];
             urlPatternMappings?: string[];
+            servletNameMappings?: string[];
             initParameters?: {
                 [key: string]: string;
             };
@@ -4038,17 +4038,17 @@ export interface components {
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            trimDirectiveWhitespaces?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            isXml?: string;
+            trimDirectiveWhitespaces?: string;
+            errorOnUndeclaredNamespace?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
             elIgnored?: string;
             urlPatterns?: string[];
+            isXml?: string;
             defaultContentType?: string;
             buffer?: string;
         };
@@ -4075,22 +4075,21 @@ export interface components {
             hosts?: string[];
             propagateQueryProperties?: boolean;
             redirectView?: boolean;
+            attributesCSV?: string;
             attributesMap?: {
                 [key: string]: unknown;
             };
-            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
         };
         ServletContext: {
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
+            serverInfo?: string;
             /** Format: int32 */
             effectiveMinorVersion?: number;
             servletContextName?: string;
@@ -4101,14 +4100,15 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            initParameterNames?: unknown;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
-            initParameterNames?: unknown;
-            contextPath?: string;
             attributeNames?: unknown;
+            contextPath?: string;
             classLoader?: {
                 name?: string;
                 registeredAsParallelCapable?: boolean;
