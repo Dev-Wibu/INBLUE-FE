@@ -23,6 +23,7 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  Copy,
   Flag,
   HelpCircle,
   Layers,
@@ -36,7 +37,7 @@ import {
   UserCheck,
   XCircle,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
@@ -52,6 +53,158 @@ interface QuizModuleProps {
   isCompleted: boolean;
   isCurrent: boolean;
   onSuccess?: () => void;
+}
+
+/** Executive VS Code Dark Theme Code Block with Syntax Tokenizer & Copy Button */
+function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    void navigator.clipboard.writeText(code);
+    setCopied(true);
+    toast.success("Đã sao chép mã nguồn!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const normalizedLang = (lang || "code").toLowerCase();
+
+  const langBadgeStyle =
+    normalizedLang === "java" || normalizedLang === "cpp"
+      ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+      : normalizedLang === "php"
+        ? "border-purple-500/30 bg-purple-500/10 text-purple-300"
+        : normalizedLang === "js" ||
+            normalizedLang === "javascript" ||
+            normalizedLang === "ts" ||
+            normalizedLang === "typescript"
+          ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
+          : normalizedLang === "python"
+            ? "border-blue-500/30 bg-blue-500/10 text-blue-300"
+            : normalizedLang === "sql"
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+              : "border-indigo-500/30 bg-indigo-500/10 text-indigo-300";
+
+  const lines = code.split("\n");
+
+  return (
+    <div className="my-4 overflow-hidden rounded-xl border border-indigo-500/20 bg-slate-950/95 shadow-xl backdrop-blur-md">
+      {/* IDE Code Header */}
+      <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/90 px-4 py-2 text-xs">
+        <div className="flex items-center gap-2.5">
+          {/* Mac window dots */}
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-500/80" />
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
+          </div>
+          <span
+            className={`rounded-md border px-2 py-0.5 font-mono text-[10px] font-extrabold uppercase ${langBadgeStyle}`}>
+            {lang || "code"}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-[11px] font-semibold text-slate-400 transition-colors hover:border-slate-700 hover:text-slate-200">
+          {copied ? (
+            <>
+              <Check className="h-3 w-3 text-emerald-400" />
+              <span className="text-emerald-400">Đã chép</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3 w-3" />
+              <span>Sao chép code</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Syntax Highlighted Lines Table */}
+      <div className="overflow-x-auto p-4 font-mono text-xs leading-relaxed">
+        <div className="table w-full">
+          {lines.map((line, lineIdx) => {
+            const tokenRegex =
+              /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\/\/.*|@[A-Za-z0-9_]+|\b(?:public|private|protected|class|interface|enum|static|final|void|int|double|float|long|boolean|char|String|byte|short|return|if|else|for|while|do|switch|case|break|continue|new|this|super|import|package|try|catch|finally|throw|throws|const|let|var|function|async|await|select|from|where|join|insert|update|delete|group|by|order|having)\b|\b\d+\b|\b[A-Za-z_][A-Za-z0-9_]*(?=\s*\())/g;
+
+            const parts: React.ReactNode[] = [];
+            let lastIndex = 0;
+            let match: RegExpExecArray | null;
+
+            while ((match = tokenRegex.exec(line)) !== null) {
+              if (match.index > lastIndex) {
+                parts.push(line.substring(lastIndex, match.index));
+              }
+
+              const token = match[0];
+
+              if (token.startsWith('"') || token.startsWith("'")) {
+                parts.push(
+                  <span key={match.index} className="text-emerald-300">
+                    {token}
+                  </span>
+                );
+              } else if (token.startsWith("@")) {
+                parts.push(
+                  <span key={match.index} className="font-bold text-amber-400">
+                    {token}
+                  </span>
+                );
+              } else if (token.startsWith("//")) {
+                parts.push(
+                  <span key={match.index} className="text-slate-500 italic">
+                    {token}
+                  </span>
+                );
+              } else if (/^\d+$/.test(token)) {
+                parts.push(
+                  <span key={match.index} className="font-bold text-cyan-300">
+                    {token}
+                  </span>
+                );
+              } else if (
+                /^[A-Za-z_][A-Za-z0-9_]*$/.test(token) &&
+                line
+                  .substring(match.index + token.length)
+                  .trim()
+                  .startsWith("(")
+              ) {
+                parts.push(
+                  <span key={match.index} className="font-semibold text-sky-300">
+                    {token}
+                  </span>
+                );
+              } else {
+                parts.push(
+                  <span key={match.index} className="font-bold text-purple-400">
+                    {token}
+                  </span>
+                );
+              }
+
+              lastIndex = tokenRegex.lastIndex;
+            }
+
+            if (lastIndex < line.length) {
+              parts.push(line.substring(lastIndex));
+            }
+
+            return (
+              <div key={lineIdx} className="table-row">
+                <span className="table-cell border-r border-slate-800/60 pr-4 text-right font-mono text-[11px] text-slate-600 select-none">
+                  {lineIdx + 1}
+                </span>
+                <span className="table-cell pl-4 font-mono text-xs text-slate-200">
+                  {parts.length > 0 ? parts : " "}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /** Helper component to parse and format question text containing markdown code blocks (```lang ... ```) */
@@ -91,24 +244,7 @@ function FormattedQuestionText({ text, className }: { text: string; className?: 
     <div className={cn("space-y-3", className)}>
       {blocks.map((block, idx) => {
         if (block.type === "code") {
-          return (
-            <div
-              key={idx}
-              className="my-3 overflow-hidden rounded-xl border border-slate-800 bg-[#0F172A] shadow-md">
-              <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-3.5 py-1.5 font-mono text-[11px] font-bold text-slate-400">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                  <span className="font-mono text-emerald-400 uppercase">
-                    {block.lang || "code"}
-                  </span>
-                </div>
-                <span className="text-[10px] text-slate-500 uppercase">CODE SNIPPET</span>
-              </div>
-              <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed whitespace-pre text-emerald-300">
-                <code>{block.content}</code>
-              </pre>
-            </div>
-          );
+          return <CodeBlockView key={idx} code={block.content} lang={block.lang} />;
         }
 
         return (
