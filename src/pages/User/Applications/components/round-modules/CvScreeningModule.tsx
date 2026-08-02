@@ -17,7 +17,7 @@ import {
   UserCheck,
   XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
@@ -172,6 +172,7 @@ export function CvScreeningModule({
   onSuccess,
 }: CvScreeningModuleProps) {
   const { t } = useTranslation();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -246,9 +247,22 @@ export function CvScreeningModule({
     }
   };
 
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (!selectedFile && !selectedFileName) {
+      // Open file browser if no file selected yet
+      fileInputRef.current?.click();
+    } else {
+      // Analyze CV if file is selected
+      handleAnalyzeCV();
+    }
+  };
+
   const handleAnalyzeCV = async () => {
     if (!selectedFile && !selectedFileName) {
-      toast.error(t("userApplicationhistory.selectCvFirst", "Vui lòng chọn file CV để tải lên"));
+      fileInputRef.current?.click();
       return;
     }
 
@@ -389,6 +403,7 @@ export function CvScreeningModule({
                 {!isCompleted && isCurrent ? (
                   <div className="relative flex min-h-[300px] w-full flex-1 flex-col items-center justify-center">
                     <input
+                      ref={fileInputRef}
                       type="file"
                       accept=".pdf,.docx,.doc"
                       onChange={handleFileChange}
@@ -412,14 +427,15 @@ export function CvScreeningModule({
                     </p>
                     <Button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleAnalyzeCV();
-                      }}
+                      onClick={handleButtonClick}
                       disabled={analyzing}
                       className="relative z-10 mt-4 h-9 gap-2 bg-indigo-600 px-5 text-xs font-bold text-white hover:bg-indigo-700">
-                      {analyzing ? (
+                      {!selectedFileName ? (
+                        <>
+                          <Upload className="h-3.5 w-3.5" />
+                          <span>Chọn file CV để nộp</span>
+                        </>
+                      ) : analyzing ? (
                         <>
                           <Sparkles className="h-3.5 w-3.5 animate-spin" />
                           <span>Đang chấm AI...</span>
