@@ -6,12 +6,10 @@ import {
   AlertTriangle,
   BadgeCheck,
   CheckCircle2,
-  Clock,
   Download,
   ExternalLink,
   FileCheck2,
   FileText,
-  HelpCircle,
   Sparkles,
   Tag,
   Upload,
@@ -89,42 +87,67 @@ function CompanyAvatar({
   );
 }
 
-/** Circular AI Match Score Clock ("Đồng hồ AI") */
-function CircularMatchGauge({ score }: { score: number }) {
-  const radius = 52;
+/** Perfectly Centered Circular SVG Gauge Clock Component */
+function CircularGaugeClock({
+  score,
+  label,
+  color = "indigo",
+}: {
+  score: number;
+  label: string;
+  color?: "indigo" | "emerald";
+}) {
+  const radius = 46;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
+  const strokeDashoffset =
+    circumference - (Math.min(100, Math.max(0, score)) / 100) * circumference;
+
+  const colorStyles =
+    color === "emerald"
+      ? {
+          ring: "text-emerald-500 dark:text-emerald-400",
+          text: "text-emerald-600 dark:text-emerald-400",
+          bg: "border-emerald-200/60 bg-emerald-50/50 dark:border-emerald-950/60 dark:bg-emerald-950/20",
+        }
+      : {
+          ring: "text-indigo-600 dark:text-indigo-400",
+          text: "text-indigo-600 dark:text-indigo-400",
+          bg: "border-indigo-200/60 bg-indigo-50/50 dark:border-indigo-950/60 dark:bg-indigo-950/20",
+        };
 
   return (
-    <div className="relative flex flex-col items-center justify-center py-2">
-      <svg className="h-36 w-36 -rotate-90 transform">
-        <circle
-          cx="72"
-          cy="72"
-          r={radius}
-          stroke="currentColor"
-          strokeWidth="10"
-          className="text-slate-100 dark:text-slate-800"
-          fill="transparent"
-        />
-        <circle
-          cx="72"
-          cy="72"
-          r={radius}
-          stroke="currentColor"
-          strokeWidth="10"
-          className="text-indigo-600 transition-all duration-1000 ease-out dark:text-indigo-400"
-          fill="transparent"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-        />
-      </svg>
-      <div className="absolute flex flex-col items-center justify-center text-center">
-        <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">{score}%</span>
-        <span className="text-[9px] font-extrabold tracking-widest text-slate-400 uppercase">
-          MATCH SCORE
-        </span>
+    <div
+      className={`flex flex-col items-center justify-center rounded-2xl border p-3 text-center transition-all ${colorStyles.bg}`}>
+      <div className="relative flex h-32 w-32 items-center justify-center">
+        <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90 transform">
+          <circle
+            cx="60"
+            cy="60"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth="8"
+            className="text-slate-200/70 dark:text-slate-800"
+            fill="transparent"
+          />
+          <circle
+            cx="60"
+            cy="60"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth="8"
+            className={`${colorStyles.ring} transition-all duration-1000 ease-out`}
+            fill="transparent"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className={`text-2xl font-black tracking-tight ${colorStyles.text}`}>{score}%</span>
+          <span className="mt-0.5 text-[9px] font-extrabold tracking-widest text-slate-400 uppercase">
+            {label}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -164,6 +187,8 @@ export function CvScreeningModule({
   const fileUrl = submissionData?.fileUrl || submissionData?.url || null;
 
   const matchScore = detail?.finalScore ?? detail?.aiScore ?? (isCompleted ? 85 : null);
+  const aiScoreVal = detail?.aiScore ?? matchScore ?? 0;
+  const hrScoreVal = detail?.hrScore ?? detail?.finalScore ?? matchScore ?? 0;
 
   const extraMetrics = aiFeedback?.extraMetrics;
   const keywordDensity = extraMetrics?.["Keyword Density"] || {};
@@ -331,14 +356,14 @@ export function CvScreeningModule({
           )}
         </Card>
 
-        {/* Standalone Column 2 (Center - 4 Cols): AI Gauge Score Clock + Keyword Matching + AI Feedback */}
+        {/* Standalone Column 2 (Center - 4 Cols): Dual Gauge Score Clocks + Keyword Matching */}
         <div className="space-y-6 lg:col-span-4">
-          {/* Card 1: Circular AI Match Score Clock ("Đồng hồ AI") & Sub-scores */}
+          {/* Card 1: Dual Gauge Score Clocks (1 AI Clock + 1 HR Clock) */}
           <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                 <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>AI Match Gauge Clock</span>
+                <span>Dual Match Score Gauge Clocks</span>
               </div>
               {detail?.finalResult && (
                 <span
@@ -353,9 +378,12 @@ export function CvScreeningModule({
             </div>
 
             {matchScore !== null ? (
-              <div className="space-y-4 text-center">
-                {/* Circular Gauge Clock */}
-                <CircularMatchGauge score={matchScore} />
+              <div className="space-y-4">
+                {/* 2 Dual Gauge Clocks Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <CircularGaugeClock score={aiScoreVal} label="AI Score" color="indigo" />
+                  <CircularGaugeClock score={hrScoreVal} label="HR Score" color="emerald" />
+                </div>
 
                 {/* Sub-Metrics Progress Bars */}
                 <div className="space-y-2.5 border-t border-slate-100 pt-3 text-left text-xs dark:border-slate-800">
@@ -467,11 +495,46 @@ export function CvScreeningModule({
               </div>
             )}
           </Card>
+        </div>
 
-          {/* Card 3: AI Assessment & HR Review Notes Accordion */}
+        {/* Standalone Column 3 (Right - 3 Cols): Enterprise Info & AI Feedback Tabs Card */}
+        <div className="space-y-6 lg:col-span-3">
+          {/* Card 1: Enterprise Job Context & Requirements Inspector */}
+          <Card className="space-y-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
+              <CompanyAvatar
+                logoUrl={jdInfo?.logoUrl}
+                companyName={jdInfo?.companyName}
+                className="h-10 w-10 rounded-[12px]"
+              />
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  {jdInfo?.companyName}
+                </h3>
+                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                  {jdInfo?.title}
+                </p>
+              </div>
+            </div>
+
+            {/* Job Requirements Box */}
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
+                <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Yêu cầu Tuyển dụng Đối chiếu:</span>
+              </div>
+              <div className="max-h-[220px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-[11px] leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
+                {jdInfo?.requirements ||
+                  jdInfo?.description ||
+                  "Yêu cầu tối thiểu 1+ năm kinh nghiệm Java / Spring Boot, thành thạo REST API, SQL và có tư duy thiết kế hệ thống vững chắc."}
+              </div>
+            </div>
+          </Card>
+
+          {/* Card 2: AI Assessment & HR Review Notes Accordion Card (Moved to Column 3) */}
           <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setActiveTab("overview")}
@@ -490,7 +553,7 @@ export function CvScreeningModule({
                       ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
                       : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
                   }`}>
-                  Điểm mạnh & Yếu
+                  Điểm mạnh/Yếu
                 </button>
                 {redFlags.length > 0 && (
                   <button
@@ -584,91 +647,6 @@ export function CvScreeningModule({
                 </div>
               </div>
             )}
-          </Card>
-        </div>
-
-        {/* Standalone Column 3 (Right - 3 Cols): Enterprise Info & Job Requirements Inspector & FAQ */}
-        <div className="space-y-6 lg:col-span-3">
-          {/* Card 1: Enterprise Job Context & Requirements Inspector */}
-          <Card className="space-y-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
-              <CompanyAvatar
-                logoUrl={jdInfo?.logoUrl}
-                companyName={jdInfo?.companyName}
-                className="h-10 w-10 rounded-[12px]"
-              />
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  {jdInfo?.companyName}
-                </h3>
-                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                  {jdInfo?.title}
-                </p>
-              </div>
-            </div>
-
-            {/* Job Requirements Box */}
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Yêu cầu Tuyển dụng Đối chiếu:</span>
-              </div>
-              <div className="max-h-[300px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-[11px] leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
-                {jdInfo?.requirements ||
-                  jdInfo?.description ||
-                  "Yêu cầu tối thiểu 1+ năm kinh nghiệm Java / Spring Boot, thành thạo REST API, SQL và có tư duy thiết kế hệ thống vững chắc."}
-              </div>
-            </div>
-          </Card>
-
-          {/* Card 2: Round Benchmark */}
-          <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-              <Clock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Tiêu chuẩn Đạt Vòng {round.roundOrder}</span>
-            </div>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
-                <span className="text-slate-500">Điểm sàn qua vòng:</span>
-                <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
-                  {round.passThreshold ?? 70}/100
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Thời gian quy định:</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {round.configData?.timeLimitMinutes
-                    ? `${round.configData.timeLimitMinutes} phút`
-                    : "Không giới hạn"}
-                </span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Card 3: FAQ Trợ giúp */}
-          <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-              <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <span>Trợ giúp nhanh</span>
-            </div>
-            <div className="space-y-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
-              <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
-                <p className="font-bold text-slate-800 dark:text-slate-200">
-                  ⚡ AI chấm điểm mất bao lâu?
-                </p>
-                <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-                  Hệ thống tự động chấm điểm và tổng hợp kết quả chỉ trong 30-60 giây.
-                </p>
-              </div>
-              <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
-                <p className="font-bold text-slate-800 dark:text-slate-200">
-                  🔒 Có được thi lại không?
-                </p>
-                <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-                  Mỗi vòng chỉ thực hiện 1 lần duy nhất.
-                </p>
-              </div>
-            </div>
           </Card>
         </div>
       </div>
