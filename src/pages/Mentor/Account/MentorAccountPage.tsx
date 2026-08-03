@@ -10,17 +10,14 @@ import { queryClient } from "@/lib/queryClient";
 import { mentorManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import {
-  Award,
   Briefcase,
   Camera,
+  CheckCircle2,
   ChevronRight,
-  Edit,
-  Eye,
-  EyeOff,
-  FileText,
+  Circle,
+  Lightbulb,
   Lock,
   Mail,
-  Share2,
   ShieldCheck,
   Star,
   Tag,
@@ -30,9 +27,6 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { MentorProfileData } from "./MentorAccountTabs";
-
-const INPUT_CLASSES =
-  "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-600 focus-visible:ring-2 focus-visible:ring-emerald-600/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-800";
 
 type AccountSubTab = "profile" | "security";
 
@@ -237,15 +231,6 @@ export function MentorAccountPage() {
     }
   };
 
-  const renderPasswordToggle = (onClick: () => void, visible: boolean) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center rounded text-slate-500 transition-colors hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-emerald-600/40 focus-visible:outline-none dark:text-slate-400 dark:hover:text-slate-200">
-      {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-    </button>
-  );
-
   if (isLoadingMentor) {
     return (
       <div className="flex h-full items-center justify-center p-8">
@@ -258,7 +243,15 @@ export function MentorAccountPage() {
 
   const currentAvatar = avatarPreview || profile.avatar;
   const summaryEmail = profile.email || "—";
-  const summaryId = profile.id;
+  const summaryName = profile.name || t("common.account");
+  const summaryExpertise = profile.expertise || t("mentorAccount.notUpdatedYet");
+  const summaryYears = profile.yearsOfExperience || 0;
+  const summaryPrice =
+    profile.pricePerMinute && profile.pricePerMinute > 0
+      ? formatCurrency(profile.pricePerMinute)
+      : t("common.notUpdatedYet");
+  const summaryRating =
+    profile.averageRating && profile.averageRating > 0 ? profile.averageRating.toFixed(1) : "—";
 
   const tabItems = [
     {
@@ -275,35 +268,93 @@ export function MentorAccountPage() {
     },
   ];
 
+  // Completion percentage for right widget — matches Candidate AccountPage
+  const completionFields = [
+    !!profile.name && !!profile.email,
+    !!profile.bio,
+    !!profile.expertise,
+    !!profile.yearsOfExperience && profile.yearsOfExperience > 0,
+    !!profile.linkedInUrl,
+    !!profile.currentCompany,
+    profile.pricePerMinute !== undefined && profile.pricePerMinute > 0,
+  ];
+  const completedCount = completionFields.filter(Boolean).length;
+  const completionPercentage = Math.round((completedCount / completionFields.length) * 100);
+
+  const renderRightWidget = () => (
+    <div className="hidden space-y-6 lg:sticky lg:top-4 lg:col-span-2 lg:block">
+      <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        <h4 className="mb-4 text-xs font-bold tracking-wider text-slate-500 uppercase">
+          {t("userAccount.profileCompletion", { defaultValue: "Độ hoàn thiện hồ sơ" })}
+        </h4>
+        <div className="mb-4 flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-600 transition-all"
+              style={{ width: `${completionPercentage}%` }}
+            />
+          </div>
+          <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+            {completionPercentage}%
+          </span>
+        </div>
+        <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+          {[
+            {
+              done: completionFields[0],
+              label: t("userAccount.basicInfo", { defaultValue: "Thông tin cơ bản" }),
+            },
+            {
+              done: completionFields[1],
+              label: t("userAccount.bio", { defaultValue: "Giới thiệu bản thân" }),
+            },
+            { done: completionFields[2], label: t("common.expertise") },
+            { done: completionFields[3], label: t("common.numberOfYearsOfExperience") },
+            {
+              done: completionFields[4],
+              label: t("userAccount.socialLinks", { defaultValue: "LinkedIn" }),
+            },
+          ].map((item, idx) => (
+            <li key={idx} className="flex items-center gap-2">
+              {item.done ? (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              ) : (
+                <Circle className="h-4 w-4 text-slate-300" />
+              )}
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+        <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-indigo-900 dark:text-indigo-300">
+          <Lightbulb className="h-4 w-4 text-amber-500" />
+          {t("userAccount.aiOptimizationTips", { defaultValue: "Mẹo tối ưu từ AI" })}
+        </h4>
+        <p className="text-xs leading-relaxed text-indigo-700 dark:text-indigo-400">
+          {t("userAccount.completeProfileTip", {
+            defaultValue:
+              "Hồ sơ đầy đủ thông tin giúp học viên tin tưởng và đặt lịch phỏng vấn với bạn nhiều hơn.",
+          })}
+        </p>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-[#f8f9ff] dark:bg-[#0b1c30]">
-      <div className="mx-auto max-w-[1280px] px-4 pt-6 pb-12 lg:px-6">
-        {/* Hero Header Card */}
-        <div className="glass-card relative mb-6 overflow-hidden rounded-xl p-6">
-          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl" />
-          <div className="relative z-10 flex flex-col items-center gap-6 md:flex-row md:items-start md:justify-between">
-            <div className="flex flex-col items-center gap-6 md:flex-row md:items-center">
-              <div className="relative shrink-0">
-                <div className="h-32 w-32 overflow-hidden rounded-2xl border-4 border-white shadow-xl md:h-40 md:w-40">
-                  {currentAvatar ? (
-                    <img
-                      src={currentAvatar}
-                      alt={profile.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-emerald-100 dark:bg-emerald-900/30">
-                      <User className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                  )}
-                </div>
+    <div className="min-h-full bg-slate-50 dark:bg-slate-950">
+      <div className="w-full px-4 pt-4 pb-8 md:px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+          <aside className="flex flex-col gap-6 lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute right-0 bottom-2 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-md transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                  aria-label="Change avatar">
-                  <Camera className="h-5 w-5" />
+                  className="absolute top-2.5 right-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                  title={t("general.edit") || "Chỉnh sửa"}>
+                  <Camera className="h-4 w-4" />
                 </button>
                 <input
                   type="file"
@@ -312,152 +363,61 @@ export function MentorAccountPage() {
                   accept="image/jpeg,image/png,image/webp"
                   className="hidden"
                 />
-                <div className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-emerald-500 shadow-sm md:right-0 md:bottom-0 dark:border-[#1a2a3a]">
-                  <div className="h-2 w-2 rounded-full bg-white" />
-                </div>
               </div>
-
-              <div className="text-center md:text-left">
-                <h1 className="text-2xl font-bold text-[#0b1c30] md:text-3xl dark:text-white">
-                  {profile.name}
-                </h1>
-                <div className="mt-2 flex flex-col items-center gap-2 sm:flex-row sm:items-center">
-                  <p className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span className="font-medium">Mentor</span>
-                  </p>
-                  <span className="hidden h-1.5 w-1.5 rounded-full bg-slate-300 sm:block dark:bg-slate-600" />
-                  <p className="flex items-center gap-1.5 text-[#45464d] dark:text-[#8f9099]">
-                    <Mail className="h-3.5 w-3.5" />
-                    {summaryEmail}
-                  </p>
+              <div className="relative px-5 pb-5 text-center">
+                <div className="-mt-12 mb-3 inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-md dark:border-slate-900 dark:bg-slate-800">
+                  {currentAvatar ? (
+                    <img
+                      src={currentAvatar}
+                      alt={summaryName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-9 w-9 text-slate-400" />
+                  )}
                 </div>
-              </div>
-            </div>
-
-            <div className="flex shrink-0 gap-3">
-              <button
-                onClick={() => setActiveTab("profile")}
-                className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-700">
-                <Edit className="h-4 w-4" />
-                {t("general.edit")}
-              </button>
-              <button
-                onClick={() => setActiveTab("security")}
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#c6c6cd] text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
-                <Lock className="h-4 w-4" />
-              </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#c6c6cd] text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
-                <Share2 className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Grid */}
-        <div className="grid gap-6 lg:grid-cols-12">
-          {/* Sidebar */}
-          <aside className="flex flex-col gap-6 lg:col-span-4">
-            <div className="glass-card rounded-xl p-5">
-              <h3 className="mb-4 text-base font-semibold text-[#0b1c30] dark:text-white">
-                {t("userAccount.personalInfo")}
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                    <Briefcase className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                      {t("common.role")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-[#0b1c30] dark:text-white">
-                      Mentor
-                    </p>
-                  </div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {summaryName}
+                </h3>
+                <div className="mt-1 flex flex-wrap items-center justify-center gap-1.5 text-xs">
+                  <span className="inline-flex items-center gap-1 font-medium text-indigo-600 dark:text-indigo-400">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Mentor
+                  </span>
+                  {summaryExpertise && (
+                    <>
+                      <span className="text-slate-300 dark:text-slate-600">•</span>
+                      <span className="inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                        {summaryExpertise}
+                      </span>
+                    </>
+                  )}
                 </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                    <Mail className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <div className="mt-4 space-y-2 border-t border-slate-100 pt-3.5 text-xs text-slate-600 dark:border-slate-800/80 dark:text-slate-300">
+                  <div className="flex items-center justify-center gap-2 px-1">
+                    <Mail className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                    <span className="truncate">{summaryEmail}</span>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                      {t("common.email")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-[#0b1c30] dark:text-white">
-                      {summaryEmail}
-                    </p>
+                  <div className="flex items-center justify-center gap-2 px-1">
+                    <Briefcase className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                    <span className="truncate">
+                      {summaryYears} {t("common.year")}
+                    </span>
                   </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                    <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                      Mentor ID
-                    </p>
-                    <p className="mt-0.5 font-mono text-sm font-semibold text-[#0b1c30] dark:text-slate-200">
-                      {summaryId}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                    <Award className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                      {t("common.numberOfYearsOfExperience")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-[#0b1c30] dark:text-white">
-                      {profile.yearsOfExperience || 0} {t("common.year")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                    <Tag className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                      {t("mentorAccount.unitPricePerMinute")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-[#0b1c30] dark:text-white">
-                      {profile.pricePerMinute && profile.pricePerMinute > 0
-                        ? t("common.var0Min", {
-                            var_0: formatCurrency(profile.pricePerMinute),
-                          })
-                        : t("common.notUpdatedYet")}
-                    </p>
-                  </div>
-                </div>
-
-                {profile.averageRating !== undefined && profile.averageRating > 0 && (
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                      <Star className="h-4 w-4 text-yellow-500" />
+                  {profile.averageRating && profile.averageRating > 0 && (
+                    <div className="flex items-center justify-center gap-2 px-1 pt-1">
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <span className="font-semibold text-slate-700 dark:text-slate-200">
+                        {summaryRating} / 5.0 ({profile.totalSession || 0} {t("common.session1")})
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                        {t("common.averageRating")}
-                      </p>
-                      <p className="mt-0.5 text-sm font-medium text-[#0b1c30] dark:text-white">
-                        {profile.averageRating.toFixed(1)} / 5.0 ({profile.totalSession || 0}{" "}
-                        {t("common.session1")})
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="glass-card rounded-xl p-5">
-              <h3 className="mb-4 text-base font-semibold text-[#0b1c30] dark:text-white">
+            <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-white">
                 {t("userAccount.quickSettings")}
               </h3>
               <ul className="space-y-1">
@@ -469,32 +429,30 @@ export function MentorAccountPage() {
                       <button
                         type="button"
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors ${
+                        className={`flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors ${
                           isActive
-                            ? "bg-emerald-100/70 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
-                            : "hover:bg-[#eff4ff] dark:hover:bg-[#1a2a3a]"
+                            ? "bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"
+                            : "text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
                         }`}>
                         <div className="flex items-center gap-3">
                           <div
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
                               isActive
-                                ? "bg-emerald-600 text-white"
-                                : "bg-emerald-100 text-emerald-600 dark:bg-[#1a2a3a] dark:text-emerald-400"
+                                ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                             }`}>
                             <TabIcon className="h-4 w-4" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-[#0b1c30] dark:text-white">
-                              {tab.label}
-                            </p>
-                            <p className="text-xs text-[#45464d] dark:text-[#8f9099]">
+                            <p className="text-sm font-medium">{tab.label}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {tab.description}
                             </p>
                           </div>
                         </div>
                         <ChevronRight
                           className={`h-4 w-4 shrink-0 transition-colors ${
-                            isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"
+                            isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"
                           }`}
                         />
                       </button>
@@ -503,17 +461,29 @@ export function MentorAccountPage() {
                 })}
               </ul>
             </div>
+
+            <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                <Tag className="h-3.5 w-3.5" />
+                {t("mentorAccount.unitPricePerMinute")}
+              </h4>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">{summaryPrice}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {t("mentorAccount.priceHint", {
+                  defaultValue: "Học viên sẽ trả theo đơn vị/phút cho mỗi phiên.",
+                })}
+              </p>
+            </div>
           </aside>
 
-          {/* Main Content */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-7">
             {activeTab === "profile" ? (
-              <Card className="glass-card border-slate-200/60 p-6 dark:border-slate-700/60">
-                <div className="mb-4">
-                  <h2 className="text-lg font-semibold text-[#0b1c30] dark:text-white">
+              <Card className="border-slate-200/60 p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                     {t("common.personalInformation")}
                   </h2>
-                  <p className="mt-1 text-sm text-[#45464d] dark:text-[#8f9099]">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     {t("userAccount.updateYourProfileEducationAnd")}
                   </p>
                 </div>
@@ -529,7 +499,7 @@ export function MentorAccountPage() {
                         id="name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className={INPUT_CLASSES}
+                        className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                         placeholder={t("common.fullName")}
                       />
                     </div>
@@ -540,14 +510,19 @@ export function MentorAccountPage() {
                         className="text-sm font-medium text-slate-700 dark:text-slate-300">
                         {t("common.email")}
                       </Label>
-                      <Input id="email" value={profile.email} disabled className={INPUT_CLASSES} />
+                      <Input
+                        id="email"
+                        value={profile.email}
+                        disabled
+                        className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
+                      />
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {t("userAccount.emailCannotBeChanged")}
                       </p>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2" id="bio">
                     <Label
                       htmlFor="bio"
                       className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -557,14 +532,14 @@ export function MentorAccountPage() {
                       id="bio"
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
-                      className={INPUT_CLASSES}
+                      className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                       placeholder={t("mentorAccount.writeAFewLinesIntroducing")}
                       rows={3}
                     />
                   </div>
 
                   <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
+                    <div className="space-y-2" id="expertise">
                       <Label
                         htmlFor="expertise"
                         className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -574,12 +549,12 @@ export function MentorAccountPage() {
                         id="expertise"
                         value={expertise}
                         onChange={(e) => setExpertise(e.target.value)}
-                        className={INPUT_CLASSES}
+                        className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                         placeholder={t("mentorAccount.forExampleReactNodeJs")}
                       />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2" id="yearsOfExperience">
                       <Label
                         htmlFor="yearsOfExperience"
                         className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -591,11 +566,11 @@ export function MentorAccountPage() {
                         min="0"
                         value={yearsOfExperience}
                         onChange={(e) => setYearsOfExperience(parseInt(e.target.value, 10) || 0)}
-                        className={INPUT_CLASSES}
+                        className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                       />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2" id="currentCompany">
                       <Label
                         htmlFor="currentCompany"
                         className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -605,12 +580,12 @@ export function MentorAccountPage() {
                         id="currentCompany"
                         value={currentCompany}
                         onChange={(e) => setCurrentCompany(e.target.value)}
-                        className={INPUT_CLASSES}
+                        className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                         placeholder={t("mentorAccount.forExampleLargeTechnologyCorporations")}
                       />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2" id="pricePerMinute">
                       <Label
                         htmlFor="pricePerMinute"
                         className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -622,12 +597,12 @@ export function MentorAccountPage() {
                         min="0"
                         value={pricePerMinute}
                         onChange={(e) => setPricePerMinute(parseInt(e.target.value, 10) || 0)}
-                        className={INPUT_CLASSES}
+                        className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                         placeholder={t("mentorAccount.enterUnitPriceVnd")}
                       />
                     </div>
 
-                    <div className="space-y-2 md:col-span-2">
+                    <div className="space-y-2 md:col-span-2" id="linkedInUrl">
                       <Label
                         htmlFor="linkedInUrl"
                         className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -637,7 +612,7 @@ export function MentorAccountPage() {
                         id="linkedInUrl"
                         value={linkedInUrl}
                         onChange={(e) => setLinkedInUrl(e.target.value)}
-                        className={INPUT_CLASSES}
+                        className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                         placeholder={t("common.linkedinPlaceholder")}
                       />
                     </div>
@@ -647,7 +622,7 @@ export function MentorAccountPage() {
                     <Button
                       type="submit"
                       disabled={isSavingProfile || !name.trim()}
-                      className="bg-emerald-600 px-6 text-white transition-colors hover:bg-emerald-700 focus-visible:ring-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700">
+                      className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
                       {isSavingProfile ? (
                         <SpinnerBlock size="sm" className="mr-2 text-white/70" />
                       ) : null}
@@ -657,12 +632,12 @@ export function MentorAccountPage() {
                 </form>
               </Card>
             ) : (
-              <Card className="glass-card border-slate-200/60 p-6 dark:border-slate-700/60">
-                <div className="mb-4">
-                  <h2 className="text-lg font-semibold text-[#0b1c30] dark:text-white">
+              <Card className="border-slate-200/60 p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                     {t("common.changePassword")}
                   </h2>
-                  <p className="mt-1 text-sm text-[#45464d] dark:text-[#8f9099]">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     {t("common.updateYourSecuritySettings")}
                   </p>
                 </div>
@@ -679,13 +654,43 @@ export function MentorAccountPage() {
                         type={showCurrentPassword ? "text" : "password"}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
-                        className={INPUT_CLASSES}
+                        className="border-slate-200 bg-white pr-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                         placeholder={t("changePassword.currentPasswordPlaceholder")}
                       />
-                      {renderPasswordToggle(
-                        () => setShowCurrentPassword(!showCurrentPassword),
-                        showCurrentPassword
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center rounded text-slate-500 transition-colors hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-indigo-600/40 focus-visible:outline-none dark:text-slate-400 dark:hover:text-slate-200">
+                        {showCurrentPassword ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round">
+                            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                            <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                            <line x1="2" y1="2" x2="22" y2="22" />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
                   </div>
 
@@ -701,13 +706,43 @@ export function MentorAccountPage() {
                         type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className={INPUT_CLASSES}
+                        className="border-slate-200 bg-white pr-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                         placeholder={t("changePassword.newPasswordPlaceholder")}
                       />
-                      {renderPasswordToggle(
-                        () => setShowNewPassword(!showNewPassword),
-                        showNewPassword
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center rounded text-slate-500 transition-colors hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-indigo-600/40 focus-visible:outline-none dark:text-slate-400 dark:hover:text-slate-200">
+                        {showNewPassword ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round">
+                            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                            <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                            <line x1="2" y1="2" x2="22" y2="22" />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
                   </div>
 
@@ -723,13 +758,43 @@ export function MentorAccountPage() {
                         type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className={INPUT_CLASSES}
+                        className="border-slate-200 bg-white pr-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 disabled:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800"
                         placeholder={t("changePassword.confirmPasswordPlaceholder")}
                       />
-                      {renderPasswordToggle(
-                        () => setShowConfirmPassword(!showConfirmPassword),
-                        showConfirmPassword
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center rounded text-slate-500 transition-colors hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-indigo-600/40 focus-visible:outline-none dark:text-slate-400 dark:hover:text-slate-200">
+                        {showConfirmPassword ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round">
+                            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                            <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                            <line x1="2" y1="2" x2="22" y2="22" />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
                   </div>
 
@@ -739,7 +804,7 @@ export function MentorAccountPage() {
                       disabled={
                         isSavingPassword || !currentPassword || !newPassword || !confirmPassword
                       }
-                      className="bg-emerald-600 px-6 text-white transition-colors hover:bg-emerald-700 focus-visible:ring-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700">
+                      className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
                       {isSavingPassword ? (
                         <SpinnerBlock size="sm" className="mr-2 text-white/70" />
                       ) : null}
@@ -750,6 +815,9 @@ export function MentorAccountPage() {
               </Card>
             )}
           </div>
+
+          {/* Right Column: Dynamic Widget — matches Candidate AccountPage */}
+          <div className="hidden lg:col-span-2 lg:block">{renderRightWidget()}</div>
         </div>
       </div>
     </div>

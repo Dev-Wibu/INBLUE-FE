@@ -171,13 +171,14 @@ function parseRules(raw: unknown): string[] {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) return parsed.map((r) => String(r ?? "")).filter(Boolean);
     } catch {
-      return raw.split("\n").map((r) => r.trim()).filter(Boolean);
+      return raw
+        .split("\n")
+        .map((r) => r.trim())
+        .filter(Boolean);
     }
   }
   return [];
 }
-
-
 
 function parseCodeStubs(raw: unknown): Partial<Record<CompilerLanguage, string>> {
   if (!raw) return {};
@@ -1251,9 +1252,7 @@ function ProblemExampleCard({
 }) {
   const [copied, setCopied] = useState(false);
 
-  const cleanInputs = (example.inputs ?? [])
-    .map((inp) => String(inp ?? "").trim())
-    .filter(Boolean);
+  const cleanInputs = (example.inputs ?? []).map((inp) => String(inp ?? "").trim()).filter(Boolean);
   const inputStr = cleanInputs.length > 0 ? cleanInputs.join(", ") : "(trống)";
   const outputStr =
     example.output != null && String(example.output).trim() !== ""
@@ -1298,20 +1297,20 @@ function ProblemExampleCard({
       {/* Body */}
       <div className="space-y-2 p-3.5 font-mono text-xs">
         <div className="flex items-start gap-2">
-          <span className="w-16 shrink-0 font-bold select-none text-slate-400">Input:</span>
+          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Input:</span>
           <span className="flex-1 font-semibold break-all text-slate-800 dark:text-slate-200">
             {inputStr}
           </span>
         </div>
         <div className="flex items-start gap-2">
-          <span className="w-16 shrink-0 font-bold select-none text-slate-400">Output:</span>
+          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Output:</span>
           <span className="flex-1 font-bold break-all text-emerald-600 dark:text-emerald-400">
             {outputStr}
           </span>
         </div>
         {example.explanation && (
           <div className="mt-2 flex items-start gap-2 border-t border-slate-100 pt-2 font-sans text-xs text-slate-600 dark:border-slate-800/80 dark:text-slate-400">
-            <span className="w-16 shrink-0 font-bold select-none text-slate-400">Giải thích:</span>
+            <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Giải thích:</span>
             <span className="flex-1 leading-relaxed">
               <FormattedInlineMarkdown text={example.explanation} />
             </span>
@@ -1890,7 +1889,8 @@ function TestResultsPanel({
             {t("userApplicationhistory.noTestResultYet", "Chưa có kết quả chạy thử")}
           </h4>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Bấm nút <strong className="text-slate-700 dark:text-slate-300">"Chạy Test Mẫu"</strong> ở thanh công cụ bên dưới để kiểm tra tính đúng đắn của giải thuật.
+            Bấm nút <strong className="text-slate-700 dark:text-slate-300">"Chạy Test Mẫu"</strong>{" "}
+            ở thanh công cụ bên dưới để kiểm tra tính đúng đắn của giải thuật.
           </p>
         </div>
       </div>
@@ -1906,18 +1906,19 @@ function TestResultsPanel({
   );
   const hasTimeout = testCases.some((tc) => tc.status === "TIMEOUT");
   const hasCompileError =
-    result.status === "COMPILE_ERROR" ||
-    (!testCases.length && Boolean(result.errorMessage));
+    result.status === "COMPILE_ERROR" || (!testCases.length && Boolean(result.errorMessage));
 
   let verdictTitle = "Passed";
   let verdictColor = "text-emerald-600 dark:text-emerald-400";
-  let verdictBg = "bg-emerald-50/80 border-emerald-200/80 dark:bg-emerald-950/30 dark:border-emerald-900/50";
+  let verdictBg =
+    "bg-emerald-50/80 border-emerald-200/80 dark:bg-emerald-950/30 dark:border-emerald-900/50";
   let VerdictIcon = CheckCircle2;
 
   if (hasCompileError) {
     verdictTitle = "Compile Error";
     verdictColor = "text-purple-600 dark:text-purple-400";
-    verdictBg = "bg-purple-50/80 border-purple-200/80 dark:bg-purple-950/30 dark:border-purple-900/50";
+    verdictBg =
+      "bg-purple-50/80 border-purple-200/80 dark:bg-purple-950/30 dark:border-purple-900/50";
     VerdictIcon = AlertTriangle;
   } else if (hasRuntimeError) {
     verdictTitle = "Runtime Error";
@@ -1937,7 +1938,8 @@ function TestResultsPanel({
   } else {
     verdictTitle = "Accepted";
     verdictColor = "text-emerald-600 dark:text-emerald-400";
-    verdictBg = "bg-emerald-50/80 border-emerald-200/80 dark:bg-emerald-950/30 dark:border-emerald-900/50";
+    verdictBg =
+      "bg-emerald-50/80 border-emerald-200/80 dark:bg-emerald-950/30 dark:border-emerald-900/50";
     VerdictIcon = CheckCircle2;
   }
 
@@ -2011,7 +2013,7 @@ function TestResultsPanel({
             <CopyButton text={result.errorMessage} label="Sao chép lỗi" />
           </div>
           <div className="rounded-xl border border-purple-900/40 bg-[#0a0714] p-3.5 shadow-inner">
-            <pre className="font-mono text-xs leading-relaxed text-purple-200 whitespace-pre-wrap select-text">
+            <pre className="font-mono text-xs leading-relaxed whitespace-pre-wrap text-purple-200 select-text">
               {result.errorMessage}
             </pre>
           </div>
@@ -2091,7 +2093,7 @@ function TestResultsPanel({
                     <CopyButton text={activeError} label="Sao chép log" />
                   </div>
                   <div className="overflow-hidden rounded-xl border border-rose-900/50 bg-[#0c0910] p-3.5 shadow-inner">
-                    <pre className="font-mono text-[11px] leading-relaxed text-rose-300 whitespace-pre-wrap select-text">
+                    <pre className="font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-rose-300 select-text">
                       {activeError}
                     </pre>
                   </div>
@@ -2108,7 +2110,7 @@ function TestResultsPanel({
                 </div>
                 <div className="rounded-lg border border-slate-200/80 bg-slate-100/70 p-3 font-mono text-xs font-semibold text-slate-800 select-all dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200">
                   {resolvedInput || (
-                    <span className="italic text-slate-400">(Không có dữ liệu đầu vào)</span>
+                    <span className="text-slate-400 italic">(Không có dữ liệu đầu vào)</span>
                   )}
                 </div>
               </div>
@@ -2123,7 +2125,7 @@ function TestResultsPanel({
                 </div>
                 <div className="rounded-lg border border-emerald-200/80 bg-emerald-50/40 p-3 font-mono text-xs font-semibold text-emerald-800 select-all dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300">
                   {resolvedExpected || (
-                    <span className="italic text-slate-400">(Không xác định)</span>
+                    <span className="text-slate-400 italic">(Không xác định)</span>
                   )}
                 </div>
               </div>
@@ -2146,11 +2148,11 @@ function TestResultsPanel({
                   {resolvedActual ? (
                     resolvedActual
                   ) : activeError ? (
-                    <span className="italic text-rose-500/80 dark:text-rose-400/80">
+                    <span className="text-rose-500/80 italic dark:text-rose-400/80">
                       (Không có kết quả trả về do phát sinh ngoại lệ / lỗi thực thi)
                     </span>
                   ) : (
-                    <span className="italic text-slate-400">(Trống)</span>
+                    <span className="text-slate-400 italic">(Trống)</span>
                   )}
                 </div>
               </div>

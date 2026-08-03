@@ -153,7 +153,11 @@ function normalizeFormattedCode(raw?: string | null): string {
       .replace(/\\t/g, "    ")
       .replace(/\\"/g, '"');
   } else {
-    text = text.replace(/\\r\\n/g, "\n").replace(/\\n/g, "\n").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    text = text
+      .replace(/\\r\\n/g, "\n")
+      .replace(/\\n/g, "\n")
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n");
   }
   return text;
 }
@@ -417,10 +421,8 @@ export function CodeReviewModule({
   // Active problem's current files and issues
   const currentProblemId = activeProblem?.problemId ?? 0;
   const currentFiles = activeProblem?.files ?? [];
-  const activeFilename =
-    activeFileByProblem[currentProblemId] || currentFiles[0]?.filename || "";
-  const currentFile =
-    currentFiles.find((f) => f.filename === activeFilename) ?? currentFiles[0];
+  const activeFilename = activeFileByProblem[currentProblemId] || currentFiles[0]?.filename || "";
+  const currentFile = currentFiles.find((f) => f.filename === activeFilename) ?? currentFiles[0];
 
   const currentProblemIssues = issuesByProblem[currentProblemId] ?? [];
 
@@ -789,7 +791,7 @@ export function CodeReviewModule({
                           {p.difficulty && (
                             <span
                               className={cn(
-                                "rounded-md px-1.5 py-0.2 text-[9px] font-extrabold uppercase",
+                                "py-0.2 rounded-md px-1.5 text-[9px] font-extrabold uppercase",
                                 isActive
                                   ? "bg-white/20 text-white"
                                   : p.difficulty === "EASY"
@@ -855,7 +857,7 @@ export function CodeReviewModule({
                       timedOut
                         ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
                         : remainingMs < 5 * 60 * 1000
-                          ? "border-amber-500/40 bg-amber-500/10 text-amber-300 animate-pulse"
+                          ? "animate-pulse border-amber-500/40 bg-amber-500/10 text-amber-300"
                           : "border-slate-700 bg-slate-800/80 text-slate-200"
                     )}>
                     <Clock className="h-3.5 w-3.5 text-indigo-400" />
@@ -872,7 +874,7 @@ export function CodeReviewModule({
                       size="sm"
                       disabled={activeProblemIdx === 0}
                       onClick={() => setActiveProblemIdx((i) => Math.max(0, i - 1))}
-                      className="h-7 w-7 p-0 rounded-lg border-slate-800 bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30">
+                      className="h-7 w-7 rounded-lg border-slate-800 bg-slate-900 p-0 text-slate-400 hover:text-white disabled:opacity-30">
                       <ChevronLeft className="h-3.5 w-3.5" />
                     </Button>
                     <Button
@@ -880,8 +882,10 @@ export function CodeReviewModule({
                       variant="outline"
                       size="sm"
                       disabled={activeProblemIdx === problems.length - 1}
-                      onClick={() => setActiveProblemIdx((i) => Math.min(problems.length - 1, i + 1))}
-                      className="h-7 w-7 p-0 rounded-lg border-slate-800 bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30">
+                      onClick={() =>
+                        setActiveProblemIdx((i) => Math.min(problems.length - 1, i + 1))
+                      }
+                      className="h-7 w-7 rounded-lg border-slate-800 bg-slate-900 p-0 text-slate-400 hover:text-white disabled:opacity-30">
                       <ChevronRight className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -896,7 +900,7 @@ export function CodeReviewModule({
                   <Lightbulb className="h-4 w-4 text-amber-400" />
                   <span>Yêu cầu Code Review:</span>
                 </h4>
-                <div className="rounded-xl border border-slate-700/80 bg-slate-950/80 p-4 sm:p-5 font-sans text-sm font-semibold leading-relaxed whitespace-pre-wrap text-slate-100 shadow-inner">
+                <div className="rounded-xl border border-slate-700/80 bg-slate-950/80 p-4 font-sans text-sm leading-relaxed font-semibold whitespace-pre-wrap text-slate-100 shadow-inner sm:p-5">
                   {activeProblem.problemStatement ||
                     t(
                       "userApplicationhistory.codeReviewDefaultStatement",
@@ -1185,7 +1189,7 @@ function renderSyntaxTokens(line: string): React.ReactNode[] {
       );
     } else if (token.startsWith("//") || token.startsWith("/*")) {
       parts.push(
-        <span key={key} className="italic text-slate-500">
+        <span key={key} className="text-slate-500 italic">
           {token}
         </span>
       );
@@ -1324,20 +1328,20 @@ function CodeViewPane({
                 {/* Gutter / Line Number */}
                 <div
                   className={cn(
-                    "flex w-14 shrink-0 items-center justify-between border-r px-2 py-0.5 text-xs select-none tabular-nums",
+                    "flex w-14 shrink-0 items-center justify-between border-r px-2 py-0.5 text-xs tabular-nums select-none",
                     "border-slate-800/80 bg-slate-950/90 text-slate-500 group-hover:bg-slate-900 group-hover:text-indigo-300",
                     hasIssues && cn("font-bold", tok?.text),
                     isEditingThisLine &&
                       "border-indigo-500/50 bg-indigo-950/60 font-bold text-indigo-300"
                   )}>
-                  <span className="w-full text-right pr-2">{lineNo}</span>
+                  <span className="w-full pr-2 text-right">{lineNo}</span>
                   {editable && (
                     <span
                       className={cn(
                         "transition-opacity",
                         isEditingThisLine
                           ? "text-indigo-300 opacity-100"
-                          : "opacity-0 group-hover:opacity-100 text-indigo-400"
+                          : "text-indigo-400 opacity-0 group-hover:opacity-100"
                       )}>
                       <Plus className="h-3 w-3" />
                     </span>
@@ -1345,14 +1349,14 @@ function CodeViewPane({
                 </div>
 
                 {/* Code Content */}
-                <div className="flex-1 px-4 py-0.5 whitespace-pre font-mono text-xs text-slate-200 group-hover:text-white select-text">
+                <div className="flex-1 px-4 py-0.5 font-mono text-xs whitespace-pre text-slate-200 select-text group-hover:text-white">
                   {renderedTokens.length > 0 ? renderedTokens : " "}
                 </div>
               </div>
 
               {/* Inline Issue Annotations attached directly below this line */}
               {hasIssues && (
-                <div className="ml-14 border-l-4 border-slate-800 bg-slate-900/95 px-4 py-2 space-y-2">
+                <div className="ml-14 space-y-2 border-l-4 border-slate-800 bg-slate-900/95 px-4 py-2">
                   {lineIssues.map((iss, iIdx) => {
                     const issTok = SEVERITY_TOKENS[iss.severity];
                     const Icon = issTok.icon;
@@ -1408,7 +1412,7 @@ function CodeViewPane({
                           )}
                         </div>
 
-                        <p className="text-xs leading-relaxed text-slate-200 select-text whitespace-pre-wrap">
+                        <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-200 select-text">
                           {iss.description}
                         </p>
                       </div>
@@ -1423,7 +1427,7 @@ function CodeViewPane({
                 onChangeInlineEditor &&
                 onSaveInlineIssue &&
                 onCloseInlineEditor && (
-                  <div className="my-2 ml-14 rounded-xl border border-indigo-500/50 bg-slate-900/98 p-4 shadow-2xl ring-1 ring-indigo-500/30 animate-in fade-in zoom-in-98 duration-150">
+                  <div className="animate-in fade-in zoom-in-98 my-2 ml-14 rounded-xl border border-indigo-500/50 bg-slate-900/98 p-4 shadow-2xl ring-1 ring-indigo-500/30 duration-150">
                     {/* Header of Inline Box */}
                     <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                       <div className="flex items-center gap-2">
@@ -1440,7 +1444,7 @@ function CodeViewPane({
                       <button
                         type="button"
                         onClick={onCloseInlineEditor}
-                        className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+                        className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white">
                         <X className="h-4 w-4" />
                       </button>
                     </div>
@@ -1464,7 +1468,7 @@ function CodeViewPane({
                                     sTok.border,
                                     sTok.bg,
                                     sTok.text,
-                                    "ring-2 ring-indigo-500/50 shadow-xs"
+                                    "shadow-xs ring-2 ring-indigo-500/50"
                                   )
                                 : "border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 hover:text-slate-200"
                             )}>
@@ -1497,11 +1501,11 @@ function CodeViewPane({
 
                     {/* Footer Actions */}
                     <div className="mt-3 flex items-center justify-between">
-                      <span className="text-[10px] text-slate-400 italic hidden sm:inline font-sans">
+                      <span className="hidden font-sans text-[10px] text-slate-400 italic sm:inline">
                         Nhấn Ctrl + Enter (hoặc ⌘ + Enter) để lưu nhanh
                       </span>
 
-                      <div className="flex items-center gap-2 ml-auto">
+                      <div className="ml-auto flex items-center gap-2">
                         <Button
                           type="button"
                           variant="ghost"
@@ -1610,10 +1614,7 @@ function ModernGaugeClock({
 }
 
 // Criteria metadata for dynamic metrics
-const CRITERIA_META: Record<
-  string,
-  { label: string; color: string; bg: string; bar: string }
-> = {
+const CRITERIA_META: Record<string, { label: string; color: string; bg: string; bar: string }> = {
   "Bug Detection": {
     label: "Phát hiện lỗi (Bug Detection)",
     color: "text-rose-400",
@@ -1721,7 +1722,11 @@ function GradedResultView({
     if (rawMetrics && typeof rawMetrics === "object") {
       Object.entries(rawMetrics).forEach(([key, value]) => {
         const lowerKey = key.toLowerCase();
-        if (lowerKey.includes("missed") || lowerKey.includes("flag") || lowerKey.includes("bỏ sót")) {
+        if (
+          lowerKey.includes("missed") ||
+          lowerKey.includes("flag") ||
+          lowerKey.includes("bỏ sót")
+        ) {
           if (typeof value === "string") {
             missed = value;
           } else if (Array.isArray(value)) {
@@ -1766,12 +1771,9 @@ function GradedResultView({
   const activeProblem = problems[activeProblemIdx] ?? problems[0];
   const pId = activeProblem?.problemId ?? 0;
   const currentFiles = activeProblem?.files ?? [];
-  const [activeFilename, setActiveFilename] = useState<string>(
-    currentFiles[0]?.filename ?? ""
-  );
+  const [activeFilename, setActiveFilename] = useState<string>(currentFiles[0]?.filename ?? "");
 
-  const currentFile =
-    currentFiles.find((f) => f.filename === activeFilename) ?? currentFiles[0];
+  const currentFile = currentFiles.find((f) => f.filename === activeFilename) ?? currentFiles[0];
 
   // Map issues for current problem
   const problemIssues = useMemo(() => {
@@ -1901,12 +1903,7 @@ function GradedResultView({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <ModernGaugeClock
-                score={aiScoreVal}
-                label="AI Score"
-                color="indigo"
-                hasData={true}
-              />
+              <ModernGaugeClock score={aiScoreVal} label="AI Score" color="indigo" hasData={true} />
               <ModernGaugeClock
                 score={hrScoreVal}
                 label="HR Score"
@@ -1940,7 +1937,10 @@ function GradedResultView({
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                       <div
-                        className={cn("h-full rounded-full transition-all duration-700", item.style.bar)}
+                        className={cn(
+                          "h-full rounded-full transition-all duration-700",
+                          item.style.bar
+                        )}
                         style={{ width: `${item.pct}%` }}
                       />
                     </div>
@@ -1971,7 +1971,8 @@ function GradedResultView({
               </div>
             ) : (
               <p className="text-xs leading-relaxed text-slate-400 italic">
-                Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi HR hoàn tất rà soát).
+                Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi
+                HR hoàn tất rà soát).
               </p>
             )}
           </Card>
@@ -1996,7 +1997,7 @@ function GradedResultView({
             </div>
 
             {problems.length > 1 && (
-              <div className="flex items-center gap-1.5 ml-4">
+              <div className="ml-4 flex items-center gap-1.5">
                 {problems.map((p, idx) => (
                   <button
                     key={idx}
@@ -2024,7 +2025,7 @@ function GradedResultView({
                 className={cn(
                   "rounded-md px-2.5 py-1 text-xs font-medium transition-all",
                   (activeFilename || currentFiles[0]?.filename) === file.filename
-                    ? "bg-slate-800 text-white font-bold"
+                    ? "bg-slate-800 font-bold text-white"
                     : "text-slate-400 hover:text-slate-200"
                 )}>
                 {filenameShort(file.filename ?? "")}
