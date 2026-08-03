@@ -312,6 +312,14 @@
     "text": "Kính gửi"
   },
   {
+    "file": "src/pages/Mentor/Account/MentorAccountPage.tsx",
+    "line": 356,
+    "character": 47,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Chỉnh sửa"
+  },
+  {
     "file": "src/pages/Mentor/MentorKioskEntryPage.tsx",
     "line": 147,
     "character": 15,
@@ -1169,7 +1177,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 522,
+    "line": 524,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1177,7 +1185,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 584,
+    "line": 586,
     "character": 60,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1185,7 +1193,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 600,
+    "line": 602,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1193,7 +1201,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 675,
+    "line": 677,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1201,7 +1209,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 676,
+    "line": 678,
     "character": 50,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1209,7 +1217,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 680,
+    "line": 682,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1217,7 +1225,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 686,
+    "line": 688,
     "character": 39,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1225,7 +1233,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 693,
+    "line": 695,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1233,7 +1241,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 695,
+    "line": 697,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1241,7 +1249,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 714,
+    "line": 716,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1249,7 +1257,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 719,
+    "line": 721,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1257,7 +1265,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 724,
+    "line": 726,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1265,7 +1273,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 767,
+    "line": 769,
     "character": 58,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1273,7 +1281,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 787,
+    "line": 789,
     "character": 41,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1281,7 +1289,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 897,
+    "line": 901,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1289,7 +1297,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 916,
+    "line": 920,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1297,7 +1305,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 971,
+    "line": 975,
     "character": 88,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1305,7 +1313,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 974,
+    "line": 978,
     "character": 80,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1313,7 +1321,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1005,
+    "line": 1009,
     "character": 58,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1321,7 +1329,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1010,
+    "line": 1014,
     "character": 62,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1329,7 +1337,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1027,
+    "line": 1031,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1337,7 +1345,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1036,
+    "line": 1040,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1345,7 +1353,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1055,
+    "line": 1059,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1353,7 +1361,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1067,
+    "line": 1071,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1361,7 +1369,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1071,
+    "line": 1075,
     "character": 23,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1369,7 +1377,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1072,
+    "line": 1076,
     "character": 23,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1377,7 +1385,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1072,
+    "line": 1076,
     "character": 76,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1385,7 +1393,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1072,
+    "line": 1076,
     "character": 109,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1393,7 +1401,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1106,
+    "line": 1110,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1401,7 +1409,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1115,
+    "line": 1119,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1409,7 +1417,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1120,
+    "line": 1124,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1417,7 +1425,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1377,
+    "line": 1381,
     "character": 46,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1425,7 +1433,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1393,
+    "line": 1397,
     "character": 39,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1433,7 +1441,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1405,
+    "line": 1409,
     "character": 39,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1441,7 +1449,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1435,
+    "line": 1439,
     "character": 31,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1449,7 +1457,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1436,
+    "line": 1440,
     "character": 31,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1457,7 +1465,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1450,
+    "line": 1454,
     "character": 78,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1465,7 +1473,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1493,
+    "line": 1497,
     "character": 25,
     "type": "JsxAttribute[placeholder]",
     "category": "vietnamese",
@@ -1473,7 +1481,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1493,
+    "line": 1497,
     "character": 37,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1481,7 +1489,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1501,
+    "line": 1505,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1489,7 +1497,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1511,
+    "line": 1515,
     "character": 27,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1497,7 +1505,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1521,
+    "line": 1525,
     "character": 67,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1505,7 +1513,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1521,
+    "line": 1525,
     "character": 84,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1513,7 +1521,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1618,
+    "line": 1619,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1521,7 +1529,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1624,
+    "line": 1625,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1529,7 +1537,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1630,
+    "line": 1631,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1537,7 +1545,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1636,
+    "line": 1637,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1545,7 +1553,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1642,
+    "line": 1643,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1553,7 +1561,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1648,
+    "line": 1649,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1561,15 +1569,15 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1724,
-    "character": 91,
+    "line": 1728,
+    "character": 29,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "bỏ sót"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1810,
+    "line": 1812,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1577,7 +1585,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1822,
+    "line": 1824,
     "character": 17,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1585,7 +1593,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1834,
+    "line": 1836,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1593,7 +1601,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1857,
+    "line": 1859,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1601,7 +1609,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1880,
+    "line": 1882,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1609,7 +1617,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1898,
+    "line": 1900,
     "character": 66,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1617,7 +1625,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1925,
+    "line": 1922,
     "character": 68,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1645,11 +1653,11 @@
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi HR hoàn tất rà soát)."
+    "text": "Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi\r\n                HR hoàn tất rà soát)."
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1994,
+    "line": 1995,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1657,7 +1665,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 2011,
+    "line": 2012,
     "character": 44,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1665,7 +1673,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 240,
+    "line": 241,
     "character": 9,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1673,7 +1681,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 241,
+    "line": 242,
     "character": 11,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1681,7 +1689,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 242,
+    "line": 243,
     "character": 8,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1689,7 +1697,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 243,
+    "line": 244,
     "character": 7,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1697,7 +1705,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 244,
+    "line": 245,
     "character": 15,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1705,7 +1713,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 245,
+    "line": 246,
     "character": 11,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1713,7 +1721,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 246,
+    "line": 247,
     "character": 7,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1721,7 +1729,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 247,
+    "line": 248,
     "character": 6,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1729,7 +1737,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 248,
+    "line": 249,
     "character": 11,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1737,7 +1745,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 249,
+    "line": 250,
     "character": 9,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1745,7 +1753,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 256,
+    "line": 257,
     "character": 5,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1753,7 +1761,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 256,
+    "line": 257,
     "character": 29,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1761,7 +1769,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 596,
+    "line": 597,
     "character": 56,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1769,7 +1777,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 705,
+    "line": 706,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1777,7 +1785,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 706,
+    "line": 707,
     "character": 50,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1785,7 +1793,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 710,
+    "line": 711,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1793,7 +1801,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 715,
+    "line": 716,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1801,7 +1809,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 717,
+    "line": 718,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1809,7 +1817,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 736,
+    "line": 737,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1817,7 +1825,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 741,
+    "line": 742,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1825,7 +1833,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 746,
+    "line": 747,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1833,7 +1841,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 870,
+    "line": 871,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1841,7 +1849,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 878,
+    "line": 879,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1849,7 +1857,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 886,
+    "line": 887,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1857,7 +1865,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 899,
+    "line": 900,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1865,7 +1873,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 927,
+    "line": 928,
     "character": 67,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1873,7 +1881,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 952,
+    "line": 953,
     "character": 29,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1881,7 +1889,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 976,
+    "line": 977,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1889,7 +1897,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1205,
+    "line": 1206,
     "character": 9,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1897,7 +1905,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1257,
+    "line": 1256,
     "character": 70,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1905,7 +1913,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1261,
+    "line": 1260,
     "character": 9,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1913,7 +1921,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1269,
+    "line": 1268,
     "character": 19,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1921,7 +1929,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1278,
+    "line": 1277,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1929,7 +1937,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1287,
+    "line": 1286,
     "character": 50,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1937,7 +1945,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1314,
+    "line": 1313,
     "character": 82,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1945,7 +1953,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1746,
+    "line": 1745,
     "character": 21,
     "type": "JsxAttribute[title]",
     "category": "vietnamese",
@@ -1953,7 +1961,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1746,
+    "line": 1745,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1961,7 +1969,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1761,
+    "line": 1760,
     "character": 21,
     "type": "JsxAttribute[title]",
     "category": "vietnamese",
@@ -1969,7 +1977,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1761,
+    "line": 1760,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1977,7 +1985,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1816,
+    "line": 1815,
     "character": 7,
     "type": "JsxAttribute[title]",
     "category": "vietnamese",
@@ -1985,7 +1993,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1816,
+    "line": 1815,
     "character": 13,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1993,7 +2001,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1820,
+    "line": 1819,
     "character": 68,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2001,7 +2009,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1875,
+    "line": 1874,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2009,7 +2017,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1893,
+    "line": 1892,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2017,7 +2025,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1893,
+    "line": 1892,
     "character": 76,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2026,14 +2034,14 @@
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
     "line": 1893,
-    "character": 101,
+    "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
     "text": "ở thanh công cụ bên dưới để kiểm tra tính đúng đắn của giải thuật."
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1987,
+    "line": 1989,
     "character": 71,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2041,7 +2049,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2009,
+    "line": 2011,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2049,7 +2057,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2011,
+    "line": 2013,
     "character": 52,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -2057,7 +2065,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2011,
+    "line": 2013,
     "character": 58,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2065,7 +2073,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2078,
+    "line": 2080,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2073,7 +2081,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2089,
+    "line": 2091,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2081,7 +2089,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2091,
+    "line": 2093,
     "character": 52,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -2089,7 +2097,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2091,
+    "line": 2093,
     "character": 58,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2097,7 +2105,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2111,
+    "line": 2113,
     "character": 61,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2105,7 +2113,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2126,
+    "line": 2128,
     "character": 61,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2113,7 +2121,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2150,
+    "line": 2152,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2121,7 +2129,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2153,
+    "line": 2155,
     "character": 61,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3201,7 +3209,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 332,
+    "line": 330,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3209,7 +3217,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 335,
+    "line": 333,
     "character": 51,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3217,7 +3225,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 341,
+    "line": 339,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3225,7 +3233,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 413,
+    "line": 404,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3233,23 +3241,23 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 417,
-    "character": 23,
+    "line": 407,
+    "character": 82,
     "type": "JsxText",
     "category": "vietnamese",
     "text": "Hoàn tất"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 421,
-    "character": 23,
+    "line": 409,
+    "character": 78,
     "type": "JsxText",
     "category": "vietnamese",
     "text": "Chưa mở"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 492,
+    "line": 488,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3257,7 +3265,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 495,
+    "line": 491,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3265,7 +3273,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 509,
+    "line": 505,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3273,7 +3281,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 512,
+    "line": 508,
     "character": 65,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3281,7 +3289,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 514,
+    "line": 510,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3289,7 +3297,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 527,
+    "line": 523,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3297,7 +3305,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 530,
+    "line": 526,
     "character": 69,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3305,7 +3313,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 532,
+    "line": 528,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3313,7 +3321,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 545,
+    "line": 541,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3321,7 +3329,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 548,
+    "line": 544,
     "character": 69,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3329,7 +3337,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 550,
+    "line": 546,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3337,15 +3345,15 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 565,
-    "character": 15,
+    "line": 560,
+    "character": 67,
     "type": "JsxText",
     "category": "vietnamese",
     "text": "Tự động làm mới mỗi 30s"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 568,
+    "line": 562,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3353,7 +3361,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 580,
+    "line": 576,
     "character": 33,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3361,7 +3369,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 580,
+    "line": 576,
     "character": 54,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3369,7 +3377,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 609,
+    "line": 605,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3377,7 +3385,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 622,
+    "line": 618,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3385,7 +3393,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 625,
+    "line": 621,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3393,7 +3401,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 634,
+    "line": 630,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3401,7 +3409,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 647,
+    "line": 643,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3409,7 +3417,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 650,
+    "line": 646,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3417,7 +3425,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 650,
+    "line": 646,
     "character": 31,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3425,7 +3433,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 675,
+    "line": 671,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3433,7 +3441,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 788,
+    "line": 784,
     "character": 68,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -3441,7 +3449,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 806,
+    "line": 802,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3449,7 +3457,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 806,
+    "line": 802,
     "character": 39,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3457,7 +3465,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 814,
+    "line": 810,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3465,7 +3473,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 846,
+    "line": 842,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3473,7 +3481,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 872,
+    "line": 868,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3481,7 +3489,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 875,
+    "line": 871,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3489,7 +3497,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 884,
+    "line": 880,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3497,7 +3505,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 896,
+    "line": 892,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3505,7 +3513,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 910,
+    "line": 906,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3513,7 +3521,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 926,
+    "line": 922,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3521,7 +3529,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 936,
+    "line": 932,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3529,7 +3537,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 962,
+    "line": 958,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3537,7 +3545,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 989,
+    "line": 985,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3545,7 +3553,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1003,
+    "line": 999,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3553,7 +3561,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1008,
+    "line": 1004,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3561,7 +3569,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1056,
+    "line": 1052,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3569,7 +3577,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1060,
+    "line": 1056,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3577,7 +3585,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1064,
+    "line": 1060,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3585,7 +3593,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1068,
+    "line": 1064,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3593,7 +3601,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1072,
+    "line": 1068,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3601,7 +3609,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1076,
+    "line": 1072,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3609,7 +3617,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1080,
+    "line": 1076,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3617,7 +3625,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1087,
+    "line": 1083,
     "character": 9,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3625,7 +3633,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1143,
+    "line": 1139,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3633,7 +3641,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1165,
+    "line": 1161,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3641,7 +3649,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1168,
+    "line": 1164,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3649,7 +3657,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1176,
+    "line": 1172,
     "character": 13,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -3657,7 +3665,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1176,
+    "line": 1172,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3665,7 +3673,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1181,
+    "line": 1177,
     "character": 13,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -3673,7 +3681,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1181,
+    "line": 1177,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3681,7 +3689,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1182,
+    "line": 1178,
     "character": 44,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -3689,7 +3697,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1186,
+    "line": 1182,
     "character": 13,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -3697,7 +3705,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1186,
+    "line": 1182,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3705,7 +3713,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1202,
+    "line": 1198,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3713,7 +3721,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1202,
+    "line": 1198,
     "character": 43,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3721,7 +3729,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1205,
+    "line": 1201,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3729,7 +3737,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1209,
+    "line": 1205,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3737,7 +3745,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1210,
+    "line": 1206,
     "character": 19,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -3745,7 +3753,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1222,
+    "line": 1218,
     "character": 28,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3753,7 +3761,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1228,
+    "line": 1224,
     "character": 45,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3761,7 +3769,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1228,
+    "line": 1224,
     "character": 68,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3769,7 +3777,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1236,
+    "line": 1232,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3777,7 +3785,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1428,
+    "line": 1424,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3785,7 +3793,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1431,
+    "line": 1427,
     "character": 22,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -3793,7 +3801,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1431,
+    "line": 1427,
     "character": 62,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -3801,7 +3809,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1439,
+    "line": 1435,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3809,7 +3817,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1443,
+    "line": 1439,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3817,7 +3825,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1447,
+    "line": 1443,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3825,7 +3833,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 64,
+    "line": 56,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3833,7 +3841,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 66,
+    "line": 58,
     "character": 32,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3841,7 +3849,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 67,
+    "line": 59,
     "character": 53,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -3849,7 +3857,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 72,
+    "line": 64,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3857,7 +3865,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 76,
+    "line": 68,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3865,7 +3873,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 78,
+    "line": 70,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3873,7 +3881,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 80,
+    "line": 72,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3881,7 +3889,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 82,
+    "line": 74,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3889,7 +3897,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 87,
+    "line": 79,
     "character": 11,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3897,15 +3905,15 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 105,
-    "character": 15,
+    "line": 96,
+    "character": 69,
     "type": "JsxText",
     "category": "vietnamese",
     "text": "Vòng"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 127,
+    "line": 115,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3913,7 +3921,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 132,
+    "line": 120,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3921,7 +3929,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 137,
+    "line": 125,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3929,7 +3937,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 142,
+    "line": 130,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3937,7 +3945,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 147,
+    "line": 135,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3945,7 +3953,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 152,
+    "line": 140,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -3953,7 +3961,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 157,
+    "line": 145,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4825,7 +4833,7 @@
   },
   {
     "file": "src/services/admin-application.manager.ts",
-    "line": 35,
+    "line": 45,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4833,7 +4841,7 @@
   },
   {
     "file": "src/services/admin-application.manager.ts",
-    "line": 41,
+    "line": 51,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4841,7 +4849,7 @@
   },
   {
     "file": "src/services/admin-application.manager.ts",
-    "line": 67,
+    "line": 77,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4849,7 +4857,7 @@
   },
   {
     "file": "src/services/admin-application.manager.ts",
-    "line": 73,
+    "line": 83,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4857,7 +4865,7 @@
   },
   {
     "file": "src/services/admin-application.manager.ts",
-    "line": 101,
+    "line": 111,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4865,7 +4873,23 @@
   },
   {
     "file": "src/services/admin-application.manager.ts",
-    "line": 107,
+    "line": 117,
+    "character": 16,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Lỗi kết nối máy chủ"
+  },
+  {
+    "file": "src/services/admin-application.manager.ts",
+    "line": 148,
+    "character": 16,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Không thể lấy danh sách ApplicationDetail"
+  },
+  {
+    "file": "src/services/admin-application.manager.ts",
+    "line": 154,
     "character": 16,
     "type": "StringLiteral",
     "category": "vietnamese",
