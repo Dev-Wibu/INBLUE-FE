@@ -124,6 +124,55 @@ interface CodingProblemVM {
   codeStubs: Partial<Record<CompilerLanguage, string>>;
 }
 
+function parseExamples(
+  rawExamples: unknown
+): Array<{ inputs: string[]; output: string; explanation?: string }> {
+  if (!rawExamples) return [];
+  let list: unknown[] = [];
+  if (typeof rawExamples === "string") {
+    try {
+      const parsed = JSON.parse(rawExamples);
+      list = Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      list = [];
+    }
+  } else if (Array.isArray(rawExamples)) {
+    list = rawExamples;
+  }
+  return list
+    .filter((ex) => ex != null && typeof ex === "object")
+    .map((ex: any) => {
+      let inputs: string[] = [];
+      if (Array.isArray(ex.inputs)) {
+        inputs = ex.inputs.map((x: any) => (x != null ? String(x) : ""));
+      } else if (ex.inputs !== undefined && ex.inputs !== null) {
+        inputs = [String(ex.inputs)];
+      } else if (Array.isArray(ex.input)) {
+        inputs = ex.input.map((x: any) => (x != null ? String(x) : ""));
+      } else if (ex.input !== undefined && ex.input !== null) {
+        inputs = [String(ex.input)];
+      }
+
+      const output = ex.output != null ? String(ex.output) : "";
+      const explanation = ex.explanation != null ? String(ex.explanation) : undefined;
+      return { inputs, output, explanation };
+    });
+}
+
+function parseRules(raw: unknown): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map((r) => String(r ?? "")).filter(Boolean);
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map((r) => String(r ?? "")).filter(Boolean);
+    } catch {
+      return raw.split("\n").map((r) => r.trim()).filter(Boolean);
+    }
+  }
+  return [];
+}
+
 function getProblems(round: JdRound): CodingProblemVM[] {
   // JdRound is a partial local shape — pull `codingProblems` off the full
   // BE round schema which is the source of truth for problem snapshots.
@@ -148,17 +197,15 @@ function getProblems(round: JdRound): CodingProblemVM[] {
   };
 
   const raw = roundFull.configData?.codingProblems ?? [];
-  return raw.map((p) => ({
+  return raw.map((p: any) => ({
     problemId: p.problemId ?? 0,
     title: p.title ?? `Problem #${p.problemId ?? "?"}`,
     difficulty: p.difficulty,
     problemStatement: p.problemStatement ?? "",
-    rulesAndConstraints: p.rulesAndConstraints ?? [],
-    visibleExamples: (p.visibleExamples ?? []).map((ex) => ({
-      inputs: ex.inputs ?? [],
-      output: ex.output ?? "",
-      explanation: ex.explanation,
-    })),
+    rulesAndConstraints: parseRules(p.rulesAndConstraints ?? p.constraints),
+    visibleExamples: parseExamples(
+      p.visibleExamples ?? p.examples ?? p.sampleTestCases ?? p.visibleTestCases ?? p.testCases
+    ),
     executionTimeLimitMs: p.executionTimeLimitMs,
     memoryLimitMb: p.memoryLimitMb,
     codeStubs: (p.codeStubs ?? {}) as Partial<Record<CompilerLanguage, string>>,
@@ -1051,11 +1098,17 @@ function ProblemExampleCard({
 }) {
   const [copied, setCopied] = useState(false);
 
-  const cleanInputs = example.inputs.filter((inp) => inp != null && inp.trim() !== "");
-  const inputStr = cleanInputs.join(", ");
+  const cleanInputs = (example.inputs ?? [])
+    .map((inp) => String(inp ?? "").trim())
+    .filter(Boolean);
+  const inputStr = cleanInputs.length > 0 ? cleanInputs.join(", ") : "(trống)";
+  const outputStr =
+    example.output != null && String(example.output).trim() !== ""
+      ? String(example.output)
+      : "(trống)";
 
   const handleCopy = () => {
-    const textToCopy = `Input: ${inputStr}\nOutput: ${example.output}${
+    const textToCopy = `Input: ${inputStr}\nOutput: ${outputStr}${
       example.explanation ? `\nExplanation: ${example.explanation}` : ""
     }`;
     void navigator.clipboard.writeText(textToCopy);
@@ -1092,20 +1145,20 @@ function ProblemExampleCard({
       {/* Body */}
       <div className="space-y-2 p-3.5 font-mono text-xs">
         <div className="flex items-start gap-2">
-          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Input:</span>
+          <span className="w-16 shrink-0 font-bold select-none text-slate-400">Input:</span>
           <span className="flex-1 font-semibold break-all text-slate-800 dark:text-slate-200">
-            {inputStr || "(trống)"}
+            {inputStr}
           </span>
         </div>
         <div className="flex items-start gap-2">
-          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Output:</span>
+          <span className="w-16 shrink-0 font-bold select-none text-slate-400">Output:</span>
           <span className="flex-1 font-bold break-all text-emerald-600 dark:text-emerald-400">
-            {example.output || "(trống)"}
+            {outputStr}
           </span>
         </div>
         {example.explanation && (
           <div className="mt-2 flex items-start gap-2 border-t border-slate-100 pt-2 font-sans text-xs text-slate-600 dark:border-slate-800/80 dark:text-slate-400">
-            <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Giải thích:</span>
+            <span className="w-16 shrink-0 font-bold select-none text-slate-400">Giải thích:</span>
             <span className="flex-1 leading-relaxed">
               <FormattedInlineMarkdown text={example.explanation} />
             </span>
@@ -1147,10 +1200,17 @@ function CodingProblemCard({
   const validExamples = useMemo(() => {
     return (problem.visibleExamples ?? []).filter(
       (ex) =>
-        (ex.inputs && ex.inputs.some((inp) => inp != null && inp.trim() !== "")) ||
-        (ex.output && ex.output.trim() !== "")
+        (ex.inputs && ex.inputs.length > 0) ||
+        (ex.output != null && String(ex.output).trim() !== "")
     );
   }, [problem.visibleExamples]);
+
+  // Auto-switch to results tab when test cases are running or returned
+  useEffect(() => {
+    if (result || isRunning) {
+      setActiveTab("results");
+    }
+  }, [result, isRunning]);
 
   // ---- Resizable split panel state ----------------------------------------
   const [leftWidthPercent, setLeftWidthPercent] = useState(40);
