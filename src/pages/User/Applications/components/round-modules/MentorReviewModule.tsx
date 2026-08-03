@@ -11,13 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
@@ -102,12 +96,12 @@ interface StepDef {
 }
 
 const STEP_DEFS: StepDef[] = [
-  { key: "AWAITING_MENTOR", title: "Chá» Admin gÃ¡n mentor", short: "Chá» mentor", icon: Hourglass },
-  { key: "SELECT_MENTOR", title: "Chá»n mentor", short: "Chá»n mentor", icon: Users },
-  { key: "SCHEDULE", title: "Äáº·t lá»‹ch phá»ng váº¥n", short: "Äáº·t lá»‹ch", icon: Calendar },
-  { key: "WAITING", title: "Chá» Ä‘áº¿n giá» phá»ng váº¥n", short: "Chá» giá»", icon: Clock },
-  { key: "IN_CALL", title: "Äang phá»ng váº¥n", short: "Phá»ng váº¥n", icon: Video },
-  { key: "RESULT", title: "Káº¿t quáº£ Ä‘Ã¡nh giÃ¡", short: "Káº¿t quáº£", icon: BadgeCheck },
+  { key: "AWAITING_MENTOR", title: "Chờ Admin gán mentor", short: "Chờ mentor", icon: Hourglass },
+  { key: "SELECT_MENTOR", title: "Chọn mentor", short: "Chọn mentor", icon: Users },
+  { key: "SCHEDULE", title: "Đặt lịch phỏng vấn", short: "Đặt lịch", icon: Calendar },
+  { key: "WAITING", title: "Chờ đến giờ phỏng vấn", short: "Chờ giờ", icon: Clock },
+  { key: "IN_CALL", title: "Đang phỏng vấn", short: "Phỏng vấn", icon: Video },
+  { key: "RESULT", title: "Kết quả đánh giá", short: "Kết quả", icon: BadgeCheck },
 ];
 
 const MIN_COMMENT_LENGTH = 20;
@@ -587,7 +581,7 @@ function SelectMentorStep({
 
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-950/60 px-3 py-1.5 text-xs font-semibold text-slate-300">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span>{t("userApplicationhistory.mentorSelectHintShort", "Xem há»“ sÆ¡ trÆ°á»›c khi chá»n")}</span>
+              <span>{t("userApplicationhistory.mentorSelectHintShort", "Xem hồ sơ trước khi chọn")}</span>
             </div>
           </div>
 
@@ -595,7 +589,7 @@ function SelectMentorStep({
             <p className="text-xs leading-5 text-slate-400">
               {t(
                 "userApplicationhistory.mentorSelectHint",
-                "Má»Ÿ há»“ sÆ¡ Ä‘á»ƒ xem kinh nghiá»‡m, Ä‘Ã¡nh giÃ¡ vÃ  pháº£n há»“i trÆ°á»›c khi chá»n."
+                "Mở hồ sơ để xem kinh nghiệm, đánh giá và phản hồi trước khi chọn."
               )}
             </p>
           </div>
@@ -699,9 +693,8 @@ function MentorCard({
           onOpenDetails();
         }
       }}
-      className="group flex h-full w-full max-w-[290px] flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-500/30 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:bg-slate-950">
-      <div className="relative overflow-hidden border-b border-slate-800 bg-gradient-to-b from-indigo-950/50 via-slate-900 to-slate-950 px-4 pt-4 pb-4">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-18 bg-gradient-to-b from-indigo-500/10 to-transparent" />
+      className="group flex h-full w-full max-w-[290px] flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-500/30 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:bg-slate-900/80">
+      <div className="relative overflow-hidden border-b border-slate-800/80 bg-slate-900/80 px-4 pt-4 pb-4 dark:bg-slate-900/80">
         <div className="relative">
           <div className="flex items-start justify-between gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/25 bg-indigo-500/10 px-2.5 py-1 text-[11px] font-semibold text-indigo-200 shadow-sm">
@@ -713,7 +706,7 @@ function MentorCard({
             </span>
           </div>
 
-          <div className="mt-5 flex flex-col items-center text-center">
+          <div className="mt-2.5 flex flex-col items-center text-center">
             <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-sm ring-1 ring-slate-950/50">
               <img
                 src={mentor.avatarUrl || "/placeholder.png"}
@@ -722,11 +715,11 @@ function MentorCard({
               />
             </div>
 
-            <div className="mt-4 min-h-[4.5rem] space-y-1">
+            <div className="mt-2 min-h-[4rem] space-y-0.5">
               <h4 className="whitespace-normal break-words text-[16px] font-semibold leading-6 text-white">
                 {mentor.name ?? "—"}
               </h4>
-              <p className="line-clamp-2 min-h-[2.5rem] text-[13px] leading-5 text-slate-400">
+              <p className="line-clamp-2 min-h-[2.5rem] text-[13px] leading-5 text-slate-300">
                 {mentor.currentCompany || mentor.email || "—"}
               </p>
             </div>
@@ -748,16 +741,17 @@ function MentorCard({
             </span>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.06] p-3.5 shadow-sm">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-indigo-300">
-              {t("userApplicationhistory.mentorSelectBioLabel", "Bio")}
-            </div>
-            <p className="mt-1.5 min-h-[6rem] text-sm leading-6 text-slate-200">
+          <div className="mt-4">
+            <p className="relative min-h-[7rem] pl-6 text-sm leading-6 italic text-slate-200">
+              <span className="absolute left-0.5 top-0 text-lg leading-none text-indigo-300">
+                “
+              </span>
               {bio ||
                 t(
                   "userApplicationhistory.mentorSelectNoBio",
                   "Chưa có giới thiệu chi tiết từ mentor này."
                 )}
+              <span className="ml-1 text-indigo-300">”</span>
             </p>
           </div>
         </div>
@@ -797,112 +791,75 @@ function MentorDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-5xl overflow-hidden border border-slate-800 bg-slate-950 p-0 text-slate-100 shadow-2xl">
-        <div className="border-b border-slate-800/80 bg-gradient-to-r from-slate-900 via-slate-900/95 to-indigo-950/40 px-6 py-5">
-          <DialogHeader className="text-left">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-[11px] font-semibold text-indigo-300">
-                {t("userApplicationhistory.mentorDetailLabel", "Chi tiết mentor")}
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
-                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                {mentor.averageRating ? mentor.averageRating.toFixed(1) : "—"}
-              </span>
-              <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
-                {t("userApplicationhistory.mentorSelectSessionsValue", "{{count}} sessions", {
-                  count: mentor.totalSession ?? 0,
-                })}
-              </span>
-            </div>
-            <DialogTitle className="mt-3 text-2xl font-bold text-white">
-              {mentor.name ?? "—"}
-            </DialogTitle>
-            <DialogDescription className="mt-1 text-sm text-slate-400">
-              {mentor.currentCompany || mentor.email || "—"}
-            </DialogDescription>
-          </DialogHeader>
+      <DialogContent
+        showCloseButton={false}
+        className="max-h-[90vh] max-w-5xl overflow-hidden border border-slate-800 bg-slate-950 p-0 text-slate-100 shadow-2xl">
+        <div className="flex items-center justify-end border-b border-slate-800/80 bg-slate-900/70 px-4 py-3">
+          <DialogClose className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 bg-slate-950/60 text-slate-300 transition-colors hover:border-slate-500 hover:text-white">
+            <X className="h-4 w-4" />
+            <span className="sr-only">{t("compUi.close", "Đóng")}</span>
+          </DialogClose>
         </div>
 
-        <div className="max-h-[calc(90vh-110px)] overflow-y-auto px-6 py-6">
-          <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-            <section className="space-y-4">
-              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-lg">
-                <div className="border-b border-slate-800 px-5 py-4">
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-sm">
+        <div className="max-h-[calc(90vh-57px)] overflow-y-auto px-6 py-6">
+          <div className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr]">
+            <section className="space-y-4 self-start">
+              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-sm">
+                <div className="border-b border-slate-800 px-5 py-5">
+                  <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-sm">
                       <img
                         src={mentor.avatarUrl || "/placeholder.png"}
                         alt={mentor.name ?? "Mentor"}
                         className="h-full w-full object-cover"
                       />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                        {t("userApplicationhistory.mentorSelectSummary", "Tổng quan")}
-                      </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-xs font-semibold text-indigo-300">
-                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                          {mentor.averageRating ? mentor.averageRating.toFixed(1) : "—"}
-                        </span>
-                        <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-xs font-semibold text-slate-300">
-                          {t("userApplicationhistory.mentorSelectSessionsValue", "{{count}} sessions", {
-                            count: mentor.totalSession ?? 0,
-                          })}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {mentor.expertise && (
-                          <span className="inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300">
-                            {mentor.expertise}
-                          </span>
-                        )}
-                        {mentor.currentCompany && (
-                          <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
-                            {mentor.currentCompany}
-                          </span>
-                        )}
-                      </div>
+
+                    <div className="space-y-1">
+                      <h3 className="text-2xl font-bold text-white">{mentor.name || "—"}</h3>
+                      <p className="text-sm text-slate-400">{mentor.currentCompany || "—"}</p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-xs font-semibold text-indigo-300">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        {mentor.averageRating ? mentor.averageRating.toFixed(1) : "—"}
+                      </span>
+                      <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-xs font-semibold text-slate-300">
+                        {t("userApplicationhistory.mentorSelectSessionsValue", "{{count}} sessions", {
+                          count: mentor.totalSession ?? 0,
+                        })}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4 p-5">
-                  <div className="rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.06] p-4">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-indigo-300">
-                      {t("userApplicationhistory.mentorSelectBioLabel", "Bio")}
+                  <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                      {t("userApplicationhistory.mentorSelectExpertise", "Chuyên môn")}
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">
-                      {mentor.bio ||
-                        t("userApplicationhistory.mentorSelectNoBio", "No bio available.")}
+                    <p className="text-sm leading-6 text-slate-100">
+                      {mentor.expertise || "—"}
                     </p>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                        {t("userApplicationhistory.mentorSelectCompany", "Công ty")}
-                      </div>
-                      <p className="mt-1 text-sm font-medium text-slate-100">
-                        {mentor.currentCompany || "—"}
-                      </p>
+                  <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                      {t("userApplicationhistory.mentorSelectContact", "Liên hệ")}
                     </div>
-                    <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                        {t("userApplicationhistory.mentorSelectExpertise", "Chuyên môn")}
-                      </div>
-                      <p className="mt-1 text-sm font-medium text-slate-100">
-                        {mentor.expertise || "—"}
-                      </p>
-                    </div>
+                    <p className="text-sm leading-6 text-slate-100">{mentor.email || "—"}</p>
                   </div>
 
                   <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                     <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                      {t("userApplicationhistory.mentorSelectContact", "Liên hệ")}
+                      {t("userApplicationhistory.mentorSelectBioLabel", "Bio")}
                     </div>
-                    <p className="mt-1 text-sm font-medium text-slate-100">
-                      {mentor.email || "—"}
+                    <p className="mt-3 text-sm leading-7 italic text-slate-200">
+                      <span className="mr-1 text-indigo-300">“</span>
+                      {mentor.bio ||
+                        t("userApplicationhistory.mentorSelectNoBio", "No bio available.")}
+                      <span className="ml-1 text-indigo-300">”</span>
                     </p>
                   </div>
                 </div>
