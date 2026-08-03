@@ -260,6 +260,7 @@ export function MentorDashboardPage() {
         }
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser?.id, authUser?.role, authUser?.name, authUser?.email, authUser?.avatarUrl, setUser]);
 
   useEffect(() => {
@@ -321,38 +322,38 @@ export function MentorDashboardPage() {
         onSettingsClick={() => setIsSettingsOpen(true)}
         theme={{
           wrapper:
-            "h-screen border-r border-emerald-200 bg-emerald-50/50 dark:border-slate-800 dark:bg-slate-900",
-          expandedWidth: "w-56",
-          collapsedWidth: "w-16",
-          logoBorder: "border-b border-emerald-200 dark:border-slate-800",
-          logoExpandedPadding: "h-14 gap-2 px-4",
-          logoCollapsedPadding: "h-14 justify-center px-2",
-          navWrapper: "flex flex-1 flex-col gap-1 overflow-y-auto py-4",
-          navExpandedPadding: "px-3",
-          navCollapsedPadding: "px-2",
+            "h-full border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900",
+          expandedWidth: "w-64",
+          collapsedWidth: "w-[72px]",
+          logoBorder: "border-b border-slate-200 dark:border-slate-800",
+          logoExpandedPadding: "h-16 gap-3 px-8",
+          logoCollapsedPadding: "h-16 justify-center px-2",
+          navWrapper: "flex-1 space-y-1 overflow-y-auto scrollbar-hide",
+          navExpandedPadding: "px-5 py-4",
+          navCollapsedPadding: "px-2 py-4",
           sectionLabel:
-            "px-3 text-xs font-semibold tracking-wider text-emerald-600/70 uppercase dark:text-slate-500",
-          divider: "border-emerald-100 dark:border-slate-800",
+            "text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-3 mt-6 px-3 dark:text-slate-400",
+          divider: "border-slate-200 dark:border-slate-800",
           itemPy: "py-2.5",
           activeItem:
-            "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+            "bg-indigo-50 text-indigo-700 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20",
           inactiveItem:
-            "text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-emerald-400",
-          activeIconOverride: "text-emerald-600 dark:text-emerald-400",
-          footerBorder: "border-t border-emerald-200 dark:border-slate-800",
-          footerExpandedPadding: "p-3",
-          footerCollapsedPadding: "p-2",
+            "text-slate-600 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
+          activeIconOverride: "text-indigo-600 dark:text-indigo-400",
+          footerBorder: "border-t border-slate-200 dark:border-slate-800",
+          footerExpandedPadding: "p-4",
+          footerCollapsedPadding: "p-3",
           logoutExpandedBtn:
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400",
           logoutCollapsedBtn:
-            "flex items-center justify-center rounded-lg p-2.5 text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
-          logoutIcon: "text-slate-500 dark:text-slate-400",
+            "flex items-center justify-center rounded-xl p-2.5 text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400",
+          logoutIcon: "",
           logoutLabel: t("common.logout"),
         }}
       />
 
       <div className="relative z-0 flex flex-1 flex-col overflow-hidden">
-        <div className="relative z-60 flex h-14 items-center justify-between border-b border-emerald-200 bg-white pr-4 pl-16 md:px-4 dark:border-slate-800 dark:bg-slate-950">
+        <div className="relative z-60 flex h-14 items-center justify-between border-b border-slate-200 bg-white pr-4 pl-16 md:px-4 dark:border-slate-800 dark:bg-slate-950">
           <div className="hidden shrink-0 pr-2 md:flex">
             <DashboardSidebarToggle
               isCollapsed={isSidebarCollapsed}

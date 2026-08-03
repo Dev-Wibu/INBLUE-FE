@@ -2153,7 +2153,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 626,
+    "line": 646,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2161,7 +2161,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 629,
+    "line": 649,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2169,7 +2169,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 632,
+    "line": 652,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2177,7 +2177,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 635,
+    "line": 655,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2185,7 +2185,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 689,
+    "line": 709,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -2193,7 +2193,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 693,
+    "line": 713,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -2217,111 +2217,159 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 769,
-    "character": 19,
+    "line": 658,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
-    "text": "Total"
+    "text": "AI Code Review Evaluator is running..."
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 777,
-    "character": 19,
+    "line": 1009,
+    "character": 47,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Issues"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 1080,
+    "character": 80,
     "type": "JsxText",
     "category": "english",
     "text": "CRITICAL"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 785,
-    "character": 19,
+    "line": 1086,
+    "character": 81,
     "type": "JsxText",
     "category": "english",
     "text": "WARNING"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 793,
-    "character": 19,
+    "line": 1092,
+    "character": 79,
     "type": "JsxText",
     "category": "english",
     "text": "INFO"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1207,
-    "character": 19,
+    "line": 1816,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
-    "text": "L"
+    "text": "AI EVALUATED"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1382,
-    "character": 19,
+    "line": 1900,
+    "character": 74,
     "type": "JsxText",
     "category": "english",
-    "text": "✓ PASSED"
+    "text": "AI vs HR"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1387,
+    "line": 1906,
+    "character": 17,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "AI Score"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 1912,
+    "character": 17,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "HR Score"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 1928,
     "character": 19,
     "type": "JsxText",
     "category": "english",
-    "text": "✗ FAILED"
+    "text": "STAT BARS"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 634,
-    "character": 19,
+    "line": 688,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
-    "text": "Lines"
+    "text": "Sandbox Grader is running..."
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 642,
-    "character": 19,
+    "line": 854,
+    "character": 15,
     "type": "JsxText",
     "category": "english",
-    "text": "Chars"
+    "text": "● Sandbox Grader"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1156,
-    "character": 31,
+    "line": 890,
+    "character": 76,
     "type": "JsxText",
     "category": "english",
-    "text": "IN"
+    "text": "chars"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1164,
-    "character": 31,
+    "line": 948,
+    "character": 58,
     "type": "JsxText",
     "category": "english",
-    "text": "OUT"
+    "text": "Tests"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1185,
-    "character": 57,
+    "line": 1292,
+    "character": 21,
     "type": "JsxText",
     "category": "english",
-    "text": "ms / test"
+    "text": "Copy"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1190,
+    "line": 1301,
+    "character": 80,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1307,
+    "character": 80,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Output:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1470,
     "character": 51,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 1476,
+    "character": 44,
     "type": "JsxText",
     "category": "english",
     "text": "MB"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1236,
+    "line": 1664,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2329,7 +2377,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1245,
+    "line": 1673,
     "character": 48,
     "type": "JsxText",
     "category": "english",
@@ -2337,7 +2385,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1245,
+    "line": 1673,
     "character": 77,
     "type": "JsxText",
     "category": "english",
@@ -2345,59 +2393,67 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1371,
-    "character": 90,
+    "line": 1997,
+    "character": 46,
     "type": "JsxText",
     "category": "english",
     "text": "ms"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1380,
-    "character": 63,
+    "line": 2048,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Case"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 2051,
+    "character": 43,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 2066,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Testcase #"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 2078,
+    "character": 73,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 2105,
+    "character": 21,
     "type": "JsxText",
     "category": "english",
     "text": "Input"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1381,
-    "character": 63,
+    "line": 2120,
+    "character": 21,
     "type": "JsxText",
     "category": "english",
-    "text": "Expected"
+    "text": "Expected Output"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1382,
-    "character": 63,
+    "line": 2135,
+    "character": 21,
     "type": "JsxText",
     "category": "english",
-    "text": "Actual"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1383,
-    "character": 63,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Status"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1384,
-    "character": 63,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Time"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1417,
-    "character": 41,
-    "type": "JsxText",
-    "category": "english",
-    "text": "ms"
+    "text": "Your Output"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
@@ -2577,7 +2633,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 248,
+    "line": 254,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2585,7 +2641,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 253,
+    "line": 259,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2593,23 +2649,15 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 364,
-    "character": 19,
+    "line": 392,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "B"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 423,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "ApplicationDetail #"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 787,
+    "line": 959,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2617,7 +2665,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 814,
+    "line": 986,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2625,7 +2673,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1019,
+    "line": 1191,
     "character": 13,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2633,15 +2681,119 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1126,
-    "character": 15,
-    "type": "JsxAttribute[label]",
+    "line": 1270,
+    "character": 21,
+    "type": "JsxText",
     "category": "english",
-    "text": "Mentor tham gia"
+    "text": "Phien phong van da hoan tat"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1185,
+    "line": 1273,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Ket qua phong van voi mentor da duoc ghi nhan. Xem nhan xet cua mentor va hoan tat\r\n              buoc danh gia mentor de dong vong phong van."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1278,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "COMPLETED"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1285,
+    "character": 13,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Thoi gian"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1290,
+    "character": 13,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Thoi luong"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1295,
+    "character": 13,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Ban tham gia"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1304,
+    "character": 13,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1315,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Recording phong van"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1323,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Xem lai video"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1335,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Danh gia cua Mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1347,
+    "character": 30,
+    "type": "JsxAttribute[title]",
+    "category": "english",
+    "text": "Diem manh"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1350,
+    "character": 30,
+    "type": "JsxAttribute[title]",
+    "category": "english",
+    "text": "Can cai thien"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1353,
+    "character": 30,
+    "type": "JsxAttribute[title]",
+    "category": "english",
+    "text": "De xuat phat trien"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1361,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Nhan xet theo STAR method"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1365,
     "character": 32,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2649,7 +2801,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1187,
+    "line": 1367,
     "character": 50,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2657,7 +2809,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1188,
+    "line": 1368,
     "character": 52,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2665,35 +2817,115 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1189,
+    "line": 1369,
     "character": 52,
     "type": "JsxAttribute[label]",
     "category": "english",
     "text": "Result"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 95,
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1381,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Dang cho danh gia cua mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1384,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Trang nay se tu cap nhat khi mentor gui nhan xet sau buoi phong van."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1486,
+    "character": 76,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Danh gia Mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1489,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Da gui"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1501,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Sua danh gia"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1534,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Cam on ban da hoan tat danh gia. Vong Mentor Interview da ket thuc."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1543,
     "character": 17,
     "type": "JsxText",
     "category": "english",
-    "text": "JavaScript / TypeScript Core"
+    "text": "Diem danh gia"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1560,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Nhan xet ve Mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1578,
+    "character": 15,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Chia se cam nhan ve cach mentor dat cau hoi, huong dan va ho tro trong buoi phong van."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1610,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Dang gui..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1630,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Huy"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 1634,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Buoc cuoi cua vong Mentor Interview"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 98,
-    "character": 17,
+    "line": 1085,
+    "character": 21,
     "type": "JsxText",
     "category": "english",
-    "text": "Database & Query Optimization"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 101,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "System Design Basics"
+    "text": "Sai ("
   },
   {
     "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
