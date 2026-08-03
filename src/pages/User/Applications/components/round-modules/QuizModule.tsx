@@ -1077,60 +1077,79 @@ export function QuizModule({
                     <div
                       key={res.originalIndex}
                       id={`review-question-${res.originalIndex}`}
-                      className={`space-y-3 rounded-2xl border p-5 transition-all ${
+                      className={`overflow-hidden rounded-2xl border transition-all ${
                         res.isCorrect
-                          ? "border-emerald-500/30 bg-emerald-950/15 hover:border-emerald-500/50"
-                          : "border-rose-500/30 bg-rose-950/15 hover:border-rose-500/50"
+                          ? "border-emerald-500/30 bg-slate-900/90 shadow-md"
+                          : "border-rose-500/30 bg-slate-900/90 shadow-md"
                       }`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3">
-                          {res.isCorrect ? (
-                            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
-                          ) : (
-                            <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
-                          )}
-                          <div className="flex-1 text-xs leading-relaxed font-bold text-slate-100">
-                            <span className="mr-1.5 font-extrabold text-indigo-400">
-                              Câu {res.originalIndex + 1}:
-                            </span>
-                            <FormattedQuestionText text={res.questionText} className="mt-1" />
+                      {/* Prominent Header Banner */}
+                      <div
+                        className={`flex items-center justify-between border-b px-5 py-3 ${
+                          res.isCorrect
+                            ? "border-emerald-500/20 bg-emerald-950/40"
+                            : "border-rose-500/20 bg-rose-950/40"
+                        }`}>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-xs font-black uppercase ${
+                              res.isCorrect
+                                ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300"
+                                : "border-rose-500/40 bg-rose-500/20 text-rose-300"
+                            }`}>
+                            {res.isCorrect ? (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-rose-400" />
+                            )}
+                            <span>CÂU HỎI {res.originalIndex + 1}</span>
                           </div>
+                          <span className="text-[11px] font-semibold text-slate-400">
+                            {res.isCorrect ? "Trả lời chính xác" : "Trả lời chưa chính xác"}
+                          </span>
                         </div>
+
                         <span
-                          className={`shrink-0 rounded-lg px-2.5 py-1 font-mono text-[10px] font-extrabold ${
+                          className={`rounded-lg border px-3 py-1 font-mono text-[11px] font-extrabold tracking-wider uppercase ${
                             res.isCorrect
-                              ? "border border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
-                              : "border border-rose-500/30 bg-rose-500/20 text-rose-300"
+                              ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
+                              : "border-rose-500/30 bg-rose-500/20 text-rose-300"
                           }`}>
                           {res.isCorrect ? "ĐÚNG" : "SAI"}
                         </span>
                       </div>
 
-                      {/* Options / Answer Box Comparison */}
-                      <div className="space-y-2 border-t border-slate-800/80 pt-3 pl-8 text-xs">
-                        <div
-                          className={`flex items-start gap-2 rounded-xl border p-3 ${
-                            res.isCorrect
-                              ? "border-emerald-500/30 bg-emerald-950/40 text-emerald-200"
-                              : "border-rose-500/30 bg-rose-950/40 text-rose-200"
-                          }`}>
-                          <span className="font-semibold text-slate-400">Lựa chọn của bạn:</span>
-                          <span className="font-mono font-bold">
-                            {res.selectedAnswer || "(Chưa chọn)"}
-                          </span>
+                      {/* Question Content & Answer Comparison */}
+                      <div className="space-y-4 p-5">
+                        <div className="text-xs leading-relaxed font-bold text-slate-100">
+                          <FormattedQuestionText text={res.questionText} />
                         </div>
 
-                        {res.correctAnswer && !res.isCorrect && (
-                          <div className="flex items-start gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-3 text-emerald-300">
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                            <div>
-                              <span className="font-semibold text-emerald-400">
-                                Đáp án chính xác:{" "}
-                              </span>
-                              <span className="font-mono font-bold">{res.correctAnswer}</span>
-                            </div>
+                        {/* Options / Answer Box Comparison */}
+                        <div className="space-y-2 border-t border-slate-800/80 pt-3 text-xs">
+                          <div
+                            className={`flex items-start gap-2 rounded-xl border p-3 ${
+                              res.isCorrect
+                                ? "border-emerald-500/30 bg-emerald-950/30 text-emerald-200"
+                                : "border-rose-500/30 bg-rose-950/30 text-rose-200"
+                            }`}>
+                            <span className="font-semibold text-slate-400">Lựa chọn của bạn:</span>
+                            <span className="font-mono font-bold">
+                              {res.selectedAnswer || "(Chưa chọn)"}
+                            </span>
                           </div>
-                        )}
+
+                          {res.correctAnswer && !res.isCorrect && (
+                            <div className="flex items-start gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950/30 p-3 text-emerald-300">
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                              <div>
+                                <span className="font-semibold text-emerald-400">
+                                  Đáp án chính xác:{" "}
+                                </span>
+                                <span className="font-mono font-bold">{res.correctAnswer}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))
