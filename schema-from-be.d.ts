@@ -2293,6 +2293,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/application-details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy danh sách các vòng thi (Application Details) và hỗ trợ lọc theo status
+         * @description Trả về danh sách các Application Details. Hỗ trợ lọc theo trạng thái (ví dụ: status=AWAITING_MENTOR). Nếu không truyền status thì trả về tất cả.
+         */
+        get: operations["getApplicationDetails"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/posts/likes/{postId}/{userId}": {
         parameters: {
             query?: never;
@@ -2677,6 +2697,13 @@ export interface components {
             /** Format: int32 */
             pricePerMinute?: number;
         };
+        MentorFeedbackResponse: {
+            /** Format: int32 */
+            rating?: number;
+            comment?: string;
+            userName?: string;
+            userAvatarUrl?: string;
+        };
         MentorResponse: {
             /** Format: int32 */
             id?: number;
@@ -2701,6 +2728,7 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+            feedbacks?: components["schemas"]["MentorFeedbackResponse"][];
             active?: boolean;
         };
         ChangeMentorPasswordRequest: {
@@ -3135,11 +3163,6 @@ export interface components {
             /** Format: int32 */
             duration?: number;
             offline?: boolean;
-        };
-        MentorFeedbackResponse: {
-            /** Format: int32 */
-            rating?: number;
-            comment?: string;
         };
         MentorReviewResponse: {
             /** Format: int32 */
@@ -3716,19 +3739,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -4046,11 +4069,11 @@ export interface components {
         /** @enum {unknown} */
         HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 CONTENT_TOO_LARGE" | "413 PAYLOAD_TOO_LARGE" | "414 URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "421 MISDIRECTED_REQUEST" | "422 UNPROCESSABLE_CONTENT" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
         HttpStatusCode: {
-            is4xxClientError?: boolean;
-            is5xxServerError?: boolean;
             is1xxInformational?: boolean;
             is2xxSuccessful?: boolean;
             is3xxRedirection?: boolean;
+            is4xxClientError?: boolean;
+            is5xxServerError?: boolean;
             error?: boolean;
         };
         JspConfigDescriptor: {
@@ -4058,18 +4081,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
-            scriptingInvalid?: string;
-            includePreludes?: string[];
-            includeCodas?: string[];
             trimDirectiveWhitespaces?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
+            scriptingInvalid?: string;
+            includePreludes?: string[];
             elIgnored?: string;
             isXml?: string;
-            defaultContentType?: string;
+            includeCodas?: string[];
+            pageEncoding?: string;
+            errorOnELNotFound?: string;
             urlPatterns?: string[];
+            defaultContentType?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -4093,8 +4116,8 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            redirectView?: boolean;
             propagateQueryProperties?: boolean;
+            redirectView?: boolean;
             attributesCSV?: string;
             attributesMap?: {
                 [key: string]: unknown;
@@ -4104,6 +4127,11 @@ export interface components {
             };
         };
         ServletContext: {
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
@@ -4121,13 +4149,8 @@ export interface components {
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
-            virtualServerName?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            contextPath?: string;
             initParameterNames?: unknown;
+            contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
                 name?: string;
@@ -4217,8 +4240,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
         AdminOpenJdResponseDto: {
             /** Format: int64 */
@@ -4380,6 +4403,48 @@ export interface components {
             appliedAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        AdminApplicationDetailResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: int64 */
+            roundId?: number;
+            /** @enum {string} */
+            status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            /** Format: double */
+            finalScore?: number;
+            /** Format: double */
+            hrScore?: number;
+            hrNote?: string;
+            /** Format: double */
+            aiScore?: number;
+            /** @enum {string} */
+            finalResult?: "PASSED" | "FAILED";
+            /** Format: date-time */
+            startedAt?: string;
+            /** Format: date-time */
+            completedAt?: string;
+            /** Format: int32 */
+            mentorId?: number;
+            assignedMentorIds?: number[];
+            assignedMentors?: components["schemas"]["MentorResponse"][];
+            /** Format: int32 */
+            sessionId?: number;
+            /** Format: int32 */
+            aiInterviewSessionId?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            roundName?: string;
+            /** Format: int32 */
+            roundOrder?: number;
+            jdTitle?: string;
+            candidateName?: string;
+            candidateEmail?: string;
+            candidateAvatarUrl?: string;
         };
     };
     responses: never;
@@ -8093,6 +8158,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminApplicationFullDetailResponseDto"];
+                };
+            };
+        };
+    };
+    getApplicationDetails: {
+        parameters: {
+            query?: {
+                status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminApplicationDetailResponse"][];
                 };
             };
         };

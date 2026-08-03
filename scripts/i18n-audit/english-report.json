@@ -1905,27 +1905,11 @@
   },
   {
     "file": "src/pages/Mentor/Account/MentorAccountPage.tsx",
-    "line": 327,
-    "character": 51,
+    "line": 385,
+    "character": 21,
     "type": "JsxText",
     "category": "english",
     "text": "Mentor"
-  },
-  {
-    "file": "src/pages/Mentor/Account/MentorAccountPage.tsx",
-    "line": 375,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Mentor"
-  },
-  {
-    "file": "src/pages/Mentor/Account/MentorAccountPage.tsx",
-    "line": 400,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Mentor ID"
   },
   {
     "file": "src/pages/Mentor/Account/MentorAccountTabs/MentorProfileSection.tsx",
@@ -2217,7 +2201,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 658,
+    "line": 660,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2225,7 +2209,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1009,
+    "line": 1013,
     "character": 47,
     "type": "JsxText",
     "category": "english",
@@ -2233,7 +2217,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1080,
+    "line": 1084,
     "character": 80,
     "type": "JsxText",
     "category": "english",
@@ -2241,7 +2225,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1086,
+    "line": 1090,
     "character": 81,
     "type": "JsxText",
     "category": "english",
@@ -2249,7 +2233,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1092,
+    "line": 1096,
     "character": 79,
     "type": "JsxText",
     "category": "english",
@@ -2257,7 +2241,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1816,
+    "line": 1818,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2265,7 +2249,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1900,
+    "line": 1902,
     "character": 74,
     "type": "JsxText",
     "category": "english",
@@ -2274,14 +2258,14 @@
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
     "line": 1906,
-    "character": 17,
+    "character": 52,
     "type": "JsxAttribute[label]",
     "category": "english",
     "text": "AI Score"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1912,
+    "line": 1909,
     "character": 17,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2289,7 +2273,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1928,
+    "line": 1925,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2297,7 +2281,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 688,
+    "line": 689,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2305,7 +2289,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 854,
+    "line": 855,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -2313,7 +2297,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 890,
+    "line": 891,
     "character": 76,
     "type": "JsxText",
     "category": "english",
@@ -2321,7 +2305,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 948,
+    "line": 949,
     "character": 58,
     "type": "JsxText",
     "category": "english",
@@ -2329,7 +2313,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1292,
+    "line": 1291,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2337,7 +2321,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1301,
+    "line": 1300,
     "character": 80,
     "type": "JsxText",
     "category": "english",
@@ -2345,7 +2329,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1307,
+    "line": 1306,
     "character": 80,
     "type": "JsxText",
     "category": "english",
@@ -2353,7 +2337,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1470,
+    "line": 1469,
     "character": 51,
     "type": "JsxText",
     "category": "english",
@@ -2361,7 +2345,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1476,
+    "line": 1475,
     "character": 44,
     "type": "JsxText",
     "category": "english",
@@ -2369,7 +2353,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1664,
+    "line": 1663,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2377,7 +2361,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1673,
+    "line": 1672,
     "character": 48,
     "type": "JsxText",
     "category": "english",
@@ -2385,7 +2369,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1673,
+    "line": 1672,
     "character": 77,
     "type": "JsxText",
     "category": "english",
@@ -2393,7 +2377,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1997,
+    "line": 1999,
     "character": 46,
     "type": "JsxText",
     "category": "english",
@@ -2401,7 +2385,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2048,
+    "line": 2050,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -2409,7 +2393,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2051,
+    "line": 2053,
     "character": 43,
     "type": "JsxText",
     "category": "english",
@@ -2417,7 +2401,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2066,
+    "line": 2068,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2425,7 +2409,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2078,
+    "line": 2080,
     "character": 73,
     "type": "JsxText",
     "category": "english",
@@ -2433,7 +2417,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2105,
+    "line": 2107,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2441,7 +2425,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2120,
+    "line": 2122,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2449,7 +2433,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2135,
+    "line": 2137,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2633,7 +2617,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 254,
+    "line": 252,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2641,7 +2625,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 259,
+    "line": 257,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2649,7 +2633,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 392,
+    "line": 387,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2657,7 +2641,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 959,
+    "line": 955,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2665,7 +2649,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 986,
+    "line": 982,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2673,7 +2657,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1191,
+    "line": 1187,
     "character": 13,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2681,7 +2665,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1270,
+    "line": 1266,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2689,7 +2673,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1273,
+    "line": 1269,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -2697,7 +2681,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1278,
+    "line": 1274,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -2705,7 +2689,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1285,
+    "line": 1281,
     "character": 13,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2713,7 +2697,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1290,
+    "line": 1286,
     "character": 13,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2721,7 +2705,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1295,
+    "line": 1291,
     "character": 13,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2729,7 +2713,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1304,
+    "line": 1300,
     "character": 13,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2737,7 +2721,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1315,
+    "line": 1311,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2745,7 +2729,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1323,
+    "line": 1319,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -2753,7 +2737,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1335,
+    "line": 1331,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2761,7 +2745,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1347,
+    "line": 1343,
     "character": 30,
     "type": "JsxAttribute[title]",
     "category": "english",
@@ -2769,7 +2753,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1350,
+    "line": 1346,
     "character": 30,
     "type": "JsxAttribute[title]",
     "category": "english",
@@ -2777,7 +2761,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1353,
+    "line": 1349,
     "character": 30,
     "type": "JsxAttribute[title]",
     "category": "english",
@@ -2785,7 +2769,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1361,
+    "line": 1357,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2793,7 +2777,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1365,
+    "line": 1361,
     "character": 32,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2801,7 +2785,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1367,
+    "line": 1363,
     "character": 50,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2809,7 +2793,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1368,
+    "line": 1364,
     "character": 52,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2817,7 +2801,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1369,
+    "line": 1365,
     "character": 52,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2825,7 +2809,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1381,
+    "line": 1377,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -2833,7 +2817,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1384,
+    "line": 1380,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -2841,7 +2825,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1486,
+    "line": 1482,
     "character": 76,
     "type": "JsxText",
     "category": "english",
@@ -2849,7 +2833,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1489,
+    "line": 1485,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -2857,7 +2841,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1501,
+    "line": 1497,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -2865,7 +2849,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1534,
+    "line": 1530,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -2873,7 +2857,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1543,
+    "line": 1539,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2881,7 +2865,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1560,
+    "line": 1556,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2889,7 +2873,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1578,
+    "line": 1574,
     "character": 15,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -2897,7 +2881,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1610,
+    "line": 1606,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2905,7 +2889,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1630,
+    "line": 1626,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2913,7 +2897,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1634,
+    "line": 1630,
     "character": 15,
     "type": "JsxText",
     "category": "english",
