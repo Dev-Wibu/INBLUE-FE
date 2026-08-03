@@ -28,8 +28,8 @@ import {
 } from "@/hooks/useMentorFeedback";
 import { useCreateRoundSession, useSessionById } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
-import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { cn } from "@/lib/utils";
+import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
   AlertCircle,
@@ -358,7 +358,7 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
                       : "border-slate-700 bg-slate-800/50 text-slate-500"
                 )}>
                 {isDone ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-                
+
                 {/* Active indicator dot */}
                 {isActive && (
                   <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] ring-2 ring-slate-900" />
@@ -423,7 +423,10 @@ function AwaitingMentorStep({
 
           {/* Heading & Description */}
           <h3 className="mt-3 text-lg font-extrabold tracking-tight text-white sm:text-xl">
-            {t("userApplicationhistory.mentorAwaitingTitle", "Chá» Admin phÃ¢n bá»• mentor phÃ¹ há»£p")}
+            {t(
+              "userApplicationhistory.mentorAwaitingTitle",
+              "Chá» Admin phÃ¢n bá»• mentor phÃ¹ há»£p"
+            )}
           </h3>
           <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">
             {t(
@@ -457,7 +460,8 @@ function AwaitingMentorStep({
               </div>
               <h5 className="mt-3 text-xs font-bold text-white">1. Admin Ä‘á» xuáº¥t Mentor</h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-300">
-                Admin xem xÃ©t há»“ sÆ¡ vÃ  chá»‰ Ä‘á»‹nh cÃ¡c mentor cÃ³ ká»¹ nÄƒng phÃ¹ há»£p nháº¥t vá»›i vá»‹ trÃ­.
+                Admin xem xÃ©t há»“ sÆ¡ vÃ  chá»‰ Ä‘á»‹nh cÃ¡c mentor cÃ³ ká»¹ nÄƒng phÃ¹ há»£p
+                nháº¥t vá»›i vá»‹ trÃ­.
               </p>
             </div>
           </div>
@@ -475,7 +479,8 @@ function AwaitingMentorStep({
               </div>
               <h5 className="mt-3 text-xs font-bold text-slate-200">2. Báº¡n chá»n Mentor</h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                Xem há»“ sÆ¡ nÄƒng lá»±c, Ä‘Ã¡nh giÃ¡ vÃ  chá»n mentor báº¡n mong muá»‘n phá»ng váº¥n.
+                Xem há»“ sÆ¡ nÄƒng lá»±c, Ä‘Ã¡nh giÃ¡ vÃ  chá»n mentor báº¡n mong muá»‘n phá»ng
+                váº¥n.
               </p>
             </div>
           </div>
@@ -491,9 +496,12 @@ function AwaitingMentorStep({
                   BÆ°á»›c 3
                 </span>
               </div>
-              <h5 className="mt-3 text-xs font-bold text-slate-200">3. Äáº·t lá»‹ch & Phá»ng váº¥n</h5>
+              <h5 className="mt-3 text-xs font-bold text-slate-200">
+                3. Äáº·t lá»‹ch & Phá»ng váº¥n
+              </h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                Chá»n thá»i gian ráº£nh thuáº­n tiá»‡n vÃ  vÃ o phÃ²ng há»p video 1-1 trá»±c tuyáº¿n.
+                Chá»n thá»i gian ráº£nh thuáº­n tiá»‡n vÃ  vÃ o phÃ²ng há»p video 1-1 trá»±c
+                tuyáº¿n.
               </p>
             </div>
           </div>
@@ -543,9 +551,15 @@ function SelectMentorStep({
     return (
       <Card className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center shadow-sm dark:border-rose-900/40 dark:bg-rose-950/20">
         <AlertCircle className="mx-auto h-12 w-12 text-rose-400" />
-        <h3 className="mt-4 text-lg font-black text-rose-900 dark:text-rose-100">ChÆ°a cÃ³ mentor nÃ o Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh</h3>
-        <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">Vui lÃ²ng chá» Admin phÃ¢n bá»• chuyÃªn gia phÃ¹ há»£p.</p>
-        <Button variant="outline" onClick={() => void refetch()} className="mt-6 rounded-xl">Táº£i láº¡i</Button>
+        <h3 className="mt-4 text-lg font-black text-rose-900 dark:text-rose-100">
+          ChÆ°a cÃ³ mentor nÃ o Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh
+        </h3>
+        <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">
+          Vui lÃ²ng chá» Admin phÃ¢n bá»• chuyÃªn gia phÃ¹ há»£p.
+        </p>
+        <Button variant="outline" onClick={() => void refetch()} className="mt-6 rounded-xl">
+          Táº£i láº¡i
+        </Button>
       </Card>
     );
   }
@@ -565,9 +579,13 @@ function SelectMentorStep({
                     {t("userApplicationhistory.mentorSelectTitle", "Chá»n mentor phÃ¹ há»£p")}
                   </h3>
                   <span className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-[11px] font-semibold text-indigo-300">
-                    {t("userApplicationhistory.mentorSelectCount", "{{count}} mentor Ä‘Æ°á»£c Ä‘á» xuáº¥t", {
-                      count: mentors.length,
-                    })}
+                    {t(
+                      "userApplicationhistory.mentorSelectCount",
+                      "{{count}} mentor Ä‘Æ°á»£c Ä‘á» xuáº¥t",
+                      {
+                        count: mentors.length,
+                      }
+                    )}
                   </span>
                 </div>
                 <p className="mt-1 text-sm leading-6 text-slate-300">
@@ -581,7 +599,9 @@ function SelectMentorStep({
 
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-950/60 px-3 py-1.5 text-xs font-semibold text-slate-300">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span>{t("userApplicationhistory.mentorSelectHintShort", "Xem hồ sơ trước khi chọn")}</span>
+              <span>
+                {t("userApplicationhistory.mentorSelectHintShort", "Xem hồ sơ trước khi chọn")}
+              </span>
             </div>
           </div>
 
@@ -595,7 +615,7 @@ function SelectMentorStep({
           </div>
         </div>
 
-        <div className="grid gap-4 justify-items-center [grid-template-columns:repeat(auto-fit,minmax(270px,1fr))]">
+        <div className="grid [grid-template-columns:repeat(auto-fit,minmax(270px,1fr))] justify-items-center gap-4">
           {mentorsSorted.map((mentor) => (
             <MentorCard
               key={mentor.id ?? mentor.email ?? mentor.name}
@@ -716,7 +736,7 @@ function MentorCard({
             </div>
 
             <div className="mt-2 min-h-[4rem] space-y-0.5">
-              <h4 className="whitespace-normal break-words text-[16px] font-semibold leading-6 text-white">
+              <h4 className="text-[16px] leading-6 font-semibold break-words whitespace-normal text-white">
                 {mentor.name ?? "—"}
               </h4>
               <p className="line-clamp-2 min-h-[2.5rem] text-[13px] leading-5 text-slate-300">
@@ -727,7 +747,7 @@ function MentorCard({
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col px-4 pb-4 pt-4">
+      <div className="flex flex-1 flex-col px-4 pt-4 pb-4">
         <div className="flex flex-1 flex-col">
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 font-medium text-indigo-200 shadow-sm">
@@ -742,8 +762,8 @@ function MentorCard({
           </div>
 
           <div className="mt-4">
-            <p className="relative min-h-[7rem] pl-6 text-sm leading-6 italic text-slate-200">
-              <span className="absolute left-0.5 top-0 text-lg leading-none text-indigo-300">
+            <p className="relative min-h-[7rem] pl-6 text-sm leading-6 text-slate-200 italic">
+              <span className="absolute top-0 left-0.5 text-lg leading-none text-indigo-300">
                 “
               </span>
               {bio ||
@@ -826,9 +846,13 @@ function MentorDetailDialog({
                         {mentor.averageRating ? mentor.averageRating.toFixed(1) : "—"}
                       </span>
                       <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-xs font-semibold text-slate-300">
-                        {t("userApplicationhistory.mentorSelectSessionsValue", "{{count}} sessions", {
-                          count: mentor.totalSession ?? 0,
-                        })}
+                        {t(
+                          "userApplicationhistory.mentorSelectSessionsValue",
+                          "{{count}} sessions",
+                          {
+                            count: mentor.totalSession ?? 0,
+                          }
+                        )}
                       </span>
                     </div>
                   </div>
@@ -836,26 +860,24 @@ function MentorDetailDialog({
 
                 <div className="space-y-4 p-5">
                   <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    <div className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
                       {t("userApplicationhistory.mentorSelectExpertise", "Chuyên môn")}
                     </div>
-                    <p className="text-sm leading-6 text-slate-100">
-                      {mentor.expertise || "—"}
-                    </p>
+                    <p className="text-sm leading-6 text-slate-100">{mentor.expertise || "—"}</p>
                   </div>
 
                   <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    <div className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
                       {t("userApplicationhistory.mentorSelectContact", "Liên hệ")}
                     </div>
                     <p className="text-sm leading-6 text-slate-100">{mentor.email || "—"}</p>
                   </div>
 
                   <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    <div className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
                       {t("userApplicationhistory.mentorSelectBioLabel", "Bio")}
                     </div>
-                    <p className="mt-3 text-sm leading-7 italic text-slate-200">
+                    <p className="mt-3 text-sm leading-7 text-slate-200 italic">
                       <span className="mr-1 text-indigo-300">“</span>
                       {mentor.bio ||
                         t("userApplicationhistory.mentorSelectNoBio", "No bio available.")}
@@ -929,10 +951,7 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
               <div className="mt-0.5 text-xs text-slate-400">
                 {session?.id
                   ? `${t("userApplicationhistory.mentorFeedbackSessionLabel", "Session")} #${session.id}`
-                  : t(
-                      "userApplicationhistory.mentorFeedbackSessionUnknown",
-                      "Session unavailable"
-                    )} 
+                  : t("userApplicationhistory.mentorFeedbackSessionUnknown", "Session unavailable")}
                 {session?.joinTime ? ` · ${formatDateTime(session.joinTime)}` : ""}
               </div>
             </div>
@@ -1004,7 +1023,8 @@ function ScheduleStep({
           Äáº·t lá»‹ch phá»ng váº¥n
         </h3>
         <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-          Chá»n ngÃ y giá» vÃ  thá»i lÆ°á»£ng phÃ¹ há»£p. Báº¡n cÃ³ thá»ƒ Ä‘á»•i trÆ°á»›c khi thanh toÃ¡n.
+          Chá»n ngÃ y giá» vÃ  thá»i lÆ°á»£ng phÃ¹ há»£p. Báº¡n cÃ³ thá»ƒ Ä‘á»•i trÆ°á»›c khi thanh
+          toÃ¡n.
         </p>
       </div>
 
@@ -1351,7 +1371,9 @@ function SessionRoomStep({
               if (session.roomUrl) {
                 window.location.href = `/user/sessions/room/${session.id}`;
               } else {
-                toast.info("ÄÃ¢y lÃ  phiÃªn Offline. HÃ£y liÃªn há»‡ mentor qua thÃ´ng tin bÃªn dÆ°á»›i.");
+                toast.info(
+                  "ÄÃ¢y lÃ  phiÃªn Offline. HÃ£y liÃªn há»‡ mentor qua thÃ´ng tin bÃªn dÆ°á»›i."
+                );
               }
             }}
             disabled={!canEnter && session.status === "PAID"}
@@ -1866,4 +1888,3 @@ function formatCountdown(ms: number): string {
   if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
   return `${pad(m)}:${pad(s)}`;
 }
-
