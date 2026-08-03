@@ -459,8 +459,19 @@ export function MentorReviewAssignmentPage() {
               </div>
 
               {pageData.map((detail) => {
-                const canAssign = detail.status === "AWAITING_MENTOR";
-                const awaitingCandidate = detail.status === "AWAITING_CANDIDATE_SELECT_MENTOR";
+                // BE rule (mentor-review-assignment API doc):
+                //   AWAITING_MENTOR              -> assign single -> status -> PENDING (gone from this view)
+                //   AWAITING_CANDIDATE_SELECT    -> admin can REASSIGN suggested mentors while UV picks
+                //   PENDING (with session)       -> room already created, READ-ONLY
+                //   Anything else (SUBMITTED/AI_EVALUATED/COMPLETED/SLOT_PICKED) -> READ-ONLY
+                const status = detail.status;
+                const isAwaitingMentor = status === "AWAITING_MENTOR";
+                const isAwaitingCandidate = status === "AWAITING_CANDIDATE_SELECT_MENTOR";
+                const hasSuggestedMentors =
+                  (detail.assignedMentorIds?.length ?? 0) > 0 ||
+                  (detail.assignedMentors?.length ?? 0) > 0;
+                const hasRoom = status === "PENDING" && detail.sessionId != null;
+
                 return (
                   <div
                     key={detail.id}
@@ -513,7 +524,7 @@ export function MentorReviewAssignmentPage() {
 
                       {/* Action */}
                       <div className="flex flex-col items-stretch justify-end gap-1 sm:col-span-2 sm:items-end">
-                        {canAssign && (
+                        {isAwaitingMentor && (
                           <Button
                             size="sm"
                             onClick={() => openAssignDialog(detail)}
@@ -525,38 +536,56 @@ export function MentorReviewAssignmentPage() {
                             </span>
                           </Button>
                         )}
-                        {awaitingCandidate && (
-                          <div className="flex flex-col items-end gap-1">
-                            <Badge
+                        {isAwaitingCandidate && (
+                          <>
+                            <Button
+                              size="sm"
                               variant="outline"
-                              className="gap-1 border-blue-200 bg-blue-50/60 px-2 text-blue-700">
-                              <Eye className="h-3 w-3" />
-                              {t("adminMentorReviewAssignment.suggestedN", {
-                                count: detail.assignedMentorIds?.length ?? 0,
-                              })}
-                            </Badge>
-                            {detail.assignedMentors &&
-                              detail.assignedMentors.slice(0, 3).map((m) => (
+                              onClick={() => openAssignDialog(detail)}
+                              className="gap-1.5 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100">
+                              <RefreshCw className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">
+                                {t("adminMentorReviewAssignment.reassign")}
+                              </span>
+                              <span className="sm:hidden">
+                                {t("adminMentorReviewAssignment.actionAssign")}
+                              </span>
+                            </Button>
+                            {hasSuggestedMentors &&
+                              detail.assignedMentors?.slice(0, 3).map((m) => (
                                 <span
                                   key={m.id}
                                   className="text-muted-foreground truncate text-[11px]">
                                   • {m.name}
                                 </span>
                               ))}
-                          </div>
+                          </>
                         )}
-                        {!canAssign && !awaitingCandidate && (
+                        {!isAwaitingMentor && !isAwaitingCandidate && hasRoom && (
                           <Badge
                             variant="outline"
-                            className="gap-1 border-slate-200 bg-slate-50 text-slate-600">
-                            {renderStatusBadge(detail, t)}
+                            className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700">
+                            <CheckCircle2 className="h-3 w-3" />
+                            {t("adminMentorReviewAssignment.roomCreated")}
                           </Badge>
                         )}
+                        {!isAwaitingMentor &&
+                          !isAwaitingCandidate &&
+                          !hasRoom &&
+                          renderStatusBadge(detail, t)}
                       </div>
 
                       {/* Mobile-only metadata */}
                       <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs sm:hidden">
                         {renderStatusBadge(detail, t)}
+                        {hasRoom && (
+                          <Badge
+                            variant="outline"
+                            className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700">
+                            <CheckCircle2 className="h-3 w-3" />
+                            {t("adminMentorReviewAssignment.roomCreated")}
+                          </Badge>
+                        )}
                         {detail.createdAt && (
                           <span>
                             {t("adminMentorReviewAssignment.createdAt")}:{" "}
@@ -569,10 +598,25 @@ export function MentorReviewAssignmentPage() {
                     {/* Expanded metadata on desktop */}
                     <div className="text-muted-foreground hidden gap-4 px-4 pb-3 text-xs sm:flex">
                       {renderStatusBadge(detail, t)}
+                      {hasRoom && (
+                        <Badge
+                          variant="outline"
+                          className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700">
+                          <CheckCircle2 className="h-3 w-3" />
+                          {t("adminMentorReviewAssignment.roomCreated")}
+                        </Badge>
+                      )}
                       {detail.createdAt && (
                         <span>
                           {t("adminMentorReviewAssignment.createdAt")}:{" "}
                           {formatDateTime(treatZuluAsVietnamLocal(detail.createdAt))}
+                        </span>
+                      )}
+                      {detail.sessionId != null && (
+                        <span>
+                          Session #{detail.sessionId}
+                          {detail.aiInterviewSessionId != null &&
+                            ` · AI #${detail.aiInterviewSessionId}`}
                         </span>
                       )}
                     </div>
