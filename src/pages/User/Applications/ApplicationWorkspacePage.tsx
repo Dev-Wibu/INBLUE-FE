@@ -331,7 +331,11 @@ export function ApplicationWorkspacePage() {
     activeRound?.roundType?.toUpperCase() === "EMAIL_SIMULATOR" ||
     activeRound?.roundType?.toUpperCase() === "EMAIL";
   const isQuizRound = activeRound?.roundType?.toUpperCase() === "QUIZ";
-  const isStandaloneLayout = isCvScreeningRound || isEmailSimulatorRound || isQuizRound;
+  const isCodingRound =
+    activeRound?.roundType?.toUpperCase() === "CODING" ||
+    activeRound?.roundType?.toUpperCase() === "CODE";
+  const isStandaloneLayout =
+    isCvScreeningRound || isEmailSimulatorRound || isQuizRound || isCodingRound;
 
   return (
     <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">
