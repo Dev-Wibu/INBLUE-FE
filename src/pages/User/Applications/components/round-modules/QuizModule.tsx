@@ -939,7 +939,7 @@ export function QuizModule({
         /* 📊 RESULTS & REVIEW VIEW (When test is finished) */
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
           {/* Left Column (4 cols - Pinned Sticky Sidebar): Score Gauge & Jump Matrix */}
-          <div className="space-y-4 lg:sticky lg:top-4 lg:col-span-4">
+          <div className="space-y-4 lg:sticky lg:top-24 lg:col-span-4">
             {/* Card 1: Score & Status Gauge */}
             <Card className="space-y-4 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
