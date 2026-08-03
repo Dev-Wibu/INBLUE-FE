@@ -30,7 +30,6 @@ import {
   Loader2,
   LogIn,
   MapPin,
-  Phone,
   PlayCircle,
   RefreshCw,
   Send,
@@ -46,6 +45,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
+import { MentorReviewSubheader } from "./MentorReviewSubheader";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -197,6 +197,8 @@ export function MentorReviewModule({
 
   return (
     <div className="space-y-6">
+      <MentorReviewSubheader activeIndex={activeIndex} totalSteps={STEP_DEFS.length} />
+
       {/* ============== Instruction ============== */}
       <div className="space-y-2">
         <h4 className="text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
