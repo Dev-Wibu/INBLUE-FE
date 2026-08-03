@@ -1,12 +1,4 @@
-import {
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Hourglass,
-  Users,
-  Video,
-  X,
-} from "lucide-react";
+import { Calendar, CheckCircle2, Clock, Hourglass, Users, Video, X } from "lucide-react";
 import type { components } from "../../../../../../schema-from-be";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
@@ -101,13 +93,9 @@ export function MentorReviewSubheader({
               {getSubheaderTitle()}
             </span>
             <span className="text-slate-600">•</span>
-            <span className="text-xs font-semibold text-indigo-400">
-              Vòng {roundOrder}
-            </span>
+            <span className="text-xs font-semibold text-indigo-400">Vòng {roundOrder}</span>
           </div>
-          <p className="mt-0.5 text-sm font-semibold text-slate-200">
-            {getDescription()}
-          </p>
+          <p className="mt-0.5 text-sm font-semibold text-slate-200">{getDescription()}</p>
         </div>
       </div>
 

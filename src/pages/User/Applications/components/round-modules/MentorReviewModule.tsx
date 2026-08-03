@@ -246,9 +246,7 @@ export function MentorReviewModule({
                   <span className="text-2xl font-extrabold text-white tabular-nums">
                     {finalScore}
                   </span>
-                  <span className="text-base font-bold text-slate-400">
-                    /100
-                  </span>
+                  <span className="text-base font-bold text-slate-400">/100</span>
                   {passed && (
                     <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-300 uppercase shadow-xs">
                       ✓ PASSED
@@ -328,7 +326,7 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
               <TrendingUp className="h-4 w-4" />
             </div>
             <div>
-              <h5 className="text-xs font-bold uppercase tracking-wider text-white">
+              <h5 className="text-xs font-bold tracking-wider text-white uppercase">
                 Tiến trình Mentor Interview
               </h5>
               <span className="text-[11px] font-medium text-slate-400">
@@ -338,7 +336,8 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="rounded-full border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-[11px] font-bold text-slate-300">
-              Bước <strong className="text-indigo-400">{Math.max(1, activeIndex + 1)}</strong> / {STEP_DEFS.length}
+              Bước <strong className="text-indigo-400">{Math.max(1, activeIndex + 1)}</strong> /{" "}
+              {STEP_DEFS.length}
             </span>
             <span className="rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-[11px] font-extrabold text-indigo-300">
               {progressPercent}%
@@ -373,11 +372,7 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
                           ? "bg-emerald-500 text-white shadow-xs"
                           : "border border-slate-700 bg-slate-800 text-slate-400"
                     )}>
-                    {isDone ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      <Icon className="h-4 w-4" />
-                    )}
+                    {isDone ? <CheckCircle2 className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                   </div>
                   <div className="flex flex-col items-center">
                     <span
@@ -394,11 +389,7 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
                     <span
                       className={cn(
                         "mt-0.5 text-xs leading-snug font-bold",
-                        isActive
-                          ? "text-white"
-                          : isDone
-                            ? "text-slate-200"
-                            : "text-slate-400"
+                        isActive ? "text-white" : isDone ? "text-slate-200" : "text-slate-400"
                       )}>
                       {step.short}
                     </span>
@@ -409,17 +400,13 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
                 <div className="mt-2.5 flex items-center justify-center">
                   {isActive ? (
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-400" />
                       Hiện tại
                     </span>
                   ) : isDone ? (
-                    <span className="text-[10px] font-semibold text-emerald-400">
-                      Hoàn tất
-                    </span>
+                    <span className="text-[10px] font-semibold text-emerald-400">Hoàn tất</span>
                   ) : (
-                    <span className="text-[10px] font-medium text-slate-400">
-                      Chưa mở
-                    </span>
+                    <span className="text-[10px] font-medium text-slate-400">Chưa mở</span>
                   )}
                 </div>
               </li>
@@ -435,7 +422,13 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
 // SUB-COMPONENT: AwaitingMentorStep
 // ============================================================================
 
-function AwaitingMentorStep({ detailId: _detailId, onRefresh }: { detailId: number; onRefresh: () => void }) {
+function AwaitingMentorStep({
+  detailId: _detailId,
+  onRefresh,
+}: {
+  detailId: number;
+  onRefresh: () => void;
+}) {
   const { t } = useTranslation();
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
@@ -457,18 +450,21 @@ function AwaitingMentorStep({ detailId: _detailId, onRefresh }: { detailId: numb
         <div className="relative mx-auto flex flex-col items-center text-center">
           {/* Animated Hero Radar Icon */}
           <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
-            <span className="absolute -inset-2 rounded-2xl border border-amber-500/20 opacity-40 animate-ping" />
-            <Hourglass className="h-8 w-8 text-amber-400 animate-pulse" />
+            <span className="absolute -inset-2 animate-ping rounded-2xl border border-amber-500/20 opacity-40" />
+            <Hourglass className="h-8 w-8 animate-pulse text-amber-400" />
           </div>
 
           {/* Live Badge */}
           <div className="mt-4">
             <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/15 px-3.5 py-1 text-xs font-bold text-amber-300 shadow-xs">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 animate-ping" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
               </span>
-              {t("userApplicationhistory.mentorStatusMatching", "Trạng thái: Đang phân công Mentor")}
+              {t(
+                "userApplicationhistory.mentorStatusMatching",
+                "Trạng thái: Đang phân công Mentor"
+              )}
             </span>
           </div>
 
@@ -488,7 +484,7 @@ function AwaitingMentorStep({ detailId: _detailId, onRefresh }: { detailId: numb
       {/* Next Steps Roadmap */}
       <div className="border-b border-slate-800/80 bg-slate-950/40 p-6 sm:p-7">
         <div className="mb-4 flex items-center justify-between">
-          <h4 className="text-[11px] font-extrabold tracking-wider uppercase text-slate-400">
+          <h4 className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
             Quy trình các bước tiếp theo
           </h4>
           <span className="text-[11px] font-medium text-slate-400">
@@ -505,7 +501,7 @@ function AwaitingMentorStep({ detailId: _detailId, onRefresh }: { detailId: numb
                   <Users className="h-4 w-4" />
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
                   Đang xử lý
                 </span>
               </div>
@@ -561,9 +557,7 @@ function AwaitingMentorStep({ detailId: _detailId, onRefresh }: { detailId: numb
             <RefreshCw className="h-4 w-4 animate-spin text-indigo-400" />
           </div>
           <div>
-            <div className="text-xs font-semibold text-slate-200">
-              Tự động làm mới mỗi 30s
-            </div>
+            <div className="text-xs font-semibold text-slate-200">Tự động làm mới mỗi 30s</div>
             <div className="text-[11px] text-slate-400">
               Hệ thống tự động cập nhật ngay khi Admin phân bổ mentor. Bạn không cần tải lại trang.
             </div>
@@ -576,7 +570,9 @@ function AwaitingMentorStep({ detailId: _detailId, onRefresh }: { detailId: numb
           disabled={isManualRefreshing}
           onClick={handleManualRefresh}
           className="h-9 gap-2 rounded-xl border-slate-700 bg-slate-800/90 px-4 text-xs font-semibold text-slate-200 shadow-sm transition-all hover:border-slate-600 hover:bg-slate-700 hover:text-white">
-          <RefreshCw className={cn("h-3.5 w-3.5", isManualRefreshing && "animate-spin text-indigo-400")} />
+          <RefreshCw
+            className={cn("h-3.5 w-3.5", isManualRefreshing && "animate-spin text-indigo-400")}
+          />
           {isManualRefreshing ? "Đang kiểm tra..." : "Kiểm tra ngay"}
         </Button>
       </div>
