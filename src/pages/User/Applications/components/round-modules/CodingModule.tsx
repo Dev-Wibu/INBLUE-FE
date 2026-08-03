@@ -25,7 +25,9 @@ import Editor from "@monaco-editor/react";
 import {
   AlertCircle,
   AlertTriangle,
+  Bug,
   Check,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -33,11 +35,11 @@ import {
   Copy,
   Cpu,
   FileCode2,
-  FileWarning,
   GripVertical,
   Loader2,
   Play,
   Send,
+  Sparkles,
   Terminal,
   XCircle,
 } from "lucide-react";
@@ -312,21 +314,19 @@ function statusBadgeClass(status: string | undefined): string {
   }
 }
 
-function statusIcon(status: string | undefined) {
-  switch (status) {
-    case "PASSED":
-      return Check;
-    case "FAILED":
-      return XCircle;
-    case "TIMEOUT":
-      return Clock;
-    case "RUNTIME_ERROR":
-      return AlertCircle;
-    case "COMPILE_ERROR":
-      return AlertTriangle;
-    default:
-      return FileWarning;
+function extractSubmissionResults(
+  targetDetail: ApplicationDetail | undefined,
+  problemList: CodingProblemVM[]
+): SampleResults {
+  const results: SampleResults = {};
+  const persisted = targetDetail?.submissionData?.codeSubmissions ?? [];
+  for (const [idx, p] of problemList.entries()) {
+    const sub = persisted[idx] ?? persisted[persisted.length - 1];
+    if (sub?.testCases) {
+      results[p.problemId] = sub.testCases as unknown as CompilerResponse;
+    }
   }
+  return results;
 }
 
 export function CodingModule({
@@ -400,7 +400,20 @@ export function CodingModule({
   }, [roundKey, detailId]);
 
   const [runningId, setRunningId] = useState<number | null>(null);
-  const [sampleResults, setSampleResults] = useState<SampleResults>({});
+  const [sampleResults, setSampleResults] = useState<SampleResults>(() => {
+    return extractSubmissionResults(detail, problems);
+  });
+
+  // Sync test results when detail updates
+  useEffect(() => {
+    if (detail?.submissionData?.codeSubmissions) {
+      const persistedResults = extractSubmissionResults(detail, problems);
+      setSampleResults((prev) => ({
+        ...prev,
+        ...persistedResults,
+      }));
+    }
+  }, [detail, problems]);
 
   // Active problem tab index (for multi-problem navigation)
   const [currentProblemIdx, setCurrentProblemIdx] = useState(0);
@@ -521,6 +534,7 @@ export function CodingModule({
       lines: number;
       chars: number;
       empty: boolean;
+      sampleResult: CompilerResponse | null;
     }> = [];
     for (const p of problems) {
       const src = sources[p.problemId];
@@ -536,10 +550,11 @@ export function CodingModule({
         lines,
         chars,
         empty: code.trim().length === 0,
+        sampleResult: sampleResults[p.problemId] ?? null,
       });
     }
     return { totalLines, totalChars, problemsList };
-  }, [problems, sources]);
+  }, [problems, sources, sampleResults]);
 
   const handleOpenConfirm = () => {
     if (problems.length === 0) return;
@@ -602,6 +617,10 @@ export function CodingModule({
         if (res.success && res.data) {
           const d = res.data.find((x) => x.roundId === roundIdValue);
           if (d?.status === "AI_EVALUATED" || d?.status === "COMPLETED") {
+            if (d.submissionData?.codeSubmissions) {
+              const resObj = extractSubmissionResults(d, problems);
+              setSampleResults((prev) => ({ ...prev, ...resObj }));
+            }
             return;
           }
         }
@@ -618,41 +637,113 @@ export function CodingModule({
     }
   };
 
-  const isFinished = isCompleted || detail?.finalScore != null;
+  const isFinished =
+    isCompleted ||
+    detail?.finalScore != null ||
+    detail?.status === "COMPLETED" ||
+    detail?.status === "AI_EVALUATED";
   const activeProblem = problems[currentProblemIdx];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* ── FULLSCREEN SUBMITTING / GRADING OVERLAY BLOCKER ── */}
+      {(submitting || awaitingGrade) && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md transition-all duration-300">
+          <div className="relative mx-4 flex max-w-md flex-col items-center gap-5 rounded-3xl border border-slate-800 bg-slate-900/95 p-8 text-center shadow-2xl shadow-indigo-500/10">
+            {/* Spinning glowing status indicator */}
+            <div className="relative flex h-16 w-16 items-center justify-center">
+              <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500/20 duration-1000" />
+              <div className="absolute inset-0 animate-spin rounded-full border-2 border-indigo-500/30 border-t-indigo-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/30">
+                <Code2 className="h-5 w-5 animate-pulse" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-base font-black tracking-tight text-white">
+                {awaitingGrade
+                  ? t("userApplicationhistory.gradingTitle", "Hệ thống đang chấm bài...")
+                  : t("userApplicationhistory.submittingTitle", "Đang nộp bài làm...")}
+              </h3>
+              <p className="text-xs leading-relaxed text-slate-400">
+                {awaitingGrade
+                  ? t(
+                      "userApplicationhistory.gradingSubtitle",
+                      "Mã nguồn đang được thực thi trên Sandbox bảo mật để chấm điểm các test cases. Vui lòng không đóng trình duyệt."
+                    )
+                  : t(
+                      "userApplicationhistory.submittingSubtitle",
+                      "Đang đóng gói và gửi dữ liệu giải thuật lên máy chủ chấm điểm..."
+                    )}
+              </p>
+            </div>
+
+            {/* Live Progress Indicator */}
+            <div className="w-full space-y-2 pt-1">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div className="h-full w-full animate-pulse rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
+              </div>
+              <div className="flex items-center justify-center gap-2 font-mono text-[11px] font-bold text-indigo-400">
+                <span className="h-2 w-2 animate-ping rounded-full bg-indigo-400" />
+                <span>Sandbox Grader is running...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── TOP SUB-HEADER (Single Standalone Header Standard) ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-xl backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/15 text-indigo-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
             <Code2 className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-indigo-400 uppercase">
-                VÒNG {round.roundOrder ?? 4}
+              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+                {isFinished
+                  ? "BÁO CÁO ĐÁNH GIÁ BÀI THI LẬP TRÌNH"
+                  : `VÒNG ${round.roundOrder ?? 4}: LẬP TRÌNH • TRẠM THI TRỰC TUYẾN`}
               </span>
               <span className="text-slate-600">•</span>
-              <span className="text-xs font-semibold text-slate-400">TRẠM THI LẬP TRÌNH</span>
+              <span className="text-xs font-semibold text-indigo-400">
+                Vòng {round.roundOrder ?? 4}
+              </span>
             </div>
-            <h1 className="text-base font-bold text-slate-100">
-              {round.name || "Bài thi Lập trình (Coding Assessment)"}
-            </h1>
+            <p className="mt-0.5 text-sm font-semibold text-slate-200">
+              {isFinished
+                ? "Hệ thống đã hoàn tất chấm điểm mã nguồn và kiểm thử toàn bộ test cases trên Sandbox."
+                : round.configData?.instruction ||
+                  "Đọc kỹ Đề bài & Ràng buộc bên dưới, viết giải thuật và chạy thử các test cases trước khi nộp."}
+            </p>
           </div>
         </div>
 
         {/* Status Badge */}
         <div className="flex items-center gap-2">
-          {isFinished ? (
-            <span className="rounded-full border border-emerald-500/40 bg-emerald-500/20 px-3 py-1 font-mono text-xs font-extrabold text-emerald-300">
-              ✓ ĐÃ HOÀN THÀNH
+          {detail?.finalResult ? (
+            <span
+              className={
+                detail.finalResult === "PASSED"
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40"
+                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-300 shadow-sm shadow-rose-950/40"
+              }>
+              {detail.finalResult === "PASSED" ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <XCircle className="h-4 w-4" />
+              )}
+              <span>KẾT QUẢ: {detail.finalResult}</span>
+            </span>
+          ) : isFinished ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>ĐÃ HOÀN THÀNH BÀI THI</span>
             </span>
           ) : (
-            <span className="flex animate-pulse items-center gap-2 rounded-full border border-indigo-500/40 bg-indigo-500/20 px-3 py-1 font-mono text-xs font-bold text-indigo-300">
-              <span className="h-2 w-2 rounded-full bg-indigo-400" />
-              ĐANG TRONG THỜI GIAN LÀM BÀI
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+              <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+              <span>ĐANG TRONG THỜI GIAN LÀM BÀI</span>
             </span>
           )}
         </div>
@@ -705,7 +796,7 @@ export function CodingModule({
               availableLanguages={langs}
               result={result}
               isRunning={isRunningThis}
-              isCompleted={isCompleted}
+              isCompleted={isFinished}
               isCurrent={isCurrent}
               finalScore={finalScore ?? null}
               problemFinalScoreStatus={detail?.status ?? null}
@@ -729,9 +820,7 @@ export function CodingModule({
           );
         })()}
 
-      {/* Confirm-submit modal — replaces the ugly window.confirm() with a
-          shadcn Dialog that also shows a live snapshot of what we're about
-          to send. */}
+      {/* Confirm-submit modal — macOS Window styling with red/yellow/green traffic dots */}
       <Dialog
         open={confirmOpen}
         onOpenChange={(next) => {
@@ -740,94 +829,139 @@ export function CodingModule({
           if (submitting) return;
           setConfirmOpen(next);
         }}>
-        <DialogContent className="max-w-md overflow-hidden p-0">
-          <div className="flex items-start gap-4 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-violet-50 px-6 py-5 dark:border-slate-700 dark:from-indigo-950/40 dark:to-violet-950/40">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-sm">
-              <Send className="h-5 w-5" />
+        <DialogContent className="max-w-lg overflow-hidden border border-slate-800 bg-slate-900/95 p-0 text-slate-100 shadow-2xl backdrop-blur-xl sm:rounded-2xl">
+          {/* MacBook Window Header */}
+          <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-5 py-3.5">
+            <div className="flex items-center gap-3">
+              {/* Window Dots */}
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-full bg-rose-500/90 shadow-2xs" />
+                <span className="h-3 w-3 rounded-full bg-amber-500/90 shadow-2xs" />
+                <span className="h-3 w-3 rounded-full bg-emerald-500/90 shadow-2xs" />
+              </div>
+              <span className="text-slate-700">|</span>
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/15 text-indigo-400">
+                  <Send className="h-3.5 w-3.5" />
+                </div>
+                <DialogTitle className="font-mono text-xs font-bold text-slate-200">
+                  {t("userApplicationhistory.confirmSubmitTitle", "Xác nhận nộp bài thi lập trình")}
+                </DialogTitle>
+              </div>
             </div>
-            <div className="flex-1">
-              <DialogTitle className="text-base">
-                {t("userApplicationhistory.confirmSubmitTitle", "Xác nhận nộp bài")}
-              </DialogTitle>
-              <DialogDescription className="mt-1 text-xs">
-                {t(
-                  "userApplicationhistory.confirmSubmitCoding",
-                  "Bạn chắc chắn muốn nộp tất cả bài? Sau khi nộp, hệ thống sẽ chấm và bạn vẫn có thể làm lại vòng này."
-                )}
-              </DialogDescription>
-            </div>
+
+            <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-0.5 font-mono text-[10px] font-bold text-indigo-300">
+              ● Sandbox Grader
+            </span>
           </div>
 
-          <div className="space-y-4 px-6 py-5">
-            {/* Summary */}
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-2.5 dark:border-slate-700 dark:bg-slate-900/60">
-                <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
-                  Bài
+          <DialogDescription className="sr-only">
+            {t(
+              "userApplicationhistory.confirmSubmitCoding",
+              "Bạn chắc chắn muốn nộp tất cả bài? Sau khi nộp, hệ thống sẽ chấm và bạn vẫn có thể làm lại vòng này."
+            )}
+          </DialogDescription>
+
+          <div className="space-y-4 px-5 py-4">
+            {/* Quick Metrics */}
+            <div className="grid grid-cols-3 gap-2.5 text-center">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 shadow-inner">
+                <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                  Số bài tập
                 </div>
-                <div className="text-lg font-extrabold text-slate-900 tabular-nums dark:text-white">
+                <div className="mt-0.5 text-lg font-black text-white tabular-nums">
                   {problems.length}
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-2.5 dark:border-slate-700 dark:bg-slate-900/60">
-                <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
-                  Lines
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 shadow-inner">
+                <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                  Tổng số dòng
                 </div>
-                <div className="text-lg font-extrabold text-slate-900 tabular-nums dark:text-white">
+                <div className="mt-0.5 text-lg font-black text-indigo-300 tabular-nums">
                   {submissionStats.totalLines}
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-2.5 dark:border-slate-700 dark:bg-slate-900/60">
-                <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
-                  Chars
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 shadow-inner">
+                <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                  Dung lượng
                 </div>
-                <div className="text-lg font-extrabold text-slate-900 tabular-nums dark:text-white">
-                  {submissionStats.totalChars}
+                <div className="mt-0.5 text-lg font-black text-emerald-300 tabular-nums">
+                  {submissionStats.totalChars}{" "}
+                  <span className="text-[11px] font-normal text-slate-400">chars</span>
                 </div>
               </div>
             </div>
 
-            {/* Per-problem table */}
-            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-              <table className="w-full text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800">
-                  <tr>
-                    <th className="px-3 py-2 text-left font-bold">#</th>
-                    <th className="px-3 py-2 text-left font-bold">
-                      {t("userApplicationhistory.codingProblem")}
-                    </th>
-                    <th className="px-3 py-2 text-left font-bold">
-                      {t("userApplicationhistory.codingLanguage")}
-                    </th>
-                    <th className="px-3 py-2 text-right font-bold">
-                      {t("userApplicationhistory.codingLines")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {submissionStats.problemsList.map((p, i) => (
-                    <tr
+            {/* Per-problem breakdown */}
+            <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/60 shadow-inner">
+              <div className="border-b border-slate-800 bg-slate-950 px-3.5 py-2">
+                <span className="font-mono text-[11px] font-bold text-slate-400 uppercase">
+                  Danh sách bài làm sẽ nộp
+                </span>
+              </div>
+              <div className="divide-y divide-slate-800/70">
+                {submissionStats.problemsList.map((p, i) => {
+                  const sampleRes = p.sampleResult;
+                  const sampleTotal =
+                    sampleRes?.totalTestCases ?? sampleRes?.testCases?.length ?? 0;
+                  const samplePassed = sampleRes?.passedTestCases ?? 0;
+                  const hasTested = Boolean(sampleRes);
+                  const isAllSamplePassed =
+                    hasTested && sampleTotal > 0 && samplePassed === sampleTotal;
+
+                  return (
+                    <div
                       key={p.problemId}
-                      className="border-t border-slate-200 dark:border-slate-700">
-                      <td className="px-3 py-2 font-mono text-[11px] text-slate-500">{i + 1}</td>
-                      <td className="max-w-[180px] truncate px-3 py-2 font-medium text-slate-800 dark:text-slate-200">
-                        {p.title}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-[11px] text-indigo-700 dark:text-indigo-300">
-                        {p.language}
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono text-[11px] text-slate-700 tabular-nums dark:text-slate-300">
-                        {p.lines}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs transition-colors hover:bg-slate-900/50">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-800 font-mono text-[10px] font-bold text-slate-400">
+                          {i + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-slate-200">{p.title}</p>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                            <span className="rounded border border-indigo-500/30 bg-indigo-950/60 px-1.5 py-0.5 font-mono text-[10px] font-bold text-indigo-300">
+                              {p.language}
+                            </span>
+                            <span>·</span>
+                            <span className="font-mono">{p.lines} dòng</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sample test status badge */}
+                      <div className="shrink-0 text-right">
+                        {hasTested ? (
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold",
+                              isAllSamplePassed
+                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                                : "border-rose-500/30 bg-rose-500/10 text-rose-400"
+                            )}>
+                            <span
+                              className={cn(
+                                "h-1.5 w-1.5 rounded-full",
+                                isAllSamplePassed ? "bg-emerald-400" : "bg-rose-400"
+                              )}
+                            />
+                            {samplePassed}/{sampleTotal} Tests
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-800/80 px-2 py-0.5 font-mono text-[10px] text-slate-400">
+                            Chưa test thử
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Warning banner */}
-            <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-300">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
               <p className="leading-relaxed">
                 {t(
                   "userApplicationhistory.confirmSubmitHint",
@@ -837,77 +971,40 @@ export function CodingModule({
             </div>
           </div>
 
-          <DialogFooter className="border-t border-slate-200 bg-slate-50/60 px-6 py-4 dark:border-slate-700 dark:bg-slate-900/60">
-            <Button
-              variant="outline"
-              onClick={() => setConfirmOpen(false)}
-              disabled={submitting}
-              className="border-slate-300 px-5 dark:border-slate-700">
-              {t("general.cancel", "Hủy")}
-            </Button>
-            <Button
-              onClick={handleConfirmSubmit}
-              disabled={submitting}
-              className="gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 px-6 text-white shadow-sm hover:from-indigo-700 hover:to-violet-700">
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("compUi.uploading", "Đang nộp...")}
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4" />
-                  {t("common.submit", "Nộp bài")}
-                </>
-              )}
-            </Button>
+          <DialogFooter className="flex items-center justify-between border-t border-slate-800/80 bg-slate-950/90 px-5 py-3.5">
+            <span className="hidden text-[11px] text-slate-400 sm:inline">
+              Kiểm tra kỹ trước khi bấm nộp
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setConfirmOpen(false)}
+                disabled={submitting}
+                className="h-8 text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200">
+                {t("general.cancel", "Hủy")}
+              </Button>
+              <Button
+                type="button"
+                onClick={handleConfirmSubmit}
+                disabled={submitting}
+                className="h-8 gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 px-5 text-xs font-bold text-white shadow-md shadow-indigo-500/20 hover:from-indigo-500 hover:to-violet-500">
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>{t("compUi.uploading", "Đang nộp...")}</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-3.5 w-3.5" />
+                    <span>{t("common.submit", "Nộp bài")}</span>
+                  </>
+                )}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Final result summary (after grading). */}
-      {detail &&
-        (detail.finalScore !== undefined ||
-          detail.aiScore !== undefined ||
-          (detail as { finalResult?: string }).finalResult !== undefined ||
-          (detail as { hrNote?: string }).hrNote) && (
-          <Card className="space-y-3 border border-emerald-200/70 bg-gradient-to-br from-emerald-50/40 via-white to-sky-50/40 p-6 shadow-xs dark:border-emerald-900/40 dark:from-emerald-950/20 dark:via-slate-900/40 dark:to-sky-950/20">
-            <div className="flex items-center justify-between">
-              <h3 className="flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
-                <Code2 className="h-4 w-4 text-emerald-500" />
-                {t("userApplicationhistory.codingResultTitle", "Kết quả chấm bài")}
-              </h3>
-              <div className="flex items-center gap-3 text-[11px]">
-                {(detail.finalScore ?? detail.aiScore) !== undefined && (
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 font-extrabold text-emerald-700 tabular-nums dark:bg-emerald-950/60 dark:text-emerald-300">
-                    ✓ {detail.finalScore ?? detail.aiScore ?? 0}/100
-                  </span>
-                )}
-                {(detail as { finalResult?: string }).finalResult && (
-                  <span
-                    className={`rounded-full px-3 py-1 font-extrabold tracking-wider uppercase ${
-                      (detail as { finalResult?: string }).finalResult === "PASSED"
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
-                        : "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
-                    }`}>
-                    {(detail as { finalResult?: string }).finalResult}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {(detail as { hrNote?: string | null }).hrNote && (
-              <div className="rounded-xl border border-sky-200 bg-sky-50/40 p-3 dark:border-sky-900/40 dark:bg-sky-950/20">
-                <h4 className="mb-1 text-[10px] font-extrabold tracking-wider text-sky-700 uppercase dark:text-sky-300">
-                  {t("userApplicationhistory.codingHrNote", "Ghi chú từ HR")}
-                </h4>
-                <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                  {(detail as { hrNote?: string | null }).hrNote}
-                </p>
-              </div>
-            )}
-          </Card>
-        )}
     </div>
   );
 }
@@ -1385,7 +1482,7 @@ function CodingProblemCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {remainingMs != null && (
+          {remainingMs != null && !isCompleted && (
             <div
               className={cn(
                 "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-extrabold tabular-nums",
@@ -1400,28 +1497,35 @@ function CodingProblemCard({
             </div>
           )}
 
-          <Select
-            value={source.language}
-            onValueChange={(v) => onChangeLanguage(v as CompilerLanguage)}>
-            <SelectTrigger className="h-8 w-36 border-slate-200 bg-white text-xs font-semibold shadow-xs dark:border-slate-700 dark:bg-slate-900">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {availableLanguages.length === 0 && (
-                <div className="p-2 text-[11px] text-slate-500">
-                  {t(
-                    "userApplicationhistory.codingNoStub",
-                    "Round này chưa cấu hình ngôn ngữ nào."
-                  )}
-                </div>
-              )}
-              {availableLanguages.map((lang) => (
-                <SelectItem key={lang} value={lang}>
-                  {LANGUAGE_LABEL[lang] ?? lang}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isCompleted ? (
+            <div className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 font-mono text-xs font-bold text-slate-700 shadow-2xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+              <Code2 className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+              <span>{LANGUAGE_LABEL[source.language] ?? source.language}</span>
+            </div>
+          ) : (
+            <Select
+              value={source.language}
+              onValueChange={(v) => onChangeLanguage(v as CompilerLanguage)}>
+              <SelectTrigger className="h-8 w-36 border-slate-200 bg-white text-xs font-semibold shadow-xs dark:border-slate-700 dark:bg-slate-900">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableLanguages.length === 0 && (
+                  <div className="p-2 text-[11px] text-slate-500">
+                    {t(
+                      "userApplicationhistory.codingNoStub",
+                      "Round này chưa cấu hình ngôn ngữ nào."
+                    )}
+                  </div>
+                )}
+                {availableLanguages.map((lang) => (
+                  <SelectItem key={lang} value={lang}>
+                    {LANGUAGE_LABEL[lang] ?? lang}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {showScore && (
             <span className="rounded-full bg-emerald-100 px-3.5 py-1 text-xs font-extrabold text-emerald-700 tabular-nums shadow-xs dark:bg-emerald-950/60 dark:text-emerald-300">
@@ -1514,7 +1618,13 @@ function CodingProblemCard({
               </div>
             )}
 
-            {activeTab === "results" && <TestResultsPanel result={result} isRunning={isRunning} />}
+            {activeTab === "results" && (
+              <TestResultsPanel
+                result={result}
+                isRunning={isRunning}
+                visibleExamples={problem.visibleExamples}
+              />
+            )}
           </div>
         </div>
 
@@ -1686,117 +1796,368 @@ function CodingProblemCard({
 // TestResultsPanel — table PASSED/FAILED, expected vs actual output
 // ============================================================================
 
-function TestResultsPanel({
-  result,
-  isRunning,
-}: {
-  result: CompilerResponse | null;
-  isRunning: boolean;
-}) {
-  const { t } = useTranslation();
-  if (isRunning) {
-    return (
-      <div className="flex items-center gap-2 p-4 text-xs text-slate-500">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        {t("userApplicationhistory.runningSamples", "Đang chạy test cases...")}
-      </div>
-    );
-  }
-  if (!result) {
-    return (
-      <div className="flex items-center gap-2 p-4 text-xs text-slate-500">
-        <Terminal className="h-4 w-4" />
-        {t(
-          "userApplicationhistory.noTestResultYet",
-          'Chưa có kết quả chạy thử. Bấm "Chạy Test Mẫu" để bắt đầu.'
-        )}
-      </div>
-    );
-  }
+function CopyButton({ text, label }: { text: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    },
+    [text]
+  );
 
   return (
-    <div className="space-y-3 p-2">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-extrabold tracking-wide text-slate-500 uppercase">
-          {t("userApplicationhistory.codingSampleResults", "Sample Test Results")}
-        </span>
-        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-          {result.passedTestCases}/{result.totalTestCases}{" "}
-          {t("userApplicationhistory.codingPassed", "passed")} · {result.executionTimeMs}ms
-        </span>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800">
-        <table className="w-full text-xs">
-          <thead className="bg-slate-100 dark:bg-slate-800">
-            <tr>
-              <th className="w-8 px-2 py-1.5 text-left font-bold">#</th>
-              <th className="px-2 py-1.5 text-left font-bold">Input</th>
-              <th className="px-2 py-1.5 text-left font-bold">Expected</th>
-              <th className="px-2 py-1.5 text-left font-bold">Actual</th>
-              <th className="px-2 py-1.5 text-left font-bold">Status</th>
-              <th className="px-2 py-1.5 text-left font-bold">Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(result.testCases ?? []).map((tc, i) => {
-              const Icon = statusIcon(tc.status);
-              return (
-                <tr
-                  key={`tc-${tc.index ?? i}`}
-                  className="border-t border-slate-200 dark:border-slate-800">
-                  <td className="px-2 py-1.5 font-mono text-[11px] text-slate-500">
-                    {(tc.index ?? 0) + 1}
-                  </td>
-                  <td className="max-w-[160px] truncate px-2 py-1.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-300">
-                    {tc.input}
-                  </td>
-                  <td className="max-w-[160px] truncate px-2 py-1.5 font-mono text-[11px] text-slate-700 dark:text-slate-300">
-                    {tc.expectedOutput}
-                  </td>
-                  <td className="max-w-[160px] truncate px-2 py-1.5 font-mono text-[11px] text-slate-700 dark:text-slate-300">
-                    {tc.actualOutput}
-                  </td>
-                  <td className="px-2 py-1.5">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-bold",
-                        statusBadgeClass(tc.status)
-                      )}>
-                      <Icon className="h-3 w-3" />
-                      {tc.status}
-                    </span>
-                  </td>
-                  <td className="px-2 py-1.5 font-mono text-[11px] text-slate-500">
-                    {tc.executionTimeMs}ms
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {(result.errorMessage ?? (result.testCases ?? []).some((tc) => tc.errorMessage)) && (
-        <details className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
-          <summary className="flex cursor-pointer items-center gap-1 font-bold">
-            <AlertTriangle className="h-3 w-3" />
-            {t("userApplicationhistory.codingErrorDetail", "Chi tiết lỗi")}
-          </summary>
-          <pre className="mt-2 text-[11px] whitespace-pre-wrap">
-            {result.errorMessage ??
-              (result.testCases ?? [])
-                .filter((tc) => tc.errorMessage)
-                .map((tc, i) => `#${(tc.index ?? i) + 1}: ${tc.errorMessage}`)
-                .join("\n")}
-          </pre>
-        </details>
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      title="Sao chép">
+      {copied ? (
+        <>
+          <Check className="h-3 w-3 text-emerald-500" />
+          <span className="text-emerald-600 dark:text-emerald-400">Đã chép</span>
+        </>
+      ) : (
+        <>
+          <Copy className="h-3 w-3" />
+          {label && <span>{label}</span>}
+        </>
       )}
-    </div>
+    </button>
   );
 }
 
 // ============================================================================
-// SubmissionHistoryPanel removed — sample-run history is implicit in the
-// "Test Results" tab and adds noise to a single-problem workspace.
+// TestResultsPanel — LeetCode-grade Test Result & Error Diagnostic Inspector
 // ============================================================================
+
+function TestResultsPanel({
+  result,
+  isRunning,
+  visibleExamples = [],
+}: {
+  result: CompilerResponse | null;
+  isRunning: boolean;
+  visibleExamples?: Array<{
+    inputs: string[];
+    output: string;
+    explanation?: string;
+  }>;
+}) {
+  const { t } = useTranslation();
+  const testCases = result?.testCases ?? [];
+
+  // Find initial active test case (prefer first failed case, otherwise 0)
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  useEffect(() => {
+    if (testCases.length > 0) {
+      const firstFailIdx = testCases.findIndex(
+        (tc) => tc.status && tc.status !== "PASSED" && tc.status !== "SUCCESS"
+      );
+      setSelectedIdx(firstFailIdx >= 0 ? firstFailIdx : 0);
+    }
+  }, [result]);
+
+  if (isRunning) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+        <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/50">
+          <Loader2 className="h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400" />
+        </div>
+        <div className="space-y-1">
+          <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+            {t("userApplicationhistory.runningSamples", "Đang chạy test cases...")}
+          </h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Hệ thống đang nạp mã nguồn vào sandbox an toàn và thực thi các bộ kiểm thử mẫu.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!result) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800/80">
+          <Terminal className="h-6 w-6 text-slate-400" />
+        </div>
+        <div className="max-w-xs space-y-1">
+          <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+            {t("userApplicationhistory.noTestResultYet", "Chưa có kết quả chạy thử")}
+          </h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Bấm nút <strong className="text-slate-700 dark:text-slate-300">"Chạy Test Mẫu"</strong> ở thanh công cụ bên dưới để kiểm tra tính đúng đắn của giải thuật.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Determine overall verdict status
+  const total = result.totalTestCases || testCases.length;
+  const passed = result.passedTestCases ?? testCases.filter((t) => t.status === "PASSED").length;
+  const allPassed = total > 0 && passed === total;
+  const hasRuntimeError = testCases.some(
+    (tc) => tc.status === "RUNTIME_ERROR" || tc.status === "ERROR"
+  );
+  const hasTimeout = testCases.some((tc) => tc.status === "TIMEOUT");
+  const hasCompileError =
+    result.status === "COMPILE_ERROR" ||
+    (!testCases.length && Boolean(result.errorMessage));
+
+  let verdictTitle = "Passed";
+  let verdictColor = "text-emerald-600 dark:text-emerald-400";
+  let verdictBg = "bg-emerald-50/80 border-emerald-200/80 dark:bg-emerald-950/30 dark:border-emerald-900/50";
+  let VerdictIcon = CheckCircle2;
+
+  if (hasCompileError) {
+    verdictTitle = "Compile Error";
+    verdictColor = "text-purple-600 dark:text-purple-400";
+    verdictBg = "bg-purple-50/80 border-purple-200/80 dark:bg-purple-950/30 dark:border-purple-900/50";
+    VerdictIcon = AlertTriangle;
+  } else if (hasRuntimeError) {
+    verdictTitle = "Runtime Error";
+    verdictColor = "text-rose-600 dark:text-rose-400";
+    verdictBg = "bg-rose-50/80 border-rose-200/80 dark:bg-rose-950/30 dark:border-rose-900/50";
+    VerdictIcon = AlertCircle;
+  } else if (hasTimeout) {
+    verdictTitle = "Time Limit Exceeded";
+    verdictColor = "text-amber-600 dark:text-amber-400";
+    verdictBg = "bg-amber-50/80 border-amber-200/80 dark:bg-amber-950/30 dark:border-amber-900/50";
+    VerdictIcon = Clock;
+  } else if (!allPassed) {
+    verdictTitle = "Wrong Answer";
+    verdictColor = "text-rose-600 dark:text-rose-400";
+    verdictBg = "bg-rose-50/80 border-rose-200/80 dark:bg-rose-950/30 dark:border-rose-900/50";
+    VerdictIcon = XCircle;
+  } else {
+    verdictTitle = "Accepted";
+    verdictColor = "text-emerald-600 dark:text-emerald-400";
+    verdictBg = "bg-emerald-50/80 border-emerald-200/80 dark:bg-emerald-950/30 dark:border-emerald-900/50";
+    VerdictIcon = CheckCircle2;
+  }
+
+  const activeTestCase = testCases[selectedIdx] ?? testCases[0];
+  const activeExample = visibleExamples[selectedIdx] ?? visibleExamples[0];
+
+  // Resolve input string
+  const resolvedInput =
+    (activeTestCase?.input && String(activeTestCase.input).trim()) ||
+    (activeExample?.inputs && activeExample.inputs.join("\n")) ||
+    "";
+
+  // Resolve expected output string
+  const resolvedExpected =
+    (activeTestCase?.expectedOutput != null && String(activeTestCase.expectedOutput).trim()) ||
+    (activeExample?.output != null ? String(activeExample.output).trim() : "");
+
+  // Resolve actual output string
+  const resolvedActual =
+    activeTestCase?.actualOutput != null ? String(activeTestCase.actualOutput) : "";
+
+  // Resolve error message for active case
+  const activeError =
+    activeTestCase?.errorMessage || (testCases.length === 1 ? result.errorMessage : null);
+
+  return (
+    <div className="space-y-4">
+      {/* 1. Verdict Summary Card */}
+      <div
+        className={cn(
+          "flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs",
+          verdictBg
+        )}>
+        <div className="flex items-center gap-2.5">
+          <div
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-2xs dark:bg-slate-900",
+              verdictColor
+            )}>
+            <VerdictIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className={cn("text-sm font-black tracking-tight", verdictColor)}>
+              {verdictTitle}
+            </h3>
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+              {total > 0 ? `${passed} / ${total} test cases passed` : "Kết quả biên dịch"}
+            </p>
+          </div>
+        </div>
+
+        {/* Runtime pill */}
+        <div className="flex items-center gap-2">
+          {result.executionTimeMs !== undefined && (
+            <div className="flex items-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+              <Clock className="h-3.5 w-3.5 text-slate-400" />
+              <span>{result.executionTimeMs} ms</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 2. Global Compile Error Display (if applicable) */}
+      {hasCompileError && result.errorMessage && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-purple-700 dark:text-purple-400">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              Chi tiết lỗi biên dịch (Compiler Error)
+            </span>
+            <CopyButton text={result.errorMessage} label="Sao chép lỗi" />
+          </div>
+          <div className="rounded-xl border border-purple-900/40 bg-[#0a0714] p-3.5 shadow-inner">
+            <pre className="font-mono text-xs leading-relaxed text-purple-200 whitespace-pre-wrap select-text">
+              {result.errorMessage}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Case Selector Tabs (LeetCode style) */}
+      {testCases.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            {testCases.map((tc, idx) => {
+              const isSelected = selectedIdx === idx;
+              const isCasePassed = tc.status === "PASSED" || tc.status === "SUCCESS";
+              const isCaseRuntimeError = tc.status === "RUNTIME_ERROR" || tc.status === "ERROR";
+              const isCaseTimeout = tc.status === "TIMEOUT";
+
+              let dotColor = "bg-rose-500";
+              if (isCasePassed) dotColor = "bg-emerald-500";
+              else if (isCaseTimeout) dotColor = "bg-amber-500";
+              else if (isCaseRuntimeError) dotColor = "bg-rose-500";
+
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedIdx(idx)}
+                  className={cn(
+                    "flex shrink-0 items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                    isSelected
+                      ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-300 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800"
+                  )}>
+                  <span className={cn("h-2 w-2 rounded-full", dotColor)} />
+                  <span>Case {idx + 1}</span>
+                  {tc.executionTimeMs !== undefined && tc.executionTimeMs > 0 && (
+                    <span className="font-mono text-[10px] font-normal text-slate-400">
+                      {tc.executionTimeMs}ms
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 4. Active Case Inspector Detail Card */}
+          {activeTestCase && (
+            <div className="space-y-3.5 rounded-xl border border-slate-200/90 bg-white/70 p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-950/70">
+              {/* Case Verdict Header */}
+              <div className="flex items-center justify-between border-b border-slate-200/70 pb-2.5 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-slate-500 dark:text-slate-400">
+                    Testcase #{selectedIdx + 1}
+                  </span>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-extrabold",
+                      statusBadgeClass(activeTestCase.status)
+                    )}>
+                    {activeTestCase.status || "UNKNOWN"}
+                  </span>
+                </div>
+                {activeTestCase.executionTimeMs !== undefined && (
+                  <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                    Thời gian: <strong>{activeTestCase.executionTimeMs} ms</strong>
+                  </span>
+                )}
+              </div>
+
+              {/* Specific Error / Stacktrace Box for THIS Testcase */}
+              {activeError && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
+                      <Bug className="h-3.5 w-3.5" />
+                      Lỗi thực thi (Runtime Error của Testcase #{selectedIdx + 1})
+                    </span>
+                    <CopyButton text={activeError} label="Sao chép log" />
+                  </div>
+                  <div className="overflow-hidden rounded-xl border border-rose-900/50 bg-[#0c0910] p-3.5 shadow-inner">
+                    <pre className="font-mono text-[11px] leading-relaxed text-rose-300 whitespace-pre-wrap select-text">
+                      {activeError}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Input Box */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    Input
+                  </span>
+                  {resolvedInput && <CopyButton text={resolvedInput} />}
+                </div>
+                <div className="rounded-lg border border-slate-200/80 bg-slate-100/70 p-3 font-mono text-xs font-semibold text-slate-800 select-all dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200">
+                  {resolvedInput || (
+                    <span className="italic text-slate-400">(Không có dữ liệu đầu vào)</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Expected Output Box */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    Expected Output
+                  </span>
+                  {resolvedExpected && <CopyButton text={resolvedExpected} />}
+                </div>
+                <div className="rounded-lg border border-emerald-200/80 bg-emerald-50/40 p-3 font-mono text-xs font-semibold text-emerald-800 select-all dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300">
+                  {resolvedExpected || (
+                    <span className="italic text-slate-400">(Không xác định)</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Actual Output Box */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    Your Output
+                  </span>
+                  {resolvedActual && <CopyButton text={resolvedActual} />}
+                </div>
+                <div
+                  className={cn(
+                    "rounded-lg border p-3 font-mono text-xs font-semibold select-all",
+                    activeTestCase.status === "PASSED"
+                      ? "border-emerald-200/80 bg-emerald-50/40 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300"
+                      : "border-slate-200/80 bg-slate-100/70 text-slate-800 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200"
+                  )}>
+                  {resolvedActual ? (
+                    resolvedActual
+                  ) : activeError ? (
+                    <span className="italic text-rose-500/80 dark:text-rose-400/80">
+                      (Không có kết quả trả về do phát sinh ngoại lệ / lỗi thực thi)
+                    </span>
+                  ) : (
+                    <span className="italic text-slate-400">(Trống)</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

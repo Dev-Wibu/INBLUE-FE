@@ -547,29 +547,50 @@ export function QuizModule({
   return (
     <div className="space-y-6">
       {/* 🎯 TOP HEADER: Single Standalone Sub-header & Status Badge */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-lg backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/20 text-indigo-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
             <HelpCircle className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-indigo-400 uppercase">
-                VÒNG TRẮC NGHIỆM
+              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+                {isFinished
+                  ? "BÁO CÁO KẾT QUẢ THI TRẮC NGHIỆM"
+                  : `VÒNG ${round.roundOrder ?? 3}: TRẮC NGHIỆM • TRẠM THI TRỰC TUYẾN`}
               </span>
               <span className="text-slate-600">•</span>
-              <span className="text-xs font-medium text-slate-300">TRẠM THI TRỰC TUYẾN</span>
+              <span className="text-xs font-semibold text-indigo-400">
+                Vòng {round.roundOrder ?? 3}
+              </span>
             </div>
-            <h2 className="text-sm font-bold text-slate-100">
-              {round.name || "Bài thi Trắc nghiệm Kiến thức Chuyên môn"}
-            </h2>
+            <p className="mt-0.5 text-sm font-semibold text-slate-200">
+              {isFinished
+                ? "Bạn đã hoàn tất bài thi trắc nghiệm. Hệ thống đã chấm điểm và lưu trữ câu trả lời."
+                : round.configData?.instruction ||
+                  "Đọc kỹ từng câu hỏi và chọn đáp án chính xác nhất trong thời gian quy định."}
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {isFinished ? (
+          {detail?.finalResult ? (
+            <span
+              className={
+                detail.finalResult === "PASSED"
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40"
+                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-300 shadow-sm shadow-rose-950/40"
+              }>
+              {detail.finalResult === "PASSED" ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <XCircle className="h-4 w-4" />
+              )}
+              <span>KẾT QUẢ: {detail.finalResult}</span>
+            </span>
+          ) : isFinished ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              <CheckCircle2 className="h-4 w-4" />
               <span>ĐÃ HOÀN THÀNH BÀI THI</span>
             </span>
           ) : hasStarted ? (

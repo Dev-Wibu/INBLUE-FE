@@ -7,30 +7,40 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { SpinnerBlock } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { applicationDetailManager } from "@/services/application-detail.manager";
+import { codeReviewProblemManager } from "@/services/code-review-problem.manager";
 import {
   AlertOctagon,
   AlertTriangle,
   Award,
+  Bot,
   Bug,
+  Check,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   Clock,
   Code2,
   FileCode2,
   Info,
+  Layers,
   Lightbulb,
   Loader2,
   MessageSquare,
+  MessageSquarePlus,
   Pencil,
   Plus,
   RefreshCw,
   Send,
+  ShieldAlert,
   Sparkles,
   Target,
   Trash2,
+  UserCheck,
   X,
+  XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -53,7 +63,8 @@ interface LocalDraftIssue {
   description: string;
 }
 
-interface IssueModalState {
+interface InlineEditorState {
+  problemId: number;
   filename: string;
   lineNumber: number;
   severity: Severity;
@@ -77,15 +88,15 @@ interface CodeReviewModuleProps {
 const SEVERITY_KEYS: Record<Severity, { label: string; desc: string }> = {
   CRITICAL: {
     label: "CRITICAL",
-    desc: "Lỗi nghiêm trọng (crash, security)",
+    desc: "Lỗi nghiêm trọng (Crash, Security, Data Loss)",
   },
   WARNING: {
     label: "WARNING",
-    desc: "Lỗi trung bình (performance, race condition)",
+    desc: "Lỗi trung bình (Performance, Memory leak, Race condition)",
   },
   INFO: {
     label: "INFO",
-    desc: "Góp ý nhỏ (naming, format)",
+    desc: "Góp ý nhỏ (Code smell, Refactor, Naming, Format)",
   },
 };
 
@@ -98,88 +109,79 @@ const SEVERITY_TOKENS: Record<
     text: string;
     icon: typeof AlertOctagon;
     dot: string;
-    darkBg: string;
-    darkBorder: string;
-    darkText: string;
+    glow: string;
   }
 > = {
   CRITICAL: {
     bar: "bg-rose-500",
-    bg: "bg-rose-50",
-    border: "border-rose-300",
-    text: "text-rose-700",
-    darkBg: "dark:bg-rose-950/40",
-    darkBorder: "dark:border-rose-900/60",
-    darkText: "dark:text-rose-300",
+    bg: "bg-rose-950/40",
+    border: "border-rose-800/80",
+    text: "text-rose-400",
     icon: AlertOctagon,
     dot: "bg-rose-500",
+    glow: "shadow-rose-500/10",
   },
   WARNING: {
-    bar: "bg-amber-400",
-    bg: "bg-amber-50",
-    border: "border-amber-300",
-    text: "text-amber-700",
-    darkBg: "dark:bg-amber-950/40",
-    darkBorder: "dark:border-amber-900/60",
-    darkText: "dark:text-amber-300",
+    bar: "bg-amber-500",
+    bg: "bg-amber-950/40",
+    border: "border-amber-800/80",
+    text: "text-amber-400",
     icon: AlertTriangle,
     dot: "bg-amber-500",
+    glow: "shadow-amber-500/10",
   },
   INFO: {
-    bar: "bg-sky-400",
-    bg: "bg-sky-50",
-    border: "border-sky-300",
-    text: "text-sky-700",
-    darkBg: "dark:bg-sky-950/40",
-    darkBorder: "dark:border-sky-900/60",
-    darkText: "dark:text-sky-300",
+    bar: "bg-sky-500",
+    bg: "bg-sky-950/40",
+    border: "border-sky-800/80",
+    text: "text-sky-400",
     icon: Info,
     dot: "bg-sky-500",
+    glow: "shadow-sky-500/10",
   },
-};
-
-const LANGUAGE_COLOR: Record<string, string> = {
-  java: "from-orange-400 to-rose-500",
-  python: "from-sky-400 to-blue-500",
-  javascript: "from-amber-400 to-yellow-500",
-  typescript: "from-blue-400 to-indigo-500",
-  tsx: "from-blue-400 to-indigo-500",
-  jsx: "from-amber-400 to-yellow-500",
-  go: "from-cyan-400 to-teal-500",
-  rust: "from-orange-500 to-rose-600",
-  ruby: "from-rose-500 to-red-600",
-  php: "from-indigo-400 to-purple-500",
-  csharp: "from-purple-400 to-violet-500",
-  cpp: "from-blue-500 to-indigo-600",
-  c: "from-blue-500 to-indigo-600",
-  kotlin: "from-violet-400 to-purple-500",
-  swift: "from-orange-400 to-rose-500",
-  sql: "from-amber-500 to-orange-500",
-  xml: "from-emerald-400 to-teal-500",
-  html: "from-orange-500 to-red-500",
-  css: "from-blue-400 to-cyan-500",
-  yaml: "from-pink-400 to-rose-500",
 };
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
+function normalizeFormattedCode(raw?: string | null): string {
+  if (!raw) return "";
+  let text = String(raw);
+  // Handle literal escaped newlines "\n" or "\r\n"
+  if (text.includes("\\n") && !text.includes("\n")) {
+    text = text
+      .replace(/\\r\\n/g, "\n")
+      .replace(/\\n/g, "\n")
+      .replace(/\\t/g, "    ")
+      .replace(/\\"/g, '"');
+  } else {
+    text = text.replace(/\\r\\n/g, "\n").replace(/\\n/g, "\n").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  }
+  return text;
+}
+
+function normalizeProblemSnapshot(problem: CodeReviewProblemSnapshot): CodeReviewProblemSnapshot {
+  return {
+    ...problem,
+    problemStatement: normalizeFormattedCode(problem.problemStatement),
+    files: (problem.files || []).map((f) => ({
+      ...f,
+      content: normalizeFormattedCode(f.content),
+    })),
+  };
+}
+
 function draftKey(applicationId: number, roundId: number, problemId: number): string {
   return `codeReview-draft-${applicationId}-${roundId}-${problemId}`;
 }
 
-function timerKey(applicationId: number, roundId: number, problemId: number): string {
-  return `codeReview-timer-${applicationId}-${roundId}-${problemId}`;
+function timerKey(applicationId: number, roundId: number): string {
+  return `codeReview-timer-${applicationId}-${roundId}`;
 }
 
 function filenameShort(path: string): string {
   return path.split("/").pop() ?? path;
-}
-
-function extensionOf(filename: string): string {
-  const m = filename.match(/\.([a-zA-Z0-9]+)$/);
-  return (m?.[1] ?? "txt").toLowerCase();
 }
 
 function formatRemaining(ms: number): string {
@@ -206,97 +208,187 @@ export function CodeReviewModule({
 }: CodeReviewModuleProps) {
   const { t } = useTranslation();
 
-  // Each round has exactly ONE Code Review problem (BE always reads [0]).
-  // The JdRound.configData type doesn't expose codeReviewProblems — cast
-  // through unknown to the BE payload shape (`Round.configData`).
   const configData = round.configData as unknown as
     | (typeof round.configData & {
         codeReviewProblems?: CodeReviewProblemSnapshot[];
+        codeReviewProblem?: CodeReviewProblemSnapshot;
+        codeReviewProblemsId?: number[];
       })
     | undefined;
-  const problem: CodeReviewProblemSnapshot | undefined = configData?.codeReviewProblems?.[0];
+
   const timeLimitMinutes = configData?.timeLimitMinutes ?? 45;
   const maxScore = configData?.maxScore ?? 100;
+  const roundId = round.id ?? 0;
 
-  const gradedStatus =
-    (detail?.status as string) === "AI_EVALUATED" || (detail?.status as string) === "COMPLETED";
-  const finalScore = detail?.finalScore ?? detail?.aiScore ?? null;
-  const showScore = gradedStatus && finalScore !== null;
-  const passed = (detail?.finalResult ?? "") === "PASSED";
-  const failed = (detail?.finalResult ?? "") === "FAILED";
+  // 1. Extract raw problems from round snapshot
+  const rawProblems = useMemo<CodeReviewProblemSnapshot[]>(() => {
+    let list: CodeReviewProblemSnapshot[] = [];
+    if (Array.isArray(configData?.codeReviewProblems) && configData.codeReviewProblems.length > 0) {
+      list = configData.codeReviewProblems;
+    } else if (configData?.codeReviewProblem) {
+      list = [configData.codeReviewProblem];
+    }
+    return list.map(normalizeProblemSnapshot);
+  }, [configData]);
 
-  // ---- Issue state -----------------------------------------------------
-  const [issues, setIssues] = useState<LocalDraftIssue[]>([]);
-  const [activeFile, setActiveFile] = useState<string>(problem?.files?.[0]?.filename ?? "");
-  const [issueModal, setIssueModal] = useState<IssueModalState | null>(null);
+  // 2. If problem IDs exist but lack full file details, fetch from API
+  const [fetchedProblems, setFetchedProblems] = useState<CodeReviewProblemSnapshot[]>([]);
+  const [isLoadingProblems, setIsLoadingProblems] = useState(false);
+
+  useEffect(() => {
+    const ids = configData?.codeReviewProblemsId || [];
+    const missingIds = ids.filter(
+      (id) => !rawProblems.some((p) => p.problemId === id && (p.files?.length ?? 0) > 0)
+    );
+
+    if (missingIds.length === 0) return;
+
+    let isMounted = true;
+    setIsLoadingProblems(true);
+    Promise.all(missingIds.map((id) => codeReviewProblemManager.getById(id)))
+      .then((resList) => {
+        if (!isMounted) return;
+        const loaded: CodeReviewProblemSnapshot[] = [];
+        resList.forEach((r) => {
+          if (r.success && r.data) {
+            loaded.push(
+              normalizeProblemSnapshot({
+                problemId: r.data.id,
+                title: r.data.title,
+                difficulty: r.data.difficulty as "EASY" | "MEDIUM" | "HARD",
+                language: r.data.language,
+                problemStatement: r.data.problemStatement,
+                files: r.data.files ?? [],
+                expectedIssues: r.data.expectedIssues ?? [],
+              })
+            );
+          }
+        });
+        setFetchedProblems(loaded);
+      })
+      .catch((err) => {
+        console.error("Failed to load full code review problems", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingProblems(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [configData?.codeReviewProblemsId, rawProblems]);
+
+  // Combine and deduplicate problems
+  const problems = useMemo<CodeReviewProblemSnapshot[]>(() => {
+    const map = new Map<number, CodeReviewProblemSnapshot>();
+    for (const p of rawProblems) {
+      if (p.problemId != null) map.set(p.problemId, p);
+    }
+    for (const p of fetchedProblems) {
+      if (p.problemId != null) {
+        if (!map.has(p.problemId) || (map.get(p.problemId)?.files?.length ?? 0) === 0) {
+          map.set(p.problemId, p);
+        }
+      }
+    }
+    const result = Array.from(map.values());
+    return result.length > 0 ? result : rawProblems;
+  }, [rawProblems, fetchedProblems]);
+
+  // Problem switcher index
+  const [activeProblemIdx, setActiveProblemIdx] = useState(0);
+  const activeProblem = problems[activeProblemIdx] ?? problems[0];
+
+  // Active file per problem (store selected filename)
+  const [activeFileByProblem, setActiveFileByProblem] = useState<Record<number, string>>({});
+
+  // Active issues dictionary: problemId -> LocalDraftIssue[]
+  const [issuesByProblem, setIssuesByProblem] = useState<Record<number, LocalDraftIssue[]>>({});
+
+  const [step, setStep] = useState<"REVIEWING" | "SUBMITTING" | "GRADED" | "ERROR">("REVIEWING");
+  const [inlineEditor, setInlineEditor] = useState<InlineEditorState | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [gradedResult, setGradedResult] = useState<ApplicationDetail | null>(null);
 
-  // ---- Hydrate from localStorage (draft + countdown resume) ------------
-  const problemId = problem?.problemId ?? 0;
-  const roundId = round.id ?? 0;
-  const draftStorageKey = useMemo(
-    () => draftKey(applicationId, roundId, problemId),
-    [applicationId, roundId, problemId]
-  );
-  const timerStorageKey = useMemo(
-    () => timerKey(applicationId, roundId, problemId),
-    [applicationId, roundId, problemId]
-  );
+  const isFinished =
+    isCompleted ||
+    detail?.finalScore != null ||
+    detail?.status === "COMPLETED" ||
+    detail?.status === "AI_EVALUATED" ||
+    step === "GRADED";
 
-  // 1. Load draft issues from localStorage
+  // Hydrate issues from localStorage / previous submission for all problems
   useEffect(() => {
-    if (!problemId) return;
-    try {
-      const raw = localStorage.getItem(draftStorageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw) as LocalDraftIssue[];
-        if (Array.isArray(parsed)) setIssues(parsed);
-      } else {
-        // First load: hydrate from server-submitted issues (if any) so the
-        // candidate can see what they already submitted.
-        const submitted = detail?.submissionData?.codeReviewSubmissions;
-        if (submitted && submitted.length > 0) {
-          setIssues(
-            submitted.map((s) => ({
-              filename: s.filename ?? "",
-              lineNumber: s.lineNumber ?? 1,
-              severity: (s.severity as Severity) ?? "WARNING",
-              description: s.description ?? "",
-            }))
-          );
+    if (problems.length === 0) return;
+
+    const initialMap: Record<number, LocalDraftIssue[]> = {};
+    const submitted = detail?.submissionData?.codeReviewSubmissions;
+
+    problems.forEach((prob) => {
+      const pId = prob.problemId ?? 0;
+      const storageKey = draftKey(applicationId, roundId, pId);
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const parsed = JSON.parse(raw) as LocalDraftIssue[];
+          if (Array.isArray(parsed)) {
+            initialMap[pId] = parsed;
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      // If no draft in localStorage, check if previous submitted issues match this problem's files
+      if (submitted && submitted.length > 0 && prob.files) {
+        const filenames = new Set(prob.files.map((f) => f.filename));
+        const matched = submitted
+          .filter((s) => filenames.has(s.filename))
+          .map((s) => ({
+            filename: s.filename ?? "",
+            lineNumber: s.lineNumber ?? 1,
+            severity: (s.severity as Severity) ?? "WARNING",
+            description: s.description ?? "",
+          }));
+        if (matched.length > 0) {
+          initialMap[pId] = matched;
         }
       }
-    } catch {
-      // ignore corrupted draft
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draftStorageKey]);
+    });
 
-  // 2. Save draft to localStorage (every change, debounced via setTimeout)
+    setIssuesByProblem((prev) => ({ ...initialMap, ...prev }));
+  }, [problems, applicationId, roundId, detail?.submissionData?.codeReviewSubmissions]);
+
+  // Auto-save drafts per problem
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (!problemId) return;
+    if (problems.length === 0 || isFinished) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      try {
-        localStorage.setItem(draftStorageKey, JSON.stringify(issues));
-      } catch {
-        // ignore quota errors
-      }
+      problems.forEach((prob) => {
+        const pId = prob.problemId ?? 0;
+        const storageKey = draftKey(applicationId, roundId, pId);
+        const pIssues = issuesByProblem[pId] || [];
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(pIssues));
+        } catch {
+          // ignore quota
+        }
+      });
     }, 500);
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [issues, draftStorageKey, problemId]);
+  }, [issuesByProblem, problems, applicationId, roundId, isFinished]);
 
-  // 3. Countdown — round has no server-side startedAt, so we anchor on
-  //    the first time the page is opened (per spec §4.4) and persist the
-  //    end-time so reloading doesn't reset the timer.
+  // Countdown timer for the whole round
+  const timerStorageKey = useMemo(() => timerKey(applicationId, roundId), [applicationId, roundId]);
   const [remainingMs, setRemainingMs] = useState<number>(timeLimitMinutes * 60 * 1000);
+
   useEffect(() => {
-    if (!problemId) return;
+    if (isFinished) return;
     const totalMs = timeLimitMinutes * 60 * 1000;
     let endAt: number;
     try {
@@ -306,7 +398,6 @@ export function CodeReviewModule({
         if (Number.isFinite(parsed) && parsed > Date.now()) {
           endAt = parsed;
         } else {
-          // stored end is in the past — reset
           endAt = Date.now() + totalMs;
           localStorage.setItem(timerStorageKey, String(endAt));
         }
@@ -321,15 +412,38 @@ export function CodeReviewModule({
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [timerStorageKey, problemId, timeLimitMinutes]);
+  }, [timerStorageKey, timeLimitMinutes, isFinished]);
 
-  const timedOut = remainingMs <= 0;
-  const editable = !isCompleted && isCurrent && !timedOut;
+  const timedOut = remainingMs <= 0 && !isFinished;
+  const editable = !isFinished && isCurrent && !timedOut;
 
-  // ---- Issue CRUD handlers --------------------------------------------
-  const openIssueModal = (filename: string, lineNumber: number) => {
+  // Active problem's current files and issues
+  const currentProblemId = activeProblem?.problemId ?? 0;
+  const currentFiles = activeProblem?.files ?? [];
+  const activeFilename =
+    activeFileByProblem[currentProblemId] || currentFiles[0]?.filename || "";
+  const currentFile =
+    currentFiles.find((f) => f.filename === activeFilename) ?? currentFiles[0];
+
+  const currentProblemIssues = issuesByProblem[currentProblemId] ?? [];
+
+  // Inline Editor handlers (GitHub Pull Request Code Review style)
+  const openInlineEditor = (problemId: number, filename: string, lineNumber: number) => {
     if (!editable) return;
-    setIssueModal({
+    // If clicking on the already opened line editor with same filename and line, toggle close it
+    if (
+      inlineEditor &&
+      inlineEditor.problemId === problemId &&
+      inlineEditor.filename === filename &&
+      inlineEditor.lineNumber === lineNumber &&
+      inlineEditor.editingIndex === null
+    ) {
+      setInlineEditor(null);
+      return;
+    }
+
+    setInlineEditor({
+      problemId,
       filename,
       lineNumber,
       severity: "WARNING",
@@ -338,10 +452,13 @@ export function CodeReviewModule({
     });
   };
 
-  const openEditIssue = (index: number) => {
+  const openEditInlineEditor = (problemId: number, index: number) => {
     if (!editable) return;
-    const it = issues[index];
-    setIssueModal({
+    const pIssues = issuesByProblem[problemId] ?? [];
+    const it = pIssues[index];
+    if (!it) return;
+    setInlineEditor({
+      problemId,
       filename: it.filename,
       lineNumber: it.lineNumber,
       severity: it.severity,
@@ -350,91 +467,120 @@ export function CodeReviewModule({
     });
   };
 
-  const closeIssueModal = () => setIssueModal(null);
+  const closeInlineEditor = () => setInlineEditor(null);
 
-  const saveIssueFromModal = () => {
-    if (!issueModal) return;
-    const desc = issueModal.description.trim();
+  const saveInlineIssue = () => {
+    if (!inlineEditor) return;
+    const desc = inlineEditor.description.trim();
     if (!desc) {
       toast.error(t("userApplicationhistory.codeReviewNoDescription", "Vui lòng mô tả issue"));
       return;
     }
     const draft: LocalDraftIssue = {
-      filename: issueModal.filename,
-      lineNumber: issueModal.lineNumber,
-      severity: issueModal.severity,
+      filename: inlineEditor.filename,
+      lineNumber: inlineEditor.lineNumber,
+      severity: inlineEditor.severity,
       description: desc,
     };
-    if (issueModal.editingIndex === null) {
-      setIssues((prev) => [...prev, draft]);
-      toast.success(t("userApplicationhistory.codeReviewIssueAdded", "Đã thêm issue mới"));
-    } else {
-      setIssues((prev) => prev.map((old, i) => (i === issueModal.editingIndex ? draft : old)));
-      toast.success(t("userApplicationhistory.codeReviewIssueUpdated", "Đã cập nhật issue"));
-    }
-    setIssueModal(null);
+
+    setIssuesByProblem((prev) => {
+      const pId = inlineEditor.problemId;
+      const list = prev[pId] ? [...prev[pId]] : [];
+      if (inlineEditor.editingIndex === null) {
+        list.push(draft);
+      } else {
+        list[inlineEditor.editingIndex] = draft;
+      }
+      return { ...prev, [pId]: list };
+    });
+
+    toast.success(
+      inlineEditor.editingIndex === null
+        ? t("userApplicationhistory.codeReviewIssueAdded", "Đã thêm nhận xét mới")
+        : t("userApplicationhistory.codeReviewIssueUpdated", "Đã cập nhật nhận xét")
+    );
+    setInlineEditor(null);
   };
 
-  const deleteIssue = (index: number) => {
+  const deleteIssue = (problemId: number, index: number) => {
     if (!editable) return;
-    setIssues((prev) => prev.filter((_, i) => i !== index));
+    setIssuesByProblem((prev) => {
+      const list = (prev[problemId] ?? []).filter((_, i) => i !== index);
+      return { ...prev, [problemId]: list };
+    });
+    // If deleting the issue currently being edited, close inline editor
+    if (inlineEditor?.problemId === problemId && inlineEditor?.editingIndex === index) {
+      setInlineEditor(null);
+    }
+    toast.success(t("userApplicationhistory.codeReviewIssueDeleted", "Đã xóa nhận xét"));
   };
 
-  const clearDraft = () => {
-    setIssues([]);
+  const clearCurrentDraft = () => {
+    setIssuesByProblem((prev) => ({ ...prev, [currentProblemId]: [] }));
     try {
-      localStorage.removeItem(draftStorageKey);
+      localStorage.removeItem(draftKey(applicationId, roundId, currentProblemId));
     } catch {
       // ignore
     }
+    toast.info("Đã xóa danh sách draft issues của bài này");
   };
 
-  // ---- Submit (synchronous) --------------------------------------------
-  const [step, setStep] = useState<"REVIEWING" | "SUBMITTING" | "GRADED" | "ERROR">("REVIEWING");
+  // Flatten all issues across all problems
+  const allFlattenedIssues = useMemo(() => {
+    const list: LocalDraftIssue[] = [];
+    Object.values(issuesByProblem).forEach((arr) => {
+      list.push(...arr);
+    });
+    return list;
+  }, [issuesByProblem]);
 
-  const handleOpenConfirm = () => {
-    if (issues.length === 0) {
-      // Allow empty submission but warn (per spec §8 no.6)
-      setConfirmOpen(true);
-      return;
-    }
-    setConfirmOpen(true);
-  };
+  const severityCounts = useMemo(() => {
+    const c = { CRITICAL: 0, WARNING: 0, INFO: 0 } as Record<Severity, number>;
+    for (const i of allFlattenedIssues) c[i.severity] += 1;
+    return c;
+  }, [allFlattenedIssues]);
 
   const handleConfirmSubmit = async () => {
     setConfirmOpen(false);
     setSubmitting(true);
     setStep("SUBMITTING");
     try {
-      const submissions = issues.map<CodeReviewSubmission>((i) => ({
+      const submissions = allFlattenedIssues.map<CodeReviewSubmission>((i) => ({
         filename: i.filename,
         lineNumber: i.lineNumber,
         severity: i.severity,
         description: i.description,
       }));
+
       const res = await applicationDetailManager.submitCodeReview({
         applicationId,
         roundId,
         submissions: submissions as never,
       });
+
       if (!res.success) {
         throw new Error(res.error || "Submit failed");
       }
-      const detail = res.data?.detail ?? (res.data as unknown as ApplicationDetail) ?? null;
-      setGradedResult(detail);
+
+      const resDetail = res.data?.detail ?? (res.data as unknown as ApplicationDetail) ?? null;
+      setGradedResult(resDetail);
       setStep("GRADED");
       toast.success(
         t(
           "userApplicationhistory.codeReviewSubmitted",
-          `Hoàn tất! Điểm: ${detail?.finalScore ?? detail?.aiScore ?? "?"}/${maxScore}`
+          `Hoàn tất! Điểm: ${resDetail?.finalScore ?? resDetail?.aiScore ?? "?"}/${maxScore}`
         )
       );
-      // Clear draft once graded successfully
-      try {
-        localStorage.removeItem(draftStorageKey);
-      } catch {
-        // ignore
-      }
+
+      // Clean local storage drafts
+      problems.forEach((p) => {
+        try {
+          localStorage.removeItem(draftKey(applicationId, roundId, p.problemId ?? 0));
+        } catch {
+          // ignore
+        }
+      });
+
       onSuccess?.();
     } catch (err) {
       console.error("[CodeReviewModule] Submit error:", err);
@@ -447,10 +593,16 @@ export function CodeReviewModule({
   };
 
   const handleRetake = () => {
-    clearDraft();
+    setIssuesByProblem({});
     setGradedResult(null);
     setStep("REVIEWING");
-    // Reset timer
+    problems.forEach((p) => {
+      try {
+        localStorage.removeItem(draftKey(applicationId, roundId, p.problemId ?? 0));
+      } catch {
+        // ignore
+      }
+    });
     try {
       const endAt = Date.now() + timeLimitMinutes * 60 * 1000;
       localStorage.setItem(timerStorageKey, String(endAt));
@@ -459,32 +611,30 @@ export function CodeReviewModule({
     }
   };
 
-  // ---- Derived data ----------------------------------------------------
-  const issuesByFile = useMemo(() => {
-    const map: Record<string, LocalDraftIssue[]> = {};
-    for (const issue of issues) {
-      if (!map[issue.filename]) map[issue.filename] = [];
-      map[issue.filename].push(issue);
-    }
-    return map;
-  }, [issues]);
+  const activeGradedDetail = gradedResult ?? detail;
 
-  const severityCounts = useMemo(() => {
-    const c = { CRITICAL: 0, WARNING: 0, INFO: 0 } as Record<Severity, number>;
-    for (const i of issues) c[i.severity] += 1;
-    return c;
-  }, [issues]);
-
-  // ---- Empty / loading guards -----------------------------------------
-  if (!problem) {
+  // Loading state
+  if (isLoadingProblems) {
     return (
-      <Card className="border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4" />
-          <span className="text-xs font-bold">
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <SpinnerBlock />
+        <p className="mt-4 text-xs font-semibold text-slate-400">
+          Đang tải dữ liệu bài tập Code Review...
+        </p>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (problems.length === 0 || !activeProblem) {
+    return (
+      <Card className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-6 text-amber-300">
+        <div className="flex items-center gap-3">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-amber-400" />
+          <span className="text-sm font-semibold">
             {t(
               "userApplicationhistory.codeReviewEmptyState",
-              "Vòng này không có bài Code Review nào"
+              "Vòng này hiện chưa có bài Code Review nào."
             )}
           </span>
         </div>
@@ -492,631 +642,511 @@ export function CodeReviewModule({
     );
   }
 
-  const files = problem.files ?? [];
-  if (files.length === 0) {
-    return (
-      <Card className="border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4" />
-          <span className="text-xs font-bold">
-            {t("userApplicationhistory.codeReviewNoFiles", "Bài Code Review này chưa có file code")}
-          </span>
-        </div>
-      </Card>
-    );
-  }
-
-  // ---- Render ----------------------------------------------------------
   return (
     <div className="space-y-6">
-      {/* ============== Toolbar / Header ============== */}
-      <Card className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 bg-gradient-to-r from-slate-50 to-white px-6 py-4 dark:border-slate-800 dark:from-[#0F172A] dark:to-slate-900/60">
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 text-white shadow-sm">
-              <Bug className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-                {t("userApplicationhistory.codeReviewRoundType", "VÒNG CODE REVIEW")}
-              </div>
-              <div className="mt-0.5 flex items-center gap-2">
-                <span className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
-                  {problem.title || t("userApplicationhistory.codeReviewTitle", "Code Review")}
-                </span>
-                {problem.difficulty && (
-                  <span
-                    className={cn(
-                      "rounded-md px-2 py-0.5 text-[10px] font-extrabold tracking-wider uppercase",
-                      problem.difficulty === "EASY"
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
-                        : problem.difficulty === "MEDIUM"
-                          ? "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"
-                          : "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
-                    )}>
-                    {problem.difficulty}
-                  </span>
-                )}
-                {problem.language && (
-                  <span className="rounded-md bg-indigo-100 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-indigo-700 uppercase dark:bg-indigo-950/60 dark:text-indigo-300">
-                    {problem.language}
-                  </span>
-                )}
+      {/* ── FULLSCREEN SUBMITTING / GRADING OVERLAY BLOCKER ── */}
+      {submitting && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md transition-all duration-300">
+          <div className="relative mx-4 flex max-w-md flex-col items-center gap-5 rounded-3xl border border-slate-800 bg-slate-900/95 p-8 text-center shadow-2xl shadow-indigo-500/10">
+            <div className="relative flex h-16 w-16 items-center justify-center">
+              <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500/20 duration-1000" />
+              <div className="absolute inset-0 animate-spin rounded-full border-2 border-indigo-500/30 border-t-indigo-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/30">
+                <Code2 className="h-5 w-5 animate-pulse" />
               </div>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {remainingMs > 0 && (
-              <div
-                className={cn(
-                  "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-extrabold tabular-nums",
-                  timedOut
-                    ? "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300"
-                    : remainingMs < 5 * 60 * 1000
-                      ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300"
-                      : "border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200"
-                )}>
-                <Clock className="h-3.5 w-3.5" />
-                {formatRemaining(remainingMs)}
+            <div className="space-y-2">
+              <h3 className="text-base font-black tracking-tight text-white">
+                {t(
+                  "userApplicationhistory.codeReviewSubmittingTitle",
+                  "AI đang chấm điểm Code Review..."
+                )}
+              </h3>
+              <p className="text-xs leading-relaxed text-slate-400">
+                {t(
+                  "userApplicationhistory.codeReviewSubmittingSubtitle",
+                  "Mô hình AI đang đối chiếu các phát hiện của bạn với bộ Expected Issues để tính điểm chi tiết. Vui lòng không đóng trình duyệt."
+                )}
+              </p>
+            </div>
+
+            <div className="w-full space-y-2 pt-1">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div className="h-full w-full animate-pulse rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
               </div>
-            )}
-
-            {showScore && (
-              <span
-                className={cn(
-                  "rounded-full px-3.5 py-1 text-xs font-extrabold tabular-nums shadow-xs",
-                  passed
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
-                    : failed
-                      ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
-                      : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                )}>
-                {passed ? "✓ " : failed ? "✗ " : ""}
-                {t("userApplicationhistory.codeReviewScore", "Điểm")}: {finalScore}/{maxScore}
-                {passed && " · PASSED"}
-                {failed && " · FAILED"}
-              </span>
-            )}
+              <div className="flex items-center justify-center gap-2 font-mono text-[11px] font-bold text-indigo-400">
+                <span className="h-2 w-2 animate-ping rounded-full bg-indigo-400" />
+                <span>AI Code Review Evaluator is running...</span>
+              </div>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* ============== Context ============== */}
-        <div className="space-y-3 px-6 py-5">
+      {/* ── TOP SUB-HEADER (Single Standalone Header Standard) ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+            <Bug className="h-5 w-5" />
+          </div>
           <div>
-            <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-              {t("userApplicationhistory.codeReviewContext", "Context / Đề bài")}
-            </h5>
-            <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-              {problem.problemStatement ||
-                t(
-                  "userApplicationhistory.codeReviewDefaultStatement",
-                  "Đọc đoạn code bên dưới, tìm các bug tiềm ẩn (security / performance / code smell) và mô tả chi tiết."
-                )}
-            </p>
-          </div>
-
-          <div className="flex items-start gap-2.5 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3 text-xs text-indigo-800 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-200">
-            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" />
-            <p className="leading-relaxed">
-              <strong className="font-extrabold">
-                {t("userApplicationhistory.codeReviewHint", "Mẹo:")}
-              </strong>{" "}
-              {t(
-                "userApplicationhistory.codeReviewClickLineHint",
-                "Click vào dòng code bên dưới để chọn vị trí nghi ngờ, sau đó chọn severity (CRITICAL / WARNING / INFO) và mô tả chi tiết."
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+                {isFinished
+                  ? "BÁO CÁO ĐÁNH GIÁ CODE REVIEW AI"
+                  : `VÒNG ${round.roundOrder ?? 5}: CODE REVIEW • TRẠM THI TRỰC TUYẾN`}
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-xs font-semibold text-indigo-400">
+                Vòng {round.roundOrder ?? 5}
+              </span>
+              {problems.length > 1 && (
+                <>
+                  <span className="text-slate-600">•</span>
+                  <span className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-extrabold text-indigo-300">
+                    {problems.length} BÀI TẬP
+                  </span>
+                </>
               )}
+            </div>
+            <p className="mt-0.5 text-sm font-semibold text-slate-200">
+              {isFinished
+                ? "Hệ thống AI đã hoàn tất phân tích các lỗi (bugs, code smells, security) và đối chiếu điểm số bài review."
+                : round.configData?.instruction ||
+                  "Đọc kỹ Đề bài & Code bên dưới, phát hiện các lỗi bảo mật/hiệu năng và ghi chú trực tiếp vào các dòng code."}
             </p>
           </div>
         </div>
-      </Card>
 
-      {/* ============== Error banner (if previous submit failed) ============== */}
+        {/* Status Badge */}
+        <div className="flex items-center gap-2">
+          {detail?.finalResult ? (
+            <span
+              className={
+                detail.finalResult === "PASSED"
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40"
+                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-300 shadow-sm shadow-rose-950/40"
+              }>
+              {detail.finalResult === "PASSED" ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <XCircle className="h-4 w-4" />
+              )}
+              <span>KẾT QUẢ: {detail.finalResult}</span>
+            </span>
+          ) : isFinished ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>ĐÃ HOÀN THÀNH BÀI THI</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+              <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+              <span>ĐANG TRONG THỜI GIAN LÀM BÀI</span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* ── ERROR BANNER ── */}
       {step === "ERROR" && (
-        <div className="flex items-center gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
+        <div className="flex items-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs font-medium text-rose-300">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-rose-400" />
           <span>
             {t(
               "userApplicationhistory.codeReviewSubmitFailedHint",
-              "Đã có lỗi khi nộp. Mạng/LLM có thể đã ổn định lại — bạn có thể thử nộp lại."
+              "Đã có lỗi khi nộp bài. Vui lòng kiểm tra kết nối mạng và thử nộp lại."
             )}
           </span>
         </div>
       )}
 
-      {/* ============== Result panel (after graded) ============== */}
-      {step === "GRADED" && gradedResult ? (
+      {/* ── GRADED RESULT VIEW (If Finished) ── */}
+      {isFinished && activeGradedDetail ? (
         <GradedResultView
-          detail={gradedResult}
+          detail={activeGradedDetail}
           maxScore={maxScore}
-          passed={passed}
-          failed={failed}
+          passed={detail?.finalResult === "PASSED"}
+          failed={detail?.finalResult === "FAILED"}
           onRetake={handleRetake}
+          problems={problems}
+          activeProblemIdx={activeProblemIdx}
+          onSelectProblem={setActiveProblemIdx}
+          issuesByProblem={issuesByProblem}
         />
       ) : (
         <>
-          {/* ============== Code + Issues split ============== */}
-          <div className="grid grid-cols-1 gap-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] dark:border-slate-800/60 dark:bg-slate-900/40">
-            {/* ===== Left: Code View ===== */}
-            <div className="flex flex-col border-b border-slate-200/80 lg:border-r lg:border-b-0 dark:border-slate-800">
-              {/* File tabs */}
-              {files.length > 1 && (
-                <div className="flex overflow-x-auto border-b border-slate-200/80 bg-slate-100/70 dark:border-slate-800 dark:bg-slate-900/60">
-                  {files.map((file) => {
-                    const fileIssues = issuesByFile[file.filename ?? ""] ?? [];
-                    const isActive = file.filename === activeFile;
-                    return (
-                      <button
-                        key={file.filename}
-                        type="button"
-                        onClick={() => setActiveFile(file.filename ?? "")}
-                        className={cn(
-                          "flex items-center gap-2 border-r border-slate-200 px-4 py-2.5 text-xs font-bold whitespace-nowrap transition-colors last:border-r-0 dark:border-slate-800",
-                          isActive
-                            ? "bg-white text-indigo-700 dark:bg-slate-900 dark:text-indigo-300"
-                            : "text-slate-500 hover:bg-white/60 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-900/40 dark:hover:text-slate-200"
-                        )}>
-                        <FileCode2 className="h-3.5 w-3.5" />
-                        <span>{filenameShort(file.filename ?? "")}</span>
-                        {fileIssues.length > 0 && (
-                          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-extrabold text-white">
-                            {fileIssues.length}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+          {/* ── UNIFIED PROBLEM CONTROL & CONTEXT CARD ── */}
+          <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-xl backdrop-blur-md">
+            {/* Top Toolbar: Multi-problem Tabs or Single Identity + Live Stats */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/70 px-5 py-3">
+              {/* Left: Problem Selection Tabs */}
+              <div className="flex flex-wrap items-center gap-2">
+                {problems.length > 1 ? (
+                  <div className="flex items-center gap-1.5 overflow-x-auto">
+                    <div className="flex items-center gap-1.5 pr-2 font-mono text-xs font-bold text-slate-400">
+                      <Layers className="h-4 w-4 text-indigo-400" />
+                      <span className="hidden sm:inline">Danh sách bài:</span>
+                    </div>
+                    {problems.map((p, idx) => {
+                      const pId = p.problemId ?? 0;
+                      const pIssues = issuesByProblem[pId] ?? [];
+                      const isActive = activeProblemIdx === idx;
 
-              {/* Active file content */}
-              <CodeViewPane
-                file={files.find((f) => f.filename === activeFile) ?? files[0]}
-                issues={issuesByFile[activeFile] ?? []}
-                onLineClick={(line) => openIssueModal(activeFile, line)}
-                editable={editable}
-              />
+                      return (
+                        <button
+                          key={pId || idx}
+                          type="button"
+                          onClick={() => setActiveProblemIdx(idx)}
+                          className={cn(
+                            "flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all",
+                            isActive
+                              ? "border border-indigo-500/50 bg-indigo-600 text-white shadow-md shadow-indigo-500/25"
+                              : "border border-slate-800 bg-slate-900/90 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                          )}>
+                          <span className="font-mono text-[11px] opacity-80">#{idx + 1}</span>
+                          <span className="max-w-[200px] truncate">
+                            {p.title || `Bài tập #${idx + 1}`}
+                          </span>
+                          {p.difficulty && (
+                            <span
+                              className={cn(
+                                "rounded-md px-1.5 py-0.2 text-[9px] font-extrabold uppercase",
+                                isActive
+                                  ? "bg-white/20 text-white"
+                                  : p.difficulty === "EASY"
+                                    ? "bg-emerald-500/15 text-emerald-400"
+                                    : p.difficulty === "MEDIUM"
+                                      ? "bg-amber-500/15 text-amber-400"
+                                      : "bg-rose-500/15 text-rose-400"
+                              )}>
+                              {p.difficulty}
+                            </span>
+                          )}
+                          {pIssues.length > 0 && (
+                            <span
+                              className={cn(
+                                "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold",
+                                isActive ? "bg-white text-indigo-700" : "bg-rose-500 text-white"
+                              )}>
+                              {pIssues.length}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-md border border-indigo-500/30 bg-indigo-500/10 font-mono text-xs font-black text-indigo-400">
+                      #1
+                    </span>
+                    <span className="text-sm font-bold text-white">
+                      {activeProblem.title || "Code Review Problem #1"}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right: Badges & Timer & Chevrons */}
+              <div className="flex items-center gap-2.5">
+                {activeProblem.difficulty && (
+                  <span
+                    className={cn(
+                      "rounded-full px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider uppercase",
+                      activeProblem.difficulty === "EASY"
+                        ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                        : activeProblem.difficulty === "MEDIUM"
+                          ? "border border-amber-500/30 bg-amber-500/10 text-amber-400"
+                          : "border border-rose-500/30 bg-rose-500/10 text-rose-400"
+                    )}>
+                    {activeProblem.difficulty}
+                  </span>
+                )}
+                {activeProblem.language && (
+                  <span className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-indigo-300 uppercase">
+                    {activeProblem.language}
+                  </span>
+                )}
+
+                {/* Countdown Timer */}
+                {remainingMs > 0 && !isFinished && (
+                  <div
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-extrabold tabular-nums transition-colors",
+                      timedOut
+                        ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
+                        : remainingMs < 5 * 60 * 1000
+                          ? "border-amber-500/40 bg-amber-500/10 text-amber-300 animate-pulse"
+                          : "border-slate-700 bg-slate-800/80 text-slate-200"
+                    )}>
+                    <Clock className="h-3.5 w-3.5 text-indigo-400" />
+                    <span>{formatRemaining(remainingMs)}</span>
+                  </div>
+                )}
+
+                {/* Navigation Chevrons */}
+                {problems.length > 1 && (
+                  <div className="flex items-center gap-1 border-l border-slate-800 pl-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={activeProblemIdx === 0}
+                      onClick={() => setActiveProblemIdx((i) => Math.max(0, i - 1))}
+                      className="h-7 w-7 p-0 rounded-lg border-slate-800 bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30">
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={activeProblemIdx === problems.length - 1}
+                      onClick={() => setActiveProblemIdx((i) => Math.min(problems.length - 1, i + 1))}
+                      className="h-7 w-7 p-0 rounded-lg border-slate-800 bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30">
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* ===== Right: Issues sidebar ===== */}
-            <IssuesSidebar
-              issues={issues}
-              severityCounts={severityCounts}
-              editable={editable}
-              onEdit={openEditIssue}
-              onDelete={deleteIssue}
-              onAddNew={() => openIssueModal(activeFile, 1)}
-            />
+            {/* Problem Statement (High Contrast, Bold, Crisp) */}
+            <div className="space-y-3 p-5">
+              <div className="space-y-2">
+                <h4 className="flex items-center gap-2 text-xs font-black tracking-wider text-amber-400 uppercase">
+                  <Lightbulb className="h-4 w-4 text-amber-400" />
+                  <span>Yêu cầu Code Review:</span>
+                </h4>
+                <div className="rounded-xl border border-slate-700/80 bg-slate-950/80 p-4 sm:p-5 font-sans text-sm font-semibold leading-relaxed whitespace-pre-wrap text-slate-100 shadow-inner">
+                  {activeProblem.problemStatement ||
+                    t(
+                      "userApplicationhistory.codeReviewDefaultStatement",
+                      "Đọc đoạn code bên dưới, phát hiện các lỗi tiềm ẩn (Security, Performance, Code Smell) và ghi nhận issue kèm mức độ nghiêm trọng."
+                    )}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* ============== Submit bar ============== */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white px-5 py-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-            <div className="flex flex-wrap items-center gap-3 text-xs">
-              <span className="font-bold text-slate-700 dark:text-slate-200">
-                {t("userApplicationhistory.codeReviewSummary", "Tổng quan")}
-              </span>
+          {/* ── FULL-WIDTH CODE VIEWER WITH INLINE ANNOTATIONS ── */}
+          {currentFiles.length === 0 ? (
+            <Card className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-6 text-amber-300">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-amber-400" />
+                <span className="text-sm font-semibold">
+                  Bài tập này chưa có file mã nguồn nào để review.
+                </span>
+              </div>
+            </Card>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
+              {/* Header: File Switcher Tabs */}
+              <div className="flex flex-wrap items-center justify-between border-b border-slate-800/80 bg-slate-900/95 px-4 py-2.5">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500/80" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
+                  </div>
+
+                  <div className="flex items-center gap-1.5 overflow-x-auto">
+                    {currentFiles.map((file) => {
+                      const fileIssues = currentProblemIssues.filter(
+                        (i) => i.filename === file.filename
+                      );
+                      const isActive = file.filename === activeFilename;
+
+                      return (
+                        <button
+                          key={file.filename}
+                          type="button"
+                          onClick={() =>
+                            setActiveFileByProblem((prev) => ({
+                              ...prev,
+                              [currentProblemId]: file.filename ?? "",
+                            }))
+                          }
+                          className={cn(
+                            "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
+                            isActive
+                              ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-200 shadow-xs shadow-indigo-950/50"
+                              : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+                          )}>
+                          <FileCode2 className="h-3.5 w-3.5" />
+                          <span>{filenameShort(file.filename ?? "")}</span>
+                          {fileIssues.length > 0 && (
+                            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-extrabold text-white">
+                              {fileIssues.length}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Meta stats right */}
+                {currentFile && (
+                  <div className="flex items-center gap-3 font-mono text-[11px] text-slate-400">
+                    <span>
+                      {normalizeFormattedCode(currentFile.content).split("\n").length} dòng
+                    </span>
+                    <span className="text-slate-600">•</span>
+                    <span>{normalizeFormattedCode(currentFile.content).length} ký tự</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Active Code Content with Inline Issues & GitHub-style Comment Composer */}
+              {currentFile && (
+                <CodeViewPane
+                  file={currentFile}
+                  issues={currentProblemIssues.filter((i) => i.filename === currentFile.filename)}
+                  allIssues={currentProblemIssues}
+                  activeProblemId={currentProblemId}
+                  inlineEditor={inlineEditor}
+                  onOpenInlineEditor={(line) =>
+                    openInlineEditor(currentProblemId, currentFile.filename ?? "", line)
+                  }
+                  onCloseInlineEditor={closeInlineEditor}
+                  onChangeInlineEditor={setInlineEditor}
+                  onSaveInlineIssue={saveInlineIssue}
+                  onEditIssue={(idx) => openEditInlineEditor(currentProblemId, idx)}
+                  onDeleteIssue={(idx) => deleteIssue(currentProblemId, idx)}
+                  editable={editable}
+                />
+              )}
+            </div>
+          )}
+
+          {/* ── REVIEW SUMMARY & SUBMIT BAR ── */}
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+            {/* Left: Issues summary badges */}
+            <div className="flex flex-wrap items-center gap-2.5 text-xs">
+              <span className="font-bold text-slate-300">Tổng kết:</span>
+              <div className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1 font-bold text-slate-200">
+                <Target className="h-3.5 w-3.5 text-indigo-400" />
+                <span>
+                  {allFlattenedIssues.length} Issues
+                  {problems.length > 1 ? ` (${problems.length} bài)` : ""}
+                </span>
+              </div>
               <SeverityBadgeMini severity="CRITICAL" count={severityCounts.CRITICAL} />
               <SeverityBadgeMini severity="WARNING" count={severityCounts.WARNING} />
               <SeverityBadgeMini severity="INFO" count={severityCounts.INFO} />
             </div>
 
-            <Button
-              onClick={handleOpenConfirm}
-              disabled={!editable || submitting}
-              className="h-10 gap-2 bg-gradient-to-r from-rose-500 to-orange-500 px-6 text-xs font-bold text-white shadow-sm hover:from-rose-600 hover:to-orange-600">
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("userApplicationhistory.codeReviewSubmitting", "Đang chấm điểm...")}
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4" />
-                  {issues.length > 0
-                    ? t("userApplicationhistory.codeReviewSubmitIssues", {
-                        count: issues.length,
-                        defaultValue: `Nộp Review (${issues.length} issues)`,
-                      })
-                    : t("userApplicationhistory.codeReviewSubmit", "Nộp Review")}
-                </>
+            {/* Right: Actions */}
+            <div className="flex items-center gap-3">
+              {editable && currentProblemIssues.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearCurrentDraft}
+                  className="h-9 gap-1.5 rounded-xl px-3 text-xs font-bold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300">
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Xóa draft bài này</span>
+                </Button>
               )}
-            </Button>
+
+              {editable && (
+                <Button
+                  onClick={() => setConfirmOpen(true)}
+                  className="h-9 gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-5 text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition-all hover:from-indigo-500 hover:to-indigo-400 active:scale-95">
+                  <Send className="h-3.5 w-3.5" />
+                  <span>Nộp bài Review ({allFlattenedIssues.length})</span>
+                </Button>
+              )}
+            </div>
           </div>
         </>
       )}
 
-      {/* ============== Issue modal ============== */}
-      {issueModal && (
-        <IssueModal
-          state={issueModal}
-          onChange={setIssueModal}
-          onClose={closeIssueModal}
-          onSave={saveIssueFromModal}
-        />
-      )}
-
-      {/* ============== Confirm-submit modal ============== */}
-      <Dialog open={confirmOpen} onOpenChange={(o) => !submitting && setConfirmOpen(o)}>
-        <DialogContent className="max-w-md overflow-hidden p-0">
-          <div className="flex items-start gap-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-orange-50 px-6 py-5 dark:border-slate-700 dark:from-rose-950/40 dark:to-orange-950/40">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 text-white shadow-sm">
-              <Send className="h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <DialogTitle className="text-base">
-                {t("userApplicationhistory.codeReviewConfirmSubmitTitle", "Xác nhận nộp Review")}
-              </DialogTitle>
-              <DialogDescription className="mt-1 text-xs">
-                {issues.length === 0
-                  ? t(
-                      "userApplicationhistory.codeReviewConfirmSubmitEmpty",
-                      "Bạn chưa tạo issue nào. Có chắc chắn muốn nộp không? Hệ thống vẫn sẽ chấm với 0 issues."
-                    )
-                  : t("userApplicationhistory.codeReviewConfirmSubmit", {
-                      count: issues.length,
-                      defaultValue: `Bạn chắc chắn muốn nộp ${issues.length} issues? AI sẽ chấm ngay và bạn không thể sửa sau khi nộp.`,
-                    })}
-              </DialogDescription>
+      {/* ── CONFIRM SUBMIT MODAL (macOS traffic-light modal) ── */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-md overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-0 text-slate-100 shadow-2xl">
+          <div className="border-b border-slate-800 bg-slate-950/60 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-full bg-rose-500/80 shadow-xs shadow-rose-500/30" />
+                <span className="h-3 w-3 rounded-full bg-amber-500/80 shadow-xs shadow-amber-500/30" />
+                <span className="h-3 w-3 rounded-full bg-emerald-500/80 shadow-xs shadow-emerald-500/30" />
+              </div>
+              <span className="ml-2 text-xs font-bold text-slate-400">
+                Xác nhận nộp bài Code Review
+              </span>
             </div>
           </div>
 
           <div className="space-y-4 px-6 py-5">
-            {/* Stats */}
-            <div className="grid grid-cols-4 gap-3 text-center">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-2.5 dark:border-slate-700 dark:bg-slate-900/60">
-                <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
-                  Total
-                </div>
-                <div className="text-lg font-extrabold text-slate-900 tabular-nums dark:text-white">
-                  {issues.length}
-                </div>
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+                <Send className="h-5 w-5" />
               </div>
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-2 py-2.5 dark:border-rose-900/60 dark:bg-rose-950/40">
-                <div className="text-[10px] font-bold tracking-wider text-rose-600 uppercase">
-                  CRITICAL
-                </div>
-                <div className="text-lg font-extrabold text-rose-700 tabular-nums dark:text-rose-300">
+              <div>
+                <DialogTitle className="text-base font-bold text-white">
+                  Bạn có chắc chắn muốn nộp bài?
+                </DialogTitle>
+                <DialogDescription className="mt-1 text-xs text-slate-400">
+                  {allFlattenedIssues.length === 0
+                    ? "Bạn chưa thêm issue nào. Hệ thống AI vẫn sẽ đối chiếu và chấm điểm với 0 issue."
+                    : `Hệ thống AI sẽ đối chiếu ${allFlattenedIssues.length} issue(s) trên ${problems.length} bài tập và chấm điểm ngay lập tức.`}
+                </DialogDescription>
+              </div>
+            </div>
+
+            {/* Severity stats breakdown */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-2">
+                <div className="text-[10px] font-bold text-rose-400 uppercase">CRITICAL</div>
+                <div className="mt-0.5 text-base font-extrabold text-rose-300">
                   {severityCounts.CRITICAL}
                 </div>
               </div>
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-2 py-2.5 dark:border-amber-900/60 dark:bg-amber-950/40">
-                <div className="text-[10px] font-bold tracking-wider text-amber-600 uppercase">
-                  WARNING
-                </div>
-                <div className="text-lg font-extrabold text-amber-700 tabular-nums dark:text-amber-300">
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-2">
+                <div className="text-[10px] font-bold text-amber-400 uppercase">WARNING</div>
+                <div className="mt-0.5 text-base font-extrabold text-amber-300">
                   {severityCounts.WARNING}
                 </div>
               </div>
-              <div className="rounded-xl border border-sky-200 bg-sky-50 px-2 py-2.5 dark:border-sky-900/60 dark:bg-sky-950/40">
-                <div className="text-[10px] font-bold tracking-wider text-sky-600 uppercase">
-                  INFO
-                </div>
-                <div className="text-lg font-extrabold text-sky-700 tabular-nums dark:text-sky-300">
+              <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-2">
+                <div className="text-[10px] font-bold text-sky-400 uppercase">INFO</div>
+                <div className="mt-0.5 text-base font-extrabold text-sky-300">
                   {severityCounts.INFO}
                 </div>
               </div>
             </div>
-
-            {/* Issues preview list */}
-            {issues.length > 0 && (
-              <div className="max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                <ul className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {issues.map((iss, i) => {
-                    const tok = SEVERITY_TOKENS[iss.severity];
-                    const Icon = tok.icon;
-                    return (
-                      <li key={i} className="flex items-start gap-2 px-3 py-2 text-xs">
-                        <Icon
-                          className={cn(
-                            "mt-0.5 h-3.5 w-3.5 shrink-0",
-                            iss.severity === "CRITICAL" && "text-rose-500",
-                            iss.severity === "WARNING" && "text-amber-500",
-                            iss.severity === "INFO" && "text-sky-500"
-                          )}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                            {filenameShort(iss.filename)}:{iss.lineNumber} ·{" "}
-                            <span className="font-bold">{iss.severity}</span>
-                          </div>
-                          <div className="line-clamp-2 text-slate-700 dark:text-slate-300">
-                            {iss.description}
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-
-            {/* Warning banner */}
-            <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <p className="leading-relaxed">
-                {t(
-                  "userApplicationhistory.codeReviewConfirmHint",
-                  "AI sẽ đối chiếu với expected issues. Quá trình này có thể mất 5–30 giây (sandbox LLM)."
-                )}
-              </p>
-            </div>
           </div>
 
-          <DialogFooter className="border-t border-slate-200 bg-slate-50/60 px-6 py-4 dark:border-slate-700 dark:bg-slate-900/60">
+          <DialogFooter className="border-t border-slate-800 bg-slate-950/60 px-6 py-4">
             <Button
               variant="outline"
               onClick={() => setConfirmOpen(false)}
               disabled={submitting}
-              className="border-slate-300 px-5 dark:border-slate-700">
-              {t("general.cancel", "Hủy")}
+              className="rounded-xl border-slate-700 bg-slate-800/80 text-xs font-bold text-slate-300 hover:bg-slate-700 hover:text-white">
+              Hủy
             </Button>
             <Button
               onClick={handleConfirmSubmit}
               disabled={submitting}
-              className="gap-2 bg-gradient-to-r from-rose-500 to-orange-500 px-6 text-white shadow-sm hover:from-rose-600 hover:to-orange-600">
+              className="gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-5 text-xs font-bold text-white shadow-md shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-400">
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("userApplicationhistory.codeReviewSubmitting", "Đang chấm điểm...")}
+                  <span>Đang xử lý...</span>
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  {t("userApplicationhistory.codeReviewSubmit", "Nộp Review")}
+                  <span>Xác nhận nộp</span>
                 </>
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-// ============================================================================
-// SUB-COMPONENT: CodeViewPane — selectable, highlighted code lines
-// ============================================================================
-
-function CodeViewPane({
-  file,
-  issues,
-  onLineClick,
-  editable,
-}: {
-  file: CodeFile;
-  issues: LocalDraftIssue[];
-  onLineClick: (_lineNumber: number) => void;
-  editable: boolean;
-}) {
-  const { t } = useTranslation();
-  const fileLines = useMemo(() => (file.content ?? "").split("\n"), [file.content]);
-  const ext = extensionOf(file.filename ?? "");
-  const colorBar = LANGUAGE_COLOR[ext] ?? "from-slate-400 to-slate-500";
-
-  // Build a map: lineNumber -> severity for quick highlighting
-  const lineHighlights = useMemo(() => {
-    const map: Record<number, Severity> = {};
-    for (const iss of issues) {
-      map[iss.lineNumber] = iss.severity;
-    }
-    return map;
-  }, [issues]);
-
-  return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      {/* File ribbon */}
-      <div className="flex items-center justify-between border-b border-slate-200/80 bg-slate-50 px-4 py-2 dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="flex items-center gap-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-          <span className={cn("inline-block h-2 w-2 rounded-full bg-gradient-to-r", colorBar)} />
-          <span className="font-mono normal-case">{file.filename}</span>
-        </div>
-        <span className="font-mono text-[10px] text-slate-500 normal-case opacity-70">
-          {fileLines.length} {t("userApplicationhistory.codeReviewLines", "dòng")} ·{" "}
-          {(file.content ?? "").length} {t("userApplicationhistory.codeReviewChars", "ký tự")}
-        </span>
-      </div>
-
-      {/* Code */}
-      <div className="flex-1 overflow-auto bg-slate-50 font-mono text-sm leading-7 dark:bg-[#0B1220]">
-        <pre className="m-0 min-h-full">
-          <code>
-            {fileLines.map((line, idx) => {
-              const lineNo = idx + 1;
-              const hl = lineHighlights[lineNo];
-              const tok = hl ? SEVERITY_TOKENS[hl] : null;
-              return (
-                <div
-                  key={lineNo}
-                  onClick={() => onLineClick(lineNo)}
-                  className={cn(
-                    "group flex transition-colors",
-                    editable && "cursor-pointer hover:bg-indigo-100/60 dark:hover:bg-indigo-500/10",
-                    tok && cn(tok.bg, tok.border, "border-l-4", tok.darkBg)
-                  )}
-                  style={
-                    tok
-                      ? {
-                          borderLeftColor:
-                            hl === "CRITICAL"
-                              ? "#f43f5e"
-                              : hl === "WARNING"
-                                ? "#f59e0b"
-                                : "#0ea5e9",
-                        }
-                      : undefined
-                  }
-                  aria-label={`Line ${lineNo}`}>
-                  <span
-                    className={cn(
-                      "sticky left-0 flex w-14 shrink-0 items-center justify-end border-r px-3 text-xs tabular-nums select-none",
-                      "border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-600",
-                      hl && "font-extrabold"
-                    )}>
-                    {lineNo}
-                  </span>
-                  <span className="flex-1 px-4 whitespace-pre text-slate-800 dark:text-slate-200">
-                    {line || " "}
-                  </span>
-                </div>
-              );
-            })}
-          </code>
-        </pre>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// SUB-COMPONENT: IssuesSidebar — list draft issues, edit/delete
-// ============================================================================
-
-function IssuesSidebar({
-  issues,
-  severityCounts,
-  editable,
-  onEdit,
-  onDelete,
-  onAddNew,
-}: {
-  issues: LocalDraftIssue[];
-  severityCounts: Record<Severity, number>;
-  editable: boolean;
-  onEdit: (_index: number) => void;
-  onDelete: (_index: number) => void;
-  onAddNew: () => void;
-}) {
-  const { t } = useTranslation();
-
-  return (
-    <div className="flex flex-col bg-slate-50/40 dark:bg-slate-900/30">
-      {/* Header */}
-      <div className="border-b border-slate-200/80 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="flex items-center justify-between">
-          <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-            <Target className="h-3.5 w-3.5" />
-            {t("userApplicationhistory.codeReviewIssues", "Review Issues")}
-          </h5>
-          <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-            {issues.length}
-          </span>
-        </div>
-        <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-          {t(
-            "userApplicationhistory.codeReviewIssuesHelp",
-            "Click dòng code bên trái hoặc bấm + để thêm issue. Mỗi issue cần severity + mô tả."
-          )}
-        </p>
-      </div>
-
-      {/* Severity mini-stat */}
-      {issues.length > 0 && (
-        <div className="flex items-center gap-2 border-b border-slate-200/80 bg-white px-5 py-3 dark:border-slate-800 dark:bg-slate-900/40">
-          <SeverityBadgeMini severity="CRITICAL" count={severityCounts.CRITICAL} />
-          <SeverityBadgeMini severity="WARNING" count={severityCounts.WARNING} />
-          <SeverityBadgeMini severity="INFO" count={severityCounts.INFO} />
-        </div>
-      )}
-
-      {/* List */}
-      <div className="flex-1 overflow-y-auto p-4">
-        {issues.length === 0 ? (
-          <div className="flex h-full min-h-40 flex-col items-center justify-center gap-2 text-center text-xs text-slate-400 dark:text-slate-500">
-            <MessageSquare className="h-6 w-6 opacity-40" />
-            <p className="max-w-[200px] leading-relaxed">
-              {t(
-                "userApplicationhistory.codeReviewEmptyIssues",
-                "Chưa có issue nào. Click vào dòng code bên trái để bắt đầu."
-              )}
-            </p>
-          </div>
-        ) : (
-          <ul className="space-y-2.5">
-            {issues.map((iss, i) => {
-              const tok = SEVERITY_TOKENS[iss.severity];
-              const Icon = tok.icon;
-              return (
-                <li
-                  key={i}
-                  className={cn(
-                    "rounded-xl border p-3 transition-shadow",
-                    tok.border,
-                    tok.bg,
-                    tok.darkBg,
-                    tok.darkBorder
-                  )}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2">
-                      <Icon
-                        className={cn(
-                          "mt-0.5 h-4 w-4 shrink-0",
-                          iss.severity === "CRITICAL" && "text-rose-500",
-                          iss.severity === "WARNING" && "text-amber-500",
-                          iss.severity === "INFO" && "text-sky-500"
-                        )}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={cn(
-                              "text-[10px] font-extrabold tracking-wider uppercase",
-                              tok.text,
-                              tok.darkText
-                            )}>
-                            #{i + 1} · {iss.severity}
-                          </span>
-                        </div>
-                        <div className="mt-0.5 font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                          {filenameShort(iss.filename)}:{iss.lineNumber}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                    {iss.description}
-                  </p>
-                  {editable && (
-                    <div className="mt-2.5 flex items-center gap-1.5 border-t border-slate-200/60 pt-2 dark:border-slate-700/60">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEdit(i)}
-                        className="h-7 gap-1 px-2 text-[11px] font-bold text-indigo-600 hover:bg-indigo-100/60 dark:text-indigo-300 dark:hover:bg-indigo-950/40">
-                        <Pencil className="h-3 w-3" />
-                        {t("userApplicationhistory.edit", "Sửa")}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDelete(i)}
-                        className="h-7 gap-1 px-2 text-[11px] font-bold text-rose-600 hover:bg-rose-100/60 dark:text-rose-300 dark:hover:bg-rose-950/40">
-                        <Trash2 className="h-3 w-3" />
-                        {t("userApplicationhistory.delete", "Xóa")}
-                      </Button>
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-
-      {/* Add new */}
-      {editable && (
-        <div className="border-t border-slate-200/80 bg-white p-3 dark:border-slate-800 dark:bg-slate-900/40">
-          <Button
-            variant="outline"
-            onClick={onAddNew}
-            className="h-9 w-full gap-2 border-dashed border-slate-300 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50/60 hover:text-indigo-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-300">
-            <Plus className="h-3.5 w-3.5" />
-            {t("userApplicationhistory.codeReviewAddNew", "Thêm issue mới")}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
@@ -1130,370 +1160,977 @@ function SeverityBadgeMini({ severity, count }: { severity: Severity; count: num
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-extrabold tracking-wider uppercase tabular-nums",
+        "flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-bold uppercase tabular-nums",
         tok.border,
         tok.bg,
-        tok.text,
-        tok.darkBg,
-        tok.darkBorder,
-        tok.darkText
+        tok.text
       )}>
       <span className={cn("h-1.5 w-1.5 rounded-full", tok.dot)} />
-      {severity}: {count}
+      <span>
+        {severity}: {count}
+      </span>
     </div>
   );
 }
 
 // ============================================================================
-// SUB-COMPONENT: IssueModal — create/edit one issue
+// HELPER: Syntax Tokenizer for Code Lines (Matches Quiz Module & VS Code Dark)
 // ============================================================================
 
-function IssueModal({
-  state,
-  onChange,
-  onClose,
-  onSave,
+function renderSyntaxTokens(line: string): React.ReactNode[] {
+  if (!line) return [];
+  const tokenRegex =
+    /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\/\/.*|\/\*[\s\S]*?\*\/|@[A-Za-z0-9_]+|\b(?:public|private|protected|class|interface|enum|static|final|void|int|double|float|long|boolean|char|String|byte|short|return|if|else|for|while|do|switch|case|break|continue|new|this|super|import|package|try|catch|finally|throw|throws|const|let|var|function|async|await|select|from|where|join|insert|update|delete|group|by|order|having|def|self|None|True|False|elif|lambda|yield|raise|except|with|as|pass|val|fun|type|struct|impl|fn|pub|mut|use|mod|crate)\b|\b\d+\b|[{}()[\]]|[;=.+*/,<>!&|:-])/g;
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tokenRegex.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(line.substring(lastIndex, match.index));
+    }
+
+    const token = match[0];
+    const key = `${match.index}-${token}`;
+
+    if (token.startsWith('"') || token.startsWith("'")) {
+      parts.push(
+        <span key={key} className="font-medium text-emerald-300">
+          {token}
+        </span>
+      );
+    } else if (token.startsWith("@")) {
+      parts.push(
+        <span key={key} className="font-bold text-amber-400">
+          {token}
+        </span>
+      );
+    } else if (token.startsWith("//") || token.startsWith("/*")) {
+      parts.push(
+        <span key={key} className="italic text-slate-500">
+          {token}
+        </span>
+      );
+    } else if (/^[{}()[\]]$/.test(token)) {
+      parts.push(
+        <span key={key} className="font-extrabold text-amber-300">
+          {token}
+        </span>
+      );
+    } else if (/^[;=.+*/,<>!&|:-]$/.test(token)) {
+      parts.push(
+        <span key={key} className="font-bold text-slate-300">
+          {token}
+        </span>
+      );
+    } else if (/^\d+$/.test(token)) {
+      parts.push(
+        <span key={key} className="font-bold text-cyan-300">
+          {token}
+        </span>
+      );
+    } else if (
+      /^[A-Za-z_][A-Za-z0-9_]*$/.test(token) &&
+      line
+        .substring(match.index + token.length)
+        .trim()
+        .startsWith("(")
+    ) {
+      parts.push(
+        <span key={key} className="font-bold text-sky-300">
+          {token}
+        </span>
+      );
+    } else {
+      parts.push(
+        <span key={key} className="font-bold text-purple-400">
+          {token}
+        </span>
+      );
+    }
+
+    lastIndex = tokenRegex.lastIndex;
+  }
+
+  if (lastIndex < line.length) {
+    parts.push(line.substring(lastIndex));
+  }
+
+  return parts;
+}
+
+// ============================================================================
+// ============================================================================
+// SUB-COMPONENT: CodeViewPane — selectable, highlighted code lines with inline issue cards & GitHub-style inline review composer
+// ============================================================================
+
+function CodeViewPane({
+  file,
+  issues,
+  allIssues,
+  activeProblemId,
+  inlineEditor,
+  onOpenInlineEditor,
+  onCloseInlineEditor,
+  onChangeInlineEditor,
+  onSaveInlineIssue,
+  onEditIssue,
+  onDeleteIssue,
+  editable,
 }: {
-  state: IssueModalState;
-  onChange: (_s: IssueModalState) => void;
-  onClose: () => void;
-  onSave: () => void;
+  file: CodeFile;
+  issues: LocalDraftIssue[];
+  allIssues: LocalDraftIssue[];
+  activeProblemId?: number;
+  inlineEditor?: InlineEditorState | null;
+  onOpenInlineEditor?: (_lineNumber: number) => void;
+  onCloseInlineEditor?: () => void;
+  onChangeInlineEditor?: (_s: InlineEditorState) => void;
+  onSaveInlineIssue?: () => void;
+  onEditIssue?: (_index: number) => void;
+  onDeleteIssue?: (_index: number) => void;
+  editable: boolean;
 }) {
-  const { t } = useTranslation();
-  const isEditing = state.editingIndex !== null;
+  const fileLines = useMemo(() => {
+    const text = normalizeFormattedCode(file.content);
+    return text ? text.split("\n") : [];
+  }, [file.content]);
+
+  const issuesByLine = useMemo(() => {
+    const map: Record<number, LocalDraftIssue[]> = {};
+    for (const iss of issues) {
+      if (!map[iss.lineNumber]) map[iss.lineNumber] = [];
+      map[iss.lineNumber].push(iss);
+    }
+    return map;
+  }, [issues]);
+
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg overflow-hidden p-0">
-        <div className="flex items-start gap-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-orange-50 px-6 py-5 dark:border-slate-700 dark:from-rose-950/40 dark:to-orange-950/40">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 text-white shadow-sm">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div className="flex-1">
-            <DialogTitle className="text-base">
-              {isEditing
-                ? t("userApplicationhistory.codeReviewEditIssue", "Sửa issue")
-                : t("userApplicationhistory.codeReviewCreateIssue", "Tạo issue mới")}
-            </DialogTitle>
-            <DialogDescription className="mt-1 text-xs">
-              {t(
-                "userApplicationhistory.codeReviewModalDesc",
-                "Chọn mức severity và mô tả chi tiết vấn đề của bạn."
-              )}
-            </DialogDescription>
-          </div>
-        </div>
+    <div className="overflow-x-auto bg-[#030712] font-mono text-xs leading-relaxed text-slate-200">
+      <div className="min-w-[700px]">
+        {fileLines.map((line, idx) => {
+          const lineNo = idx + 1;
+          const lineIssues = issuesByLine[lineNo] ?? [];
+          const hasIssues = lineIssues.length > 0;
+          const isEditingThisLine =
+            editable &&
+            inlineEditor?.lineNumber === lineNo &&
+            inlineEditor?.filename === file.filename &&
+            (activeProblemId == null || inlineEditor?.problemId === activeProblemId);
 
-        <div className="space-y-4 px-6 py-5">
-          {/* File + Line */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {t("userApplicationhistory.codeReviewFile", "File")}
-              </label>
-              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/60">
-                <FileCode2 className="h-3.5 w-3.5 text-slate-400" />
-                <span className="truncate font-mono text-xs text-slate-700 dark:text-slate-300">
-                  {filenameShort(state.filename)}
-                </span>
-              </div>
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {t("userApplicationhistory.codeReviewLine", "Dòng")}
-              </label>
-              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/60">
-                <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                <span className="font-mono text-xs font-extrabold text-indigo-700 dark:text-indigo-300">
-                  L{state.lineNumber}
-                </span>
-              </div>
-            </div>
-          </div>
+          const highestSeverity: Severity = hasIssues
+            ? lineIssues.some((i) => i.severity === "CRITICAL")
+              ? "CRITICAL"
+              : lineIssues.some((i) => i.severity === "WARNING")
+                ? "WARNING"
+                : "INFO"
+            : "INFO";
+          const tok = hasIssues ? SEVERITY_TOKENS[highestSeverity] : null;
+          const renderedTokens = renderSyntaxTokens(line);
 
-          {/* Severity picker */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("userApplicationhistory.codeReviewSeverity", "Severity")}
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(["CRITICAL", "WARNING", "INFO"] as Severity[]).map((s) => {
-                const tok = SEVERITY_TOKENS[s];
-                const Icon = tok.icon;
-                const active = state.severity === s;
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => onChange({ ...state, severity: s })}
-                    className={cn(
-                      "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
-                      active
-                        ? cn(
-                            tok.border,
-                            "ring-2 ring-offset-1",
-                            s === "CRITICAL" && "ring-rose-400",
-                            s === "WARNING" && "ring-amber-400",
-                            s === "INFO" && "ring-sky-400"
-                          )
-                        : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
-                    )}>
-                    <div className="flex items-center gap-1.5">
-                      <Icon
-                        className={cn(
-                          "h-4 w-4",
-                          s === "CRITICAL" && "text-rose-500",
-                          s === "WARNING" && "text-amber-500",
-                          s === "INFO" && "text-sky-500"
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "text-xs font-extrabold tracking-wider uppercase",
-                          active
-                            ? s === "CRITICAL"
-                              ? "text-rose-700 dark:text-rose-300"
-                              : s === "WARNING"
-                                ? "text-amber-700 dark:text-amber-300"
-                                : "text-sky-700 dark:text-sky-300"
-                            : "text-slate-700 dark:text-slate-300"
-                        )}>
-                        {SEVERITY_KEYS[s].label}
-                      </span>
-                    </div>
-                    <span className="text-[10px] leading-tight text-slate-500 dark:text-slate-400">
-                      {SEVERITY_KEYS[s].desc}
+          return (
+            <div key={lineNo} className="flex flex-col">
+              {/* Main code line */}
+              <div
+                onClick={() => {
+                  if (editable && onOpenInlineEditor) {
+                    onOpenInlineEditor(lineNo);
+                  }
+                }}
+                className={cn(
+                  "group flex items-stretch transition-colors select-none",
+                  editable && "cursor-pointer hover:bg-indigo-500/10",
+                  hasIssues && cn(tok?.bg, "border-l-4", tok?.border),
+                  isEditingThisLine && "border-l-4 border-indigo-500 bg-indigo-500/15"
+                )}>
+                {/* Gutter / Line Number */}
+                <div
+                  className={cn(
+                    "flex w-14 shrink-0 items-center justify-between border-r px-2 py-0.5 text-xs select-none tabular-nums",
+                    "border-slate-800/80 bg-slate-950/90 text-slate-500 group-hover:bg-slate-900 group-hover:text-indigo-300",
+                    hasIssues && cn("font-bold", tok?.text),
+                    isEditingThisLine &&
+                      "border-indigo-500/50 bg-indigo-950/60 font-bold text-indigo-300"
+                  )}>
+                  <span className="w-full text-right pr-2">{lineNo}</span>
+                  {editable && (
+                    <span
+                      className={cn(
+                        "transition-opacity",
+                        isEditingThisLine
+                          ? "text-indigo-300 opacity-100"
+                          : "opacity-0 group-hover:opacity-100 text-indigo-400"
+                      )}>
+                      <Plus className="h-3 w-3" />
                     </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                  )}
+                </div>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("userApplicationhistory.codeReviewDescription", "Mô tả issue")}
-            </label>
-            <textarea
-              autoFocus
-              rows={4}
-              value={state.description}
-              onChange={(e) => onChange({ ...state, description: e.target.value })}
-              placeholder={t(
-                "userApplicationhistory.codeReviewDescriptionPlaceholder",
-                "VD: SQL Injection: dùng Statement + string concat thay vì PreparedStatement..."
+                {/* Code Content */}
+                <div className="flex-1 px-4 py-0.5 whitespace-pre font-mono text-xs text-slate-200 group-hover:text-white select-text">
+                  {renderedTokens.length > 0 ? renderedTokens : " "}
+                </div>
+              </div>
+
+              {/* Inline Issue Annotations attached directly below this line */}
+              {hasIssues && (
+                <div className="ml-14 border-l-4 border-slate-800 bg-slate-900/95 px-4 py-2 space-y-2">
+                  {lineIssues.map((iss, iIdx) => {
+                    const issTok = SEVERITY_TOKENS[iss.severity];
+                    const Icon = issTok.icon;
+                    const globalIdx = allIssues.indexOf(iss);
+
+                    return (
+                      <div
+                        key={iIdx}
+                        className={cn(
+                          "flex flex-col gap-2 rounded-xl border p-3 shadow-md",
+                          issTok.border,
+                          issTok.bg
+                        )}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Icon className={cn("h-4 w-4", issTok.text)} />
+                            <span
+                              className={cn(
+                                "text-[11px] font-extrabold tracking-wider uppercase",
+                                issTok.text
+                              )}>
+                              {iss.severity} · Dòng {iss.lineNumber}
+                            </span>
+                          </div>
+
+                          {editable && globalIdx !== -1 && onEditIssue && onDeleteIssue && (
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEditIssue(globalIdx);
+                                }}
+                                className="h-6 gap-1 px-2 text-[10px] font-bold text-indigo-300 hover:bg-indigo-500/20">
+                                <Pencil className="h-3 w-3" />
+                                <span>Sửa</span>
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteIssue(globalIdx);
+                                }}
+                                className="h-6 gap-1 px-2 text-[10px] font-bold text-rose-400 hover:bg-rose-500/20">
+                                <Trash2 className="h-3 w-3" />
+                                <span>Xóa</span>
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+
+                        <p className="text-xs leading-relaxed text-slate-200 select-text whitespace-pre-wrap">
+                          {iss.description}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-              className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-hidden dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-600"
-            />
-          </div>
-        </div>
 
-        <DialogFooter className="border-t border-slate-200 bg-slate-50/60 px-6 py-4 dark:border-slate-700 dark:bg-slate-900/60">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="border-slate-300 px-5 dark:border-slate-700">
-            <X className="mr-1.5 h-3.5 w-3.5" />
-            {t("general.cancel", "Hủy")}
-          </Button>
-          <Button
-            onClick={onSave}
-            disabled={!state.description.trim()}
-            className="gap-2 bg-gradient-to-r from-rose-500 to-orange-500 px-6 text-white shadow-sm hover:from-rose-600 hover:to-orange-600">
-            <Plus className="h-4 w-4" />
-            {isEditing
-              ? t("userApplicationhistory.codeReviewSave", "Lưu thay đổi")
-              : t("userApplicationhistory.codeReviewAdd", "Thêm issue")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+              {/* GitHub-style Inline Review Composer attached directly underneath this line */}
+              {isEditingThisLine &&
+                inlineEditor &&
+                onChangeInlineEditor &&
+                onSaveInlineIssue &&
+                onCloseInlineEditor && (
+                  <div className="my-2 ml-14 rounded-xl border border-indigo-500/50 bg-slate-900/98 p-4 shadow-2xl ring-1 ring-indigo-500/30 animate-in fade-in zoom-in-98 duration-150">
+                    {/* Header of Inline Box */}
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500/20 text-indigo-300">
+                          <MessageSquarePlus className="h-3.5 w-3.5" />
+                        </div>
+                        <span className="text-xs font-bold text-white">
+                          {inlineEditor.editingIndex !== null
+                            ? `Chỉnh sửa nhận xét trên dòng ${lineNo}`
+                            : `Thêm nhận xét trên dòng ${lineNo}`}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={onCloseInlineEditor}
+                        className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {/* Severity Selection Pills */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-bold text-slate-400">Mức độ:</span>
+                      {(["CRITICAL", "WARNING", "INFO"] as Severity[]).map((s) => {
+                        const sTok = SEVERITY_TOKENS[s];
+                        const Icon = sTok.icon;
+                        const isSelected = inlineEditor.severity === s;
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => onChangeInlineEditor({ ...inlineEditor, severity: s })}
+                            className={cn(
+                              "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-extrabold uppercase transition-all",
+                              isSelected
+                                ? cn(
+                                    sTok.border,
+                                    sTok.bg,
+                                    sTok.text,
+                                    "ring-2 ring-indigo-500/50 shadow-xs"
+                                  )
+                                : "border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                            )}>
+                            <Icon className={cn("h-3.5 w-3.5", sTok.text)} />
+                            <span>{SEVERITY_KEYS[s].label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Description Textarea */}
+                    <div className="mt-3">
+                      <textarea
+                        autoFocus
+                        rows={3}
+                        value={inlineEditor.description}
+                        onChange={(e) =>
+                          onChangeInlineEditor({ ...inlineEditor, description: e.target.value })
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                            e.preventDefault();
+                            onSaveInlineIssue();
+                          }
+                        }}
+                        placeholder="Mô tả chi tiết vấn đề (ví dụ: Thiếu kiểm tra null, SQL Injection, N+1 query...)"
+                        className="w-full resize-y rounded-xl border border-slate-700/80 bg-slate-950/90 p-3 font-sans text-xs leading-relaxed text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/25 focus:outline-hidden"
+                      />
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-[10px] text-slate-400 italic hidden sm:inline font-sans">
+                        Nhấn Ctrl + Enter (hoặc ⌘ + Enter) để lưu nhanh
+                      </span>
+
+                      <div className="flex items-center gap-2 ml-auto">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={onCloseInlineEditor}
+                          className="h-8 rounded-lg px-3 text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-white">
+                          Hủy
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={onSaveInlineIssue}
+                          disabled={!inlineEditor.description.trim()}
+                          className="h-8 gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 text-xs font-bold text-white shadow-md shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-400 disabled:opacity-50">
+                          <Check className="h-3.5 w-3.5" />
+                          <span>
+                            {inlineEditor.editingIndex !== null ? "Lưu thay đổi" : "Thêm nhận xét"}
+                          </span>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
 // ============================================================================
-// SUB-COMPONENT: GradedResultView — show AI score + 10 metrics + feedback
+// HELPER: ModernGaugeClock (Circular Score Ring matching CV & Email modules)
+// ============================================================================
+
+function ModernGaugeClock({
+  score,
+  label,
+  color = "indigo",
+  hasData = true,
+}: {
+  score: number;
+  label: string;
+  color?: "indigo" | "emerald";
+  hasData?: boolean;
+}) {
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+  const displayScore = hasData ? Math.min(100, Math.max(0, Math.round(score))) : 0;
+  const strokeDashoffset = circumference - (displayScore / 100) * circumference;
+
+  const styles =
+    color === "emerald"
+      ? {
+          ring: "text-emerald-400",
+          text: "text-emerald-400",
+          bg: "border-emerald-500/20 bg-emerald-950/20",
+        }
+      : {
+          ring: "text-indigo-400",
+          text: "text-indigo-400",
+          bg: "border-indigo-500/20 bg-indigo-950/20",
+        };
+
+  return (
+    <div
+      className={`flex flex-col items-center justify-center rounded-2xl border p-3 text-center transition-all ${styles.bg}`}>
+      <div className="relative flex h-24 w-24 items-center justify-center">
+        <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 transform">
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth="7"
+            className="text-slate-800"
+            fill="transparent"
+          />
+          {hasData && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              stroke="currentColor"
+              strokeWidth="7"
+              className={`${styles.ring} transition-all duration-1000 ease-out`}
+              fill="transparent"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+            />
+          )}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span
+            className={`text-xl font-black tracking-tight ${hasData ? styles.text : "text-slate-500"}`}>
+            {hasData ? `${displayScore}%` : "--"}
+          </span>
+          <span className="text-[8px] font-extrabold tracking-wider text-slate-400 uppercase">
+            {label}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Criteria metadata for dynamic metrics
+const CRITERIA_META: Record<
+  string,
+  { label: string; color: string; bg: string; bar: string }
+> = {
+  "Bug Detection": {
+    label: "Phát hiện lỗi (Bug Detection)",
+    color: "text-rose-400",
+    bg: "bg-rose-500/10",
+    bar: "bg-rose-500",
+  },
+  "Security Awareness": {
+    label: "Nhận thức bảo mật (Security)",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    bar: "bg-emerald-500",
+  },
+  "Solution Quality": {
+    label: "Chất lượng giải pháp (Solution)",
+    color: "text-indigo-400",
+    bg: "bg-indigo-500/10",
+    bar: "bg-indigo-500",
+  },
+  "Clean Code Awareness": {
+    label: "Chuẩn mực Clean Code",
+    color: "text-violet-400",
+    bg: "bg-violet-500/10",
+    bar: "bg-violet-500",
+  },
+  "Code Smell Detection": {
+    label: "Phát hiện Code Smell",
+    color: "text-amber-400",
+    bg: "bg-amber-500/10",
+    bar: "bg-amber-500",
+  },
+  "Performance Analysis": {
+    label: "Phân tích hiệu năng (Performance)",
+    color: "text-cyan-400",
+    bg: "bg-cyan-500/10",
+    bar: "bg-cyan-500",
+  },
+};
+
+// ============================================================================
+// SUB-COMPONENT: GradedResultView — Polished Result Screen (CV & Email Standard)
 // ============================================================================
 
 function GradedResultView({
   detail,
-  maxScore,
-  passed,
-  failed,
+  maxScore: _maxScore,
+  passed: _passed,
+  failed: _failed,
   onRetake,
+  problems,
+  activeProblemIdx,
+  onSelectProblem,
+  issuesByProblem,
 }: {
   detail: ApplicationDetail;
   maxScore: number;
   passed: boolean;
   failed: boolean;
   onRetake: () => void;
+  problems: CodeReviewProblemSnapshot[];
+  activeProblemIdx: number;
+  onSelectProblem: (_idx: number) => void;
+  issuesByProblem: Record<number, LocalDraftIssue[]>;
 }) {
-  const { t } = useTranslation();
-  const feedback = detail.aiFeedback as AiFeedback | null | undefined;
-  const finalScore = detail.finalScore ?? detail.aiScore ?? 0;
-  const metrics = feedback?.extraMetrics ?? {};
+  const { t: _t } = useTranslation();
+
+  const feedback = useMemo<AiFeedback | null>(() => {
+    if (!detail.aiFeedback) return null;
+    if (typeof detail.aiFeedback === "object") return detail.aiFeedback as AiFeedback;
+    try {
+      return JSON.parse(detail.aiFeedback as string) as AiFeedback;
+    } catch {
+      return null;
+    }
+  }, [detail.aiFeedback]);
+
+  const submissionData = useMemo(() => {
+    if (!detail.submissionData) return null;
+    if (typeof detail.submissionData === "object") return detail.submissionData;
+    try {
+      return JSON.parse(detail.submissionData as string);
+    } catch {
+      return null;
+    }
+  }, [detail.submissionData]);
+
+  const aiScoreVal = Math.round(detail.aiScore ?? detail.finalScore ?? 0);
+  const hrScoreVal = Math.round(detail.hrScore ?? 0);
+  const hasHrScore = detail.hrScore != null && hrScoreVal > 0;
+
+  const rawMetrics = feedback?.extraMetrics ?? {};
   const strengths = feedback?.strengths ?? [];
   const weaknesses = feedback?.weaknesses ?? [];
   const generalComment = feedback?.generalComment ?? "";
 
+  // Parse numerical metrics & text missed issues
+  const { numericMetrics, missedIssuesText } = useMemo(() => {
+    const list: {
+      key: string;
+      label: string;
+      score: number;
+      max: number;
+      pct: number;
+      style: { color: string; bg: string; bar: string };
+    }[] = [];
+    let missed: string | null = null;
+
+    if (rawMetrics && typeof rawMetrics === "object") {
+      Object.entries(rawMetrics).forEach(([key, value]) => {
+        const lowerKey = key.toLowerCase();
+        if (lowerKey.includes("missed") || lowerKey.includes("flag") || lowerKey.includes("bỏ sót")) {
+          if (typeof value === "string") {
+            missed = value;
+          } else if (Array.isArray(value)) {
+            missed = value.join("\n");
+          }
+          return;
+        }
+
+        let numVal: number | null = null;
+        if (typeof value === "number") {
+          numVal = value;
+        } else if (typeof value === "string" && !isNaN(Number(value))) {
+          numVal = Number(value);
+        }
+
+        if (numVal !== null) {
+          const isTenScale = numVal <= 10;
+          const max = isTenScale ? 10 : 100;
+          const pct = isTenScale ? Math.round(numVal * 10) : Math.round(numVal);
+          const meta = CRITERIA_META[key] || {
+            label: key,
+            color: "text-indigo-400",
+            bg: "bg-indigo-500/10",
+            bar: "bg-indigo-500",
+          };
+          list.push({
+            key,
+            label: meta.label,
+            score: numVal,
+            max,
+            pct: Math.min(100, Math.max(0, pct)),
+            style: meta,
+          });
+        }
+      });
+    }
+
+    return { numericMetrics: list, missedIssuesText: missed };
+  }, [rawMetrics]);
+
+  // Active problem & files
+  const activeProblem = problems[activeProblemIdx] ?? problems[0];
+  const pId = activeProblem?.problemId ?? 0;
+  const currentFiles = activeProblem?.files ?? [];
+  const [activeFilename, setActiveFilename] = useState<string>(
+    currentFiles[0]?.filename ?? ""
+  );
+
+  const currentFile =
+    currentFiles.find((f) => f.filename === activeFilename) ?? currentFiles[0];
+
+  // Map issues for current problem
+  const problemIssues = useMemo(() => {
+    if (issuesByProblem[pId] && issuesByProblem[pId].length > 0) {
+      return issuesByProblem[pId];
+    }
+    const subList = submissionData?.codeReviewSubmissions as CodeReviewSubmission[] | undefined;
+    if (Array.isArray(subList) && currentFiles.length > 0) {
+      const filenames = new Set(currentFiles.map((f) => f.filename));
+      return subList
+        .filter((s) => filenames.has(s.filename))
+        .map((s) => ({
+          filename: s.filename ?? "",
+          lineNumber: s.lineNumber ?? 1,
+          severity: (s.severity as Severity) ?? "WARNING",
+          description: s.description ?? "",
+        }));
+    }
+    return [];
+  }, [issuesByProblem, pId, submissionData, currentFiles]);
+
+  // Flattened total submission counts
+  const allSubmissions = useMemo(() => {
+    const subList = submissionData?.codeReviewSubmissions as CodeReviewSubmission[] | undefined;
+    if (Array.isArray(subList) && subList.length > 0) {
+      return subList;
+    }
+    return Object.values(issuesByProblem).flat();
+  }, [submissionData, issuesByProblem]);
+
+  const submissionCounts = useMemo(() => {
+    const counts = { CRITICAL: 0, WARNING: 0, INFO: 0, TOTAL: allSubmissions.length };
+    allSubmissions.forEach((item) => {
+      const sev = (item.severity as Severity) ?? "WARNING";
+      if (counts[sev] !== undefined) counts[sev]++;
+    });
+    return counts;
+  }, [allSubmissions]);
+
   return (
-    <Card className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-      {/* Header */}
-      <div
-        className={cn(
-          "flex items-center justify-between border-b border-slate-200/80 px-6 py-5 dark:border-slate-800",
-          passed
-            ? "bg-gradient-to-r from-emerald-50 to-sky-50 dark:from-emerald-950/40 dark:to-sky-950/40"
-            : failed
-              ? "bg-gradient-to-r from-rose-50 to-orange-50 dark:from-rose-950/40 dark:to-orange-950/40"
-              : "bg-gradient-to-r from-slate-50 to-white dark:from-slate-900/60 dark:to-slate-900/40"
-        )}>
-        <div className="flex items-center gap-4">
-          <div
-            className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm",
-              passed
-                ? "bg-gradient-to-br from-emerald-500 to-sky-600"
-                : failed
-                  ? "bg-gradient-to-br from-rose-500 to-orange-500"
-                  : "bg-gradient-to-br from-slate-400 to-slate-600"
-            )}>
-            {passed ? (
-              <CheckCircle2 className="h-6 w-6" />
-            ) : failed ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Award className="h-6 w-6" />
-            )}
-          </div>
-          <div>
-            <div className="text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-              {t("userApplicationhistory.codeReviewResultTitle", "Kết quả Code Review")}
-            </div>
-            <div className="mt-0.5 flex items-center gap-2">
-              <span className="text-2xl font-extrabold text-slate-900 tabular-nums dark:text-white">
-                {finalScore}
-              </span>
-              <span className="text-base font-bold text-slate-500 dark:text-slate-400">
-                /{maxScore}
-              </span>
-              {passed && (
-                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-700 uppercase dark:bg-emerald-950/60 dark:text-emerald-300">
-                  ✓ PASSED
-                </span>
-              )}
-              {failed && (
-                <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-rose-700 uppercase dark:bg-rose-950/60 dark:text-rose-300">
-                  ✗ FAILED
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* ── TOP 2-COLUMN STORYTELLING & METRICS GRID ── */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        {/* 🧠 LEFT COLUMN (7 cols): AI Storytelling & HR Feedback */}
+        <div className="space-y-5 lg:col-span-7">
+          {/* SECTION 1: AI Executive Summary (Notion AI Theme) */}
+          <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-lg shadow-indigo-950/20 backdrop-blur-md">
+            <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/20 text-indigo-300">
+                  <Bot className="h-4 w-4" />
+                </div>
+                <h3 className="text-xs font-extrabold tracking-wider text-indigo-300 uppercase">
+                  BÁO CÁO PHÂN TÍCH TỔNG QUAN AI
+                </h3>
+              </div>
 
-        <Button
-          variant="outline"
-          onClick={onRetake}
-          className="gap-2 border-slate-300 px-5 text-xs font-bold dark:border-slate-700">
-          <RefreshCw className="h-3.5 w-3.5" />
-          {t("userApplicationhistory.codeReviewRetake", "Tôi muốn submit lại")}
-        </Button>
-      </div>
+              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-400/40 bg-indigo-500/15 px-3 py-1 text-[11px] font-extrabold text-indigo-200 shadow-xs">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-300" />
+                <span>AI EVALUATED</span>
+              </span>
+            </div>
 
-      {/* Body */}
-      <div className="grid grid-cols-1 gap-0 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)]">
-        {/* ===== Left: 10 metrics ===== */}
-        <div className="space-y-4 border-b border-slate-200/80 p-6 lg:border-r lg:border-b-0 dark:border-slate-800">
-          <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-            <Code2 className="h-3.5 w-3.5" />
-            {t("userApplicationhistory.codeReviewMetricsTitle", "Điểm chi tiết (10 tiêu chí AI)")}
-          </h5>
-          {Object.keys(metrics).length === 0 ? (
-            <p className="text-xs text-slate-400 italic">
-              {t("userApplicationhistory.codeReviewNoMetrics", "Chưa có metrics")}
+            <p className="text-sm leading-relaxed font-normal text-slate-200">
+              {generalComment ||
+                "Hệ thống AI đã phân tích chi tiết bài đánh giá mã nguồn, đối chiếu danh sách bug và kiểm tra độ chính xác của các ghi chú."}
             </p>
-          ) : (
-            <ul className="space-y-2.5">
-              {Object.entries(metrics).map(([key, value]) => (
-                <li
-                  key={key}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-900/40">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {key}
-                  </span>
-                  <span className="font-mono text-xs font-extrabold text-indigo-700 tabular-nums dark:text-indigo-300">
-                    {String(value)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+          </Card>
+
+          {/* SECTION 2: Strengths Card (Green Theme) */}
+          {strengths.length > 0 && (
+            <Card className="space-y-3 rounded-2xl border border-emerald-500/30 bg-slate-900/80 p-5 shadow-md">
+              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                </div>
+                <h4 className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
+                  Điểm mạnh nổi bật
+                </h4>
+              </div>
+
+              <ul className="space-y-2 text-sm text-slate-200">
+                {strengths.map((st, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                    <span className="leading-relaxed">{st}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
           )}
+
+          {/* SECTION 3: Weaknesses Card (Amber Theme) */}
+          {weaknesses.length > 0 && (
+            <Card className="space-y-3 rounded-2xl border border-amber-500/30 bg-slate-900/80 p-5 shadow-md">
+              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md border border-amber-500/20 bg-amber-500/10 text-amber-400">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                </div>
+                <h4 className="text-xs font-bold tracking-wider text-amber-400 uppercase">
+                  Điểm cần bổ sung & Cải thiện
+                </h4>
+              </div>
+
+              <ul className="space-y-2 text-sm text-slate-200">
+                {weaknesses.map((wk, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                    <span className="leading-relaxed">{wk}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {/* SECTION 4: Missed Issues Card (Red/Rose Theme) */}
+          {missedIssuesText && (
+            <Card className="space-y-3 rounded-2xl border border-rose-500/50 bg-rose-950/30 p-5 shadow-lg ring-1 shadow-rose-950/20 ring-rose-500/30">
+              <div className="flex items-center gap-2 border-b border-rose-500/30 pb-2.5">
+                <div className="flex h-6 w-6 animate-pulse items-center justify-center rounded-md border border-rose-500/40 bg-rose-500/20 text-rose-400">
+                  <ShieldAlert className="h-4 w-4" />
+                </div>
+                <h4 className="text-xs font-bold tracking-wider text-rose-300 uppercase">
+                  Các lỗi quan trọng bỏ sót (Missed Issues)
+                </h4>
+              </div>
+
+              <div className="rounded-xl border border-rose-500/30 bg-rose-950/40 p-3.5 text-sm leading-relaxed text-rose-200">
+                {missedIssuesText}
+              </div>
+            </Card>
+          )}
+
+          {/* SECTION 5: HR Feedback Card (Direct Human Comment) */}
+          <Card className="space-y-3 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-md">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/20 text-indigo-300">
+                  <UserCheck className="h-4 w-4" />
+                </div>
+                <h4 className="text-xs font-bold tracking-wider text-indigo-300 uppercase">
+                  NHẬN XÉT TRỰC TIẾP TỪ HỘI ĐỒNG HR
+                </h4>
+              </div>
+
+              <span className="text-[10px] font-medium text-slate-400">HR ĐÁNH GIÁ</span>
+            </div>
+
+            {detail?.hrNote ? (
+              <div className="rounded-xl border-l-2 border-indigo-500 bg-slate-950/60 p-3.5 text-sm leading-relaxed text-slate-200 italic">
+                "{detail.hrNote}"
+              </div>
+            ) : (
+              <p className="text-xs leading-relaxed text-slate-400 italic">
+                Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi HR hoàn tất rà soát).
+              </p>
+            )}
+          </Card>
         </div>
 
-        {/* ===== Right: Strengths / Weaknesses / General ===== */}
-        <div className="space-y-5 p-6">
-          {/* Strengths */}
-          <div>
-            <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-emerald-700 uppercase dark:text-emerald-400">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              {t("userApplicationhistory.codeReviewStrengths", "Điểm mạnh")}
-            </h5>
-            {strengths.length === 0 ? (
-              <p className="mt-2 text-xs text-slate-400 italic">
-                {t("userApplicationhistory.codeReviewNoComments", "Chưa có nhận xét")}
-              </p>
-            ) : (
-              <ul className="mt-2 space-y-1.5">
-                {strengths.map((s, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
-                    <span>{s}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Weaknesses */}
-          <div>
-            <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-amber-700 uppercase dark:text-amber-400">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              {t("userApplicationhistory.codeReviewWeaknesses", "Điểm yếu")}
-            </h5>
-            {weaknesses.length === 0 ? (
-              <p className="mt-2 text-xs text-slate-400 italic">
-                {t("userApplicationhistory.codeReviewNoComments", "Chưa có nhận xét")}
-              </p>
-            ) : (
-              <ul className="mt-2 space-y-1.5">
-                {weaknesses.map((w, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
-                    <span>{w}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* General Comment */}
-          {generalComment && (
-            <div>
-              <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-indigo-700 uppercase dark:text-indigo-400">
-                <MessageSquare className="h-3.5 w-3.5" />
-                {t("userApplicationhistory.codeReviewGeneralComment", "Nhận xét chung")}
-              </h5>
-              <p className="mt-2 rounded-xl border border-indigo-200 bg-indigo-50/50 p-3 text-xs leading-relaxed text-slate-700 italic dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-slate-300">
-                {generalComment}
-              </p>
+        {/* 📊 RIGHT COLUMN (5 cols): Clocks, Detailed Stat Bars & Submission Summary */}
+        <div className="space-y-5 lg:col-span-5">
+          {/* WIDGET 1: Dual Gauge Clocks (AI Score & HR Score) */}
+          <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-indigo-400" />
+                <h4 className="text-xs font-bold text-slate-200">Chỉ số Match Score</h4>
+              </div>
+              <span className="text-[10px] font-semibold text-slate-400">AI vs HR</span>
             </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <ModernGaugeClock
+                score={aiScoreVal}
+                label="AI Score"
+                color="indigo"
+                hasData={true}
+              />
+              <ModernGaugeClock
+                score={hrScoreVal}
+                label="HR Score"
+                color="emerald"
+                hasData={hasHrScore}
+              />
+            </div>
+          </Card>
+
+          {/* WIDGET 2: Criteria Stat Progress Bars */}
+          {numericMetrics.length > 0 && (
+            <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div className="flex items-center gap-2">
+                  <Code2 className="h-4 w-4 text-indigo-400" />
+                  <h4 className="text-xs font-bold text-slate-200">Phân tích tiêu chí chi tiết</h4>
+                </div>
+                <span className="text-[10px] font-bold tracking-wider text-indigo-400 uppercase">
+                  STAT BARS
+                </span>
+              </div>
+
+              <div className="space-y-3 pt-1">
+                {numericMetrics.map((item) => (
+                  <div key={item.key} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium text-slate-300">{item.label}</span>
+                      <span className={cn("font-mono font-bold tabular-nums", item.style.color)}>
+                        {item.max === 10 ? `${item.score}/10` : `${item.pct}%`}
+                      </span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className={cn("h-full rounded-full transition-all duration-700", item.style.bar)}
+                        style={{ width: `${item.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           )}
+
+          {/* WIDGET 3: Submission Summary & Retake Action */}
+          <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center gap-2">
+                <Bug className="h-4 w-4 text-indigo-400" />
+                <h4 className="text-xs font-bold text-slate-200">Tổng kết ghi chú bài nộp</h4>
+              </div>
+              <span className="text-xs font-mono font-extrabold text-slate-400">
+                {submissionCounts.TOTAL} GHI CHÚ
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+              <div className="rounded-xl border border-rose-500/20 bg-rose-950/20 p-2">
+                <div className="font-mono text-base font-extrabold text-rose-400 tabular-nums">
+                  {submissionCounts.CRITICAL}
+                </div>
+                <div className="text-[10px] font-bold text-rose-300">CRITICAL</div>
+              </div>
+
+              <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 p-2">
+                <div className="font-mono text-base font-extrabold text-amber-400 tabular-nums">
+                  {submissionCounts.WARNING}
+                </div>
+                <div className="text-[10px] font-bold text-amber-300">WARNING</div>
+              </div>
+
+              <div className="rounded-xl border border-sky-500/20 bg-sky-950/20 p-2">
+                <div className="font-mono text-base font-extrabold text-sky-400 tabular-nums">
+                  {submissionCounts.INFO}
+                </div>
+                <div className="text-[10px] font-bold text-sky-300">INFO</div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                onClick={onRetake}
+                className="w-full gap-2 rounded-xl border-slate-700 bg-slate-800/80 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700 hover:text-white">
+                <RefreshCw className="h-3.5 w-3.5" />
+                <span>Thực hiện lại bài thi</span>
+              </Button>
+            </div>
+          </Card>
         </div>
       </div>
-    </Card>
+
+      {/* ── FULL-WIDTH CODE VIEWER WITH SUBMITTED ISSUES ── */}
+      <div className="overflow-hidden rounded-2xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
+        <div className="flex flex-wrap items-center justify-between border-b border-slate-800/80 bg-slate-900/95 px-4 py-2.5">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-500/80" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <FileCode2 className="h-4 w-4 text-indigo-400" />
+              <span className="text-xs font-bold text-slate-200">
+                Mã nguồn & ghi chú bạn đã nộp
+              </span>
+            </div>
+
+            {problems.length > 1 && (
+              <div className="flex items-center gap-1.5 ml-4">
+                {problems.map((p, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => onSelectProblem(idx)}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
+                      activeProblemIdx === idx
+                        ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-200"
+                        : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                    )}>
+                    #{idx + 1} {p.title || `Bài ${idx + 1}`}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {currentFiles.map((file) => (
+              <button
+                key={file.filename}
+                type="button"
+                onClick={() => setActiveFilename(file.filename ?? "")}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs font-medium transition-all",
+                  (activeFilename || currentFiles[0]?.filename) === file.filename
+                    ? "bg-slate-800 text-white font-bold"
+                    : "text-slate-400 hover:text-slate-200"
+                )}>
+                {filenameShort(file.filename ?? "")}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {currentFile && (
+          <CodeViewPane
+            file={currentFile}
+            issues={problemIssues.filter((i) => i.filename === currentFile.filename)}
+            allIssues={problemIssues}
+            editable={false}
+          />
+        )}
+      </div>
+    </div>
   );
 }
