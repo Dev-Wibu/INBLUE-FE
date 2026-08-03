@@ -593,35 +593,37 @@ export function CodingModule({
           const langs = languagesAvailable(activeProblem);
           const result = sampleResults[activeProblem.problemId] ?? null;
           const isRunningThis = runningId === activeProblem.problemId;
-          <CodingProblemCard
-            key={activeProblem.problemId}
-            index={currentProblemIdx}
-            problem={activeProblem}
-            source={source}
-            availableLanguages={langs}
-            result={result}
-            isRunning={isRunningThis}
-            isCompleted={isCompleted}
-            isCurrent={isCurrent}
-            finalScore={finalScore ?? null}
-            problemFinalScoreStatus={detail?.status ?? null}
-            onChangeCode={(value) => handleCodeChange(activeProblem.problemId, value)}
-            onChangeLanguage={(lang) => handleLanguageChange(activeProblem.problemId, lang)}
-            onRun={() => handleRunCode(activeProblem.problemId)}
-            submitting={submitting}
-            onSubmitAll={handleOpenConfirm}
-            totalProblems={problems.length}
-            timeLimitMinutes={timeLimitMinutes}
-            startTime={detail?.startedAt ?? roundDetailStart(detail)}
-            onNavigatePrev={
-              currentProblemIdx > 0 ? () => setCurrentProblemIdx((i) => i - 1) : undefined
-            }
-            onNavigateNext={
-              currentProblemIdx < problems.length - 1
-                ? () => setCurrentProblemIdx((i) => i + 1)
-                : undefined
-            }
-          />;
+          return (
+            <CodingProblemCard
+              key={activeProblem.problemId}
+              index={currentProblemIdx}
+              problem={activeProblem}
+              source={source}
+              availableLanguages={langs}
+              result={result}
+              isRunning={isRunningThis}
+              isCompleted={isCompleted}
+              isCurrent={isCurrent}
+              finalScore={finalScore ?? null}
+              problemFinalScoreStatus={detail?.status ?? null}
+              onChangeCode={(value) => handleCodeChange(activeProblem.problemId, value)}
+              onChangeLanguage={(lang) => handleLanguageChange(activeProblem.problemId, lang)}
+              onRun={() => handleRunCode(activeProblem.problemId)}
+              submitting={submitting}
+              onSubmitAll={handleOpenConfirm}
+              totalProblems={problems.length}
+              timeLimitMinutes={timeLimitMinutes}
+              startTime={detail?.startedAt ?? roundDetailStart(detail)}
+              onNavigatePrev={
+                currentProblemIdx > 0 ? () => setCurrentProblemIdx((i) => i - 1) : undefined
+              }
+              onNavigateNext={
+                currentProblemIdx < problems.length - 1
+                  ? () => setCurrentProblemIdx((i) => i + 1)
+                  : undefined
+              }
+            />
+          );
         })()}
 
       {/* Confirm-submit modal — replaces the ugly window.confirm() with a
