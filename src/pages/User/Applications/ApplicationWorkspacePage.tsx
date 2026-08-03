@@ -337,12 +337,16 @@ export function ApplicationWorkspacePage() {
   const isCodeReviewRound =
     activeRound?.roundType?.toUpperCase() === "CODE_REVIEW" ||
     activeRound?.roundType?.toUpperCase() === "CODEREVIEW";
+  const isMentorReviewRound =
+    activeRound?.roundType?.toUpperCase() === "MENTOR_REVIEW" ||
+    activeRound?.roundType?.toUpperCase() === "MENTOR";
   const isStandaloneLayout =
     isCvScreeningRound ||
     isEmailSimulatorRound ||
     isQuizRound ||
     isCodingRound ||
-    isCodeReviewRound;
+    isCodeReviewRound ||
+    isMentorReviewRound;
 
   return (
     <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">
