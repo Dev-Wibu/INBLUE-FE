@@ -1,4 +1,5 @@
 ﻿import { RatingScale10 } from "@/components/feedback/RatingScale10";
+import { DateTimePicker } from "@/components/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
@@ -34,21 +36,30 @@ import { useAuthStore } from "@/stores/authStore";
 import {
   AlertCircle,
   ArrowRight,
+  Award,
   BadgeCheck,
+  Briefcase,
+  Building2,
   Calendar,
   CalendarCheck,
   CheckCircle2,
   ChevronRight,
+  CircleDollarSign,
+  CircleUser,
   Clock,
   ExternalLink,
+  Globe,
   Hourglass,
+  Linkedin,
   Loader2,
   LogIn,
+  Mail,
   MapPin,
   Phone,
   PlayCircle,
   RefreshCw,
   Send,
+  Sparkles,
   Star,
   UserCheck,
   Users,
@@ -296,6 +307,7 @@ export function MentorReviewModule({
       )}
       {activeStep === "SCHEDULE" && (
         <ScheduleStep
+          detailId={detailId}
           submitting={createSessionMutation.isPending}
           onSubmit={(payload) =>
             createSessionMutation.mutate({
@@ -431,7 +443,7 @@ function AwaitingMentorStep({
           <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">
             {t(
               "userApplicationhistory.mentorAwaitingDesc",
-              "Há»‡ thá»‘ng Ä‘ang tiáº¿n hÃ nh rÃ  soÃ¡t chuyÃªn mÃ´n vÃ  káº¿t ná»‘i mentor thÃ­ch há»£p nháº¥t theo yÃªu cáº§u cá»§a JD. Khi mentor Ä‘Æ°á»£c gÃ¡n, danh sÃ¡ch Ä‘á» xuáº¥t sáº½ xuáº¥t hiá»‡n ngay á»Ÿ bÆ°á»›c tiáº¿p theo Ä‘á»ƒ báº¡n chá»n ngÆ°á»i phá»ng váº¥n."
+              "Há»‡ thá»‘ng Ä‘ang tiáº¿n hÃ nh rÃ  soÃ¡t chuyÃªn mÃ´n vÃ  káº¿t ná»‘i mentor thÃ­ch há»£p nháº¥t theo yÃªu cáº§u cá»§a JD. Khi mentor Ä‘Æ°á»£c gÃ¡n, danh sÃ¡ch Ä‘á» xuáº¥t sáº½ xuáº¥t hiá»‡n ngay á»Ÿ bÆ°á»›c tiáº¿p theo Ä‘á»ƒ báº¡n chá»n ngÆ°á»i phá»ng váº¥n."
             )}
           </p>
         </div>
@@ -460,7 +472,7 @@ function AwaitingMentorStep({
               </div>
               <h5 className="mt-3 text-xs font-bold text-white">1. Admin Ä‘á» xuáº¥t Mentor</h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-300">
-                Admin xem xÃ©t há»“ sÆ¡ vÃ  chá»‰ Ä‘á»‹nh cÃ¡c mentor cÃ³ ká»¹ nÄƒng phÃ¹ há»£p
+                Admin xem xÃ©t há»“ sÆ¡ vÃ chá»‰ Ä‘á»‹nh cÃ¡c mentor cÃ³ ká»¹ nÄƒng phÃ¹ há»£p
                 nháº¥t vá»›i vá»‹ trÃ­.
               </p>
             </div>
@@ -479,7 +491,7 @@ function AwaitingMentorStep({
               </div>
               <h5 className="mt-3 text-xs font-bold text-slate-200">2. Báº¡n chá»n Mentor</h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                Xem há»“ sÆ¡ nÄƒng lá»±c, Ä‘Ã¡nh giÃ¡ vÃ  chá»n mentor báº¡n mong muá»‘n phá»ng
+                Xem há»“ sÆ¡ nÄƒng lá»±c, Ä‘Ã¡nh giÃ¡ vÃ chá»n mentor báº¡n mong muá»‘n phá»ng
                 váº¥n.
               </p>
             </div>
@@ -500,8 +512,7 @@ function AwaitingMentorStep({
                 3. Äáº·t lá»‹ch & Phá»ng váº¥n
               </h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                Chá»n thá»i gian ráº£nh thuáº­n tiá»‡n vÃ  vÃ o phÃ²ng há»p video 1-1 trá»±c
-                tuyáº¿n.
+                Chá»n thá»i gian ráº£nh thuáº­n tiá»‡n vÃ vÃ o phÃ²ng há»p video 1-1 trá»±c tuyáº¿n.
               </p>
             </div>
           </div>
@@ -552,7 +563,7 @@ function SelectMentorStep({
       <Card className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center shadow-sm dark:border-rose-900/40 dark:bg-rose-950/20">
         <AlertCircle className="mx-auto h-12 w-12 text-rose-400" />
         <h3 className="mt-4 text-lg font-black text-rose-900 dark:text-rose-100">
-          ChÆ°a cÃ³ mentor nÃ o Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh
+          ChÆ°a cÃ³ mentor nÃ o Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh
         </h3>
         <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">
           Vui lÃ²ng chá» Admin phÃ¢n bá»• chuyÃªn gia phÃ¹ há»£p.
@@ -591,7 +602,7 @@ function SelectMentorStep({
                 <p className="mt-1 text-sm leading-6 text-slate-300">
                   {t(
                     "userApplicationhistory.mentorSelectDescription",
-                    "Chá»n 1 mentor tá»« danh sÃ¡ch Ä‘Æ°á»£c Ä‘á» xuáº¥t cho vá»‹ trÃ­ á»©ng tuyá»ƒn nÃ y."
+                    "Chá»n 1 mentor tá»« danh sÃ¡ch Ä‘Æ°á»£c Ä‘á» xuáº¥t cho vá»‹ trÃ­ á»©ng tuyá»ƒn nÃ y."
                   )}
                 </p>
               </div>
@@ -970,204 +981,745 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
   );
 }
 
-// ============================================================================'
+// ============================================================================
+// SUB-COMPONENT: ScheduleStep — 2-column layout (form left + mentor info right)
+// ============================================================================
+
 function ScheduleStep({
+  detailId,
   submitting,
   onSubmit,
 }: {
+  detailId: number;
   submitting: boolean;
   onSubmit: (_payload: { joinTime: string; duration: number; offline: boolean }) => void;
 }) {
+  const { t } = useTranslation();
+  const { data: mentors } = useAssignedMentors(detailId);
+  const selectedMentor = useMemo(() => {
+    return mentors?.find((m) => m.id != null) ?? mentors?.[0] ?? null;
+  }, [mentors]);
+
   const now = new Date();
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  // Use LOCAL date for the default (not toISOString which is UTC-based and
-  // can roll over to the previous day for users in positive offsets like
-  // Vietnam UTC+7).
-  const defaultDate = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
-  const defaultTime = "14:00";
 
-  const [date, setDate] = useState(defaultDate);
-  const [time, setTime] = useState(defaultTime);
+  // Single source of truth for when the interview happens. Wall-clock time is
+  // preserved through the browser's local timezone (Date#getHours/getMinutes
+  // returns the local TZ value), which is critical for the joinTime
+  // construction below: 1:45 stays 1:45, never 8:30.
+  const defaultJoinDateTime = (() => {
+    const d = new Date(tomorrow);
+    d.setHours(14, 0, 0, 0);
+    return d;
+  })();
+
+  const [joinDateTime, setJoinDateTime] = useState<Date | null>(defaultJoinDateTime);
   const [duration, setDuration] = useState<number>(45);
   const [offline, setOffline] = useState(false);
 
   const handleSubmit = () => {
-    if (!date || !time) {
-      toast.error("Vui lÃ²ng chá»n ngÃ y giá»");
+    if (!joinDateTime) {
+      toast.error(
+        t("userApplicationhistory.mentorScheduleMissingDateTime", "Please select a date and time")
+      );
       return;
     }
     // Build joinTime with an explicit timezone offset so the BE knows the
     // candidate's intended wall-clock time. Without the offset, the BE
     // (Spring Boot/Jackson default) treats the naive string as UTC, which
-    // shifts the stored time by 7h for users in Vietnam (UTC+7) â€” e.g.
+    // shifts the stored time by 7h for users in Vietnam (UTC+7) — e.g.
     // picking 01:46 lands the session at 08:46 local.
-    // The offset is derived from the user's browser timezone (read from
-    // `<input type="datetime-local">` semantics: naive local pick).
+    // We extract the wall-clock y/m/d/h/m from the browser-local Date
+    // (which is what the user picked) and pair them with the browser's
+    // current timezone offset.
     const offsetMinutes = now.getTimezoneOffset();
     const sign = offsetMinutes > 0 ? "-" : "+";
     const absOffset = Math.abs(offsetMinutes);
     const offsetHours = String(Math.floor(absOffset / 60)).padStart(2, "0");
     const offsetMins = String(absOffset % 60).padStart(2, "0");
-    const joinTime = `${date}T${time}:00${sign}${offsetHours}:${offsetMins}`;
+    const y = joinDateTime.getFullYear();
+    const mo = String(joinDateTime.getMonth() + 1).padStart(2, "0");
+    const dd = String(joinDateTime.getDate()).padStart(2, "0");
+    const hh = String(joinDateTime.getHours()).padStart(2, "0");
+    const mm = String(joinDateTime.getMinutes()).padStart(2, "0");
+    const joinTime = `${y}-${mo}-${dd}T${hh}:${mm}:00${sign}${offsetHours}:${offsetMins}`;
     onSubmit({ joinTime, duration, offline });
   };
 
-  const durations = [30, 45, 60, 90];
+  const today = useMemo(() => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    return t;
+  }, []);
+
+  const minDateTime = useMemo(() => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    return t;
+  }, []);
+
+  const summaryDate = useMemo(() => {
+    if (!joinDateTime) return "—";
+    return joinDateTime.toLocaleDateString(undefined, {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  }, [joinDateTime]);
+
+  const summaryTime = useMemo(() => {
+    if (!joinDateTime) return "—";
+    return `${String(joinDateTime.getHours()).padStart(2, "0")}:${String(
+      joinDateTime.getMinutes()
+    ).padStart(2, "0")}`;
+  }, [joinDateTime]);
+
+  // Build an end-time string by adding `duration` minutes to the start time.
+  const endTime = useMemo(() => {
+    if (!joinDateTime) return null;
+    return new Date(joinDateTime.getTime() + duration * 60_000);
+  }, [joinDateTime, duration]);
+
+  const formattedEndTime = useMemo(() => {
+    if (!endTime) return "—";
+    const h = String(endTime.getHours()).padStart(2, "0");
+    const m = String(endTime.getMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+  }, [endTime]);
+
+  const durationPresets = useMemo(
+    () =>
+      [30, 45, 60, 90].map((m) => {
+        const raw = t("userApplicationhistory.mentorScheduleDurationOptions", {
+          returnObjects: true,
+          defaultValue: ["30 min", "45 min", "60 min", "90 min"],
+        }) as string[];
+        return { value: m, label: raw[[30, 45, 60, 90].indexOf(m)] ?? `${m} min` };
+      }),
+    [t]
+  );
+
+  // Largest duration drives the bar; smaller durations show a proportionally
+  // filled bar so the visual length reinforces the choice.
+  const DURATION_MAX = 120;
 
   return (
-    <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-      <div className="border-b border-slate-200 bg-gradient-to-r from-sky-50 to-indigo-50 px-6 py-5 dark:border-slate-800 dark:from-sky-950/40 dark:to-indigo-950/40">
-        <h3 className="flex items-center gap-2 text-base font-extrabold text-slate-900 dark:text-white">
-          <Calendar className="h-4 w-4 text-sky-500" />
-          Äáº·t lá»‹ch phá»ng váº¥n
-        </h3>
-        <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-          Chá»n ngÃ y giá» vÃ  thá»i lÆ°á»£ng phÃ¹ há»£p. Báº¡n cÃ³ thá»ƒ Ä‘á»•i trÆ°á»›c khi thanh
-          toÃ¡n.
-        </p>
-      </div>
-
-      <div className="space-y-5 p-6">
-        {/* Date + time */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              NgÃ y phá»ng váº¥n
-            </label>
-            <input
-              type="date"
-              value={date}
-              min={new Date().toISOString().slice(0, 10)}
-              onChange={(e) => setDate(e.target.value)}
-              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 text-sm font-bold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-hidden dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              Giá» báº¯t Ä‘áº§u
-            </label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 text-sm font-bold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-hidden dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100"
-            />
-          </div>
-        </div>
-
-        {/* Duration */}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-            Thá»i lÆ°á»£ng
-          </label>
-          <div className="grid grid-cols-4 gap-2">
-            {durations.map((d) => {
-              const active = duration === d;
-              return (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setDuration(d)}
-                  className={cn(
-                    "rounded-xl border-2 px-3 py-2.5 text-xs font-extrabold transition-all",
-                    active
-                      ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:border-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
-                  )}>
-                  {d} phÃºt
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Mode */}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-            HÃ¬nh thá»©c phá»ng váº¥n
-          </label>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => setOffline(false)}
-              className={cn(
-                "flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all",
-                !offline
-                  ? "border-sky-400 bg-sky-50/60 dark:border-sky-700 dark:bg-sky-950/30"
-                  : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/40"
-              )}>
-              <Video
-                className={cn("mt-0.5 h-4 w-4", !offline ? "text-sky-500" : "text-slate-400")}
-              />
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
+      {/* ============== LEFT COLUMN — Schedule form ============== */}
+      <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        {/* Sticky-feel header */}
+        <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-indigo-50 via-white to-violet-50 px-6 py-5 dark:border-slate-800 dark:from-indigo-950/40 dark:via-slate-900/60 dark:to-violet-950/30">
+          <div className="pointer-events-none absolute -top-12 -right-10 h-40 w-40 rounded-full bg-indigo-400/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-violet-400/20 blur-3xl" />
+          <div className="relative flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/30">
+                <CalendarCheck className="h-5 w-5" />
+              </div>
               <div>
-                <div
-                  className={cn(
-                    "text-xs font-extrabold",
-                    !offline
-                      ? "text-sky-700 dark:text-sky-300"
-                      : "text-slate-700 dark:text-slate-300"
-                  )}>
-                  Online (Daily.co)
+                <h3 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  {t("userApplicationhistory.mentorScheduleTitle", "Schedule the interview")}
+                </h3>
+                <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
+                  {t(
+                    "userApplicationhistory.mentorScheduleDescription",
+                    "Pick a date, time, and duration that work for you. You can change it before payment."
+                  )}
+                </p>
+              </div>
+            </div>
+            <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-indigo-200 bg-white/70 px-3 py-1 text-[11px] font-bold text-indigo-700 shadow-sm sm:inline-flex dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
+              <Sparkles className="h-3 w-3" />
+              {t("userApplicationhistory.mentorScheduleStepBadge", "Step 3 of 6")}
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-5 p-5 sm:p-6">
+          {/* ===== WHEN: Calendar (left) + Clock (right) ===== */}
+          <section className="space-y-3">
+            <SectionLabel
+              index={1}
+              label={t("userApplicationhistory.mentorScheduleWhenLabel", "When")}
+              hint={t(
+                "userApplicationhistory.mentorScheduleWhenHint",
+                "Pick the date and a precise start time"
+              )}
+            />
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-indigo-50/50 shadow-xs dark:border-slate-700 dark:from-slate-900/40 dark:via-slate-900/40 dark:to-indigo-950/20">
+              <div className="pointer-events-none absolute -top-12 -right-10 h-32 w-32 rounded-full bg-indigo-400/20 blur-2xl" />
+              <DateTimePicker
+                value={joinDateTime}
+                onChange={(d) => setJoinDateTime(d)}
+                placeholder={t(
+                  "userApplicationhistory.mentorScheduleDateTimePickerPlaceholder",
+                  "Pick a date and time"
+                )}
+                showTime
+                minuteStep={5}
+                minDate={minDateTime}
+                disabledDates={(d) => {
+                  const base = new Date(d);
+                  base.setHours(0, 0, 0, 0);
+                  return base < today;
+                }}
+                themeVariant="user"
+                clearable={false}
+                className="relative w-full"
+                popoverClassName="overflow-hidden"
+              />
+            </div>
+          </section>
+
+          {/* ===== HOW LONG: Duration pill cards ===== */}
+          <section className="space-y-3">
+            <SectionLabel
+              index={2}
+              label={t("userApplicationhistory.mentorScheduleDurationLabel", "Duration")}
+              hint={t(
+                "userApplicationhistory.mentorScheduleDurationHint",
+                "How long should the interview run?"
+              )}
+            />
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+              {durationPresets.map((d) => {
+                const active = duration === d.value;
+                const fill = Math.min(100, (d.value / DURATION_MAX) * 100);
+                return (
+                  <button
+                    key={d.value}
+                    type="button"
+                    onClick={() => setDuration(d.value)}
+                    aria-pressed={active}
+                    className={cn(
+                      "group relative overflow-hidden rounded-2xl border-2 px-3 py-3 text-left transition-all duration-200",
+                      active
+                        ? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-violet-50 shadow-md shadow-indigo-500/15 dark:border-indigo-600 dark:from-indigo-950/50 dark:to-violet-950/40"
+                        : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-indigo-700"
+                    )}>
+                    <div className="flex items-baseline justify-between">
+                      <span
+                        className={cn(
+                          "text-2xl font-black tracking-tight tabular-nums",
+                          active
+                            ? "text-indigo-700 dark:text-indigo-200"
+                            : "text-slate-800 dark:text-slate-100"
+                        )}>
+                        {d.value}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-[10px] font-extrabold tracking-wider uppercase",
+                          active
+                            ? "text-indigo-500 dark:text-indigo-300"
+                            : "text-slate-400 dark:text-slate-500"
+                        )}>
+                        min
+                      </span>
+                    </div>
+                    {/* Relative-length visualization bar */}
+                    <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-200/70 dark:bg-slate-800">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-300",
+                          active
+                            ? "bg-gradient-to-r from-indigo-500 to-violet-500"
+                            : "bg-slate-300 group-hover:bg-indigo-300 dark:bg-slate-700 dark:group-hover:bg-indigo-700"
+                        )}
+                        style={{ width: `${fill}%` }}
+                      />
+                    </div>
+                    {active && (
+                      <CheckCircle2 className="absolute top-2 right-2 h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ===== WHERE: Mode ===== */}
+          <section className="space-y-3">
+            <SectionLabel
+              index={3}
+              label={t("userApplicationhistory.mentorScheduleModeLabel", "Interview mode")}
+              hint={t(
+                "userApplicationhistory.mentorScheduleModeHint",
+                "Choose how you want to meet the mentor"
+              )}
+            />
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              <ModeOption
+                active={!offline}
+                onClick={() => setOffline(false)}
+                icon={<Video className="h-5 w-5" />}
+                tone="sky"
+                title={t(
+                  "userApplicationhistory.mentorScheduleModeOnlineTitle",
+                  "Online (Daily.co)"
+                )}
+                desc={t(
+                  "userApplicationhistory.mentorScheduleModeOnlineDesc",
+                  "Video interview in your browser"
+                )}
+                badge={t("userApplicationhistory.mentorScheduleModeOnlineBadge", "Recommended")}
+              />
+              <ModeOption
+                active={offline}
+                onClick={() => setOffline(true)}
+                icon={<MapPin className="h-5 w-5" />}
+                tone="amber"
+                title={t("userApplicationhistory.mentorScheduleModeOfflineTitle", "Offline")}
+                desc={t(
+                  "userApplicationhistory.mentorScheduleModeOfflineDesc",
+                  "Meet in person at a location arranged by the mentor"
+                )}
+                badge={t("userApplicationhistory.mentorScheduleModeOfflineBadge", "On request")}
+              />
+            </div>
+          </section>
+
+          {/* ===== CTA ===== */}
+          <div className="relative pt-1">
+            <div className="pointer-events-none absolute inset-x-0 -top-2 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-800" />
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="relative h-12 w-full gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 text-sm font-bold tracking-wide text-white shadow-lg shadow-indigo-500/25 hover:from-indigo-700 hover:to-violet-700 hover:shadow-indigo-500/40">
+              <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 transition-opacity duration-500 hover:opacity-100" />
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("userApplicationhistory.mentorScheduleSubmitting", "Creating session...")}
+                </>
+              ) : (
+                <>
+                  <CalendarCheck className="h-4 w-4" />
+                  {t("userApplicationhistory.mentorScheduleSubmit", "Create interview session")}
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* ============== RIGHT COLUMN — Mentor hero + Summary card ============== */}
+      <div className="space-y-4 lg:sticky lg:top-4">
+        {/* ===== Mentor hero card ===== */}
+        <Card className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          {/* Soft brand banner */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-br from-indigo-500/15 via-violet-500/15 to-fuchsia-500/15 dark:from-indigo-500/25 dark:via-violet-500/20 dark:to-fuchsia-500/15" />
+          <div className="pointer-events-none absolute -top-16 left-1/2 h-40 w-72 -translate-x-1/2 rounded-full bg-indigo-400/30 blur-3xl dark:bg-indigo-500/30" />
+
+          <div className="relative px-5 pt-5 pb-4">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white/80 px-2.5 py-1 text-[11px] font-extrabold tracking-wider text-indigo-700 uppercase shadow-xs backdrop-blur dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
+                <UserCheck className="h-3 w-3" />
+                {t("userApplicationhistory.mentorScheduleSelectedMentorTitle", "Selected mentor")}
+              </span>
+              {selectedMentor?.linkedInUrl && (
+                <a
+                  href={selectedMentor.linkedInUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
+                  aria-label="LinkedIn">
+                  <Linkedin className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+
+            {selectedMentor ? (
+              <>
+                {/* Identity */}
+                <div className="mt-3 flex items-start gap-3">
+                  <div className="relative">
+                    <Avatar className="h-14 w-14 rounded-2xl border-2 border-white shadow-md ring-1 shadow-indigo-500/15 ring-slate-200 dark:border-slate-900 dark:ring-slate-700">
+                      <AvatarImage
+                        src={selectedMentor.avatarUrl || "/placeholder.png"}
+                        alt={selectedMentor.name ?? "Mentor"}
+                      />
+                      <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-base font-extrabold text-white">
+                        {selectedMentor.name?.slice(0, 1).toUpperCase() ?? (
+                          <CircleUser className="h-6 w-6" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                    {selectedMentor.active !== false && (
+                      <span className="absolute -right-0.5 -bottom-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-emerald-500 shadow-sm dark:border-slate-900">
+                        <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="truncate text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
+                      {selectedMentor.name ?? "—"}
+                    </h4>
+                    {selectedMentor.currentCompany && (
+                      <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                        <Building2 className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{selectedMentor.currentCompany}</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                  Phá»ng váº¥n qua Video Call trÃªn trÃ¬nh duyá»‡t
+
+                {/* Stats row */}
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <StatBlock
+                    icon={<Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />}
+                    label={t("userApplicationhistory.mentorScheduleStatRating", "Rating")}
+                    value={
+                      selectedMentor.averageRating ? selectedMentor.averageRating.toFixed(1) : "—"
+                    }
+                    tone="amber"
+                  />
+                  <StatBlock
+                    icon={<Briefcase className="h-3.5 w-3.5 text-indigo-500" />}
+                    label={t("userApplicationhistory.mentorScheduleStatSessions", "Sessions")}
+                    value={String(selectedMentor.totalSession ?? 0)}
+                    tone="indigo"
+                  />
+                  <StatBlock
+                    icon={<Award className="h-3.5 w-3.5 text-violet-500" />}
+                    label={t("userApplicationhistory.mentorScheduleStatYears", "Years")}
+                    value={
+                      selectedMentor.yearsOfExperience != null
+                        ? `${selectedMentor.yearsOfExperience}+`
+                        : "—"
+                    }
+                    tone="violet"
+                  />
+                </div>
+
+                {/* Expertise */}
+                {selectedMentor.expertise && (
+                  <div className="mt-4 rounded-xl border border-violet-200/70 bg-gradient-to-br from-violet-50 to-fuchsia-50/50 p-3 dark:border-violet-900/40 dark:from-violet-950/30 dark:to-fuchsia-950/20">
+                    <div className="flex items-center gap-1.5 text-[10px] font-extrabold tracking-wider text-violet-700 uppercase dark:text-violet-300">
+                      <Sparkles className="h-3 w-3" />
+                      {t("userApplicationhistory.mentorSelectExpertise", "Expertise")}
+                    </div>
+                    <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                      {selectedMentor.expertise}
+                    </p>
+                  </div>
+                )}
+
+                {/* Bio + contact */}
+                {(selectedMentor.bio || selectedMentor.email) && (
+                  <div className="mt-4 space-y-2 border-t border-slate-200/80 pt-3 text-xs dark:border-slate-800">
+                    {selectedMentor.bio && (
+                      <p className="leading-relaxed text-slate-600 italic dark:text-slate-400">
+                        &ldquo;{selectedMentor.bio}&rdquo;
+                      </p>
+                    )}
+                    {selectedMentor.email && (
+                      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                        <Mail className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{selectedMentor.email}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex flex-col items-center gap-2 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                <Globe className="h-6 w-6 text-slate-400" />
+                <p>
+                  {t(
+                    "userApplicationhistory.mentorScheduleSelectedMentorEmpty",
+                    "No mentor selected"
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* ===== Summary card ===== */}
+        <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-5 py-4 dark:border-slate-800 dark:from-emerald-950/30 dark:via-slate-900/60 dark:to-sky-950/30">
+            <div className="pointer-events-none absolute -top-10 right-4 h-24 w-24 rounded-full bg-emerald-400/15 blur-2xl" />
+            <div className="relative flex items-center justify-between gap-2">
+              <h3 className="flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-300">
+                  <BadgeCheck className="h-4 w-4" />
+                </span>
+                {t("userApplicationhistory.mentorScheduleSummaryTitle", "Interview summary")}
+              </h3>
+              <span className="rounded-full border border-emerald-200/70 bg-white/80 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-700 uppercase shadow-xs backdrop-blur dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
+                {t("userApplicationhistory.mentorScheduleSummaryLiveLabel", "Live preview")}
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-4 p-5">
+            {/* Hero time block */}
+            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 dark:border-slate-700 dark:from-slate-950/40 dark:to-slate-900/40">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("userApplicationhistory.mentorScheduleSummaryStart", "Start")}
+                  </div>
+                  <div className="mt-0.5 flex items-baseline gap-1 text-slate-900 tabular-nums dark:text-white">
+                    <span className="text-2xl font-black tracking-tight sm:text-3xl">
+                      {summaryTime}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {summaryDate}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("userApplicationhistory.mentorScheduleSummaryEnds", "Ends")}
+                  </div>
+                  <div className="mt-0.5 flex items-baseline gap-1 tabular-nums">
+                    <span className="text-2xl font-black tracking-tight text-indigo-700 sm:text-3xl dark:text-indigo-200">
+                      {formattedEndTime}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 text-xs font-bold text-indigo-600 dark:text-indigo-300">
+                    + {duration} min
+                  </div>
                 </div>
               </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => setOffline(true)}
-              className={cn(
-                "flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all",
-                offline
-                  ? "border-amber-400 bg-amber-50/60 dark:border-amber-700 dark:bg-amber-950/30"
-                  : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/40"
-              )}>
-              <MapPin
-                className={cn("mt-0.5 h-4 w-4", offline ? "text-amber-500" : "text-slate-400")}
-              />
-              <div>
-                <div
-                  className={cn(
-                    "text-xs font-extrabold",
-                    offline
-                      ? "text-amber-700 dark:text-amber-300"
-                      : "text-slate-700 dark:text-slate-300"
-                  )}>
-                  Offline
-                </div>
-                <div className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                  Gáº·p trá»±c tiáº¿p táº¡i Ä‘á»‹a Ä‘iá»ƒm do mentor sáº¯p xáº¿p
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>
+            </div>
 
-        <Button
-          onClick={handleSubmit}
-          disabled={submitting}
-          className="h-11 w-full gap-2 bg-gradient-to-r from-sky-500 to-indigo-600 text-xs font-bold text-white shadow-sm hover:from-sky-600 hover:to-indigo-700">
-          {submitting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Äang táº¡o phiÃªn...
-            </>
-          ) : (
-            <>
-              <CalendarCheck className="h-4 w-4" />
-              Táº¡o phiÃªn phá»ng váº¥n
-              <ArrowRight className="h-4 w-4" />
-            </>
-          )}
-        </Button>
+            {/* Pills row */}
+            <div className="flex flex-wrap gap-2">
+              <SummaryPill
+                icon={<Hourglass className="h-3.5 w-3.5" />}
+                label={t("userApplicationhistory.mentorScheduleSummaryDuration", "Duration")}
+                value={`${duration} min`}
+                tone="indigo"
+              />
+              <SummaryPill
+                icon={
+                  offline ? <MapPin className="h-3.5 w-3.5" /> : <Video className="h-3.5 w-3.5" />
+                }
+                label={t("userApplicationhistory.mentorScheduleSummaryMode", "Mode")}
+                value={
+                  offline
+                    ? t("userApplicationhistory.mentorScheduleSummaryModeOffline", "In person")
+                    : t("userApplicationhistory.mentorScheduleSummaryModeOnline", "Online")
+                }
+                tone={offline ? "amber" : "sky"}
+              />
+              {selectedMentor?.rate != null && (
+                <SummaryPill
+                  icon={<CircleDollarSign className="h-3.5 w-3.5" />}
+                  label={t("userApplicationhistory.mentorScheduleSummaryEstimate", "Estimate")}
+                  value={formatRate(selectedMentor.rate, duration)}
+                  tone="emerald"
+                />
+              )}
+            </div>
+
+            <div className="rounded-xl border border-indigo-200/70 bg-gradient-to-br from-indigo-50/60 to-white p-3 dark:border-indigo-900/40 dark:from-indigo-950/30 dark:to-slate-900/40">
+              <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+                <strong className="text-slate-800 dark:text-slate-200">
+                  {t(
+                    "userApplicationhistory.mentorScheduleReadyTitle",
+                    "Ready to create the session?"
+                  )}
+                </strong>{" "}
+                {t(
+                  "userApplicationhistory.mentorScheduleReadyDesc",
+                  "Your interview schedule will be confirmed right after creation. You can still change the time before payment."
+                )}
+              </p>
+            </div>
+          </div>
+        </Card>
       </div>
-    </Card>
+    </div>
   );
 }
 
 // ============================================================================
+
+function SectionLabel({ index, label, hint }: { index: number; label: string; hint?: string }) {
+  return (
+    <div className="flex items-baseline gap-2">
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[10px] font-extrabold text-white shadow-sm shadow-indigo-500/30">
+        {index}
+      </span>
+      <span className="text-[11px] font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
+        {label}
+      </span>
+      {hint && (
+        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">— {hint}</span>
+      )}
+    </div>
+  );
+}
+
+function ModeOption({
+  active,
+  onClick,
+  icon,
+  tone,
+  title,
+  desc,
+  badge,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  tone: "sky" | "amber";
+  title: string;
+  desc: string;
+  badge?: string;
+}) {
+  const toneClasses = {
+    sky: {
+      ring: "ring-sky-500/20",
+      activeBorder:
+        "border-sky-500 bg-gradient-to-br from-sky-50 to-white dark:border-sky-600 dark:from-sky-950/40 dark:to-slate-900/40",
+      iconBg: "bg-sky-500/15 text-sky-600 dark:text-sky-300",
+      title: "text-sky-700 dark:text-sky-200",
+      desc: "text-slate-600 dark:text-slate-400",
+      badgeBg:
+        "border-sky-200 bg-sky-100 text-sky-700 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300",
+    },
+    amber: {
+      ring: "ring-amber-500/20",
+      activeBorder:
+        "border-amber-500 bg-gradient-to-br from-amber-50 to-white dark:border-amber-600 dark:from-amber-950/40 dark:to-slate-900/40",
+      iconBg: "bg-amber-500/15 text-amber-600 dark:text-amber-300",
+      title: "text-amber-700 dark:text-amber-200",
+      desc: "text-slate-600 dark:text-slate-400",
+      badgeBg:
+        "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+    },
+  }[tone];
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "relative flex flex-col items-start gap-2 rounded-2xl border-2 p-3.5 text-left transition-all duration-200",
+        active
+          ? cn("shadow-md ring-2", toneClasses.activeBorder, toneClasses.ring)
+          : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40"
+      )}>
+      <div className="flex w-full items-start justify-between">
+        <div
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-xl",
+            active
+              ? toneClasses.iconBg
+              : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+          )}>
+          {icon}
+        </div>
+        {active && badge && (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-extrabold tracking-wider uppercase",
+              toneClasses.badgeBg
+            )}>
+            <Sparkles className="h-2.5 w-2.5" />
+            {badge}
+          </span>
+        )}
+      </div>
+      <div>
+        <div
+          className={cn(
+            "text-sm font-extrabold tracking-tight",
+            active ? toneClasses.title : "text-slate-800 dark:text-slate-100"
+          )}>
+          {title}
+        </div>
+        <div className={cn("mt-0.5 text-[11px] leading-relaxed", toneClasses.desc)}>{desc}</div>
+      </div>
+    </button>
+  );
+}
+
+function StatBlock({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  tone: "amber" | "indigo" | "violet";
+}) {
+  const toneClasses = {
+    amber: "border-amber-200/70 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-950/20",
+    indigo: "border-indigo-200/70 bg-indigo-50/50 dark:border-indigo-900/40 dark:bg-indigo-950/20",
+    violet: "border-violet-200/70 bg-violet-50/50 dark:border-violet-900/40 dark:bg-violet-950/20",
+  }[tone];
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center",
+        toneClasses
+      )}>
+      <div className="flex items-center gap-1 text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+        {icon}
+        <span className="leading-none">{label}</span>
+      </div>
+      <div className="mt-1 text-base font-black text-slate-900 tabular-nums dark:text-white">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function SummaryPill({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  tone: "indigo" | "sky" | "amber" | "emerald";
+}) {
+  const toneClasses = {
+    indigo:
+      "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-200",
+    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-200",
+    amber:
+      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200",
+    emerald:
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200",
+  }[tone];
+
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+        toneClasses
+      )}>
+      {icon}
+      <span className="text-[10px] font-extrabold tracking-wider uppercase opacity-70">
+        {label}
+      </span>
+      <span className="font-extrabold tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+// Approximate cost: rate is per session in many systems; we surface a
+// transparent "duration × 1" estimate. Backend may overwrite.
+function formatRate(rate: number, durationMin: number): string {
+  const total = Math.round(rate * durationMin);
+  return `${total.toLocaleString()}`;
+}
 
 function InfoRow({
   icon,
@@ -1221,7 +1773,7 @@ function SessionStatusBadge({ status }: { status: string }) {
     },
     COMPLETED: {
       tone: "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-      label: "ÄÃ£ hoÃ n táº¥t",
+      label: "ÄÃ£ hoÃ n táº¥t",
     },
     REJECTED: {
       tone: "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300",
@@ -1317,7 +1869,7 @@ function SessionRoomStep({
           PhiÃªn phá»ng váº¥n #{session.id}
         </h3>
         <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-          VÃ o phÃ²ng Video Call Ä‘Ãºng giá». PhÃ²ng sáº½ má»Ÿ trÆ°á»›c 15 phÃºt.
+          VÃ o phÃ²ng Video Call Ä‘Ãºng giá». PhÃ²ng sáº½ má»Ÿ trÆ°á»›c 15 phÃºt.
         </p>
       </div>
 
@@ -1354,11 +1906,11 @@ function SessionRoomStep({
               {canEnter ? "PhÃ²ng Ä‘Ã£ má»Ÿ" : "CÃ²n"}
             </div>
             <div className="text-3xl font-black text-sky-700 tabular-nums dark:text-sky-200">
-              {canEnter ? "Sáºµn sÃ ng vÃ o" : formatCountdown(Math.max(0, joinAt - now))}
+              {canEnter ? "Sáºµn sÃ ng vÃ o" : formatCountdown(Math.max(0, joinAt - now))}
             </div>
             <div className="text-xs text-sky-700/80 dark:text-sky-300/80">
               {canEnter
-                ? "Báº¡n cÃ³ thá»ƒ vÃ o phÃ²ng ngay bÃ¢y giá»"
+                ? "Báº¡n cÃ³ thá»ƒ vÃ o phÃ²ng ngay bÃ¢y giá»"
                 : `PhÃ²ng má»Ÿ 15 phÃºt trÆ°á»›c ${session.joinTime ? formatTimeOnly(session.joinTime) : ""}`}
             </div>
           </div>
@@ -1372,14 +1924,14 @@ function SessionRoomStep({
                 window.location.href = `/user/sessions/room/${session.id}`;
               } else {
                 toast.info(
-                  "ÄÃ¢y lÃ  phiÃªn Offline. HÃ£y liÃªn há»‡ mentor qua thÃ´ng tin bÃªn dÆ°á»›i."
+                  "ÄÃ¢y lÃ  phiÃªn Offline. HÃ£y liÃªn há»‡ mentor qua thÃ´ng tin bÃªn dÆ°á»›i."
                 );
               }
             }}
             disabled={!canEnter && session.status === "PAID"}
             className="h-11 flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-sky-600 text-xs font-bold text-white shadow-sm hover:from-emerald-600 hover:to-sky-700 disabled:cursor-not-allowed disabled:opacity-50">
             <LogIn className="h-4 w-4" />
-            {session.status === "ONGOING" ? "Tiáº¿p tá»¥c vÃ o phÃ²ng" : "VÃ o phÃ²ng Video Call"}
+            {session.status === "ONGOING" ? "Tiáº¿p tá»¥c vÃ o phÃ²ng" : "VÃ o phÃ²ng Video Call"}
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
@@ -1387,7 +1939,7 @@ function SessionRoomStep({
             onClick={() => void refetch()}
             className="h-11 gap-2 border-slate-300 px-4 text-xs font-bold dark:border-slate-700">
             <RefreshCw className="h-4 w-4" />
-            LÃ m má»›i
+            LÃ m má»›i
           </Button>
         </div>
 
