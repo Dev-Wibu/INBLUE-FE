@@ -75,6 +75,8 @@ interface ProblemSource {
   code: string;
   /** Local hint: did the user actually edit this problem's code? */
   dirty: boolean;
+  /** Cache code per language for this problem (like LeetCode) */
+  codeByLanguage?: Partial<Record<CompilerLanguage, string>>;
 }
 
 type SampleResults = Record<number, CompilerResponse | null>;
@@ -173,6 +175,26 @@ function parseRules(raw: unknown): string[] {
   return [];
 }
 
+
+
+function parseCodeStubs(raw: unknown): Partial<Record<CompilerLanguage, string>> {
+  if (!raw) return {};
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed === "object" && parsed !== null) {
+        return parsed as Partial<Record<CompilerLanguage, string>>;
+      }
+    } catch {
+      return {};
+    }
+  }
+  if (typeof raw === "object" && raw !== null) {
+    return raw as Partial<Record<CompilerLanguage, string>>;
+  }
+  return {};
+}
+
 function getProblems(round: JdRound): CodingProblemVM[] {
   // JdRound is a partial local shape — pull `codingProblems` off the full
   // BE round schema which is the source of truth for problem snapshots.
@@ -208,22 +230,41 @@ function getProblems(round: JdRound): CodingProblemVM[] {
     ),
     executionTimeLimitMs: p.executionTimeLimitMs,
     memoryLimitMb: p.memoryLimitMb,
-    codeStubs: (p.codeStubs ?? {}) as Partial<Record<CompilerLanguage, string>>,
+    codeStubs: parseCodeStubs(p.codeStubs ?? p.starterCode ?? p.templates),
   }));
 }
 
+const DEFAULT_STUBS: Partial<Record<CompilerLanguage, string>> = {
+  JAVA: `class Solution {\n    // Viết code của bạn tại đây\n}`,
+  PYTHON: `class Solution:\n    # Viết code của bạn tại đây\n    pass`,
+  CPP: `class Solution {\npublic:\n    // Viết code của bạn tại đây\n};`,
+  JS: `/**\n * @return {any}\n */\nfunction solution() {\n    // Viết code của bạn tại đây\n}`,
+  TYPESCRIPT: `function solution(): void {\n    // Viết code của bạn tại đây\n}`,
+  CSHARP: `public class Solution {\n    // Viết code của bạn tại đây\n}`,
+  GO: `package main\n\n// Viết code của bạn tại đây`,
+  C: `// Viết code của bạn tại đây\n`,
+  KOTLIN: `class Solution {\n    // Viết code của bạn tại đây\n}`,
+  RUST: `// Viết code của bạn tại đây\n`,
+};
+
+function getCodeStub(problem: CodingProblemVM, language: CompilerLanguage): string {
+  return (
+    problem.codeStubs[language] ||
+    DEFAULT_STUBS[language] ||
+    `// Viết code ${language} của bạn tại đây\n`
+  );
+}
+
 function languagesAvailable(problem: CodingProblemVM): CompilerLanguage[] {
-  // Show every language whose stub the BE actually provided. Using ALL_LANGUAGES
-  // blindly would let users select a language the sandbox cannot bootstrap.
-  return ALL_LANGUAGES.filter((l) => Boolean(problem.codeStubs[l]));
+  const present = ALL_LANGUAGES.filter((l) => Boolean(problem.codeStubs[l]));
+  if (present.length > 0) return present;
+  return ["JAVA", "PYTHON", "CPP", "JS", "TYPESCRIPT", "CSHARP", "GO", "C", "KOTLIN", "RUST"];
 }
 
 function pickInitialLanguage(
   problem: CodingProblemVM,
   detail: ApplicationDetail | undefined
 ): CompilerLanguage {
-  // 1) The candidate already has a submission for THIS round → remember the
-  //    language they used.
   const last = detail?.submissionData?.codeSubmissions?.at(-1);
   if (last?.sourceCode && last.sourceCode.length > 0) {
     const restored = inferLanguage(last.sourceCode.join("\n"));
@@ -231,14 +272,11 @@ function pickInitialLanguage(
       return restored;
     }
   }
-
-  // 2) Otherwise pick the first language the BE actually exposed.
   return languagesAvailable(problem)[0] ?? "JAVA";
 }
 
 function inferLanguage(code: string | undefined): CompilerLanguage | null {
   if (!code) return null;
-  // Order matters: most specific patterns first.
   if (/^\s*(import\s+java\b|public\s+(?:class|interface|enum)\s|System\.out)/m.test(code))
     return "JAVA";
   if (/^\s*(def\s+\w+\(|from\s+\w+\s+import|import\s+sys\b)/m.test(code)) return "PYTHON";
@@ -246,10 +284,6 @@ function inferLanguage(code: string | undefined): CompilerLanguage | null {
   if (/:\s*interface\s+\w+|:\s*type\b|=>\s*\{|^\s*declare\s/m.test(code)) return "TYPESCRIPT";
   if (/^\s*(const|let|var|function)\s/m.test(code)) return "JS";
   return null;
-}
-
-function getCodeStub(problem: CodingProblemVM, language: CompilerLanguage): string {
-  return problem.codeStubs[language] ?? "";
 }
 
 function splitSourceForApi(code: string): string[] {
@@ -323,7 +357,12 @@ export function CodingModule({
         submitted?.sourceCode && submitted.sourceCode.length > 0
           ? joinSourceFromApi(submitted.sourceCode)
           : getCodeStub(p, lang);
-      init[p.problemId] = { language: lang, code, dirty: false };
+      init[p.problemId] = {
+        language: lang,
+        code,
+        dirty: Boolean(submitted?.sourceCode && submitted.sourceCode.length > 0),
+        codeByLanguage: { [lang]: code },
+      };
     }
     return init;
   });
@@ -346,7 +385,12 @@ export function CodingModule({
           submitted?.sourceCode && submitted.sourceCode.length > 0
             ? joinSourceFromApi(submitted.sourceCode)
             : getCodeStub(p, lang);
-        next[p.problemId] = { language: lang, code, dirty: false };
+        next[p.problemId] = {
+          language: lang,
+          code,
+          dirty: Boolean(submitted?.sourceCode && submitted.sourceCode.length > 0),
+          codeByLanguage: existing?.codeByLanguage ?? { [lang]: code },
+        };
       }
       return next;
     });
@@ -380,25 +424,37 @@ export function CodingModule({
   };
 
   const handleCodeChange = (problemId: number, value: string) => {
-    updateSource(problemId, (s) => ({ ...s, code: value, dirty: true }));
+    updateSource(problemId, (s) => ({
+      ...s,
+      code: value,
+      dirty: true,
+      codeByLanguage: {
+        ...(s.codeByLanguage ?? {}),
+        [s.language]: value,
+      },
+    }));
   };
 
   const handleLanguageChange = (problemId: number, next: CompilerLanguage) => {
     const problem = problems.find((p) => p.problemId === problemId);
     if (!problem) return;
-    const stub = getCodeStub(problem, next);
     updateSource(problemId, (s) => {
-      // If the candidate hasn't really started typing (still the stub or empty)
-      // we replace their code with the new language stub. Otherwise we just
-      // switch the language and leave their code alone — they can copy-paste
-      // into the new language.
-      const looksUntouched =
-        !s.dirty ||
-        s.code.trim().length === 0 ||
-        s.code.trim() === getCodeStub(problem, s.language).trim();
-      return looksUntouched
-        ? { ...s, language: next, code: stub, dirty: false }
-        : { ...s, language: next };
+      // Save current code to cache
+      const codeCache = {
+        ...(s.codeByLanguage ?? {}),
+        [s.language]: s.code,
+      };
+      // Next language code: use cached code if exists, otherwise get code stub
+      const nextCode = codeCache[next] ?? getCodeStub(problem, next);
+      return {
+        ...s,
+        language: next,
+        code: nextCode,
+        codeByLanguage: {
+          ...codeCache,
+          [next]: nextCode,
+        },
+      };
     });
     // Drop any sample-run results for this problem — they reference the old
     // language's output.
