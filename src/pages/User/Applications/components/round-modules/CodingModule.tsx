@@ -30,6 +30,8 @@ import {
   ChevronRight,
   Clock,
   Code2,
+  Copy,
+  Cpu,
   FileCode2,
   FileWarning,
   GripVertical,
@@ -583,56 +585,6 @@ export function CodingModule({
         </Card>
       )}
 
-      {/* ── PROBLEM TAB SWITCHER (only shown when > 1 problem) ── */}
-      {problems.length > 1 && (
-        <div className="flex items-center gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-2">
-          {problems.map((p, idx) => {
-            const res = sampleResults[p.problemId];
-            const isActive = idx === currentProblemIdx;
-            const hasPassed = res?.passedTestCases === res?.totalTestCases && res != null;
-            return (
-              <button
-                key={p.problemId}
-                type="button"
-                onClick={() => setCurrentProblemIdx(idx)}
-                className={cn(
-                  "flex flex-1 flex-col items-center gap-1 rounded-xl border px-3 py-2.5 text-center transition-all",
-                  isActive
-                    ? "border-indigo-500/50 bg-indigo-500/20 text-indigo-200"
-                    : "border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                )}>
-                <div className="flex items-center gap-1.5">
-                  <FileCode2 className="h-3.5 w-3.5" />
-                  <span className="font-mono text-xs font-bold">Bài {idx + 1}</span>
-                  {hasPassed && (
-                    <span
-                      className="h-2 w-2 rounded-full bg-emerald-400"
-                      title="Sample tests passed"
-                    />
-                  )}
-                </div>
-                {p.difficulty && (
-                  <span
-                    className={cn(
-                      "rounded px-1.5 py-0.5 font-mono text-[9px] font-extrabold uppercase",
-                      p.difficulty === "EASY"
-                        ? "bg-emerald-950/60 text-emerald-400"
-                        : p.difficulty === "MEDIUM"
-                          ? "bg-amber-950/60 text-amber-400"
-                          : "bg-rose-950/60 text-rose-400"
-                    )}>
-                    {p.difficulty}
-                  </span>
-                )}
-                <span className="max-w-[120px] truncate text-[10px] font-medium opacity-70">
-                  {p.title}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       {/* ── ACTIVE PROBLEM CARD ── */}
       {activeProblem &&
         (() => {
@@ -641,39 +593,35 @@ export function CodingModule({
           const langs = languagesAvailable(activeProblem);
           const result = sampleResults[activeProblem.problemId] ?? null;
           const isRunningThis = runningId === activeProblem.problemId;
-          return (
-            <CodingProblemCard
-              key={activeProblem.problemId}
-              index={currentProblemIdx}
-              total={problems.length}
-              problem={activeProblem}
-              source={source}
-              availableLanguages={langs}
-              result={result}
-              isRunning={isRunningThis}
-              isCompleted={isCompleted}
-              isCurrent={isCurrent}
-              finalScore={finalScore ?? null}
-              problemFinalScoreStatus={detail?.status ?? null}
-              onChangeCode={(value) => handleCodeChange(activeProblem.problemId, value)}
-              onChangeLanguage={(lang) => handleLanguageChange(activeProblem.problemId, lang)}
-              onRun={() => handleRunCode(activeProblem.problemId)}
-              submitting={submitting}
-              onSubmitAll={handleOpenConfirm}
-              totalProblems={problems.length}
-              isLastProblem={currentProblemIdx === problems.length - 1}
-              timeLimitMinutes={timeLimitMinutes}
-              startTime={detail?.startedAt ?? roundDetailStart(detail)}
-              onNavigatePrev={
-                currentProblemIdx > 0 ? () => setCurrentProblemIdx((i) => i - 1) : undefined
-              }
-              onNavigateNext={
-                currentProblemIdx < problems.length - 1
-                  ? () => setCurrentProblemIdx((i) => i + 1)
-                  : undefined
-              }
-            />
-          );
+          <CodingProblemCard
+            key={activeProblem.problemId}
+            index={currentProblemIdx}
+            problem={activeProblem}
+            source={source}
+            availableLanguages={langs}
+            result={result}
+            isRunning={isRunningThis}
+            isCompleted={isCompleted}
+            isCurrent={isCurrent}
+            finalScore={finalScore ?? null}
+            problemFinalScoreStatus={detail?.status ?? null}
+            onChangeCode={(value) => handleCodeChange(activeProblem.problemId, value)}
+            onChangeLanguage={(lang) => handleLanguageChange(activeProblem.problemId, lang)}
+            onRun={() => handleRunCode(activeProblem.problemId)}
+            submitting={submitting}
+            onSubmitAll={handleOpenConfirm}
+            totalProblems={problems.length}
+            timeLimitMinutes={timeLimitMinutes}
+            startTime={detail?.startedAt ?? roundDetailStart(detail)}
+            onNavigatePrev={
+              currentProblemIdx > 0 ? () => setCurrentProblemIdx((i) => i - 1) : undefined
+            }
+            onNavigateNext={
+              currentProblemIdx < problems.length - 1
+                ? () => setCurrentProblemIdx((i) => i + 1)
+                : undefined
+            }
+          />;
         })()}
 
       {/* Confirm-submit modal — replaces the ugly window.confirm() with a
@@ -874,7 +822,6 @@ function roundDetailStart(detail: ApiApplicationDetail | undefined): string | un
 
 interface CodingProblemCardProps {
   index: number;
-  total: number;
   problem: CodingProblemVM;
   source: ProblemSource;
   availableLanguages: CompilerLanguage[];
@@ -890,7 +837,6 @@ interface CodingProblemCardProps {
   submitting: boolean;
   onSubmitAll: () => void;
   totalProblems: number;
-  isLastProblem: boolean;
   timeLimitMinutes: number | null;
   startTime: string | undefined;
   onNavigatePrev?: () => void;
@@ -990,9 +936,186 @@ function formatRemaining(ms: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+/**
+ * Inline Markdown Tokenizer:
+ * Handles `inline_code`, **bold**, *italic*, 10^4 (superscripts), and plain text.
+ */
+function FormattedInlineMarkdown({ text, className }: { text: string; className?: string }) {
+  const tokens = useMemo(() => {
+    if (!text) return [];
+    const regex = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|\b\d+\^\d+\b)/g;
+    const parts = text.split(regex);
+    return parts.filter(Boolean).map((part, idx) => {
+      if (part.startsWith("`") && part.endsWith("`")) {
+        return (
+          <code
+            key={idx}
+            className="rounded border border-indigo-500/20 bg-indigo-50/70 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-950/50 dark:text-indigo-300">
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return (
+          <strong key={idx} className="font-bold text-slate-900 dark:text-slate-100">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      if (part.startsWith("*") && part.endsWith("*")) {
+        return (
+          <em key={idx} className="text-slate-700 italic dark:text-slate-300">
+            {part.slice(1, -1)}
+          </em>
+        );
+      }
+      if (/^\d+\^\d+$/.test(part)) {
+        const [base, exp] = part.split("^");
+        return (
+          <span key={idx} className="font-mono text-xs font-medium">
+            {base}
+            <sup>{exp}</sup>
+          </span>
+        );
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  }, [text]);
+
+  return <span className={cn("leading-relaxed", className)}>{tokens}</span>;
+}
+
+/**
+ * Multi-line Markdown Problem Statement formatter.
+ * Handles paragraphs, lists (* or -), and code blocks.
+ */
+function FormattedCodingProblemStatement({ text }: { text: string }) {
+  const blocks = useMemo(() => {
+    if (!text) return [];
+    const normalized = text.replace(/\\n/g, "\n");
+    const rawParagraphs = normalized.split(/\n\n+/);
+    return rawParagraphs.map((p) => p.trim()).filter(Boolean);
+  }, [text]);
+
+  if (!text) {
+    return (
+      <p className="text-xs text-slate-400 italic">
+        Đề bài chưa được cập nhật. Vui lòng xem Ví dụ bên dưới.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300">
+      {blocks.map((block, idx) => {
+        const lines = block.split("\n");
+        const isList = lines.length > 1 && lines.every((l) => /^[*-]\s+/.test(l.trim()));
+
+        if (isList) {
+          return (
+            <ul key={idx} className="space-y-1.5 pl-2">
+              {lines.map((line, lIdx) => {
+                const cleaned = line.trim().replace(/^[*-]\s+/, "");
+                return (
+                  <li key={lIdx} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
+                    <FormattedInlineMarkdown text={cleaned} />
+                  </li>
+                );
+              })}
+            </ul>
+          );
+        }
+
+        return (
+          <p key={idx} className="leading-relaxed whitespace-pre-line">
+            <FormattedInlineMarkdown text={block} />
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * LeetCode-Grade Problem Example Card with one-click Copy
+ */
+function ProblemExampleCard({
+  index,
+  example,
+}: {
+  index: number;
+  example: { inputs: string[]; output: string; explanation?: string };
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const cleanInputs = example.inputs.filter((inp) => inp != null && inp.trim() !== "");
+  const inputStr = cleanInputs.join(", ");
+
+  const handleCopy = () => {
+    const textToCopy = `Input: ${inputStr}\nOutput: ${example.output}${
+      example.explanation ? `\nExplanation: ${example.explanation}` : ""
+    }`;
+    void navigator.clipboard.writeText(textToCopy);
+    setCopied(true);
+    toast.success(`Đã sao chép Ví dụ ${index + 1}!`);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className="group overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xs transition-all hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-950/60 dark:hover:border-slate-700">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800/60 dark:bg-slate-900/60 dark:text-slate-300">
+        <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+          Ví dụ {index + 1}:
+        </span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-slate-400 opacity-80 transition-all group-hover:opacity-100 hover:bg-slate-200/60 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+          {copied ? (
+            <>
+              <Check className="h-3 w-3 text-emerald-400" />
+              <span className="text-emerald-500">Đã copy</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3 w-3" />
+              <span>Copy</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="space-y-2 p-3.5 font-mono text-xs">
+        <div className="flex items-start gap-2">
+          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Input:</span>
+          <span className="flex-1 font-semibold break-all text-slate-800 dark:text-slate-200">
+            {inputStr || "(trống)"}
+          </span>
+        </div>
+        <div className="flex items-start gap-2">
+          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Output:</span>
+          <span className="flex-1 font-bold break-all text-emerald-600 dark:text-emerald-400">
+            {example.output || "(trống)"}
+          </span>
+        </div>
+        {example.explanation && (
+          <div className="mt-2 flex items-start gap-2 border-t border-slate-100 pt-2 font-sans text-xs text-slate-600 dark:border-slate-800/80 dark:text-slate-400">
+            <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Giải thích:</span>
+            <span className="flex-1 leading-relaxed">
+              <FormattedInlineMarkdown text={example.explanation} />
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CodingProblemCard({
   index,
-  total,
   problem,
   source,
   availableLanguages,
@@ -1008,7 +1131,6 @@ function CodingProblemCard({
   submitting,
   onSubmitAll,
   totalProblems,
-  isLastProblem,
   timeLimitMinutes,
   startTime,
   onNavigatePrev,
@@ -1017,10 +1139,19 @@ function CodingProblemCard({
   const { t } = useTranslation();
   const monacoTheme = useMonacoTheme();
 
-  const [activeTab, setActiveTab] = useState<"description" | "results" | "history">("description");
+  const [activeTab, setActiveTab] = useState<"description" | "results">("description");
+
+  // Filter valid examples
+  const validExamples = useMemo(() => {
+    return (problem.visibleExamples ?? []).filter(
+      (ex) =>
+        (ex.inputs && ex.inputs.some((inp) => inp != null && inp.trim() !== "")) ||
+        (ex.output && ex.output.trim() !== "")
+    );
+  }, [problem.visibleExamples]);
 
   // ---- Resizable split panel state ----------------------------------------
-  const [leftWidthPercent, setLeftWidthPercent] = useState(38);
+  const [leftWidthPercent, setLeftWidthPercent] = useState(40);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
 
@@ -1033,8 +1164,8 @@ function CodingProblemCard({
       const rect = containerRef.current.getBoundingClientRect();
       const x = ev.clientX - rect.left;
       const percent = (x / rect.width) * 100;
-      // Clamp between 20% and 70%
-      setLeftWidthPercent(Math.min(70, Math.max(20, percent)));
+      // Clamp between 25% and 65%
+      setLeftWidthPercent(Math.min(65, Math.max(25, percent)));
     };
 
     const onMouseUp = () => {
@@ -1055,14 +1186,12 @@ function CodingProblemCard({
   const remainingMs = useRemainingMs(timeLimitMinutes, startTime);
   const timedOut = remainingMs === 0;
 
-  const tabs: Array<{ id: "description" | "results"; label: string }> = [
-    { id: "description", label: t("userApplicationhistory.codingTabDesc", "Mô tả & Ví dụ") },
+  const tabs: Array<{ id: "description" | "results"; label: string; badge?: string }> = [
+    { id: "description", label: t("userApplicationhistory.codingTabDesc", "Mô tả bài toán") },
     {
       id: "results",
-      label: t(
-        "userApplicationhistory.codingTabResults",
-        `Test Results${result ? ` (${result.passedTestCases}/${result.totalTestCases})` : ""}`
-      ),
+      label: t("userApplicationhistory.codingTabResults", "Test Results"),
+      badge: result ? `${result.passedTestCases}/${result.totalTestCases}` : undefined,
     },
   ];
 
@@ -1086,21 +1215,17 @@ function CodingProblemCard({
   return (
     <Card className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
       {/* ── Top Toolbar ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 bg-gradient-to-r from-slate-50 to-white px-5 py-3 dark:border-slate-800 dark:from-[#0F172A] dark:to-slate-900/60">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 bg-slate-50/80 px-5 py-3 dark:border-slate-800 dark:bg-[#0B1120]">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-sm">
             <Code2 className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-              {t("userApplicationhistory.codingProblemNofM", {
-                current: index + 1,
-                total,
-                defaultValue: `BÀI ${index + 1} / ${total}`,
-              })}
-            </div>
-            <div className="mt-0.5 flex items-center gap-2">
-              <span className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-extrabold text-indigo-600 dark:text-indigo-400">
+                #{index + 1}
+              </span>
+              <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">
                 {problem.title}
               </span>
               {problem.difficulty && (
@@ -1122,6 +1247,22 @@ function CodingProblemCard({
                 </span>
               )}
             </div>
+            {(problem.executionTimeLimitMs || problem.memoryLimitMb) && (
+              <div className="mt-0.5 flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+                {problem.executionTimeLimitMs != null && (
+                  <span className="flex items-center gap-1 font-mono">
+                    <Clock className="h-3 w-3 text-slate-400" />
+                    {problem.executionTimeLimitMs}ms
+                  </span>
+                )}
+                {problem.memoryLimitMb != null && (
+                  <span className="flex items-center gap-1 font-mono">
+                    <Cpu className="h-3 w-3 text-slate-400" />
+                    {problem.memoryLimitMb}MB
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1173,117 +1314,86 @@ function CodingProblemCard({
       </div>
 
       {/* ── Resizable Split Panel Body (Description | Code Editor) ── */}
-      <div ref={containerRef} className="relative flex flex-1" style={{ minHeight: "65vh" }}>
+      <div ref={containerRef} className="relative flex flex-1" style={{ minHeight: "68vh" }}>
         {/* LEFT PANEL — Description / Test Results */}
         <div
-          className="flex flex-col overflow-hidden border-r border-slate-200/80 dark:border-slate-800"
+          className="flex flex-col overflow-hidden border-r border-slate-200/80 bg-slate-50/30 dark:border-slate-800 dark:bg-[#030712]/40"
           style={{ width: `${leftWidthPercent}%`, minWidth: 0 }}>
           {/* Tab strip for left panel */}
-          <div className="flex shrink-0 items-center gap-1 border-b border-slate-200/80 bg-slate-50 px-3 dark:border-slate-800 dark:bg-[#0F172A]/80">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "px-3 py-2.5 text-xs font-bold tracking-wide transition-colors",
-                  activeTab === tab.id
-                    ? "border-b-2 border-indigo-500 text-indigo-700 dark:text-indigo-300"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                )}>
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex shrink-0 items-center gap-2 border-b border-slate-200/80 bg-slate-100/70 px-4 py-1.5 dark:border-slate-800 dark:bg-slate-950/80">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                    isActive
+                      ? "bg-white text-indigo-700 shadow-2xs dark:bg-slate-900 dark:text-indigo-300"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  )}>
+                  <span>{tab.label}</span>
+                  {tab.badge && (
+                    <span className="py-0.2 rounded-md bg-indigo-100 px-1.5 font-mono text-[10px] font-extrabold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Tab content scrollable  */}
-          <div className="flex-1 overflow-y-auto bg-slate-50/40 p-5 dark:bg-slate-900/30">
+          {/* Tab content scrollable */}
+          <div className="flex-1 overflow-y-auto p-5">
             {activeTab === "description" && (
-              <>
+              <div className="space-y-6">
+                {/* 1. Problem Statement */}
                 <section>
-                  <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                    {t("userApplicationhistory.codingProblemStatement", "Đề bài")}
-                  </h5>
-                  <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                    {problem.problemStatement ||
-                      t(
-                        "userApplicationhistory.codingMissingStatement",
-                        "Đề bài chưa được cập nhật. Vui lòng xem Examples."
-                      )}
-                  </p>
+                  <FormattedCodingProblemStatement text={problem.problemStatement} />
                 </section>
 
-                {problem.rulesAndConstraints.length > 0 && (
-                  <section className="mt-5">
-                    <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                      {t("userApplicationhistory.codingConstraints", "Ràng buộc")}
+                {/* 2. Examples Section */}
+                {validExamples.length > 0 && (
+                  <section className="space-y-3">
+                    <h5 className="flex items-center gap-2 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                      {t("userApplicationhistory.codingExamples", "Ví dụ:")}
                     </h5>
-                    <ul className="mt-3 space-y-1.5 pl-1 text-sm text-slate-700 dark:text-slate-300">
-                      {problem.rulesAndConstraints.map((c, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-slate-400" />
-                          <span className="leading-relaxed">{c}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-
-                {problem.visibleExamples.length > 0 && (
-                  <section className="mt-5">
-                    <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      {t("userApplicationhistory.codingExamples", "Ví dụ")}
-                    </h5>
-                    <div className="mt-3 space-y-3">
-                      {problem.visibleExamples.map((ex, i) => (
-                        <div
-                          key={i}
-                          className="rounded-xl border border-slate-200 bg-white p-3 text-sm shadow-xs dark:border-slate-700 dark:bg-slate-900/60">
-                          <div className="flex items-start gap-2">
-                            <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
-                              IN
-                            </span>
-                            <code className="flex-1 font-mono text-xs text-indigo-700 dark:text-indigo-300">
-                              {ex.inputs.join(", ")}
-                            </code>
-                          </div>
-                          <div className="mt-1.5 flex items-start gap-2">
-                            <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
-                              OUT
-                            </span>
-                            <code className="flex-1 font-mono text-xs text-emerald-700 dark:text-emerald-300">
-                              {ex.output}
-                            </code>
-                          </div>
-                          {ex.explanation && (
-                            <div className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-500 italic dark:border-slate-800">
-                              💡 {ex.explanation}
-                            </div>
-                          )}
-                        </div>
+                    <div className="space-y-3">
+                      {validExamples.map((ex, i) => (
+                        <ProblemExampleCard key={i} index={i} example={ex} />
                       ))}
                     </div>
                   </section>
                 )}
 
-                {(problem.executionTimeLimitMs || problem.memoryLimitMb) && (
-                  <section className="mt-5 flex flex-wrap gap-2">
-                    {problem.executionTimeLimitMs != null && (
-                      <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
-                        ⏱ {problem.executionTimeLimitMs}ms / test
-                      </div>
-                    )}
-                    {problem.memoryLimitMb != null && (
-                      <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
-                        💾 {problem.memoryLimitMb}MB
-                      </div>
-                    )}
+                {/* 3. Constraints Section */}
+                {problem.rulesAndConstraints.length > 0 && (
+                  <section className="space-y-2.5">
+                    <h5 className="flex items-center gap-2 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                      {t("userApplicationhistory.codingConstraints", "Ràng buộc (Constraints):")}
+                    </h5>
+                    <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-950/60">
+                      <ul className="space-y-2 pl-1 text-xs text-slate-700 dark:text-slate-300">
+                        {problem.rulesAndConstraints.map((c, i) => {
+                          const cleaned = c.replace(/^[*-]\s*/, "");
+                          return (
+                            <li key={i} className="flex items-center gap-2">
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400 dark:bg-amber-500" />
+                              <code className="rounded border border-slate-200/70 bg-slate-50 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                                <FormattedInlineMarkdown text={cleaned} />
+                              </code>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
                   </section>
                 )}
-              </>
+              </div>
             )}
 
             {activeTab === "results" && <TestResultsPanel result={result} isRunning={isRunning} />}
@@ -1294,7 +1404,6 @@ function CodingProblemCard({
         <div
           onMouseDown={handleMouseDown}
           className="group relative z-10 flex w-2 shrink-0 cursor-col-resize items-center justify-center bg-slate-100 transition-colors hover:bg-indigo-100 active:bg-indigo-200 dark:bg-slate-800 dark:hover:bg-indigo-950/60 dark:active:bg-indigo-900/60">
-          {/* Visible grip icon in the center */}
           <div className="flex h-8 w-4 items-center justify-center rounded-md bg-slate-200/80 text-slate-400 shadow-sm transition-colors group-hover:bg-indigo-200 group-hover:text-indigo-600 group-active:bg-indigo-300 dark:bg-slate-700 dark:text-slate-500 dark:group-hover:bg-indigo-900 dark:group-hover:text-indigo-400">
             <GripVertical className="h-3.5 w-3.5" />
           </div>
@@ -1379,7 +1488,7 @@ function CodingProblemCard({
                 ? "border-slate-700/60 bg-[#020617]"
                 : "border-slate-200/80 bg-slate-50"
             )}>
-            {/* Left: Run button */}
+            {/* Left: Run sample tests */}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -1395,31 +1504,39 @@ function CodingProblemCard({
               </Button>
             </div>
 
-            {/* Right: Prev / Next navigation + Submit */}
-            <div className="flex items-center gap-2">
-              {onNavigatePrev && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={onNavigatePrev}
-                  className="h-9 gap-1.5 border-slate-300 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-                  <ChevronLeft className="h-4 w-4" />
-                  <span>Bài trước</span>
-                </Button>
+            {/* Right: Compact Problem Switcher & Submit Button */}
+            <div className="flex items-center gap-3">
+              {totalProblems > 1 && (
+                <div className="flex items-center gap-1 rounded-xl border border-slate-300/80 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-950">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={index === 0}
+                    onClick={onNavigatePrev}
+                    className="h-7 w-7 p-0 text-slate-600 hover:text-slate-900 disabled:opacity-30 dark:text-slate-400 dark:hover:text-slate-100"
+                    title="Bài trước">
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  <span className="px-2 font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {index + 1} / {totalProblems}
+                  </span>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={index === totalProblems - 1}
+                    onClick={onNavigateNext}
+                    className="h-7 w-7 p-0 text-slate-600 hover:text-slate-900 disabled:opacity-30 dark:text-slate-400 dark:hover:text-slate-100"
+                    title="Bài tiếp theo">
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
-              {onNavigateNext && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={onNavigateNext}
-                  className="h-9 gap-1.5 border-slate-300 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-                  <span>Bài tiếp</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              )}
-              {isLastProblem && !isCompleted && (
+
+              {!isCompleted && (
                 <Button
                   onClick={onSubmitAll}
                   disabled={submitting || isRunning || !isCurrent}
