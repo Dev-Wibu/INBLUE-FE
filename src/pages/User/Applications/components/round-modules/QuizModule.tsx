@@ -33,8 +33,6 @@ import {
   Send,
   ShieldAlert,
   Sparkles,
-  Target,
-  UserCheck,
   XCircle,
 } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -439,10 +437,38 @@ export function QuizModule({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [bookmarked, setBookmarked] = useState<Record<number, boolean>>({});
+  const [resultFilter, setResultFilter] = useState<"ALL" | "CORRECT" | "INCORRECT">("ALL");
 
   // Time limit calculation (in seconds)
   const timeLimitMinutes = round.configData?.timeLimitMinutes ?? quizConfig?.timeLimitMinutes ?? 20;
   const [remainingSeconds, setRemainingSeconds] = useState(timeLimitMinutes * 60);
+
+  // Compute overall result data for review mode
+  const allResults = useMemo(() => {
+    if (quizResultData.results && quizResultData.results.length > 0) {
+      return quizResultData.results;
+    }
+    return questions.map((q, idx) => ({
+      questionText: q.questionText,
+      selectedAnswer: selectedAnswers[idx] ?? null,
+      correctAnswer: q.correctAnswer ?? null,
+      isCorrect: selectedAnswers[idx] === q.correctAnswer,
+    }));
+  }, [quizResultData, questions, selectedAnswers]);
+
+  const correctCount = useMemo(() => {
+    return allResults.filter((r) => r.isCorrect).length;
+  }, [allResults]);
+
+  const totalCount = allResults.length;
+  const accuracyPercentage = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+
+  const filteredResults = useMemo(() => {
+    const mapped = allResults.map((r, idx) => ({ ...r, originalIndex: idx }));
+    if (resultFilter === "CORRECT") return mapped.filter((r) => r.isCorrect);
+    if (resultFilter === "INCORRECT") return mapped.filter((r) => !r.isCorrect);
+    return mapped;
+  }, [allResults, resultFilter]);
 
   const submitMutation = useSubmitQuiz();
 
@@ -912,14 +938,15 @@ export function QuizModule({
       ) : (
         /* 📊 RESULTS & REVIEW VIEW (When test is finished) */
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-          {/* Left Column (50% - lg:col-span-6): Result Summary & HR Notes */}
-          <div className="space-y-5 lg:col-span-6">
+          {/* Left Column (4 cols - Pinned Sticky Sidebar): Score Gauge & Jump Matrix */}
+          <div className="space-y-4 lg:sticky lg:top-4 lg:col-span-4">
+            {/* Card 1: Score & Status Gauge */}
             <Card className="space-y-4 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
                 <div className="flex items-center gap-2">
                   <Award className="h-5 w-5 text-emerald-400" />
                   <h3 className="text-xs font-extrabold tracking-wider text-emerald-300 uppercase">
-                    KẾT QUẢ ĐÁNH GIÁ TRẮC NGHIỆM
+                    KẾT QUẢ ĐÁNH GIÁ
                   </h3>
                 </div>
                 <span className="rounded-full border border-emerald-400/40 bg-emerald-500/20 px-3 py-0.5 text-xs font-extrabold text-emerald-300">
@@ -927,129 +954,187 @@ export function QuizModule({
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-1">
+              {/* Single Central Gauge for Quiz Score */}
+              <div className="flex justify-center py-1">
                 <ModernGaugeClock
-                  score={detail?.finalScore ?? quizResultData.score ?? 0}
-                  label="Điểm Trắc Nghiệm"
+                  score={detail?.finalScore ?? quizResultData.score ?? accuracyPercentage}
+                  label="Điểm Số Trắc Nghiệm"
                   color="emerald"
                   hasData={true}
                 />
-                <ModernGaugeClock
-                  score={detail?.hrScore ?? 0}
-                  label="HR Score"
-                  color="indigo"
-                  hasData={detail?.hrScore != null && (detail?.hrScore ?? 0) > 0}
-                />
+              </div>
+
+              {/* Stat breakdown pills */}
+              <div className="grid grid-cols-2 gap-2 border-t border-slate-800/80 pt-3">
+                <div className="flex flex-col items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-2.5 text-center">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">
+                    Số câu đúng
+                  </span>
+                  <span className="font-mono text-base font-extrabold text-emerald-400">
+                    {correctCount} / {totalCount}
+                  </span>
+                </div>
+                <div className="flex flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-rose-950/20 p-2.5 text-center">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Số câu sai</span>
+                  <span className="font-mono text-base font-extrabold text-rose-400">
+                    {totalCount - correctCount} / {totalCount}
+                  </span>
+                </div>
               </div>
             </Card>
 
-            <Card className="space-y-3 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-md">
+            {/* Card 2: Interactive Jump Matrix */}
+            <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <UserCheck className="h-4 w-4 text-indigo-300" />
-                  <h4 className="text-xs font-bold tracking-wider text-indigo-300 uppercase">
-                    NHẬN XÉT TRỰC TIẾP TỪ HỘI ĐỒNG HR
+                  <Layers className="h-4 w-4 text-indigo-400" />
+                  <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
+                    MA TRẬN CÂU HỎI
                   </h4>
                 </div>
-                <span className="text-[10px] font-medium text-slate-400">HR ĐÁNH GIÁ</span>
+                <span className="text-[10px] text-slate-400">Click để xem nhanh</span>
               </div>
 
-              {detail?.hrNote ? (
-                <div className="rounded-xl border-l-2 border-indigo-500 bg-slate-950/60 p-3.5 text-sm leading-relaxed text-slate-200 italic">
-                  "{detail.hrNote}"
-                </div>
-              ) : (
-                <p className="text-xs leading-relaxed text-slate-400 italic">
-                  Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay
-                  khi HR hoàn tất rà soát).
-                </p>
-              )}
-            </Card>
-
-            <Card className="space-y-3.5 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-5 shadow-md">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-                <Target className="h-4 w-4 text-indigo-400" />
-                <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
-                  NỘI DUNG HƯỚNG DẪN BAN ĐẦU
-                </h4>
-              </div>
-              <div className="rounded-xl border border-indigo-500/30 bg-slate-950/90 p-4 text-xs leading-relaxed font-medium whitespace-pre-line text-slate-100 shadow-inner">
-                {round.configData?.instruction ||
-                  "Bài thi trắc nghiệm nhằm đánh giá kiến thức chuyên môn cốt lõi và tư duy kỹ thuật."}
+              <div className="grid grid-cols-5 gap-2">
+                {allResults.map((res, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setResultFilter("ALL");
+                      setTimeout(() => {
+                        const el = document.getElementById(`review-question-${idx}`);
+                        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      }, 50);
+                    }}
+                    className={`flex h-9 items-center justify-center rounded-xl border font-mono text-xs font-bold transition-all hover:scale-105 ${
+                      res.isCorrect
+                        ? "border-emerald-500/40 bg-emerald-950/60 text-emerald-300 hover:border-emerald-400"
+                        : "border-rose-500/40 bg-rose-950/60 text-rose-300 hover:border-rose-400"
+                    }`}>
+                    <span>{idx + 1}</span>
+                  </button>
+                ))}
               </div>
             </Card>
           </div>
 
-          {/* Right Column (50% - lg:col-span-6): Question Answers Breakdown */}
-          <div className="space-y-4 lg:col-span-6">
+          {/* Right Column (8 cols): Question Answers Review & Filters */}
+          <div className="space-y-4 lg:col-span-8">
             <Card className="space-y-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-5 shadow-xl backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              {/* Header & Filter Tabs */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-2">
                   <HelpCircle className="h-4 w-4 text-indigo-400" />
                   <h4 className="text-xs font-extrabold tracking-wider text-slate-200 uppercase">
-                    CHI TIẾT CÂU TRẢ LỜI
+                    CHI TIẾT CÂU HỎI VÀ ĐÁP ÁN
                   </h4>
                 </div>
-                <span className="rounded bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[11px] font-bold text-emerald-400">
-                  {quizResultData.correctCount} /{" "}
-                  {quizResultData.totalQuestions || questions.length} Câu đúng
-                </span>
+
+                {/* Filter Tabs */}
+                <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setResultFilter("ALL")}
+                    className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
+                      resultFilter === "ALL"
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "text-slate-400 hover:text-slate-200"
+                    }`}>
+                    Tất cả ({allResults.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setResultFilter("CORRECT")}
+                    className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
+                      resultFilter === "CORRECT"
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "text-slate-400 hover:text-slate-200"
+                    }`}>
+                    Đúng ({correctCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setResultFilter("INCORRECT")}
+                    className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
+                      resultFilter === "INCORRECT"
+                        ? "bg-rose-600 text-white shadow-sm"
+                        : "text-slate-400 hover:text-slate-200"
+                    }`}>
+                    Sai ({totalCount - correctCount})
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-3">
-                {(quizResultData.results && quizResultData.results.length > 0
-                  ? quizResultData.results
-                  : questions.map((q, idx) => ({
-                      questionText: q.questionText,
-                      selectedAnswer: selectedAnswers[idx] ?? null,
-                      correctAnswer: q.correctAnswer ?? null,
-                      isCorrect: selectedAnswers[idx] === q.correctAnswer,
-                    }))
-                ).map((res, i) => (
-                  <div
-                    key={i}
-                    className={`space-y-2 rounded-xl border p-4.5 ${
-                      res.isCorrect
-                        ? "border-emerald-500/30 bg-emerald-950/20"
-                        : "border-rose-500/30 bg-rose-950/20"
-                    }`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-2.5">
-                        {res.isCorrect ? (
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                        ) : (
-                          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
-                        )}
-                        <div className="flex-1 text-xs leading-relaxed font-bold text-slate-100">
-                          <span className="mr-1 font-extrabold text-indigo-400">Câu {i + 1}:</span>
-                          <FormattedQuestionText text={res.questionText} className="mt-1" />
-                        </div>
-                      </div>
-                      <span
-                        className={`shrink-0 rounded px-2 py-0.5 font-mono text-[10px] font-extrabold ${
-                          res.isCorrect
-                            ? "bg-emerald-500/20 text-emerald-300"
-                            : "bg-rose-500/20 text-rose-300"
-                        }`}>
-                        {res.isCorrect ? "ĐÚNG" : "SAI"}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1 pl-7 text-[11px]">
-                      <p className="text-slate-300">
-                        Đáp án đã chọn:{" "}
-                        <span className="font-semibold text-slate-100">
-                          {res.selectedAnswer || "(Chưa chọn)"}
-                        </span>
-                      </p>
-                      {res.correctAnswer && !res.isCorrect && (
-                        <p className="text-emerald-400">
-                          Đáp án đúng: <span className="font-semibold">{res.correctAnswer}</span>
-                        </p>
-                      )}
-                    </div>
+              {/* Questions List */}
+              <div className="space-y-4">
+                {filteredResults.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-slate-500">
+                    Không có câu hỏi nào thuộc bộ lọc này.
                   </div>
-                ))}
+                ) : (
+                  filteredResults.map((res) => (
+                    <div
+                      key={res.originalIndex}
+                      id={`review-question-${res.originalIndex}`}
+                      className={`space-y-3 rounded-2xl border p-5 transition-all ${
+                        res.isCorrect
+                          ? "border-emerald-500/30 bg-emerald-950/15 hover:border-emerald-500/50"
+                          : "border-rose-500/30 bg-rose-950/15 hover:border-rose-500/50"
+                      }`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          {res.isCorrect ? (
+                            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+                          ) : (
+                            <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
+                          )}
+                          <div className="flex-1 text-xs leading-relaxed font-bold text-slate-100">
+                            <span className="mr-1.5 font-extrabold text-indigo-400">
+                              Câu {res.originalIndex + 1}:
+                            </span>
+                            <FormattedQuestionText text={res.questionText} className="mt-1" />
+                          </div>
+                        </div>
+                        <span
+                          className={`shrink-0 rounded-lg px-2.5 py-1 font-mono text-[10px] font-extrabold ${
+                            res.isCorrect
+                              ? "border border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
+                              : "border border-rose-500/30 bg-rose-500/20 text-rose-300"
+                          }`}>
+                          {res.isCorrect ? "ĐÚNG" : "SAI"}
+                        </span>
+                      </div>
+
+                      {/* Options / Answer Box Comparison */}
+                      <div className="space-y-2 border-t border-slate-800/80 pt-3 pl-8 text-xs">
+                        <div
+                          className={`flex items-start gap-2 rounded-xl border p-3 ${
+                            res.isCorrect
+                              ? "border-emerald-500/30 bg-emerald-950/40 text-emerald-200"
+                              : "border-rose-500/30 bg-rose-950/40 text-rose-200"
+                          }`}>
+                          <span className="font-semibold text-slate-400">Lựa chọn của bạn:</span>
+                          <span className="font-mono font-bold">
+                            {res.selectedAnswer || "(Chưa chọn)"}
+                          </span>
+                        </div>
+
+                        {res.correctAnswer && !res.isCorrect && (
+                          <div className="flex items-start gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-3 text-emerald-300">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                            <div>
+                              <span className="font-semibold text-emerald-400">
+                                Đáp án chính xác:{" "}
+                              </span>
+                              <span className="font-mono font-bold">{res.correctAnswer}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </Card>
           </div>
