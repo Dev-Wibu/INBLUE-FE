@@ -535,7 +535,7 @@ export function CodingModule({
               <span className="text-xs font-semibold text-slate-400">TRẠM THI LẬP TRÌNH</span>
             </div>
             <h1 className="text-base font-bold text-slate-100">
-              {round.roundName || "Bài thi Lập trình (Coding Assessment)"}
+              {round.name || "Bài thi Lập trình (Coding Assessment)"}
             </h1>
           </div>
         </div>
