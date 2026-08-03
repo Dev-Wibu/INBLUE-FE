@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -27,6 +26,8 @@ import {
   AlertCircle,
   AlertTriangle,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Code2,
   FileCode2,
@@ -308,15 +309,8 @@ export function CodingModule({
   const [runningId, setRunningId] = useState<number | null>(null);
   const [sampleResults, setSampleResults] = useState<SampleResults>({});
 
-  // Challenge Gate & Execution state
-  const [hasStarted, setHasStarted] = useState(() => {
-    return (
-      isCompleted ||
-      detail?.finalScore != null ||
-      (detail?.submissionData?.codeSubmissions?.length ?? 0) > 0
-    );
-  });
-  const [showStartModal, setShowStartModal] = useState(false);
+  // Active problem tab index (for multi-problem navigation)
+  const [currentProblemIdx, setCurrentProblemIdx] = useState(0);
 
   // Submit-then-poll state. After Submit returns PENDING we poll
   // GET /api/application-details/application/{id} every 10s looking for an
@@ -520,10 +514,11 @@ export function CodingModule({
   };
 
   const isFinished = isCompleted || detail?.finalScore != null;
+  const activeProblem = problems[currentProblemIdx];
 
   return (
-    <div className="space-y-6">
-      {/* ── TOP SUB-HEADER (Single Standalone Header Standard matching CV / Email / Quiz) ── */}
+    <div className="space-y-4">
+      {/* ── TOP SUB-HEADER (Single Standalone Header Standard) ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-xl backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/15 text-indigo-400">
@@ -549,20 +544,16 @@ export function CodingModule({
             <span className="rounded-full border border-emerald-500/40 bg-emerald-500/20 px-3 py-1 font-mono text-xs font-extrabold text-emerald-300">
               ✓ ĐÃ HOÀN THÀNH
             </span>
-          ) : hasStarted ? (
+          ) : (
             <span className="flex animate-pulse items-center gap-2 rounded-full border border-indigo-500/40 bg-indigo-500/20 px-3 py-1 font-mono text-xs font-bold text-indigo-300">
               <span className="h-2 w-2 rounded-full bg-indigo-400" />
               ĐANG TRONG THỜI GIAN LÀM BÀI
-            </span>
-          ) : (
-            <span className="rounded-full border border-amber-500/40 bg-amber-500/20 px-3 py-1 font-mono text-xs font-bold text-amber-300">
-              SẴN SÀNG LÀM BÀI THI
             </span>
           )}
         </div>
       </div>
 
-      {/* Awaiting-grading banner (visible while polling) */}
+      {/* Awaiting-grading banner */}
       {awaitingGrade && (
         <div
           role="status"
@@ -577,150 +568,113 @@ export function CodingModule({
         </div>
       )}
 
-      {/* ── CHALLENGE GATE LOCK SCREEN (When candidate has not started yet) ── */}
-      {!hasStarted && !isFinished ? (
-        <Card className="flex min-h-[460px] flex-col items-center justify-center space-y-6 rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 via-slate-900/80 to-slate-950 p-8 text-center shadow-2xl backdrop-blur-md">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400 shadow-inner">
-            <Code2 className="h-10 w-10" />
+      {/* No problems warning */}
+      {problems.length === 0 && (
+        <Card className="border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-xs font-bold">
+              {t(
+                "userApplicationhistory.codingNoProblem",
+                "Round này chưa cấu hình bài coding. Vui lòng liên hệ nhà tuyển dụng."
+              )}
+            </span>
           </div>
-
-          <div className="max-w-xl space-y-2">
-            <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl">
-              CỔNG THỬ THÁCH LẬP TRÌNH (LEETCODE STUDIO)
-            </h2>
-            <p className="text-xs leading-relaxed text-slate-300">
-              {round.configData?.instruction ||
-                "Viết mã nguồn tối ưu thuật toán giải quyết các bài toán lập trình. Đảm bảo độ phức tạp thời gian & không gian tối ưu."}
-            </p>
-          </div>
-
-          {/* Key Parameters Grid */}
-          <div className="grid w-full max-w-xl grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-950/80 p-3.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Số bài tập</span>
-              <span className="font-mono text-sm font-extrabold text-indigo-400">
-                {problems.length} Bài Coding
-              </span>
-            </div>
-            <div className="flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-950/80 p-3.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Thời lượng</span>
-              <span className="font-mono text-sm font-extrabold text-amber-400">
-                {timeLimitMinutes ? `${timeLimitMinutes} Phút` : "Tự do"}
-              </span>
-            </div>
-            <div className="col-span-2 flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 sm:col-span-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">
-                Điểm sàn qua vòng
-              </span>
-              <span className="font-mono text-sm font-extrabold text-emerald-400">
-                {round.configData?.passingScore ?? 80} / 100
-              </span>
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <Button
-            type="button"
-            size="lg"
-            onClick={() => setShowStartModal(true)}
-            className="h-12 gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-8 text-xs font-extrabold text-white shadow-xl hover:from-indigo-500 hover:to-violet-500 sm:text-sm">
-            <Play className="h-5 w-5 fill-current" />
-            <span>BẮT ĐẦU THI LẬP TRÌNH NGAY</span>
-          </Button>
         </Card>
-      ) : (
-        <>
-          {/* One card per coding problem */}
-          {problems.length === 0 && (
-            <Card className="border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-xs font-bold">
-                  {t(
-                    "userApplicationhistory.codingNoProblem",
-                    "Round này chưa cấu hình bài coding. Vui lòng liên hệ nhà tuyển dụng."
-                  )}
-                </span>
-              </div>
-            </Card>
-          )}
-
-          <div className="flex flex-col gap-6">
-            {problems.map((problem, idx) => {
-              const source = sources[problem.problemId];
-              if (!source) return null;
-              const langs = languagesAvailable(problem);
-              const result = sampleResults[problem.problemId] ?? null;
-              const isRunningThis = runningId === problem.problemId;
-              return (
-                <CodingProblemCard
-                  key={problem.problemId}
-                  index={idx}
-                  total={problems.length}
-                  problem={problem}
-                  source={source}
-                  availableLanguages={langs}
-                  result={result}
-                  isRunning={isRunningThis}
-                  isCompleted={isCompleted}
-                  isCurrent={isCurrent}
-                  finalScore={finalScore ?? null}
-                  problemFinalScoreStatus={detail?.status ?? null}
-                  onChangeCode={(value) => handleCodeChange(problem.problemId, value)}
-                  onChangeLanguage={(lang) => handleLanguageChange(problem.problemId, lang)}
-                  onRun={() => handleRunCode(problem.problemId)}
-                  submitting={submitting}
-                  onSubmitAll={handleOpenConfirm}
-                  totalProblems={problems.length}
-                  isLastProblem={idx === problems.length - 1}
-                  timeLimitMinutes={timeLimitMinutes}
-                  startTime={detail?.startedAt ?? roundDetailStart(detail)}
-                />
-              );
-            })}
-          </div>
-        </>
       )}
 
-      {/* ⚠️ START EXAM CONFIRMATION MODAL */}
-      <Dialog open={showStartModal} onOpenChange={setShowStartModal}>
-        <DialogContent className="max-w-sm border-slate-800 bg-slate-900/95 text-slate-100 shadow-2xl backdrop-blur-xl">
-          <DialogHeader className="space-y-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/15 text-indigo-400">
-              <Play className="h-5 w-5 fill-current" />
-            </div>
-            <DialogTitle className="text-sm font-bold text-slate-100">
-              Bắt đầu bài thi lập trình?
-            </DialogTitle>
-            <DialogDescription className="text-xs leading-relaxed text-slate-400">
-              Thời gian làm bài sẽ bắt đầu đếm ngược ngay khi bạn xác nhận.
-            </DialogDescription>
-          </DialogHeader>
+      {/* ── PROBLEM TAB SWITCHER (only shown when > 1 problem) ── */}
+      {problems.length > 1 && (
+        <div className="flex items-center gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-2">
+          {problems.map((p, idx) => {
+            const res = sampleResults[p.problemId];
+            const isActive = idx === currentProblemIdx;
+            const hasPassed = res?.passedTestCases === res?.totalTestCases && res != null;
+            return (
+              <button
+                key={p.problemId}
+                type="button"
+                onClick={() => setCurrentProblemIdx(idx)}
+                className={cn(
+                  "flex flex-1 flex-col items-center gap-1 rounded-xl border px-3 py-2.5 text-center transition-all",
+                  isActive
+                    ? "border-indigo-500/50 bg-indigo-500/20 text-indigo-200"
+                    : "border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                )}>
+                <div className="flex items-center gap-1.5">
+                  <FileCode2 className="h-3.5 w-3.5" />
+                  <span className="font-mono text-xs font-bold">Bài {idx + 1}</span>
+                  {hasPassed && (
+                    <span
+                      className="h-2 w-2 rounded-full bg-emerald-400"
+                      title="Sample tests passed"
+                    />
+                  )}
+                </div>
+                {p.difficulty && (
+                  <span
+                    className={cn(
+                      "rounded px-1.5 py-0.5 font-mono text-[9px] font-extrabold uppercase",
+                      p.difficulty === "EASY"
+                        ? "bg-emerald-950/60 text-emerald-400"
+                        : p.difficulty === "MEDIUM"
+                          ? "bg-amber-950/60 text-amber-400"
+                          : "bg-rose-950/60 text-rose-400"
+                    )}>
+                    {p.difficulty}
+                  </span>
+                )}
+                <span className="max-w-[120px] truncate text-[10px] font-medium opacity-70">
+                  {p.title}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
-          <DialogFooter className="mt-3 flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowStartModal(false)}
-              className="h-8 text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200">
-              Hủy
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => {
-                setShowStartModal(false);
-                setHasStarted(true);
-                toast.success("Bắt đầu thời gian thi Lập trình!");
-              }}
-              className="h-8 gap-1.5 bg-indigo-600 px-4 text-xs font-bold text-white shadow-md hover:bg-indigo-500">
-              <Play className="h-3.5 w-3.5 fill-current" />
-              <span>Bắt đầu</span>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* ── ACTIVE PROBLEM CARD ── */}
+      {activeProblem &&
+        (() => {
+          const source = sources[activeProblem.problemId];
+          if (!source) return null;
+          const langs = languagesAvailable(activeProblem);
+          const result = sampleResults[activeProblem.problemId] ?? null;
+          const isRunningThis = runningId === activeProblem.problemId;
+          return (
+            <CodingProblemCard
+              key={activeProblem.problemId}
+              index={currentProblemIdx}
+              total={problems.length}
+              problem={activeProblem}
+              source={source}
+              availableLanguages={langs}
+              result={result}
+              isRunning={isRunningThis}
+              isCompleted={isCompleted}
+              isCurrent={isCurrent}
+              finalScore={finalScore ?? null}
+              problemFinalScoreStatus={detail?.status ?? null}
+              onChangeCode={(value) => handleCodeChange(activeProblem.problemId, value)}
+              onChangeLanguage={(lang) => handleLanguageChange(activeProblem.problemId, lang)}
+              onRun={() => handleRunCode(activeProblem.problemId)}
+              submitting={submitting}
+              onSubmitAll={handleOpenConfirm}
+              totalProblems={problems.length}
+              isLastProblem={currentProblemIdx === problems.length - 1}
+              timeLimitMinutes={timeLimitMinutes}
+              startTime={detail?.startedAt ?? roundDetailStart(detail)}
+              onNavigatePrev={
+                currentProblemIdx > 0 ? () => setCurrentProblemIdx((i) => i - 1) : undefined
+              }
+              onNavigateNext={
+                currentProblemIdx < problems.length - 1
+                  ? () => setCurrentProblemIdx((i) => i + 1)
+                  : undefined
+              }
+            />
+          );
+        })()}
 
       {/* Confirm-submit modal — replaces the ugly window.confirm() with a
           shadcn Dialog that also shows a live snapshot of what we're about
@@ -939,6 +893,8 @@ interface CodingProblemCardProps {
   isLastProblem: boolean;
   timeLimitMinutes: number | null;
   startTime: string | undefined;
+  onNavigatePrev?: () => void;
+  onNavigateNext?: () => void;
 }
 
 const LANGUAGE_LABEL: Partial<Record<CompilerLanguage, string>> = {
@@ -1055,6 +1011,8 @@ function CodingProblemCard({
   isLastProblem,
   timeLimitMinutes,
   startTime,
+  onNavigatePrev,
+  onNavigateNext,
 }: CodingProblemCardProps) {
   const { t } = useTranslation();
   const monacoTheme = useMonacoTheme();
@@ -1421,39 +1379,67 @@ function CodingProblemCard({
                 ? "border-slate-700/60 bg-[#020617]"
                 : "border-slate-200/80 bg-slate-50"
             )}>
-            <Button
-              variant="outline"
-              onClick={onRun}
-              disabled={isRunning || !isCurrent || isCompleted || timedOut}
-              className="h-9 gap-2 border-slate-300 px-4 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-              {isRunning ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Play className="h-4 w-4 fill-slate-700 dark:fill-slate-200" />
-              )}
-              <span>{t("userApplicationhistory.runSample", "Chạy Test Mẫu")}</span>
-            </Button>
-
-            {isLastProblem && !isCompleted && (
+            {/* Left: Run button */}
+            <div className="flex items-center gap-2">
               <Button
-                onClick={onSubmitAll}
-                disabled={submitting || isRunning || !isCurrent}
-                className="h-9 gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 px-5 text-xs font-bold text-white shadow-sm hover:from-indigo-700 hover:to-violet-700">
-                {submitting ? (
+                variant="outline"
+                onClick={onRun}
+                disabled={isRunning || !isCurrent || isCompleted || timedOut}
+                className="h-9 gap-2 border-slate-300 px-4 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                {isRunning ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Play className="h-4 w-4 fill-slate-700 dark:fill-slate-200" />
                 )}
-                <span>
-                  {totalProblems > 1
-                    ? t("userApplicationhistory.submitAllProblems", {
-                        count: totalProblems,
-                        defaultValue: `Nộp bài (${totalProblems} bài)`,
-                      })
-                    : t("userApplicationhistory.submitSolution", "Nộp bài Solution")}
-                </span>
+                <span>{t("userApplicationhistory.runSample", "Chạy Test Mẫu")}</span>
               </Button>
-            )}
+            </div>
+
+            {/* Right: Prev / Next navigation + Submit */}
+            <div className="flex items-center gap-2">
+              {onNavigatePrev && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onNavigatePrev}
+                  className="h-9 gap-1.5 border-slate-300 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Bài trước</span>
+                </Button>
+              )}
+              {onNavigateNext && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onNavigateNext}
+                  className="h-9 gap-1.5 border-slate-300 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  <span>Bài tiếp</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              )}
+              {isLastProblem && !isCompleted && (
+                <Button
+                  onClick={onSubmitAll}
+                  disabled={submitting || isRunning || !isCurrent}
+                  className="h-9 gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 px-5 text-xs font-bold text-white shadow-sm hover:from-indigo-700 hover:to-violet-700">
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  <span>
+                    {totalProblems > 1
+                      ? t("userApplicationhistory.submitAllProblems", {
+                          count: totalProblems,
+                          defaultValue: `Nộp bài (${totalProblems} bài)`,
+                        })
+                      : t("userApplicationhistory.submitSolution", "Nộp bài Solution")}
+                  </span>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
