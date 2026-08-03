@@ -337,9 +337,13 @@ export function ApplicationWorkspacePage() {
   const isCodeReviewRound =
     activeRound?.roundType?.toUpperCase() === "CODE_REVIEW" ||
     activeRound?.roundType?.toUpperCase() === "CODEREVIEW";
+  const activeRoundType = activeRound?.roundType?.toUpperCase() ?? "";
+  const activeRoundName = activeRound?.name?.toUpperCase() ?? "";
   const isMentorReviewRound =
-    activeRound?.roundType?.toUpperCase() === "MENTOR_REVIEW" ||
-    activeRound?.roundType?.toUpperCase() === "MENTOR";
+    activeRoundType === "MENTOR_REVIEW" ||
+    activeRoundType === "MENTOR" ||
+    activeRoundType === "MENTROR_REVIEW" ||
+    activeRoundName.includes("MENTOR");
   const isStandaloneLayout =
     isCvScreeningRound ||
     isEmailSimulatorRound ||

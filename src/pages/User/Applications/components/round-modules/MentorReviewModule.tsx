@@ -30,6 +30,7 @@ import {
   Loader2,
   LogIn,
   MapPin,
+  Phone,
   PlayCircle,
   RefreshCw,
   Send,
@@ -89,6 +90,9 @@ const STEP_DEFS: StepDef[] = [
   { key: "RESULT", title: "Kết quả đánh giá", short: "Kết quả", icon: BadgeCheck },
 ];
 
+const MIN_COMMENT_LENGTH = 20;
+const MAX_COMMENT_LENGTH = 1000;
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -97,6 +101,7 @@ export function MentorReviewModule({
   round,
   detail: initialDetail,
   applicationId,
+  isCompleted,
   onSuccess,
 }: MentorReviewModuleProps) {
   const { t } = useTranslation();
@@ -174,10 +179,6 @@ export function MentorReviewModule({
       return () => clearInterval(id);
     }
     if (sessionId) {
-      // Always poll the session while it exists. Mentor may write
-      // `mentorReview` AFTER session.status flips to COMPLETED (the
-      // candidate-side hub needs to pick that up without a manual reload).
-      // Terminal states stop the poll.
       if (sessionStatus === "CANCELED" || sessionStatus === "REJECTED") {
         return undefined;
       }
@@ -194,46 +195,40 @@ export function MentorReviewModule({
   const failed = detail?.finalResult === "FAILED";
 
   const activeIndex = STEP_DEFS.findIndex((s) => s.key === activeStep);
+  const roundOrder = round.roundOrder ?? activeIndex + 1;
 
   return (
     <div className="space-y-6">
-      <MentorReviewSubheader activeIndex={activeIndex} totalSteps={STEP_DEFS.length} />
-
-      {/* ============== Instruction ============== */}
-      <div className="space-y-2">
-        <h4 className="text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-          {t("userApplicationhistory.instructionsTitle", "Hướng dẫn làm bài")}
-        </h4>
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-xs leading-relaxed text-slate-700 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A]/90 dark:text-slate-300">
-          {round.configData?.instruction ||
-            t(
-              "userApplicationhistory.mentorInstructionDefault",
-              "Vòng phỏng vấn trực tiếp 1-1 cùng Chuyên gia / Mentor tuyển dụng hàng đầu. Hoàn tất các bước: chờ admin gán mentor → chọn mentor → đặt lịch → thanh toán → vào phòng Video Call."
-            )}
-        </div>
-      </div>
+      <MentorReviewSubheader
+        roundOrder={roundOrder}
+        roundLabel={round.name || t("userApplicationhistory.mentorRoundTitle", "Đánh giá Mentor")}
+        activeStep={activeStep}
+        detail={detail}
+        isCompleted={isCompleted}
+        instruction={round.configData?.instruction}
+      />
 
       {/* ============== Score banner (when done) ============== */}
       {showScore && (
-        <Card className="overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        <Card className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-md backdrop-blur-md">
           <div
             className={cn(
-              "flex flex-wrap items-center justify-between gap-4 px-6 py-5",
+              "flex flex-wrap items-center justify-between gap-4 p-5",
               passed
-                ? "bg-gradient-to-r from-emerald-50 to-sky-50 dark:from-emerald-950/40 dark:to-sky-950/40"
+                ? "bg-gradient-to-r from-emerald-950/40 via-slate-900/90 to-slate-900/90"
                 : failed
-                  ? "bg-gradient-to-r from-rose-50 to-orange-50 dark:from-rose-950/40 dark:to-orange-950/40"
-                  : "bg-gradient-to-r from-slate-50 to-white dark:from-slate-900/60 dark:to-slate-900/40"
+                  ? "bg-gradient-to-r from-rose-950/40 via-slate-900/90 to-slate-900/90"
+                  : "bg-slate-900/90"
             )}>
             <div className="flex items-center gap-4">
               <div
                 className={cn(
-                  "flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm",
+                  "flex h-12 w-12 items-center justify-center rounded-2xl shadow-md",
                   passed
-                    ? "bg-gradient-to-br from-emerald-500 to-sky-600"
+                    ? "border border-emerald-500/30 bg-emerald-500/20 text-emerald-400"
                     : failed
-                      ? "bg-gradient-to-br from-rose-500 to-orange-500"
-                      : "bg-gradient-to-br from-slate-400 to-slate-600"
+                      ? "border border-rose-500/30 bg-rose-500/20 text-rose-400"
+                      : "border border-slate-700 bg-slate-800 text-slate-300"
                 )}>
                 {passed ? (
                   <CheckCircle2 className="h-6 w-6" />
@@ -244,23 +239,23 @@ export function MentorReviewModule({
                 )}
               </div>
               <div>
-                <div className="text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-                  Kết quả phỏng vấn Mentor
+                <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                  Điểm số đánh giá phỏng vấn Mentor
                 </div>
                 <div className="mt-0.5 flex items-center gap-2">
-                  <span className="text-2xl font-extrabold text-slate-900 tabular-nums dark:text-white">
+                  <span className="text-2xl font-extrabold text-white tabular-nums">
                     {finalScore}
                   </span>
-                  <span className="text-base font-bold text-slate-500 dark:text-slate-400">
+                  <span className="text-base font-bold text-slate-400">
                     /100
                   </span>
                   {passed && (
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-700 uppercase dark:bg-emerald-950/60 dark:text-emerald-300">
+                    <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-300 uppercase shadow-xs">
                       ✓ PASSED
                     </span>
                   )}
                   {failed && (
-                    <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-rose-700 uppercase dark:bg-rose-950/60 dark:text-rose-300">
+                    <span className="rounded-full border border-rose-500/30 bg-rose-500/15 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-rose-300 uppercase shadow-xs">
                       ✗ FAILED
                     </span>
                   )}
@@ -271,7 +266,7 @@ export function MentorReviewModule({
         </Card>
       )}
 
-      {/* ============== Progress hub ============== */}
+      {/* ============== Step Progress ====================================== */}
       <ProgressHub activeIndex={activeIndex} />
 
       {/* ============== Step body ============== */}
@@ -320,19 +315,39 @@ export function MentorReviewModule({
 // ============================================================================
 
 function ProgressHub({ activeIndex }: { activeIndex: number }) {
+  const progressPercent = Math.round(
+    ((Math.min(activeIndex, STEP_DEFS.length - 1) + 1) / STEP_DEFS.length) * 100
+  );
+
   return (
-    <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-      <div className="px-6 py-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h5 className="flex items-center gap-2 text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-            <TrendingUp className="h-3.5 w-3.5" />
-            Tiến trình Mentor Interview
-          </h5>
-          <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-            Bước {Math.max(1, activeIndex + 1)} / {STEP_DEFS.length}
-          </span>
+    <Card className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-lg backdrop-blur-md">
+      <div className="p-4 sm:p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/15 text-indigo-400">
+              <TrendingUp className="h-4 w-4" />
+            </div>
+            <div>
+              <h5 className="text-xs font-bold uppercase tracking-wider text-white">
+                Tiến trình Mentor Interview
+              </h5>
+              <span className="text-[11px] font-medium text-slate-400">
+                {STEP_DEFS[activeIndex]?.title || "Quy trình phỏng vấn"}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-[11px] font-bold text-slate-300">
+              Bước <strong className="text-indigo-400">{Math.max(1, activeIndex + 1)}</strong> / {STEP_DEFS.length}
+            </span>
+            <span className="rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-[11px] font-extrabold text-indigo-300">
+              {progressPercent}%
+            </span>
+          </div>
         </div>
-        <ol className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4 lg:grid-cols-7">
+
+        {/* 6-step responsive full-width grid */}
+        <ol className="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
           {STEP_DEFS.map((step, i) => {
             const isActive = i === activeIndex;
             const isDone = i < activeIndex;
@@ -341,48 +356,72 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
               <li
                 key={step.key}
                 className={cn(
-                  "group relative flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-center transition-colors",
+                  "group relative flex flex-col items-center justify-between rounded-xl border p-3 text-center transition-all duration-200",
                   isActive
-                    ? "border-indigo-300 bg-indigo-50/60 dark:border-indigo-900/60 dark:bg-indigo-950/30"
+                    ? "border-indigo-500/60 bg-gradient-to-b from-indigo-950/50 to-slate-900/90 shadow-[0_0_15px_rgba(99,102,241,0.15)] ring-1 ring-indigo-500/40"
                     : isDone
-                      ? "border-emerald-200 bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-emerald-950/20"
-                      : "border-slate-200 bg-slate-50/60 dark:border-slate-700/60 dark:bg-slate-900/30"
+                      ? "border-emerald-500/30 bg-emerald-950/20 hover:border-emerald-500/50 hover:bg-emerald-950/30"
+                      : "border-slate-800/80 bg-slate-950/40 hover:border-slate-700/80"
                 )}>
-                <div
-                  className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full",
-                    isActive
-                      ? "bg-indigo-500 text-white shadow"
-                      : isDone
-                        ? "bg-emerald-500 text-white"
-                        : "bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
-                  )}>
-                  {isDone ? (
-                    <CheckCircle2 className="h-3.5 w-3.5" />
+                <div className="flex w-full flex-col items-center gap-2">
+                  <div
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-full transition-transform group-hover:scale-105",
+                      isActive
+                        ? "bg-indigo-600 text-white shadow-md ring-2 ring-indigo-400/40"
+                        : isDone
+                          ? "bg-emerald-500 text-white shadow-xs"
+                          : "border border-slate-700 bg-slate-800 text-slate-400"
+                    )}>
+                    {isDone ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <Icon className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span
+                      className={cn(
+                        "text-[10px] font-extrabold tracking-wider uppercase",
+                        isActive
+                          ? "text-indigo-400"
+                          : isDone
+                            ? "text-emerald-400"
+                            : "text-slate-400"
+                      )}>
+                      B{i + 1}
+                    </span>
+                    <span
+                      className={cn(
+                        "mt-0.5 text-xs leading-snug font-bold",
+                        isActive
+                          ? "text-white"
+                          : isDone
+                            ? "text-slate-200"
+                            : "text-slate-400"
+                      )}>
+                      {step.short}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Subtle status indicator */}
+                <div className="mt-2.5 flex items-center justify-center">
+                  {isActive ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                      Hiện tại
+                    </span>
+                  ) : isDone ? (
+                    <span className="text-[10px] font-semibold text-emerald-400">
+                      Hoàn tất
+                    </span>
                   ) : (
-                    <Icon className="h-3.5 w-3.5" />
+                    <span className="text-[10px] font-medium text-slate-400">
+                      Chưa mở
+                    </span>
                   )}
                 </div>
-                <span
-                  className={cn(
-                    "text-[10px] font-extrabold tracking-wider uppercase",
-                    isActive
-                      ? "text-indigo-700 dark:text-indigo-300"
-                      : isDone
-                        ? "text-emerald-700 dark:text-emerald-300"
-                        : "text-slate-500 dark:text-slate-400"
-                  )}>
-                  B{i + 1}
-                </span>
-                <span
-                  className={cn(
-                    "text-[10px] leading-tight font-bold",
-                    isActive
-                      ? "text-slate-900 dark:text-white"
-                      : "text-slate-500 dark:text-slate-400"
-                  )}>
-                  {step.short}
-                </span>
               </li>
             );
           })}
@@ -396,43 +435,150 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
 // SUB-COMPONENT: AwaitingMentorStep
 // ============================================================================
 
-function AwaitingMentorStep({ detailId, onRefresh }: { detailId: number; onRefresh: () => void }) {
+function AwaitingMentorStep({ detailId: _detailId, onRefresh }: { detailId: number; onRefresh: () => void }) {
   const { t } = useTranslation();
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+
+  const handleManualRefresh = () => {
+    setIsManualRefreshing(true);
+    onRefresh();
+    setTimeout(() => {
+      setIsManualRefreshing(false);
+      toast.success(t("userApplicationhistory.refreshSuccess", "Đã cập nhật trạng thái mới nhất!"));
+    }, 600);
+  };
+
   return (
-    <Card className="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 shadow-sm dark:border-amber-900/60 dark:from-amber-950/40 dark:to-orange-950/40">
-      <div className="flex flex-col items-center gap-5 px-6 py-12 text-center">
-        <div className="relative flex h-20 w-20 items-center justify-center">
-          <span className="absolute inset-0 animate-ping rounded-full bg-amber-400/30" />
-          <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md">
-            <Hourglass className="h-9 w-9" />
-          </span>
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
-            Đang chờ Admin gán mentor cho bạn
+    <Card className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-xl backdrop-blur-md">
+      {/* Hero Visual Section */}
+      <div className="relative overflow-hidden border-b border-slate-800/80 bg-gradient-to-b from-slate-900 via-slate-900/95 to-slate-950/90 px-6 py-8 sm:px-8">
+        <div className="pointer-events-none absolute -top-16 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-amber-500/10 blur-3xl" />
+
+        <div className="relative mx-auto flex flex-col items-center text-center">
+          {/* Animated Hero Radar Icon */}
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+            <span className="absolute -inset-2 rounded-2xl border border-amber-500/20 opacity-40 animate-ping" />
+            <Hourglass className="h-8 w-8 text-amber-400 animate-pulse" />
+          </div>
+
+          {/* Live Badge */}
+          <div className="mt-4">
+            <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/15 px-3.5 py-1 text-xs font-bold text-amber-300 shadow-xs">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 animate-ping" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+              </span>
+              {t("userApplicationhistory.mentorStatusMatching", "Trạng thái: Đang phân công Mentor")}
+            </span>
+          </div>
+
+          {/* Heading & Description */}
+          <h3 className="mt-3 text-lg font-extrabold tracking-tight text-white sm:text-xl">
+            {t("userApplicationhistory.mentorAwaitingTitle", "Chờ Admin phân bổ mentor phù hợp")}
           </h3>
-          <p className="mx-auto max-w-md text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-            Vui lòng đợi Admin của JD phân công 1 mentor phù hợp. Sau khi gán, bạn sẽ có thể chọn
-            người phỏng vấn từ danh sách được đề xuất.
+          <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">
+            {t(
+              "userApplicationhistory.mentorAwaitingDesc",
+              "Hệ thống đang tiến hành rà soát chuyên môn và kết nối mentor thích hợp nhất theo yêu cầu của JD. Khi mentor được gán, danh sách đề xuất sẽ xuất hiện ngay ở bước tiếp theo để bạn chọn người phỏng vấn."
+            )}
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 dark:border-amber-900/60 dark:bg-slate-900/40">
-            <RefreshCw className="h-3 w-3 animate-spin" />
-            <span className="font-bold">{t("userApplicationhistory.mentorAwaitingPollNote")}</span>
+      </div>
+
+      {/* Next Steps Roadmap */}
+      <div className="border-b border-slate-800/80 bg-slate-950/40 p-6 sm:p-7">
+        <div className="mb-4 flex items-center justify-between">
+          <h4 className="text-[11px] font-extrabold tracking-wider uppercase text-slate-400">
+            Quy trình các bước tiếp theo
+          </h4>
+          <span className="text-[11px] font-medium text-slate-400">
+            Tự động kích hoạt khi có Mentor
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3.5 md:grid-cols-3">
+          {/* Card Step 1 */}
+          <div className="relative flex flex-col justify-between rounded-xl border border-amber-500/40 bg-amber-500/[0.04] p-4.5 shadow-xs">
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/15 text-amber-400">
+                  <Users className="h-4 w-4" />
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  Đang xử lý
+                </span>
+              </div>
+              <h5 className="mt-3 text-xs font-bold text-white">1. Admin đề xuất Mentor</h5>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-300">
+                Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí.
+              </p>
+            </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onRefresh}
-            className="h-8 gap-1.5 border-amber-300 text-xs font-bold text-amber-700 hover:bg-amber-100/60 dark:border-amber-900/60 dark:text-amber-300 dark:hover:bg-amber-950/30">
-            <RefreshCw className="h-3 w-3" />
-            Kiểm tra ngay
-          </Button>
+
+          {/* Card Step 2 */}
+          <div className="relative flex flex-col justify-between rounded-xl border border-slate-800/80 bg-slate-900/60 p-4.5">
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-400">
+                  <UserCheck className="h-4 w-4" />
+                </div>
+                <span className="inline-flex items-center rounded-md border border-slate-800 bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                  Bước tiếp theo
+                </span>
+              </div>
+              <h5 className="mt-3 text-xs font-bold text-slate-200">2. Bạn chọn Mentor</h5>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn.
+              </p>
+            </div>
+          </div>
+
+          {/* Card Step 3 */}
+          <div className="relative flex flex-col justify-between rounded-xl border border-slate-800/80 bg-slate-900/60 p-4.5">
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-400">
+                  <CalendarCheck className="h-4 w-4" />
+                </div>
+                <span className="inline-flex items-center rounded-md border border-slate-800 bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                  Bước 3
+                </span>
+              </div>
+              <h5 className="mt-3 text-xs font-bold text-slate-200">3. Đặt lịch & Phỏng vấn</h5>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="mt-2 text-[10px] tracking-wider text-slate-400 uppercase dark:text-slate-500">
-          ApplicationDetail #{detailId}
+      </div>
+
+      {/* Sync & Refresh Action Footer */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-950/80 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+            <RefreshCw className="h-4 w-4 animate-spin text-indigo-400" />
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-slate-200">
+              Tự động làm mới mỗi 30s
+            </div>
+            <div className="text-[11px] text-slate-400">
+              Hệ thống tự động cập nhật ngay khi Admin phân bổ mentor. Bạn không cần tải lại trang.
+            </div>
+          </div>
         </div>
+
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={isManualRefreshing}
+          onClick={handleManualRefresh}
+          className="h-9 gap-2 rounded-xl border-slate-700 bg-slate-800/90 px-4 text-xs font-semibold text-slate-200 shadow-sm transition-all hover:border-slate-600 hover:bg-slate-700 hover:text-white">
+          <RefreshCw className={cn("h-3.5 w-3.5", isManualRefreshing && "animate-spin text-indigo-400")} />
+          {isManualRefreshing ? "Đang kiểm tra..." : "Kiểm tra ngay"}
+        </Button>
       </div>
     </Card>
   );
@@ -1109,104 +1255,112 @@ function SessionRoomStep({
 // ============================================================================
 
 function CompletedResultView({ session, onChange }: { session: Session; onChange: () => void }) {
-  const review = session.mentorReview;
+  const review = session.mentorReview as NonNullable<Session["mentorReview"]>;
   const feedback = session.mentorFeedback;
+  const candidateStart = session.startTime1 ?? null;
+  const candidateEnd = session.endTime1 ?? null;
 
   return (
-    <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-      <div className="border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-sky-50 px-6 py-5 dark:border-slate-800 dark:from-emerald-950/40 dark:to-sky-950/40">
-        <h3 className="flex items-center gap-2 text-base font-extrabold text-slate-900 dark:text-white">
-          <BadgeCheck className="h-4 w-4 text-emerald-500" />
-          Phiên phỏng vấn đã hoàn tất
-        </h3>
-        <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-          Cảm ơn bạn đã tham gia vòng Mentor Interview.
-        </p>
-      </div>
-
-      <div className="space-y-4 p-6">
-        {/* Session summary */}
-        <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:grid-cols-2 dark:border-slate-700 dark:bg-slate-900/40">
-          <InfoRow
-            icon={<CalendarCheck className="h-3.5 w-3.5" />}
-            label="Thời gian"
-            value={session.joinTime ? formatDateTime(session.joinTime) : "—"}
-          />
-          <InfoRow
-            icon={<Clock className="h-3.5 w-3.5" />}
-            label="Thời lượng"
-            value={`${session.duration ?? 0} phút`}
-          />
-          {session.startTime1 && session.endTime1 && (
-            <InfoRow
-              icon={<PlayCircle className="h-3.5 w-3.5" />}
-              label="Bạn tham gia"
-              value={`${formatTimeOnly(session.startTime1)} → ${formatTimeOnly(session.endTime1)} (${
-                session.durationSeconds1 ? Math.floor(session.durationSeconds1 / 60) : 0
-              } phút)`}
-            />
-          )}
-          {session.startTime2 && session.endTime2 && (
-            <InfoRow
-              icon={<PlayCircle className="h-3.5 w-3.5" />}
-              label="Mentor tham gia"
-              value={`${formatTimeOnly(session.startTime2)} → ${formatTimeOnly(session.endTime2)} (${
-                session.durationSeconds2 ? Math.floor(session.durationSeconds2 / 60) : 0
-              } phút)`}
-            />
-          )}
+    <div className="space-y-5">
+      <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+          <div className="min-w-0 space-y-1">
+            <div className="flex items-center gap-2 text-sm font-bold text-slate-950 dark:text-white">
+              <BadgeCheck className="h-4 w-4 text-emerald-500" />
+              <span>Phien phong van da hoan tat</span>
+            </div>
+            <p className="max-w-2xl text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+              Ket qua phong van voi mentor da duoc ghi nhan. Xem nhan xet cua mentor va hoan tat
+              buoc danh gia mentor de dong vong phong van.
+            </p>
+          </div>
+          <span className="inline-flex h-7 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+            COMPLETED
+          </span>
         </div>
 
-        {/* Recording */}
-        {session.recordUrl && (
-          <div className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/30">
-            <div className="mb-2 flex items-center gap-2 text-xs font-bold text-indigo-800 dark:text-indigo-200">
-              <Video className="h-3.5 w-3.5" />
-              Recording phỏng vấn
+        <div className="grid gap-0 md:grid-cols-4">
+          <InfoTile
+            icon={<CalendarCheck className="h-4 w-4" />}
+            label="Thoi gian"
+            value={session.joinTime ? formatDateTime(session.joinTime) : "-"}
+          />
+          <InfoTile
+            icon={<Clock className="h-4 w-4" />}
+            label="Thoi luong"
+            value={`${session.duration ?? 0} phut`}
+          />
+          <InfoTile
+            icon={<PlayCircle className="h-4 w-4" />}
+            label="Ban tham gia"
+            value={
+              candidateStart && candidateEnd
+                ? `${formatTimeOnly(candidateStart)} - ${formatTimeOnly(candidateEnd)}`
+                : "-"
+            }
+          />
+          <InfoTile
+            icon={<UserCheck className="h-4 w-4" />}
+            label="Mentor"
+            value={session.mentorId ? `#${session.mentorId}` : "-"}
+          />
+        </div>
+      </Card>
+
+      {session.recordUrl && (
+        <Card className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 shadow-sm dark:border-indigo-900/60 dark:bg-indigo-950/30">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-indigo-900 dark:text-indigo-100">
+              <Video className="h-4 w-4" />
+              <span>Recording phong van</span>
             </div>
             <a
               href={session.recordUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-extrabold text-indigo-700 underline hover:text-indigo-800 dark:text-indigo-300">
-              <ExternalLink className="h-3 w-3" />
-              Xem lại video
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
+              <ExternalLink className="h-3.5 w-3.5" />
+              Xem lai video
             </a>
           </div>
-        )}
+        </Card>
+      )}
 
-        {/* Mentor review */}
-        {review && (
-          <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 dark:border-amber-900/60 dark:bg-amber-950/30">
+      {review ? (
+        <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
-              <h4 className="text-sm font-extrabold text-amber-800 dark:text-amber-200">
-                Đánh giá của Mentor
-              </h4>
-              {review.rating !== undefined && (
-                <span className="ml-auto rounded-full bg-amber-100 px-3 py-1 text-[11px] font-extrabold text-amber-700 tabular-nums dark:bg-amber-950/60 dark:text-amber-300">
-                  {review.rating}/10
-                </span>
-              )}
+              <Star className="h-4 w-4 text-amber-500" />
+              <h3 className="text-sm font-bold text-slate-950 dark:text-white">
+                Danh gia cua Mentor
+              </h3>
             </div>
+            {review.rating !== undefined && (
+              <span className="inline-flex h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-3 text-sm font-bold text-amber-700 tabular-nums dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                {review.rating}/10
+              </span>
+            )}
+          </div>
+
+          <div className="grid gap-4 p-5 lg:grid-cols-3">
             {review.strength && (
-              <ReviewBlock label="Điểm mạnh" content={review.strength} tone="emerald" />
+              <ReviewInsight title="Diem manh" content={review.strength} tone="emerald" />
             )}
             {review.weakness && (
-              <ReviewBlock label="Cần cải thiện" content={review.weakness} tone="rose" />
+              <ReviewInsight title="Can cai thien" content={review.weakness} tone="rose" />
             )}
             {review.improve && (
-              <ReviewBlock label="Đề xuất phát triển" content={review.improve} tone="sky" />
+              <ReviewInsight title="De xuat phat trien" content={review.improve} tone="sky" />
             )}
-            {(review.situationNote ||
-              review.taskNote ||
-              review.actionNote ||
-              review.resultNote) && (
-              <details className="rounded-xl border border-amber-200 bg-white p-3 dark:border-amber-900/60 dark:bg-slate-900/40">
-                <summary className="cursor-pointer text-xs font-extrabold text-amber-800 dark:text-amber-200">
-                  Nhận xét theo STAR method
+          </div>
+
+          {(review.situationNote || review.taskNote || review.actionNote || review.resultNote) && (
+            <div className="border-t border-slate-200 px-5 py-4 dark:border-slate-800">
+              <details className="group rounded-lg border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-950/30">
+                <summary className="cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  Nhan xet theo STAR method
                 </summary>
-                <div className="mt-3 space-y-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                <div className="mt-3 grid gap-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
                   {review.situationNote && (
                     <ReviewRow label="Situation" content={review.situationNote} />
                   )}
@@ -1215,38 +1369,29 @@ function CompletedResultView({ session, onChange }: { session: Session; onChange
                   {review.resultNote && <ReviewRow label="Result" content={review.resultNote} />}
                 </div>
               </details>
-            )}
+            </div>
+          )}
+        </Card>
+      ) : (
+        <Card className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+            <Hourglass className="h-5 w-5" />
           </div>
-        )}
+          <h3 className="mt-3 text-sm font-semibold text-slate-950 dark:text-white">
+            Dang cho danh gia cua mentor
+          </h3>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Trang nay se tu cap nhat khi mentor gui nhan xet sau buoi phong van.
+          </p>
+        </Card>
+      )}
 
-        {/* Candidate rates the mentor (MentorFeedback). Shown when mentor
-            has finished reviewing the candidate. Without this step the
-            interview round is not considered "closed" on the candidate
-            side. */}
-        {review ? (
-          <CandidateMentorFeedbackBlock session={session} feedback={feedback} onChange={onChange} />
-        ) : (
-          <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400">
-            Mentor chưa gửi đánh giá. Vui lòng quay lại sau.
-          </div>
-        )}
-      </div>
-    </Card>
+      {review && (
+        <CandidateMentorFeedbackBlock session={session} feedback={feedback} onChange={onChange} />
+      )}
+    </div>
   );
 }
-
-// ============================================================================
-// SUB-COMPONENT: CandidateMentorFeedbackBlock
-// Renders the candidate-side "rate your mentor" step. This is the final
-// step in the Mentor Interview flow:
-//   1. Mentor reviewed the candidate (`session.mentorReview`).
-//   2. Candidate rates the mentor here (`session.mentorFeedback`).
-// When `mentorFeedback` is null, show the editable form. After submission
-// show the recorded rating + comment with an "Edit" affordance.
-// ============================================================================
-
-const MIN_COMMENT_LENGTH = 20;
-const MAX_COMMENT_LENGTH = 1000;
 
 function CandidateMentorFeedbackBlock({
   session,
@@ -1334,131 +1479,140 @@ function CandidateMentorFeedbackBlock({
   };
 
   return (
-    <div className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 dark:border-indigo-900/60 dark:bg-indigo-950/30">
-      <div className="flex items-center gap-2">
-        <Star className="h-4 w-4 fill-[#FFD700] text-[#FFD700]" />
-        <h4 className="text-sm font-extrabold text-indigo-800 dark:text-indigo-200">
-          Đánh giá Mentor
-        </h4>
-        {hasFeedback && !editing && (
-          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-700 uppercase dark:bg-emerald-950/60 dark:text-emerald-300">
-            ✓ Đã gửi
-          </span>
-        )}
+    <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+        <div className="flex items-center gap-2">
+          <Star className="h-4 w-4 text-indigo-500" />
+          <h3 className="text-sm font-bold text-slate-950 dark:text-white">Danh gia Mentor</h3>
+          {hasFeedback && !editing && (
+            <span className="inline-flex h-6 items-center rounded-md bg-emerald-50 px-2 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
+              Da gui
+            </span>
+          )}
+        </div>
         {hasFeedback && !editing && (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => setEditing(true)}
-            className="ml-auto h-7 gap-1 px-2 text-[11px] font-bold">
-            <RefreshCw className="h-3 w-3" />
-            Sửa
+            className="h-8 gap-1.5 px-3 text-xs font-semibold">
+            <RefreshCw className="h-3.5 w-3.5" />
+            Sua danh gia
           </Button>
         )}
       </div>
 
       {!editing && hasFeedback ? (
-        <div className="space-y-3">
-          {feedback?.rating !== undefined && (
-            <div className="flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-3 py-2 dark:border-indigo-900/60 dark:bg-slate-900/40">
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={cn(
-                      "h-3.5 w-3.5",
-                      i < Math.round(feedback.rating ?? 0)
-                        ? "fill-[#FFD700] text-[#FFD700]"
-                        : "text-slate-300 dark:text-slate-600"
-                    )}
-                  />
-                ))}
-              </div>
-              <span className="text-sm font-extrabold text-indigo-700 tabular-nums dark:text-indigo-300">
-                {feedback.rating}/10
-              </span>
+        <div className="space-y-4 p-5">
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/30">
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    i < Math.round(feedback?.rating ?? 0)
+                      ? "fill-amber-400 text-amber-400"
+                      : "text-slate-300 dark:text-slate-700"
+                  )}
+                />
+              ))}
             </div>
-          )}
+            <span className="text-sm font-bold text-slate-950 tabular-nums dark:text-white">
+              {feedback?.rating ?? 0}/10
+            </span>
+          </div>
           {feedback?.comment && (
-            <div className="rounded-xl border border-indigo-200 bg-white p-3 text-xs leading-relaxed text-slate-700 dark:border-indigo-900/60 dark:bg-slate-900/40 dark:text-slate-200">
+            <p className="rounded-lg border border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-200">
               {feedback.comment}
-            </div>
+            </p>
           )}
-          <div className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 text-[11px] text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
+          <div className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
             <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <p className="leading-relaxed">
-              Cảm ơn bạn đã hoàn tất đánh giá. Vòng Mentor Interview của bạn đã kết thúc.
+              Cam on ban da hoan tat danh gia. Vong Mentor Interview da ket thuc.
             </p>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-extrabold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
-              Điểm đánh giá <span className="text-rose-500">*</span>
-            </Label>
+        <form onSubmit={handleSubmit} className="space-y-4 p-5" noValidate>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                Diem danh gia <span className="text-rose-500">*</span>
+              </Label>
+              <span className="text-xs font-semibold text-slate-500">{rating || 0}/10</span>
+            </div>
             <RatingScale10 value={rating} onChange={setRating} />
             {errors.rating && (
-              <p className="text-[11px] font-bold text-rose-500" role="alert">
+              <p className="text-xs font-semibold text-rose-600" role="alert">
                 {errors.rating}
               </p>
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <Label
-              htmlFor="candidate-mentor-comment"
-              className="text-xs font-extrabold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
-              Nhận xét về Mentor <span className="text-rose-500">*</span>
-            </Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <Label
+                htmlFor="candidate-mentor-comment"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                Nhan xet ve Mentor <span className="text-rose-500">*</span>
+              </Label>
+              <span
+                className={cn(
+                  "text-xs font-semibold",
+                  trimmedLen < MIN_COMMENT_LENGTH
+                    ? "text-slate-500"
+                    : "text-emerald-600 dark:text-emerald-400"
+                )}>
+                {comment.length}/{MAX_COMMENT_LENGTH}
+              </span>
+            </div>
             <Textarea
               id="candidate-mentor-comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={4}
               maxLength={MAX_COMMENT_LENGTH}
-              placeholder="Chia sẻ cảm nhận của bạn về buổi phỏng vấn: cách mentor đặt câu hỏi, sự hỗ trợ, điều bạn học được..."
+              placeholder="Chia se cam nhan ve cach mentor dat cau hoi, huong dan va ho tro trong buoi phong van."
               aria-invalid={!!errors.comment}
-              className="resize-y"
+              className="resize-y rounded-lg"
             />
-            <div className="flex items-center justify-between text-[10px] tracking-wider uppercase">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span
                 className={cn(
-                  "font-bold",
+                  "text-xs font-medium",
                   trimmedLen < MIN_COMMENT_LENGTH
-                    ? "text-slate-400"
+                    ? "text-slate-500"
                     : "text-emerald-600 dark:text-emerald-400"
                 )}>
                 {trimmedLen < MIN_COMMENT_LENGTH
-                  ? `Tối thiểu ${MIN_COMMENT_LENGTH} ký tự (còn ${MIN_COMMENT_LENGTH - trimmedLen})`
-                  : `Đạt yêu cầu ✓`}
+                  ? `Toi thieu ${MIN_COMMENT_LENGTH} ky tu, con ${MIN_COMMENT_LENGTH - trimmedLen}`
+                  : "Da dat yeu cau"}
               </span>
-              <span className="text-slate-400">
-                {comment.length}/{MAX_COMMENT_LENGTH}
-              </span>
+              {errors.comment && (
+                <span className="text-xs font-semibold text-rose-600" role="alert">
+                  {errors.comment}
+                </span>
+              )}
             </div>
-            {errors.comment && (
-              <p className="text-[11px] font-bold text-rose-500" role="alert">
-                {errors.comment}
-              </p>
-            )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
             <Button
               type="submit"
               disabled={submitDisabled}
-              className="h-10 gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-xs font-bold text-white shadow-sm hover:from-indigo-600 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50">
+              className="h-9 gap-2 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
               {isSubmitting ? (
                 <>
                   <Spinner size="sm" tone="white" />
-                  Đang gửi...
+                  Dang gui...
                 </>
               ) : (
                 <>
                   <Send className="h-3.5 w-3.5" />
-                  {hasFeedback ? "Cập nhật đánh giá" : "Gửi đánh giá"}
+                  {hasFeedback ? "Cap nhat danh gia" : "Gui danh gia"}
                 </>
               )}
             </Button>
@@ -1472,45 +1626,58 @@ function CandidateMentorFeedbackBlock({
                   setComment(feedback?.comment ?? "");
                   setErrors({});
                 }}
-                className="h-10 border-slate-300 px-4 text-xs font-bold dark:border-slate-700">
-                Hủy
+                className="h-9 px-4 text-xs font-semibold">
+                Huy
               </Button>
             )}
-            <p className="ml-auto text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              Đây là bước cuối của vòng Mentor Interview
+            <p className="ml-auto text-xs text-slate-500 dark:text-slate-400">
+              Buoc cuoi cua vong Mentor Interview
             </p>
           </div>
         </form>
       )}
+    </Card>
+  );
+}
+
+function InfoTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="border-b border-slate-200 p-4 last:border-b-0 md:border-r md:border-b-0 md:last:border-r-0 dark:border-slate-800">
+      <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        <span className="text-slate-400">{icon}</span>
+        {label}
+      </div>
+      <div className="mt-1 truncate text-sm font-bold text-slate-950 dark:text-white">{value}</div>
     </div>
   );
 }
 
-function ReviewBlock({
-  label,
+function ReviewInsight({
+  title,
   content,
   tone,
 }: {
-  label: string;
+  title: string;
   content: string;
   tone: "emerald" | "rose" | "sky";
 }) {
-  const colors: Record<string, string> = {
-    emerald: "border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/30",
-    rose: "border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/30",
-    sky: "border-sky-200 bg-sky-50 dark:border-sky-900/60 dark:bg-sky-950/30",
-  };
-  const labels: Record<string, string> = {
-    emerald: "text-emerald-700 dark:text-emerald-300",
-    rose: "text-rose-700 dark:text-rose-300",
-    sky: "text-sky-700 dark:text-sky-300",
-  };
+  const toneClass = {
+    emerald:
+      "border-emerald-200 bg-emerald-50/60 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300",
+    rose: "border-rose-200 bg-rose-50/60 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-300",
+    sky: "border-sky-200 bg-sky-50/60 text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/20 dark:text-sky-300",
+  }[tone];
+
   return (
-    <div className={cn("rounded-xl border p-3", colors[tone])}>
-      <div className={cn("mb-1 text-[10px] font-extrabold tracking-wider uppercase", labels[tone])}>
-        {label}
+    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+      <div
+        className={cn(
+          "mb-2 inline-flex rounded-md border px-2 py-1 text-xs font-semibold",
+          toneClass
+        )}>
+        {title}
       </div>
-      <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">{content}</p>
+      <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{content}</p>
     </div>
   );
 }

@@ -14,7 +14,6 @@ import { codeReviewProblemManager } from "@/services/code-review-problem.manager
 import {
   AlertOctagon,
   AlertTriangle,
-  Award,
   Bot,
   Bug,
   Check,
@@ -28,11 +27,9 @@ import {
   Layers,
   Lightbulb,
   Loader2,
-  MessageSquare,
   MessageSquarePlus,
   Pencil,
   Plus,
-  RefreshCw,
   Send,
   ShieldAlert,
   Sparkles,
@@ -592,25 +589,6 @@ export function CodeReviewModule({
     }
   };
 
-  const handleRetake = () => {
-    setIssuesByProblem({});
-    setGradedResult(null);
-    setStep("REVIEWING");
-    problems.forEach((p) => {
-      try {
-        localStorage.removeItem(draftKey(applicationId, roundId, p.problemId ?? 0));
-      } catch {
-        // ignore
-      }
-    });
-    try {
-      const endAt = Date.now() + timeLimitMinutes * 60 * 1000;
-      localStorage.setItem(timerStorageKey, String(endAt));
-    } catch {
-      // ignore
-    }
-  };
-
   const activeGradedDetail = gradedResult ?? detail;
 
   // Loading state
@@ -769,7 +747,6 @@ export function CodeReviewModule({
           maxScore={maxScore}
           passed={detail?.finalResult === "PASSED"}
           failed={detail?.finalResult === "FAILED"}
-          onRetake={handleRetake}
           problems={problems}
           activeProblemIdx={activeProblemIdx}
           onSelectProblem={setActiveProblemIdx}
@@ -1684,7 +1661,6 @@ function GradedResultView({
   maxScore: _maxScore,
   passed: _passed,
   failed: _failed,
-  onRetake,
   problems,
   activeProblemIdx,
   onSelectProblem,
@@ -1694,7 +1670,6 @@ function GradedResultView({
   maxScore: number;
   passed: boolean;
   failed: boolean;
-  onRetake: () => void;
   problems: CodeReviewProblemSnapshot[];
   activeProblemIdx: number;
   onSelectProblem: (_idx: number) => void;
@@ -1818,29 +1793,11 @@ function GradedResultView({
     return [];
   }, [issuesByProblem, pId, submissionData, currentFiles]);
 
-  // Flattened total submission counts
-  const allSubmissions = useMemo(() => {
-    const subList = submissionData?.codeReviewSubmissions as CodeReviewSubmission[] | undefined;
-    if (Array.isArray(subList) && subList.length > 0) {
-      return subList;
-    }
-    return Object.values(issuesByProblem).flat();
-  }, [submissionData, issuesByProblem]);
-
-  const submissionCounts = useMemo(() => {
-    const counts = { CRITICAL: 0, WARNING: 0, INFO: 0, TOTAL: allSubmissions.length };
-    allSubmissions.forEach((item) => {
-      const sev = (item.severity as Severity) ?? "WARNING";
-      if (counts[sev] !== undefined) counts[sev]++;
-    });
-    return counts;
-  }, [allSubmissions]);
-
   return (
     <div className="space-y-6">
       {/* ── TOP 2-COLUMN STORYTELLING & METRICS GRID ── */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        {/* 🧠 LEFT COLUMN (7 cols): AI Storytelling & HR Feedback */}
+        {/* 🧠 LEFT COLUMN (7 cols): AI Storytelling, Strengths, Weaknesses & Missed Issues */}
         <div className="space-y-5 lg:col-span-7">
           {/* SECTION 1: AI Executive Summary (Notion AI Theme) */}
           <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-lg shadow-indigo-950/20 backdrop-blur-md">
@@ -1929,35 +1886,9 @@ function GradedResultView({
               </div>
             </Card>
           )}
-
-          {/* SECTION 5: HR Feedback Card (Direct Human Comment) */}
-          <Card className="space-y-3 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-md">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/20 text-indigo-300">
-                  <UserCheck className="h-4 w-4" />
-                </div>
-                <h4 className="text-xs font-bold tracking-wider text-indigo-300 uppercase">
-                  NHẬN XÉT TRỰC TIẾP TỪ HỘI ĐỒNG HR
-                </h4>
-              </div>
-
-              <span className="text-[10px] font-medium text-slate-400">HR ĐÁNH GIÁ</span>
-            </div>
-
-            {detail?.hrNote ? (
-              <div className="rounded-xl border-l-2 border-indigo-500 bg-slate-950/60 p-3.5 text-sm leading-relaxed text-slate-200 italic">
-                "{detail.hrNote}"
-              </div>
-            ) : (
-              <p className="text-xs leading-relaxed text-slate-400 italic">
-                Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi HR hoàn tất rà soát).
-              </p>
-            )}
-          </Card>
         </div>
 
-        {/* 📊 RIGHT COLUMN (5 cols): Clocks, Detailed Stat Bars & Submission Summary */}
+        {/* 📊 RIGHT COLUMN (5 cols): Clocks, Detailed Stat Bars & HR Feedback */}
         <div className="space-y-5 lg:col-span-5">
           {/* WIDGET 1: Dual Gauge Clocks (AI Score & HR Score) */}
           <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
@@ -2019,50 +1950,30 @@ function GradedResultView({
             </Card>
           )}
 
-          {/* WIDGET 3: Submission Summary & Retake Action */}
-          <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          {/* WIDGET 3: HR Feedback Card (Direct Human Comment) */}
+          <Card className="space-y-3 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-md">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
-                <Bug className="h-4 w-4 text-indigo-400" />
-                <h4 className="text-xs font-bold text-slate-200">Tổng kết ghi chú bài nộp</h4>
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/20 text-indigo-300">
+                  <UserCheck className="h-4 w-4" />
+                </div>
+                <h4 className="text-xs font-bold tracking-wider text-indigo-300 uppercase">
+                  NHẬN XÉT TỪ HỘI ĐỒNG HR
+                </h4>
               </div>
-              <span className="text-xs font-mono font-extrabold text-slate-400">
-                {submissionCounts.TOTAL} GHI CHÚ
-              </span>
+
+              <span className="text-[10px] font-medium text-slate-400">HR ĐÁNH GIÁ</span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-xl border border-rose-500/20 bg-rose-950/20 p-2">
-                <div className="font-mono text-base font-extrabold text-rose-400 tabular-nums">
-                  {submissionCounts.CRITICAL}
-                </div>
-                <div className="text-[10px] font-bold text-rose-300">CRITICAL</div>
+            {detail?.hrNote ? (
+              <div className="rounded-xl border-l-2 border-indigo-500 bg-slate-950/60 p-3.5 text-sm leading-relaxed text-slate-200 italic">
+                "{detail.hrNote}"
               </div>
-
-              <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 p-2">
-                <div className="font-mono text-base font-extrabold text-amber-400 tabular-nums">
-                  {submissionCounts.WARNING}
-                </div>
-                <div className="text-[10px] font-bold text-amber-300">WARNING</div>
-              </div>
-
-              <div className="rounded-xl border border-sky-500/20 bg-sky-950/20 p-2">
-                <div className="font-mono text-base font-extrabold text-sky-400 tabular-nums">
-                  {submissionCounts.INFO}
-                </div>
-                <div className="text-[10px] font-bold text-sky-300">INFO</div>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                onClick={onRetake}
-                className="w-full gap-2 rounded-xl border-slate-700 bg-slate-800/80 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700 hover:text-white">
-                <RefreshCw className="h-3.5 w-3.5" />
-                <span>Thực hiện lại bài thi</span>
-              </Button>
-            </div>
+            ) : (
+              <p className="text-xs leading-relaxed text-slate-400 italic">
+                Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi HR hoàn tất rà soát).
+              </p>
+            )}
           </Card>
         </div>
       </div>
