@@ -219,6 +219,14 @@ export function MentorReviewModule({
 
   const activeIndex = STEP_DEFS.findIndex((s) => s.key === activeStep);
   const roundOrder = round.roundOrder ?? activeIndex + 1;
+  const [previewStep, setPreviewStep] = useState<StepKey | null>(null);
+  const viewedStep = previewStep ?? activeStep;
+  const viewedIndex = STEP_DEFS.findIndex((s) => s.key === viewedStep);
+  const isPreviewingStep = previewStep !== null;
+
+  useEffect(() => {
+    setPreviewStep(null);
+  }, [activeStep]);
 
   return (
     <div className="space-y-6">
@@ -232,23 +240,48 @@ export function MentorReviewModule({
       />
 
       {/* ============== Step Progress ====================================== */}
-      <ProgressHub activeIndex={activeIndex} />
+      <ProgressHub
+        activeIndex={activeIndex}
+        viewedIndex={viewedIndex}
+        onSelectStep={setPreviewStep}
+      />
+
+      {isPreviewingStep && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-200">
+          <div className="flex items-center gap-2">
+            <CircleUser className="h-4 w-4" />
+            <span className="font-semibold">Đang xem lại bước trong pipeline.</span>
+            <span className="text-indigo-700/80 dark:text-indigo-300/80">
+              Các thao tác ở màn hình này đã được khóa.
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setPreviewStep(null)}
+            className="h-8 border-indigo-200 bg-white px-3 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-200">
+            Quay lại bước hiện tại
+          </Button>
+        </div>
+      )}
 
       {/* ============== Step body ============== */}
-      {activeStep === "AWAITING_MENTOR" && <AwaitingMentorStep />}
-      {activeStep === "SELECT_MENTOR" && (
+      {viewedStep === "AWAITING_MENTOR" && <AwaitingMentorStep />}
+      {viewedStep === "SELECT_MENTOR" && (
         <SelectMentorStep
           detailId={detailId}
+          readOnly={isPreviewingStep}
           onAfterSelect={() => {
             void refetchDetail();
             onSuccess?.();
           }}
         />
       )}
-      {activeStep === "SCHEDULE" && (
+      {viewedStep === "SCHEDULE" && (
         <ScheduleStep
           detailId={detailId}
           submitting={createSessionMutation.isPending}
+          readOnly={isPreviewingStep}
           onSubmit={(payload) =>
             createSessionMutation.mutate({
               applicationDetailId: detailId,
@@ -259,13 +292,15 @@ export function MentorReviewModule({
           }
         />
       )}
-      {(activeStep === "WAITING" || activeStep === "IN_CALL" || activeStep === "RESULT") && (
+      {(viewedStep === "WAITING" || viewedStep === "IN_CALL" || viewedStep === "RESULT") && (
         <SessionRoomStep
           detailId={detailId}
           sessionId={sessionId}
           applicationId={applicationId}
           finalScore={finalScore}
           finalResult={detail?.finalResult ?? null}
+          viewStep={viewedStep}
+          readOnly={isPreviewingStep}
           onStatusChange={() => {
             void refetchDetail();
             void refetchSession();
@@ -280,12 +315,21 @@ export function MentorReviewModule({
 // SUB-COMPONENT: ProgressHub â€” wizard steps indicator
 // ============================================================================
 
-function ProgressHub({ activeIndex }: { activeIndex: number }) {
+function ProgressHub({
+  activeIndex,
+  viewedIndex,
+  onSelectStep,
+}: {
+  activeIndex: number;
+  viewedIndex: number;
+  onSelectStep: (step: StepKey) => void;
+}) {
   return (
     <Card className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 shadow-lg backdrop-blur-md">
       <div className="flex w-full items-start justify-between">
         {STEP_DEFS.map((step, i) => {
-          const isActive = i === activeIndex;
+          const isActive = i === viewedIndex;
+          const isCurrent = i === activeIndex;
           const isDone = i < activeIndex;
           const Icon = step.icon;
 
@@ -302,9 +346,12 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
               )}
 
               {/* Icon Circle */}
-              <div
+              <button
+                type="button"
+                onClick={() => onSelectStep(step.key)}
+                title={`Xem lại: ${step.short}`}
                 className={cn(
-                  "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
+                  "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-indigo-400/60 focus-visible:outline-none",
                   isActive
                     ? "border-indigo-500 bg-indigo-950/50 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)]"
                     : isDone
@@ -314,10 +361,10 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
                 {isDone ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
 
                 {/* Active indicator dot */}
-                {isActive && (
+                {isCurrent && (
                   <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] ring-2 ring-slate-900" />
                 )}
-              </div>
+              </button>
 
               {/* Label */}
               <span
@@ -468,9 +515,11 @@ function AwaitingMentorStep() {
 
 function SelectMentorStep({
   detailId,
+  readOnly = false,
   onAfterSelect,
 }: {
   detailId: number;
+  readOnly?: boolean;
   onAfterSelect: () => void;
 }) {
   const { t } = useTranslation();
@@ -567,9 +616,11 @@ function SelectMentorStep({
             <MentorCard
               key={mentor.id ?? mentor.email ?? mentor.name}
               mentor={mentor}
-              disabled={selectMutation.isPending}
+              disabled={readOnly || selectMutation.isPending}
               onOpenDetails={() => setFeedbackMentor(mentor)}
-              onRequestConfirm={() => setMentorToConfirm(mentor)}
+              onRequestConfirm={() => {
+                if (!readOnly) setMentorToConfirm(mentor);
+              }}
             />
           ))}
         </div>
@@ -609,6 +660,7 @@ function SelectMentorStep({
             <AlertDialogCancel>{t("common.cancel", "Há»§y")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
+                if (readOnly) return;
                 if (!mentorToConfirm?.id) return;
                 selectMutation.mutate({
                   applicationDetailId: detailId,
@@ -924,10 +976,12 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
 function ScheduleStep({
   detailId,
   submitting,
+  readOnly = false,
   onSubmit,
 }: {
   detailId: number;
   submitting: boolean;
+  readOnly?: boolean;
   onSubmit: (_payload: { joinTime: string; duration: number; offline: boolean }) => void;
 }) {
   const { t } = useTranslation();
@@ -955,6 +1009,7 @@ function ScheduleStep({
   const [offline, setOffline] = useState(false);
 
   const handleSubmit = () => {
+    if (readOnly) return;
     if (!joinDateTime) {
       toast.error(
         t("userApplicationhistory.mentorScheduleMissingDateTime", "Please select a date and time")
@@ -1081,7 +1136,11 @@ function ScheduleStep({
                 "Pick the date and a precise start time"
               )}
             />
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
+            <div
+              className={cn(
+                "relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900/40",
+                readOnly && "pointer-events-none opacity-70"
+              )}>
               <DateTimePicker
                 value={joinDateTime}
                 onChange={(d) => setJoinDateTime(d)}
@@ -1123,7 +1182,10 @@ function ScheduleStep({
                   <button
                     key={d.value}
                     type="button"
-                    onClick={() => setDuration(d.value)}
+                    onClick={() => {
+                      if (!readOnly) setDuration(d.value);
+                    }}
+                    disabled={readOnly}
                     aria-pressed={active}
                     className={cn(
                       "group relative overflow-hidden rounded-2xl border-2 px-3 py-3 text-left transition-all duration-200",
@@ -1185,6 +1247,7 @@ function ScheduleStep({
             <div className="grid gap-2.5 sm:grid-cols-2">
               <ModeOption
                 active={!offline}
+                disabled={readOnly}
                 onClick={() => setOffline(false)}
                 icon={<Video className="h-5 w-5" />}
                 tone="sky"
@@ -1200,6 +1263,7 @@ function ScheduleStep({
               />
               <ModeOption
                 active={offline}
+                disabled={readOnly}
                 onClick={() => setOffline(true)}
                 icon={<MapPin className="h-5 w-5" />}
                 tone="amber"
@@ -1218,7 +1282,7 @@ function ScheduleStep({
             <div className="pointer-events-none absolute inset-x-0 -top-2 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-800" />
             <Button
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={readOnly || submitting}
               className="relative h-12 w-full gap-2 overflow-hidden rounded-xl bg-indigo-600 text-sm font-semibold tracking-wide text-white shadow-sm hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-500/20">
               {submitting ? (
                 <>
@@ -1485,6 +1549,7 @@ function SectionLabel({ index, label, hint }: { index: number; label: string; hi
 function ModeOption({
   active,
   onClick,
+  disabled = false,
   icon,
   tone,
   title,
@@ -1493,6 +1558,7 @@ function ModeOption({
 }: {
   active: boolean;
   onClick: () => void;
+  disabled?: boolean;
   icon: React.ReactNode;
   tone: "sky" | "amber";
   title: string;
@@ -1523,13 +1589,17 @@ function ModeOption({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => {
+        if (!disabled) onClick();
+      }}
+      disabled={disabled}
       aria-pressed={active}
       className={cn(
         "relative flex flex-col items-start gap-2 rounded-2xl border-2 p-3.5 text-left transition-all duration-200",
         active
           ? cn("shadow-sm ring-1", toneClasses.activeBorder, toneClasses.ring)
-          : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600"
+          : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600",
+        disabled && "cursor-not-allowed opacity-70 hover:translate-y-0 hover:shadow-none"
       )}>
       <div className="flex w-full items-start justify-between">
         <div
@@ -1738,6 +1808,8 @@ function SessionRoomStep({
   sessionId,
   finalScore,
   finalResult,
+  viewStep,
+  readOnly = false,
   onStatusChange,
 }: {
   detailId: number;
@@ -1745,6 +1817,8 @@ function SessionRoomStep({
   applicationId: number;
   finalScore: number | null;
   finalResult: string | null;
+  viewStep: StepKey;
+  readOnly?: boolean;
   onStatusChange: () => void;
 }) {
   const { t } = useTranslation();
@@ -1790,7 +1864,7 @@ function SessionRoomStep({
   const joinAt = session.joinTime ? new Date(session.joinTime).getTime() : 0;
   const minutesUntilStart = Math.floor((joinAt - now) / 60_000);
   const canEnter = minutesUntilStart <= 15 && minutesUntilStart > -(session.duration ?? 0);
-  const isCompleted = session.status === "COMPLETED";
+  const isCompleted = readOnly ? viewStep === "RESULT" : session.status === "COMPLETED";
 
   // ---- COMPLETED ----
   if (isCompleted) {
@@ -1800,6 +1874,7 @@ function SessionRoomStep({
         mentor={sessionMentor}
         finalScore={finalScore}
         finalResult={finalResult}
+        readOnly={readOnly}
         onChange={onStatusChange}
       />
     );
@@ -1923,13 +1998,14 @@ function SessionRoomStep({
             <div className="flex flex-wrap gap-2">
               <Button
                 onClick={() => {
+                  if (readOnly) return;
                   if (session.roomUrl) {
                     window.location.href = `/user/sessions/room/${session.id}`;
                   } else {
                     toast.info(t("userApplicationhistory.mentorSessionOfflineToast"));
                   }
                 }}
-                disabled={!canEnter && session.status === "PAID"}
+                disabled={readOnly || (!canEnter && session.status === "PAID")}
                 className="h-11 flex-1 gap-2 bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
                 <LogIn className="h-4 w-4" />
                 {session.status === "ONGOING"
@@ -1939,7 +2015,10 @@ function SessionRoomStep({
               </Button>
               <Button
                 variant="outline"
-                onClick={() => void refetch()}
+                onClick={() => {
+                  if (!readOnly) void refetch();
+                }}
+                disabled={readOnly}
                 className="h-11 gap-2 border-slate-300 px-4 text-xs font-semibold dark:border-slate-700">
                 <RefreshCw className="h-4 w-4" />
                 {t("userApplicationhistory.mentorSessionRefresh")}
@@ -1961,12 +2040,14 @@ function CompletedResultView({
   mentor,
   finalScore,
   finalResult,
+  readOnly = false,
   onChange,
 }: {
   session: Session;
   mentor: MentorResponse | null;
   finalScore: number | null;
   finalResult: string | null;
+  readOnly?: boolean;
   onChange: () => void;
 }) {
   const { t } = useTranslation();
@@ -2098,6 +2179,7 @@ function CompletedResultView({
               <CandidateMentorFeedbackBlock
                 session={session}
                 feedback={feedback}
+                readOnly={readOnly}
                 onChange={onChange}
               />
             )}
@@ -2252,10 +2334,12 @@ function CompletedResultView({
 function CandidateMentorFeedbackBlock({
   session,
   feedback,
+  readOnly = false,
   onChange,
 }: {
   session: Session;
   feedback: Session["mentorFeedback"];
+  readOnly?: boolean;
   onChange: () => void;
 }) {
   const { t } = useTranslation();
@@ -2277,7 +2361,7 @@ function CandidateMentorFeedbackBlock({
 
   const trimmedLen = comment.trim().length;
   const isSubmitting = createFeedback.isPending || updateFeedback.isPending;
-  const submitDisabled = isSubmitting || trimmedLen < MIN_COMMENT_LENGTH || rating < 1;
+  const submitDisabled = readOnly || isSubmitting || trimmedLen < MIN_COMMENT_LENGTH || rating < 1;
 
   const validate = () => {
     const next: typeof errors = {};
@@ -2294,6 +2378,7 @@ function CandidateMentorFeedbackBlock({
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (readOnly) return;
     if (!userId) {
       setErrors({ rating: t("userApplicationhistory.mentorSessionErrNotLoggedIn") });
       return;
@@ -2414,6 +2499,7 @@ function CandidateMentorFeedbackBlock({
             <Button
               type="button"
               variant="outline"
+              disabled={readOnly}
               onClick={() => setEditing(true)}
               className="h-9 gap-1.5 px-4 text-xs font-semibold">
               <RefreshCw className="h-3.5 w-3.5" />
@@ -2445,7 +2531,7 @@ function CandidateMentorFeedbackBlock({
                   {rating || 0}/5
                 </span>
               </div>
-              <RatingScale5 value={rating} onChange={setRating} />
+              <RatingScale5 value={rating} onChange={setRating} disabled={readOnly} />
               {errors.rating && (
                 <p className="mt-3 text-xs font-semibold text-rose-600" role="alert">
                   {errors.rating}
@@ -2482,6 +2568,7 @@ function CandidateMentorFeedbackBlock({
                 id="candidate-mentor-comment"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
+                disabled={readOnly}
                 rows={5}
                 maxLength={MAX_COMMENT_LENGTH}
                 placeholder={t("userApplicationhistory.mentorSessionCommentPlaceholder")}
@@ -2555,7 +2642,15 @@ function CandidateMentorFeedbackBlock({
   );
 }
 
-function RatingScale5({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+function RatingScale5({
+  value,
+  disabled = false,
+  onChange,
+}: {
+  value: number;
+  disabled?: boolean;
+  onChange: (value: number) => void;
+}) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {Array.from({ length: 5 }).map((_, index) => {
@@ -2566,12 +2661,16 @@ function RatingScale5({ value, onChange }: { value: number; onChange: (value: nu
             key={starValue}
             type="button"
             aria-label={`Chọn ${starValue} sao`}
-            onClick={() => onChange(starValue)}
+            disabled={disabled}
+            onClick={() => {
+              if (!disabled) onChange(starValue);
+            }}
             className={cn(
               "group inline-flex h-12 w-12 items-center justify-center rounded-xl border transition-all",
               active
                 ? "border-amber-300 bg-amber-50 text-amber-400 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30"
-                : "border-slate-200 bg-white text-slate-300 hover:border-amber-200 hover:text-amber-300 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-600"
+                : "border-slate-200 bg-white text-slate-300 hover:border-amber-200 hover:text-amber-300 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-600",
+              disabled && "cursor-not-allowed opacity-70 hover:border-slate-200 hover:text-slate-300"
             )}>
             <Star
               className={cn(
