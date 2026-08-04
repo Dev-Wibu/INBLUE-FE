@@ -16,7 +16,7 @@ import {
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { useTabsState, type Tab } from "@/hooks/useTabsState";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { ClipboardCheck, FileText, LayoutDashboard, Trash2, User } from "lucide-react";
+import { ClipboardCheck, FileText, Home, LayoutDashboard, Trash2, User } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -26,17 +26,28 @@ import {
   ApplicationGradingPage,
 } from "../../Admin/ApplicationGrading/ApplicationGradingPage";
 import { StaffAccountPage } from "../Account/StaffAccountPage";
+import { StaffHomeFeedPage } from "../HomeFeed/StaffHomeFeedPage";
 import { StaffOverviewPage } from "./StaffOverviewPage";
 
-type TabType = "dashboard" | "applicationGrading" | "grading-detail" | "account";
+type TabType = "home" | "dashboard" | "applicationGrading" | "grading-detail" | "account";
 
-const VALID_TAB_TYPES: TabType[] = ["dashboard", "applicationGrading", "grading-detail", "account"];
+const VALID_TAB_TYPES: TabType[] = [
+  "home",
+  "dashboard",
+  "applicationGrading",
+  "grading-detail",
+  "account",
+];
 
 const isValidTabType = (value: string): value is TabType => {
   return VALID_TAB_TYPES.includes(value as TabType);
 };
 
 const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; label: string }> => [
+  {
+    type: "home",
+    label: t("common.home"),
+  },
   {
     type: "dashboard",
     label: t("common.dashboard"),
@@ -52,6 +63,7 @@ const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; la
 ];
 
 const TAB_ICONS: Record<TabType, React.ElementType> = {
+  home: Home,
   dashboard: LayoutDashboard,
   applicationGrading: ClipboardCheck,
   "grading-detail": FileText,
@@ -59,6 +71,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
 };
 
 const TAB_COLORS: Record<TabType, string> = {
+  home: "text-[#0047AB]",
   dashboard: "text-[#0047AB]",
   applicationGrading: "text-orange-600",
   "grading-detail": "text-orange-600",
@@ -68,6 +81,12 @@ const TAB_COLORS: Record<TabType, string> = {
 const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup[] => [
   {
     items: [
+      {
+        type: "home",
+        label: t("common.home"),
+        icon: Home,
+        iconColor: "text-[#0047AB]",
+      },
       {
         type: "dashboard",
         label: t("common.dashboard"),
@@ -91,6 +110,17 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
 const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] => [
   {
     label: t("common.home"),
+    items: [
+      {
+        type: "home",
+        icon: Home,
+        label: t("common.home"),
+        color: "text-[#0047AB] dark:text-[#66B2FF]",
+      },
+    ],
+  },
+  {
+    label: t("common.overview"),
     items: [
       {
         type: "dashboard",
@@ -165,7 +195,7 @@ export function StaffDashboardPage() {
     openGradingTab,
   } = useTabsState({
     storageKey: "staff",
-    defaultTab: "dashboard",
+    defaultTab: "home",
     availableTabs: availableTabs,
   });
   const navigate = useNavigate();
@@ -298,7 +328,7 @@ export function StaffDashboardPage() {
     [openTabs, navigateToTab, activeTab, closeOtherTabs]
   );
 
-  const closeAllDisabled = openTabs.length === 1 && openTabs[0]?.type === "dashboard";
+  const closeAllDisabled = openTabs.length === 1 && openTabs[0]?.type === "home";
   const chromeMenuActions = useMemo<ChromeTabMenuAction[]>(
     () => [
       {
@@ -315,6 +345,8 @@ export function StaffDashboardPage() {
 
   const renderTabContent = (tabType: string) => {
     switch (tabType) {
+      case "home":
+        return <StaffHomeFeedPage />;
       case "dashboard":
         return <StaffOverviewPage />;
       case "applicationGrading":
@@ -335,7 +367,7 @@ export function StaffDashboardPage() {
       case "account":
         return <StaffAccountPage />;
       default:
-        return <StaffOverviewPage />;
+        return <StaffHomeFeedPage />;
     }
   };
 

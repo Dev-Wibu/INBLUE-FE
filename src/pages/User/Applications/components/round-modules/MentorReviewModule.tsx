@@ -293,9 +293,7 @@ export function MentorReviewModule({
       <ProgressHub activeIndex={activeIndex} />
 
       {/* ============== Step body ============== */}
-      {activeStep === "AWAITING_MENTOR" && (
-        <AwaitingMentorStep detailId={detailId} onRefresh={() => void refetchDetail()} />
-      )}
+      {activeStep === "AWAITING_MENTOR" && <AwaitingMentorStep />}
       {activeStep === "SELECT_MENTOR" && (
         <SelectMentorStep
           detailId={detailId}
@@ -397,13 +395,7 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
 // SUB-COMPONENT: AwaitingMentorStep
 // ============================================================================
 
-function AwaitingMentorStep({
-  detailId: _detailId,
-  onRefresh: _onRefresh,
-}: {
-  detailId: number;
-  onRefresh: () => void;
-}) {
+function AwaitingMentorStep() {
   const { t } = useTranslation();
 
   return (
