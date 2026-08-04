@@ -2074,17 +2074,6 @@ function CompletedResultView({
                         </div>
                       </div>
                     </div>
-                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
-                      <Users className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-semibold tracking-[0.16em] text-slate-500 uppercase dark:text-slate-400">
-                          Phiên mentor
-                        </div>
-                        <div className="text-sm font-bold text-slate-950 tabular-nums dark:text-white">
-                          {mentorSessionCount}
-                        </div>
-                      </div>
-                    </div>
                     <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2 dark:border-indigo-900/50 dark:bg-indigo-950/25">
                       <Award className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
                       <div className="min-w-0">
@@ -2121,15 +2110,9 @@ function CompletedResultView({
                   }
                 />
                 <InfoTile
-                  icon={<UserCheck className="h-4 w-4" />}
-                  label={t("userApplicationhistory.mentorSessionFieldMentor")}
-                  value={
-                    mentor?.name
-                      ? `${mentor.name}${mentor?.currentCompany ? ` · ${mentor.currentCompany}` : ""}`
-                      : session.mentorId
-                        ? `#${session.mentorId}`
-                        : "-"
-                  }
+                  icon={<Users className="h-4 w-4" />}
+                  label="Phiên mentor"
+                  value={`${mentorSessionCount} phiên`}
                 />
               </div>
             </Card>
@@ -2164,9 +2147,9 @@ function CompletedResultView({
 
           <div className="space-y-5">
             {review ? (
-              <div className="space-y-3">
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <h3 className="text-base font-bold text-slate-950 dark:text-white">
+              <Card className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+                <div className="mb-4 flex flex-col items-center gap-2 text-center">
+                  <h3 className="text-lg font-bold text-slate-950 dark:text-white">
                     {t("userApplicationhistory.mentorSessionReviewTitle")}
                   </h3>
                   <div className="flex items-center gap-0.5">
@@ -2184,8 +2167,7 @@ function CompletedResultView({
                   </div>
                 </div>
 
-                <Card className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-                  <div className="space-y-4">
+                <div className="space-y-4">
                   <div className="flex flex-col gap-3">
                     {review.strength && (
                       <ReviewInsight
@@ -2270,8 +2252,7 @@ function CompletedResultView({
                     </div>
                   )}
                   </div>
-                </Card>
-              </div>
+              </Card>
             ) : (
               <Card className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
