@@ -188,7 +188,7 @@ export function MentorReviewModule({
     // schedule an interview slot. Treat PENDING the same as SLOT_PICKED
     // so the ScheduleStep renders instead of falling through to the
     // AWAITING_MENTOR default (which previously trapped candidates in
-    // "Äang chá» Admin gÃ¡n mentor" forever after they'd already picked).
+    // "Đang chờ Admin gán mentor" forever after they'd already picked).
     if (status === "AWAITING_MENTOR") return "AWAITING_MENTOR";
     if (status === "AWAITING_CANDIDATE_SELECT_MENTOR") return "SELECT_MENTOR";
     if (status === "PENDING" || status === "SLOT_PICKED" || status === "SUBMITTED") {
@@ -232,7 +232,7 @@ export function MentorReviewModule({
     <div className="space-y-6">
       <MentorReviewSubheader
         roundOrder={roundOrder}
-        roundLabel={round.name || t("userApplicationhistory.mentorRoundTitle", "ÄÃ¡nh giÃ¡ Mentor")}
+        roundLabel={round.name || t("userApplicationhistory.mentorRoundTitle", "Đánh giá Mentor")}
         activeStep={activeStep}
         detail={detail}
         isCompleted={isCompleted}
@@ -279,6 +279,7 @@ export function MentorReviewModule({
       )}
       {viewedStep === "SCHEDULE" && (
         <ScheduleStep
+          detail={detail}
           detailId={detailId}
           submitting={createSessionMutation.isPending}
           readOnly={isPreviewingStep}
@@ -387,8 +388,6 @@ function ProgressHub({
 // ============================================================================
 
 function AwaitingMentorStep() {
-  const { t } = useTranslation();
-
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-xl backdrop-blur-md">
       {/* Hero Visual Section */}
@@ -409,25 +408,18 @@ function AwaitingMentorStep() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
               </span>
-              {t(
-                "userApplicationhistory.mentorStatusMatching",
-                "Tráº¡ng thÃ¡i: Äang phÃ¢n cÃ´ng Mentor"
-              )}
+              Trạng thái: Đang phân công Mentor
             </span>
           </div>
 
           {/* Heading & Description */}
           <h3 className="mt-3 text-lg font-extrabold tracking-tight text-white sm:text-xl">
-            {t(
-              "userApplicationhistory.mentorAwaitingTitle",
-              "Chá» Admin phÃ¢n bá»• mentor phÃ¹ há»£p"
-            )}
+            Chờ Admin phân bổ mentor phù hợp
           </h3>
           <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">
-            {t(
-              "userApplicationhistory.mentorAwaitingDesc",
-              "Há»‡ thá»‘ng Ä‘ang tiáº¿n hÃ nh rÃ  soÃ¡t chuyÃªn mÃ´n vÃ  káº¿t ná»‘i mentor thÃ­ch há»£p nháº¥t theo yÃªu cáº§u cá»§a JD. Khi mentor Ä‘Æ°á»£c gÃ¡n, danh sÃ¡ch Ä‘á» xuáº¥t sáº½ xuáº¥t hiá»‡n ngay á»Ÿ bÆ°á»›c tiáº¿p theo Ä‘á»ƒ báº¡n chá»n ngÆ°á»i phá»ng váº¥n."
-            )}
+            Hệ thống đang rà soát chuyên môn và kết nối mentor phù hợp nhất theo yêu cầu của JD.
+            Khi mentor được gán, danh sách đề xuất sẽ xuất hiện ở bước tiếp theo để bạn chọn
+            người phỏng vấn.
           </p>
         </div>
       </div>
@@ -436,7 +428,7 @@ function AwaitingMentorStep() {
       <div className="bg-slate-950/40 p-6 sm:p-7">
         <div className="mb-4 flex items-center justify-between">
           <h4 className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
-            Quy trÃ¬nh cÃ¡c bÆ°á»›c tiáº¿p theo
+            Quy trình các bước tiếp theo
           </h4>
         </div>
 
@@ -450,13 +442,12 @@ function AwaitingMentorStep() {
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-300">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
-                  Äang xá»­ lÃ½
+                  Đang xử lý
                 </span>
               </div>
-              <h5 className="mt-3 text-xs font-bold text-white">1. Admin Ä‘á» xuáº¥t Mentor</h5>
+              <h5 className="mt-3 text-xs font-bold text-white">1. Admin đề xuất Mentor</h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-300">
-                Admin xem xÃ©t há»“ sÆ¡ vÃ chá»‰ Ä‘á»‹nh cÃ¡c mentor cÃ³ ká»¹ nÄƒng phÃ¹ há»£p
-                nháº¥t vá»›i vá»‹ trÃ­.
+                Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí.
               </p>
             </div>
           </div>
@@ -469,13 +460,12 @@ function AwaitingMentorStep() {
                   <UserCheck className="h-4 w-4" />
                 </div>
                 <span className="inline-flex items-center rounded-md border border-slate-800 bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400">
-                  BÆ°á»›c tiáº¿p theo
+                  Bước tiếp theo
                 </span>
               </div>
-              <h5 className="mt-3 text-xs font-bold text-slate-200">2. Báº¡n chá»n Mentor</h5>
+              <h5 className="mt-3 text-xs font-bold text-slate-200">2. Bạn chọn Mentor</h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                Xem há»“ sÆ¡ nÄƒng lá»±c, Ä‘Ã¡nh giÃ¡ vÃ chá»n mentor báº¡n mong muá»‘n phá»ng
-                váº¥n.
+                Xem hồ sơ năng lực, đánh giá và chọn mentor bạn muốn phỏng vấn.
               </p>
             </div>
           </div>
@@ -488,14 +478,14 @@ function AwaitingMentorStep() {
                   <CalendarCheck className="h-4 w-4" />
                 </div>
                 <span className="inline-flex items-center rounded-md border border-slate-800 bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400">
-                  BÆ°á»›c 3
+                  Bước 3
                 </span>
               </div>
               <h5 className="mt-3 text-xs font-bold text-slate-200">
-                3. Äáº·t lá»‹ch & Phá»ng váº¥n
+                3. Đặt lịch và phỏng vấn
               </h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                Chá»n thá»i gian ráº£nh thuáº­n tiá»‡n vÃ vÃ o phÃ²ng há»p video 1-1 trá»±c tuyáº¿n.
+                Chọn thời gian thuận tiện và vào phòng họp video 1-1 trực tuyến.
               </p>
             </div>
           </div>
@@ -538,7 +528,9 @@ function SelectMentorStep({
     return (
       <Card className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
         <Spinner className="mx-auto h-8 w-8 text-indigo-500" />
-        <p className="mt-4 text-sm font-semibold text-slate-500">Äang táº£i danh sÃ¡ch mentor...</p>
+        <p className="mt-4 text-sm font-semibold text-slate-500">
+          Đang tải danh sách mentor...
+        </p>
       </Card>
     );
   }
@@ -548,10 +540,10 @@ function SelectMentorStep({
       <Card className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center shadow-sm dark:border-rose-900/40 dark:bg-rose-950/20">
         <AlertCircle className="mx-auto h-12 w-12 text-rose-400" />
         <h3 className="mt-4 text-lg font-black text-rose-900 dark:text-rose-100">
-          ChÆ°a cÃ³ mentor nÃ o Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh
+          Chưa có mentor nào được chỉ định
         </h3>
         <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">
-          Vui lÃ²ng chá» Admin phÃ¢n bá»• chuyÃªn gia phÃ¹ há»£p.
+          Vui lòng chờ Admin phân bổ chuyên gia phù hợp.
         </p>
         <Button variant="outline" onClick={() => void refetch()} className="mt-6 rounded-xl">
           Táº£i láº¡i
@@ -572,12 +564,12 @@ function SelectMentorStep({
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-lg font-bold text-slate-100">
-                    {t("userApplicationhistory.mentorSelectTitle", "Chá»n mentor phÃ¹ há»£p")}
+                    {t("userApplicationhistory.mentorSelectTitle", "Chọn mentor phù hợp")}
                   </h3>
                   <span className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-[11px] font-semibold text-indigo-300">
                     {t(
                       "userApplicationhistory.mentorSelectCount",
-                      "{{count}} mentor Ä‘Æ°á»£c Ä‘á» xuáº¥t",
+                      "{{count}} mentor được đề xuất",
                       {
                         count: mentors.length,
                       }
@@ -587,7 +579,7 @@ function SelectMentorStep({
                 <p className="mt-1 text-sm leading-6 text-slate-300">
                   {t(
                     "userApplicationhistory.mentorSelectDescription",
-                    "Chá»n 1 mentor tá»« danh sÃ¡ch Ä‘Æ°á»£c Ä‘á» xuáº¥t cho vá»‹ trÃ­ á»©ng tuyá»ƒn nÃ y."
+                    "Chọn 1 mentor từ danh sách được đề xuất cho vị trí ứng tuyển này."
                   )}
                 </p>
               </div>
@@ -657,7 +649,7 @@ function SelectMentorStep({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel", "Há»§y")}</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel", "Hủy")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (readOnly) return;
@@ -668,7 +660,7 @@ function SelectMentorStep({
                 });
                 setMentorToConfirm(null);
               }}>
-              {t("common.confirm", "XÃ¡c nháº­n")}
+              {t("common.confirm", "Xác nhận")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -974,11 +966,13 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
 // ============================================================================
 
 function ScheduleStep({
+  detail,
   detailId,
   submitting,
   readOnly = false,
   onSubmit,
 }: {
+  detail?: ApplicationDetail;
   detailId: number;
   submitting: boolean;
   readOnly?: boolean;
@@ -986,9 +980,17 @@ function ScheduleStep({
 }) {
   const { t } = useTranslation();
   const { data: mentors } = useAssignedMentors(detailId);
+  const scheduleSessionInfo = (
+    detail as unknown as { sessionInfo?: { mentorId?: number | null } } | undefined
+  )?.sessionInfo;
+  const selectedMentorId = detail?.mentorId ?? scheduleSessionInfo?.mentorId ?? null;
   const selectedMentor = useMemo(() => {
-    return mentors?.find((m) => m.id != null) ?? mentors?.[0] ?? null;
-  }, [mentors]);
+    return (
+      mentors?.find((m) => selectedMentorId != null && m.id === selectedMentorId) ??
+      mentors?.[0] ??
+      null
+    );
+  }, [mentors, selectedMentorId]);
 
   const now = new Date();
   const tomorrow = new Date(now);
@@ -1305,11 +1307,11 @@ function ScheduleStep({
       <div className="space-y-4 self-stretch lg:sticky lg:top-4">
         {/* ===== Mentor hero card ===== */}
         <Card className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-          <div className="relative border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
-            <div className="flex items-center justify-between">
+          <div className="border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <div className="flex items-center justify-between gap-3">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
                 <UserCheck className="h-3 w-3" />
-                {t("userApplicationhistory.mentorScheduleSelectedMentorTitle", "Selected mentor")}
+                Mentor đã chọn
               </span>
               {selectedMentor?.linkedInUrl && (
                 <a
@@ -1322,16 +1324,19 @@ function ScheduleStep({
                 </a>
               )}
             </div>
+          </div>
 
+          <div className="p-5">
             {selectedMentor ? (
               <>
                 {/* Identity */}
-                <div className="mt-4 flex items-start gap-3">
+                <div className="flex items-start gap-4">
                   <div className="relative">
-                    <Avatar className="h-16 w-16 rounded-2xl border-2 border-white shadow-sm ring-1 ring-slate-200 dark:border-slate-900 dark:ring-slate-700">
+                    <Avatar className="h-20 w-20 rounded-2xl border border-slate-200 shadow-sm dark:border-slate-700">
                       <AvatarImage
                         src={selectedMentor.avatarUrl || "/placeholder.png"}
                         alt={selectedMentor.name ?? "Mentor"}
+                        className="object-cover"
                       />
                       <AvatarFallback className="rounded-2xl bg-indigo-600 text-base font-extrabold text-white">
                         {selectedMentor.name?.slice(0, 1).toUpperCase() ?? (
@@ -1345,55 +1350,45 @@ function ScheduleStep({
                       </span>
                     )}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-base font-semibold tracking-tight text-slate-900 dark:text-white">
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <h4 className="text-lg leading-6 font-bold tracking-tight text-slate-950 dark:text-white">
                       {selectedMentor.name ?? "—"}
                     </h4>
                     {selectedMentor.currentCompany && (
-                      <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                        <Building2 className="h-3 w-3 shrink-0" />
+                      <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                        <Building2 className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
                         <span className="truncate">{selectedMentor.currentCompany}</span>
                       </p>
                     )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+                        {selectedMentor.averageRating
+                          ? selectedMentor.averageRating.toFixed(1)
+                          : "—"}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/25 dark:text-indigo-200">
+                        <Briefcase className="h-3.5 w-3.5" />
+                        {selectedMentor.totalSession ?? 0} phiên
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-bold text-violet-700 dark:border-violet-900/50 dark:bg-violet-950/25 dark:text-violet-200">
+                        <Award className="h-3.5 w-3.5" />
+                        {selectedMentor.yearsOfExperience != null
+                          ? `${selectedMentor.yearsOfExperience}+ năm`
+                          : "—"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-
-                {/* Stats row */}
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                  <StatBlock
-                    icon={<Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />}
-                    label={t("userApplicationhistory.mentorScheduleStatRating", "Rating")}
-                    value={
-                      selectedMentor.averageRating ? selectedMentor.averageRating.toFixed(1) : "—"
-                    }
-                    tone="amber"
-                  />
-                  <StatBlock
-                    icon={<Briefcase className="h-3.5 w-3.5 text-indigo-500" />}
-                    label={t("userApplicationhistory.mentorScheduleStatSessions", "Sessions")}
-                    value={String(selectedMentor.totalSession ?? 0)}
-                    tone="indigo"
-                  />
-                  <StatBlock
-                    icon={<Award className="h-3.5 w-3.5 text-violet-500" />}
-                    label={t("userApplicationhistory.mentorScheduleStatYears", "Years")}
-                    value={
-                      selectedMentor.yearsOfExperience != null
-                        ? `${selectedMentor.yearsOfExperience}+`
-                        : "—"
-                    }
-                    tone="violet"
-                  />
                 </div>
 
                 {/* Expertise */}
                 {selectedMentor.expertise && (
-                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-950/30">
-                    <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wide text-slate-600 dark:text-slate-400">
-                      <Sparkles className="h-3 w-3" />
-                      {t("userApplicationhistory.mentorSelectExpertise", "Expertise")}
+                  <div className="mt-5 border-t border-slate-200 pt-4 dark:border-slate-800">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+                      <Sparkles className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
+                      Chuyên môn
                     </div>
-                    <p className="mt-1 text-sm leading-6 font-medium text-slate-800 dark:text-slate-100">
+                    <p className="mt-2 text-sm leading-6 font-semibold text-slate-900 dark:text-slate-100">
                       {selectedMentor.expertise}
                     </p>
                   </div>
@@ -1401,9 +1396,9 @@ function ScheduleStep({
 
                 {/* Bio + contact */}
                 {(selectedMentor.bio || selectedMentor.email) && (
-                  <div className="mt-4 space-y-2 border-t border-slate-200 pt-3 text-xs dark:border-slate-800">
+                  <div className="mt-4 space-y-3 border-t border-slate-200 pt-4 text-xs dark:border-slate-800">
                     {selectedMentor.bio && (
-                      <p className="leading-relaxed text-slate-600 italic dark:text-slate-400">
+                      <p className="leading-6 text-slate-600 italic dark:text-slate-300">
                         &ldquo;{selectedMentor.bio}&rdquo;
                       </p>
                     )}
@@ -1432,95 +1427,71 @@ function ScheduleStep({
 
         {/* ===== Summary card ===== */}
         <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-          <div className="relative overflow-hidden border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
-            <div className="relative flex items-center justify-between gap-2">
+          <div className="border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <div className="flex items-center justify-between gap-2">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
                   <BadgeCheck className="h-4 w-4" />
                 </span>
-                {t("userApplicationhistory.mentorScheduleSummaryTitle", "Interview summary")}
+                Tóm tắt buổi phỏng vấn
               </h3>
               <span className="rounded-full border border-emerald-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
-                {t("userApplicationhistory.mentorScheduleSummaryLiveLabel", "Live preview")}
+                Cập nhật trực tiếp
               </span>
             </div>
           </div>
 
-          <div className="space-y-4 p-5">
-            {/* Hero time block */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950/30">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                    {t("userApplicationhistory.mentorScheduleSummaryStart", "Start")}
+          <div className="p-5">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    Bắt đầu
                   </div>
-                  <div className="mt-0.5 flex items-baseline gap-1 text-slate-900 tabular-nums dark:text-white">
-                    <span className="text-2xl font-black tracking-tight sm:text-3xl">
-                      {summaryTime}
-                    </span>
+                  <div className="mt-1 text-3xl font-black tracking-tight text-slate-950 tabular-nums dark:text-white">
+                    {summaryTime}
                   </div>
-                  <div className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <div className="mt-1 truncate text-xs font-medium text-slate-500 dark:text-slate-400">
                     {summaryDate}
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                    {t("userApplicationhistory.mentorScheduleSummaryEnds", "Ends")}
+                <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                <div className="min-w-0 text-right">
+                  <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    Kết thúc
                   </div>
-                  <div className="mt-0.5 flex items-baseline gap-1 tabular-nums">
-                    <span className="text-2xl font-black tracking-tight text-indigo-700 sm:text-3xl dark:text-indigo-200">
-                      {formattedEndTime}
-                    </span>
+                  <div className="mt-1 text-3xl font-black tracking-tight text-indigo-700 tabular-nums dark:text-indigo-200">
+                    {formattedEndTime}
                   </div>
-                  <div className="mt-0.5 text-xs font-bold text-indigo-600 dark:text-indigo-300">
-                    + {duration} min
+                  <div className="mt-1 text-xs font-bold text-indigo-600 dark:text-indigo-300">
+                    + {duration} phút
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Pills row */}
-            <div className="flex flex-wrap gap-2">
-              <SummaryPill
-                icon={<Hourglass className="h-3.5 w-3.5" />}
-                label={t("userApplicationhistory.mentorScheduleSummaryDuration", "Duration")}
-                value={`${duration} min`}
-                tone="indigo"
-              />
-              <SummaryPill
-                icon={
-                  offline ? <MapPin className="h-3.5 w-3.5" /> : <Video className="h-3.5 w-3.5" />
-                }
-                label={t("userApplicationhistory.mentorScheduleSummaryMode", "Mode")}
-                value={
-                  offline
-                    ? t("userApplicationhistory.mentorScheduleSummaryModeOffline", "In person")
-                    : t("userApplicationhistory.mentorScheduleSummaryModeOnline", "Online")
-                }
-                tone={offline ? "amber" : "sky"}
-              />
-              {selectedMentor?.rate != null && (
-                <SummaryPill
-                  icon={<CircleDollarSign className="h-3.5 w-3.5" />}
-                  label={t("userApplicationhistory.mentorScheduleSummaryEstimate", "Estimate")}
-                  value={formatRate(selectedMentor.rate, duration)}
-                  tone="emerald"
+              <div className="grid gap-3 border-t border-slate-200 pt-4 dark:border-slate-800">
+                <SummaryLine
+                  icon={<Hourglass className="h-4 w-4" />}
+                  label="Thời lượng"
+                  value={`${duration} phút`}
                 />
-              )}
-            </div>
-
-            <div className="rounded-xl border border-indigo-200/70 bg-indigo-50/60 p-3 dark:border-indigo-900/40 dark:bg-indigo-950/20">
-              <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
-                <strong className="text-slate-800 dark:text-slate-200">
-                  {t(
-                    "userApplicationhistory.mentorScheduleReadyTitle",
-                    "Ready to create the session?"
-                  )}
-                </strong>{" "}
-                {t(
-                  "userApplicationhistory.mentorScheduleReadyDesc",
-                  "Your interview schedule will be confirmed right after creation. You can still change the time before payment."
+                <SummaryLine
+                  icon={offline ? <MapPin className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+                  label="Hình thức"
+                  value={offline ? "Gặp trực tiếp" : "Trực tuyến"}
+                />
+                {selectedMentor?.rate != null && (
+                  <SummaryLine
+                    icon={<CircleDollarSign className="h-4 w-4" />}
+                    label="Ước tính"
+                    value={formatRate(selectedMentor.rate, duration)}
+                  />
                 )}
+              </div>
+
+              <p className="border-t border-slate-200 pt-4 text-xs leading-5 text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ
+                trước khi phiên bắt đầu.
               </p>
             </div>
           </div>
@@ -1636,72 +1607,22 @@ function ModeOption({
   );
 }
 
-function StatBlock({
+function SummaryLine({
   icon,
   label,
   value,
-  tone,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  tone: "amber" | "indigo" | "violet";
 }) {
-  const toneClasses = {
-    amber: "border-amber-200/70 bg-amber-50/70 dark:border-amber-900/40 dark:bg-amber-950/20",
-    indigo: "border-indigo-200/70 bg-indigo-50/70 dark:border-indigo-900/40 dark:bg-indigo-950/20",
-    violet: "border-violet-200/70 bg-violet-50/70 dark:border-violet-900/40 dark:bg-violet-950/20",
-  }[tone];
-
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center",
-        toneClasses
-      )}>
-      <div className="flex items-center gap-1 text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-        {icon}
-        <span className="leading-none">{label}</span>
-      </div>
-      <div className="mt-1 text-base font-black text-slate-900 tabular-nums dark:text-white">
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function SummaryPill({
-  icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  tone: "indigo" | "sky" | "amber" | "emerald";
-}) {
-  const toneClasses = {
-    indigo:
-      "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-200",
-    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-200",
-    amber:
-      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200",
-    emerald:
-      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200",
-  }[tone];
-
-  return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
-        toneClasses
-      )}>
-      {icon}
-      <span className="text-[10px] font-extrabold tracking-wider uppercase opacity-70">
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+        <span className="text-indigo-500 dark:text-indigo-300">{icon}</span>
         {label}
-      </span>
-      <span className="font-extrabold tabular-nums">{value}</span>
+      </div>
+      <div className="text-sm font-bold text-slate-950 dark:text-white">{value}</div>
     </div>
   );
 }
