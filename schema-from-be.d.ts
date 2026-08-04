@@ -1789,6 +1789,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/kiosk-bookings/application-detail/{applicationDetailId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getBookingByApplicationDetailId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/job-descriptions/{id}": {
         parameters: {
             query?: never;
@@ -3721,10 +3737,10 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
@@ -3744,15 +3760,15 @@ export interface components {
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
+            unpaged?: boolean;
         };
         SortObject: {
             sorted?: boolean;
-            unsorted?: boolean;
             empty?: boolean;
+            unsorted?: boolean;
         };
         Payment: {
             /** Format: int32 */
@@ -4077,22 +4093,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            errorOnELNotFound?: string;
-            scriptingInvalid?: string;
             includePreludes?: string[];
-            includeCodas?: string[];
-            elIgnored?: string;
-            isXml?: string;
             pageEncoding?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
+            trimDirectiveWhitespaces?: string;
+            isXml?: string;
+            scriptingInvalid?: string;
+            errorOnELNotFound?: string;
+            elIgnored?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
-            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            includeCodas?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -4127,13 +4143,12 @@ export interface components {
             };
         };
         ServletContext: {
-            virtualServerName?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -4148,7 +4163,8 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -4227,10 +4243,10 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
-            httpOnly?: boolean;
+            secure?: boolean;
             /** Format: int32 */
             maxAge?: number;
-            secure?: boolean;
+            httpOnly?: boolean;
             domain?: string;
             path?: string;
             name?: string;
@@ -7490,6 +7506,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["KioskHistoryResponseDto"][];
+                };
+            };
+        };
+    };
+    getBookingByApplicationDetailId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationDetailId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["KioskBooking"];
                 };
             };
         };
