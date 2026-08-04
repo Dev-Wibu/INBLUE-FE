@@ -71,11 +71,11 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
 };
 
 const TAB_COLORS: Record<TabType, string> = {
-  home: "text-[#0047AB]",
-  dashboard: "text-[#0047AB]",
-  applicationGrading: "text-orange-600",
-  "grading-detail": "text-orange-600",
-  account: "text-gray-600",
+  home: "text-indigo-600 dark:text-indigo-400",
+  dashboard: "text-indigo-600 dark:text-indigo-400",
+  applicationGrading: "text-indigo-600 dark:text-indigo-400",
+  "grading-detail": "text-indigo-600 dark:text-indigo-400",
+  account: "text-indigo-600 dark:text-indigo-400",
 };
 
 const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup[] => [
@@ -85,13 +85,13 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         type: "home",
         label: t("common.home"),
         icon: Home,
-        iconColor: "text-[#0047AB]",
+        iconColor: "text-indigo-600 dark:text-indigo-400",
       },
       {
         type: "dashboard",
         label: t("common.dashboard"),
         icon: LayoutDashboard,
-        iconColor: "text-[#0047AB]",
+        iconColor: "text-indigo-600 dark:text-indigo-400",
       },
     ],
   },
@@ -101,7 +101,7 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         type: "applicationGrading",
         label: t("adminApplicationGrading.applicationGrading"),
         icon: ClipboardCheck,
-        iconColor: "text-orange-600",
+        iconColor: "text-indigo-600 dark:text-indigo-400",
       },
     ],
   },
@@ -115,7 +115,7 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         type: "home",
         icon: Home,
         label: t("common.home"),
-        color: "text-[#0047AB] dark:text-[#66B2FF]",
+        color: "text-indigo-600 dark:text-indigo-400",
       },
     ],
   },
@@ -126,7 +126,7 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         type: "dashboard",
         icon: LayoutDashboard,
         label: t("common.dashboard"),
-        color: "text-[#0047AB] dark:text-[#66B2FF]",
+        color: "text-indigo-600 dark:text-indigo-400",
       },
     ],
   },
@@ -137,7 +137,7 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         type: "applicationGrading",
         icon: ClipboardCheck,
         label: t("adminApplicationGrading.applicationGrading"),
-        color: "text-orange-600 dark:text-orange-500",
+        color: "text-indigo-600 dark:text-indigo-400",
         description: t("adminApplicationGrading.gradeApplications"),
       },
     ],
@@ -166,9 +166,11 @@ export function StaffDashboardPage() {
   const { t } = useTranslation();
   const STAFF_SIDEBAR_LOGO = useMemo(
     () => (
-      <a href="/" className="flex items-center gap-2">
-        <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
-        <span className="text-lg font-bold text-[#002654] dark:text-white">INBLUE AI</span>
+      <a href="/" className="flex items-center gap-2.5">
+        <img src={icon2} alt="INBLUE AI" className="h-8 w-8 shrink-0 object-contain" />
+        <span className="text-lg font-bold tracking-wide text-[#002654] dark:text-white">
+          INBLUE AI
+        </span>
       </a>
     ),
     []
@@ -176,7 +178,7 @@ export function StaffDashboardPage() {
   const STAFF_SIDEBAR_LOGO_COLLAPSED = useMemo(
     () => (
       <a href="/" className="flex items-center justify-center">
-        <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
+        <img src={icon2} alt="INBLUE AI" className="h-8 w-8 shrink-0 object-contain" />
       </a>
     ),
     []
@@ -376,7 +378,7 @@ export function StaffDashboardPage() {
   }, []);
 
   return (
-    <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
+    <div className="isolate flex h-screen bg-slate-50 dark:bg-slate-950">
       <DashboardSidebar
         menuGroups={sidebarMenuGroups}
         activeTab={typedActiveTab}
@@ -393,31 +395,32 @@ export function StaffDashboardPage() {
         onSettingsClick={() => setIsSettingsOpen(true)}
         theme={{
           wrapper:
-            "h-screen flex-shrink-0 border-r border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900",
-          expandedWidth: "w-56",
-          collapsedWidth: "w-16",
+            "h-full flex-shrink-0 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900",
+          expandedWidth: "w-64",
+          collapsedWidth: "w-[72px]",
           logoBorder: "border-b border-slate-200 dark:border-slate-800",
-          logoExpandedPadding: "h-14 gap-2 px-4",
-          logoCollapsedPadding: "h-14 justify-center px-2",
+          logoExpandedPadding: "h-16 gap-3 px-8",
+          logoCollapsedPadding: "h-16 justify-center px-2",
           navWrapper: "flex flex-1 flex-col gap-1 py-4",
-          navExpandedPadding: "px-3",
-          navCollapsedPadding: "px-2",
+          navExpandedPadding: "px-5 py-4",
+          navCollapsedPadding: "px-2 py-4",
           sectionLabel:
-            "px-3 text-xs font-semibold tracking-wider text-slate-500/70 uppercase dark:text-slate-500",
-          divider: "border-slate-100 dark:border-slate-800",
+            "text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-3 mt-2 px-3 dark:text-slate-400",
+          divider: "border-slate-200 dark:border-slate-800",
           itemPy: "py-2.5",
-          activeItem: "bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]",
+          activeItem:
+            "bg-indigo-50 text-indigo-700 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20",
           inactiveItem:
-            "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
-          activeIconOverride: "text-[#0047AB] dark:text-[#66B2FF]",
-          footerBorder: "border-t border-slate-200/90 dark:border-slate-800/80",
-          footerExpandedPadding: "p-3",
-          footerCollapsedPadding: "p-2",
+            "text-slate-600 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
+          activeIconOverride: "text-indigo-600 dark:text-indigo-400",
+          footerBorder: "border-t border-slate-200 dark:border-slate-800",
+          footerExpandedPadding: "p-4",
+          footerCollapsedPadding: "p-3",
           logoutExpandedBtn:
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
           logoutCollapsedBtn:
-            "flex items-center justify-center rounded-lg p-2.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
-          logoutIcon: "text-slate-500 dark:text-slate-400",
+            "flex items-center justify-center rounded-xl p-2.5 text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
+          logoutIcon: "",
           logoutLabel: t("common.logout"),
         }}
       />
@@ -435,7 +438,7 @@ export function StaffDashboardPage() {
             <DashboardSidebarToggle
               isCollapsed={isSidebarCollapsed}
               onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
-              className="hidden h-7 w-7 rounded-full border border-slate-300/85 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 md:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="hidden h-7 w-7 rounded-xl border border-slate-300/85 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 md:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             />
           }
           tabIcons={TAB_ICONS}
@@ -444,15 +447,15 @@ export function StaffDashboardPage() {
           menuActions={chromeMenuActions}
           rightSlot={<LanguageToggle />}
           theme={{
-            bg: "bg-gray-100 dark:bg-slate-800",
-            tabActiveBorder: "border-gray-300 dark:border-slate-600",
+            bg: "bg-slate-50 dark:bg-slate-800",
+            tabActiveBorder: "border-slate-300 dark:border-slate-600",
             tabActiveBg: "bg-white dark:bg-slate-900",
-            tabInactiveBg: "bg-gray-200 dark:bg-slate-700",
-            tabInactiveHover: "hover:bg-gray-100 dark:hover:bg-slate-600",
-            closeHover: "hover:bg-gray-300 dark:hover:bg-slate-500",
-            addBtnBg: "bg-gray-200 dark:bg-slate-700",
-            addBtnHover: "hover:bg-gray-300 dark:hover:bg-slate-500",
-            menuHover: "hover:bg-gray-100 dark:hover:bg-slate-600",
+            tabInactiveBg: "bg-slate-200 dark:bg-slate-700",
+            tabInactiveHover: "hover:bg-slate-100 dark:hover:bg-slate-600",
+            closeHover: "hover:bg-slate-300 dark:hover:bg-slate-500",
+            addBtnBg: "bg-slate-200 dark:bg-slate-700",
+            addBtnHover: "hover:bg-slate-300 dark:hover:bg-slate-500",
+            menuHover: "hover:bg-slate-100 dark:hover:bg-slate-600",
           }}
         />
 
