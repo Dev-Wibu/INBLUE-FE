@@ -2142,6 +2142,10 @@ function CompletedResultView({
               </div>
             </Card>
 
+            {review && (
+              <CandidateMentorFeedbackBlock session={session} feedback={feedback} onChange={onChange} />
+            )}
+
             {session.recordUrl && (
               <Card className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 shadow-sm dark:border-indigo-900/60 dark:bg-indigo-950/30">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -2267,9 +2271,6 @@ function CompletedResultView({
               </Card>
             )}
 
-            {review && (
-              <CandidateMentorFeedbackBlock session={session} feedback={feedback} onChange={onChange} />
-            )}
           </div>
         </div>
       </Card>
@@ -2393,9 +2394,22 @@ function CandidateMentorFeedbackBlock({
 
       {!editing && hasFeedback ? (
         <div className="space-y-4 p-5">
-          <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
-            <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
-              <div className="flex items-center gap-1">
+          <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                    Đánh giá của bạn
+                  </div>
+                  <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                    {feedback?.rating ?? 0}/5 sao
+                  </div>
+                </div>
+                <span className="inline-flex h-9 items-center rounded-full border border-amber-200 bg-amber-50 px-3 text-sm font-bold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                  {feedback?.rating ?? 0}/5
+                </span>
+              </div>
+              <div className="mt-3 flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
@@ -2408,9 +2422,13 @@ function CandidateMentorFeedbackBlock({
                   />
                 ))}
               </div>
-              <div className="text-3xl font-black tabular-nums text-slate-950 dark:text-white">
-                {feedback?.rating ?? 0}
-                <span className="text-lg font-semibold text-slate-400">/5</span>
+              <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/30">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                  Trạng thái
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                  Bạn đã lưu phản hồi mentor cho phiên này.
+                </p>
               </div>
             </div>
 
@@ -2451,35 +2469,27 @@ function CandidateMentorFeedbackBlock({
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5 p-5" noValidate>
-          <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
-            <div className="space-y-2">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
               <Label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                 {t("userApplicationhistory.mentorSessionRatingLabel")}{" "}
                 <span className="text-rose-500">*</span>
               </Label>
-              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Chọn mức đánh giá từ 1 đến 5 sao theo trải nghiệm thực tế của bạn.
-              </p>
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {rating || 0}/5
+              </span>
+            </div>
+            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              Chọn mức đánh giá từ 1 đến 5 sao theo trải nghiệm thực tế của bạn.
+            </p>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
               <RatingScale5 value={rating} onChange={setRating} />
-              {errors.rating && (
-                <p className="text-xs font-semibold text-rose-600" role="alert">
-                  {errors.rating}
-                </p>
-              )}
             </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
-                Điểm hiện tại
-              </div>
-              <div className="mt-2 text-3xl font-black tabular-nums text-slate-950 dark:text-white">
-                {rating || 0}
-                <span className="text-lg font-semibold text-slate-400">/5</span>
-              </div>
-              <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Điểm này sẽ được lưu cùng nhận xét mentor của bạn.
+            {errors.rating && (
+              <p className="text-xs font-semibold text-rose-600" role="alert">
+                {errors.rating}
               </p>
-            </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -2644,13 +2654,20 @@ function ReviewInsight({
   }[tone];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
-      <div className="mb-3 flex items-center gap-2">
+    <div className="flex h-full gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+      <div
+        className={cn(
+          "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-[11px] font-bold uppercase tracking-[0.14em]",
+          toneClass
+        )}>
+        {title.slice(0, 1)}
+      </div>
+      <div className="min-w-0 space-y-2">
         <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", toneClass)}>
           {title}
         </span>
+        <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{content}</p>
       </div>
-      <p className="text-[15px] leading-7 text-slate-700 dark:text-slate-200">{content}</p>
     </div>
   );
 }
