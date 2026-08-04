@@ -2028,7 +2028,7 @@ function CompletedResultView({
         <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-5">
             <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-              <div className="flex flex-wrap items-start gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
+              <div className="flex flex-wrap items-center gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
                 <div className="flex h-24 w-24 shrink-0 overflow-hidden rounded-3xl border border-slate-200 bg-white p-0.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                   <Avatar className="h-full w-full rounded-[1.15rem]">
                     <AvatarImage
@@ -2047,43 +2047,40 @@ function CompletedResultView({
                   </Avatar>
                 </div>
 
-                <div className="min-w-0 flex-1 space-y-2">
+                <div className="min-w-0 flex-1 space-y-3">
                   <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
                     <span>Thông tin phiên</span>
                     <span className="h-1 w-1 rounded-full bg-slate-400/70" />
                     <span>Đã hoàn tất</span>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
                       {mentor?.name ?? (session.mentorId ? `#${session.mentorId}` : "-")}
                     </h3>
-                    <p className="truncate text-sm text-slate-500 dark:text-slate-400">
-                      {mentor?.currentCompany ?? "Mentor"}
+                    <p className="inline-flex max-w-full items-center gap-1.5 truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      <Building2 className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
+                      <span className="truncate">{mentor?.currentCompany ?? "Mentor"}</span>
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/30">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 dark:border-amber-900/60 dark:bg-amber-950/30">
                       <Star className="h-4 w-4 fill-current text-amber-500" />
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-semibold tracking-[0.16em] text-amber-700/80 uppercase dark:text-amber-300/80">
-                          Mentor ratio
-                        </div>
-                        <div className="text-sm font-bold text-amber-700 tabular-nums dark:text-amber-300">
-                          {mentorAverageRating ? `${mentorAverageRating.toFixed(1)}/5` : "—"}
-                        </div>
-                      </div>
+                      <span className="text-sm font-bold text-amber-700 tabular-nums dark:text-amber-300">
+                        {mentorAverageRating ? `${mentorAverageRating.toFixed(1)}/5` : "—"}
+                      </span>
+                      <span className="text-xs font-semibold text-amber-700/70 dark:text-amber-300/70">
+                        Mentor ratio
+                      </span>
                     </div>
-                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2 dark:border-indigo-900/50 dark:bg-indigo-950/25">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 dark:border-indigo-900/50 dark:bg-indigo-950/25">
                       <Award className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-semibold tracking-[0.16em] text-indigo-600/80 uppercase dark:text-indigo-300/80">
-                          Kinh nghiệm
-                        </div>
-                        <div className="text-sm font-bold text-indigo-700 tabular-nums dark:text-indigo-200">
-                          {mentorExperienceLabel}
-                        </div>
-                      </div>
+                      <span className="text-sm font-bold text-indigo-700 tabular-nums dark:text-indigo-200">
+                        {mentorExperienceLabel}
+                      </span>
+                      <span className="text-xs font-semibold text-indigo-600/70 dark:text-indigo-300/70">
+                        kinh nghiệm
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -2385,53 +2382,55 @@ function CandidateMentorFeedbackBlock({
       </div>
 
       {!editing && hasFeedback ? (
-        <div className="space-y-4 p-5">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-950/30">
-            <div className="text-center">
-              <div className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
-                Phản hồi đã gửi
-              </div>
-              <div className="mt-2 text-4xl font-black text-amber-600 tabular-nums dark:text-amber-400">
-                {feedback?.rating ?? 0}/5
-              </div>
+        <div className="p-5">
+          <div className="grid gap-4 border-b border-slate-200 pb-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
+            <div>
+              <div className="text-sm font-bold text-slate-950 dark:text-white">Điểm bạn đã gửi</div>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Điểm này phản ánh trải nghiệm thực tế của bạn với mentor.
+              </p>
             </div>
-            <div className="mt-5 flex justify-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-black text-amber-700 tabular-nums dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                {feedback?.rating ?? 0}/5
+              </span>
+              <div className="flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
                     className={cn(
-                      "h-10 w-10 transition-all duration-300",
+                      "h-7 w-7 transition-all duration-300",
                       i < Math.round(feedback?.rating ?? 0)
-                        ? "fill-amber-400 text-amber-500 drop-shadow-md scale-105"
+                        ? "fill-amber-400 text-amber-500 drop-shadow-sm"
                         : "text-slate-300 dark:text-slate-700"
                     )}
                   />
                 ))}
               </div>
             </div>
+          </div>
 
-            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/30">
-              {feedback?.comment ? (
-                <p className="text-sm leading-relaxed text-slate-700 italic dark:text-slate-200">
-                  “{feedback.comment}”
-                </p>
-              ) : (
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Chưa có nhận xét chi tiết.
-                </p>
-              )}
+          <div className="grid gap-4 border-b border-slate-200 py-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
+            <div>
+              <div className="text-sm font-bold text-slate-950 dark:text-white">
+                Nhận xét của bạn
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Nội dung này giúp hệ thống cải thiện chất lượng mentor.
+              </p>
             </div>
+            {feedback?.comment ? (
+              <p className="text-sm leading-relaxed text-slate-700 italic dark:text-slate-200">
+                “{feedback.comment}”
+              </p>
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Chưa có nhận xét chi tiết.
+              </p>
+            )}
           </div>
 
-          <div className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
-            <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <p className="leading-relaxed">
-              {t("userApplicationhistory.mentorSessionThanksMessage")}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="flex flex-wrap items-center gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
@@ -2446,82 +2445,94 @@ function CandidateMentorFeedbackBlock({
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-5 p-5" noValidate>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
-            <div className="flex items-center justify-between gap-3">
+        <form onSubmit={handleSubmit} className="p-5" noValidate>
+          <div className="grid gap-4 border-b border-slate-200 pb-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
+            <div>
               <Label className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                 {t("userApplicationhistory.mentorSessionRatingLabel")}{" "}
                 <span className="text-rose-500">*</span>
               </Label>
-              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-600 tabular-nums dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300">
-                {rating || 0}/5
-              </span>
-            </div>
-            <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              Chọn mức sao phản ánh cách mentor đặt câu hỏi, hướng dẫn và hỗ trợ bạn.
-            </p>
-            <div className="mt-4">
-              <RatingScale5 value={rating} onChange={setRating} />
-            </div>
-            {errors.rating && (
-              <p className="mt-3 text-xs font-semibold text-rose-600" role="alert">
-                {errors.rating}
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Chọn mức sao phản ánh cách mentor đặt câu hỏi, hướng dẫn và hỗ trợ bạn.
               </p>
-            )}
+            </div>
+            <div>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  Mức bạn chọn
+                </span>
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-600 tabular-nums dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-300">
+                  {rating || 0}/5
+                </span>
+              </div>
+              <RatingScale5 value={rating} onChange={setRating} />
+              {errors.rating && (
+                <p className="mt-3 text-xs font-semibold text-rose-600" role="alert">
+                  {errors.rating}
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/20">
-            <div className="flex items-center justify-between gap-3">
+          <div className="grid gap-4 border-b border-slate-200 py-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
+            <div>
               <Label
                 htmlFor="candidate-mentor-comment"
                 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                 {t("userApplicationhistory.mentorSessionCommentLabel")}{" "}
                 <span className="text-rose-500">*</span>
               </Label>
-              <span
-                className={cn(
-                  "text-xs font-semibold",
-                  trimmedLen < MIN_COMMENT_LENGTH
-                    ? "text-slate-500"
-                    : "text-emerald-600 dark:text-emerald-400"
-                )}>
-                {comment.length}/{MAX_COMMENT_LENGTH}
-              </span>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Viết ngắn gọn điều mentor làm tốt hoặc cần cải thiện.
+              </p>
             </div>
-            <Textarea
-              id="candidate-mentor-comment"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={5}
-              maxLength={MAX_COMMENT_LENGTH}
-              placeholder={t("userApplicationhistory.mentorSessionCommentPlaceholder")}
-              aria-invalid={!!errors.comment}
-              className="mt-3 resize-y rounded-xl border-slate-200 bg-slate-50/70 shadow-none dark:border-slate-800 dark:bg-slate-950/40"
-            />
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span
-                className={cn(
-                  "text-xs font-medium",
-                  trimmedLen < MIN_COMMENT_LENGTH
-                    ? "text-slate-500"
-                    : "text-emerald-600 dark:text-emerald-400"
-                )}>
-                {trimmedLen < MIN_COMMENT_LENGTH
-                  ? t("userApplicationhistory.mentorSessionMinChars", {
-                      min: MIN_COMMENT_LENGTH,
-                      left: MIN_COMMENT_LENGTH - trimmedLen,
-                    })
-                  : t("userApplicationhistory.mentorSessionMinCharsMet")}
-              </span>
-              {errors.comment && (
-                <span className="text-xs font-semibold text-rose-600" role="alert">
-                  {errors.comment}
+            <div>
+              <div className="mb-2 flex items-center justify-end">
+                <span
+                  className={cn(
+                    "text-xs font-semibold",
+                    trimmedLen < MIN_COMMENT_LENGTH
+                      ? "text-slate-500"
+                      : "text-emerald-600 dark:text-emerald-400"
+                  )}>
+                  {comment.length}/{MAX_COMMENT_LENGTH}
                 </span>
-              )}
+              </div>
+              <Textarea
+                id="candidate-mentor-comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={5}
+                maxLength={MAX_COMMENT_LENGTH}
+                placeholder={t("userApplicationhistory.mentorSessionCommentPlaceholder")}
+                aria-invalid={!!errors.comment}
+                className="resize-y rounded-xl border-slate-200 bg-slate-50/70 shadow-none dark:border-slate-800 dark:bg-slate-950/40"
+              />
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <span
+                  className={cn(
+                    "text-xs font-medium",
+                    trimmedLen < MIN_COMMENT_LENGTH
+                      ? "text-slate-500"
+                      : "text-emerald-600 dark:text-emerald-400"
+                  )}>
+                  {trimmedLen < MIN_COMMENT_LENGTH
+                    ? t("userApplicationhistory.mentorSessionMinChars", {
+                        min: MIN_COMMENT_LENGTH,
+                        left: MIN_COMMENT_LENGTH - trimmedLen,
+                      })
+                    : t("userApplicationhistory.mentorSessionMinCharsMet")}
+                </span>
+                {errors.comment && (
+                  <span className="text-xs font-semibold text-rose-600" role="alert">
+                    {errors.comment}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="flex flex-wrap items-center gap-2 pt-4">
             <Button
               type="submit"
               disabled={submitDisabled}
