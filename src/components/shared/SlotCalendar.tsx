@@ -84,6 +84,7 @@ export function SlotCalendar({
 }: SlotCalendarProps) {
   const { t, i18n } = useTranslation();
   const today = startOfDayLocal(new Date());
+  const currentMonth = startOfMonthLocal(today);
   const locale = i18n.language === "en" ? undefined : vi;
   const monthAnchor = startOfMonthLocal(selectedDate);
 
@@ -118,7 +119,11 @@ export function SlotCalendar({
     [monthAnchor, locale]
   );
 
-  const goPrevMonth = () => onSelectDate(addMonthsLocal(selectedDate, -1));
+  const canGoPrevMonth = monthAnchor.getTime() > currentMonth.getTime();
+  const goPrevMonth = () => {
+    if (!canGoPrevMonth) return;
+    onSelectDate(addMonthsLocal(selectedDate, -1));
+  };
   const goNextMonth = () => onSelectDate(addMonthsLocal(selectedDate, 1));
   const goToday = () => onSelectDate(new Date());
 
@@ -145,8 +150,9 @@ export function SlotCalendar({
           variant="ghost"
           size="icon"
           onClick={goPrevMonth}
+          disabled={!canGoPrevMonth}
           aria-label={t("common.slotCalendar.previousMonth", "Previous month")}
-          className="text-muted-foreground hover:text-foreground">
+          className="text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-35">
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
