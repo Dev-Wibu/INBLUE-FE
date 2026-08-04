@@ -216,9 +216,6 @@ export function MentorReviewModule({
 
   // ===== Header ===========================================================
   const finalScore = detail?.finalScore ?? detail?.hrScore ?? null;
-  const showScore = (status === "COMPLETED" || status === "AI_EVALUATED") && finalScore !== null;
-  const passed = detail?.finalResult === "PASSED";
-  const failed = detail?.finalResult === "FAILED";
 
   const activeIndex = STEP_DEFS.findIndex((s) => s.key === activeStep);
   const roundOrder = round.roundOrder ?? activeIndex + 1;
@@ -233,62 +230,6 @@ export function MentorReviewModule({
         isCompleted={isCompleted}
         instruction={round.configData?.instruction}
       />
-
-      {/* ============== Score banner (when done) ============== */}
-      {showScore && (
-        <Card className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-md backdrop-blur-md">
-          <div
-            className={cn(
-              "flex flex-wrap items-center justify-between gap-4 p-5",
-              passed
-                ? "bg-gradient-to-r from-emerald-950/40 via-slate-900/90 to-slate-900/90"
-                : failed
-                  ? "bg-gradient-to-r from-rose-950/40 via-slate-900/90 to-slate-900/90"
-                  : "bg-slate-900/90"
-            )}>
-            <div className="flex items-center gap-4">
-              <div
-                className={cn(
-                  "flex h-12 w-12 items-center justify-center rounded-2xl shadow-md",
-                  passed
-                    ? "border border-emerald-500/30 bg-emerald-500/20 text-emerald-400"
-                    : failed
-                      ? "border border-rose-500/30 bg-rose-500/20 text-rose-400"
-                      : "border border-slate-700 bg-slate-800 text-slate-300"
-                )}>
-                {passed ? (
-                  <CheckCircle2 className="h-6 w-6" />
-                ) : failed ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <BadgeCheck className="h-6 w-6" />
-                )}
-              </div>
-              <div>
-                <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                  Äiá»ƒm sá»‘ Ä‘Ã¡nh giÃ¡ phá»ng váº¥n Mentor
-                </div>
-                <div className="mt-0.5 flex items-center gap-2">
-                  <span className="text-2xl font-extrabold text-white tabular-nums">
-                    {finalScore}
-                  </span>
-                  <span className="text-base font-bold text-slate-400">/100</span>
-                  {passed && (
-                    <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-300 uppercase shadow-xs">
-                      âœ“ PASSED
-                    </span>
-                  )}
-                  {failed && (
-                    <span className="rounded-full border border-rose-500/30 bg-rose-500/15 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-rose-300 uppercase shadow-xs">
-                      âœ— FAILED
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
 
       {/* ============== Step Progress ====================================== */}
       <ProgressHub activeIndex={activeIndex} />
@@ -323,6 +264,8 @@ export function MentorReviewModule({
           detailId={detailId}
           sessionId={sessionId}
           applicationId={applicationId}
+          finalScore={finalScore}
+          finalResult={detail?.finalResult ?? null}
           onStatusChange={() => {
             void refetchDetail();
             void refetchSession();
@@ -1793,11 +1736,15 @@ function SessionStatusBadge({ status }: { status: string }) {
 function SessionRoomStep({
   detailId,
   sessionId,
+  finalScore,
+  finalResult,
   onStatusChange,
 }: {
   detailId: number;
   sessionId: number | null;
   applicationId: number;
+  finalScore: number | null;
+  finalResult: string | null;
   onStatusChange: () => void;
 }) {
   const { t } = useTranslation();
@@ -1848,7 +1795,13 @@ function SessionRoomStep({
   // ---- COMPLETED ----
   if (isCompleted) {
     return (
-      <CompletedResultView session={session} mentor={sessionMentor} onChange={onStatusChange} />
+      <CompletedResultView
+        session={session}
+        mentor={sessionMentor}
+        finalScore={finalScore}
+        finalResult={finalResult}
+        onChange={onStatusChange}
+      />
     );
   }
 
@@ -2006,10 +1959,14 @@ function SessionRoomStep({
 function CompletedResultView({
   session,
   mentor,
+  finalScore,
+  finalResult,
   onChange,
 }: {
   session: Session;
   mentor: MentorResponse | null;
+  finalScore: number | null;
+  finalResult: string | null;
   onChange: () => void;
 }) {
   const { t } = useTranslation();
@@ -2022,6 +1979,9 @@ function CompletedResultView({
   const mentorExperienceLabel = mentor?.yearsOfExperience
     ? `${mentor.yearsOfExperience}+ năm`
     : "—";
+  const hasFinalScore = finalScore !== null && finalScore !== undefined;
+  const finalPassed = finalResult === "PASSED";
+  const finalFailed = finalResult === "FAILED";
 
   return (
     <div className="space-y-5">
@@ -2048,10 +2008,39 @@ function CompletedResultView({
                 </div>
 
                 <div className="min-w-0 flex-1 space-y-3">
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
-                    <span>Thông tin phiên</span>
-                    <span className="h-1 w-1 rounded-full bg-slate-400/70" />
-                    <span>Đã hoàn tất</span>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
+                      <span>Thông tin phiên</span>
+                      <span className="h-1 w-1 rounded-full bg-slate-400/70" />
+                      <span>Đã hoàn tất</span>
+                    </div>
+                    {hasFinalScore && (
+                      <div
+                        className={cn(
+                          "inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 shadow-sm",
+                          finalPassed
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"
+                            : finalFailed
+                              ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300"
+                              : "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/25 dark:text-indigo-200"
+                        )}>
+                        <BadgeCheck className="h-4 w-4" />
+                        <div className="leading-none">
+                          <div className="text-[9px] font-black tracking-[0.14em] uppercase opacity-75">
+                            Chứng nhận mentor
+                          </div>
+                          <div className="mt-1 flex items-baseline gap-1">
+                            <span className="text-lg font-black tabular-nums">{finalScore}</span>
+                            <span className="text-[11px] font-bold opacity-70">/100</span>
+                            {(finalPassed || finalFailed) && (
+                              <span className="ml-1 text-[10px] font-black tracking-wide uppercase">
+                                {finalPassed ? "Passed" : "Failed"}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
