@@ -1,5 +1,4 @@
-﻿import { RatingScale10 } from "@/components/feedback/RatingScale10";
-import { DateTimePicker } from "@/components/shared";
+﻿import { DateTimePicker } from "@/components/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1098,23 +1097,20 @@ function ScheduleStep({
   const DURATION_MAX = 120;
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
+    <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
       {/* ============== LEFT COLUMN — Schedule form ============== */}
-      <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-        {/* Sticky-feel header */}
-        <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-indigo-50 via-white to-violet-50 px-6 py-5 dark:border-slate-800 dark:from-indigo-950/40 dark:via-slate-900/60 dark:to-violet-950/30">
-          <div className="pointer-events-none absolute -top-12 -right-10 h-40 w-40 rounded-full bg-indigo-400/20 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-violet-400/20 blur-3xl" />
-          <div className="relative flex items-start justify-between gap-3">
+      <Card className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        <div className="border-b border-slate-200 bg-slate-50/80 px-6 py-5 dark:border-slate-800 dark:bg-slate-900/60">
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/30">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-indigo-200 bg-indigo-500/10 text-indigo-600 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
                 <CalendarCheck className="h-5 w-5" />
               </div>
-              <div>
-                <h3 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold tracking-tight text-slate-900 dark:text-white">
                   {t("userApplicationhistory.mentorScheduleTitle", "Schedule the interview")}
                 </h3>
-                <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
+                <p className="max-w-xl text-sm text-slate-600 dark:text-slate-400">
                   {t(
                     "userApplicationhistory.mentorScheduleDescription",
                     "Pick a date, time, and duration that work for you. You can change it before payment."
@@ -1122,14 +1118,14 @@ function ScheduleStep({
                 </p>
               </div>
             </div>
-            <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-indigo-200 bg-white/70 px-3 py-1 text-[11px] font-bold text-indigo-700 shadow-sm sm:inline-flex dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
-              <Sparkles className="h-3 w-3" />
+            <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 sm:inline-flex dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-300">
+              <Sparkles className="h-3 w-3 text-indigo-500 dark:text-indigo-300" />
               {t("userApplicationhistory.mentorScheduleStepBadge", "Step 3 of 6")}
             </span>
           </div>
         </div>
 
-        <div className="space-y-5 p-5 sm:p-6">
+        <div className="flex flex-1 flex-col space-y-5 p-5 sm:p-6">
           {/* ===== WHEN: Calendar (left) + Clock (right) ===== */}
           <section className="space-y-3">
             <SectionLabel
@@ -1140,8 +1136,7 @@ function ScheduleStep({
                 "Pick the date and a precise start time"
               )}
             />
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-indigo-50/50 shadow-xs dark:border-slate-700 dark:from-slate-900/40 dark:via-slate-900/40 dark:to-indigo-950/20">
-              <div className="pointer-events-none absolute -top-12 -right-10 h-32 w-32 rounded-full bg-indigo-400/20 blur-2xl" />
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
               <DateTimePicker
                 value={joinDateTime}
                 onChange={(d) => setJoinDateTime(d)}
@@ -1188,8 +1183,8 @@ function ScheduleStep({
                     className={cn(
                       "group relative overflow-hidden rounded-2xl border-2 px-3 py-3 text-left transition-all duration-200",
                       active
-                        ? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-violet-50 shadow-md shadow-indigo-500/15 dark:border-indigo-600 dark:from-indigo-950/50 dark:to-violet-950/40"
-                        : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-indigo-700"
+                        ? "border-indigo-500 bg-indigo-500/10 shadow-sm dark:border-indigo-400 dark:bg-indigo-950/30"
+                        : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600"
                     )}>
                     <div className="flex items-baseline justify-between">
                       <span
@@ -1217,7 +1212,7 @@ function ScheduleStep({
                         className={cn(
                           "h-full rounded-full transition-all duration-300",
                           active
-                            ? "bg-gradient-to-r from-indigo-500 to-violet-500"
+                            ? "bg-indigo-500"
                             : "bg-slate-300 group-hover:bg-indigo-300 dark:bg-slate-700 dark:group-hover:bg-indigo-700"
                         )}
                         style={{ width: `${fill}%` }}
@@ -1274,13 +1269,12 @@ function ScheduleStep({
           </section>
 
           {/* ===== CTA ===== */}
-          <div className="relative pt-1">
+          <div className="relative mt-auto pt-1">
             <div className="pointer-events-none absolute inset-x-0 -top-2 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-800" />
             <Button
               onClick={handleSubmit}
               disabled={submitting}
-              className="relative h-12 w-full gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 text-sm font-bold tracking-wide text-white shadow-lg shadow-indigo-500/25 hover:from-indigo-700 hover:to-violet-700 hover:shadow-indigo-500/40">
-              <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 transition-opacity duration-500 hover:opacity-100" />
+              className="relative h-12 w-full gap-2 overflow-hidden rounded-xl bg-indigo-600 text-sm font-semibold tracking-wide text-white shadow-sm hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-500/20">
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -1299,16 +1293,12 @@ function ScheduleStep({
       </Card>
 
       {/* ============== RIGHT COLUMN — Mentor hero + Summary card ============== */}
-      <div className="space-y-4 lg:sticky lg:top-4">
+      <div className="space-y-4 self-stretch lg:sticky lg:top-4">
         {/* ===== Mentor hero card ===== */}
         <Card className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-          {/* Soft brand banner */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-br from-indigo-500/15 via-violet-500/15 to-fuchsia-500/15 dark:from-indigo-500/25 dark:via-violet-500/20 dark:to-fuchsia-500/15" />
-          <div className="pointer-events-none absolute -top-16 left-1/2 h-40 w-72 -translate-x-1/2 rounded-full bg-indigo-400/30 blur-3xl dark:bg-indigo-500/30" />
-
-          <div className="relative px-5 pt-5 pb-4">
+          <div className="relative border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white/80 px-2.5 py-1 text-[11px] font-extrabold tracking-wider text-indigo-700 uppercase shadow-xs backdrop-blur dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
                 <UserCheck className="h-3 w-3" />
                 {t("userApplicationhistory.mentorScheduleSelectedMentorTitle", "Selected mentor")}
               </span>
@@ -1317,7 +1307,7 @@ function ScheduleStep({
                   href={selectedMentor.linkedInUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
                   aria-label="LinkedIn">
                   <Linkedin className="h-3.5 w-3.5" />
                 </a>
@@ -1327,14 +1317,14 @@ function ScheduleStep({
             {selectedMentor ? (
               <>
                 {/* Identity */}
-                <div className="mt-3 flex items-start gap-3">
+                <div className="mt-4 flex items-start gap-3">
                   <div className="relative">
-                    <Avatar className="h-14 w-14 rounded-2xl border-2 border-white shadow-md ring-1 shadow-indigo-500/15 ring-slate-200 dark:border-slate-900 dark:ring-slate-700">
+                    <Avatar className="h-16 w-16 rounded-2xl border-2 border-white shadow-sm ring-1 ring-slate-200 dark:border-slate-900 dark:ring-slate-700">
                       <AvatarImage
                         src={selectedMentor.avatarUrl || "/placeholder.png"}
                         alt={selectedMentor.name ?? "Mentor"}
                       />
-                      <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-base font-extrabold text-white">
+                      <AvatarFallback className="rounded-2xl bg-indigo-600 text-base font-extrabold text-white">
                         {selectedMentor.name?.slice(0, 1).toUpperCase() ?? (
                           <CircleUser className="h-6 w-6" />
                         )}
@@ -1347,7 +1337,7 @@ function ScheduleStep({
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    <h4 className="truncate text-base font-semibold tracking-tight text-slate-900 dark:text-white">
                       {selectedMentor.name ?? "—"}
                     </h4>
                     {selectedMentor.currentCompany && (
@@ -1389,12 +1379,12 @@ function ScheduleStep({
 
                 {/* Expertise */}
                 {selectedMentor.expertise && (
-                  <div className="mt-4 rounded-xl border border-violet-200/70 bg-gradient-to-br from-violet-50 to-fuchsia-50/50 p-3 dark:border-violet-900/40 dark:from-violet-950/30 dark:to-fuchsia-950/20">
-                    <div className="flex items-center gap-1.5 text-[10px] font-extrabold tracking-wider text-violet-700 uppercase dark:text-violet-300">
+                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-950/30">
+                    <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wide text-slate-600 dark:text-slate-400">
                       <Sparkles className="h-3 w-3" />
                       {t("userApplicationhistory.mentorSelectExpertise", "Expertise")}
                     </div>
-                    <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    <p className="mt-1 text-sm leading-6 font-medium text-slate-800 dark:text-slate-100">
                       {selectedMentor.expertise}
                     </p>
                   </div>
@@ -1402,7 +1392,7 @@ function ScheduleStep({
 
                 {/* Bio + contact */}
                 {(selectedMentor.bio || selectedMentor.email) && (
-                  <div className="mt-4 space-y-2 border-t border-slate-200/80 pt-3 text-xs dark:border-slate-800">
+                  <div className="mt-4 space-y-2 border-t border-slate-200 pt-3 text-xs dark:border-slate-800">
                     {selectedMentor.bio && (
                       <p className="leading-relaxed text-slate-600 italic dark:text-slate-400">
                         &ldquo;{selectedMentor.bio}&rdquo;
@@ -1433,16 +1423,15 @@ function ScheduleStep({
 
         {/* ===== Summary card ===== */}
         <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-          <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-5 py-4 dark:border-slate-800 dark:from-emerald-950/30 dark:via-slate-900/60 dark:to-sky-950/30">
-            <div className="pointer-events-none absolute -top-10 right-4 h-24 w-24 rounded-full bg-emerald-400/15 blur-2xl" />
+          <div className="relative overflow-hidden border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
             <div className="relative flex items-center justify-between gap-2">
-              <h3 className="flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-300">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
                   <BadgeCheck className="h-4 w-4" />
                 </span>
                 {t("userApplicationhistory.mentorScheduleSummaryTitle", "Interview summary")}
               </h3>
-              <span className="rounded-full border border-emerald-200/70 bg-white/80 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-700 uppercase shadow-xs backdrop-blur dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
+              <span className="rounded-full border border-emerald-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
                 {t("userApplicationhistory.mentorScheduleSummaryLiveLabel", "Live preview")}
               </span>
             </div>
@@ -1450,10 +1439,10 @@ function ScheduleStep({
 
           <div className="space-y-4 p-5">
             {/* Hero time block */}
-            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 dark:border-slate-700 dark:from-slate-950/40 dark:to-slate-900/40">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950/30">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                     {t("userApplicationhistory.mentorScheduleSummaryStart", "Start")}
                   </div>
                   <div className="mt-0.5 flex items-baseline gap-1 text-slate-900 tabular-nums dark:text-white">
@@ -1466,7 +1455,7 @@ function ScheduleStep({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                     {t("userApplicationhistory.mentorScheduleSummaryEnds", "Ends")}
                   </div>
                   <div className="mt-0.5 flex items-baseline gap-1 tabular-nums">
@@ -1511,7 +1500,7 @@ function ScheduleStep({
               )}
             </div>
 
-            <div className="rounded-xl border border-indigo-200/70 bg-gradient-to-br from-indigo-50/60 to-white p-3 dark:border-indigo-900/40 dark:from-indigo-950/30 dark:to-slate-900/40">
+            <div className="rounded-xl border border-indigo-200/70 bg-indigo-50/60 p-3 dark:border-indigo-900/40 dark:bg-indigo-950/20">
               <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
                 <strong className="text-slate-800 dark:text-slate-200">
                   {t(
@@ -1537,12 +1526,10 @@ function ScheduleStep({
 function SectionLabel({ index, label, hint }: { index: number; label: string; hint?: string }) {
   return (
     <div className="flex items-baseline gap-2">
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[10px] font-extrabold text-white shadow-sm shadow-indigo-500/30">
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-extrabold text-white shadow-sm">
         {index}
       </span>
-      <span className="text-[11px] font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-        {label}
-      </span>
+      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</span>
       {hint && (
         <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">— {hint}</span>
       )}
@@ -1569,24 +1556,22 @@ function ModeOption({
 }) {
   const toneClasses = {
     sky: {
-      ring: "ring-sky-500/20",
-      activeBorder:
-        "border-sky-500 bg-gradient-to-br from-sky-50 to-white dark:border-sky-600 dark:from-sky-950/40 dark:to-slate-900/40",
+      ring: "ring-sky-500/15",
+      activeBorder: "border-sky-500 bg-sky-500/10 dark:border-sky-400 dark:bg-sky-950/25",
       iconBg: "bg-sky-500/15 text-sky-600 dark:text-sky-300",
       title: "text-sky-700 dark:text-sky-200",
       desc: "text-slate-600 dark:text-slate-400",
       badgeBg:
-        "border-sky-200 bg-sky-100 text-sky-700 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300",
+        "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-300",
     },
     amber: {
-      ring: "ring-amber-500/20",
-      activeBorder:
-        "border-amber-500 bg-gradient-to-br from-amber-50 to-white dark:border-amber-600 dark:from-amber-950/40 dark:to-slate-900/40",
+      ring: "ring-amber-500/15",
+      activeBorder: "border-amber-500 bg-amber-500/10 dark:border-amber-400 dark:bg-amber-950/25",
       iconBg: "bg-amber-500/15 text-amber-600 dark:text-amber-300",
       title: "text-amber-700 dark:text-amber-200",
       desc: "text-slate-600 dark:text-slate-400",
       badgeBg:
-        "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+        "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300",
     },
   }[tone];
 
@@ -1598,8 +1583,8 @@ function ModeOption({
       className={cn(
         "relative flex flex-col items-start gap-2 rounded-2xl border-2 p-3.5 text-left transition-all duration-200",
         active
-          ? cn("shadow-md ring-2", toneClasses.activeBorder, toneClasses.ring)
-          : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40"
+          ? cn("shadow-sm ring-1", toneClasses.activeBorder, toneClasses.ring)
+          : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600"
       )}>
       <div className="flex w-full items-start justify-between">
         <div
@@ -1614,7 +1599,7 @@ function ModeOption({
         {active && badge && (
           <span
             className={cn(
-              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-extrabold tracking-wider uppercase",
+              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide",
               toneClasses.badgeBg
             )}>
             <Sparkles className="h-2.5 w-2.5" />
@@ -1625,7 +1610,7 @@ function ModeOption({
       <div>
         <div
           className={cn(
-            "text-sm font-extrabold tracking-tight",
+            "text-sm font-semibold tracking-tight",
             active ? toneClasses.title : "text-slate-800 dark:text-slate-100"
           )}>
           {title}
@@ -1648,9 +1633,9 @@ function StatBlock({
   tone: "amber" | "indigo" | "violet";
 }) {
   const toneClasses = {
-    amber: "border-amber-200/70 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-950/20",
-    indigo: "border-indigo-200/70 bg-indigo-50/50 dark:border-indigo-900/40 dark:bg-indigo-950/20",
-    violet: "border-violet-200/70 bg-violet-50/50 dark:border-violet-900/40 dark:bg-violet-950/20",
+    amber: "border-amber-200/70 bg-amber-50/70 dark:border-amber-900/40 dark:bg-amber-950/20",
+    indigo: "border-indigo-200/70 bg-indigo-50/70 dark:border-indigo-900/40 dark:bg-indigo-950/20",
+    violet: "border-violet-200/70 bg-violet-50/70 dark:border-violet-900/40 dark:bg-violet-950/20",
   }[tone];
 
   return (
@@ -1659,7 +1644,7 @@ function StatBlock({
         "flex flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center",
         toneClasses
       )}>
-      <div className="flex items-center gap-1 text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+      <div className="flex items-center gap-1 text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
         {icon}
         <span className="leading-none">{label}</span>
       </div>
@@ -1758,7 +1743,7 @@ function SessionStatusBadge({ status }: { status: string }) {
     },
     PAID: {
       tone: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300",
-      labelKey: "userApplicationhistory.mentorSessionStatusPaid",
+      labelKey: "userApplicationhistory.mentorSessionStatusBooked",
     },
     ONGOING: {
       tone: "bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300",
@@ -1788,7 +1773,12 @@ function SessionStatusBadge({ status }: { status: string }) {
           "rounded-full px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase",
           cfg.tone
         )}>
-        {t(cfg.labelKey)}
+        {t(
+          cfg.labelKey,
+          status === "PAID"
+            ? "Đã đặt lịch"
+            : t("userApplicationhistory.mentorSessionStatusPaid", "Đã lên lịch")
+        )}
       </span>
     </div>
   );
@@ -1799,6 +1789,7 @@ function SessionStatusBadge({ status }: { status: string }) {
 // ============================================================================
 
 function SessionRoomStep({
+  detailId,
   sessionId,
   onStatusChange,
 }: {
@@ -1808,8 +1799,12 @@ function SessionRoomStep({
   onStatusChange: () => void;
 }) {
   const { t } = useTranslation();
+  const { data: mentors } = useAssignedMentors(detailId);
   const { data: session, refetch } = useSessionById(sessionId ?? 0);
   const [now, setNow] = useState(() => Date.now());
+  const sessionMentor = useMemo(() => {
+    return mentors?.find((mentor) => mentor.id === session?.mentorId) ?? null;
+  }, [mentors, session?.mentorId]);
 
   // Poll session every 30s while in WAITING or IN_CALL
   useEffect(() => {
@@ -1850,112 +1845,153 @@ function SessionRoomStep({
 
   // ---- COMPLETED ----
   if (isCompleted) {
-    return <CompletedResultView session={session} onChange={onStatusChange} />;
+    return (
+      <CompletedResultView session={session} mentor={sessionMentor} onChange={onStatusChange} />
+    );
   }
 
   // ---- ONGOING or WAITING ----
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-      <div className="border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-sky-50 px-6 py-5 dark:border-slate-800 dark:from-emerald-950/40 dark:to-sky-950/40">
-        <h3 className="flex items-center gap-2 text-base font-extrabold text-slate-900 dark:text-white">
-          <Video className="h-4 w-4 text-emerald-500" />
-          {t("userApplicationhistory.mentorSessionTitle", { id: session.id })}
-        </h3>
-        <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-          {t("userApplicationhistory.mentorSessionHint")}
-        </p>
+      <div className="border-b border-slate-200 bg-slate-50/80 px-6 py-5 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 space-y-2">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-300">
+              <Video className="h-3 w-3 text-indigo-500 dark:text-indigo-300" />
+              {t("userApplicationhistory.mentorSessionTitle", { id: session.id })}
+            </div>
+            <h3 className="text-base font-semibold tracking-tight text-slate-900 dark:text-white">
+              {t("userApplicationhistory.mentorSessionHint")}
+            </h3>
+            <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+              Phòng sẽ mở trước 15 phút. Bạn có thể vào từ trình duyệt khi trạng thái cho phép.
+            </p>
+          </div>
+          <SessionStatusBadge status={session.status ?? "SCHEDULED"} />
+        </div>
       </div>
 
-      <div className="space-y-4 p-6">
-        <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:grid-cols-2 dark:border-slate-700 dark:bg-slate-900/40">
-          <InfoRow
-            icon={<CalendarCheck className="h-3.5 w-3.5" />}
-            label={t("userApplicationhistory.mentorSessionFieldTime")}
-            value={session.joinTime ? formatDateTime(session.joinTime) : "â€”"}
-          />
-          <InfoRow
-            icon={<Clock className="h-3.5 w-3.5" />}
-            label={t("userApplicationhistory.mentorSessionFieldDuration")}
-            value={t("userApplicationhistory.mentorSessionDurationValue", {
-              minutes: session.duration ?? 0,
-            })}
-          />
-          <InfoRow
-            icon={<Video className="h-3.5 w-3.5" />}
-            label={t("userApplicationhistory.mentorSessionFieldMode")}
-            value={
-              session.roomUrl
-                ? t("userApplicationhistory.mentorSessionModeOnline")
-                : t("userApplicationhistory.mentorSessionModeOffline")
-            }
-          />
-          <InfoRow
-            icon={<UserCheck className="h-3.5 w-3.5" />}
-            label={t("userApplicationhistory.mentorSessionFieldMentor")}
-            value={`#${session.mentorId ?? "â€”"}`}
-          />
-        </div>
-
-        <SessionStatusBadge status={session.status ?? "SCHEDULED"} />
-
-        {/* Countdown */}
-        {session.status === "PAID" && joinAt > 0 && (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50/60 p-5 dark:border-sky-900/60 dark:bg-sky-950/30">
-            <div className="text-[10px] font-bold tracking-widest text-sky-600 uppercase dark:text-sky-400">
-              {canEnter
-                ? t("userApplicationhistory.mentorSessionRoomOpen")
-                : t("userApplicationhistory.mentorSessionCountdownLabel")}
+      <div className="grid gap-4 p-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+            <div className="mb-3 flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
+                Thông tin phiên
+              </h4>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Cập nhật mỗi 30 giây
+              </span>
             </div>
-            <div className="text-3xl font-black text-sky-700 tabular-nums dark:text-sky-200">
-              {canEnter
-                ? t("userApplicationhistory.mentorSessionReady")
-                : formatCountdown(Math.max(0, joinAt - now))}
-            </div>
-            <div className="text-xs text-sky-700/80 dark:text-sky-300/80">
-              {canEnter
-                ? t("userApplicationhistory.mentorSessionReadyHint")
-                : t("userApplicationhistory.mentorSessionOpensBeforeHint", {
-                    time: session.joinTime ? formatTimeOnly(session.joinTime) : "",
-                  })}
+            <div className="grid gap-0 sm:grid-cols-2">
+              <InfoRow
+                icon={<CalendarCheck className="h-3.5 w-3.5" />}
+                label={t("userApplicationhistory.mentorSessionFieldTime")}
+                value={session.joinTime ? formatDateTime(session.joinTime) : "—"}
+              />
+              <InfoRow
+                icon={<Clock className="h-3.5 w-3.5" />}
+                label={t("userApplicationhistory.mentorSessionFieldDuration")}
+                value={`${session.duration ?? 0} phút`}
+              />
+              <InfoRow
+                icon={<Video className="h-3.5 w-3.5" />}
+                label={t("userApplicationhistory.mentorSessionFieldMode")}
+                value={
+                  session.roomUrl
+                    ? t("userApplicationhistory.mentorSessionModeOnline")
+                    : t("userApplicationhistory.mentorSessionModeOffline")
+                }
+              />
+              <InfoRow
+                icon={<UserCheck className="h-3.5 w-3.5" />}
+                label={t("userApplicationhistory.mentorSessionFieldMentor")}
+                value={
+                  sessionMentor
+                    ? `${sessionMentor.name ?? `#${session.mentorId ?? "—"}`}${
+                        sessionMentor.currentCompany ? ` · ${sessionMentor.currentCompany}` : ""
+                      }`
+                    : `#${session.mentorId ?? "—"}`
+                }
+              />
             </div>
           </div>
-        )}
 
-        {/* Action buttons */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={() => {
-              if (session.roomUrl) {
-                window.location.href = `/user/sessions/room/${session.id}`;
-              } else {
-                toast.info(t("userApplicationhistory.mentorSessionOfflineToast"));
-              }
-            }}
-            disabled={!canEnter && session.status === "PAID"}
-            className="h-11 flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-sky-600 text-xs font-bold text-white shadow-sm hover:from-emerald-600 hover:to-sky-700 disabled:cursor-not-allowed disabled:opacity-50">
-            <LogIn className="h-4 w-4" />
-            {session.status === "ONGOING"
-              ? t("userApplicationhistory.mentorSessionJoinOngoing")
-              : t("userApplicationhistory.mentorSessionJoinVideoCall")}
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => void refetch()}
-            className="h-11 gap-2 border-slate-300 px-4 text-xs font-bold dark:border-slate-700">
-            <RefreshCw className="h-4 w-4" />
-            {t("userApplicationhistory.mentorSessionRefresh")}
-          </Button>
-        </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <Phone className="h-3.5 w-3.5 text-indigo-500" />
+              <span>Mẹo</span>
+            </div>
+            <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+              Nếu gặp sự cố kỹ thuật, refresh trang và thử lại. Trang sẽ tự động cập nhật trạng thái
+              phiên mỗi 30 giây.
+            </p>
+          </div>
+        </section>
 
-        {/* Tip */}
-        <div className="flex items-start gap-2.5 rounded-xl border border-indigo-200 bg-indigo-50/50 p-3 text-xs text-indigo-800 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-200">
-          <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <p className="leading-relaxed">
-            <strong>{t("userApplicationhistory.mentorRefreshTip")}</strong>{" "}
-            {t("userApplicationhistory.mentorRefreshHint")}
-          </p>
-        </div>
+        <section className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                  Sẵn sàng vào phòng
+                </div>
+                <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
+                  Theo dõi thời gian và vào phòng đúng lúc
+                </div>
+              </div>
+            </div>
+
+            {session.status === "PAID" && joinAt > 0 && (
+              <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50/60 p-4 dark:border-sky-900/60 dark:bg-sky-950/25">
+                <div className="text-[10px] font-semibold tracking-wide text-sky-600 uppercase dark:text-sky-400">
+                  {canEnter
+                    ? t("userApplicationhistory.mentorSessionRoomOpen")
+                    : t("userApplicationhistory.mentorSessionCountdownLabel")}
+                </div>
+                <div className="mt-2 text-3xl font-black text-sky-700 tabular-nums dark:text-sky-200">
+                  {canEnter
+                    ? t("userApplicationhistory.mentorSessionReady")
+                    : formatCountdown(Math.max(0, joinAt - now))}
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-sky-700/80 dark:text-sky-300/80">
+                  {canEnter
+                    ? t("userApplicationhistory.mentorSessionReadyHint")
+                    : t("userApplicationhistory.mentorSessionOpensBeforeHint", {
+                        time: session.joinTime ? formatTimeOnly(session.joinTime) : "",
+                      })}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={() => {
+                  if (session.roomUrl) {
+                    window.location.href = `/user/sessions/room/${session.id}`;
+                  } else {
+                    toast.info(t("userApplicationhistory.mentorSessionOfflineToast"));
+                  }
+                }}
+                disabled={!canEnter && session.status === "PAID"}
+                className="h-11 flex-1 gap-2 bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
+                <LogIn className="h-4 w-4" />
+                {session.status === "ONGOING"
+                  ? t("userApplicationhistory.mentorSessionJoinOngoing")
+                  : t("userApplicationhistory.mentorSessionJoinVideoCall")}
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => void refetch()}
+                className="h-11 gap-2 border-slate-300 px-4 text-xs font-semibold dark:border-slate-700">
+                <RefreshCw className="h-4 w-4" />
+                {t("userApplicationhistory.mentorSessionRefresh")}
+              </Button>
+            </div>
+          </div>
+        </section>
       </div>
     </Card>
   );
@@ -1965,17 +2001,30 @@ function SessionRoomStep({
 // SUB-COMPONENT: CompletedResultView
 // ============================================================================
 
-function CompletedResultView({ session, onChange }: { session: Session; onChange: () => void }) {
+function CompletedResultView({
+  session,
+  mentor,
+  onChange,
+}: {
+  session: Session;
+  mentor: MentorResponse | null;
+  onChange: () => void;
+}) {
   const { t } = useTranslation();
   const review = session.mentorReview as NonNullable<Session["mentorReview"]>;
   const feedback = session.mentorFeedback;
   const candidateStart = session.startTime1 ?? null;
   const candidateEnd = session.endTime1 ?? null;
+  const mentorAverageRating = mentor?.averageRating ?? 0;
+  const mentorSessionCount = mentor?.totalSession ?? 0;
+  const mentorExperienceLabel = mentor?.yearsOfExperience
+    ? `${mentor.yearsOfExperience}+ năm`
+    : "—";
 
   return (
     <div className="space-y-5">
-      <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+      <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/20">
           <div className="min-w-0 space-y-1">
             <div className="flex items-center gap-2 text-sm font-bold text-slate-950 dark:text-white">
               <BadgeCheck className="h-4 w-4 text-emerald-500" />
@@ -1990,130 +2039,255 @@ function CompletedResultView({ session, onChange }: { session: Session; onChange
           </span>
         </div>
 
-        <div className="grid gap-0 md:grid-cols-4">
-          <InfoTile
-            icon={<CalendarCheck className="h-4 w-4" />}
-            label={t("userApplicationhistory.mentorSessionFieldTime")}
-            value={session.joinTime ? formatDateTime(session.joinTime) : "-"}
-          />
-          <InfoTile
-            icon={<Clock className="h-4 w-4" />}
-            label={t("userApplicationhistory.mentorSessionFieldDuration")}
-            value={t("userApplicationhistory.mentorSessionDurationValue", {
-              minutes: session.duration ?? 0,
-            })}
-          />
-          <InfoTile
-            icon={<PlayCircle className="h-4 w-4" />}
-            label={t("userApplicationhistory.mentorSessionFieldParticipation")}
-            value={
-              candidateStart && candidateEnd
-                ? `${formatTimeOnly(candidateStart)} - ${formatTimeOnly(candidateEnd)}`
-                : "-"
-            }
-          />
-          <InfoTile
-            icon={<UserCheck className="h-4 w-4" />}
-            label={t("userApplicationhistory.mentorSessionFieldMentor")}
-            value={session.mentorId ? `#${session.mentorId}` : "-"}
-          />
+        <div className="grid gap-5 p-5 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="space-y-5">
+            <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 shadow-none dark:border-slate-800 dark:bg-slate-950/30">
+              <div className="flex flex-wrap items-start gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
+                <div className="flex h-24 w-24 shrink-0 overflow-hidden rounded-3xl border border-slate-200 bg-white p-0.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                  <Avatar className="h-full w-full rounded-[1.15rem]">
+                    <AvatarImage
+                      src={mentor?.avatarUrl ?? undefined}
+                      alt={mentor?.name ?? "Mentor"}
+                      className="h-full w-full object-cover"
+                    />
+                    <AvatarFallback className="rounded-[1.15rem] bg-indigo-500/10 text-lg font-bold text-indigo-500 dark:bg-indigo-950/30 dark:text-indigo-300">
+                      {(mentor?.name ?? "M")
+                        .split(" ")
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
+                    <span>Thông tin phiên</span>
+                    <span className="h-1 w-1 rounded-full bg-slate-400/70" />
+                    <span>Đã hoàn tất</span>
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
+                      {mentor?.name ?? (session.mentorId ? `#${session.mentorId}` : "-")}
+                    </h3>
+                    <p className="truncate text-sm text-slate-500 dark:text-slate-400">
+                      {mentor?.currentCompany ?? "Mentor"}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/30">
+                      <Star className="h-4 w-4 fill-current text-amber-500" />
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-semibold tracking-[0.16em] text-amber-700/80 uppercase dark:text-amber-300/80">
+                          Mentor ratio
+                        </div>
+                        <div className="text-sm font-bold text-amber-700 tabular-nums dark:text-amber-300">
+                          {mentorAverageRating ? `${mentorAverageRating.toFixed(1)}/5` : "—"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
+                      <Users className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-semibold tracking-[0.16em] text-slate-500 uppercase dark:text-slate-400">
+                          Phiên mentor
+                        </div>
+                        <div className="text-sm font-bold text-slate-950 tabular-nums dark:text-white">
+                          {mentorSessionCount}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2 dark:border-indigo-900/50 dark:bg-indigo-950/25">
+                      <Award className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-semibold tracking-[0.16em] text-indigo-600/80 uppercase dark:text-indigo-300/80">
+                          Kinh nghiệm
+                        </div>
+                        <div className="text-sm font-bold text-indigo-700 tabular-nums dark:text-indigo-200">
+                          {mentorExperienceLabel}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-0 md:grid-cols-2">
+                <InfoTile
+                  icon={<CalendarCheck className="h-4 w-4" />}
+                  label={t("userApplicationhistory.mentorSessionFieldTime")}
+                  value={session.joinTime ? formatDateTime(session.joinTime) : "-"}
+                />
+                <InfoTile
+                  icon={<Clock className="h-4 w-4" />}
+                  label={t("userApplicationhistory.mentorSessionFieldDuration")}
+                  value={`${session.duration ?? 0} phút`}
+                />
+                <InfoTile
+                  icon={<PlayCircle className="h-4 w-4" />}
+                  label={t("userApplicationhistory.mentorSessionFieldParticipation")}
+                  value={
+                    candidateStart && candidateEnd
+                      ? `${formatTimeOnly(candidateStart)} - ${formatTimeOnly(candidateEnd)}`
+                      : "-"
+                  }
+                />
+                <InfoTile
+                  icon={<UserCheck className="h-4 w-4" />}
+                  label={t("userApplicationhistory.mentorSessionFieldMentor")}
+                  value={
+                    mentor?.name
+                      ? `${mentor.name}${mentor?.currentCompany ? ` · ${mentor.currentCompany}` : ""}`
+                      : session.mentorId
+                        ? `#${session.mentorId}`
+                        : "-"
+                  }
+                />
+              </div>
+            </Card>
+
+            {review && (
+              <CandidateMentorFeedbackBlock
+                session={session}
+                feedback={feedback}
+                onChange={onChange}
+              />
+            )}
+
+            {session.recordUrl && (
+              <Card className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 shadow-sm dark:border-indigo-900/60 dark:bg-indigo-950/30">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-indigo-900 dark:text-indigo-100">
+                    <Video className="h-4 w-4" />
+                    <span>{t("userApplicationhistory.mentorSessionRecordingTitle")}</span>
+                  </div>
+                  <a
+                    href={session.recordUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-8 items-center gap-1.5 rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {t("userApplicationhistory.mentorSessionWatchRecording")}
+                  </a>
+                </div>
+              </Card>
+            )}
+          </div>
+
+          <div className="space-y-5">
+            {review ? (
+              <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/20">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 text-amber-500" />
+                    <h3 className="text-sm font-bold text-slate-950 dark:text-white">
+                      {t("userApplicationhistory.mentorSessionReviewTitle")}
+                    </h3>
+                  </div>
+                  {review.rating !== undefined && (
+                    <span className="inline-flex h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-3 text-sm font-bold text-amber-700 tabular-nums dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                      {review.rating}/5
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-4 p-5">
+                  <div className="grid gap-3 xl:grid-cols-3">
+                    {review.strength && (
+                      <ReviewInsight
+                        title={t("userApplicationhistory.mentorSessionReviewStrength")}
+                        content={review.strength}
+                        tone="emerald"
+                      />
+                    )}
+                    {review.weakness && (
+                      <ReviewInsight
+                        title={t("userApplicationhistory.mentorSessionReviewWeakness")}
+                        content={review.weakness}
+                        tone="rose"
+                      />
+                    )}
+                    {review.improve && (
+                      <ReviewInsight
+                        title={t("userApplicationhistory.mentorSessionReviewImprove")}
+                        content={review.improve}
+                        tone="sky"
+                      />
+                    )}
+                  </div>
+
+                  {(review.situationNote ||
+                    review.taskNote ||
+                    review.actionNote ||
+                    review.resultNote) && (
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-500/10 text-indigo-500 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
+                          <Sparkles className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-950 dark:text-white">
+                            {t("userApplicationhistory.mentorSessionReviewStar")}
+                          </h4>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                        {review.situationNote && (
+                          <StarNoteBlock
+                            tone="indigo"
+                            label="Situation"
+                            title="Bối cảnh"
+                            content={review.situationNote}
+                          />
+                        )}
+                        {review.taskNote && (
+                          <StarNoteBlock
+                            tone="sky"
+                            label="Task"
+                            title="Mục tiêu"
+                            content={review.taskNote}
+                          />
+                        )}
+                        {review.actionNote && (
+                          <StarNoteBlock
+                            tone="emerald"
+                            label="Action"
+                            title="Cách xử lý"
+                            content={review.actionNote}
+                          />
+                        )}
+                        {review.resultNote && (
+                          <StarNoteBlock
+                            tone="amber"
+                            label="Result"
+                            title="Kết quả"
+                            content={review.resultNote}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ) : (
+              <Card className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  <Hourglass className="h-5 w-5" />
+                </div>
+                <h3 className="mt-3 text-sm font-semibold text-slate-950 dark:text-white">
+                  {t("userApplicationhistory.mentorSessionAwaitingReview")}
+                </h3>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {t("userApplicationhistory.mentorSessionAwaitingReviewDesc")}
+                </p>
+              </Card>
+            )}
+          </div>
         </div>
       </Card>
-
-      {session.recordUrl && (
-        <Card className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 shadow-sm dark:border-indigo-900/60 dark:bg-indigo-950/30">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-indigo-900 dark:text-indigo-100">
-              <Video className="h-4 w-4" />
-              <span>{t("userApplicationhistory.mentorSessionRecordingTitle")}</span>
-            </div>
-            <a
-              href={session.recordUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
-              <ExternalLink className="h-3.5 w-3.5" />
-              {t("userApplicationhistory.mentorSessionWatchRecording")}
-            </a>
-          </div>
-        </Card>
-      )}
-
-      {review ? (
-        <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-amber-500" />
-              <h3 className="text-sm font-bold text-slate-950 dark:text-white">
-                {t("userApplicationhistory.mentorSessionReviewTitle")}
-              </h3>
-            </div>
-            {review.rating !== undefined && (
-              <span className="inline-flex h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-3 text-sm font-bold text-amber-700 tabular-nums dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
-                {review.rating}/10
-              </span>
-            )}
-          </div>
-
-          <div className="grid gap-4 p-5 lg:grid-cols-3">
-            {review.strength && (
-              <ReviewInsight
-                title={t("userApplicationhistory.mentorSessionReviewStrength")}
-                content={review.strength}
-                tone="emerald"
-              />
-            )}
-            {review.weakness && (
-              <ReviewInsight
-                title={t("userApplicationhistory.mentorSessionReviewWeakness")}
-                content={review.weakness}
-                tone="rose"
-              />
-            )}
-            {review.improve && (
-              <ReviewInsight
-                title={t("userApplicationhistory.mentorSessionReviewImprove")}
-                content={review.improve}
-                tone="sky"
-              />
-            )}
-          </div>
-
-          {(review.situationNote || review.taskNote || review.actionNote || review.resultNote) && (
-            <div className="border-t border-slate-200 px-5 py-4 dark:border-slate-800">
-              <details className="group rounded-lg border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-950/30">
-                <summary className="cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-200">
-                  {t("userApplicationhistory.mentorSessionReviewStar")}
-                </summary>
-                <div className="mt-3 grid gap-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                  {review.situationNote && (
-                    <ReviewRow label="Situation" content={review.situationNote} />
-                  )}
-                  {review.taskNote && <ReviewRow label="Task" content={review.taskNote} />}
-                  {review.actionNote && <ReviewRow label="Action" content={review.actionNote} />}
-                  {review.resultNote && <ReviewRow label="Result" content={review.resultNote} />}
-                </div>
-              </details>
-            </div>
-          )}
-        </Card>
-      ) : (
-        <Card className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-            <Hourglass className="h-5 w-5" />
-          </div>
-          <h3 className="mt-3 text-sm font-semibold text-slate-950 dark:text-white">
-            {t("userApplicationhistory.mentorSessionAwaitingReview")}
-          </h3>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            {t("userApplicationhistory.mentorSessionAwaitingReviewDesc")}
-          </p>
-        </Card>
-      )}
-
-      {review && (
-        <CandidateMentorFeedbackBlock session={session} feedback={feedback} onChange={onChange} />
-      )}
     </div>
   );
 }
@@ -2150,8 +2324,8 @@ function CandidateMentorFeedbackBlock({
 
   const validate = () => {
     const next: typeof errors = {};
-    if (!rating || rating < 1 || rating > 10) {
-      next.rating = "Vui lÃ²ng chá»n Ä‘iá»ƒm Ä‘Ã¡nh giÃ¡ (1â€“10)";
+    if (!rating || rating < 1 || rating > 5) {
+      next.rating = "Vui lòng chọn điểm đánh giá (1–5)";
     }
     if (comment.trim().length < MIN_COMMENT_LENGTH) {
       next.comment = t("userApplicationhistory.mentorSessionCommentMinError", {
@@ -2207,73 +2381,103 @@ function CandidateMentorFeedbackBlock({
   };
 
   return (
-    <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-        <div className="flex items-center gap-2">
-          <Star className="h-4 w-4 text-indigo-500" />
-          <h3 className="text-sm font-bold text-slate-950 dark:text-white">Danh gia Mentor</h3>
-          {hasFeedback && !editing && (
-            <span className="inline-flex h-6 items-center rounded-md bg-emerald-50 px-2 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
-              Da gui
-            </span>
-          )}
+    <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+      <div className="relative flex items-center justify-center border-b border-slate-200 bg-slate-50/70 px-5 py-4 text-center dark:border-slate-800 dark:bg-slate-950/20">
+        <div className="space-y-1">
+          <div className="flex items-center justify-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-500/10 text-indigo-500 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
+              <Star className="h-4 w-4" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-950 dark:text-white">Đánh giá mentor</h3>
+          </div>
         </div>
+
         {hasFeedback && !editing && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setEditing(true)}
-            className="h-8 gap-1.5 px-3 text-xs font-semibold">
-            <RefreshCw className="h-3.5 w-3.5" />
-            {t("userApplicationhistory.mentorSessionEditFeedback")}
-          </Button>
+          <span className="absolute top-1/2 right-5 inline-flex h-7 -translate-y-1/2 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+            Đã gửi
+          </span>
         )}
       </div>
 
       {!editing && hasFeedback ? (
         <div className="space-y-4 p-5">
-          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/30">
-            <div className="flex items-center gap-0.5">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className={cn(
-                    "h-3.5 w-3.5",
-                    i < Math.round(feedback?.rating ?? 0)
-                      ? "fill-amber-400 text-amber-400"
-                      : "text-slate-300 dark:text-slate-700"
-                  )}
-                />
-              ))}
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+            <div className="text-center">
+              <div className="text-[11px] font-semibold tracking-[0.22em] text-slate-500 uppercase dark:text-slate-400">
+                Đánh giá của Mentor
+              </div>
+              <div className="mt-2 text-4xl font-black text-amber-600 tabular-nums dark:text-amber-400">
+                {feedback?.rating ?? 0}/5
+              </div>
             </div>
-            <span className="text-sm font-bold text-slate-950 tabular-nums dark:text-white">
-              {feedback?.rating ?? 0}/10
-            </span>
+            <div className="mt-5 flex justify-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={cn(
+                      "h-8 w-8 transition-colors",
+                      i < Math.round(feedback?.rating ?? 0)
+                        ? "fill-amber-400 text-amber-400 drop-shadow-sm"
+                        : "text-slate-300 dark:text-slate-700"
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/30">
+              {feedback?.comment ? (
+                <p className="text-sm leading-relaxed text-slate-700 italic dark:text-slate-200">
+                  “{feedback.comment}”
+                </p>
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Chưa có nhận xét chi tiết.
+                </p>
+              )}
+            </div>
           </div>
-          {feedback?.comment && (
-            <p className="rounded-lg border border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-200">
-              {feedback.comment}
-            </p>
-          )}
-          <div className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
+
+          <div className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
             <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <p className="leading-relaxed">
               {t("userApplicationhistory.mentorSessionThanksMessage")}
             </p>
           </div>
+
+          <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditing(true)}
+              className="h-9 gap-1.5 px-4 text-xs font-semibold">
+              <RefreshCw className="h-3.5 w-3.5" />
+              {t("userApplicationhistory.mentorSessionEditFeedback")}
+            </Button>
+            <p className="ml-auto text-xs text-slate-500 dark:text-slate-400">
+              Bước cuối của vòng Mentor Interview
+            </p>
+          </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 p-5" noValidate>
-          <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-5 p-5" noValidate>
+          <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <Label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                 {t("userApplicationhistory.mentorSessionRatingLabel")}{" "}
                 <span className="text-rose-500">*</span>
               </Label>
-              <span className="text-xs font-semibold text-slate-500">{rating || 0}/10</span>
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {rating || 0}/5
+              </span>
             </div>
-            <RatingScale10 value={rating} onChange={setRating} />
+            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              Chọn mức đánh giá từ 1 đến 5 sao theo trải nghiệm thực tế của bạn.
+            </p>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+              <RatingScale5 value={rating} onChange={setRating} />
+            </div>
             {errors.rating && (
               <p className="text-xs font-semibold text-rose-600" role="alert">
                 {errors.rating}
@@ -2303,11 +2507,11 @@ function CandidateMentorFeedbackBlock({
               id="candidate-mentor-comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              rows={4}
+              rows={5}
               maxLength={MAX_COMMENT_LENGTH}
               placeholder={t("userApplicationhistory.mentorSessionCommentPlaceholder")}
               aria-invalid={!!errors.comment}
-              className="resize-y rounded-lg"
+              className="resize-y rounded-2xl border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/30"
             />
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span
@@ -2336,7 +2540,7 @@ function CandidateMentorFeedbackBlock({
             <Button
               type="submit"
               disabled={submitDisabled}
-              className="h-9 gap-2 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
+              className="h-10 gap-2 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
               {isSubmitting ? (
                 <>
                   <Spinner size="sm" tone="white" />
@@ -2361,17 +2565,50 @@ function CandidateMentorFeedbackBlock({
                   setComment(feedback?.comment ?? "");
                   setErrors({});
                 }}
-                className="h-9 px-4 text-xs font-semibold">
-                Huy
+                className="h-10 px-4 text-xs font-semibold">
+                Hủy
               </Button>
             )}
             <p className="ml-auto text-xs text-slate-500 dark:text-slate-400">
-              Buoc cuoi cua vong Mentor Interview
+              Hoàn tất để đóng vòng Mentor Interview
             </p>
           </div>
         </form>
       )}
     </Card>
+  );
+}
+
+function RatingScale5({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+      <div className="flex flex-wrap items-center gap-1">
+        {Array.from({ length: 5 }).map((_, index) => {
+          const starValue = index + 1;
+          const active = starValue <= value;
+          return (
+            <button
+              key={starValue}
+              type="button"
+              aria-label={`Chọn ${starValue} sao`}
+              onClick={() => onChange(starValue)}
+              className={cn(
+                "group inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-all",
+                active
+                  ? "border-amber-300 bg-amber-50 text-amber-400 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30"
+                  : "border-slate-200 bg-white text-slate-300 hover:border-amber-200 hover:text-amber-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600"
+              )}>
+              <Star
+                className={cn(
+                  "h-5 w-5 transition-transform duration-150",
+                  active ? "fill-current" : "group-hover:scale-105"
+                )}
+              />
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -2404,23 +2641,71 @@ function ReviewInsight({
   }[tone];
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+    <div className="flex h-full flex-row items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
       <div
         className={cn(
-          "mb-2 inline-flex rounded-md border px-2 py-1 text-xs font-semibold",
+          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-[11px] font-bold tracking-[0.14em] uppercase",
           toneClass
         )}>
-        {title}
+        {title.slice(0, 1)}
       </div>
-      <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{content}</p>
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <span
+            className={cn(
+              "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+              toneClass
+            )}>
+            {title}
+          </span>
+          <span className="text-[10px] font-semibold tracking-[0.16em] text-slate-400 uppercase">
+            note
+          </span>
+        </div>
+        <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{content}</p>
+      </div>
     </div>
   );
 }
 
-function ReviewRow({ label, content }: { label: string; content: string }) {
+function StarNoteBlock({
+  tone,
+  label,
+  title,
+  content,
+}: {
+  tone: "indigo" | "sky" | "emerald" | "amber";
+  label: string;
+  title: string;
+  content: string;
+}) {
+  const toneClass = {
+    indigo:
+      "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/25 dark:text-indigo-200",
+    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/25 dark:text-sky-200",
+    emerald:
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/25 dark:text-emerald-200",
+    amber:
+      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-200",
+  }[tone];
+
   return (
-    <div>
-      <span className="font-extrabold">{label}:</span> {content}
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
+      <div className="flex items-center gap-2">
+        <span
+          className={cn(
+            "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+            toneClass
+          )}>
+          {label}
+        </span>
+        <span className="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-slate-400">
+          {title}
+        </span>
+      </div>
+      <p className="mt-3 text-sm leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+        {content}
+      </p>
     </div>
   );
 }
