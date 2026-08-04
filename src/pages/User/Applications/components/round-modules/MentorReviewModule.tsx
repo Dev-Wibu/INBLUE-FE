@@ -1988,7 +1988,27 @@ function CompletedResultView({
         <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-5">
             <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-              <div className="flex flex-wrap items-center gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
+              <div className="relative flex flex-wrap items-center gap-4 border-b border-slate-200 px-5 py-5 pr-5 md:pr-44 dark:border-slate-800">
+                {hasFinalScore && (
+                  <div
+                    className={cn(
+                      "absolute top-5 right-5 hidden rotate-[-3deg] items-center gap-2 rounded-full border-2 border-dashed bg-white/70 px-3.5 py-2 shadow-sm backdrop-blur-sm md:inline-flex dark:bg-slate-950/30",
+                      finalPassed
+                        ? "border-emerald-400/70 text-emerald-700 dark:border-emerald-500/60 dark:text-emerald-300"
+                        : finalFailed
+                          ? "border-rose-400/70 text-rose-700 dark:border-rose-500/60 dark:text-rose-300"
+                          : "border-indigo-400/70 text-indigo-700 dark:border-indigo-500/60 dark:text-indigo-300"
+                    )}>
+                    <BadgeCheck className="h-4 w-4" />
+                    <span className="text-xl font-black leading-none tabular-nums">{finalScore}</span>
+                    <span className="text-[11px] font-black opacity-70">/100</span>
+                    {(finalPassed || finalFailed) && (
+                      <span className="text-[10px] font-black tracking-wide uppercase">
+                        {finalPassed ? "Passed" : "Failed"}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="flex h-24 w-24 shrink-0 overflow-hidden rounded-3xl border border-slate-200 bg-white p-0.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                   <Avatar className="h-full w-full rounded-[1.15rem]">
                     <AvatarImage
@@ -2008,39 +2028,10 @@ function CompletedResultView({
                 </div>
 
                 <div className="min-w-0 flex-1 space-y-3">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
-                      <span>Thông tin phiên</span>
-                      <span className="h-1 w-1 rounded-full bg-slate-400/70" />
-                      <span>Đã hoàn tất</span>
-                    </div>
-                    {hasFinalScore && (
-                      <div
-                        className={cn(
-                          "inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 shadow-sm",
-                          finalPassed
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"
-                            : finalFailed
-                              ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300"
-                              : "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/25 dark:text-indigo-200"
-                        )}>
-                        <BadgeCheck className="h-4 w-4" />
-                        <div className="leading-none">
-                          <div className="text-[9px] font-black tracking-[0.14em] uppercase opacity-75">
-                            Chứng nhận mentor
-                          </div>
-                          <div className="mt-1 flex items-baseline gap-1">
-                            <span className="text-lg font-black tabular-nums">{finalScore}</span>
-                            <span className="text-[11px] font-bold opacity-70">/100</span>
-                            {(finalPassed || finalFailed) && (
-                              <span className="ml-1 text-[10px] font-black tracking-wide uppercase">
-                                {finalPassed ? "Passed" : "Failed"}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
+                    <span>Thông tin phiên</span>
+                    <span className="h-1 w-1 rounded-full bg-slate-400/70" />
+                    <span>Đã hoàn tất</span>
                   </div>
                   <div className="space-y-1.5">
                     <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
