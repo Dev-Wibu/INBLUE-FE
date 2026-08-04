@@ -216,6 +216,9 @@ export function MentorReviewModule({
 
   // ===== Header ===========================================================
   const finalScore = detail?.finalScore ?? detail?.hrScore ?? null;
+  const showScore = finalScore !== null && finalScore !== undefined;
+  const passed = showScore && (finalScore ?? 0) >= 70;
+  const failed = showScore && (finalScore ?? 0) < 70;
 
   const activeIndex = STEP_DEFS.findIndex((s) => s.key === activeStep);
   const roundOrder = round.roundOrder ?? activeIndex + 1;
