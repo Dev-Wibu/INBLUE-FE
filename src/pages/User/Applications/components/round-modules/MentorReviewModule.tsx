@@ -2027,7 +2027,7 @@ function CompletedResultView({
     <div className="space-y-5">
         <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-5">
-            <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 shadow-none dark:border-slate-800 dark:bg-slate-950/30">
+            <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
               <div className="flex flex-wrap items-start gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
                 <div className="flex h-24 w-24 shrink-0 overflow-hidden rounded-3xl border border-slate-200 bg-white p-0.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                   <Avatar className="h-full w-full rounded-[1.15rem]">
@@ -2147,8 +2147,8 @@ function CompletedResultView({
 
           <div className="space-y-5">
             {review ? (
-              <Card className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-                <div className="mb-4 flex flex-col items-center gap-2 text-center">
+              <Card className="rounded-2xl border border-slate-200 bg-white p-4 pt-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+                <div className="mb-3 flex flex-col items-center gap-2 text-center">
                   <h3 className="text-lg font-bold text-slate-950 dark:text-white">
                     {t("userApplicationhistory.mentorSessionReviewTitle")}
                   </h3>
