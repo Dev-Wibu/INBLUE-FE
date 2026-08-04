@@ -246,25 +246,6 @@ export function MentorReviewModule({
         onSelectStep={setPreviewStep}
       />
 
-      {isPreviewingStep && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-200">
-          <div className="flex items-center gap-2">
-            <CircleUser className="h-4 w-4" />
-            <span className="font-semibold">Đang xem lại bước trong pipeline.</span>
-            <span className="text-indigo-700/80 dark:text-indigo-300/80">
-              Các thao tác ở màn hình này đã được khóa.
-            </span>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setPreviewStep(null)}
-            className="h-8 border-indigo-200 bg-white px-3 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-200">
-            Quay lại bước hiện tại
-          </Button>
-        </div>
-      )}
-
       {/* ============== Step body ============== */}
       {viewedStep === "AWAITING_MENTOR" && <AwaitingMentorStep />}
       {viewedStep === "SELECT_MENTOR" && (
