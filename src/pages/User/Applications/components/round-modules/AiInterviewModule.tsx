@@ -76,83 +76,54 @@ function getKioskInitials(name?: string): string {
 
 function AiInterviewSubheader({
   round,
-  detail,
   finalScore,
   isCompleted,
 }: {
   round: JdRound;
-  detail?: ApplicationDetail;
   finalScore?: number;
   isCompleted: boolean;
 }) {
   const roundOrder = round.roundOrder ?? 7;
 
   return (
-    <section className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-      <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800/70 dark:bg-indigo-950/40 dark:text-indigo-300">
-            <Bot className="h-6 w-6" />
+    <section className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-md backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+            <Bot className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-extrabold text-indigo-700 dark:border-indigo-800/70 dark:bg-indigo-950/40 dark:text-indigo-300">
+              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                 Vòng {roundOrder}
               </span>
-              <span
-                className={cn(
-                  "rounded-full border px-2.5 py-1 text-[11px] font-extrabold",
-                  isCompleted
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"
-                    : "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-300"
-                )}>
-                {isCompleted ? "Đã hoàn tất" : "Đặt lịch Kiosk"}
+              <span className="text-slate-600">•</span>
+              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+                Phỏng vấn AI tại Kiosk
               </span>
             </div>
-            <h2 className="mt-2 text-xl font-extrabold tracking-tight text-slate-950 dark:text-white">
-              Phỏng vấn AI tại Kiosk
-            </h2>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+            <h2 className="sr-only">Phỏng vấn AI tại Kiosk</h2>
+            <p className="mt-0.5 max-w-4xl text-sm leading-6 font-semibold text-slate-200">
               Chọn trạm Kiosk và khung giờ phù hợp. Sau khi đặt lịch, hệ thống sẽ cấp mã PIN 6 số để
               bạn nhập tại Kiosk đúng giờ phỏng vấn.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:min-w-[260px]">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-950/40">
-            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Điểm sàn</p>
-            <p className="mt-1 text-lg font-black text-emerald-600 dark:text-emerald-400">
-              {round.passThreshold ?? 70}/100
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-950/40">
-            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
-              {finalScore != null ? "Điểm AI" : "Thời lượng"}
-            </p>
-            <p className="mt-1 text-lg font-black text-slate-950 dark:text-white">
-              {finalScore != null
-                ? `${finalScore}/100`
-                : `${round.configData?.timeLimitMinutes ?? 20} phút`}
-            </p>
-          </div>
+        <div className="flex items-center gap-2">
+          {isCompleted ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>{finalScore != null ? `ĐIỂM AI ${finalScore}/100` : "ĐÃ HOÀN TẤT"}</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+              <CalendarClock className="h-3.5 w-3.5 text-indigo-400" />
+              <span>ĐẶT LỊCH KIOSK</span>
+            </span>
+          )}
         </div>
       </div>
-
-      {detail?.finalResult && (
-        <div className="border-t border-slate-200 px-5 py-3 text-xs font-semibold text-slate-600 sm:px-6 dark:border-slate-800 dark:text-slate-300">
-          Kết quả vòng:{" "}
-          <span
-            className={cn(
-              "font-extrabold",
-              detail.finalResult === "PASSED"
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-rose-600 dark:text-rose-400"
-            )}>
-            {detail.finalResult === "PASSED" ? "Đạt" : "Chưa đạt"}
-          </span>
-        </div>
-      )}
     </section>
   );
 }
@@ -366,12 +337,7 @@ export function AiInterviewModule({
 
   return (
     <div className="space-y-6">
-      <AiInterviewSubheader
-        round={round}
-        detail={detail}
-        finalScore={finalScore}
-        isCompleted={isCompleted}
-      />
+      <AiInterviewSubheader round={round} finalScore={finalScore} isCompleted={isCompleted} />
 
       {isCompleted ? (
         <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
