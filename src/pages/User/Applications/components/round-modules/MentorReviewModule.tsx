@@ -67,7 +67,7 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
@@ -224,13 +224,16 @@ export function MentorReviewModule({
   const viewedIndex = STEP_DEFS.findIndex((s) => s.key === viewedStep);
   const isPreviewingStep = previewStep !== null;
 
-  // Reset preview when active step changes - use useMemo to derive value
-  useEffect(() => {
-    // Only reset if previewStep is for a different step than current
+  // Reset preview when active step changes
+  const resetPreviewRef = useRef(() => {
     if (previewStep && previewStep !== activeStep) {
       setPreviewStep(null);
     }
-  }, [activeStep, previewStep]);
+  });
+
+  useEffect(() => {
+    resetPreviewRef.current();
+  }, [activeStep]);
 
   return (
     <div className="space-y-6">
