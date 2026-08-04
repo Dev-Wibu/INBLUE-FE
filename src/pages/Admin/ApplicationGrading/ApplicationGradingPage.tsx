@@ -56,7 +56,6 @@ import {
   ThumbsDown,
   ThumbsUp,
   User,
-  XCircle,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -111,17 +110,6 @@ const STATUS_CONFIG: Record<string, { label: string; className: string; dot?: st
     label: t("common.error"),
     className: "bg-red-500/15 text-red-700 dark:bg-red-500/10 dark:text-red-300",
     dot: "bg-red-500",
-  },
-};
-
-const RESULT_CONFIG: Record<string, { label: string; className: string }> = {
-  PASSED: {
-    label: t("userApplicationhistory.passed"),
-    className: "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-  },
-  FAILED: {
-    label: t("userApplicationhistory.failed"),
-    className: "bg-red-500/15 text-red-700 dark:bg-red-500/10 dark:text-red-300",
   },
 };
 
