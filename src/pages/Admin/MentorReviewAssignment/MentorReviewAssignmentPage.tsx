@@ -76,7 +76,9 @@ function renderStatusBadge(detail: AdminDetailItem, t: (_key: string) => string)
   const status = detail.status;
   if (status === "AWAITING_MENTOR") {
     return (
-      <Badge variant="outline" className="gap-1 border-amber-200 bg-amber-50 text-amber-700">
+      <Badge
+        variant="outline"
+        className="gap-1 border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400">
         <Clock className="h-3 w-3" />
         {t("adminMentorReviewAssignment.statusBadge.needsAssignment")}
       </Badge>
@@ -84,7 +86,9 @@ function renderStatusBadge(detail: AdminDetailItem, t: (_key: string) => string)
   }
   if (status === "AWAITING_CANDIDATE_SELECT_MENTOR") {
     return (
-      <Badge variant="outline" className="gap-1 border-blue-200 bg-blue-50 text-blue-700">
+      <Badge
+        variant="outline"
+        className="gap-1 border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400">
         <Users className="h-3 w-3" />
         {t("adminMentorReviewAssignment.statusBadge.awaitingCandidate")}
       </Badge>
@@ -92,7 +96,9 @@ function renderStatusBadge(detail: AdminDetailItem, t: (_key: string) => string)
   }
   if (status === "SLOT_PICKED" || (detail.mentorId != null && status !== "PENDING")) {
     return (
-      <Badge variant="outline" className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700">
+      <Badge
+        variant="outline"
+        className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
         <UserCheck className="h-3 w-3" />
         {t("adminMentorReviewAssignment.statusBadge.assigned")}
       </Badge>
@@ -261,9 +267,9 @@ export function MentorReviewAssignmentPage() {
   };
 
   return (
-    <div className="bg-background flex flex-col">
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-slate-950">
       {/* Toolbar */}
-      <div className="border-border bg-card flex flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
+      <div className="border-border flex flex-col gap-4 border-b bg-inherit px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-xl">
             <UserCheck className="h-5 w-5" />
@@ -307,7 +313,7 @@ export function MentorReviewAssignmentPage() {
       </div>
 
       {/* Tabs + overflow filter dropdown (compact) */}
-      <div className="border-border bg-card flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
+      <div className="border-border flex flex-wrap items-center justify-between gap-3 border-b bg-inherit px-4 py-3 sm:px-6 dark:border-slate-800">
         <Tabs
           value={mainTab}
           onValueChange={(value) => {
@@ -315,7 +321,7 @@ export function MentorReviewAssignmentPage() {
             setMoreFilter(null); // switching to a main tab clears the secondary filter
           }}
           className="w-full sm:w-auto">
-          <TabsList className="h-9 bg-slate-100 p-0.5 dark:bg-slate-800/60">
+          <TabsList className="h-9 bg-gray-200/70 p-0.5 dark:bg-slate-800/60">
             <TabsTrigger
               value="AWAITING_MENTOR"
               className="gap-1.5 data-[state=active]:bg-amber-500 data-[state=active]:text-white">
@@ -326,8 +332,8 @@ export function MentorReviewAssignmentPage() {
                 className={cn(
                   "ml-1 h-5 min-w-[20px] justify-center px-1.5 text-[10px]",
                   mainTab === "AWAITING_MENTOR" && !moreFilter
-                    ? "bg-white/30 text-white"
-                    : "bg-amber-100 text-amber-700"
+                    ? "bg-white/30 text-white dark:bg-slate-700/50 dark:text-slate-200"
+                    : "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
                 )}>
                 {counts.awaitingMentor}
               </Badge>
@@ -346,8 +352,8 @@ export function MentorReviewAssignmentPage() {
                 className={cn(
                   "ml-1 h-5 min-w-[20px] justify-center px-1.5 text-[10px]",
                   mainTab === "AWAITING_CANDIDATE_SELECT_MENTOR" && !moreFilter
-                    ? "bg-white/30 text-white"
-                    : "bg-blue-100 text-blue-700"
+                    ? "bg-white/30 text-white dark:bg-slate-700/50 dark:text-slate-200"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                 )}>
                 {counts.awaitingCandidateSelect}
               </Badge>
@@ -411,11 +417,11 @@ export function MentorReviewAssignmentPage() {
       </div>
 
       {/* Content */}
-      <div className="p-4 sm:px-6 sm:py-6">
+      <div className="bg-transparent p-4 sm:px-6 sm:py-6">
         {isLoading ? (
           <SpinnerBlock label={t("common.loading")} />
         ) : error ? (
-          <Card className="border-red-200 bg-red-50/40">
+          <Card className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30">
             <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
               <AlertTriangle className="h-10 w-10 text-red-500" />
               <div>
@@ -434,7 +440,7 @@ export function MentorReviewAssignmentPage() {
             </CardContent>
           </Card>
         ) : filteredDetails.length === 0 ? (
-          <div className="border-border flex h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed">
+          <div className="border-border flex h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed bg-inherit dark:border-slate-700">
             <Inbox className="text-muted-foreground h-12 w-12" />
             <p className="text-muted-foreground text-sm font-medium">
               {t("adminMentorReviewAssignment.noPendingAssignments")}
@@ -442,9 +448,9 @@ export function MentorReviewAssignmentPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="border-border bg-card overflow-hidden rounded-xl border">
+            <div className="border-border overflow-hidden rounded-xl border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               {/* Table header */}
-              <div className="text-muted-foreground hidden border-b bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wider uppercase sm:grid sm:grid-cols-12 sm:gap-2 sm:px-4 dark:bg-slate-900/50">
+              <div className="text-muted-foreground hidden border-b bg-gray-100/70 px-4 py-2 text-xs font-semibold tracking-wider uppercase sm:grid sm:grid-cols-12 sm:gap-2 sm:px-4 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
                 <div className="sm:col-span-4">{t("adminMentorReviewAssignment.candidate")}</div>
                 <div className="sm:col-span-3">
                   {t("adminMentorReviewAssignment.jobDescription")}
@@ -475,7 +481,7 @@ export function MentorReviewAssignmentPage() {
                 return (
                   <div
                     key={detail.id}
-                    className="border-border/60 hover:bg-muted/30 border-b transition-colors last:border-b-0">
+                    className="border-border/60 hover:bg-muted/40 border-b transition-colors last:border-b-0 dark:hover:bg-slate-800/40">
                     <div className="grid grid-cols-1 gap-3 px-4 py-3 sm:grid sm:grid-cols-12 sm:items-center sm:gap-2">
                       {/* Candidate */}
                       <div className="flex items-center gap-3 sm:col-span-4">
@@ -528,7 +534,7 @@ export function MentorReviewAssignmentPage() {
                           <Button
                             size="sm"
                             onClick={() => openAssignDialog(detail)}
-                            className="gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700">
+                            className="gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700">
                             <UserPlus className="h-3.5 w-3.5" />
                             <span className="hidden sm:inline">{t("adminKiosk.assignMentor")}</span>
                             <span className="sm:hidden">
@@ -542,7 +548,7 @@ export function MentorReviewAssignmentPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => openAssignDialog(detail)}
-                              className="gap-1.5 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100">
+                              className="gap-1.5 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-900/30">
                               <RefreshCw className="h-3.5 w-3.5" />
                               <span className="hidden sm:inline">
                                 {t("adminMentorReviewAssignment.reassign")}
@@ -564,7 +570,7 @@ export function MentorReviewAssignmentPage() {
                         {!isAwaitingMentor && !isAwaitingCandidate && hasRoom && (
                           <Badge
                             variant="outline"
-                            className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700">
+                            className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
                             <CheckCircle2 className="h-3 w-3" />
                             {t("adminMentorReviewAssignment.roomCreated")}
                           </Badge>
@@ -581,7 +587,7 @@ export function MentorReviewAssignmentPage() {
                         {hasRoom && (
                           <Badge
                             variant="outline"
-                            className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700">
+                            className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
                             <CheckCircle2 className="h-3 w-3" />
                             {t("adminMentorReviewAssignment.roomCreated")}
                           </Badge>
@@ -601,7 +607,7 @@ export function MentorReviewAssignmentPage() {
                       {hasRoom && (
                         <Badge
                           variant="outline"
-                          className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700">
+                          className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
                           <CheckCircle2 className="h-3 w-3" />
                           {t("adminMentorReviewAssignment.roomCreated")}
                         </Badge>
@@ -784,10 +790,12 @@ function AssignMentorDialog({
               value={assignMode}
               onValueChange={(value) => setAssignMode(value as "single" | "multiple")}
               className="flex flex-col gap-3">
-              <div className="flex items-start gap-3 rounded-lg border p-3">
+              <div className="flex items-start gap-3 rounded-lg border p-3 dark:border-slate-700 dark:hover:bg-slate-800/50">
                 <RadioGroupItem value="single" id="mode-single" className="mt-0.5" />
                 <div className="flex-1">
-                  <Label htmlFor="mode-single" className="cursor-pointer font-medium">
+                  <Label
+                    htmlFor="mode-single"
+                    className="cursor-pointer font-medium dark:text-slate-200">
                     {t("adminMentorReviewAssignment.option1Single")}
                   </Label>
                   <p className="text-muted-foreground mt-0.5 text-xs">
@@ -795,10 +803,12 @@ function AssignMentorDialog({
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 rounded-lg border p-3">
+              <div className="flex items-start gap-3 rounded-lg border p-3 dark:border-slate-700 dark:hover:bg-slate-800/50">
                 <RadioGroupItem value="multiple" id="mode-multiple" className="mt-0.5" />
                 <div className="flex-1">
-                  <Label htmlFor="mode-multiple" className="cursor-pointer font-medium">
+                  <Label
+                    htmlFor="mode-multiple"
+                    className="cursor-pointer font-medium dark:text-slate-200">
                     {t("adminMentorReviewAssignment.option2Multiple")}
                   </Label>
                   <p className="text-muted-foreground mt-0.5 text-xs">
@@ -876,13 +886,15 @@ function AssignMentorDialog({
                             setMentorQuery("");
                           }}
                           className={cn(
-                            "flex w-full flex-col items-start px-3 py-2 text-left text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-800",
+                            "flex w-full flex-col items-start px-3 py-2 text-left text-sm transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
                             selectedMentorId === String(mentor.id) &&
                               "bg-slate-100 font-medium dark:bg-slate-800"
                           )}>
                           <span className="font-medium">{mentor.name}</span>
                           {mentor.email && (
-                            <span className="text-xs text-slate-500">{mentor.email}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              {mentor.email}
+                            </span>
                           )}
                         </button>
                       ))
@@ -939,14 +951,16 @@ function AssignMentorDialog({
               </div>
 
               {/* Checklist */}
-              <div className="max-h-60 space-y-2 overflow-y-auto overscroll-contain rounded-lg border p-3">
+              <div className="max-h-60 space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-slate-200 p-3 dark:border-slate-700">
                 {filteredMultiMentors.length === 0 ? (
-                  <p className="py-3 text-center text-sm text-slate-500">{t("common.noResults")}</p>
+                  <p className="py-3 text-center text-sm text-slate-500 dark:text-slate-400">
+                    {t("common.noResults")}
+                  </p>
                 ) : (
                   filteredMultiMentors.map((mentor) => (
                     <div
                       key={mentor.id}
-                      className="flex items-center gap-3 rounded-lg border p-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800">
+                      className="flex items-center gap-3 rounded-lg border p-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
                       <Checkbox
                         id={`mentor-${mentor.id}`}
                         checked={selectedMentorIds.includes(mentor.id as number)}
@@ -956,9 +970,11 @@ function AssignMentorDialog({
                         htmlFor={`mentor-${mentor.id}`}
                         className="flex flex-1 cursor-pointer items-center gap-3">
                         <div className="flex flex-col">
-                          <span className="font-medium">{mentor.name}</span>
+                          <span className="font-medium dark:text-slate-200">{mentor.name}</span>
                           {mentor.email && (
-                            <span className="text-xs text-slate-500">{mentor.email}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              {mentor.email}
+                            </span>
                           )}
                         </div>
                       </Label>

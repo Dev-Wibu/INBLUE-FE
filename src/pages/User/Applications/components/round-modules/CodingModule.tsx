@@ -145,20 +145,21 @@ function parseExamples(
   }
   return list
     .filter((ex) => ex != null && typeof ex === "object")
-    .map((ex: any) => {
+    .map((ex) => {
+      const entry = ex as Record<string, unknown>;
       let inputs: string[] = [];
-      if (Array.isArray(ex.inputs)) {
-        inputs = ex.inputs.map((x: any) => (x != null ? String(x) : ""));
-      } else if (ex.inputs !== undefined && ex.inputs !== null) {
-        inputs = [String(ex.inputs)];
-      } else if (Array.isArray(ex.input)) {
-        inputs = ex.input.map((x: any) => (x != null ? String(x) : ""));
-      } else if (ex.input !== undefined && ex.input !== null) {
-        inputs = [String(ex.input)];
+      if (Array.isArray(entry.inputs)) {
+        inputs = entry.inputs.map((x) => (x != null ? String(x) : ""));
+      } else if (entry.inputs !== undefined && entry.inputs !== null) {
+        inputs = [String(entry.inputs)];
+      } else if (Array.isArray(entry.input)) {
+        inputs = entry.input.map((x) => (x != null ? String(x) : ""));
+      } else if (entry.input !== undefined && entry.input !== null) {
+        inputs = [String(entry.input)];
       }
 
-      const output = ex.output != null ? String(ex.output) : "";
-      const explanation = ex.explanation != null ? String(ex.explanation) : undefined;
+      const output = entry.output != null ? String(entry.output) : "";
+      const explanation = entry.explanation != null ? String(entry.explanation) : undefined;
       return { inputs, output, explanation };
     });
 }
@@ -222,18 +223,28 @@ function getProblems(round: JdRound): CodingProblemVM[] {
   };
 
   const raw = roundFull.configData?.codingProblems ?? [];
-  return raw.map((p: any) => ({
+  return raw.map((p) => ({
     problemId: p.problemId ?? 0,
     title: p.title ?? `Problem #${p.problemId ?? "?"}`,
     difficulty: p.difficulty,
     problemStatement: p.problemStatement ?? "",
-    rulesAndConstraints: parseRules(p.rulesAndConstraints ?? p.constraints),
+    rulesAndConstraints: parseRules(
+      p.rulesAndConstraints ?? (p as Record<string, unknown>).constraints
+    ),
     visibleExamples: parseExamples(
-      p.visibleExamples ?? p.examples ?? p.sampleTestCases ?? p.visibleTestCases ?? p.testCases
+      p.visibleExamples ??
+        (p as Record<string, unknown>).examples ??
+        (p as Record<string, unknown>).sampleTestCases ??
+        (p as Record<string, unknown>).visibleTestCases ??
+        (p as Record<string, unknown>).testCases
     ),
     executionTimeLimitMs: p.executionTimeLimitMs,
     memoryLimitMb: p.memoryLimitMb,
-    codeStubs: parseCodeStubs(p.codeStubs ?? p.starterCode ?? p.templates),
+    codeStubs: parseCodeStubs(
+      p.codeStubs ??
+        (p as Record<string, unknown>).starterCode ??
+        (p as Record<string, unknown>).templates
+    ),
   }));
 }
 
@@ -1360,7 +1371,7 @@ function CodingProblemCard({
   // Auto-switch to results tab when test cases are running or returned
   useEffect(() => {
     if (result || isRunning) {
-      setActiveTab("results");
+      queueMicrotask(() => setActiveTab("results"));
     }
   }, [result, isRunning]);
 
@@ -1856,9 +1867,9 @@ function TestResultsPanel({
       const firstFailIdx = testCases.findIndex(
         (tc) => tc.status && tc.status !== "PASSED" && tc.status !== "SUCCESS"
       );
-      setSelectedIdx(firstFailIdx >= 0 ? firstFailIdx : 0);
+      queueMicrotask(() => setSelectedIdx(firstFailIdx >= 0 ? firstFailIdx : 0));
     }
-  }, [result]);
+  }, [result, testCases]);
 
   if (isRunning) {
     return (

@@ -538,6 +538,12 @@ export function JobDescriptionDetailView({
     }
   };
 
+  const formatPrice = (price?: number, currency?: string) => {
+    if (price == null) return "—";
+    const curr = currency || "VND";
+    return `${price.toLocaleString()} ${curr}`;
+  };
+
   const getStatusBadge = (status?: string) => {
     switch (status) {
       case "PASSED":
@@ -1067,7 +1073,44 @@ export function JobDescriptionDetailView({
                 </span>
               </div>
 
-              {/* Row 6: Status */}
+              {/* Row 6: Price */}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
+                  <DollarSign className="h-4 w-4 text-cyan-500" />
+                  {t("adminCompanymanagement.price", "Giá JD")}
+                </span>
+                {!isEditing ? (
+                  <span className="font-bold text-cyan-600 dark:text-cyan-400">
+                    {formatPrice(currentJd.price, currentJd.currency)}
+                  </span>
+                ) : (
+                  <div className="flex items-center justify-end gap-1">
+                    <Input
+                      type="number"
+                      value={editFormData.price ?? ""}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          price: e.target.value === "" ? undefined : Number(e.target.value),
+                        })
+                      }
+                      placeholder="0"
+                      className="h-7.5 w-24 border-slate-200/80 bg-slate-100/60 px-2 text-right font-mono text-xs dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
+                    />
+                    <Input
+                      value={editFormData.currency || "VND"}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, currency: e.target.value.toUpperCase() })
+                      }
+                      placeholder="VND"
+                      maxLength={5}
+                      className="h-7.5 w-14 border-slate-200/80 bg-slate-100/60 px-1 text-center font-mono text-xs uppercase dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Row 7: Status */}
               <div className="flex items-center justify-between gap-2 pt-0.5">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Clock className="h-4 w-4 text-slate-400" />
