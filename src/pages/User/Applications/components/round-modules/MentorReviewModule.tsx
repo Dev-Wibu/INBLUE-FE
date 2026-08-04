@@ -2184,7 +2184,7 @@ function CompletedResultView({
                 </div>
 
                 <div className="space-y-4 p-5">
-                  <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="grid gap-3 xl:grid-cols-3">
                     {review.strength && (
                       <ReviewInsight
                         title={t("userApplicationhistory.mentorSessionReviewStrength")}
@@ -2218,13 +2218,10 @@ function CompletedResultView({
                           <h4 className="text-sm font-bold text-slate-950 dark:text-white">
                             {t("userApplicationhistory.mentorSessionReviewStar")}
                           </h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Tách thành 4 phần để dễ đọc hơn khi nhìn lại buổi phỏng vấn.
-                          </p>
                         </div>
                       </div>
 
-                      <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <div className="mt-4 grid gap-3 lg:grid-cols-2">
                         {review.situationNote && (
                           <StarNoteBlock
                             tone="indigo"
@@ -2368,25 +2365,18 @@ function CandidateMentorFeedbackBlock({
 
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/20">
+      <div className="relative flex items-center justify-center border-b border-slate-200 bg-slate-50/70 px-5 py-4 text-center dark:border-slate-800 dark:bg-slate-950/20">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-500/10 text-indigo-500 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
               <Star className="h-4 w-4" />
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-950 dark:text-white">
-                Đánh giá mentor
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Thang điểm 5 sao, nhận xét ngắn gọn để đóng vòng phỏng vấn
-              </p>
-            </div>
+            <h3 className="text-sm font-bold text-slate-950 dark:text-white">Đánh giá mentor</h3>
           </div>
         </div>
 
         {hasFeedback && !editing && (
-          <span className="inline-flex h-7 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+          <span className="absolute right-5 top-1/2 -translate-y-1/2 inline-flex h-7 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
             Đã gửi
           </span>
         )}
@@ -2394,58 +2384,40 @@ function CandidateMentorFeedbackBlock({
 
       {!editing && hasFeedback ? (
         <div className="space-y-4 p-5">
-          <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                    Đánh giá của bạn
-                  </div>
-                  <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                    {feedback?.rating ?? 0}/5 sao
-                  </div>
-                </div>
-                <span className="inline-flex h-9 items-center rounded-full border border-amber-200 bg-amber-50 px-3 text-sm font-bold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
-                  {feedback?.rating ?? 0}/5
-                </span>
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+            <div className="text-center">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                Đánh giá của Mentor
               </div>
-              <div className="mt-3 flex items-center gap-1">
+              <div className="mt-2 text-4xl font-black tabular-nums text-amber-600 dark:text-amber-400">
+                {feedback?.rating ?? 0}/5
+              </div>
+            </div>
+            <div className="mt-5 flex justify-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
                     className={cn(
-                      "h-5 w-5",
+                      "h-8 w-8 transition-colors",
                       i < Math.round(feedback?.rating ?? 0)
-                        ? "fill-amber-400 text-amber-400"
+                        ? "fill-amber-400 text-amber-400 drop-shadow-sm"
                         : "text-slate-300 dark:text-slate-700"
                     )}
                   />
                 ))}
               </div>
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/30">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                  Trạng thái
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
-                  Bạn đã lưu phản hồi mentor cho phiên này.
-                </p>
-              </div>
             </div>
 
-            {feedback?.comment ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/30">
-                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                  Nhận xét của bạn
-                </div>
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/30">
+              {feedback?.comment ? (
                 <p className="text-sm leading-relaxed text-slate-700 italic dark:text-slate-200">
                   “{feedback.comment}”
                 </p>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-400">
-                Chưa có nhận xét chi tiết.
-              </div>
-            )}
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400">Chưa có nhận xét chi tiết.</p>
+              )}
+            </div>
           </div>
 
           <div className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
@@ -2654,18 +2626,23 @@ function ReviewInsight({
   }[tone];
 
   return (
-    <div className="flex h-full gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+    <div className="flex h-full flex-row items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
       <div
         className={cn(
-          "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-[11px] font-bold uppercase tracking-[0.14em]",
+          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-[11px] font-bold uppercase tracking-[0.14em]",
           toneClass
         )}>
         {title.slice(0, 1)}
       </div>
-      <div className="min-w-0 space-y-2">
-        <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", toneClass)}>
-          {title}
-        </span>
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", toneClass)}>
+            {title}
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+            note
+          </span>
+        </div>
         <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{content}</p>
       </div>
     </div>
