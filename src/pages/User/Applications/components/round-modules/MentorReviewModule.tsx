@@ -435,6 +435,7 @@ function ProgressHub({
 // ============================================================================
 
 function AwaitingMentorStep() {
+  const { t } = useTranslation();
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-xl backdrop-blur-md">
       {/* Hero Visual Section */}
