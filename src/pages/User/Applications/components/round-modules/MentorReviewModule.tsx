@@ -224,9 +224,13 @@ export function MentorReviewModule({
   const viewedIndex = STEP_DEFS.findIndex((s) => s.key === viewedStep);
   const isPreviewingStep = previewStep !== null;
 
+  // Reset preview when active step changes - use useMemo to derive value
   useEffect(() => {
-    setPreviewStep(null);
-  }, [activeStep]);
+    // Only reset if previewStep is for a different step than current
+    if (previewStep && previewStep !== activeStep) {
+      setPreviewStep(null);
+    }
+  }, [activeStep, previewStep]);
 
   return (
     <div className="space-y-6">
