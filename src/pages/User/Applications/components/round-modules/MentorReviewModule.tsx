@@ -1384,7 +1384,7 @@ function ScheduleStep({
                       <Sparkles className="h-3 w-3" />
                       {t("userApplicationhistory.mentorSelectExpertise", "Expertise")}
                     </div>
-                    <p className="mt-1 text-sm font-medium leading-6 text-slate-800 dark:text-slate-100">
+                    <p className="mt-1 text-sm leading-6 font-medium text-slate-800 dark:text-slate-100">
                       {selectedMentor.expertise}
                     </p>
                   </div>
@@ -1530,7 +1530,9 @@ function SectionLabel({ index, label, hint }: { index: number; label: string; hi
         {index}
       </span>
       <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</span>
-      {hint && <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">— {hint}</span>}
+      {hint && (
+        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">— {hint}</span>
+      )}
     </div>
   );
 }
@@ -1843,7 +1845,9 @@ function SessionRoomStep({
 
   // ---- COMPLETED ----
   if (isCompleted) {
-    return <CompletedResultView session={session} mentor={sessionMentor} onChange={onStatusChange} />;
+    return (
+      <CompletedResultView session={session} mentor={sessionMentor} onChange={onStatusChange} />
+    );
   }
 
   // ---- ONGOING or WAITING ----
@@ -1918,8 +1922,8 @@ function SessionRoomStep({
               <span>Mẹo</span>
             </div>
             <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-              Nếu gặp sự cố kỹ thuật, refresh trang và thử lại. Trang sẽ tự động cập nhật trạng
-              thái phiên mỗi 30 giây.
+              Nếu gặp sự cố kỹ thuật, refresh trang và thử lại. Trang sẽ tự động cập nhật trạng thái
+              phiên mỗi 30 giây.
             </p>
           </div>
         </section>
@@ -1944,7 +1948,7 @@ function SessionRoomStep({
                     ? t("userApplicationhistory.mentorSessionRoomOpen")
                     : t("userApplicationhistory.mentorSessionCountdownLabel")}
                 </div>
-                <div className="mt-2 text-3xl font-black tabular-nums text-sky-700 dark:text-sky-200">
+                <div className="mt-2 text-3xl font-black text-sky-700 tabular-nums dark:text-sky-200">
                   {canEnter
                     ? t("userApplicationhistory.mentorSessionReady")
                     : formatCountdown(Math.max(0, joinAt - now))}
@@ -2013,7 +2017,9 @@ function CompletedResultView({
   const candidateEnd = session.endTime1 ?? null;
   const mentorAverageRating = mentor?.averageRating ?? 0;
   const mentorSessionCount = mentor?.totalSession ?? 0;
-  const mentorExperienceLabel = mentor?.yearsOfExperience ? `${mentor.yearsOfExperience}+ năm` : "—";
+  const mentorExperienceLabel = mentor?.yearsOfExperience
+    ? `${mentor.yearsOfExperience}+ năm`
+    : "—";
 
   return (
     <div className="space-y-5">
@@ -2056,7 +2062,7 @@ function CompletedResultView({
                 </div>
 
                 <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
                     <span>Thông tin phiên</span>
                     <span className="h-1 w-1 rounded-full bg-slate-400/70" />
                     <span>Đã hoàn tất</span>
@@ -2074,10 +2080,10 @@ function CompletedResultView({
                     <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/30">
                       <Star className="h-4 w-4 fill-current text-amber-500" />
                       <div className="min-w-0">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700/80 dark:text-amber-300/80">
+                        <div className="text-[10px] font-semibold tracking-[0.16em] text-amber-700/80 uppercase dark:text-amber-300/80">
                           Mentor ratio
                         </div>
-                        <div className="text-sm font-bold tabular-nums text-amber-700 dark:text-amber-300">
+                        <div className="text-sm font-bold text-amber-700 tabular-nums dark:text-amber-300">
                           {mentorAverageRating ? `${mentorAverageRating.toFixed(1)}/5` : "—"}
                         </div>
                       </div>
@@ -2085,10 +2091,10 @@ function CompletedResultView({
                     <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
                       <Users className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                       <div className="min-w-0">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                        <div className="text-[10px] font-semibold tracking-[0.16em] text-slate-500 uppercase dark:text-slate-400">
                           Phiên mentor
                         </div>
-                        <div className="text-sm font-bold tabular-nums text-slate-950 dark:text-white">
+                        <div className="text-sm font-bold text-slate-950 tabular-nums dark:text-white">
                           {mentorSessionCount}
                         </div>
                       </div>
@@ -2096,10 +2102,10 @@ function CompletedResultView({
                     <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2 dark:border-indigo-900/50 dark:bg-indigo-950/25">
                       <Award className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
                       <div className="min-w-0">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-indigo-600/80 dark:text-indigo-300/80">
+                        <div className="text-[10px] font-semibold tracking-[0.16em] text-indigo-600/80 uppercase dark:text-indigo-300/80">
                           Kinh nghiệm
                         </div>
-                        <div className="text-sm font-bold tabular-nums text-indigo-700 dark:text-indigo-200">
+                        <div className="text-sm font-bold text-indigo-700 tabular-nums dark:text-indigo-200">
                           {mentorExperienceLabel}
                         </div>
                       </div>
@@ -2143,7 +2149,11 @@ function CompletedResultView({
             </Card>
 
             {review && (
-              <CandidateMentorFeedbackBlock session={session} feedback={feedback} onChange={onChange} />
+              <CandidateMentorFeedbackBlock
+                session={session}
+                feedback={feedback}
+                onChange={onChange}
+              />
             )}
 
             {session.recordUrl && (
@@ -2208,7 +2218,10 @@ function CompletedResultView({
                     )}
                   </div>
 
-                  {(review.situationNote || review.taskNote || review.actionNote || review.resultNote) && (
+                  {(review.situationNote ||
+                    review.taskNote ||
+                    review.actionNote ||
+                    review.resultNote) && (
                     <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
                       <div className="flex items-center gap-2">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-500/10 text-indigo-500 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
@@ -2231,7 +2244,12 @@ function CompletedResultView({
                           />
                         )}
                         {review.taskNote && (
-                          <StarNoteBlock tone="sky" label="Task" title="Mục tiêu" content={review.taskNote} />
+                          <StarNoteBlock
+                            tone="sky"
+                            label="Task"
+                            title="Mục tiêu"
+                            content={review.taskNote}
+                          />
                         )}
                         {review.actionNote && (
                           <StarNoteBlock
@@ -2267,7 +2285,6 @@ function CompletedResultView({
                 </p>
               </Card>
             )}
-
           </div>
         </div>
       </Card>
@@ -2376,7 +2393,7 @@ function CandidateMentorFeedbackBlock({
         </div>
 
         {hasFeedback && !editing && (
-          <span className="absolute right-5 top-1/2 -translate-y-1/2 inline-flex h-7 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+          <span className="absolute top-1/2 right-5 inline-flex h-7 -translate-y-1/2 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
             Đã gửi
           </span>
         )}
@@ -2386,10 +2403,10 @@ function CandidateMentorFeedbackBlock({
         <div className="space-y-4 p-5">
           <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
             <div className="text-center">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+              <div className="text-[11px] font-semibold tracking-[0.22em] text-slate-500 uppercase dark:text-slate-400">
                 Đánh giá của Mentor
               </div>
-              <div className="mt-2 text-4xl font-black tabular-nums text-amber-600 dark:text-amber-400">
+              <div className="mt-2 text-4xl font-black text-amber-600 tabular-nums dark:text-amber-400">
                 {feedback?.rating ?? 0}/5
               </div>
             </div>
@@ -2415,14 +2432,18 @@ function CandidateMentorFeedbackBlock({
                   “{feedback.comment}”
                 </p>
               ) : (
-                <p className="text-sm text-slate-500 dark:text-slate-400">Chưa có nhận xét chi tiết.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Chưa có nhận xét chi tiết.
+                </p>
               )}
             </div>
           </div>
 
           <div className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
             <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <p className="leading-relaxed">{t("userApplicationhistory.mentorSessionThanksMessage")}</p>
+            <p className="leading-relaxed">
+              {t("userApplicationhistory.mentorSessionThanksMessage")}
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
@@ -2558,13 +2579,7 @@ function CandidateMentorFeedbackBlock({
   );
 }
 
-function RatingScale5({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (value: number) => void;
-}) {
+function RatingScale5({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
       <div className="flex flex-wrap items-center gap-1">
@@ -2629,17 +2644,21 @@ function ReviewInsight({
     <div className="flex h-full flex-row items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
       <div
         className={cn(
-          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-[11px] font-bold uppercase tracking-[0.14em]",
+          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-[11px] font-bold tracking-[0.14em] uppercase",
           toneClass
         )}>
         {title.slice(0, 1)}
       </div>
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", toneClass)}>
+          <span
+            className={cn(
+              "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+              toneClass
+            )}>
             {title}
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <span className="text-[10px] font-semibold tracking-[0.16em] text-slate-400 uppercase">
             note
           </span>
         </div>
@@ -2673,14 +2692,18 @@ function StarNoteBlock({
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
       <div className="flex items-center gap-2">
-        <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", toneClass)}>
+        <span
+          className={cn(
+            "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+            toneClass
+          )}>
           {label}
         </span>
-        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+        <span className="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-slate-400">
           {title}
         </span>
       </div>
-      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-200">
+      <p className="mt-3 text-sm leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-200">
         {content}
       </p>
     </div>
