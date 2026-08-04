@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 
 import { CodingRoundGrader } from "@/components/ui/coding-round-grader";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -15,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useApplication, useApplications, useUsers } from "@/hooks/useApplication";
@@ -182,108 +180,142 @@ function RoundCard({
   return (
     <div
       className={cn(
-        "rounded-xl border transition-all",
+        "group overflow-hidden rounded-[20px] border transition-all duration-200",
         isExpanded
-          ? "border-indigo-500 shadow-md dark:border-indigo-500"
-          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600",
-        needsHrScore && !hasExistingGrade && !isExpanded && "border-amber-300 dark:border-amber-700"
+          ? "border-indigo-400 shadow-xl shadow-indigo-500/10 dark:border-indigo-500/50 dark:shadow-indigo-950/30"
+          : "border-slate-200 hover:border-slate-300 dark:border-slate-800/80 dark:hover:border-slate-700",
+        needsHrScore && !hasExistingGrade && !isExpanded && "border-amber-300 dark:border-amber-600"
       )}>
-      {/* Card Header - Always visible */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-3">
-          {/* Expand/Collapse icon or Grading button */}
-          {needsHrScore && !hasExistingGrade && !isExpanded ? (
-            <Button
-              type="button"
-              size="sm"
-              onClick={onStartGrading}
-              className="h-8 gap-1.5 bg-amber-500 px-3 text-xs font-medium text-white hover:bg-amber-600">
-              <ClipboardCheck className="h-3.5 w-3.5" />
-              {t("grading.grade")}
-            </Button>
-          ) : (
-            <button
-              type="button"
-              onClick={onToggle}
-              className={cn(
-                "transition-col flex h-8 w-8 items-center justify-center rounded-lg",
-                isExpanded
-                  ? "bg-indigo-600 text-white"
-                  : "bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
-              )}>
-              <ChevronRight
-                className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-90")}
-              />
-            </button>
-          )}
+      {/* Card Header — Always visible */}
+      <div className="relative p-5">
+        {/* Dark inner panel matching ApplicationHistoryPage style */}
+        <div className="rounded-[14px] border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-[#0F172A]/90">
+          <div className="flex items-start justify-between gap-3">
+            {/* Left: expand toggle + round info */}
+            <div className="flex items-start gap-3">
+              {/* Expand/Collapse button */}
+              {needsHrScore && !hasExistingGrade && !isExpanded ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={onStartGrading}
+                  className="mt-0.5 h-8 gap-1.5 rounded-lg bg-amber-500 px-3 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-amber-600">
+                  <ClipboardCheck className="h-3.5 w-3.5" />
+                  {t("grading.grade")}
+                </Button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onToggle}
+                  className={cn(
+                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
+                    isExpanded
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
+                  )}>
+                  <ChevronRight
+                    className={cn(
+                      "h-4 w-4 transition-transform duration-200",
+                      isExpanded && "rotate-90"
+                    )}
+                  />
+                </button>
+              )}
 
-          {/* Round info */}
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-                {t("userApplicationhistory.round")} #{detail.roundId}
-              </h3>
-              <Badge className={cn("px-1.5 py-0 text-[10px]", statusCfg.className)}>
-                {statusCfg.label}
-              </Badge>
-              {resultCfg && (
-                <Badge className={cn("px-1.5 py-0 text-[10px]", resultCfg.className)}>
-                  {resultCfg.label}
-                </Badge>
-              )}
-              {needsHrScore && !hasExistingGrade && (
-                <Badge
-                  variant="outline"
-                  className="border-amber-400 px-1.5 py-0 text-[10px] text-amber-600">
-                  {t("grading.needsGrading")}
-                </Badge>
-              )}
+              {/* Round info */}
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-bold text-slate-900 dark:text-slate-100">
+                    {t("userApplicationhistory.round")} #{detail.roundId}
+                  </h3>
+                  {/* Status badge with dot */}
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase",
+                      statusCfg.className
+                    )}>
+                    {statusCfg.dot && (
+                      <span className={cn("h-1.5 w-1.5 rounded-full", statusCfg.dot)} />
+                    )}
+                    {statusCfg.label}
+                  </span>
+                  {/* Result badge */}
+                  {resultCfg && (
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase",
+                        resultCfg.className
+                      )}>
+                      {resultCfg.label}
+                    </span>
+                  )}
+                  {/* Needs grading warning */}
+                  {needsHrScore && !hasExistingGrade && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-600 uppercase dark:bg-amber-500/10 dark:text-amber-400">
+                      <AlertTriangle className="h-3 w-3" />
+                      {t("grading.needsGrading")}
+                    </span>
+                  )}
+                </div>
+
+                {/* Quick scores row */}
+                <div className="mt-2 flex flex-wrap items-center gap-4">
+                  {detail.aiScore !== undefined && (
+                    <div className="flex items-center gap-1.5">
+                      <Star className="h-3.5 w-3.5 fill-purple-400 text-purple-400" />
+                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                        AI {detail.aiScore}
+                      </span>
+                    </div>
+                  )}
+                  {detail.hrScore !== undefined && (
+                    <div className="flex items-center gap-1.5">
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                        HR {detail.hrScore}
+                      </span>
+                    </div>
+                  )}
+                  {detail.finalScore !== undefined && (
+                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      Final {detail.finalScore}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Quick scores */}
-            <div className="mt-1 flex items-center gap-3 text-xs text-slate-500">
-              {detail.aiScore !== undefined && (
-                <span className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-purple-400 text-purple-400" />
-                  AI: <span className="font-medium text-purple-600">{detail.aiScore}</span>
+            {/* Right: completion indicator */}
+            <div className="flex shrink-0 items-center gap-2">
+              {detail.completedAt && (
+                <span className="hidden text-xs text-slate-400 sm:block">
+                  {formatDateTime(detail.completedAt)}
                 </span>
               )}
-              {detail.hrScore !== undefined && (
-                <span className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  HR:{" "}
-                  <span className="font-medium text-indigo-600 dark:text-indigo-400">
-                    {detail.hrScore}
-                  </span>
-                </span>
+              {detail.finalResult === "PASSED" && (
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
               )}
-              {detail.finalScore !== undefined && (
-                <span className="font-medium text-slate-600 dark:text-slate-300">
-                  Final: {detail.finalScore}
-                </span>
+              {detail.finalResult === "FAILED" && (
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-500 dark:bg-red-500/10">
+                  <XCircle className="h-5 w-5" />
+                </div>
               )}
             </div>
           </div>
-        </div>
-
-        {/* Right side: completion indicator */}
-        <div className="flex items-center gap-2">
-          {detail.completedAt && (
-            <span className="text-xs text-slate-400">{formatDateTime(detail.completedAt)}</span>
-          )}
-          {detail.finalResult === "PASSED" && <CheckCircle2 className="h-5 w-5 text-green-500" />}
-          {detail.finalResult === "FAILED" && <XCircle className="h-5 w-5 text-red-500" />}
         </div>
       </div>
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="border-t border-slate-200 p-4 dark:border-slate-700">
-          <div className="space-y-4">
+        <div className="border-t border-slate-100 p-5 dark:border-slate-800">
+          <div className="space-y-5">
             {/* Submission Content */}
             {data && (
               <div>
-                <h4 className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                <h4 className="mb-2 flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
+                  <FileText className="h-3.5 w-3.5" />
                   {t("submission.content")}
                 </h4>
                 <SubmissionPreview detail={detail} onViewEmailSubmission={onViewEmailSubmission} />
@@ -291,23 +323,25 @@ function RoundCard({
             )}
 
             {/* AI Feedback */}
-            {(detail.aiScore !== undefined || detail.aiFeedback) && (
+            {detail.aiScore !== undefined || detail.aiFeedback ? (
               <div>
-                <h4 className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                <h4 className="mb-2 flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
+                  <Star className="h-3.5 w-3.5 text-purple-400" />
                   {t("grading.aiFeedback")}
                 </h4>
-                <div className="rounded-lg bg-purple-50 p-3 dark:bg-purple-900/20">
+                <div className="rounded-[14px] border border-purple-100 bg-purple-50/80 p-4 dark:border-purple-500/20 dark:bg-purple-500/5">
                   <AIFeedbackPanel feedback={detail.aiFeedback} score={detail.aiScore} />
                 </div>
               </div>
-            )}
+            ) : null}
 
-            <Separator />
+            <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
             {/* HR Grading Section */}
             <div>
-              <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+              <div className="mb-4 flex items-center justify-between">
+                <h4 className="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
+                  <ClipboardCheck className="h-3.5 w-3.5" />
                   {hasExistingGrade
                     ? isEditing
                       ? t("grading.editScore")
@@ -329,23 +363,27 @@ function RoundCard({
                 )}
               </div>
 
-              {/* Existing Grade Display - Đã chấm */}
+              {/* Existing Grade Display — Đã chấm */}
               {hasExistingGrade && !isEditing && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-                    <div className="flex items-center gap-1.5">
-                      <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
-                      <span className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-                        {detail.hrScore}
-                      </span>
-                      <span className="text-base text-slate-400">/100</span>
+                  <div className="flex items-center gap-4 rounded-[14px] border border-emerald-200 bg-emerald-50/80 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-500/10">
+                        <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+                      </div>
+                      <div>
+                        <p className="text-3xl font-extrabold text-slate-900 dark:text-white">
+                          {detail.hrScore}
+                        </p>
+                        <p className="text-xs font-medium text-slate-400">/100</p>
+                      </div>
                     </div>
-                    <div className="h-10 w-px bg-green-200 dark:bg-green-800" />
+                    <div className="h-10 w-px bg-emerald-200 dark:bg-emerald-500/20" />
                     <Badge
                       className={
                         detail.finalResult === "PASSED"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                          ? "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                          : "bg-red-500/15 text-red-700 dark:bg-red-500/10 dark:text-red-300"
                       }>
                       {detail.finalResult === "PASSED"
                         ? t("userApplicationhistory.passed")
@@ -356,41 +394,43 @@ function RoundCard({
                     variant="outline"
                     size="sm"
                     onClick={() => setIsEditing(true)}
-                    className="gap-1.5 text-xs">
+                    className="gap-1.5 rounded-lg text-xs">
                     {t("grading.editScore")}
                   </Button>
                 </div>
               )}
 
-              {/* Grading Form - Chưa chấm, đang sửa, hoặc bấm nút "Chấm" */}
-              {(!hasExistingGrade || isEditing || isStartGrading) && (
-                <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+              {/* Grading Form — Chưa chấm / Đang sửa / Bấm nút "Chấm" */}
+              {!hasExistingGrade || isEditing || isStartGrading ? (
+                <div className="space-y-4 rounded-[14px] border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-[#0F172A]/90">
                   {/* AI Score Reference */}
                   {detail.aiScore !== undefined && (
-                    <div className="rounded-lg bg-purple-50 p-2.5 dark:bg-purple-900/20">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
-                        <Star className="h-3.5 w-3.5 fill-purple-400 text-purple-400" />
-                        {t("grading.aiScoreReference")}{" "}
-                        <span className="font-bold text-purple-600 dark:text-purple-400">
-                          {detail.aiScore}
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-2.5 rounded-lg border border-purple-100 bg-purple-50/70 p-3 dark:border-purple-500/20 dark:bg-purple-500/5">
+                      <Star className="h-4 w-4 shrink-0 text-purple-400" />
+                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                        {t("grading.aiScoreReference")}
+                      </span>
+                      <span className="ml-auto text-sm font-extrabold text-purple-600 dark:text-purple-400">
+                        {detail.aiScore}
+                      </span>
                     </div>
                   )}
 
                   {/* Decision */}
                   <div>
-                    <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                    <label className="mb-2.5 block text-xs font-semibold text-slate-600 dark:text-slate-400">
                       {t("grading.decision")}
                     </label>
-                    <div className="flex gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <Button
                         type="button"
                         variant={isPass ? "default" : "outline"}
                         size="sm"
                         className={cn(
-                          "flex-1 gap-1.5 text-sm",
-                          isPass ? "bg-green-600 hover:bg-green-700" : ""
+                          "h-10 gap-1.5 rounded-xl text-sm font-semibold",
+                          isPass
+                            ? "bg-emerald-600 shadow-sm hover:bg-emerald-700"
+                            : "text-emerald-600 dark:text-emerald-400"
                         )}
                         onClick={() => setIsPass(true)}>
                         <ThumbsUp className="h-4 w-4" />
@@ -401,8 +441,10 @@ function RoundCard({
                         variant={!isPass ? "default" : "outline"}
                         size="sm"
                         className={cn(
-                          "flex-1 gap-1.5 text-sm",
-                          !isPass ? "bg-red-600 hover:bg-red-700" : ""
+                          "h-10 gap-1.5 rounded-xl text-sm font-semibold",
+                          !isPass
+                            ? "bg-red-600 shadow-sm hover:bg-red-700"
+                            : "text-red-600 dark:text-red-400"
                         )}
                         onClick={() => setIsPass(false)}>
                         <ThumbsDown className="h-4 w-4" />
@@ -413,7 +455,7 @@ function RoundCard({
 
                   {/* Score Input */}
                   <div>
-                    <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                    <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">
                       {t("grading.hrScore")}
                     </label>
                     <Input
@@ -423,13 +465,13 @@ function RoundCard({
                       value={score}
                       onChange={(e) => setScore(e.target.value)}
                       placeholder={t("grading.enterScore")}
-                      className="w-full"
+                      className="h-10 rounded-xl"
                     />
                   </div>
 
                   {/* Note */}
                   <div>
-                    <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                    <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">
                       {t("general.notes")}
                     </label>
                     <Textarea
@@ -437,7 +479,7 @@ function RoundCard({
                       onChange={(e) => setNote(e.target.value)}
                       placeholder={t("grading.enterHrNotes")}
                       rows={3}
-                      className="resize-none"
+                      className="resize-none rounded-xl"
                     />
                   </div>
 
@@ -446,8 +488,8 @@ function RoundCard({
                     onClick={handleSubmit}
                     disabled={isSubmitting}
                     className={cn(
-                      "w-full gap-1.5",
-                      isPass ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
+                      "h-10 w-full gap-2 rounded-xl text-sm font-semibold shadow-sm",
+                      isPass ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"
                     )}>
                     {isSubmitting ? (
                       <>
@@ -466,15 +508,16 @@ function RoundCard({
                     )}
                   </Button>
                 </div>
-              )}
+              ) : null}
 
               {/* Existing HR Note */}
               {detail.hrNote && !isEditing && (
                 <div className="mt-4">
-                  <h5 className="mb-2 text-xs font-semibold text-slate-500">
+                  <h5 className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                    <FileText className="h-3.5 w-3.5" />
                     {t("general.notes")} HR
                   </h5>
-                  <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
+                  <div className="rounded-[14px] border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-500/20 dark:bg-blue-500/5">
                     <p className="text-sm whitespace-pre-wrap text-blue-700 dark:text-blue-300">
                       {detail.hrNote}
                     </p>
@@ -1438,25 +1481,26 @@ export function ApplicationGradingDetailPage({
 
   if (!isValidId) {
     return (
-      <div className="flex h-full min-h-0 items-center justify-center p-6">
-        <EmptyState
-          icon={ClipboardCheck}
-          title={t("error.invalidId")}
-          description={t("application.selectValid")}
-          action={
-            <Button onClick={() => navigate(`${dashboardBase}?tab=applicationGrading`)}>
-              <ChevronLeft className="h-4 w-4" />
-              {t("common.backToTheList")}
-            </Button>
-          }
-        />
+      <div className="flex h-full min-h-0 items-center justify-center bg-slate-50 p-6 dark:bg-slate-950">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+            <ClipboardCheck className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+          </div>
+          <p className="mb-2 text-sm font-semibold text-slate-600 dark:text-slate-300">
+            {t("error.invalidId")}
+          </p>
+          <Button size="sm" onClick={() => navigate(`${dashboardBase}?tab=applicationGrading`)}>
+            <ChevronLeft className="h-4 w-4" />
+            {t("common.backToTheList")}
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex h-full min-h-0 items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="flex h-full min-h-0 items-center justify-center bg-slate-50 p-6 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3">
           <Spinner className="h-8 w-8" />
           <p className="text-sm text-slate-500">{t("general.loadingData")}</p>
@@ -1467,131 +1511,165 @@ export function ApplicationGradingDetailPage({
 
   return (
     <div className="flex flex-col">
-      {/* Compact header — no sidebar, just back button */}
-      <div className="flex h-14 shrink-0 items-center gap-3 overflow-hidden border-b border-slate-200 bg-white px-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="shrink-0 gap-1.5 text-slate-600 dark:text-slate-400"
-          onClick={() => navigate(`${dashboardBase}?tab=applicationGrading`)}>
-          <ChevronLeft className="h-4 w-4" />
-          {t("common.goBack")}
-        </Button>
-        <Separator orientation="vertical" className="h-5 shrink-0" />
-        {/* Candidate info */}
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <Avatar className="h-8 w-8 shrink-0">
+      {/* ── HEADER BANNER ───────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-white to-purple-50 px-4 py-5 sm:px-6 dark:border-slate-800 dark:from-[#0F172A]/40 dark:via-slate-900 dark:to-indigo-950/30">
+        {/* Back button row */}
+        <div className="mb-4 flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 rounded-lg border-slate-200 text-xs font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            onClick={() => navigate(`${dashboardBase}?tab=applicationGrading`)}>
+            <ChevronLeft className="h-3.5 w-3.5" />
+            {t("common.goBack")}
+          </Button>
+          <span className="text-xs text-slate-400">{t("application.gradingDetail")}</span>
+        </div>
+
+        {/* Candidate info row */}
+        <div className="flex items-center gap-4">
+          <Avatar className="h-14 w-14 shrink-0 rounded-[16px] shadow-sm ring-2 ring-white dark:ring-indigo-500/20">
             <AvatarImage src={candidateAvatar ?? undefined} alt={candidateName ?? "User"} />
-            <AvatarFallback className="bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <AvatarFallback className="rounded-[16px] bg-indigo-100 text-lg font-bold text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300">
               {(candidateName ?? "?")[0]?.toUpperCase() ?? "?"}
             </AvatarFallback>
           </Avatar>
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <h1 className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl font-bold tracking-tight text-slate-900 dark:text-white">
               {candidateName ?? `${t("application.detailsId")}${applicationId || numericId}`}
             </h1>
-            <div className="flex items-center gap-2 truncate text-xs text-slate-500">
-              <span className="truncate">
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
                 {t("application.detailsId")}
                 {applicationId || numericId}
               </span>
               {jdId !== undefined && (
-                <>
-                  <span className="shrink-0">•</span>
-                  <span className="truncate">
-                    {t("common.id", "ID JD")}: <span className="font-medium">{jdId}</span>
-                  </span>
-                </>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
+                  {t("common.id", "ID JD")}: <span className="font-semibold">{jdId}</span>
+                </span>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Reload button */}
-        <button
-          onClick={() => {
-            void refetch();
-          }}
-          disabled={isLoading}
-          className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-300/85 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
-          title={t("common.reload")}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={cn("h-3.5 w-3.5", isLoading && "animate-spin")}>
-            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-            <path d="M21 3v5h-5" />
-            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-            <path d="M8 16H3v5" />
-          </svg>
-        </button>
+          {/* Reload button */}
+          <button
+            onClick={() => {
+              void refetch();
+            }}
+            disabled={isLoading}
+            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-xs transition-colors hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+            title={t("common.reload")}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={cn("h-4 w-4", isLoading && "animate-spin")}>
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+              <path d="M8 16H3v5" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* NEW LAYOUT: Single page with all rounds as expandable cards */}
       <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
-        {/* Summary Stats Bar */}
-        <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500">
-                {t("round.totalRounds")} {t("userApplicationhistory.rounds")}:
-              </span>
-              <span className="font-semibold text-slate-900 dark:text-slate-100">
-                {summaryStats.total}
-              </span>
+        {/* ── SUMMARY STATS BAR ────────────────────────────────────────────────── */}
+        <div className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {/* Total Rounds */}
+            <div className="flex items-center gap-3 rounded-[14px] border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-[#0F172A]/90">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-500/10">
+                <ClipboardCheck className="h-4 w-4 text-indigo-500" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {t("round.totalRounds")}
+                </p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">
+                  {summaryStats.total}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-xs text-amber-600">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                {t("grading.needsGrading")}:
-              </span>
-              <span className="font-semibold text-amber-600">{summaryStats.pending}</span>
+            {/* Pending */}
+            <div className="flex items-center gap-3 rounded-[14px] border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-500/20 dark:bg-amber-500/5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15">
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                  {t("grading.needsGrading")}
+                </p>
+                <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                  {summaryStats.pending}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-xs text-green-600">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {t("grading.gradedCount")}
-              </span>
-              <span className="font-semibold text-green-600">{summaryStats.completed}</span>
+            {/* Graded */}
+            <div className="flex items-center gap-3 rounded-[14px] border border-emerald-200 bg-emerald-50/60 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                  {t("grading.gradedCount")}
+                </p>
+                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                  {summaryStats.completed}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400">
-                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                {t("grading.hrAverageScore")}
-              </span>
-              <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-                {summaryStats.avgScore}
-              </span>
+            {/* Average Score */}
+            <div className="flex items-center gap-3 rounded-[14px] border border-purple-200 bg-purple-50/60 p-3 dark:border-purple-500/20 dark:bg-purple-500/5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-500/15">
+                <Star className="h-4 w-4 text-purple-500" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-purple-600 dark:text-purple-400">
+                  {t("grading.hrAverageScore")}
+                </p>
+                <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                  {summaryStats.avgScore}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Filter & Actions Bar */}
+        {/* ── FILTER & ACTIONS BAR ─────────────────────────────────────────── */}
         {!singleDetail && (
-          <div className="flex shrink-0 items-center justify-between gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex shrink-0 items-center justify-between gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+            <Button
+              variant={showPendingOnly ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowPendingOnly(!showPendingOnly)}
+              className={cn(
+                "h-8 gap-1.5 rounded-lg text-xs font-semibold",
+                showPendingOnly && "bg-amber-500 shadow-sm hover:bg-amber-600"
+              )}>
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {t("grading.needsGrading")} ({summaryStats.pending})
+            </Button>
             <div className="flex shrink-0 items-center gap-2">
               <Button
-                variant={showPendingOnly ? "default" : "outline"}
+                variant="outline"
                 size="sm"
-                onClick={() => setShowPendingOnly(!showPendingOnly)}
-                className={cn(
-                  "gap-1.5 text-xs",
-                  showPendingOnly && "bg-amber-600 hover:bg-amber-700"
-                )}>
-                <AlertTriangle className="h-3.5 w-3.5" />
-                {t("grading.needsGrading")} ({summaryStats.pending})
-              </Button>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <Button variant="outline" size="sm" onClick={expandAll} className="gap-1.5 text-xs">
+                onClick={expandAll}
+                className="h-8 gap-1.5 rounded-lg text-xs dark:border-slate-700">
                 {t("userPractice.openAll")}
               </Button>
-              <Button variant="outline" size="sm" onClick={collapseAll} className="gap-1.5 text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={collapseAll}
+                className="h-8 gap-1.5 rounded-lg text-xs dark:border-slate-700">
                 {t("common.collapse")}
               </Button>
             </div>
@@ -1599,11 +1677,20 @@ export function ApplicationGradingDetailPage({
         )}
 
         {/* Expandable Round Cards */}
-        <div className="p-4 sm:p-6">
+        <div className="space-y-3 p-4 sm:p-6">
           {filteredDetails.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center text-center">
-              <ClipboardCheck className="mb-4 h-12 w-12 text-slate-300" />
-              <p className="text-sm text-slate-400">{t("application.noRounds")}</p>
+            <div className="flex flex-col items-center justify-center gap-4 rounded-[20px] border border-dashed border-slate-200 bg-slate-50/60 py-16 dark:border-slate-800 dark:bg-slate-900/40">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                <ClipboardCheck className="h-7 w-7 text-slate-400 dark:text-slate-500" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                  {t("application.noRounds")}
+                </p>
+                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                  {t("adminApplicationGrading.pageDescription")}
+                </p>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
