@@ -216,9 +216,6 @@ export function MentorReviewModule({
 
   // ===== Header ===========================================================
   const finalScore = detail?.finalScore ?? detail?.hrScore ?? null;
-  const showScore = finalScore !== null && finalScore !== undefined;
-  const passed = showScore && (finalScore ?? 0) >= 70;
-  const failed = showScore && (finalScore ?? 0) < 70;
 
   const activeIndex = STEP_DEFS.findIndex((s) => s.key === activeStep);
   const roundOrder = round.roundOrder ?? activeIndex + 1;
@@ -248,62 +245,6 @@ export function MentorReviewModule({
         isCompleted={isCompleted}
         instruction={round.configData?.instruction}
       />
-
-      {/* ============== Score banner (when done) ============== */}
-      {showScore && (
-        <Card className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-md backdrop-blur-md">
-          <div
-            className={cn(
-              "flex flex-wrap items-center justify-between gap-4 p-5",
-              passed
-                ? "bg-gradient-to-r from-emerald-950/40 via-slate-900/90 to-slate-900/90"
-                : failed
-                  ? "bg-gradient-to-r from-rose-950/40 via-slate-900/90 to-slate-900/90"
-                  : "bg-slate-900/90"
-            )}>
-            <div className="flex items-center gap-4">
-              <div
-                className={cn(
-                  "flex h-12 w-12 items-center justify-center rounded-2xl shadow-md",
-                  passed
-                    ? "border border-emerald-500/30 bg-emerald-500/20 text-emerald-400"
-                    : failed
-                      ? "border border-rose-500/30 bg-rose-500/20 text-rose-400"
-                      : "border border-slate-700 bg-slate-800 text-slate-300"
-                )}>
-                {passed ? (
-                  <CheckCircle2 className="h-6 w-6" />
-                ) : failed ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <BadgeCheck className="h-6 w-6" />
-                )}
-              </div>
-              <div>
-                <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                  Điểm số đánh giá phỏng vấn Mentor
-                </div>
-                <div className="mt-0.5 flex items-center gap-2">
-                  <span className="text-2xl font-extrabold text-white tabular-nums">
-                    {finalScore}
-                  </span>
-                  <span className="text-base font-bold text-slate-400">/100</span>
-                  {passed && (
-                    <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-300 uppercase shadow-xs">
-                      ✓ PASSED
-                    </span>
-                  )}
-                  {failed && (
-                    <span className="rounded-full border border-rose-500/30 bg-rose-500/15 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-rose-300 uppercase shadow-xs">
-                      ✗ FAILED
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
 
       {/* ============== Step Progress ====================================== */}
       <ProgressHub
