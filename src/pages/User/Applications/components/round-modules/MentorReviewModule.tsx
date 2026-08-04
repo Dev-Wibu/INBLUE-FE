@@ -1307,32 +1307,13 @@ function ScheduleStep({
       <div className="space-y-4 self-stretch lg:sticky lg:top-4">
         {/* ===== Mentor hero card ===== */}
         <Card className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-          <div className="border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
-            <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
-                <UserCheck className="h-3 w-3" />
-                Mentor đã chọn
-              </span>
-              {selectedMentor?.linkedInUrl && (
-                <a
-                  href={selectedMentor.linkedInUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
-                  aria-label="LinkedIn">
-                  <Linkedin className="h-3.5 w-3.5" />
-                </a>
-              )}
-            </div>
-          </div>
-
-          <div className="p-5">
+          <div className="p-4">
             {selectedMentor ? (
               <>
                 {/* Identity */}
-                <div className="flex items-start gap-4">
-                  <div className="relative">
-                    <Avatar className="h-20 w-20 rounded-2xl border border-slate-200 shadow-sm dark:border-slate-700">
+                <div className="flex items-start gap-3">
+                  <div>
+                    <Avatar className="h-16 w-16 rounded-2xl border border-slate-200 shadow-sm dark:border-slate-700">
                       <AvatarImage
                         src={selectedMentor.avatarUrl || "/placeholder.png"}
                         alt={selectedMentor.name ?? "Mentor"}
@@ -1344,23 +1325,18 @@ function ScheduleStep({
                         )}
                       </AvatarFallback>
                     </Avatar>
-                    {selectedMentor.active !== false && (
-                      <span className="absolute -right-0.5 -bottom-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-emerald-500 shadow-sm dark:border-slate-900">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                      </span>
-                    )}
                   </div>
                   <div className="min-w-0 flex-1 pt-0.5">
-                    <h4 className="text-lg leading-6 font-bold tracking-tight text-slate-950 dark:text-white">
+                    <h4 className="text-base leading-6 font-bold tracking-tight text-slate-950 dark:text-white">
                       {selectedMentor.name ?? "—"}
                     </h4>
                     {selectedMentor.currentCompany && (
-                      <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        <Building2 className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
+                      <p className="mt-0.5 flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                        <Building2 className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-300" />
                         <span className="truncate">{selectedMentor.currentCompany}</span>
                       </p>
                     )}
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-2 flex flex-wrap gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
                         <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
                         {selectedMentor.averageRating
@@ -1383,31 +1359,45 @@ function ScheduleStep({
 
                 {/* Expertise */}
                 {selectedMentor.expertise && (
-                  <div className="mt-5 border-t border-slate-200 pt-4 dark:border-slate-800">
+                  <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-800">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
                       <Sparkles className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
                       Chuyên môn
                     </div>
-                    <p className="mt-2 text-sm leading-6 font-semibold text-slate-900 dark:text-slate-100">
+                    <p className="mt-1.5 text-sm leading-5 font-semibold text-slate-900 dark:text-slate-100">
                       {selectedMentor.expertise}
                     </p>
                   </div>
                 )}
 
                 {/* Bio + contact */}
-                {(selectedMentor.bio || selectedMentor.email) && (
-                  <div className="mt-4 space-y-3 border-t border-slate-200 pt-4 text-xs dark:border-slate-800">
+                {(selectedMentor.bio || selectedMentor.email || selectedMentor.linkedInUrl) && (
+                  <div className="mt-3 space-y-2.5 border-t border-slate-200 pt-3 text-xs dark:border-slate-800">
                     {selectedMentor.bio && (
-                      <p className="leading-6 text-slate-600 italic dark:text-slate-300">
+                      <p className="line-clamp-2 leading-5 text-slate-600 italic dark:text-slate-300">
                         &ldquo;{selectedMentor.bio}&rdquo;
                       </p>
                     )}
-                    {selectedMentor.email && (
-                      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                        <Mail className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{selectedMentor.email}</span>
-                      </div>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {selectedMentor.email && (
+                        <a
+                          href={`mailto:${selectedMentor.email}`}
+                          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-600 transition-colors hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:text-indigo-300">
+                          <Mail className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{selectedMentor.email}</span>
+                        </a>
+                      )}
+                      {selectedMentor.linkedInUrl && (
+                        <a
+                          href={selectedMentor.linkedInUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-600 transition-colors hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:text-indigo-300">
+                          <Linkedin className="h-3.5 w-3.5" />
+                          LinkedIn
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
               </>
@@ -1427,7 +1417,7 @@ function ScheduleStep({
 
         {/* ===== Summary card ===== */}
         <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-          <div className="border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
+          <div className="border-b border-slate-200 bg-slate-50/70 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-900/60">
             <div className="flex items-center justify-between gap-2">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
@@ -1441,8 +1431,8 @@ function ScheduleStep({
             </div>
           </div>
 
-          <div className="p-5">
-            <div className="space-y-4">
+          <div className="p-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -1469,7 +1459,7 @@ function ScheduleStep({
                 </div>
               </div>
 
-              <div className="grid gap-3 border-t border-slate-200 pt-4 dark:border-slate-800">
+              <div className="grid gap-2.5 border-t border-slate-200 pt-3 dark:border-slate-800">
                 <SummaryLine
                   icon={<Hourglass className="h-4 w-4" />}
                   label="Thời lượng"
@@ -1489,7 +1479,7 @@ function ScheduleStep({
                 )}
               </div>
 
-              <p className="border-t border-slate-200 pt-4 text-xs leading-5 text-slate-500 dark:border-slate-800 dark:text-slate-400">
+              <p className="border-t border-slate-200 pt-3 text-xs leading-5 text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ
                 trước khi phiên bắt đầu.
               </p>
