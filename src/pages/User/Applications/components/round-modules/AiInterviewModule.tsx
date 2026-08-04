@@ -1,7 +1,13 @@
 import { SlotCalendar, type SlotCalendarSlot } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useActiveKiosks, useKioskSlots, usePickKioskSlot } from "@/hooks/useKiosk";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import {
+  useActiveKiosks,
+  useKioskBookingByApplicationDetail,
+  useKioskSlots,
+  usePickKioskSlot,
+} from "@/hooks/useKiosk";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { kioskManager, type Kiosk, type KioskSchedule } from "@/services/kiosk.manager";
@@ -12,10 +18,12 @@ import {
   CalendarClock,
   CheckCircle2,
   Clock3,
+  Copy,
   Cpu,
   KeyRound,
   Laptop,
   Loader2,
+  Mail,
   MapPin,
   RadioTower,
   RefreshCw,
@@ -143,18 +151,21 @@ function AiInterviewSubheader({
 function KioskCard({
   kiosk,
   selected,
+  disabled,
   onSelect,
 }: {
   kiosk: Kiosk;
   selected: boolean;
+  disabled?: boolean;
   onSelect: () => void;
 }) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={onSelect}
       className={cn(
-        "group flex h-full min-h-[92px] flex-col rounded-2xl border p-3 text-left transition-colors",
+        "group flex h-full min-h-[92px] flex-col rounded-2xl border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
         selected
           ? "border-indigo-400 bg-indigo-50/80 dark:border-indigo-500/70 dark:bg-indigo-950/30"
           : "border-slate-200 bg-white hover:border-indigo-200 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:border-indigo-800/70 dark:hover:bg-slate-900/70"
@@ -270,6 +281,94 @@ function SummaryItem({ icon, label, value }: { icon: ReactNode; label: string; v
   );
 }
 
+function KioskPinDialog({
+  open,
+  onOpenChange,
+  booking,
+  kiosk,
+  duration,
+  onCopy,
+}: {
+  open: boolean;
+  onOpenChange: (_open: boolean) => void;
+  booking: KioskBooking | null;
+  kiosk: Kiosk | null;
+  duration: number | null;
+  onCopy: () => void;
+}) {
+  const sessionKey = booking?.sessionKey ?? "";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[520px] overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-0 text-slate-100 shadow-2xl">
+        <div className="border-b border-slate-800 bg-slate-900 px-6 py-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
+              <KeyRound className="h-5 w-5" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-black text-white">
+                Đặt lịch Kiosk thành công
+              </DialogTitle>
+              <DialogDescription className="mt-1 text-sm leading-6 text-slate-300">
+                Hãy đến đúng trạm, đúng giờ và nhập mã PIN này để bắt đầu vòng phỏng vấn AI.
+              </DialogDescription>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-6">
+          <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center">
+            <p className="text-xs font-extrabold tracking-[0.2em] text-emerald-300 uppercase">
+              Mã PIN phiên Kiosk
+            </p>
+            <p className="mt-3 font-mono text-4xl font-black tracking-[0.28em] text-emerald-200">
+              {sessionKey || "------"}
+            </p>
+            <Button
+              type="button"
+              onClick={onCopy}
+              disabled={!sessionKey}
+              className="mt-4 h-10 gap-2 rounded-xl bg-emerald-500 px-5 text-sm font-extrabold text-emerald-950 hover:bg-emerald-400 disabled:opacity-60">
+              <Copy className="h-4 w-4" />
+              Copy mã PIN
+            </Button>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+              <p className="text-xs font-bold text-slate-400">Thời gian</p>
+              <p className="mt-1 text-sm font-extrabold text-white">
+                {booking?.scheduledStart ? formatDateTime(booking.scheduledStart) : "Chưa có"}
+              </p>
+              <p className="mt-1 text-xs font-semibold text-indigo-300">
+                {duration ? `${duration} phút` : "Theo slot đã đặt"}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+              <p className="text-xs font-bold text-slate-400">Trạm Kiosk</p>
+              <p className="mt-1 text-sm font-extrabold text-white">
+                {kiosk?.name ?? (booking?.kioskId ? `Kiosk #${booking.kioskId}` : "Chưa có")}
+              </p>
+              <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-400">
+                {kiosk?.location ?? "Kiểm tra email để xem hướng dẫn chi tiết"}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-indigo-500/25 bg-indigo-500/10 p-4 text-sm leading-6 text-indigo-100">
+            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-indigo-300" />
+            <p>
+              Thông tin chi tiết cũng sẽ được gửi qua email hoặc hộp thư thông báo. Chúc bạn làm bài
+              thật tốt, bình tĩnh trả lời rõ ràng và đến sớm trước giờ hẹn 10-15 phút nhé.
+            </p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function AiInterviewModule({
   round,
   detail,
@@ -286,10 +385,17 @@ export function AiInterviewModule({
   const [selectedKioskId, setSelectedKioskId] = useState<number | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<SlotCalendarSlot | null>(null);
   const [createdBooking, setCreatedBooking] = useState<KioskBooking | null>(null);
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
 
   const finalScore = detail?.finalScore ?? detail?.aiScore;
   const applicationDetailId = detail?.id ?? null;
   const selectedDateString = useMemo(() => toYmd(selectedDate), [selectedDate]);
+
+  const bookingQuery = useKioskBookingByApplicationDetail(applicationDetailId, !isCompleted);
+  const activeBooking = createdBooking ?? bookingQuery.data ?? null;
+  const hasBookedSlot = Boolean(
+    activeBooking?.id || activeBooking?.sessionKey || detail?.status === "SLOT_PICKED"
+  );
 
   const {
     data: kiosks = [],
@@ -299,10 +405,30 @@ export function AiInterviewModule({
   } = useActiveKiosks(isCurrent && !isCompleted);
 
   useEffect(() => {
+    if (activeBooking?.kioskId && selectedKioskId !== activeBooking.kioskId) {
+      setSelectedKioskId(activeBooking.kioskId);
+      return;
+    }
     if (!selectedKioskId && kiosks.length > 0) {
       setSelectedKioskId(kiosks[0].id ?? null);
     }
-  }, [kiosks, selectedKioskId]);
+  }, [activeBooking?.kioskId, kiosks, selectedKioskId]);
+
+  useEffect(() => {
+    if (!activeBooking?.scheduledStart || !activeBooking?.scheduledEnd) return;
+    const bookingDate = new Date(activeBooking.scheduledStart);
+    if (!Number.isNaN(bookingDate.getTime())) {
+      bookingDate.setHours(0, 0, 0, 0);
+      if (bookingDate.getTime() !== selectedDate.getTime()) {
+        setSelectedDate(bookingDate);
+      }
+    }
+    setSelectedSlot({
+      startTime: activeBooking.scheduledStart,
+      endTime: activeBooking.scheduledEnd,
+      available: true,
+    });
+  }, [activeBooking?.scheduledEnd, activeBooking?.scheduledStart, selectedDate]);
 
   const selectedKiosk = useMemo(
     () => kiosks.find((kiosk) => kiosk.id === selectedKioskId) ?? null,
@@ -325,7 +451,11 @@ export function AiInterviewModule({
     data: rawSlots = [],
     isLoading: slotsLoading,
     error: slotsError,
-  } = useKioskSlots(selectedKioskId ?? 0, selectedDateString, Boolean(selectedKioskId));
+  } = useKioskSlots(
+    selectedKioskId ?? 0,
+    selectedDateString,
+    Boolean(selectedKioskId) && !hasBookedSlot
+  );
 
   const availableSlots = useMemo<SlotCalendarSlot[]>(
     () =>
@@ -350,9 +480,11 @@ export function AiInterviewModule({
     Boolean(applicationDetailId) &&
     Boolean(selectedKioskId) &&
     Boolean(selectedSlot) &&
+    !hasBookedSlot &&
     !pickSlotMutation.isPending;
 
   const handleSelectKiosk = (kioskId?: number) => {
+    if (hasBookedSlot) return;
     if (!kioskId) return;
     setSelectedKioskId(kioskId);
     setSelectedSlot(null);
@@ -370,8 +502,22 @@ export function AiInterviewModule({
     });
 
     setCreatedBooking(booking ?? null);
+    if (booking?.sessionKey) {
+      setPinDialogOpen(true);
+    }
     toast.success("Đã đặt lịch Kiosk. Mã PIN đã được gửi qua thông báo.");
     onSuccess?.();
+  };
+
+  const handleCopySessionKey = async () => {
+    const sessionKey = activeBooking?.sessionKey;
+    if (!sessionKey) return;
+    try {
+      await navigator.clipboard.writeText(sessionKey);
+      toast.success("Đã copy mã PIN Kiosk.");
+    } catch {
+      toast.error("Không thể copy mã PIN. Bạn hãy copy thủ công nhé.");
+    }
   };
 
   const completedStart = detail?.sessionInfo?.startTime ?? detail?.startedAt;
@@ -486,6 +632,7 @@ export function AiInterviewModule({
                         key={kiosk.id ?? kiosk.name}
                         kiosk={kiosk}
                         selected={kiosk.id === selectedKioskId}
+                        disabled={hasBookedSlot}
                         onSelect={() => handleSelectKiosk(kiosk.id)}
                       />
                     ))}
@@ -515,6 +662,7 @@ export function AiInterviewModule({
             <SlotCalendar
               selectedDate={selectedDate}
               onSelectDate={(date) => {
+                if (hasBookedSlot) return;
                 setSelectedDate(date);
                 setSelectedSlot(null);
                 setCreatedBooking(null);
@@ -522,11 +670,12 @@ export function AiInterviewModule({
               slots={availableSlots}
               selectedSlotKey={selectedSlotKey}
               onSelectSlot={(slot) => {
+                if (hasBookedSlot) return;
                 setSelectedSlot(slot);
                 setCreatedBooking(null);
               }}
               isLoading={slotsLoading}
-              disabled={!selectedKioskId || !isCurrent}
+              disabled={!selectedKioskId || !isCurrent || hasBookedSlot}
               emptyMessage={
                 slotsError
                   ? "Không thể tải slot trống của Kiosk."
@@ -578,18 +727,35 @@ export function AiInterviewModule({
                   />
                 </div>
 
-                {createdBooking?.sessionKey ? (
+                {activeBooking?.sessionKey ? (
                   <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center dark:border-emerald-900/60 dark:bg-emerald-950/30">
                     <KeyRound className="mx-auto h-5 w-5 text-emerald-700 dark:text-emerald-300" />
                     <p className="mt-2 text-xs font-bold text-emerald-700 dark:text-emerald-300">
                       Mã PIN vào Kiosk
                     </p>
                     <p className="mt-1 font-mono text-3xl font-black tracking-[0.24em] text-emerald-800 dark:text-emerald-200">
-                      {createdBooking.sessionKey}
+                      {activeBooking.sessionKey}
                     </p>
                     <p className="mt-2 text-xs leading-5 text-emerald-700/80 dark:text-emerald-300/80">
                       Giữ mã này để nhập tại trạm Kiosk. Mã cũng được gửi qua thông báo.
                     </p>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCopySessionKey}
+                        className="h-9 gap-2 border-emerald-300 bg-white/70 text-xs font-extrabold text-emerald-800 hover:bg-white dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+                        <Copy className="h-3.5 w-3.5" />
+                        Copy PIN
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => setPinDialogOpen(true)}
+                        className="h-9 gap-2 bg-emerald-600 text-xs font-extrabold text-white hover:bg-emerald-700">
+                        <KeyRound className="h-3.5 w-3.5" />
+                        Xem hướng dẫn
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="mt-4 flex items-start gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-800 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-200">
@@ -601,18 +767,20 @@ export function AiInterviewModule({
                   </div>
                 )}
 
-                <Button
-                  type="button"
-                  onClick={() => void handleBookSlot()}
-                  disabled={!canBook}
-                  className="mt-4 h-11 w-full gap-2 bg-indigo-600 text-sm font-extrabold text-white hover:bg-indigo-700 disabled:opacity-50">
-                  {pickSlotMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <KeyRound className="h-4 w-4" />
-                  )}
-                  {pickSlotMutation.isPending ? "Đang đặt slot..." : "Xác nhận đặt slot Kiosk"}
-                </Button>
+                {!hasBookedSlot && (
+                  <Button
+                    type="button"
+                    onClick={() => void handleBookSlot()}
+                    disabled={!canBook}
+                    className="mt-4 h-11 w-full gap-2 bg-indigo-600 text-sm font-extrabold text-white hover:bg-indigo-700 disabled:opacity-50">
+                    {pickSlotMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <KeyRound className="h-4 w-4" />
+                    )}
+                    {pickSlotMutation.isPending ? "Đang đặt slot..." : "Xác nhận đặt slot Kiosk"}
+                  </Button>
+                )}
 
                 {!applicationDetailId && (
                   <p className="mt-3 text-xs leading-5 text-rose-600 dark:text-rose-300">
@@ -636,6 +804,14 @@ export function AiInterviewModule({
           </aside>
         </div>
       )}
+      <KioskPinDialog
+        open={pinDialogOpen}
+        onOpenChange={setPinDialogOpen}
+        booking={activeBooking}
+        kiosk={selectedKiosk}
+        duration={selectedDuration}
+        onCopy={handleCopySessionKey}
+      />
     </div>
   );
 }
