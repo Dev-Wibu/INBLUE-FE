@@ -1,6 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { useApplicationDetailsForReviewer } from "@/hooks/useApplicationDetails";
 import { fixUtf8Mojibake } from "@/lib/utils";
@@ -62,38 +61,36 @@ export function StaffOverviewPage() {
   const openGrading = () => navigate(GRADING_PATH);
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff] dark:bg-[#0b1c30]">
-      <div className="mx-auto max-w-[1280px] space-y-6 px-4 pt-6 pb-12 lg:px-6">
+    <div className="min-h-full bg-slate-50 dark:bg-slate-950">
+      <div className="w-full px-4 pt-4 pb-8 md:px-6 lg:px-8">
         {/* Welcome Hero */}
-        <div className="glass-card relative overflow-hidden rounded-xl p-6">
-          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#0058be]/10 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-emerald-400/10 blur-3xl" />
-          <div className="relative z-10 flex flex-col items-center gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          <div className="flex flex-col items-center gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col items-center gap-5 md:flex-row md:items-center">
               <Avatar className="h-20 w-20 shrink-0 shadow-md ring-4 ring-white dark:ring-slate-900">
                 {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
-                <AvatarFallback className="bg-[#e5eeff] text-lg font-bold text-[#0058be] dark:bg-[#1a2a3a] dark:text-[#66B2FF]">
+                <AvatarFallback className="bg-indigo-50 text-lg font-bold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                   {initials || "S"}
                 </AvatarFallback>
               </Avatar>
               <div className="text-center md:text-left">
                 <div className="flex items-center justify-center gap-2 md:justify-start">
-                  <Sparkles className="h-4 w-4 text-[#0058be] dark:text-[#66B2FF]" />
-                  <span className="text-xs font-medium tracking-wider text-[#0058be] uppercase dark:text-[#66B2FF]">
+                  <Sparkles className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+                  <span className="text-xs font-medium tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
                     {t("staffOverview.greeting")}
                   </span>
                 </div>
-                <h1 className="mt-1 text-2xl font-bold text-[#0b1c30] md:text-3xl dark:text-white">
+                <h1 className="mt-1 text-2xl font-bold text-slate-900 md:text-3xl dark:text-white">
                   {displayName}
                 </h1>
-                <p className="mt-1 text-sm text-[#45464d] md:text-base dark:text-[#8f9099]">
+                <p className="mt-1 text-sm text-slate-600 md:text-base dark:text-slate-400">
                   {t("staffOverview.welcomeDescription")}
                 </p>
               </div>
             </div>
             <button
               onClick={openGrading}
-              className="flex items-center gap-2 rounded-lg bg-[#0058be] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0047a8]">
+              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-indigo-700">
               <ClipboardCheck className="h-4 w-4" />
               {t("staffOverview.goToApplications")}
               <ArrowRight className="h-4 w-4" />
@@ -102,77 +99,77 @@ export function StaffOverviewPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Card className="glass-card border-slate-200/60 p-5 dark:border-slate-800/60">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium tracking-wider text-[#45464d] uppercase dark:text-[#8f9099]">
+                <p className="text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   {t("staffOverview.pendingReview")}
                 </p>
-                <p className="mt-2 text-3xl font-bold text-[#0b1c30] dark:text-white">
+                <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
                   {isLoading ? "—" : stats.needsGrading}
                 </p>
-                <p className="mt-1 text-xs text-[#45464d] dark:text-[#8f9099]">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {t("staffOverview.pendingReviewHint")}
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                 <ClipboardCheck className="h-6 w-6" />
               </div>
             </div>
-          </Card>
-          <Card className="glass-card border-slate-200/60 p-5 dark:border-slate-800/60">
+          </div>
+          <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium tracking-wider text-[#45464d] uppercase dark:text-[#8f9099]">
+                <p className="text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   {t("staffOverview.processedToday")}
                 </p>
-                <p className="mt-2 text-3xl font-bold text-[#0b1c30] dark:text-white">
+                <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
                   {isLoading ? "—" : stats.completed}
                 </p>
-                <p className="mt-1 text-xs text-[#45464d] dark:text-[#8f9099]">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {t("staffOverview.processedTodayHint")}
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
                 <TrendingUp className="h-6 w-6" />
               </div>
             </div>
-          </Card>
-          <Card className="glass-card border-slate-200/60 p-5 dark:border-slate-800/60">
+          </div>
+          <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium tracking-wider text-[#45464d] uppercase dark:text-[#8f9099]">
+                <p className="text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   {t("staffOverview.pendingNow")}
                 </p>
-                <p className="mt-2 text-3xl font-bold text-[#0b1c30] dark:text-white">
+                <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
                   {isLoading ? "—" : stats.total}
                 </p>
-                <p className="mt-1 text-xs text-[#45464d] dark:text-[#8f9099]">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {t("staffOverview.pendingNowHint")}
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
                 <Clock className="h-6 w-6" />
               </div>
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Recent Pending Reviews */}
-        <Card className="glass-card border-slate-200/60 p-6 dark:border-slate-800/60">
+        <div className="mt-6 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-[#0b1c30] dark:text-white">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                 {t("staffOverview.recentSubmissions")}
               </h2>
-              <p className="mt-1 text-sm text-[#45464d] dark:text-[#8f9099]">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {t("staffOverview.recentSubmissionsHint")}
               </p>
             </div>
             <button
               onClick={openGrading}
-              className="flex items-center gap-1 text-sm font-medium text-[#0058be] transition-colors hover:text-[#0047a8] dark:text-[#66B2FF] dark:hover:text-[#99ccff]">
+              className="flex items-center gap-1 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
               {t("common.seeAll")}
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
@@ -206,16 +203,16 @@ export function StaffOverviewPage() {
                   <button
                     key={detailId}
                     onClick={openGrading}
-                    className="flex w-full items-center gap-4 rounded-xl border border-slate-200/60 bg-white p-4 text-left transition-all hover:border-[#0058be]/40 hover:bg-[#eff4ff] dark:border-slate-800/60 dark:bg-slate-900/50 dark:hover:bg-[#0058be]/10">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
+                    className="flex w-full items-center gap-4 rounded-xl border border-slate-200/60 bg-white p-4 text-left transition-all hover:border-indigo-300/60 hover:bg-indigo-50/50 dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/5">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                       <ClipboardCheck className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[#0b1c30] dark:text-white">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
                         {t("staffOverview.applicationLabel")}
                         {applicationId ?? "—"}
                       </p>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#45464d] dark:text-[#8f9099]">
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {formatTimeAgo(submittedAt, t)}
@@ -237,7 +234,7 @@ export function StaffOverviewPage() {
               })}
             </div>
           )}
-        </Card>
+        </div>
       </div>
     </div>
   );
