@@ -52,6 +52,16 @@ const DAY_LABELS: Record<NonNullable<KioskSchedule["dayOfWeek"]>, string> = {
   SUNDAY: "Chủ nhật",
 };
 
+const WEEK_DAYS = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+] as const satisfies readonly NonNullable<KioskSchedule["dayOfWeek"]>[];
+
 function toYmd(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -67,11 +77,18 @@ function getDurationMinutes(start?: string, end?: string): number | null {
   return Math.round((endMs - startMs) / 60000);
 }
 
-function getKioskInitials(name?: string): string {
-  if (!name) return "K";
-  const words = name.trim().split(/\s+/);
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+function formatHourMinute(value?: string): string {
+  if (!value) return "--:--";
+  const timeMatch = value.match(/(\d{2}):(\d{2})/);
+  if (timeMatch) return `${timeMatch[1]}:${timeMatch[2]}`;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--:--";
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }
 
 function AiInterviewSubheader({
@@ -137,7 +154,7 @@ function KioskCard({
       type="button"
       onClick={onSelect}
       className={cn(
-        "group flex h-full min-h-[116px] flex-col rounded-2xl border p-4 text-left transition-colors",
+        "group flex h-full min-h-[92px] flex-col rounded-2xl border p-3 text-left transition-colors",
         selected
           ? "border-indigo-400 bg-indigo-50/80 dark:border-indigo-500/70 dark:bg-indigo-950/30"
           : "border-slate-200 bg-white hover:border-indigo-200 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:border-indigo-800/70 dark:hover:bg-slate-900/70"
@@ -146,18 +163,18 @@ function KioskCard({
         <div className="flex items-center gap-3">
           <span
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-sm font-black",
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border",
               selected
                 ? "border-indigo-300 bg-white text-indigo-700 dark:border-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-200"
-                : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-200"
+                : "border-slate-200 bg-slate-50 text-indigo-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-indigo-300"
             )}>
-            {getKioskInitials(kiosk.name)}
+            <Laptop className="h-4 w-4" />
           </span>
           <div className="min-w-0">
-            <p className="truncate text-sm font-extrabold text-slate-950 dark:text-white">
+            <p className="truncate text-sm font-black text-slate-950 dark:text-white">
               {kiosk.name ?? `Kiosk #${kiosk.id ?? "-"}`}
             </p>
-            <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+            <p className="mt-0.5 line-clamp-1 text-xs leading-5 font-semibold text-slate-600 dark:text-slate-300">
               {kiosk.location ?? "Chưa cập nhật vị trí"}
             </p>
           </div>
@@ -166,7 +183,7 @@ function KioskCard({
           <CheckCircle2 className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-300" />
         )}
       </div>
-      <div className="mt-auto flex items-center gap-1.5 pt-4 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+      <div className="mt-auto flex items-center gap-1.5 pt-2.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
         <RadioTower className="h-3.5 w-3.5" />
         {kiosk.active === false ? "Tạm ngưng" : "Đang hoạt động"}
       </div>
@@ -183,28 +200,58 @@ function ScheduleList({ schedules, loading }: { schedules: KioskSchedule[]; load
     );
   }
 
-  if (schedules.length === 0) {
-    return (
-      <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        Kiosk này chưa có lịch hoạt động được công bố.
-      </div>
-    );
-  }
+  const schedulesByDay = new Map<NonNullable<KioskSchedule["dayOfWeek"]>, KioskSchedule[]>();
+  schedules.forEach((schedule) => {
+    if (!schedule.dayOfWeek) return;
+    const list = schedulesByDay.get(schedule.dayOfWeek) ?? [];
+    list.push(schedule);
+    schedulesByDay.set(schedule.dayOfWeek, list);
+  });
 
   return (
-    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {schedules.map((schedule) => (
-        <div
-          key={schedule.id ?? `${schedule.dayOfWeek}-${schedule.openTime}`}
-          className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-950/40">
-          <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100">
-            {schedule.dayOfWeek ? DAY_LABELS[schedule.dayOfWeek] : "Ngày hoạt động"}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            {schedule.openTime ?? "--:--"} - {schedule.closeTime ?? "--:--"}
-          </p>
-        </div>
-      ))}
+    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-7">
+      {WEEK_DAYS.map((day) => {
+        const daySchedules = schedulesByDay.get(day) ?? [];
+        const activeSchedules = daySchedules.filter((schedule) => schedule.active !== false);
+        const hasSchedule = activeSchedules.length > 0;
+
+        return (
+          <div
+            key={day}
+            className={cn(
+              "rounded-2xl border px-3 py-2.5",
+              hasSchedule
+                ? "border-indigo-200 bg-indigo-50/60 dark:border-indigo-900/60 dark:bg-indigo-950/20"
+                : "border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-950/40"
+            )}>
+            <p
+              className={cn(
+                "text-xs font-black",
+                hasSchedule
+                  ? "text-slate-950 dark:text-white"
+                  : "text-slate-500 dark:text-slate-400"
+              )}>
+              {DAY_LABELS[day]}
+            </p>
+            <p
+              className={cn(
+                "mt-1 text-xs font-extrabold tabular-nums",
+                hasSchedule
+                  ? "text-indigo-700 dark:text-indigo-200"
+                  : "text-slate-400 dark:text-slate-500"
+              )}>
+              {hasSchedule
+                ? activeSchedules
+                    .map(
+                      (schedule) =>
+                        `${formatHourMinute(schedule.openTime)} - ${formatHourMinute(schedule.closeTime)}`
+                    )
+                    .join(", ")
+                : "Không mở"}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -386,14 +433,14 @@ export function AiInterviewModule({
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
           <div className="space-y-6">
             <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-              <div className="border-b border-slate-200 p-5 sm:p-6 dark:border-slate-800">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="border-b border-slate-200 px-4 py-3.5 sm:px-5 sm:py-4 dark:border-slate-800">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h3 className="flex items-center gap-2 text-base font-extrabold text-slate-950 dark:text-white">
-                      <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
+                    <h3 className="flex items-center gap-2 text-sm font-black text-slate-950 dark:text-white">
+                      <MapPin className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
                       Chọn trạm Kiosk
                     </h3>
-                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                    <p className="mt-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
                       Ưu tiên trạm gần bạn và có lịch hoạt động khớp với thời gian phỏng vấn.
                     </p>
                   </div>
@@ -401,20 +448,20 @@ export function AiInterviewModule({
                     type="button"
                     variant="outline"
                     onClick={() => void refetchKiosks()}
-                    className="h-9 gap-2 text-xs font-bold">
+                    className="h-8 gap-1.5 px-3 text-[11px] font-extrabold">
                     <RefreshCw className="h-3.5 w-3.5" />
                     Làm mới Kiosk
                   </Button>
                 </div>
               </div>
 
-              <div className="p-5 sm:p-6">
+              <div className="p-4 sm:p-5">
                 {kiosksLoading ? (
-                  <div className="grid gap-3 md:grid-cols-3">
+                  <div className="grid gap-2.5 md:grid-cols-3">
                     {Array.from({ length: 3 }).map((_, index) => (
                       <div
                         key={index}
-                        className="h-[116px] animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60"
+                        className="h-[92px] animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60"
                       />
                     ))}
                   </div>
@@ -433,7 +480,7 @@ export function AiInterviewModule({
                     </p>
                   </div>
                 ) : (
-                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
                     {kiosks.map((kiosk) => (
                       <KioskCard
                         key={kiosk.id ?? kiosk.name}
@@ -448,16 +495,16 @@ export function AiInterviewModule({
             </Card>
 
             <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-              <div className="border-b border-slate-200 p-5 sm:p-6 dark:border-slate-800">
-                <h3 className="flex items-center gap-2 text-base font-extrabold text-slate-950 dark:text-white">
-                  <Clock3 className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
+              <div className="border-b border-slate-200 px-4 py-3.5 sm:px-5 sm:py-4 dark:border-slate-800">
+                <h3 className="flex items-center gap-2 text-sm font-black text-slate-950 dark:text-white">
+                  <Clock3 className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
                   Lịch hoạt động của trạm
                 </h3>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                <p className="mt-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   Các khung hoạt động dùng để sinh slot trống theo từng ngày.
                 </p>
               </div>
-              <div className="p-5 sm:p-6">
+              <div className="p-4 sm:p-5">
                 <ScheduleList
                   schedules={schedulesQuery.data ?? []}
                   loading={schedulesQuery.isLoading}
