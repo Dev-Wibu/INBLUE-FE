@@ -2011,7 +2011,9 @@ function CompletedResultView({
   const feedback = session.mentorFeedback;
   const candidateStart = session.startTime1 ?? null;
   const candidateEnd = session.endTime1 ?? null;
-  const mentorRating = Math.max(0, Math.min(5, review.rating ?? 0));
+  const mentorAverageRating = mentor?.averageRating ?? 0;
+  const mentorSessionCount = mentor?.totalSession ?? 0;
+  const mentorExperienceLabel = mentor?.yearsOfExperience ? `${mentor.yearsOfExperience}+ năm` : "—";
 
   return (
     <div className="space-y-5">
@@ -2035,10 +2037,14 @@ function CompletedResultView({
           <div className="space-y-5">
             <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 shadow-none dark:border-slate-800 dark:bg-slate-950/30">
               <div className="flex flex-wrap items-start gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                  <Avatar className="h-full w-full rounded-none">
-                    <AvatarImage src={mentor?.avatarUrl ?? undefined} alt={mentor?.name ?? "Mentor"} />
-                    <AvatarFallback className="rounded-none bg-indigo-500/10 text-lg font-bold text-indigo-500 dark:bg-indigo-950/30 dark:text-indigo-300">
+                <div className="flex h-24 w-24 shrink-0 overflow-hidden rounded-3xl border border-slate-200 bg-white p-0.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                  <Avatar className="h-full w-full rounded-[1.15rem]">
+                    <AvatarImage
+                      src={mentor?.avatarUrl ?? undefined}
+                      alt={mentor?.name ?? "Mentor"}
+                      className="h-full w-full object-cover"
+                    />
+                    <AvatarFallback className="rounded-[1.15rem] bg-indigo-500/10 text-lg font-bold text-indigo-500 dark:bg-indigo-950/30 dark:text-indigo-300">
                       {(mentor?.name ?? "M")
                         .split(" ")
                         .slice(0, 2)
@@ -2064,14 +2070,40 @@ function CompletedResultView({
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex h-8 items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 text-sm font-bold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
-                      <Star className="h-4 w-4 fill-current" />
-                      {mentorRating ? `${mentorRating}/5` : "0/5"}
-                    </span>
-                    <span className="inline-flex h-8 items-center rounded-full border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                      {session.duration ?? 0} phút
-                    </span>
+                  <div className="flex flex-wrap gap-2">
+                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/30">
+                      <Star className="h-4 w-4 fill-current text-amber-500" />
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700/80 dark:text-amber-300/80">
+                          Mentor ratio
+                        </div>
+                        <div className="text-sm font-bold tabular-nums text-amber-700 dark:text-amber-300">
+                          {mentorAverageRating ? `${mentorAverageRating.toFixed(1)}/5` : "—"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
+                      <Users className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                          Phiên mentor
+                        </div>
+                        <div className="text-sm font-bold tabular-nums text-slate-950 dark:text-white">
+                          {mentorSessionCount}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2 dark:border-indigo-900/50 dark:bg-indigo-950/25">
+                      <Award className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-indigo-600/80 dark:text-indigo-300/80">
+                          Kinh nghiệm
+                        </div>
+                        <div className="text-sm font-bold tabular-nums text-indigo-700 dark:text-indigo-200">
+                          {mentorExperienceLabel}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2173,19 +2205,51 @@ function CompletedResultView({
                   </div>
 
                   {(review.situationNote || review.taskNote || review.actionNote || review.resultNote) && (
-                    <details className="group rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
-                      <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.12em] text-slate-700 dark:text-slate-200">
-                        {t("userApplicationhistory.mentorSessionReviewStar")}
-                      </summary>
-                      <div className="mt-4 grid gap-3 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                        {review.situationNote && (
-                          <ReviewRow label="Situation" content={review.situationNote} />
-                        )}
-                        {review.taskNote && <ReviewRow label="Task" content={review.taskNote} />}
-                        {review.actionNote && <ReviewRow label="Action" content={review.actionNote} />}
-                        {review.resultNote && <ReviewRow label="Result" content={review.resultNote} />}
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-500/10 text-indigo-500 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
+                          <Sparkles className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-950 dark:text-white">
+                            {t("userApplicationhistory.mentorSessionReviewStar")}
+                          </h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Tách thành 4 phần để dễ đọc hơn khi nhìn lại buổi phỏng vấn.
+                          </p>
+                        </div>
                       </div>
-                    </details>
+
+                      <div className="mt-4 grid gap-3 md:grid-cols-2">
+                        {review.situationNote && (
+                          <StarNoteBlock
+                            tone="indigo"
+                            label="Situation"
+                            title="Bối cảnh"
+                            content={review.situationNote}
+                          />
+                        )}
+                        {review.taskNote && (
+                          <StarNoteBlock tone="sky" label="Task" title="Mục tiêu" content={review.taskNote} />
+                        )}
+                        {review.actionNote && (
+                          <StarNoteBlock
+                            tone="emerald"
+                            label="Action"
+                            title="Cách xử lý"
+                            content={review.actionNote}
+                          />
+                        )}
+                        {review.resultNote && (
+                          <StarNoteBlock
+                            tone="amber"
+                            label="Result"
+                            title="Kết quả"
+                            content={review.resultNote}
+                          />
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
               </Card>
@@ -2580,23 +2644,51 @@ function ReviewInsight({
   }[tone];
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-950/30">
-      <div
-        className={cn(
-          "mb-2 inline-flex rounded-md border px-2 py-1 text-xs font-semibold",
-          toneClass
-        )}>
-        {title}
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+      <div className="mb-3 flex items-center gap-2">
+        <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", toneClass)}>
+          {title}
+        </span>
       </div>
-      <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{content}</p>
+      <p className="text-[15px] leading-7 text-slate-700 dark:text-slate-200">{content}</p>
     </div>
   );
 }
 
-function ReviewRow({ label, content }: { label: string; content: string }) {
+function StarNoteBlock({
+  tone,
+  label,
+  title,
+  content,
+}: {
+  tone: "indigo" | "sky" | "emerald" | "amber";
+  label: string;
+  title: string;
+  content: string;
+}) {
+  const toneClass = {
+    indigo:
+      "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/25 dark:text-indigo-200",
+    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/25 dark:text-sky-200",
+    emerald:
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/25 dark:text-emerald-200",
+    amber:
+      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-200",
+  }[tone];
+
   return (
-    <div>
-      <span className="font-extrabold">{label}:</span> {content}
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
+      <div className="flex items-center gap-2">
+        <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", toneClass)}>
+          {label}
+        </span>
+        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+          {title}
+        </span>
+      </div>
+      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-200">
+        {content}
+      </p>
     </div>
   );
 }
