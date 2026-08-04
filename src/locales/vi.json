@@ -4420,12 +4420,7 @@
     "mentorScheduleDateLabel": "Ngày phỏng vấn",
     "mentorScheduleDurationLabel": "Thời lượng",
     "mentorScheduleDurationValue": "{{count}} phút",
-    "mentorScheduleDurationOptions": [
-      "30 phút",
-      "45 phút",
-      "60 phút",
-      "90 phút"
-    ],
+    "mentorScheduleDurationOptions": ["30 phút", "45 phút", "60 phút", "90 phút"],
     "mentorScheduleModeLabel": "Hình thức phỏng vấn",
     "mentorScheduleModeOnlineTitle": "Online (Daily.co)",
     "mentorScheduleModeOnlineDesc": "Phỏng vấn qua Video Call trên trình duyệt",

@@ -4372,12 +4372,7 @@
     "mentorScheduleDateLabel": "面接日",
     "mentorScheduleDurationLabel": "時間",
     "mentorScheduleDurationValue": "{{count}} 分",
-    "mentorScheduleDurationOptions": [
-      "30 分",
-      "45 分",
-      "60 分",
-      "90 分"
-    ],
+    "mentorScheduleDurationOptions": ["30 分", "45 分", "60 分", "90 分"],
     "mentorScheduleModeLabel": "面接形式",
     "mentorScheduleModeOnlineTitle": "オンライン (Daily.co)",
     "mentorScheduleModeOnlineDesc": "ブラウザでビデオ面接",

@@ -1672,6 +1672,14 @@
     "text": "sample"
   },
   {
+    "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
+    "line": 617,
+    "character": 27,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Session #"
+  },
+  {
     "file": "src/pages/Admin/PracticeSetManagement/components/PracticeSetFormDialog.tsx",
     "line": 87,
     "character": 47,
@@ -2009,7 +2017,7 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
-    "line": 140,
+    "line": 164,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -2017,7 +2025,7 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
-    "line": 141,
+    "line": 165,
     "character": 76,
     "type": "JsxText",
     "category": "english",
@@ -2025,7 +2033,7 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
-    "line": 149,
+    "line": 173,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -2617,71 +2625,39 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 252,
-    "character": 23,
+    "line": 1219,
+    "character": 25,
     "type": "JsxText",
     "category": "english",
-    "text": "✓ PASSED"
+    "text": "min"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 257,
-    "character": 23,
+    "line": 1416,
+    "character": 25,
     "type": "JsxText",
     "category": "english",
-    "text": "✗ FAILED"
+    "text": "&ldquo;"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 387,
-    "character": 23,
+    "line": 1416,
+    "character": 52,
     "type": "JsxText",
     "category": "english",
-    "text": "B"
+    "text": "&rdquo;"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 955,
-    "character": 19,
+    "line": 1486,
+    "character": 34,
     "type": "JsxText",
     "category": "english",
-    "text": "Online (Daily.co)"
+    "text": "min"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 982,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Offline"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1187,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1266,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Phien phong van da hoan tat"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1269,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Ket qua phong van voi mentor da duoc ghi nhan. Xem nhan xet cua mentor va hoan tat\r\n              buoc danh gia mentor de dong vong phong van."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1274,
+    "line": 1996,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -2689,95 +2665,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1281,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Thoi gian"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1286,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Thoi luong"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1291,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Ban tham gia"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1300,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1311,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Recording phong van"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1319,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Xem lai video"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1331,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Danh gia cua Mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1343,
-    "character": 30,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "Diem manh"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1346,
-    "character": 30,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "Can cai thien"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1349,
-    "character": 30,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "De xuat phat trien"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1357,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Nhan xet theo STAR method"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1361,
+    "line": 2097,
     "character": 32,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2785,7 +2673,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1363,
+    "line": 2099,
     "character": 50,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2793,7 +2681,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1364,
+    "line": 2100,
     "character": 52,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2801,7 +2689,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1365,
+    "line": 2101,
     "character": 52,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2809,23 +2697,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1377,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Dang cho danh gia cua mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1380,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Trang nay se tu cap nhat khi mentor gui nhan xet sau buoi phong van."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1482,
+    "line": 2220,
     "character": 76,
     "type": "JsxText",
     "category": "english",
@@ -2833,7 +2705,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1485,
+    "line": 2223,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -2841,55 +2713,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1497,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Sua danh gia"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1530,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Cam on ban da hoan tat danh gia. Vong Mentor Interview da ket thuc."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1539,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Diem danh gia"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1556,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Nhan xet ve Mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1574,
-    "character": 15,
-    "type": "JsxAttribute[placeholder]",
-    "category": "english",
-    "text": "Chia se cam nhan ve cach mentor dat cau hoi, huong dan va ho tro trong buoi phong van."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1606,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Dang gui..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1626,
+    "line": 2371,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2897,7 +2721,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1630,
+    "line": 2375,
     "character": 15,
     "type": "JsxText",
     "category": "english",

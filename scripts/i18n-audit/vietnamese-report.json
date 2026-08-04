@@ -3105,7 +3105,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 85,
+    "line": 110,
     "character": 36,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3113,7 +3113,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 85,
+    "line": 110,
     "character": 67,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3121,7 +3121,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 86,
+    "line": 111,
     "character": 34,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3129,7 +3129,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 86,
+    "line": 111,
     "character": 56,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3137,7 +3137,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 87,
+    "line": 112,
     "character": 29,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3145,7 +3145,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 87,
+    "line": 112,
     "character": 58,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3153,7 +3153,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 88,
+    "line": 113,
     "character": 28,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3161,7 +3161,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 88,
+    "line": 113,
     "character": 60,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3169,7 +3169,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 89,
+    "line": 114,
     "character": 28,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3177,7 +3177,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 89,
+    "line": 114,
     "character": 53,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3185,7 +3185,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 90,
+    "line": 115,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3193,7 +3193,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 90,
+    "line": 115,
     "character": 54,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3201,635 +3201,163 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 243,
+    "line": 268,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Điểm số đánh giá phỏng vấn Mentor"
+    "text": "Äiá»ƒm sá»‘ Ä‘Ã¡nh giÃ¡ phá»ng váº¥n Mentor"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 330,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tiến trình Mentor Interview"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 333,
-    "character": 51,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Quy trình phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 339,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Bước"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 404,
+    "line": 277,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Hiện tại"
+    "text": "âœ“ PASSED"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 407,
-    "character": 82,
+    "line": 282,
+    "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Hoàn tất"
+    "text": "âœ— FAILED"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 409,
-    "character": 78,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chưa mở"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 488,
+    "line": 456,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Quy trình các bước tiếp theo"
+    "text": "Quy trÃ¬nh cÃ¡c bÆ°á»›c tiáº¿p theo"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 491,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tự động kích hoạt khi có Mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 505,
+    "line": 470,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Đang xử lý"
+    "text": "Äang xá»­ lÃ½"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 473,
+    "character": 65,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "1. Admin Ä‘á» xuáº¥t Mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 475,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Admin xem xÃ©t há»“ sÆ¡ vÃ chá»‰ Ä‘á»‹nh cÃ¡c mentor cÃ³ ká»¹ nÄƒng phÃ¹ há»£p\r\n                nháº¥t vá»›i vá»‹ trÃ­."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 489,
+    "character": 19,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "BÆ°á»›c tiáº¿p theo"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 492,
+    "character": 69,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "2. Báº¡n chá»n Mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 494,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Xem há»“ sÆ¡ nÄƒng lá»±c, Ä‘Ã¡nh giÃ¡ vÃ chá»n mentor báº¡n mong muá»‘n phá»ng\r\n                váº¥n."
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
     "line": 508,
-    "character": 65,
+    "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "1. Admin đề xuất Mentor"
+    "text": "BÆ°á»›c 3"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 510,
+    "line": 512,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí."
+    "text": "3. Äáº·t lá»‹ch & Phá»ng váº¥n"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 523,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Bước tiếp theo"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 526,
-    "character": 69,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "2. Bạn chọn Mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 528,
+    "line": 515,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn."
+    "text": "Chá»n thá»i gian ráº£nh thuáº­n tiá»‡n vÃ vÃ o phÃ²ng há»p video 1-1 trá»±c tuyáº¿n."
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 541,
-    "character": 19,
+    "line": 556,
+    "character": 66,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Bước 3"
+    "text": "Äang táº£i danh sÃ¡ch mentor..."
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 544,
-    "character": 69,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "3. Đặt lịch & Phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 546,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 560,
-    "character": 67,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tự động làm mới mỗi 30s"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 562,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hệ thống tự động cập nhật ngay khi Admin phân bổ mentor. Bạn không cần tải lại trang."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 576,
-    "character": 33,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đang kiểm tra..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 576,
-    "character": 54,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Kiểm tra ngay"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 605,
+    "line": 566,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Đang tải danh sách mentor..."
+    "text": "ChÆ°a cÃ³ mentor nÃ o Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 618,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chưa có mentor nào được Admin đề xuất"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 621,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vui lòng liên hệ Admin để được gán mentor. Sau khi Admin gán xong, danh sách sẽ hiện ở\r\n              đây."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 630,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tải lại"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 643,
+    "line": 569,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Chọn mentor phỏng vấn"
+    "text": "Vui lÃ²ng chá» Admin phÃ¢n bá»• chuyÃªn gia phÃ¹ há»£p."
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 646,
+    "line": 572,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
-    "text": "Có"
+    "text": "Táº£i láº¡i"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 646,
-    "character": 31,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "mentor được Admin đề xuất cho vòng này. Chọn người phù hợp nhất với\r\n          bạn."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 671,
-    "character": 11,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "💡 Mẹo: Bạn có thể đổi mentor trước khi tạo phiên phỏng vấn."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 784,
-    "character": 68,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "+ năm KN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 802,
-    "character": 27,
+    "line": 1882,
+    "character": 74,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Đã chọn"
+    "text": "â€”"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 802,
-    "character": 39,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chọn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 810,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Xác nhận"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 842,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Vui lòng chọn ngày giờ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 868,
-    "character": 11,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đặt lịch phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 871,
-    "character": 11,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chọn ngày giờ và thời lượng phù hợp. Bạn có thể đổi trước khi thanh toán."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 880,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Ngày phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 892,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Giờ bắt đầu"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 906,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thời lượng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 922,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "phút"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 932,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hình thức phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 958,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Phỏng vấn qua Video Call trên trình duyệt"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 985,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Gặp trực tiếp tại địa điểm do mentor sắp xếp"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 999,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đang tạo phiên..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1004,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tạo phiên phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1052,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Nháp"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1056,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chờ thanh toán"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1060,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đã thanh toán"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1064,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đang diễn ra"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1068,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đã hoàn tất"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1072,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Bị từ chối"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1076,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đã hủy"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1083,
-    "character": 9,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Trạng thái phiên"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1139,
-    "character": 11,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đang tải phiên phỏng vấn..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1161,
-    "character": 11,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Phiên phỏng vấn #"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1164,
-    "character": 11,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vào phòng Video Call đúng giờ. Phòng sẽ mở trước 15 phút."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1172,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "vietnamese",
-    "text": "Thời gian"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1172,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Thời gian"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1177,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "vietnamese",
-    "text": "Thời lượng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1177,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Thời lượng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1178,
+    "line": 1903,
     "character": 44,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "phút"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1182,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "vietnamese",
-    "text": "Hình thức"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1182,
-    "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Hình thức"
+    "text": "â€”"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1198,
-    "character": 27,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Phòng đã mở"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1198,
-    "character": 43,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Còn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1201,
-    "character": 27,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Sẵn sàng vào"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1205,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Bạn có thể vào phòng ngay bây giờ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1206,
-    "character": 19,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "Phòng mở 15 phút trước"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1218,
-    "character": 28,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đây là phiên Offline. Hãy liên hệ mentor qua thông tin bên dưới."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1224,
-    "character": 45,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Tiếp tục vào phòng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1224,
-    "character": 68,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Vào phòng Video Call"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1232,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Làm mới"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1424,
+    "line": 2160,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Vui lòng chọn điểm đánh giá (1–10)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1427,
-    "character": 22,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "Nhận xét tối thiểu"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1427,
-    "character": 62,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "ký tự"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1435,
-    "character": 27,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Bạn chưa đăng nhập"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1439,
-    "character": 27,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Không tìm thấy ID phiên"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1443,
-    "character": 27,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Không tìm thấy mentor"
+    "text": "Vui lÃ²ng chá»n Ä‘iá»ƒm Ä‘Ã¡nh giÃ¡ (1â€“10)"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
