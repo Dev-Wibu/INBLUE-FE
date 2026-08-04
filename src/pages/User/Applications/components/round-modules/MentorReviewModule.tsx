@@ -1,4 +1,4 @@
-﻿import { DateTimePicker } from "@/components/shared";
+import { DateTimePicker } from "@/components/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -141,7 +141,7 @@ export function MentorReviewModule({
   // Schedule session mutation (used by the SCHEDULE step). We declare it
   // here so we can refresh `useSessionById` after success and immediately
   // jump the candidate to the WAITING step (no payment step in the current
-  // business flow â€” see backend: totalPrice=0 is valid).
+  // business flow — see backend: totalPrice=0 is valid).
   const createSessionMutation = useCreateRoundSession({
     onSuccess: () => {
       void refetchDetail();
@@ -151,7 +151,7 @@ export function MentorReviewModule({
 
   // Active step derived from BOTH `detail.status` (mentor-assignment side)
   // AND `sessionStatus` (Daily.co side via webhook). The two lifecycles are
-  // independent and can drift â€” see issue: candidate joined the room, both
+  // independent and can drift — see issue: candidate joined the room, both
   // sides left, session.status = COMPLETED, but detail.status may still be
   // `AWAITING_MENTOR` because staff haven't flipped it to COMPLETED yet.
   // We always trust `sessionStatus === 'COMPLETED'` as the source of truth
@@ -181,12 +181,12 @@ export function MentorReviewModule({
     }
     // 4. No session yet: show pre-session steps
     // Note: Option 2 (multi-mentor proposal) flips detail.status to
-    // "PENDING" once the candidate confirms their pick â€” at that point
+    // "PENDING" once the candidate confirms their pick — at that point
     // the session doesn't exist yet and the candidate still needs to
     // schedule an interview slot. Treat PENDING the same as SLOT_PICKED
     // so the ScheduleStep renders instead of falling through to the
     // AWAITING_MENTOR default (which previously trapped candidates in
-    // "Äang chá» Admin gÃ¡n mentor" forever after they'd already picked).
+    // "Đang chờ Admin gán mentor" forever after they'd already picked).
     if (status === "AWAITING_MENTOR") return "AWAITING_MENTOR";
     if (status === "AWAITING_CANDIDATE_SELECT_MENTOR") return "SELECT_MENTOR";
     if (status === "PENDING" || status === "SLOT_PICKED" || status === "SUBMITTED") {
@@ -195,7 +195,7 @@ export function MentorReviewModule({
     return "AWAITING_MENTOR";
   }, [status, sessionId, sessionStatus]);
 
-  // Polling â€” refresh detail (for status flips) AND session (for COMPLETED
+  // Polling — refresh detail (for status flips) AND session (for COMPLETED
   // flip via Daily.co webhook) on different intervals.
   useEffect(() => {
     if (activeStep === "AWAITING_MENTOR" && !sessionId) {
@@ -225,7 +225,7 @@ export function MentorReviewModule({
     <div className="space-y-6">
       <MentorReviewSubheader
         roundOrder={roundOrder}
-        roundLabel={round.name || t("userApplicationhistory.mentorRoundTitle", "ÄÃ¡nh giÃ¡ Mentor")}
+        roundLabel={round.name || t("userApplicationhistory.mentorRoundTitle", "Đánh giá Mentor")}
         activeStep={activeStep}
         detail={detail}
         isCompleted={isCompleted}
@@ -264,7 +264,7 @@ export function MentorReviewModule({
               </div>
               <div>
                 <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                  Äiá»ƒm sá»‘ Ä‘Ã¡nh giÃ¡ phá»ng váº¥n Mentor
+                  Điểm số đánh giá phỏng vấn Mentor
                 </div>
                 <div className="mt-0.5 flex items-center gap-2">
                   <span className="text-2xl font-extrabold text-white tabular-nums">
@@ -273,12 +273,12 @@ export function MentorReviewModule({
                   <span className="text-base font-bold text-slate-400">/100</span>
                   {passed && (
                     <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-300 uppercase shadow-xs">
-                      âœ“ PASSED
+                      ✓ PASSED
                     </span>
                   )}
                   {failed && (
                     <span className="rounded-full border border-rose-500/30 bg-rose-500/15 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-rose-300 uppercase shadow-xs">
-                      âœ— FAILED
+                      ✗ FAILED
                     </span>
                   )}
                 </div>
@@ -332,7 +332,7 @@ export function MentorReviewModule({
 }
 
 // ============================================================================
-// SUB-COMPONENT: ProgressHub â€” wizard steps indicator
+// SUB-COMPONENT: ProgressHub — wizard steps indicator
 // ============================================================================
 
 function ProgressHub({ activeIndex }: { activeIndex: number }) {
@@ -419,22 +419,19 @@ function AwaitingMentorStep() {
               </span>
               {t(
                 "userApplicationhistory.mentorStatusMatching",
-                "Tráº¡ng thÃ¡i: Äang phÃ¢n cÃ´ng Mentor"
+                "Trạng thái: Đang phân công Mentor"
               )}
             </span>
           </div>
 
           {/* Heading & Description */}
           <h3 className="mt-3 text-lg font-extrabold tracking-tight text-white sm:text-xl">
-            {t(
-              "userApplicationhistory.mentorAwaitingTitle",
-              "Chá» Admin phÃ¢n bá»• mentor phÃ¹ há»£p"
-            )}
+            {t("userApplicationhistory.mentorAwaitingTitle", "Chờ Admin phân bổ mentor phù hợp")}
           </h3>
           <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">
             {t(
               "userApplicationhistory.mentorAwaitingDesc",
-              "Há»‡ thá»‘ng Ä‘ang tiáº¿n hÃ nh rÃ  soÃ¡t chuyÃªn mÃ´n vÃ  káº¿t ná»‘i mentor thÃ­ch há»£p nháº¥t theo yÃªu cáº§u cá»§a JD. Khi mentor Ä‘Æ°á»£c gÃ¡n, danh sÃ¡ch Ä‘á» xuáº¥t sáº½ xuáº¥t hiá»‡n ngay á»Ÿ bÆ°á»›c tiáº¿p theo Ä‘á»ƒ báº¡n chá»n ngÆ°á»i phá»ng váº¥n."
+              "Hệ thống đang tiến hành rà soát chuyên môn và kết nối mentor thích hợp nhất theo yêu cầu của JD. Khi mentor được gán, danh sách đề xuất sẽ xuất hiện ngay ở bước tiếp theo để bạn chọn người phỏng vấn."
             )}
           </p>
         </div>
@@ -444,7 +441,7 @@ function AwaitingMentorStep() {
       <div className="bg-slate-950/40 p-6 sm:p-7">
         <div className="mb-4 flex items-center justify-between">
           <h4 className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
-            Quy trÃ¬nh cÃ¡c bÆ°á»›c tiáº¿p theo
+            Quy trình các bước tiếp theo
           </h4>
         </div>
 
@@ -458,13 +455,12 @@ function AwaitingMentorStep() {
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-300">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
-                  Äang xá»­ lÃ½
+                  Đang xử lý
                 </span>
               </div>
-              <h5 className="mt-3 text-xs font-bold text-white">1. Admin Ä‘á» xuáº¥t Mentor</h5>
+              <h5 className="mt-3 text-xs font-bold text-white">1. Admin đề xuất Mentor</h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-300">
-                Admin xem xÃ©t há»“ sÆ¡ vÃ chá»‰ Ä‘á»‹nh cÃ¡c mentor cÃ³ ká»¹ nÄƒng phÃ¹ há»£p
-                nháº¥t vá»›i vá»‹ trÃ­.
+                Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí.
               </p>
             </div>
           </div>
@@ -477,13 +473,12 @@ function AwaitingMentorStep() {
                   <UserCheck className="h-4 w-4" />
                 </div>
                 <span className="inline-flex items-center rounded-md border border-slate-800 bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400">
-                  BÆ°á»›c tiáº¿p theo
+                  Bước tiếp theo
                 </span>
               </div>
-              <h5 className="mt-3 text-xs font-bold text-slate-200">2. Báº¡n chá»n Mentor</h5>
+              <h5 className="mt-3 text-xs font-bold text-slate-200">2. Bạn chọn Mentor</h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                Xem há»“ sÆ¡ nÄƒng lá»±c, Ä‘Ã¡nh giÃ¡ vÃ chá»n mentor báº¡n mong muá»‘n phá»ng
-                váº¥n.
+                Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn.
               </p>
             </div>
           </div>
@@ -496,14 +491,12 @@ function AwaitingMentorStep() {
                   <CalendarCheck className="h-4 w-4" />
                 </div>
                 <span className="inline-flex items-center rounded-md border border-slate-800 bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400">
-                  BÆ°á»›c 3
+                  Bước 3
                 </span>
               </div>
-              <h5 className="mt-3 text-xs font-bold text-slate-200">
-                3. Äáº·t lá»‹ch & Phá»ng váº¥n
-              </h5>
+              <h5 className="mt-3 text-xs font-bold text-slate-200">3. Đặt lịch & Phỏng vấn</h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                Chá»n thá»i gian ráº£nh thuáº­n tiá»‡n vÃ vÃ o phÃ²ng há»p video 1-1 trá»±c tuyáº¿n.
+                Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến.
               </p>
             </div>
           </div>
@@ -544,7 +537,7 @@ function SelectMentorStep({
     return (
       <Card className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
         <Spinner className="mx-auto h-8 w-8 text-indigo-500" />
-        <p className="mt-4 text-sm font-semibold text-slate-500">Äang táº£i danh sÃ¡ch mentor...</p>
+        <p className="mt-4 text-sm font-semibold text-slate-500">Đang tải danh sách mentor...</p>
       </Card>
     );
   }
@@ -554,13 +547,13 @@ function SelectMentorStep({
       <Card className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center shadow-sm dark:border-rose-900/40 dark:bg-rose-950/20">
         <AlertCircle className="mx-auto h-12 w-12 text-rose-400" />
         <h3 className="mt-4 text-lg font-black text-rose-900 dark:text-rose-100">
-          ChÆ°a cÃ³ mentor nÃ o Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh
+          Chưa có mentor nào được chỉ định
         </h3>
         <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">
-          Vui lÃ²ng chá» Admin phÃ¢n bá»• chuyÃªn gia phÃ¹ há»£p.
+          Vui lòng chờ Admin phân bổ chuyên gia phù hợp.
         </p>
         <Button variant="outline" onClick={() => void refetch()} className="mt-6 rounded-xl">
-          Táº£i láº¡i
+          Tải lại
         </Button>
       </Card>
     );
@@ -578,12 +571,12 @@ function SelectMentorStep({
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-lg font-bold text-slate-100">
-                    {t("userApplicationhistory.mentorSelectTitle", "Chá»n mentor phÃ¹ há»£p")}
+                    {t("userApplicationhistory.mentorSelectTitle", "Chọn mentor phù hợp")}
                   </h3>
                   <span className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-[11px] font-semibold text-indigo-300">
                     {t(
                       "userApplicationhistory.mentorSelectCount",
-                      "{{count}} mentor Ä‘Æ°á»£c Ä‘á» xuáº¥t",
+                      "{{count}} mentor được đề xuất",
                       {
                         count: mentors.length,
                       }
@@ -593,7 +586,7 @@ function SelectMentorStep({
                 <p className="mt-1 text-sm leading-6 text-slate-300">
                   {t(
                     "userApplicationhistory.mentorSelectDescription",
-                    "Chá»n 1 mentor tá»« danh sÃ¡ch Ä‘Æ°á»£c Ä‘á» xuáº¥t cho vá»‹ trÃ­ á»©ng tuyá»ƒn nÃ y."
+                    "Chọn 1 mentor từ danh sách được đề xuất cho vị trí ứng tuyển này."
                   )}
                 </p>
               </div>
@@ -654,14 +647,14 @@ function SelectMentorStep({
                     "userApplicationhistory.mentorConfirmDescription",
                     "You are selecting {{name}} as your mentor. Are you sure?",
                     {
-                      name: mentorToConfirm.name ?? "â€”",
+                      name: mentorToConfirm.name ?? "—",
                     }
                   )
                 : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel", "Há»§y")}</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel", "Hủy")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (!mentorToConfirm?.id) return;
@@ -671,7 +664,7 @@ function SelectMentorStep({
                 });
                 setMentorToConfirm(null);
               }}>
-              {t("common.confirm", "XÃ¡c nháº­n")}
+              {t("common.confirm", "Xác nhận")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -2309,9 +2302,9 @@ function CandidateMentorFeedbackBlock({
   const hasFeedback = !!(feedback && (feedback.rating !== undefined || feedback.comment));
   // BE keys `MentorFeedback.id` to `sessionId` via `@MapsId`. So if the
   // session already has a `mentorFeedback` block we MUST call PUT (not
-  // POST) â€” POST will return 500 "different object with same identifier"
+  // POST) — POST will return 500 "different object with same identifier"
   // because Hibernate tries to attach a second entity with id=sessionId.
-  // We use `session.id` as the PUT id (per docs/STUDENT_RATING_MENTOR_API.md Â§6).
+  // We use `session.id` as the PUT id (per docs/STUDENT_RATING_MENTOR_API.md §6).
   const isUpdate = hasFeedback;
   const [editing, setEditing] = useState(!hasFeedback);
   const [rating, setRating] = useState<number>(feedback?.rating ?? 0);
@@ -2355,7 +2348,7 @@ function CandidateMentorFeedbackBlock({
 
     try {
       if (isUpdate) {
-        // PUT /api/mentor-feedbacks â€” body { id: sessionId, rating, comment }
+        // PUT /api/mentor-feedbacks — body { id: sessionId, rating, comment }
         await updateFeedback.mutateAsync({
           id: session.id,
           data: {
