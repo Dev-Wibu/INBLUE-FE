@@ -86,45 +86,40 @@ function AiInterviewSubheader({
   const roundOrder = round.roundOrder ?? 7;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-md backdrop-blur-md">
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
-            <Bot className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
-                Vòng {roundOrder}
-              </span>
-              <span className="text-slate-600">•</span>
-              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
-                Phỏng vấn AI tại Kiosk
-              </span>
-            </div>
-            <h2 className="sr-only">Phỏng vấn AI tại Kiosk</h2>
-            <p className="mt-0.5 max-w-4xl text-sm leading-5 font-semibold text-slate-200">
-              Chọn trạm Kiosk và khung giờ phù hợp. Sau khi đặt lịch, hệ thống sẽ cấp mã PIN 6 số để
-              bạn nhập tại Kiosk đúng giờ phỏng vấn.
-            </p>
-          </div>
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+          <Bot className="h-5 w-5" />
         </div>
-
-        <div className="flex items-center gap-2">
-          {isCompleted ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3.5 py-1 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>{finalScore != null ? `ĐIỂM AI ${finalScore}/100` : "ĐÃ HOÀN TẤT"}</span>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+              Vòng {roundOrder}: Phỏng vấn AI tại Kiosk
             </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-3.5 py-1 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
-              <CalendarClock className="h-3.5 w-3.5 text-indigo-400" />
-              <span>ĐẶT LỊCH KIOSK</span>
-            </span>
-          )}
+            <span className="text-slate-600">•</span>
+            <span className="text-xs font-semibold text-indigo-400">Vòng {roundOrder}</span>
+          </div>
+          <p className="mt-0.5 text-sm font-semibold text-slate-200">
+            Chọn trạm Kiosk và khung giờ phù hợp. Sau khi đặt lịch, hệ thống sẽ cấp mã PIN 6 số để
+            bạn nhập tại Kiosk đúng giờ phỏng vấn.
+          </p>
         </div>
       </div>
-    </section>
+
+      <div className="flex items-center gap-2">
+        {isCompleted ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>{finalScore != null ? `ĐIỂM AI ${finalScore}/100` : "ĐÃ HOÀN TẤT"}</span>
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+            <CalendarClock className="h-3.5 w-3.5 text-indigo-400" />
+            <span>ĐẶT LỊCH KIOSK</span>
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 
