@@ -1788,7 +1788,7 @@ function SessionRoomStep({
           <div className="min-w-0 space-y-2">
             <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-300">
               <Video className="h-3 w-3 text-indigo-500 dark:text-indigo-300" />
-              {t("userApplicationhistory.mentorSessionTitle", { id: session.id })}
+              {t("userApplicationhistory.mentorSession", "Phiên phỏng vấn")} #{session.id}
             </div>
             <h3 className="text-base font-semibold tracking-tight text-slate-900 dark:text-white">
               {t("userApplicationhistory.mentorSessionHint")}
@@ -2488,7 +2488,7 @@ function CandidateMentorFeedbackBlock({
                   {trimmedLen < MIN_COMMENT_LENGTH
                     ? t("userApplicationhistory.mentorSessionMinChars", {
                         min: MIN_COMMENT_LENGTH,
-                        left: MIN_COMMENT_LENGTH - trimmedLen,
+                        left: Math.max(0, MIN_COMMENT_LENGTH - trimmedLen),
                       })
                     : t("userApplicationhistory.mentorSessionMinCharsMet")}
                 </span>
