@@ -1659,8 +1659,11 @@ const CRITERIA_META: Record<string, { label: string; color: string; bg: string; 
 
 function GradedResultView({
   detail,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   maxScore: _maxScore,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   passed: _passed,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   failed: _failed,
   problems,
   activeProblemIdx,
@@ -1676,8 +1679,6 @@ function GradedResultView({
   onSelectProblem: (_idx: number) => void;
   issuesByProblem: Record<number, LocalDraftIssue[]>;
 }) {
-  const { t: _t } = useTranslation();
-
   const feedback = useMemo<AiFeedback | null>(() => {
     if (!detail.aiFeedback) return null;
     if (typeof detail.aiFeedback === "object") return detail.aiFeedback as AiFeedback;
