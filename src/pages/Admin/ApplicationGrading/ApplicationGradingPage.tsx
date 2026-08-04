@@ -24,6 +24,7 @@ import {
   useHrScore,
 } from "@/hooks/useApplicationDetails";
 import { useEmailSubmission } from "@/hooks/useEmailSubmission";
+import { useJobDescription } from "@/hooks/useJobDescription";
 import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import {
@@ -38,18 +39,23 @@ import { useAuthStore } from "@/stores/authStore";
 import {
   AlertTriangle,
   ArrowRight,
+  Briefcase,
+  Check,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
   Clock,
+  ExternalLink,
   FileText,
   Filter,
   Mail,
   Search,
+  Sparkles,
   Star,
   ThumbsDown,
   ThumbsUp,
+  User,
   XCircle,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -120,423 +126,111 @@ const RESULT_CONFIG: Record<string, { label: string; className: string }> = {
 };
 
 // ============================================================
-// Expandable Round Card
+// Embedded CV & Document In-Page Viewer
 // ============================================================
 
-interface RoundCardProps {
-  detail: ApplicationDetail;
-  isExpanded: boolean;
-  isStartGrading: boolean;
-  onToggle: () => void;
-  onStartGrading: () => void;
-  onViewEmailSubmission: (_emailSubmissionId: number) => void;
-  onHrScoreSuccess: () => void;
-}
+function EmbeddedCVViewer({ fileUrl }: { fileUrl: string }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
-function RoundCard({
-  detail,
-  isExpanded,
-  isStartGrading,
-  onToggle,
-  onStartGrading,
-  onViewEmailSubmission,
-  onHrScoreSuccess,
-}: RoundCardProps) {
-  const { mutate: submitScore, isPending: isSubmitting } = useHrScore({
-    onSuccess: onHrScoreSuccess,
-  });
-  const statusCfg = STATUS_CONFIG[detail.status ?? ""] ?? { label: detail.status, className: "" };
-  const resultCfg = detail.finalResult ? RESULT_CONFIG[detail.finalResult] : null;
-  const needsHrScore = needsHrScoring(detail);
-  const hasExistingGrade = detail.hrScore !== undefined;
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [isPass, setIsPass] = useState(detail.finalResult === "PASSED");
-  const [score, setScore] = useState(
-    detail.hrScore !== undefined
-      ? String(detail.hrScore)
-      : detail.aiScore !== undefined
-        ? String(Math.round(detail.aiScore))
-        : ""
-  );
-  const [note, setNote] = useState(detail.hrNote ?? "");
-
-  const data = detail.submissionData as SubmissionData | undefined;
-
-  const handleSubmit = () => {
-    const scoreNum = parseFloat(score);
-    if (isNaN(scoreNum) || score.trim() === "") {
-      toast.error(t("grading.invalidScore"));
-      return;
+  // Extract clean filename from fileUrl
+  const fileName = useMemo(() => {
+    try {
+      const url = new URL(fileUrl);
+      const name = url.pathname.split("/").pop() || "Candidate_CV.pdf";
+      return decodeURIComponent(name);
+    } catch {
+      return "Candidate_CV.pdf";
     }
-    const clampedScore = Math.min(100, Math.max(0, scoreNum));
-    submitScore({
-      applicationDetailId: detail.id!,
-      isPass,
-      note: note.trim(),
-      score: clampedScore,
-    });
-  };
+  }, [fileUrl]);
+
+  const fileExt = useMemo(() => {
+    const ext = fileName.split(".").pop()?.toLowerCase();
+    return ext || "pdf";
+  }, [fileName]);
+
+  const isImage = ["png", "jpg", "jpeg", "webp", "gif", "svg"].includes(fileExt);
+  const isOfficeDoc = ["doc", "docx", "ppt", "pptx", "xls", "xlsx"].includes(fileExt);
+
+  // Use Google Docs Embedded Viewer for docx/ppt files so they render natively
+  const viewerUrl = isOfficeDoc
+    ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`
+    : fileUrl;
 
   return (
-    <div
-      className={cn(
-        "group overflow-hidden rounded-xl border transition-all duration-200",
-        isExpanded
-          ? "border-indigo-400 shadow-lg shadow-indigo-500/10 dark:border-indigo-500/50 dark:shadow-indigo-950/30"
-          : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-slate-700",
-        needsHrScore && !hasExistingGrade && !isExpanded && "border-amber-300 dark:border-amber-600"
-      )}>
-      {/* Card Header — Always visible */}
-      <div className="relative p-4">
-        {/* Inner panel */}
-        <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3.5 dark:border-slate-800/80 dark:bg-[#0F172A]/90">
-          <div className="flex items-start justify-between gap-3">
-            {/* Left: expand toggle + round info */}
-            <div className="flex items-start gap-3">
-              {/* Expand/Collapse button */}
-              {needsHrScore && !hasExistingGrade && !isExpanded ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={onStartGrading}
-                  className="mt-0.5 h-8 gap-1.5 rounded-lg bg-amber-500 px-3 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-amber-600">
-                  <ClipboardCheck className="h-3.5 w-3.5" />
-                  {t("grading.grade")}
-                </Button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={onToggle}
-                  className={cn(
-                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
-                    isExpanded
-                      ? "bg-indigo-600 text-white shadow-sm"
-                      : "bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
-                  )}>
-                  <ChevronRight
-                    className={cn(
-                      "h-4 w-4 transition-transform duration-200",
-                      isExpanded && "rotate-90"
-                    )}
-                  />
-                </button>
-              )}
-
-              {/* Round info */}
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-bold text-slate-900 dark:text-slate-100">
-                    {t("userApplicationhistory.round")} #{detail.roundId}
-                  </h3>
-                  {/* Status badge with dot */}
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase",
-                      statusCfg.className
-                    )}>
-                    {statusCfg.dot && (
-                      <span className={cn("h-1.5 w-1.5 rounded-full", statusCfg.dot)} />
-                    )}
-                    {statusCfg.label}
-                  </span>
-                  {/* Result badge */}
-                  {resultCfg && (
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase",
-                        resultCfg.className
-                      )}>
-                      {resultCfg.label}
-                    </span>
-                  )}
-                  {/* Needs grading warning */}
-                  {needsHrScore && !hasExistingGrade && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-600 uppercase dark:bg-amber-500/10 dark:text-amber-400">
-                      <AlertTriangle className="h-3 w-3" />
-                      {t("grading.needsGrading")}
-                    </span>
-                  )}
-                </div>
-
-                {/* Quick scores row */}
-                <div className="mt-2 flex flex-wrap items-center gap-4">
-                  {detail.aiScore !== undefined && (
-                    <div className="flex items-center gap-1.5">
-                      <Star className="h-3.5 w-3.5 fill-purple-400 text-purple-400" />
-                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
-                        AI {detail.aiScore}
-                      </span>
-                    </div>
-                  )}
-                  {detail.hrScore !== undefined && (
-                    <div className="flex items-center gap-1.5">
-                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                      <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                        HR {detail.hrScore}
-                      </span>
-                    </div>
-                  )}
-                  {detail.finalScore !== undefined && (
-                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                      Final {detail.finalScore}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Right: completion indicator */}
-            <div className="flex shrink-0 items-center gap-2">
-              {detail.completedAt && (
-                <span className="hidden text-xs text-slate-400 sm:block">
-                  {formatDateTime(detail.completedAt)}
-                </span>
-              )}
-              {detail.finalResult === "PASSED" && (
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10">
-                  <CheckCircle2 className="h-5 w-5" />
-                </div>
-              )}
-              {detail.finalResult === "FAILED" && (
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-500 dark:bg-red-500/10">
-                  <XCircle className="h-5 w-5" />
-                </div>
-              )}
-            </div>
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      {/* Viewer Header Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/60">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <FileText className="h-4 w-4" />
           </div>
+          <div className="min-w-0">
+            <p className="truncate text-xs font-bold text-slate-900 dark:text-white">{fileName}</p>
+            <span className="inline-block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
+              {fileExt.toUpperCase()} Document
+            </span>
+          </div>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="h-8 gap-1.5 rounded-lg border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+            {isExpanded ? "Thu gọn" : "Mở rộng chiều cao"}
+          </Button>
+          <a
+            href={fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700">
+            <ExternalLink className="h-3.5 w-3.5" />
+            Mở tab mới
+          </a>
         </div>
       </div>
 
-      {/* Expanded Content */}
-      {isExpanded && (
-        <div className="border-t border-slate-100 p-4 sm:p-5 dark:border-slate-800">
-          <div className="grid gap-5 lg:grid-cols-5">
-            {/* ─── LEFT COLUMN: Submission + AI Feedback (3/5 width) ─── */}
-            <div className="space-y-5 lg:col-span-3">
-              {/* Submission Content */}
-              {data && (
-                <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/60">
-                  <h4 className="mb-3 flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
-                    <FileText className="h-3.5 w-3.5" />
-                    {t("submission.content")}
-                  </h4>
-                  <SubmissionPreview
-                    detail={detail}
-                    onViewEmailSubmission={onViewEmailSubmission}
-                  />
-                </div>
-              )}
-
-              {/* AI Feedback */}
-              {detail.aiScore !== undefined || detail.aiFeedback ? (
-                <div className="rounded-xl border border-purple-200 bg-white p-4 dark:border-purple-500/20 dark:bg-slate-900/60">
-                  <h4 className="mb-3 flex items-center gap-2 text-xs font-bold tracking-widest text-purple-500 uppercase dark:text-purple-400">
-                    <Star className="h-3.5 w-3.5 text-purple-400" />
-                    {t("grading.aiFeedback")}
-                  </h4>
-                  <div className="rounded-lg border border-purple-100 bg-purple-50/80 p-3.5 dark:border-purple-500/15 dark:bg-purple-500/5">
-                    <AIFeedbackPanel feedback={detail.aiFeedback} score={detail.aiScore} />
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            {/* ─── RIGHT COLUMN: HR Grading Panel (2/5 width) ─── */}
-            <div className="lg:col-span-2">
-              <div className="rounded-xl border border-slate-200 bg-white p-4 lg:sticky lg:top-4 dark:border-slate-800 dark:bg-slate-900/60">
-                <div className="mb-4 flex items-center justify-between">
-                  <h4 className="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
-                    <ClipboardCheck className="h-3.5 w-3.5" />
-                    {hasExistingGrade
-                      ? isEditing
-                        ? t("grading.editScore")
-                        : t("grading.hrResult")
-                      : t("grading.hrGrading")}
-                  </h4>
-                  {hasExistingGrade && isEditing && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setIsEditing(false);
-                        setScore(String(detail.hrScore ?? detail.aiScore ?? ""));
-                        setNote(detail.hrNote ?? "");
-                      }}
-                      className="h-7 gap-1.5 text-xs">
-                      {t("common.cancel")}
-                    </Button>
-                  )}
-                </div>
-
-                {/* Existing Grade Display — Đã chấm */}
-                {hasExistingGrade && !isEditing && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-4 rounded-lg border border-emerald-200 bg-emerald-50/80 p-3.5 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-500/10">
-                          <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
-                        </div>
-                        <div>
-                          <p className="text-3xl font-extrabold text-slate-900 dark:text-white">
-                            {detail.hrScore}
-                          </p>
-                          <p className="text-xs font-medium text-slate-400">/100</p>
-                        </div>
-                      </div>
-                      <div className="h-10 w-px bg-emerald-200 dark:bg-emerald-500/20" />
-                      <Badge
-                        className={
-                          detail.finalResult === "PASSED"
-                            ? "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-                            : "bg-red-500/15 text-red-700 dark:bg-red-500/10 dark:text-red-300"
-                        }>
-                        {detail.finalResult === "PASSED"
-                          ? t("userApplicationhistory.passed")
-                          : t("userApplicationhistory.failed")}
-                      </Badge>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditing(true)}
-                      className="w-full gap-1.5 rounded-lg text-xs">
-                      {t("grading.editScore")}
-                    </Button>
-
-                    {/* HR Note integrated here */}
-                    {detail.hrNote && (
-                      <div>
-                        <h5 className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                          <FileText className="h-3.5 w-3.5" />
-                          {t("general.notes")} HR
-                        </h5>
-                        <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-3 dark:border-blue-500/20 dark:bg-blue-500/5">
-                          <p className="text-sm whitespace-pre-wrap text-blue-700 dark:text-blue-300">
-                            {detail.hrNote}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Grading Form — Chưa chấm / Đang sửa / Bấm nút "Chấm" */}
-                {!hasExistingGrade || isEditing || isStartGrading ? (
-                  <div className="space-y-3.5">
-                    {/* AI Score Reference */}
-                    {detail.aiScore !== undefined && (
-                      <div className="flex items-center gap-2.5 rounded-lg border border-purple-100 bg-purple-50/70 p-2.5 dark:border-purple-500/20 dark:bg-purple-500/5">
-                        <Star className="h-4 w-4 shrink-0 text-purple-400" />
-                        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                          {t("grading.aiScoreReference")}
-                        </span>
-                        <span className="ml-auto text-sm font-extrabold text-purple-600 dark:text-purple-400">
-                          {detail.aiScore}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Decision */}
-                    <div>
-                      <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        {t("grading.decision")}
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          type="button"
-                          variant={isPass ? "default" : "outline"}
-                          size="sm"
-                          className={cn(
-                            "h-9 gap-1.5 rounded-lg text-sm font-semibold",
-                            isPass
-                              ? "bg-emerald-600 shadow-sm hover:bg-emerald-700"
-                              : "text-emerald-600 dark:text-emerald-400"
-                          )}
-                          onClick={() => setIsPass(true)}>
-                          <ThumbsUp className="h-4 w-4" />
-                          {t("userApplicationhistory.passed")}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={!isPass ? "default" : "outline"}
-                          size="sm"
-                          className={cn(
-                            "h-9 gap-1.5 rounded-lg text-sm font-semibold",
-                            !isPass
-                              ? "bg-red-600 shadow-sm hover:bg-red-700"
-                              : "text-red-600 dark:text-red-400"
-                          )}
-                          onClick={() => setIsPass(false)}>
-                          <ThumbsDown className="h-4 w-4" />
-                          {t("userApplicationhistory.failed")}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Score Input */}
-                    <div>
-                      <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        {t("grading.hrScore")}
-                      </label>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={score}
-                        onChange={(e) => setScore(e.target.value)}
-                        placeholder={t("grading.enterScore")}
-                        className="h-9 rounded-lg"
-                      />
-                    </div>
-
-                    {/* Notes */}
-                    <div>
-                      <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        {t("general.notes")}
-                      </label>
-                      <Textarea
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                        placeholder={t("grading.enterHrNotes")}
-                        rows={3}
-                        className="resize-none rounded-lg"
-                      />
-                    </div>
-
-                    {/* Submit Button */}
-                    <Button
-                      onClick={handleSubmit}
-                      disabled={isSubmitting}
-                      className={cn(
-                        "h-9 w-full gap-2 rounded-lg text-sm font-semibold shadow-sm",
-                        isPass
-                          ? "bg-emerald-600 hover:bg-emerald-700"
-                          : "bg-red-600 hover:bg-red-700"
-                      )}>
-                      {isSubmitting ? (
-                        <>
-                          <Spinner className="h-4 w-4" />
-                          {t("common.saving")}
-                        </>
-                      ) : (
-                        <>
-                          {isPass ? (
-                            <ThumbsUp className="h-4 w-4" />
-                          ) : (
-                            <ThumbsDown className="h-4 w-4" />
-                          )}
-                          {t("general.save")} {t("grading.hrResult")}
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
-            </div>
+      {/* Embedded Document Viewport */}
+      <div
+        className={cn(
+          "relative w-full bg-slate-900/5 transition-all duration-300 dark:bg-slate-950/40",
+          isExpanded ? "h-[850px]" : "h-[620px]"
+        )}>
+        {isImage ? (
+          <div className="flex h-full items-center justify-center p-4">
+            <img
+              src={fileUrl}
+              alt={fileName}
+              className="max-h-full max-w-full rounded-xl object-contain shadow-md"
+            />
           </div>
-        </div>
-      )}
+        ) : !hasError ? (
+          <iframe
+            src={viewerUrl}
+            className="h-full w-full rounded-b-2xl border-0 bg-white dark:bg-slate-900"
+            title={fileName}
+            onError={() => setHasError(true)}
+          />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+            <FileText className="h-12 w-12 text-slate-400" />
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+              Không thể tải bản xem trước CV trực tiếp.
+            </p>
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md">
+              <ExternalLink className="h-4 w-4" />
+              Tải / Xem file CV trong tab mới
+            </a>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -671,31 +365,9 @@ function SubmissionPreview({ detail, onViewEmailSubmission }: SubmissionPreviewP
     );
   }
 
-  // File upload (CV, etc.)
+  // File upload (CV, etc.) — Embedded in-page document viewer
   if (data.fileUrl) {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-orange-500" />
-          <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
-            {t("submission.submittedFile")}
-          </span>
-        </div>
-        <a
-          href={data.fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5",
-            "text-xs font-medium text-blue-700 hover:bg-blue-100",
-            "dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30",
-            "transition-colors"
-          )}>
-          <FileText className="h-3.5 w-3.5" />
-          {t("submission.viewSubmittedFile")}
-        </a>
-      </div>
-    );
+    return <EmbeddedCVViewer fileUrl={data.fileUrl} />;
   }
 
   // Quiz answers
@@ -1242,7 +914,7 @@ export function ApplicationGradingPage({
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col duration-300">
             {/* Card Grid */}
-            <div className="grid flex-1 grid-cols-1 content-start gap-4 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            <div className="grid flex-1 grid-cols-1 content-start gap-5 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
               {paginatedData.map((item) => {
                 const status = item.detailStatus ?? item.status;
                 const score = item.overallScore;
@@ -1264,30 +936,19 @@ export function ApplicationGradingPage({
                   <button
                     key={item.detailId ?? item.id}
                     onClick={() => handleOpenGrading(item.id, item.detailId, item)}
-                    className="group relative flex w-full flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/10 dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-950/30">
+                    className="group relative flex w-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-950/30">
                     <div className="space-y-4">
-                      {/* Top: Avatar + Name + Status */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <Avatar className="h-11 w-11 shrink-0 rounded-[14px] shadow-sm ring-1 ring-slate-200/80 dark:ring-slate-700">
-                            <AvatarImage src={userAvatar ?? undefined} alt={userName} />
-                            <AvatarFallback className="rounded-[14px] bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-bold text-white">
-                              {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                              {userName}
-                            </h3>
-                            <p className="mt-0.5 truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
-                              #{item.id}
-                              {jdId != null ? ` · JD#${jdId}` : ""}
-                            </p>
-                          </div>
-                        </div>
+                      {/* Top Row: ID Badge & Status Pill */}
+                      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          <User className="h-3 w-3 text-indigo-500" />
+                          Đơn #{item.id}
+                          {jdId != null ? ` · JD #${jdId}` : ""}
+                        </span>
+
                         <span
                           className={cn(
-                            "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider",
+                            "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide",
                             statusCfg.className
                           )}>
                           {statusCfg.dot && (
@@ -1297,18 +958,37 @@ export function ApplicationGradingPage({
                         </span>
                       </div>
 
-                      {/* Inner Hub Panel — Score Gauge (matching candidate JobSearchTab style) */}
-                      <div className="rounded-[16px] border border-slate-100 bg-slate-50/80 p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A]/90">
-                        <div className="flex items-center justify-between gap-3">
-                          {/* Score Circular Gauge */}
-                          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+                      {/* Candidate Profile Header */}
+                      <div className="flex items-center gap-3.5">
+                        <Avatar className="h-12 w-12 shrink-0 rounded-2xl shadow-sm ring-2 ring-slate-100 dark:ring-slate-800">
+                          <AvatarImage src={userAvatar ?? undefined} alt={userName} />
+                          <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-base font-black text-white">
+                            {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <h3 className="truncate text-base font-black tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                            {userName}
+                          </h3>
+                          <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
+                            Candidate Evaluation Workspace
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Score Gauge & Round Details Box */}
+                      <div className="rounded-xl border border-slate-100 bg-slate-50/90 p-3.5 dark:border-slate-800 dark:bg-slate-950/60">
+                        <div className="flex items-center gap-3.5">
+                          {/* Circular Score Gauge */}
+                          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
                             <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 96 96">
                               <circle
                                 cx="48"
                                 cy="48"
                                 r="36"
                                 className="stroke-slate-200 dark:stroke-slate-800"
-                                strokeWidth="5"
+                                strokeWidth="6"
                                 fill="transparent"
                               />
                               {score !== undefined && (
@@ -1324,7 +1004,7 @@ export function ApplicationGradingPage({
                                         ? "stroke-amber-500"
                                         : "stroke-red-500"
                                   )}
-                                  strokeWidth="5"
+                                  strokeWidth="6"
                                   strokeDasharray={2 * Math.PI * 36}
                                   strokeDashoffset={
                                     2 * Math.PI * 36 - (scorePercent / 100) * 2 * Math.PI * 36
@@ -1345,19 +1025,21 @@ export function ApplicationGradingPage({
                             </div>
                           </div>
 
-                          {/* Score Label + Round Info */}
+                          {/* Info Column */}
                           <div className="min-w-0 flex-1 space-y-1">
-                            <p className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                              {t("userApplicationhistory.totalScore")}
-                            </p>
-                            <p className="text-lg font-extrabold text-slate-900 dark:text-white">
-                              {score !== undefined ? score : "—"}
-                              <span className="text-xs font-normal text-slate-400">/100</span>
-                            </p>
-                            <div className="flex items-center gap-1.5">
-                              <Clock className="h-3 w-3 text-slate-400" />
-                              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                                {t("userApplicationhistory.round")} {roundId ?? 1}
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
+                                {t("userApplicationhistory.totalScore")}
+                              </span>
+                              <span className="text-xs font-black text-slate-900 dark:text-white">
+                                {score !== undefined ? score : "—"}/100
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                              <Clock className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
+                              <span className="truncate font-semibold">
+                                {t("userApplicationhistory.round")} #{roundId ?? 1}
                               </span>
                             </div>
                           </div>
@@ -1365,17 +1047,14 @@ export function ApplicationGradingPage({
                       </div>
                     </div>
 
-                    {/* Bottom Action */}
-                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3.5 dark:border-slate-800">
-                      <div className="flex items-center gap-1.5">
-                        <ClipboardCheck className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
-                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                          {t("grading.grade")}
-                        </span>
-                      </div>
-                      <span className="flex items-center gap-1 text-xs font-bold text-indigo-600 transition-colors group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300">
+                    {/* Card Bottom Footer */}
+                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <ClipboardCheck className="h-4 w-4 text-indigo-500" />
                         {t("grading.grade")}
-                        <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                      <span className="flex items-center gap-1 text-xs font-bold text-indigo-600 transition-transform group-hover:translate-x-1 dark:text-indigo-400">
+                        {t("grading.grade")} <ArrowRight className="h-3.5 w-3.5" />
                       </span>
                     </div>
                   </button>
@@ -1444,7 +1123,6 @@ export function ApplicationGradingDetailPage({
   } = useApplicationDetails(numericId, isValidId && !isStaff);
 
   // Determine the actual applicationId we need to fetch full application info
-  // For Staff, singleDetail contains the applicationId; for Admin, numericId is the app id.
   const applicationId =
     isStaff && singleDetail?.applicationId !== undefined
       ? singleDetail.applicationId
@@ -1458,27 +1136,22 @@ export function ApplicationGradingDetailPage({
     applicationId > 0
   );
 
-  // Fetch user info for the candidate (if we have a userId)
+  // Fetch candidate user info
   const userId = application?.userId;
   const { data: allUsers } = useUsers();
-  const candidateName = useMemo(() => {
-    // Use prop first if provided
-    if (candidateNameProp) return candidateNameProp;
+  const candidateUser = useMemo(() => {
     if (!userId || !allUsers) return undefined;
     const userList = Array.isArray(allUsers) ? allUsers : [];
-    const found = userList.find((u: { id?: number; name?: string }) => u.id === userId);
-    return found?.name ?? `User #${userId}`;
-  }, [candidateNameProp, userId, allUsers]);
-
-  const candidateAvatar = useMemo(() => {
-    if (!userId || !allUsers) return undefined;
-    const userList = Array.isArray(allUsers) ? allUsers : [];
-    const found = userList.find((u: { id?: number; avatarUrl?: string }) => u.id === userId);
-    return found?.avatarUrl;
+    return userList.find((u: { id?: number }) => u.id === userId);
   }, [userId, allUsers]);
 
-  // jdId: prefer prop, fallback to fetched application data
+  const candidateName = candidateNameProp ?? candidateUser?.name ?? `User #${userId ?? numericId}`;
+  const candidateAvatar = candidateUser?.avatarUrl;
+  const candidateEmail = candidateUser?.email;
+
+  // Fetch Job Description info
   const jdId = jdIdProp !== undefined ? Number(jdIdProp) : application?.jdId;
+  const { data: jobDescription } = useJobDescription(jdId ?? 0, Boolean(jdId && jdId > 0));
 
   const isLoading =
     isLoadingSingle || isLoadingDetails || (applicationId > 0 && isLoadingApplication);
@@ -1488,11 +1161,7 @@ export function ApplicationGradingDetailPage({
   const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
   const [emailPreviewId, setEmailPreviewId] = useState<number | null>(null);
 
-  // Track which round to start grading (for "Chấm" button)
-  const [startGradingRoundId, setStartGradingRoundId] = useState<number | null>(null);
-
-  // Unified details array: single detail for Staff, all details for Admin
-  // Filter out auto-graded rounds (QUIZ, etc.) - these don't need HR scoring
+  // Unified details array (filtered for non-auto-graded rounds)
   const displayDetails = useMemo((): ApplicationDetail[] => {
     if (isStaff && singleDetail) {
       return isAutoGradedRound(singleDetail) ? [] : [singleDetail];
@@ -1500,56 +1169,26 @@ export function ApplicationGradingDetailPage({
     return filterOutAutoGradedRounds(details);
   }, [isStaff, singleDetail, details]);
 
-  // Expanded rounds state - track which round cards are expanded
-  const [expandedRoundIds, setExpandedRoundIds] = useState<Set<number>>(() => {
-    if (displayDetails.length === 0) return new Set<number>();
-    const firstNeedsHr = displayDetails.find((d) => needsHrScoring(d));
-    const firstId = firstNeedsHr?.id ?? displayDetails[0]?.id;
-    return firstId !== undefined ? new Set([firstId]) : new Set<number>();
-  });
+  // Selected Round Tab State
+  const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
 
-  const [showPendingOnly, setShowPendingOnly] = useState(false);
+  // Auto-select first round needing HR score, or first round available
+  const activeDetail = useMemo(() => {
+    if (displayDetails.length === 0) return undefined;
+    if (selectedRoundId !== null) {
+      const found = displayDetails.find((d) => d.id === selectedRoundId);
+      if (found) return found;
+    }
+    const firstNeedsHr = displayDetails.find((d) => needsHrScoring(d));
+    return firstNeedsHr ?? displayDetails[0];
+  }, [displayDetails, selectedRoundId]);
 
   const handleViewEmailSubmission = useCallback((emailSubmissionId: number) => {
     setEmailPreviewId(emailSubmissionId);
     setEmailPreviewOpen(true);
   }, []);
 
-  const toggleExpanded = useCallback((detailId: number) => {
-    setExpandedRoundIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(detailId)) {
-        next.delete(detailId);
-      } else {
-        next.add(detailId);
-      }
-      return next;
-    });
-    setStartGradingRoundId(null);
-  }, []);
-
-  const handleStartGrading = useCallback((detailId: number) => {
-    setStartGradingRoundId(detailId);
-    setExpandedRoundIds(new Set([detailId]));
-  }, []);
-
-  const expandAll = useCallback(() => {
-    setExpandedRoundIds(
-      new Set(displayDetails.map((d: ApplicationDetail) => d.id!).filter(Boolean))
-    );
-  }, [displayDetails]);
-
-  const collapseAll = useCallback(() => {
-    setExpandedRoundIds(new Set());
-  }, []);
-
-  // Filter displayDetails based on showPendingOnly
-  const filteredDetails = useMemo(() => {
-    if (!showPendingOnly) return displayDetails;
-    return displayDetails.filter((d) => needsHrScoring(d));
-  }, [displayDetails, showPendingOnly]);
-
-  // Calculate summary stats
+  // Summary stats
   const summaryStats = useMemo(() => {
     const total = displayDetails.length;
     const pending = displayDetails.filter((d) => needsHrScoring(d)).length;
@@ -1584,216 +1223,325 @@ export function ApplicationGradingDetailPage({
     return (
       <div className="flex h-full min-h-0 items-center justify-center bg-slate-50 p-6 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3">
-          <Spinner className="h-8 w-8" />
-          <p className="text-sm text-slate-500">{t("general.loadingData")}</p>
+          <Spinner className="h-8 w-8 text-indigo-600" />
+          <p className="text-sm font-medium text-slate-500">{t("general.loadingData")}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-full flex-col">
-      {/* ── HEADER BANNER ───────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-white to-purple-50 px-4 py-5 sm:px-6 dark:border-slate-800 dark:from-[#0F172A]/40 dark:via-slate-900 dark:to-indigo-950/30">
-        {/* Back button row */}
-        <div className="mb-4 flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1.5 rounded-lg border-slate-200 text-xs font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            onClick={() => navigate(`${dashboardBase}?tab=applicationGrading`)}>
-            <ChevronLeft className="h-3.5 w-3.5" />
-            {t("common.goBack")}
-          </Button>
-          <span className="text-xs text-slate-400">{t("application.gradingDetail")}</span>
-        </div>
+    <div className="flex min-h-full flex-col bg-slate-50/70 dark:bg-slate-950">
+      {/* ── CANDIDATE WORKSPACE HEADER BANNER (Theme Aware: Light & Dark) ─────── */}
+      <div className="relative border-b border-slate-200/80 bg-gradient-to-r from-indigo-50/90 via-purple-50/40 to-white px-4 py-6 text-slate-900 sm:px-8 dark:border-slate-800 dark:from-slate-950 dark:via-indigo-950/60 dark:to-slate-950 dark:text-white">
+        {/* Ambient background glow */}
+        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-purple-500/10 blur-2xl dark:bg-purple-500/10" />
 
-        {/* Candidate info row */}
-        <div className="flex items-center gap-4">
-          <Avatar className="h-14 w-14 shrink-0 rounded-[16px] shadow-sm ring-2 ring-white dark:ring-indigo-500/20">
-            <AvatarImage src={candidateAvatar ?? undefined} alt={candidateName ?? "User"} />
-            <AvatarFallback className="rounded-[16px] bg-gradient-to-br from-indigo-500 to-purple-600 text-lg font-bold text-white">
-              {(candidateName ?? "?")[0]?.toUpperCase() ?? "?"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {candidateName ?? `${t("application.detailsId")}${applicationId || numericId}`}
-            </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                {t("application.detailsId")}
-                {applicationId || numericId}
+        <div className="relative mx-auto max-w-7xl">
+          {/* Top Breadcrumb & Actions */}
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 rounded-xl border-slate-200 bg-white/80 px-3 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-700"
+                onClick={() => navigate(`${dashboardBase}?tab=applicationGrading`)}>
+                <ChevronLeft className="h-3.5 w-3.5" />
+                {t("common.goBack")}
+              </Button>
+              <span className="text-slate-300 dark:text-slate-600">/</span>
+              <span className="font-semibold text-indigo-600 dark:text-indigo-300">
+                {t("application.gradingDetail", "Chi tiết bài chấm")}
               </span>
-              {jdId !== undefined && (
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
-                  {t("common.id", "ID JD")}: <span className="font-semibold">{jdId}</span>
-                </span>
-              )}
             </div>
+
+            {/* Reload Data Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void refetch()}
+              disabled={isLoading}
+              className="h-8 gap-1.5 rounded-xl border-slate-200 bg-white/80 px-3 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-700">
+              <Clock
+                className={cn(
+                  "h-3.5 w-3.5 text-slate-500 dark:text-slate-400",
+                  isLoading && "animate-spin"
+                )}
+              />
+              {t("common.reload")}
+            </Button>
           </div>
 
-          {/* Reload button */}
-          <button
-            onClick={() => {
-              void refetch();
-            }}
-            disabled={isLoading}
-            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-xs transition-colors hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-            title={t("common.reload")}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={cn("h-4 w-4", isLoading && "animate-spin")}>
-              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-              <path d="M21 3v5h-5" />
-              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-              <path d="M8 16H3v5" />
-            </svg>
-          </button>
+          {/* Candidate Profile Details Row */}
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            {/* Left: Avatar & Candidate Info */}
+            <div className="flex items-start gap-4 sm:items-center">
+              <Avatar className="h-16 w-16 shrink-0 rounded-2xl shadow-md ring-4 ring-white dark:ring-indigo-500/20">
+                <AvatarImage src={candidateAvatar ?? undefined} alt={candidateName} />
+                <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-xl font-black text-white">
+                  {(candidateName ?? "?")[0]?.toUpperCase() ?? "?"}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                    {candidateName}
+                  </h1>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 dark:ring-1 dark:ring-indigo-400/30">
+                    <User className="h-3 w-3" />
+                    ID #{applicationId || numericId}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
+                  {candidateEmail && (
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Mail className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                      {candidateEmail}
+                    </span>
+                  )}
+                  {jobDescription?.title && (
+                    <span className="flex items-center gap-1.5 font-bold text-purple-700 dark:text-purple-300">
+                      <Briefcase className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400" />
+                      {jobDescription.title}
+                    </span>
+                  )}
+                  {jobDescription?.level && (
+                    <Badge
+                      variant="outline"
+                      className="border-purple-200 bg-purple-100/60 text-[10px] font-extrabold text-purple-700 dark:border-purple-400/30 dark:bg-purple-500/10 dark:text-purple-200">
+                      {jobDescription.level}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Summary Score & Stat Pills */}
+            <div className="flex flex-wrap items-center gap-3 border-t border-slate-200/80 pt-4 lg:border-t-0 lg:pt-0 dark:border-slate-800">
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/80 p-3.5 shadow-2xs backdrop-blur-xs dark:border-slate-800 dark:bg-slate-900/60">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-400/20 dark:text-amber-300">
+                  <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("grading.hrAverageScore")}
+                  </p>
+                  <p className="text-xl font-black text-slate-900 dark:text-white">
+                    {summaryStats.avgScore}{" "}
+                    <span className="text-xs font-normal text-slate-400 dark:text-slate-500">
+                      /100
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/80 p-3.5 shadow-2xs backdrop-blur-xs dark:border-slate-800 dark:bg-slate-900/60">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-400/20 dark:text-emerald-300">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("grading.gradedCount")}
+                  </p>
+                  <p className="text-xl font-black text-slate-900 dark:text-white">
+                    {summaryStats.completed}{" "}
+                    <span className="text-xs font-normal text-slate-400 dark:text-slate-500">
+                      / {summaryStats.total}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* NEW LAYOUT: Single page with all rounds as expandable cards */}
-      <div className="flex flex-1 flex-col bg-slate-50 dark:bg-slate-950">
-        {/* ── SUMMARY STATS BAR ────────────────────────────────────────────────── */}
-        <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-          <div className="mx-auto grid w-full max-w-5xl grid-cols-2 gap-2.5 sm:grid-cols-4">
-            {/* Total Rounds */}
-            <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5 dark:border-slate-800 dark:bg-[#0F172A]/90">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-500/10">
-                <ClipboardCheck className="h-3.5 w-3.5 text-indigo-500" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {t("round.totalRounds")}
-                </p>
-                <p className="text-base font-bold text-slate-900 dark:text-white">
-                  {summaryStats.total}
-                </p>
-              </div>
-            </div>
-            {/* Pending */}
-            <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50/60 p-2.5 dark:border-amber-500/20 dark:bg-amber-500/5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-amber-100 dark:bg-amber-500/15">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                  {t("grading.needsGrading")}
-                </p>
-                <p className="text-base font-bold text-amber-600 dark:text-amber-400">
-                  {summaryStats.pending}
-                </p>
-              </div>
-            </div>
-            {/* Graded */}
-            <div className="flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50/60 p-2.5 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-500/15">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                  {t("grading.gradedCount")}
-                </p>
-                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">
-                  {summaryStats.completed}
-                </p>
-              </div>
-            </div>
-            {/* Average Score */}
-            <div className="flex items-center gap-2.5 rounded-lg border border-purple-200 bg-purple-50/60 p-2.5 dark:border-purple-500/20 dark:bg-purple-500/5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-purple-100 dark:bg-purple-500/15">
-                <Star className="h-3.5 w-3.5 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-purple-600 dark:text-purple-400">
-                  {t("grading.hrAverageScore")}
-                </p>
-                <p className="text-base font-bold text-purple-600 dark:text-purple-400">
-                  {summaryStats.avgScore}
-                </p>
-              </div>
-            </div>
+      {/* ── WORKSPACE CONTENT AREA ─────────────────────────────────────────── */}
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col space-y-6 p-4 sm:p-6 lg:p-8">
+        {/* ── ROUND STEPPER NAVIGATION TABS ─────────────────────────────────── */}
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-2 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="scrollbar-none flex items-center gap-2 overflow-x-auto p-1">
+            {displayDetails.map((detail: ApplicationDetail, index: number) => {
+              const isSelected = activeDetail?.id === detail.id;
+              const needsHr = needsHrScoring(detail);
+              const hasScore = detail.hrScore !== undefined;
+              const isPass = detail.finalResult === "PASSED";
+
+              return (
+                <button
+                  key={detail.id}
+                  onClick={() => setSelectedRoundId(detail.id!)}
+                  className={cn(
+                    "group relative flex min-w-[200px] flex-1 items-center justify-between rounded-xl px-4 py-3 text-left transition-all duration-200",
+                    isSelected
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 dark:bg-indigo-600"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-800/60 dark:text-slate-300 dark:hover:bg-slate-800"
+                  )}>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        isSelected
+                          ? "bg-white/20 text-white"
+                          : "bg-slate-200/80 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                      )}>
+                      #{index + 1}
+                    </div>
+                    <div className="min-w-0">
+                      <p
+                        className={cn(
+                          "truncate text-xs font-bold tracking-tight",
+                          isSelected ? "text-white" : "text-slate-900 dark:text-slate-100"
+                        )}>
+                        {t("userApplicationhistory.round")} #{detail.roundId}
+                      </p>
+                      <p
+                        className={cn(
+                          "truncate text-[10px] font-medium",
+                          isSelected ? "text-indigo-100" : "text-slate-500 dark:text-slate-400"
+                        )}>
+                        {detail.roundId ? `Round #${detail.roundId}` : "Evaluation"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status Indicator */}
+                  <div>
+                    {needsHr && !hasScore ? (
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider",
+                          isSelected
+                            ? "bg-amber-400 text-slate-950"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
+                        )}>
+                        <AlertTriangle className="h-3 w-3" />
+                        {t("grading.needsGrading")}
+                      </span>
+                    ) : hasScore ? (
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider",
+                          isSelected
+                            ? "bg-emerald-400 text-slate-950"
+                            : isPass
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                              : "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300"
+                        )}>
+                        <CheckCircle2 className="h-3 w-3" />
+                        {detail.hrScore}/100
+                      </span>
+                    ) : (
+                      <span className="h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600" />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* ── FILTER & ACTIONS BAR ─────────────────────────────────────────── */}
-        {!singleDetail && (
-          <div className="flex shrink-0 items-center justify-between gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-            <Button
-              variant={showPendingOnly ? "default" : "outline"}
-              size="sm"
-              onClick={() => setShowPendingOnly(!showPendingOnly)}
-              className={cn(
-                "h-8 gap-1.5 rounded-lg text-xs font-semibold",
-                showPendingOnly && "bg-amber-500 shadow-sm hover:bg-amber-600"
-              )}>
-              <AlertTriangle className="h-3.5 w-3.5" />
-              {t("grading.needsGrading")} ({summaryStats.pending})
-            </Button>
-            <div className="flex shrink-0 items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={expandAll}
-                className="h-8 gap-1.5 rounded-lg text-xs dark:border-slate-700">
-                {t("userPractice.openAll")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={collapseAll}
-                className="h-8 gap-1.5 rounded-lg text-xs dark:border-slate-700">
-                {t("common.collapse")}
-              </Button>
+        {/* ── ACTIVE ROUND EVALUATION WORKSPACE ─────────────────────────────── */}
+        {!activeDetail ? (
+          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-white py-20 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+              <ClipboardCheck className="h-8 w-8 text-slate-400" />
+            </div>
+            <p className="text-base font-bold text-slate-700 dark:text-slate-200">
+              {t("application.noRounds")}
+            </p>
+            <p className="text-xs text-slate-400">{t("adminApplicationGrading.pageDescription")}</p>
+          </div>
+        ) : (
+          <div className="grid items-start gap-6 lg:grid-cols-12">
+            {/* ── LEFT WORKSPACE (65% width - cols 7) ────────────────────── */}
+            <div className="space-y-6 lg:col-span-7">
+              {/* Submission Card */}
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                        {t("submission.content")} — {t("userApplicationhistory.round")} #
+                        {activeDetail.roundId}
+                      </h3>
+                      {activeDetail.completedAt && (
+                        <p className="text-[11px] font-medium text-slate-400">
+                          {formatDateTime(activeDetail.completedAt)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <Badge
+                    variant="outline"
+                    className="border-indigo-200 bg-indigo-50 text-xs font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
+                    Max Score: 100
+                  </Badge>
+                </div>
+
+                <div className="p-6">
+                  <SubmissionPreview
+                    detail={activeDetail}
+                    onViewEmailSubmission={handleViewEmailSubmission}
+                  />
+                </div>
+              </div>
+
+              {/* AI Evaluation Insights Card */}
+              {(activeDetail.aiScore !== undefined || activeDetail.aiFeedback) && (
+                <div className="overflow-hidden rounded-2xl border border-purple-200/80 bg-gradient-to-b from-purple-50/40 via-white to-white p-6 shadow-xs dark:border-purple-500/20 dark:from-purple-950/20 dark:via-slate-900 dark:to-slate-900">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                          {t("grading.aiFeedback")}
+                        </h3>
+                        <p className="text-[11px] font-medium text-purple-600 dark:text-purple-400">
+                          {t("grading.aiScoreReference")}
+                        </p>
+                      </div>
+                    </div>
+
+                    {activeDetail.aiScore !== undefined && (
+                      <span className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3 py-1 text-sm font-extrabold text-white shadow-xs">
+                        <Star className="h-4 w-4 fill-white" />
+                        AI: {activeDetail.aiScore}/100
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="rounded-xl border border-purple-100 bg-purple-50/60 p-4 dark:border-purple-500/15 dark:bg-purple-500/5">
+                    <AIFeedbackPanel
+                      feedback={activeDetail.aiFeedback}
+                      score={activeDetail.aiScore}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── RIGHT WORKSPACE (35% width - cols 5 - Sticky Evaluation Card) ─ */}
+            <div className="lg:col-span-5">
+              <div className="lg:sticky lg:top-6">
+                <ActiveRoundGradingPanel
+                  key={activeDetail.id}
+                  detail={activeDetail}
+                  onHrScoreSuccess={() => void refetch()}
+                />
+              </div>
             </div>
           </div>
         )}
-
-        {/* Expandable Round Cards */}
-        <div className="mx-auto w-full max-w-5xl flex-1 space-y-3 p-4 sm:p-6">
-          {filteredDetails.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 py-16 dark:border-slate-800 dark:bg-slate-900/40">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                <ClipboardCheck className="h-7 w-7 text-slate-400 dark:text-slate-500" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-                  {t("application.noRounds")}
-                </p>
-                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                  {t("adminApplicationGrading.pageDescription")}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredDetails.map((detail: ApplicationDetail) => (
-                <RoundCard
-                  key={detail.id}
-                  detail={detail}
-                  isExpanded={expandedRoundIds.has(detail.id!)}
-                  isStartGrading={startGradingRoundId === detail.id}
-                  onToggle={() => toggleExpanded(detail.id!)}
-                  onStartGrading={() => handleStartGrading(detail.id!)}
-                  onViewEmailSubmission={handleViewEmailSubmission}
-                  onHrScoreSuccess={() => {
-                    setStartGradingRoundId(null);
-                    // No need to call refetch() - queryClient.invalidateQueries already triggers refetch
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Email Preview Dialog */}
@@ -1802,6 +1550,314 @@ export function ApplicationGradingDetailPage({
         onOpenChange={setEmailPreviewOpen}
         emailSubmissionId={emailPreviewId}
       />
+    </div>
+  );
+}
+
+// ============================================================
+// Active Round Sticky HR Grading Panel
+// ============================================================
+
+function ActiveRoundGradingPanel({
+  detail,
+  onHrScoreSuccess,
+}: {
+  detail: ApplicationDetail;
+  onHrScoreSuccess: () => void;
+}) {
+  const { mutate: submitScore, isPending: isSubmitting } = useHrScore();
+  const hasExistingGrade = detail.hrScore !== undefined;
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [isPass, setIsPass] = useState(detail.finalResult === "PASSED");
+  const [score, setScore] = useState(
+    detail.hrScore !== undefined
+      ? String(detail.hrScore)
+      : detail.aiScore !== undefined
+        ? String(Math.round(detail.aiScore))
+        : ""
+  );
+  const [note, setNote] = useState(detail.hrNote ?? "");
+  const [scoreError, setScoreError] = useState<string | null>(null);
+
+  const handleScoreChange = (val: string) => {
+    setScore(val);
+    if (val.trim() === "") {
+      setScoreError("Vui lòng nhập điểm số");
+      return;
+    }
+    const num = parseFloat(val);
+    if (isNaN(num)) {
+      setScoreError("Điểm số phải là số hợp lệ");
+      return;
+    }
+    if (num < 0 || num > 100) {
+      setScoreError("Điểm số phải nằm trong khoảng từ 0 đến 100");
+      return;
+    }
+    setScoreError(null);
+  };
+
+  const handleSubmit = () => {
+    const scoreNum = parseFloat(score);
+    if (isNaN(scoreNum) || score.trim() === "") {
+      setScoreError("Vui lòng nhập điểm số hợp lệ từ 0 đến 100");
+      toast.error(t("grading.invalidScore"));
+      return;
+    }
+    if (scoreNum < 0 || scoreNum > 100) {
+      setScoreError("Điểm số phải nằm trong khoảng từ 0 đến 100");
+      toast.error(t("grading.invalidScore"));
+      return;
+    }
+    const clampedScore = Math.min(100, Math.max(0, scoreNum));
+    submitScore(
+      {
+        applicationDetailId: detail.id!,
+        isPass,
+        note: note.trim(),
+        score: clampedScore,
+      },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+          onHrScoreSuccess();
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+      {/* Panel Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs">
+            <ClipboardCheck className="h-4 w-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              {hasExistingGrade
+                ? isEditing
+                  ? t("grading.editScore")
+                  : t("grading.hrResult")
+                : t("grading.hrGrading")}
+            </h3>
+            <p className="text-[11px] font-medium text-slate-400">Round #{detail.roundId}</p>
+          </div>
+        </div>
+
+        {hasExistingGrade && isEditing && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setIsEditing(false);
+              setScore(String(detail.hrScore ?? detail.aiScore ?? ""));
+              setNote(detail.hrNote ?? "");
+              setScoreError(null);
+            }}
+            className="h-7 text-xs font-semibold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800">
+            {t("common.cancel")}
+          </Button>
+        )}
+      </div>
+
+      <div className="space-y-5 p-6">
+        {/* Existing Grade View (when graded and not editing) */}
+        {hasExistingGrade && !isEditing ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/50 p-5 dark:border-emerald-500/20 dark:from-emerald-950/30 dark:to-teal-950/10">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400/20 text-amber-500 shadow-2xs">
+                  <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase">
+                    {t("grading.hrScore")}
+                  </p>
+                  <p className="text-3xl font-black text-slate-900 dark:text-white">
+                    {detail.hrScore}{" "}
+                    <span className="text-xs font-normal text-slate-400">/100</span>
+                  </p>
+                </div>
+              </div>
+
+              <Badge
+                className={cn(
+                  "px-3 py-1 text-xs font-extrabold shadow-2xs",
+                  detail.finalResult === "PASSED"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-red-600 text-white"
+                )}>
+                {detail.finalResult === "PASSED"
+                  ? t("userApplicationhistory.passed")
+                  : t("userApplicationhistory.failed")}
+              </Badge>
+            </div>
+
+            {/* HR Note */}
+            {detail.hrNote && (
+              <div className="space-y-1.5">
+                <h5 className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                  <FileText className="h-3.5 w-3.5 text-indigo-500" />
+                  {t("general.notes")} HR
+                </h5>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-800/40">
+                  <p className="text-xs whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                    {detail.hrNote}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <Button
+              variant="outline"
+              onClick={() => setIsEditing(true)}
+              className="w-full gap-2 rounded-xl border-slate-200 font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+              {t("grading.editScore")}
+            </Button>
+          </div>
+        ) : (
+          /* Interactive Grading Form */
+          <div className="space-y-4">
+            {/* AI Reference Score Pill */}
+            {detail.aiScore !== undefined && (
+              <div className="flex items-center justify-between rounded-xl border border-purple-100 bg-purple-50/70 px-3.5 py-2.5 dark:border-purple-500/20 dark:bg-purple-500/5">
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300">
+                  <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+                  {t("grading.aiScoreReference")}
+                </span>
+                <span className="text-sm font-extrabold text-purple-600 dark:text-purple-400">
+                  {detail.aiScore} / 100
+                </span>
+              </div>
+            )}
+
+            {/* Decision Toggle */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                {t("grading.decision")}
+              </label>
+              <div className="grid grid-cols-2 gap-2.5">
+                <Button
+                  type="button"
+                  variant={isPass ? "default" : "outline"}
+                  className={cn(
+                    "h-10 gap-2 rounded-xl text-xs font-bold transition-all",
+                    isPass
+                      ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700"
+                      : "border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900/40 dark:text-emerald-400"
+                  )}
+                  onClick={() => setIsPass(true)}>
+                  <ThumbsUp className="h-4 w-4" />
+                  {t("userApplicationhistory.passed")}
+                </Button>
+                <Button
+                  type="button"
+                  variant={!isPass ? "default" : "outline"}
+                  className={cn(
+                    "h-10 gap-2 rounded-xl text-xs font-bold transition-all",
+                    !isPass
+                      ? "bg-red-600 text-white shadow-md shadow-red-600/20 hover:bg-red-700"
+                      : "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-400"
+                  )}
+                  onClick={() => setIsPass(false)}>
+                  <ThumbsDown className="h-4 w-4" />
+                  {t("userApplicationhistory.failed")}
+                </Button>
+              </div>
+            </div>
+
+            {/* Score Input & Quick Presets */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Điểm HR (0 - 100)
+                </label>
+                {detail.aiScore !== undefined && (
+                  <button
+                    type="button"
+                    onClick={() => handleScoreChange(String(Math.round(detail.aiScore!)))}
+                    className="text-[11px] font-semibold text-purple-600 hover:underline dark:text-purple-400">
+                    Use AI Score ({Math.round(detail.aiScore)})
+                  </button>
+                )}
+              </div>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                value={score}
+                onChange={(e) => handleScoreChange(e.target.value)}
+                placeholder={t("grading.enterScore")}
+                className={cn(
+                  "h-10 rounded-xl text-base font-extrabold transition-colors",
+                  scoreError && "border-red-500 focus-visible:ring-red-500"
+                )}
+              />
+
+              {/* Validation error message */}
+              {scoreError && (
+                <p className="flex items-center gap-1.5 text-[11px] font-semibold text-red-500">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  {scoreError}
+                </p>
+              )}
+
+              {/* Score Presets */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {[100, 90, 80, 70, 60, 50].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => handleScoreChange(String(preset))}
+                    className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    {preset}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* HR Note Textarea */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                {t("general.notes")}
+              </label>
+              <Textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder={t("grading.enterHrNotes")}
+                rows={4}
+                className="resize-none rounded-xl text-xs"
+              />
+            </div>
+
+            {/* Submit Action Button */}
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting || scoreError !== null || score.trim() === ""}
+              className={cn(
+                "h-11 w-full gap-2 rounded-xl text-sm font-bold shadow-md transition-all",
+                isPass
+                  ? "bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-700"
+                  : "bg-red-600 shadow-red-600/20 hover:bg-red-700"
+              )}>
+              {isSubmitting ? (
+                <>
+                  <Spinner className="h-4 w-4 text-white" />
+                  {t("common.saving")}
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4" />
+                  {t("general.save")} {t("grading.hrResult")}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
