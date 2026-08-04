@@ -344,13 +344,15 @@ export function ApplicationWorkspacePage() {
     activeRoundType === "MENTOR" ||
     activeRoundType === "MENTROR_REVIEW" ||
     activeRoundName.includes("MENTOR");
+  const isAiInterviewRound = activeRoundType === "AI_INTERVIEW" || activeRoundName.includes("AI");
   const isStandaloneLayout =
     isCvScreeningRound ||
     isEmailSimulatorRound ||
     isQuizRound ||
     isCodingRound ||
     isCodeReviewRound ||
-    isMentorReviewRound;
+    isMentorReviewRound ||
+    isAiInterviewRound;
 
   return (
     <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">
