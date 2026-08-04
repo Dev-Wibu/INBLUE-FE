@@ -1,6 +1,5 @@
 import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
-import { SortButton } from "@/components/shared/SortButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,14 +17,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useApplication, useApplications, useUsers } from "@/hooks/useApplication";
 import {
@@ -48,11 +39,14 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import {
   AlertTriangle,
+  ArrowRight,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
+  Clock,
   FileText,
+  Filter,
   Mail,
   Search,
   Star,
@@ -87,37 +81,42 @@ interface GradingListItem {
   detail?: ApplicationDetail;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
+const STATUS_CONFIG: Record<string, { label: string; className: string; dot?: string }> = {
   PENDING: {
     label: t("status.pendingSubmit"),
     className: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+    dot: "bg-slate-400",
   },
   SUBMITTED: {
     label: t("adminQuizsetmanagement.submitted"),
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+    className: "bg-blue-500/15 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300",
+    dot: "bg-blue-500",
   },
   AI_EVALUATED: {
     label: t("status.aiGraded"),
-    className: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+    className: "bg-purple-500/15 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300",
+    dot: "bg-purple-500",
   },
   COMPLETED: {
     label: t("general.completed"),
-    className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+    className: "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+    dot: "bg-emerald-500",
   },
   ERROR: {
     label: t("common.error"),
-    className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+    className: "bg-red-500/15 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+    dot: "bg-red-500",
   },
 };
 
 const RESULT_CONFIG: Record<string, { label: string; className: string }> = {
   PASSED: {
     label: t("userApplicationhistory.passed"),
-    className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+    className: "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
   },
   FAILED: {
     label: t("userApplicationhistory.failed"),
-    className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+    className: "bg-red-500/15 text-red-700 dark:bg-red-500/10 dark:text-red-300",
   },
 };
 
@@ -185,7 +184,7 @@ function RoundCard({
       className={cn(
         "rounded-xl border transition-all",
         isExpanded
-          ? "border-[#0047AB] shadow-md dark:border-[#0047AB]"
+          ? "border-indigo-500 shadow-md dark:border-indigo-500"
           : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600",
         needsHrScore && !hasExistingGrade && !isExpanded && "border-amber-300 dark:border-amber-700"
       )}>
@@ -209,7 +208,7 @@ function RoundCard({
               className={cn(
                 "transition-col flex h-8 w-8 items-center justify-center rounded-lg",
                 isExpanded
-                  ? "bg-[#0047AB] text-white"
+                  ? "bg-indigo-600 text-white"
                   : "bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
               )}>
               <ChevronRight
@@ -252,7 +251,10 @@ function RoundCard({
               {detail.hrScore !== undefined && (
                 <span className="flex items-center gap-1">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  HR: <span className="font-medium text-[#0047AB]">{detail.hrScore}</span>
+                  HR:{" "}
+                  <span className="font-medium text-indigo-600 dark:text-indigo-400">
+                    {detail.hrScore}
+                  </span>
                 </span>
               )}
               {detail.finalScore !== undefined && (
@@ -333,7 +335,9 @@ function RoundCard({
                   <div className="flex items-center gap-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
                     <div className="flex items-center gap-1.5">
                       <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
-                      <span className="text-3xl font-bold text-[#0047AB]">{detail.hrScore}</span>
+                      <span className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                        {detail.hrScore}
+                      </span>
                       <span className="text-base text-slate-400">/100</span>
                     </div>
                     <div className="h-10 w-px bg-green-200 dark:bg-green-800" />
@@ -720,7 +724,9 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-            <span className="text-base font-bold text-[#0047AB]">{score}</span>
+            <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">
+              {score}
+            </span>
             <span className="text-sm text-slate-400">/100</span>
           </div>
         </div>
@@ -736,7 +742,9 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           {overallMatch !== null && (
             <div className="flex flex-col items-center rounded-lg border bg-white p-3 text-center dark:border-slate-700 dark:bg-slate-800">
-              <span className="text-2xl font-bold text-[#0047AB]">{overallMatch}</span>
+              <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                {overallMatch}
+              </span>
               <span className="mt-0.5 text-xs text-slate-500">Overall</span>
             </div>
           )}
@@ -822,7 +830,7 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
               .map(([keyword, count]) => (
                 <span
                   key={keyword}
-                  className="inline-flex items-center rounded-full bg-[#0047AB]/10 px-2.5 py-1 text-xs font-medium text-[#0047AB] dark:bg-[#0047AB]/20">
+                  className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                   {keyword}: {count}
                 </span>
               ))}
@@ -1014,7 +1022,7 @@ export function ApplicationGradingPage({
     }));
   }, [filteredApplications]);
 
-  const { sortedData, getSortProps } = useSortable(sortableApplications, {
+  const { sortedData } = useSortable(sortableApplications, {
     defaultSort: { key: "idSortValue", direction: "desc" },
     noSortBehavior: "preserve",
     tieBreaker: { key: "idSortValue", direction: "desc" },
@@ -1060,7 +1068,7 @@ export function ApplicationGradingPage({
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             {t("adminApplicationGrading.pageTitle")}
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -1069,8 +1077,9 @@ export function ApplicationGradingPage({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-64">
-            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+          {/* Search */}
+          <div className="relative w-full sm:w-56">
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               type="text"
               placeholder={t("application.searchByUserOrJob")}
@@ -1079,7 +1088,7 @@ export function ApplicationGradingPage({
                 setSearchQuery(e.target.value);
                 pagination.setPage(1);
               }}
-              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+              className="h-9 pl-9 text-xs"
             />
           </div>
 
@@ -1090,8 +1099,11 @@ export function ApplicationGradingPage({
               setStatusFilter(value);
               pagination.setPage(1);
             }}>
-            <SelectTrigger className="h-8 w-40 text-xs">
-              <SelectValue placeholder={t("common.filterByStatus")} />
+            <SelectTrigger className="h-9 w-[160px] text-xs">
+              <div className="flex items-center gap-2">
+                <Filter className="h-3.5 w-3.5 text-slate-400" />
+                <SelectValue placeholder={t("common.filterByStatus")} />
+              </div>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("common.allStatus")}</SelectItem>
@@ -1104,7 +1116,7 @@ export function ApplicationGradingPage({
 
           {/* Sort Order */}
           <Select value={sortBy} onValueChange={(value: typeof sortBy) => setSortBy(value)}>
-            <SelectTrigger className="h-8 w-36 text-xs">
+            <SelectTrigger className="h-9 w-[150px] text-xs">
               <SelectValue placeholder={t("common.sortBy")} />
             </SelectTrigger>
             <SelectContent>
@@ -1115,8 +1127,6 @@ export function ApplicationGradingPage({
             </SelectContent>
           </Select>
 
-          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-
           <ReloadButton
             onReload={async () => {
               if (isStaff) {
@@ -1126,127 +1136,134 @@ export function ApplicationGradingPage({
               }
             }}
             tooltip={t("common.reload")}
-            className="h-8 w-8"
+            className="h-9 w-9"
           />
         </div>
       </div>
 
-      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
+      {/* ── CARD GRID CONTENT ──────────────────────────────────────────────── */}
       <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
         {paginatedData.length === 0 ? (
-          <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-              <ClipboardCheck className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+          <div className="flex flex-col items-center justify-center gap-4 px-4 py-20">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <ClipboardCheck className="h-8 w-8 text-slate-400 dark:text-slate-500" />
             </div>
-            <p className="text-sm font-medium text-slate-500">
-              {t("grading.noApplicationsToGrade")}
-            </p>
+            <div className="text-center">
+              <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                {t("grading.noApplicationsToGrade")}
+              </p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                {t("adminApplicationGrading.pageDescription")}
+              </p>
+            </div>
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                    <TableHead className="w-16 pl-6 font-medium text-slate-500">
-                      <SortButton {...getSortProps("idSortValue")}>{t("common.id")}</SortButton>
-                    </TableHead>
-                    <TableHead className="font-medium text-slate-500">
-                      {t("common.candidate")}
-                    </TableHead>
-                    <TableHead className="hidden font-medium text-slate-500 md:table-cell">
-                      ID JD
-                    </TableHead>
-                    <TableHead className="font-medium text-slate-500">
-                      {t("common.status")}
-                    </TableHead>
-                    <TableHead className="hidden font-medium text-slate-500 lg:table-cell">
-                      {t("userApplicationhistory.round")}
-                    </TableHead>
-                    <TableHead className="hidden font-medium text-slate-500 lg:table-cell">
-                      <SortButton {...getSortProps("scoreSortValue")}>
-                        {t("userApplicationhistory.totalScore")}
-                      </SortButton>
-                    </TableHead>
-                    <TableHead className="w-32 pr-6 text-right font-medium text-slate-500">
-                      {t("common.operation")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedData.map((item) => {
-                    const status = item.detailStatus ?? item.status;
-                    const score = item.overallScore;
-                    const roundId = item.detail?.roundId ?? item.currentRoundOrder;
-                    const jdId = item.jdId;
-                    const userId = item.userId;
-                    const userName =
-                      item.userName ?? userMap.get(userId!) ?? (userId ? `User #${userId}` : "-");
+            {/* Card Grid */}
+            <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              {paginatedData.map((item) => {
+                const status = item.detailStatus ?? item.status;
+                const score = item.overallScore;
+                const roundId = item.detail?.roundId ?? item.currentRoundOrder;
+                const jdId = item.jdId;
+                const userId = item.userId;
+                const userName =
+                  item.userName ?? userMap.get(userId!) ?? (userId ? `User #${userId}` : "-");
+                const statusCfg = STATUS_CONFIG[status ?? ""] ?? {
+                  label: status,
+                  className: "bg-slate-100 text-slate-600",
+                  dot: "bg-slate-400",
+                };
 
-                    return (
-                      <TableRow
-                        key={item.detailId ?? item.id}
-                        className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                        <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                          <div className="flex items-center gap-2">
-                            <span>#{item.id}</span>
-                            {/* Dummy element to force row height alignment */}
-                            <div
-                              className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
-                              aria-hidden="true">
-                              <div className="h-3.5 w-3.5"></div>
-                              <div className="h-3.5 w-3.5"></div>
-                            </div>
+                return (
+                  <button
+                    key={item.detailId ?? item.id}
+                    onClick={() => handleOpenGrading(item.id, item.detailId, item)}
+                    className="group relative flex w-full flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200/80 bg-white p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/10 dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-950/30">
+                    {/* Top: Avatar + Status */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <Avatar className="h-11 w-11 shrink-0 rounded-[14px]">
+                          <AvatarFallback className="rounded-[14px] bg-indigo-50 text-sm font-bold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                            {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                            {userName}
+                          </h3>
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <span className="h-2 w-2 shrink-0 rounded-full bg-slate-300 dark:bg-slate-600" />
+                            <span className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">
+                              #{item.id}
+                              {jdId != null ? ` · JD#${jdId}` : ""}
+                            </span>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-7 w-7 shrink-0">
-                              <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                                {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="truncate font-medium">{userName}</span>
+                        </div>
+                      </div>
+                      <span
+                        className={cn(
+                          "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider",
+                          statusCfg.className
+                        )}>
+                        {statusCfg.dot && (
+                          <span className={cn("h-1.5 w-1.5 rounded-full", statusCfg.dot)} />
+                        )}
+                        {statusCfg.label}
+                      </span>
+                    </div>
+
+                    {/* Middle: Score + Round */}
+                    <div className="mt-4 flex items-center justify-between">
+                      {score !== undefined ? (
+                        <div className="flex items-center gap-1.5">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-500 dark:bg-amber-500/10">
+                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                           </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">{jdId ?? "-"}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
-                            {STATUS_CONFIG[status ?? ""]?.label ?? status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          <span className="text-sm font-medium">
-                            {t("userApplicationhistory.round")} {roundId ?? 1}
-                          </span>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {score !== undefined ? (
-                            <span className="font-bold text-[#0047AB]">{score}</span>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="pr-6 text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 gap-1.5 text-xs text-[#0047AB] hover:bg-[#0047AB]/10 dark:text-blue-400 dark:hover:bg-blue-900/20"
-                            onClick={() => handleOpenGrading(item.id, item.detailId, item)}>
-                            <ClipboardCheck className="h-3.5 w-3.5" />
-                            {t("grading.grade")}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                              {t("userApplicationhistory.totalScore")}
+                            </p>
+                            <p className="text-lg font-extrabold text-slate-900 dark:text-white">
+                              {score}
+                              <span className="text-xs font-normal text-slate-400">/100</span>
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                            <Star className="h-4 w-4" />
+                          </div>
+                          <p className="text-sm text-slate-400 dark:text-slate-500">—</p>
+                        </div>
+                      )}
+
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-400">
+                        <ClipboardCheck className="h-4 w-4" />
+                      </div>
+                    </div>
+
+                    {/* Bottom: Round + Action */}
+                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-slate-400" />
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                          {t("userApplicationhistory.round")} {roundId ?? 1}
+                        </span>
+                      </div>
+                      <span className="flex items-center gap-1 text-xs font-bold text-indigo-600 transition-colors group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300">
+                        {t("grading.grade")}
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="flex items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+            {/* Pagination */}
+            <div className="flex items-center justify-center border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-950">
               <PaginationControl pagination={pagination} />
             </div>
           </div>
@@ -1465,7 +1482,7 @@ export function ApplicationGradingDetailPage({
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <Avatar className="h-8 w-8 shrink-0">
             <AvatarImage src={candidateAvatar ?? undefined} alt={candidateName ?? "User"} />
-            <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
+            <AvatarFallback className="bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
               {(candidateName ?? "?")[0]?.toUpperCase() ?? "?"}
             </AvatarFallback>
           </Avatar>
@@ -1543,11 +1560,13 @@ export function ApplicationGradingDetailPage({
               <span className="font-semibold text-green-600">{summaryStats.completed}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-xs text-[#0047AB]">
-                <Star className="h-3.5 w-3.5 fill-[#0047AB] text-[#0047AB]" />
+              <span className="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                 {t("grading.hrAverageScore")}
               </span>
-              <span className="font-semibold text-[#0047AB]">{summaryStats.avgScore}</span>
+              <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                {summaryStats.avgScore}
+              </span>
             </div>
           </div>
         </div>
