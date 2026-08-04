@@ -2148,7 +2148,7 @@ function CompletedResultView({
           <div className="space-y-5">
             {review ? (
               <Card className="rounded-2xl border border-slate-200 bg-white p-4 pt-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-                <div className="mb-3 flex flex-col items-center gap-2 text-center">
+                <div className="mb-2 flex flex-col items-center gap-2 text-center">
                   <h3 className="text-lg font-bold text-slate-950 dark:text-white">
                     {t("userApplicationhistory.mentorSessionReviewTitle")}
                   </h3>
@@ -2362,16 +2362,23 @@ function CandidateMentorFeedbackBlock({
 
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-      <div className="relative border-b border-slate-200 bg-slate-50/70 px-5 py-4 text-center dark:border-slate-800 dark:bg-slate-950/20">
-        <div className="mx-auto flex max-w-md flex-col items-center gap-3">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
-            Đánh giá của Mentor
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/60 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/20">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
+            <Send className="h-4 w-4" />
           </div>
-          <h3 className="text-base font-bold text-slate-950 dark:text-white">Đánh giá mentor</h3>
+          <div className="min-w-0">
+            <h3 className="text-base font-bold text-slate-950 dark:text-white">
+              Phản hồi của bạn cho mentor
+            </h3>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              Chấm sao và ghi nhận trải nghiệm sau buổi phỏng vấn.
+            </p>
+          </div>
         </div>
 
         {hasFeedback && !editing && (
-          <span className="absolute top-1/2 right-5 inline-flex h-7 -translate-y-1/2 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+          <span className="inline-flex h-7 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
             Đã gửi
           </span>
         )}
@@ -2379,10 +2386,10 @@ function CandidateMentorFeedbackBlock({
 
       {!editing && hasFeedback ? (
         <div className="space-y-4 p-5">
-          <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-950/30">
             <div className="text-center">
-              <div className="text-[11px] font-semibold tracking-[0.22em] text-slate-500 uppercase dark:text-slate-400">
-                Đánh giá của Mentor
+              <div className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
+                Phản hồi đã gửi
               </div>
               <div className="mt-2 text-4xl font-black text-amber-600 tabular-nums dark:text-amber-400">
                 {feedback?.rating ?? 0}/5
@@ -2404,7 +2411,7 @@ function CandidateMentorFeedbackBlock({
               </div>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/30">
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/30">
               {feedback?.comment ? (
                 <p className="text-sm leading-relaxed text-slate-700 italic dark:text-slate-200">
                   “{feedback.comment}”
@@ -2440,34 +2447,34 @@ function CandidateMentorFeedbackBlock({
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5 p-5" noValidate>
-          <div className="space-y-3">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
             <div className="flex items-center justify-between gap-3">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+              <Label className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                 {t("userApplicationhistory.mentorSessionRatingLabel")}{" "}
                 <span className="text-rose-500">*</span>
               </Label>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-600 tabular-nums dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300">
                 {rating || 0}/5
               </span>
             </div>
-            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              Chọn mức đánh giá từ 1 đến 5 sao theo trải nghiệm thực tế của bạn.
+            <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              Chọn mức sao phản ánh cách mentor đặt câu hỏi, hướng dẫn và hỗ trợ bạn.
             </p>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+            <div className="mt-4">
               <RatingScale5 value={rating} onChange={setRating} />
             </div>
             {errors.rating && (
-              <p className="text-xs font-semibold text-rose-600" role="alert">
+              <p className="mt-3 text-xs font-semibold text-rose-600" role="alert">
                 {errors.rating}
               </p>
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/20">
             <div className="flex items-center justify-between gap-3">
               <Label
                 htmlFor="candidate-mentor-comment"
-                className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                 {t("userApplicationhistory.mentorSessionCommentLabel")}{" "}
                 <span className="text-rose-500">*</span>
               </Label>
@@ -2489,7 +2496,7 @@ function CandidateMentorFeedbackBlock({
               maxLength={MAX_COMMENT_LENGTH}
               placeholder={t("userApplicationhistory.mentorSessionCommentPlaceholder")}
               aria-invalid={!!errors.comment}
-              className="resize-y rounded-2xl border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/30"
+              className="mt-3 resize-y rounded-xl border-slate-200 bg-slate-50/70 shadow-none dark:border-slate-800 dark:bg-slate-950/40"
             />
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span
@@ -2559,33 +2566,31 @@ function CandidateMentorFeedbackBlock({
 
 function RatingScale5({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
-      <div className="flex flex-wrap items-center gap-1">
-        {Array.from({ length: 5 }).map((_, index) => {
-          const starValue = index + 1;
-          const active = starValue <= value;
-          return (
-            <button
-              key={starValue}
-              type="button"
-              aria-label={`Chọn ${starValue} sao`}
-              onClick={() => onChange(starValue)}
+    <div className="flex flex-wrap items-center gap-2">
+      {Array.from({ length: 5 }).map((_, index) => {
+        const starValue = index + 1;
+        const active = starValue <= value;
+        return (
+          <button
+            key={starValue}
+            type="button"
+            aria-label={`Chọn ${starValue} sao`}
+            onClick={() => onChange(starValue)}
+            className={cn(
+              "group inline-flex h-12 w-12 items-center justify-center rounded-xl border transition-all",
+              active
+                ? "border-amber-300 bg-amber-50 text-amber-400 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30"
+                : "border-slate-200 bg-white text-slate-300 hover:border-amber-200 hover:text-amber-300 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-600"
+            )}>
+            <Star
               className={cn(
-                "group inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-all",
-                active
-                  ? "border-amber-300 bg-amber-50 text-amber-400 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30"
-                  : "border-slate-200 bg-white text-slate-300 hover:border-amber-200 hover:text-amber-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600"
-              )}>
-              <Star
-                className={cn(
-                  "h-5 w-5 transition-transform duration-150",
-                  active ? "fill-current" : "group-hover:scale-105"
-                )}
-              />
-            </button>
-          );
-        })}
-      </div>
+                "h-6 w-6 transition-transform duration-150",
+                active ? "fill-current scale-105" : "group-hover:scale-105"
+              )}
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }
