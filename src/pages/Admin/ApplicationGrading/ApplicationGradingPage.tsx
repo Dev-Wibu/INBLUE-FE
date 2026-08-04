@@ -939,7 +939,7 @@ export function ApplicationGradingPage({
 
   const applications = useMemo(() => (Array.isArray(rawApps) ? rawApps : []), [rawApps]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "score-high" | "score-low">("newest");
 
   // Sortable fields for the table
