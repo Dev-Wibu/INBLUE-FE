@@ -1966,6 +1966,7 @@ function SessionRoomStep({
 // ============================================================================
 
 function CompletedResultView({ session, onChange }: { session: Session; onChange: () => void }) {
+  const { t } = useTranslation();
   const review = session.mentorReview as NonNullable<Session["mentorReview"]>;
   const feedback = session.mentorFeedback;
   const candidateStart = session.startTime1 ?? null;
@@ -2126,6 +2127,7 @@ function CandidateMentorFeedbackBlock({
   feedback: Session["mentorFeedback"];
   onChange: () => void;
 }) {
+  const { t } = useTranslation();
   const userId = useAuthStore((state) => state.user?.id);
   const createFeedback = useCreateMentorFeedback();
   const updateFeedback = useUpdateMentorFeedback();
