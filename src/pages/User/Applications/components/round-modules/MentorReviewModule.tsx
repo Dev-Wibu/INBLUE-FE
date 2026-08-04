@@ -1,4 +1,4 @@
-import { DateTimePicker } from "@/components/shared";
+﻿import { DateTimePicker } from "@/components/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,7 @@ import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowRight,
   Award,
   BadgeCheck,
@@ -60,6 +61,7 @@ import {
   Send,
   Sparkles,
   Star,
+  Target,
   UserCheck,
   Users,
   Video,
@@ -214,12 +216,17 @@ export function MentorReviewModule({
 
   // ===== Header ===========================================================
   const finalScore = detail?.finalScore ?? detail?.hrScore ?? null;
-  const showScore = (status === "COMPLETED" || status === "AI_EVALUATED") && finalScore !== null;
-  const passed = detail?.finalResult === "PASSED";
-  const failed = detail?.finalResult === "FAILED";
 
   const activeIndex = STEP_DEFS.findIndex((s) => s.key === activeStep);
   const roundOrder = round.roundOrder ?? activeIndex + 1;
+  const [previewStep, setPreviewStep] = useState<StepKey | null>(null);
+  const viewedStep = previewStep ?? activeStep;
+  const viewedIndex = STEP_DEFS.findIndex((s) => s.key === viewedStep);
+  const isPreviewingStep = previewStep !== null;
+
+  useEffect(() => {
+    setPreviewStep(null);
+  }, [activeStep]);
 
   return (
     <div className="space-y-6">
@@ -289,23 +296,30 @@ export function MentorReviewModule({
       )}
 
       {/* ============== Step Progress ====================================== */}
-      <ProgressHub activeIndex={activeIndex} />
+      <ProgressHub
+        activeIndex={activeIndex}
+        viewedIndex={viewedIndex}
+        onSelectStep={setPreviewStep}
+      />
 
       {/* ============== Step body ============== */}
-      {activeStep === "AWAITING_MENTOR" && <AwaitingMentorStep />}
-      {activeStep === "SELECT_MENTOR" && (
+      {viewedStep === "AWAITING_MENTOR" && <AwaitingMentorStep />}
+      {viewedStep === "SELECT_MENTOR" && (
         <SelectMentorStep
           detailId={detailId}
+          readOnly={isPreviewingStep}
           onAfterSelect={() => {
             void refetchDetail();
             onSuccess?.();
           }}
         />
       )}
-      {activeStep === "SCHEDULE" && (
+      {viewedStep === "SCHEDULE" && (
         <ScheduleStep
+          detail={detail}
           detailId={detailId}
           submitting={createSessionMutation.isPending}
+          readOnly={isPreviewingStep}
           onSubmit={(payload) =>
             createSessionMutation.mutate({
               applicationDetailId: detailId,
@@ -316,11 +330,15 @@ export function MentorReviewModule({
           }
         />
       )}
-      {(activeStep === "WAITING" || activeStep === "IN_CALL" || activeStep === "RESULT") && (
+      {(viewedStep === "WAITING" || viewedStep === "IN_CALL" || viewedStep === "RESULT") && (
         <SessionRoomStep
           detailId={detailId}
           sessionId={sessionId}
           applicationId={applicationId}
+          finalScore={finalScore}
+          finalResult={detail?.finalResult ?? null}
+          viewStep={viewedStep}
+          readOnly={isPreviewingStep}
           onStatusChange={() => {
             void refetchDetail();
             void refetchSession();
@@ -335,12 +353,21 @@ export function MentorReviewModule({
 // SUB-COMPONENT: ProgressHub — wizard steps indicator
 // ============================================================================
 
-function ProgressHub({ activeIndex }: { activeIndex: number }) {
+function ProgressHub({
+  activeIndex,
+  viewedIndex,
+  onSelectStep,
+}: {
+  activeIndex: number;
+  viewedIndex: number;
+  onSelectStep: (step: StepKey) => void;
+}) {
   return (
     <Card className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 shadow-lg backdrop-blur-md">
       <div className="flex w-full items-start justify-between">
         {STEP_DEFS.map((step, i) => {
-          const isActive = i === activeIndex;
+          const isActive = i === viewedIndex;
+          const isCurrent = i === activeIndex;
           const isDone = i < activeIndex;
           const Icon = step.icon;
 
@@ -357,9 +384,12 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
               )}
 
               {/* Icon Circle */}
-              <div
+              <button
+                type="button"
+                onClick={() => onSelectStep(step.key)}
+                title={`Xem lại: ${step.short}`}
                 className={cn(
-                  "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
+                  "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-indigo-400/60 focus-visible:outline-none",
                   isActive
                     ? "border-indigo-500 bg-indigo-950/50 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)]"
                     : isDone
@@ -369,10 +399,10 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
                 {isDone ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
 
                 {/* Active indicator dot */}
-                {isActive && (
+                {isCurrent && (
                   <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] ring-2 ring-slate-900" />
                 )}
-              </div>
+              </button>
 
               {/* Label */}
               <span
@@ -395,8 +425,6 @@ function ProgressHub({ activeIndex }: { activeIndex: number }) {
 // ============================================================================
 
 function AwaitingMentorStep() {
-  const { t } = useTranslation();
-
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-xl backdrop-blur-md">
       {/* Hero Visual Section */}
@@ -516,9 +544,11 @@ function AwaitingMentorStep() {
 
 function SelectMentorStep({
   detailId,
+  readOnly = false,
   onAfterSelect,
 }: {
   detailId: number;
+  readOnly?: boolean;
   onAfterSelect: () => void;
 }) {
   const { t } = useTranslation();
@@ -615,9 +645,11 @@ function SelectMentorStep({
             <MentorCard
               key={mentor.id ?? mentor.email ?? mentor.name}
               mentor={mentor}
-              disabled={selectMutation.isPending}
+              disabled={readOnly || selectMutation.isPending}
               onOpenDetails={() => setFeedbackMentor(mentor)}
-              onRequestConfirm={() => setMentorToConfirm(mentor)}
+              onRequestConfirm={() => {
+                if (!readOnly) setMentorToConfirm(mentor);
+              }}
             />
           ))}
         </div>
@@ -657,6 +689,7 @@ function SelectMentorStep({
             <AlertDialogCancel>{t("common.cancel", "Hủy")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
+                if (readOnly) return;
                 if (!mentorToConfirm?.id) return;
                 selectMutation.mutate({
                   applicationDetailId: detailId,
@@ -970,19 +1003,31 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
 // ============================================================================
 
 function ScheduleStep({
+  detail,
   detailId,
   submitting,
+  readOnly = false,
   onSubmit,
 }: {
+  detail?: ApplicationDetail;
   detailId: number;
   submitting: boolean;
+  readOnly?: boolean;
   onSubmit: (_payload: { joinTime: string; duration: number; offline: boolean }) => void;
 }) {
   const { t } = useTranslation();
   const { data: mentors } = useAssignedMentors(detailId);
+  const scheduleSessionInfo = (
+    detail as unknown as { sessionInfo?: { mentorId?: number | null } } | undefined
+  )?.sessionInfo;
+  const selectedMentorId = detail?.mentorId ?? scheduleSessionInfo?.mentorId ?? null;
   const selectedMentor = useMemo(() => {
-    return mentors?.find((m) => m.id != null) ?? mentors?.[0] ?? null;
-  }, [mentors]);
+    return (
+      mentors?.find((m) => selectedMentorId != null && m.id === selectedMentorId) ??
+      mentors?.[0] ??
+      null
+    );
+  }, [mentors, selectedMentorId]);
 
   const now = new Date();
   const tomorrow = new Date(now);
@@ -1003,6 +1048,7 @@ function ScheduleStep({
   const [offline, setOffline] = useState(false);
 
   const handleSubmit = () => {
+    if (readOnly) return;
     if (!joinDateTime) {
       toast.error(
         t("userApplicationhistory.mentorScheduleMissingDateTime", "Please select a date and time")
@@ -1129,7 +1175,11 @@ function ScheduleStep({
                 "Pick the date and a precise start time"
               )}
             />
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
+            <div
+              className={cn(
+                "relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900/40",
+                readOnly && "pointer-events-none opacity-70"
+              )}>
               <DateTimePicker
                 value={joinDateTime}
                 onChange={(d) => setJoinDateTime(d)}
@@ -1171,7 +1221,10 @@ function ScheduleStep({
                   <button
                     key={d.value}
                     type="button"
-                    onClick={() => setDuration(d.value)}
+                    onClick={() => {
+                      if (!readOnly) setDuration(d.value);
+                    }}
+                    disabled={readOnly}
                     aria-pressed={active}
                     className={cn(
                       "group relative overflow-hidden rounded-2xl border-2 px-3 py-3 text-left transition-all duration-200",
@@ -1233,6 +1286,7 @@ function ScheduleStep({
             <div className="grid gap-2.5 sm:grid-cols-2">
               <ModeOption
                 active={!offline}
+                disabled={readOnly}
                 onClick={() => setOffline(false)}
                 icon={<Video className="h-5 w-5" />}
                 tone="sky"
@@ -1248,6 +1302,7 @@ function ScheduleStep({
               />
               <ModeOption
                 active={offline}
+                disabled={readOnly}
                 onClick={() => setOffline(true)}
                 icon={<MapPin className="h-5 w-5" />}
                 tone="amber"
@@ -1266,7 +1321,7 @@ function ScheduleStep({
             <div className="pointer-events-none absolute inset-x-0 -top-2 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-800" />
             <Button
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={readOnly || submitting}
               className="relative h-12 w-full gap-2 overflow-hidden rounded-xl bg-indigo-600 text-sm font-semibold tracking-wide text-white shadow-sm hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-500/20">
               {submitting ? (
                 <>
@@ -1289,33 +1344,17 @@ function ScheduleStep({
       <div className="space-y-4 self-stretch lg:sticky lg:top-4">
         {/* ===== Mentor hero card ===== */}
         <Card className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-          <div className="relative border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
-                <UserCheck className="h-3 w-3" />
-                {t("userApplicationhistory.mentorScheduleSelectedMentorTitle", "Selected mentor")}
-              </span>
-              {selectedMentor?.linkedInUrl && (
-                <a
-                  href={selectedMentor.linkedInUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
-                  aria-label="LinkedIn">
-                  <Linkedin className="h-3.5 w-3.5" />
-                </a>
-              )}
-            </div>
-
+          <div className="p-4">
             {selectedMentor ? (
               <>
                 {/* Identity */}
-                <div className="mt-4 flex items-start gap-3">
-                  <div className="relative">
-                    <Avatar className="h-16 w-16 rounded-2xl border-2 border-white shadow-sm ring-1 ring-slate-200 dark:border-slate-900 dark:ring-slate-700">
+                <div className="flex items-start gap-3">
+                  <div>
+                    <Avatar className="h-16 w-16 rounded-2xl border border-slate-200 shadow-sm dark:border-slate-700">
                       <AvatarImage
                         src={selectedMentor.avatarUrl || "/placeholder.png"}
                         alt={selectedMentor.name ?? "Mentor"}
+                        className="object-cover"
                       />
                       <AvatarFallback className="rounded-2xl bg-indigo-600 text-base font-extrabold text-white">
                         {selectedMentor.name?.slice(0, 1).toUpperCase() ?? (
@@ -1323,80 +1362,79 @@ function ScheduleStep({
                         )}
                       </AvatarFallback>
                     </Avatar>
-                    {selectedMentor.active !== false && (
-                      <span className="absolute -right-0.5 -bottom-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-emerald-500 shadow-sm dark:border-slate-900">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                      </span>
-                    )}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-base font-semibold tracking-tight text-slate-900 dark:text-white">
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <h4 className="text-base leading-6 font-bold tracking-tight text-slate-950 dark:text-white">
                       {selectedMentor.name ?? "—"}
                     </h4>
                     {selectedMentor.currentCompany && (
-                      <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                        <Building2 className="h-3 w-3 shrink-0" />
+                      <p className="mt-0.5 flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                        <Building2 className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-300" />
                         <span className="truncate">{selectedMentor.currentCompany}</span>
                       </p>
                     )}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+                        {selectedMentor.averageRating
+                          ? selectedMentor.averageRating.toFixed(1)
+                          : "—"}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/25 dark:text-indigo-200">
+                        <Briefcase className="h-3.5 w-3.5" />
+                        {selectedMentor.totalSession ?? 0} phiên
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-bold text-violet-700 dark:border-violet-900/50 dark:bg-violet-950/25 dark:text-violet-200">
+                        <Award className="h-3.5 w-3.5" />
+                        {selectedMentor.yearsOfExperience != null
+                          ? `${selectedMentor.yearsOfExperience}+ năm`
+                          : "—"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-
-                {/* Stats row */}
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                  <StatBlock
-                    icon={<Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />}
-                    label={t("userApplicationhistory.mentorScheduleStatRating", "Rating")}
-                    value={
-                      selectedMentor.averageRating ? selectedMentor.averageRating.toFixed(1) : "—"
-                    }
-                    tone="amber"
-                  />
-                  <StatBlock
-                    icon={<Briefcase className="h-3.5 w-3.5 text-indigo-500" />}
-                    label={t("userApplicationhistory.mentorScheduleStatSessions", "Sessions")}
-                    value={String(selectedMentor.totalSession ?? 0)}
-                    tone="indigo"
-                  />
-                  <StatBlock
-                    icon={<Award className="h-3.5 w-3.5 text-violet-500" />}
-                    label={t("userApplicationhistory.mentorScheduleStatYears", "Years")}
-                    value={
-                      selectedMentor.yearsOfExperience != null
-                        ? `${selectedMentor.yearsOfExperience}+`
-                        : "—"
-                    }
-                    tone="violet"
-                  />
                 </div>
 
                 {/* Expertise */}
                 {selectedMentor.expertise && (
-                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-950/30">
-                    <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wide text-slate-600 dark:text-slate-400">
-                      <Sparkles className="h-3 w-3" />
-                      {t("userApplicationhistory.mentorSelectExpertise", "Expertise")}
+                  <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-800">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+                      <Sparkles className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
+                      Chuyên môn
                     </div>
-                    <p className="mt-1 text-sm leading-6 font-medium text-slate-800 dark:text-slate-100">
+                    <p className="mt-1.5 text-sm leading-5 font-semibold text-slate-900 dark:text-slate-100">
                       {selectedMentor.expertise}
                     </p>
                   </div>
                 )}
 
                 {/* Bio + contact */}
-                {(selectedMentor.bio || selectedMentor.email) && (
-                  <div className="mt-4 space-y-2 border-t border-slate-200 pt-3 text-xs dark:border-slate-800">
+                {(selectedMentor.bio || selectedMentor.email || selectedMentor.linkedInUrl) && (
+                  <div className="mt-3 space-y-2.5 border-t border-slate-200 pt-3 text-xs dark:border-slate-800">
                     {selectedMentor.bio && (
-                      <p className="leading-relaxed text-slate-600 italic dark:text-slate-400">
+                      <p className="line-clamp-2 leading-5 text-slate-600 italic dark:text-slate-300">
                         &ldquo;{selectedMentor.bio}&rdquo;
                       </p>
                     )}
-                    {selectedMentor.email && (
-                      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                        <Mail className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{selectedMentor.email}</span>
-                      </div>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {selectedMentor.email && (
+                        <a
+                          href={`mailto:${selectedMentor.email}`}
+                          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-600 transition-colors hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:text-indigo-300">
+                          <Mail className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{selectedMentor.email}</span>
+                        </a>
+                      )}
+                      {selectedMentor.linkedInUrl && (
+                        <a
+                          href={selectedMentor.linkedInUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-600 transition-colors hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:text-indigo-300">
+                          <Linkedin className="h-3.5 w-3.5" />
+                          LinkedIn
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
               </>
@@ -1416,95 +1454,71 @@ function ScheduleStep({
 
         {/* ===== Summary card ===== */}
         <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-          <div className="relative overflow-hidden border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">
-            <div className="relative flex items-center justify-between gap-2">
+          <div className="border-b border-slate-200 bg-slate-50/70 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-900/60">
+            <div className="flex items-center justify-between gap-2">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
                   <BadgeCheck className="h-4 w-4" />
                 </span>
-                {t("userApplicationhistory.mentorScheduleSummaryTitle", "Interview summary")}
+                Tóm tắt buổi phỏng vấn
               </h3>
               <span className="rounded-full border border-emerald-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
-                {t("userApplicationhistory.mentorScheduleSummaryLiveLabel", "Live preview")}
+                Cập nhật trực tiếp
               </span>
             </div>
           </div>
 
-          <div className="space-y-4 p-5">
-            {/* Hero time block */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950/30">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                    {t("userApplicationhistory.mentorScheduleSummaryStart", "Start")}
+          <div className="p-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    Bắt đầu
                   </div>
-                  <div className="mt-0.5 flex items-baseline gap-1 text-slate-900 tabular-nums dark:text-white">
-                    <span className="text-2xl font-black tracking-tight sm:text-3xl">
-                      {summaryTime}
-                    </span>
+                  <div className="mt-1 text-3xl font-black tracking-tight text-slate-950 tabular-nums dark:text-white">
+                    {summaryTime}
                   </div>
-                  <div className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <div className="mt-1 truncate text-xs font-medium text-slate-500 dark:text-slate-400">
                     {summaryDate}
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                    {t("userApplicationhistory.mentorScheduleSummaryEnds", "Ends")}
+                <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                <div className="min-w-0 text-right">
+                  <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    Kết thúc
                   </div>
-                  <div className="mt-0.5 flex items-baseline gap-1 tabular-nums">
-                    <span className="text-2xl font-black tracking-tight text-indigo-700 sm:text-3xl dark:text-indigo-200">
-                      {formattedEndTime}
-                    </span>
+                  <div className="mt-1 text-3xl font-black tracking-tight text-indigo-700 tabular-nums dark:text-indigo-200">
+                    {formattedEndTime}
                   </div>
-                  <div className="mt-0.5 text-xs font-bold text-indigo-600 dark:text-indigo-300">
-                    + {duration} min
+                  <div className="mt-1 text-xs font-bold text-indigo-600 dark:text-indigo-300">
+                    + {duration} phút
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Pills row */}
-            <div className="flex flex-wrap gap-2">
-              <SummaryPill
-                icon={<Hourglass className="h-3.5 w-3.5" />}
-                label={t("userApplicationhistory.mentorScheduleSummaryDuration", "Duration")}
-                value={`${duration} min`}
-                tone="indigo"
-              />
-              <SummaryPill
-                icon={
-                  offline ? <MapPin className="h-3.5 w-3.5" /> : <Video className="h-3.5 w-3.5" />
-                }
-                label={t("userApplicationhistory.mentorScheduleSummaryMode", "Mode")}
-                value={
-                  offline
-                    ? t("userApplicationhistory.mentorScheduleSummaryModeOffline", "In person")
-                    : t("userApplicationhistory.mentorScheduleSummaryModeOnline", "Online")
-                }
-                tone={offline ? "amber" : "sky"}
-              />
-              {selectedMentor?.rate != null && (
-                <SummaryPill
-                  icon={<CircleDollarSign className="h-3.5 w-3.5" />}
-                  label={t("userApplicationhistory.mentorScheduleSummaryEstimate", "Estimate")}
-                  value={formatRate(selectedMentor.rate, duration)}
-                  tone="emerald"
+              <div className="grid gap-2.5 border-t border-slate-200 pt-3 dark:border-slate-800">
+                <SummaryLine
+                  icon={<Hourglass className="h-4 w-4" />}
+                  label="Thời lượng"
+                  value={`${duration} phút`}
                 />
-              )}
-            </div>
-
-            <div className="rounded-xl border border-indigo-200/70 bg-indigo-50/60 p-3 dark:border-indigo-900/40 dark:bg-indigo-950/20">
-              <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
-                <strong className="text-slate-800 dark:text-slate-200">
-                  {t(
-                    "userApplicationhistory.mentorScheduleReadyTitle",
-                    "Ready to create the session?"
-                  )}
-                </strong>{" "}
-                {t(
-                  "userApplicationhistory.mentorScheduleReadyDesc",
-                  "Your interview schedule will be confirmed right after creation. You can still change the time before payment."
+                <SummaryLine
+                  icon={offline ? <MapPin className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+                  label="Hình thức"
+                  value={offline ? "Gặp trực tiếp" : "Trực tuyến"}
+                />
+                {selectedMentor?.rate != null && (
+                  <SummaryLine
+                    icon={<CircleDollarSign className="h-4 w-4" />}
+                    label="Ước tính"
+                    value={formatRate(selectedMentor.rate, duration)}
+                  />
                 )}
+              </div>
+
+              <p className="border-t border-slate-200 pt-3 text-xs leading-5 text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ
+                trước khi phiên bắt đầu.
               </p>
             </div>
           </div>
@@ -1533,6 +1547,7 @@ function SectionLabel({ index, label, hint }: { index: number; label: string; hi
 function ModeOption({
   active,
   onClick,
+  disabled = false,
   icon,
   tone,
   title,
@@ -1541,6 +1556,7 @@ function ModeOption({
 }: {
   active: boolean;
   onClick: () => void;
+  disabled?: boolean;
   icon: React.ReactNode;
   tone: "sky" | "amber";
   title: string;
@@ -1571,13 +1587,17 @@ function ModeOption({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => {
+        if (!disabled) onClick();
+      }}
+      disabled={disabled}
       aria-pressed={active}
       className={cn(
         "relative flex flex-col items-start gap-2 rounded-2xl border-2 p-3.5 text-left transition-all duration-200",
         active
           ? cn("shadow-sm ring-1", toneClasses.activeBorder, toneClasses.ring)
-          : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600"
+          : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600",
+        disabled && "cursor-not-allowed opacity-70 hover:translate-y-0 hover:shadow-none"
       )}>
       <div className="flex w-full items-start justify-between">
         <div
@@ -1614,72 +1634,22 @@ function ModeOption({
   );
 }
 
-function StatBlock({
+function SummaryLine({
   icon,
   label,
   value,
-  tone,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  tone: "amber" | "indigo" | "violet";
 }) {
-  const toneClasses = {
-    amber: "border-amber-200/70 bg-amber-50/70 dark:border-amber-900/40 dark:bg-amber-950/20",
-    indigo: "border-indigo-200/70 bg-indigo-50/70 dark:border-indigo-900/40 dark:bg-indigo-950/20",
-    violet: "border-violet-200/70 bg-violet-50/70 dark:border-violet-900/40 dark:bg-violet-950/20",
-  }[tone];
-
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center",
-        toneClasses
-      )}>
-      <div className="flex items-center gap-1 text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-        {icon}
-        <span className="leading-none">{label}</span>
-      </div>
-      <div className="mt-1 text-base font-black text-slate-900 tabular-nums dark:text-white">
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function SummaryPill({
-  icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  tone: "indigo" | "sky" | "amber" | "emerald";
-}) {
-  const toneClasses = {
-    indigo:
-      "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-200",
-    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-200",
-    amber:
-      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200",
-    emerald:
-      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200",
-  }[tone];
-
-  return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
-        toneClasses
-      )}>
-      {icon}
-      <span className="text-[10px] font-extrabold tracking-wider uppercase opacity-70">
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+        <span className="text-indigo-500 dark:text-indigo-300">{icon}</span>
         {label}
-      </span>
-      <span className="font-extrabold tabular-nums">{value}</span>
+      </div>
+      <div className="text-sm font-bold text-slate-950 dark:text-white">{value}</div>
     </div>
   );
 }
@@ -1784,11 +1754,19 @@ function SessionStatusBadge({ status }: { status: string }) {
 function SessionRoomStep({
   detailId,
   sessionId,
+  finalScore,
+  finalResult,
+  viewStep,
+  readOnly = false,
   onStatusChange,
 }: {
   detailId: number;
   sessionId: number | null;
   applicationId: number;
+  finalScore: number | null;
+  finalResult: string | null;
+  viewStep: StepKey;
+  readOnly?: boolean;
   onStatusChange: () => void;
 }) {
   const { t } = useTranslation();
@@ -1834,12 +1812,19 @@ function SessionRoomStep({
   const joinAt = session.joinTime ? new Date(session.joinTime).getTime() : 0;
   const minutesUntilStart = Math.floor((joinAt - now) / 60_000);
   const canEnter = minutesUntilStart <= 15 && minutesUntilStart > -(session.duration ?? 0);
-  const isCompleted = session.status === "COMPLETED";
+  const isCompleted = readOnly ? viewStep === "RESULT" : session.status === "COMPLETED";
 
   // ---- COMPLETED ----
   if (isCompleted) {
     return (
-      <CompletedResultView session={session} mentor={sessionMentor} onChange={onStatusChange} />
+      <CompletedResultView
+        session={session}
+        mentor={sessionMentor}
+        finalScore={finalScore}
+        finalResult={finalResult}
+        readOnly={readOnly}
+        onChange={onStatusChange}
+      />
     );
   }
 
@@ -1961,13 +1946,14 @@ function SessionRoomStep({
             <div className="flex flex-wrap gap-2">
               <Button
                 onClick={() => {
+                  if (readOnly) return;
                   if (session.roomUrl) {
                     window.location.href = `/user/sessions/room/${session.id}`;
                   } else {
                     toast.info(t("userApplicationhistory.mentorSessionOfflineToast"));
                   }
                 }}
-                disabled={!canEnter && session.status === "PAID"}
+                disabled={readOnly || (!canEnter && session.status === "PAID")}
                 className="h-11 flex-1 gap-2 bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
                 <LogIn className="h-4 w-4" />
                 {session.status === "ONGOING"
@@ -1977,7 +1963,10 @@ function SessionRoomStep({
               </Button>
               <Button
                 variant="outline"
-                onClick={() => void refetch()}
+                onClick={() => {
+                  if (!readOnly) void refetch();
+                }}
+                disabled={readOnly}
                 className="h-11 gap-2 border-slate-300 px-4 text-xs font-semibold dark:border-slate-700">
                 <RefreshCw className="h-4 w-4" />
                 {t("userApplicationhistory.mentorSessionRefresh")}
@@ -1997,10 +1986,16 @@ function SessionRoomStep({
 function CompletedResultView({
   session,
   mentor,
+  finalScore,
+  finalResult,
+  readOnly = false,
   onChange,
 }: {
   session: Session;
   mentor: MentorResponse | null;
+  finalScore: number | null;
+  finalResult: string | null;
+  readOnly?: boolean;
   onChange: () => void;
 }) {
   const { t } = useTranslation();
@@ -2013,29 +2008,36 @@ function CompletedResultView({
   const mentorExperienceLabel = mentor?.yearsOfExperience
     ? `${mentor.yearsOfExperience}+ năm`
     : "—";
+  const hasFinalScore = finalScore !== null && finalScore !== undefined;
+  const finalPassed = finalResult === "PASSED";
+  const finalFailed = finalResult === "FAILED";
 
   return (
     <div className="space-y-5">
-      <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/20">
-          <div className="min-w-0 space-y-1">
-            <div className="flex items-center gap-2 text-sm font-bold text-slate-950 dark:text-white">
-              <BadgeCheck className="h-4 w-4 text-emerald-500" />
-              <span>{t("userApplicationhistory.mentorSessionCompletedTitle")}</span>
-            </div>
-            <p className="max-w-2xl text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-              {t("userApplicationhistory.mentorSessionCompletedDesc")}
-            </p>
-          </div>
-          <span className="inline-flex h-7 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
-            COMPLETED
-          </span>
-        </div>
-
-        <div className="grid gap-5 p-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-5">
-            <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 shadow-none dark:border-slate-800 dark:bg-slate-950/30">
-              <div className="flex flex-wrap items-start gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
+            <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+              <div className="relative flex flex-wrap items-center gap-4 border-b border-slate-200 px-5 py-5 pr-5 md:pr-44 dark:border-slate-800">
+                {hasFinalScore && (
+                  <div
+                    className={cn(
+                      "absolute top-5 right-5 hidden rotate-[-3deg] items-center gap-2 rounded-full border-2 border-dashed bg-white/70 px-3.5 py-2 shadow-sm backdrop-blur-sm md:inline-flex dark:bg-slate-950/30",
+                      finalPassed
+                        ? "border-emerald-400/70 text-emerald-700 dark:border-emerald-500/60 dark:text-emerald-300"
+                        : finalFailed
+                          ? "border-rose-400/70 text-rose-700 dark:border-rose-500/60 dark:text-rose-300"
+                          : "border-indigo-400/70 text-indigo-700 dark:border-indigo-500/60 dark:text-indigo-300"
+                    )}>
+                    <BadgeCheck className="h-4 w-4" />
+                    <span className="text-xl font-black leading-none tabular-nums">{finalScore}</span>
+                    <span className="text-[11px] font-black opacity-70">/100</span>
+                    {(finalPassed || finalFailed) && (
+                      <span className="text-[10px] font-black tracking-wide uppercase">
+                        {finalPassed ? "Passed" : "Failed"}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="flex h-24 w-24 shrink-0 overflow-hidden rounded-3xl border border-slate-200 bg-white p-0.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                   <Avatar className="h-full w-full rounded-[1.15rem]">
                     <AvatarImage
@@ -2054,54 +2056,40 @@ function CompletedResultView({
                   </Avatar>
                 </div>
 
-                <div className="min-w-0 flex-1 space-y-2">
+                <div className="min-w-0 flex-1 space-y-3">
                   <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
                     <span>Thông tin phiên</span>
                     <span className="h-1 w-1 rounded-full bg-slate-400/70" />
                     <span>Đã hoàn tất</span>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
                       {mentor?.name ?? (session.mentorId ? `#${session.mentorId}` : "-")}
                     </h3>
-                    <p className="truncate text-sm text-slate-500 dark:text-slate-400">
-                      {mentor?.currentCompany ?? "Mentor"}
+                    <p className="inline-flex max-w-full items-center gap-1.5 truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      <Building2 className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
+                      <span className="truncate">{mentor?.currentCompany ?? "Mentor"}</span>
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/30">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 dark:border-amber-900/60 dark:bg-amber-950/30">
                       <Star className="h-4 w-4 fill-current text-amber-500" />
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-semibold tracking-[0.16em] text-amber-700/80 uppercase dark:text-amber-300/80">
-                          Mentor ratio
-                        </div>
-                        <div className="text-sm font-bold text-amber-700 tabular-nums dark:text-amber-300">
-                          {mentorAverageRating ? `${mentorAverageRating.toFixed(1)}/5` : "—"}
-                        </div>
-                      </div>
+                      <span className="text-sm font-bold text-amber-700 tabular-nums dark:text-amber-300">
+                        {mentorAverageRating ? `${mentorAverageRating.toFixed(1)}/5` : "—"}
+                      </span>
+                      <span className="text-xs font-semibold text-amber-700/70 dark:text-amber-300/70">
+                        Mentor ratio
+                      </span>
                     </div>
-                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
-                      <Users className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-semibold tracking-[0.16em] text-slate-500 uppercase dark:text-slate-400">
-                          Phiên mentor
-                        </div>
-                        <div className="text-sm font-bold text-slate-950 tabular-nums dark:text-white">
-                          {mentorSessionCount}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="inline-flex min-w-[8.5rem] items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2 dark:border-indigo-900/50 dark:bg-indigo-950/25">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 dark:border-indigo-900/50 dark:bg-indigo-950/25">
                       <Award className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-semibold tracking-[0.16em] text-indigo-600/80 uppercase dark:text-indigo-300/80">
-                          Kinh nghiệm
-                        </div>
-                        <div className="text-sm font-bold text-indigo-700 tabular-nums dark:text-indigo-200">
-                          {mentorExperienceLabel}
-                        </div>
-                      </div>
+                      <span className="text-sm font-bold text-indigo-700 tabular-nums dark:text-indigo-200">
+                        {mentorExperienceLabel}
+                      </span>
+                      <span className="text-xs font-semibold text-indigo-600/70 dark:text-indigo-300/70">
+                        kinh nghiệm
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -2128,15 +2116,9 @@ function CompletedResultView({
                   }
                 />
                 <InfoTile
-                  icon={<UserCheck className="h-4 w-4" />}
-                  label={t("userApplicationhistory.mentorSessionFieldMentor")}
-                  value={
-                    mentor?.name
-                      ? `${mentor.name}${mentor?.currentCompany ? ` · ${mentor.currentCompany}` : ""}`
-                      : session.mentorId
-                        ? `#${session.mentorId}`
-                        : "-"
-                  }
+                  icon={<Users className="h-4 w-4" />}
+                  label="Phiên mentor"
+                  value={`${mentorSessionCount} phiên`}
                 />
               </div>
             </Card>
@@ -2145,6 +2127,7 @@ function CompletedResultView({
               <CandidateMentorFeedbackBlock
                 session={session}
                 feedback={feedback}
+                readOnly={readOnly}
                 onChange={onChange}
               />
             )}
@@ -2171,27 +2154,33 @@ function CompletedResultView({
 
           <div className="space-y-5">
             {review ? (
-              <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/20">
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-amber-500" />
-                    <h3 className="text-sm font-bold text-slate-950 dark:text-white">
-                      {t("userApplicationhistory.mentorSessionReviewTitle")}
-                    </h3>
+              <Card className="rounded-2xl border border-slate-200 bg-white p-4 pt-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+                <div className="mb-2 flex flex-col items-center gap-2 text-center">
+                  <h3 className="text-lg font-bold text-slate-950 dark:text-white">
+                    {t("userApplicationhistory.mentorSessionReviewTitle")}
+                  </h3>
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={cn(
+                          "h-5 w-5 transition-all",
+                          i < Math.round(review.rating ?? 0)
+                            ? "fill-amber-400 text-amber-500 drop-shadow-sm"
+                            : "text-slate-300 dark:text-slate-700"
+                        )}
+                      />
+                    ))}
                   </div>
-                  {review.rating !== undefined && (
-                    <span className="inline-flex h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-3 text-sm font-bold text-amber-700 tabular-nums dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
-                      {review.rating}/5
-                    </span>
-                  )}
                 </div>
 
-                <div className="space-y-4 p-5">
-                  <div className="grid gap-3 xl:grid-cols-3">
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-3">
                     {review.strength && (
                       <ReviewInsight
                         title={t("userApplicationhistory.mentorSessionReviewStrength")}
                         content={review.strength}
+                        icon={<CheckCircle2 className="h-4 w-4" />}
                         tone="emerald"
                       />
                     )}
@@ -2199,6 +2188,7 @@ function CompletedResultView({
                       <ReviewInsight
                         title={t("userApplicationhistory.mentorSessionReviewWeakness")}
                         content={review.weakness}
+                        icon={<AlertTriangle className="h-4 w-4" />}
                         tone="rose"
                       />
                     )}
@@ -2206,6 +2196,7 @@ function CompletedResultView({
                       <ReviewInsight
                         title={t("userApplicationhistory.mentorSessionReviewImprove")}
                         content={review.improve}
+                        icon={<Sparkles className="h-4 w-4" />}
                         tone="sky"
                       />
                     )}
@@ -2227,12 +2218,13 @@ function CompletedResultView({
                         </div>
                       </div>
 
-                      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                      <div className="mt-4 grid aspect-square grid-cols-2 gap-3">
                         {review.situationNote && (
                           <StarNoteBlock
                             tone="indigo"
                             label="Situation"
                             title="Bối cảnh"
+                            icon={<CalendarCheck className="h-4 w-4" />}
                             content={review.situationNote}
                           />
                         )}
@@ -2241,6 +2233,7 @@ function CompletedResultView({
                             tone="sky"
                             label="Task"
                             title="Mục tiêu"
+                            icon={<Target className="h-4 w-4" />}
                             content={review.taskNote}
                           />
                         )}
@@ -2249,6 +2242,7 @@ function CompletedResultView({
                             tone="emerald"
                             label="Action"
                             title="Cách xử lý"
+                            icon={<Sparkles className="h-4 w-4" />}
                             content={review.actionNote}
                           />
                         )}
@@ -2257,13 +2251,14 @@ function CompletedResultView({
                             tone="amber"
                             label="Result"
                             title="Kết quả"
+                            icon={<BadgeCheck className="h-4 w-4" />}
                             content={review.resultNote}
                           />
                         )}
                       </div>
                     </div>
                   )}
-                </div>
+                  </div>
               </Card>
             ) : (
               <Card className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
@@ -2280,7 +2275,6 @@ function CompletedResultView({
             )}
           </div>
         </div>
-      </Card>
     </div>
   );
 }
@@ -2288,10 +2282,12 @@ function CompletedResultView({
 function CandidateMentorFeedbackBlock({
   session,
   feedback,
+  readOnly = false,
   onChange,
 }: {
   session: Session;
   feedback: Session["mentorFeedback"];
+  readOnly?: boolean;
   onChange: () => void;
 }) {
   const { t } = useTranslation();
@@ -2313,7 +2309,7 @@ function CandidateMentorFeedbackBlock({
 
   const trimmedLen = comment.trim().length;
   const isSubmitting = createFeedback.isPending || updateFeedback.isPending;
-  const submitDisabled = isSubmitting || trimmedLen < MIN_COMMENT_LENGTH || rating < 1;
+  const submitDisabled = readOnly || isSubmitting || trimmedLen < MIN_COMMENT_LENGTH || rating < 1;
 
   const validate = () => {
     const next: typeof errors = {};
@@ -2330,6 +2326,7 @@ function CandidateMentorFeedbackBlock({
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (readOnly) return;
     if (!userId) {
       setErrors({ rating: t("userApplicationhistory.mentorSessionErrNotLoggedIn") });
       return;
@@ -2375,74 +2372,82 @@ function CandidateMentorFeedbackBlock({
 
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-      <div className="relative flex items-center justify-center border-b border-slate-200 bg-slate-50/70 px-5 py-4 text-center dark:border-slate-800 dark:bg-slate-950/20">
-        <div className="space-y-1">
-          <div className="flex items-center justify-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-500/10 text-indigo-500 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
-              <Star className="h-4 w-4" />
-            </div>
-            <h3 className="text-sm font-bold text-slate-950 dark:text-white">Đánh giá mentor</h3>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/60 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/20">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
+            <Send className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-base font-bold text-slate-950 dark:text-white">
+              Phản hồi của bạn cho mentor
+            </h3>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              Chấm sao và ghi nhận trải nghiệm sau buổi phỏng vấn.
+            </p>
           </div>
         </div>
 
         {hasFeedback && !editing && (
-          <span className="absolute top-1/2 right-5 inline-flex h-7 -translate-y-1/2 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+          <span className="inline-flex h-7 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
             Đã gửi
           </span>
         )}
       </div>
 
       {!editing && hasFeedback ? (
-        <div className="space-y-4 p-5">
-          <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
-            <div className="text-center">
-              <div className="text-[11px] font-semibold tracking-[0.22em] text-slate-500 uppercase dark:text-slate-400">
-                Đánh giá của Mentor
-              </div>
-              <div className="mt-2 text-4xl font-black text-amber-600 tabular-nums dark:text-amber-400">
-                {feedback?.rating ?? 0}/5
-              </div>
+        <div className="p-5">
+          <div className="grid gap-4 border-b border-slate-200 pb-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
+            <div>
+              <div className="text-sm font-bold text-slate-950 dark:text-white">Điểm bạn đã gửi</div>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Điểm này phản ánh trải nghiệm thực tế của bạn với mentor.
+              </p>
             </div>
-            <div className="mt-5 flex justify-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-black text-amber-700 tabular-nums dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                {feedback?.rating ?? 0}/5
+              </span>
+              <div className="flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
                     className={cn(
-                      "h-8 w-8 transition-colors",
+                      "h-7 w-7 transition-all duration-300",
                       i < Math.round(feedback?.rating ?? 0)
-                        ? "fill-amber-400 text-amber-400 drop-shadow-sm"
+                        ? "fill-amber-400 text-amber-500 drop-shadow-sm"
                         : "text-slate-300 dark:text-slate-700"
                     )}
                   />
                 ))}
               </div>
             </div>
+          </div>
 
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/30">
-              {feedback?.comment ? (
-                <p className="text-sm leading-relaxed text-slate-700 italic dark:text-slate-200">
-                  “{feedback.comment}”
-                </p>
-              ) : (
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Chưa có nhận xét chi tiết.
-                </p>
-              )}
+          <div className="grid gap-4 border-b border-slate-200 py-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
+            <div>
+              <div className="text-sm font-bold text-slate-950 dark:text-white">
+                Nhận xét của bạn
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Nội dung này giúp hệ thống cải thiện chất lượng mentor.
+              </p>
             </div>
+            {feedback?.comment ? (
+              <p className="text-sm leading-relaxed text-slate-700 italic dark:text-slate-200">
+                “{feedback.comment}”
+              </p>
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Chưa có nhận xét chi tiết.
+              </p>
+            )}
           </div>
 
-          <div className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
-            <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <p className="leading-relaxed">
-              {t("userApplicationhistory.mentorSessionThanksMessage")}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="flex flex-wrap items-center gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
+              disabled={readOnly}
               onClick={() => setEditing(true)}
               className="h-9 gap-1.5 px-4 text-xs font-semibold">
               <RefreshCw className="h-3.5 w-3.5" />
@@ -2454,82 +2459,95 @@ function CandidateMentorFeedbackBlock({
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-5 p-5" noValidate>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+        <form onSubmit={handleSubmit} className="p-5" noValidate>
+          <div className="grid gap-4 border-b border-slate-200 pb-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
+            <div>
+              <Label className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                 {t("userApplicationhistory.mentorSessionRatingLabel")}{" "}
                 <span className="text-rose-500">*</span>
               </Label>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {rating || 0}/5
-              </span>
-            </div>
-            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              Chọn mức đánh giá từ 1 đến 5 sao theo trải nghiệm thực tế của bạn.
-            </p>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
-              <RatingScale5 value={rating} onChange={setRating} />
-            </div>
-            {errors.rating && (
-              <p className="text-xs font-semibold text-rose-600" role="alert">
-                {errors.rating}
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Chọn mức sao phản ánh cách mentor đặt câu hỏi, hướng dẫn và hỗ trợ bạn.
               </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <Label
-                htmlFor="candidate-mentor-comment"
-                className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-                {t("userApplicationhistory.mentorSessionCommentLabel")}{" "}
-                <span className="text-rose-500">*</span>
-              </Label>
-              <span
-                className={cn(
-                  "text-xs font-semibold",
-                  trimmedLen < MIN_COMMENT_LENGTH
-                    ? "text-slate-500"
-                    : "text-emerald-600 dark:text-emerald-400"
-                )}>
-                {comment.length}/{MAX_COMMENT_LENGTH}
-              </span>
             </div>
-            <Textarea
-              id="candidate-mentor-comment"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={5}
-              maxLength={MAX_COMMENT_LENGTH}
-              placeholder={t("userApplicationhistory.mentorSessionCommentPlaceholder")}
-              aria-invalid={!!errors.comment}
-              className="resize-y rounded-2xl border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/30"
-            />
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span
-                className={cn(
-                  "text-xs font-medium",
-                  trimmedLen < MIN_COMMENT_LENGTH
-                    ? "text-slate-500"
-                    : "text-emerald-600 dark:text-emerald-400"
-                )}>
-                {trimmedLen < MIN_COMMENT_LENGTH
-                  ? t("userApplicationhistory.mentorSessionMinChars", {
-                      min: MIN_COMMENT_LENGTH,
-                      left: MIN_COMMENT_LENGTH - trimmedLen,
-                    })
-                  : t("userApplicationhistory.mentorSessionMinCharsMet")}
-              </span>
-              {errors.comment && (
-                <span className="text-xs font-semibold text-rose-600" role="alert">
-                  {errors.comment}
+            <div>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  Mức bạn chọn
                 </span>
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-600 tabular-nums dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-300">
+                  {rating || 0}/5
+                </span>
+              </div>
+              <RatingScale5 value={rating} onChange={setRating} disabled={readOnly} />
+              {errors.rating && (
+                <p className="mt-3 text-xs font-semibold text-rose-600" role="alert">
+                  {errors.rating}
+                </p>
               )}
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="grid gap-4 border-b border-slate-200 py-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
+            <div>
+              <Label
+                htmlFor="candidate-mentor-comment"
+                className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                {t("userApplicationhistory.mentorSessionCommentLabel")}{" "}
+                <span className="text-rose-500">*</span>
+              </Label>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Viết ngắn gọn điều mentor làm tốt hoặc cần cải thiện.
+              </p>
+            </div>
+            <div>
+              <div className="mb-2 flex items-center justify-end">
+                <span
+                  className={cn(
+                    "text-xs font-semibold",
+                    trimmedLen < MIN_COMMENT_LENGTH
+                      ? "text-slate-500"
+                      : "text-emerald-600 dark:text-emerald-400"
+                  )}>
+                  {comment.length}/{MAX_COMMENT_LENGTH}
+                </span>
+              </div>
+              <Textarea
+                id="candidate-mentor-comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                disabled={readOnly}
+                rows={5}
+                maxLength={MAX_COMMENT_LENGTH}
+                placeholder={t("userApplicationhistory.mentorSessionCommentPlaceholder")}
+                aria-invalid={!!errors.comment}
+                className="resize-y rounded-xl border-slate-200 bg-slate-50/70 shadow-none dark:border-slate-800 dark:bg-slate-950/40"
+              />
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <span
+                  className={cn(
+                    "text-xs font-medium",
+                    trimmedLen < MIN_COMMENT_LENGTH
+                      ? "text-slate-500"
+                      : "text-emerald-600 dark:text-emerald-400"
+                  )}>
+                  {trimmedLen < MIN_COMMENT_LENGTH
+                    ? t("userApplicationhistory.mentorSessionMinChars", {
+                        min: MIN_COMMENT_LENGTH,
+                        left: MIN_COMMENT_LENGTH - trimmedLen,
+                      })
+                    : t("userApplicationhistory.mentorSessionMinCharsMet")}
+                </span>
+                {errors.comment && (
+                  <span className="text-xs font-semibold text-rose-600" role="alert">
+                    {errors.comment}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-4">
             <Button
               type="submit"
               disabled={submitDisabled}
@@ -2572,35 +2590,45 @@ function CandidateMentorFeedbackBlock({
   );
 }
 
-function RatingScale5({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+function RatingScale5({
+  value,
+  disabled = false,
+  onChange,
+}: {
+  value: number;
+  disabled?: boolean;
+  onChange: (value: number) => void;
+}) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
-      <div className="flex flex-wrap items-center gap-1">
-        {Array.from({ length: 5 }).map((_, index) => {
-          const starValue = index + 1;
-          const active = starValue <= value;
-          return (
-            <button
-              key={starValue}
-              type="button"
-              aria-label={`Chọn ${starValue} sao`}
-              onClick={() => onChange(starValue)}
+    <div className="flex flex-wrap items-center gap-2">
+      {Array.from({ length: 5 }).map((_, index) => {
+        const starValue = index + 1;
+        const active = starValue <= value;
+        return (
+          <button
+            key={starValue}
+            type="button"
+            aria-label={`Chọn ${starValue} sao`}
+            disabled={disabled}
+            onClick={() => {
+              if (!disabled) onChange(starValue);
+            }}
+            className={cn(
+              "group inline-flex h-12 w-12 items-center justify-center rounded-xl border transition-all",
+              active
+                ? "border-amber-300 bg-amber-50 text-amber-400 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30"
+                : "border-slate-200 bg-white text-slate-300 hover:border-amber-200 hover:text-amber-300 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-600",
+              disabled && "cursor-not-allowed opacity-70 hover:border-slate-200 hover:text-slate-300"
+            )}>
+            <Star
               className={cn(
-                "group inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-all",
-                active
-                  ? "border-amber-300 bg-amber-50 text-amber-400 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30"
-                  : "border-slate-200 bg-white text-slate-300 hover:border-amber-200 hover:text-amber-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600"
-              )}>
-              <Star
-                className={cn(
-                  "h-5 w-5 transition-transform duration-150",
-                  active ? "fill-current" : "group-hover:scale-105"
-                )}
-              />
-            </button>
-          );
-        })}
-      </div>
+                "h-6 w-6 transition-transform duration-150",
+                active ? "fill-current scale-105" : "group-hover:scale-105"
+              )}
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -2620,42 +2648,42 @@ function InfoTile({ icon, label, value }: { icon: React.ReactNode; label: string
 function ReviewInsight({
   title,
   content,
+  icon,
   tone,
 }: {
   title: string;
   content: string;
+  icon: React.ReactNode;
   tone: "emerald" | "rose" | "sky";
 }) {
   const toneClass = {
     emerald:
-      "border-emerald-200 bg-emerald-50/60 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300",
-    rose: "border-rose-200 bg-rose-50/60 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-300",
-    sky: "border-sky-200 bg-sky-50/60 text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/20 dark:text-sky-300",
+      "border-emerald-300 bg-emerald-500/10 text-emerald-200 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-200",
+    rose:
+      "border-rose-300 bg-rose-500/10 text-rose-200 dark:border-rose-700/60 dark:bg-rose-950/40 dark:text-rose-200",
+    sky: "border-sky-300 bg-sky-500/10 text-sky-200 dark:border-sky-700/60 dark:bg-sky-950/40 dark:text-sky-200",
   }[tone];
 
   return (
-    <div className="flex h-full flex-row items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+    <div className="flex h-full flex-row items-start gap-3 rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4 shadow-sm ring-1 ring-white/5">
       <div
         className={cn(
-          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-[11px] font-bold tracking-[0.14em] uppercase",
+          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
           toneClass
         )}>
-        {title.slice(0, 1)}
+        {icon}
       </div>
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <span
             className={cn(
-              "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+              "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm",
               toneClass
             )}>
             {title}
           </span>
-          <span className="text-[10px] font-semibold tracking-[0.16em] text-slate-400 uppercase">
-            note
-          </span>
         </div>
-        <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{content}</p>
+        <p className="text-[15px] leading-7 text-slate-100">{content}</p>
       </div>
     </div>
   );
@@ -2665,38 +2693,39 @@ function StarNoteBlock({
   tone,
   label,
   title,
+  icon,
   content,
 }: {
   tone: "indigo" | "sky" | "emerald" | "amber";
   label: string;
   title: string;
+  icon: React.ReactNode;
   content: string;
 }) {
   const toneClass = {
     indigo:
-      "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/25 dark:text-indigo-200",
-    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/25 dark:text-sky-200",
+      "border-indigo-300 bg-indigo-500/15 text-indigo-100 dark:border-indigo-700/60 dark:bg-indigo-950/40 dark:text-indigo-100",
+    sky: "border-sky-300 bg-sky-500/15 text-sky-100 dark:border-sky-700/60 dark:bg-sky-950/40 dark:text-sky-100",
     emerald:
-      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/25 dark:text-emerald-200",
+      "border-emerald-300 bg-emerald-500/15 text-emerald-100 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-100",
     amber:
-      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-200",
+      "border-amber-300 bg-amber-500/15 text-amber-100 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-100",
   }[tone];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
+    <div className="rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4 shadow-sm ring-1 ring-white/5">
       <div className="flex items-center gap-2">
-        <span
-          className={cn(
-            "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
-            toneClass
-          )}>
+        <span className={cn("flex h-8 w-8 items-center justify-center rounded-xl border", toneClass)}>
+          {icon}
+        </span>
+        <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm", toneClass)}>
           {label}
         </span>
-        <span className="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-slate-400">
+        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-200/80">
           {title}
         </span>
       </div>
-      <p className="mt-3 text-sm leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-100">
         {content}
       </p>
     </div>
