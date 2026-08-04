@@ -34,6 +34,7 @@ import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowRight,
   Award,
   BadgeCheck,
@@ -60,6 +61,7 @@ import {
   Send,
   Sparkles,
   Star,
+  Target,
   UserCheck,
   Users,
   Video,
@@ -2179,26 +2181,36 @@ function CompletedResultView({
           <div className="space-y-5">
             {review ? (
               <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/20">
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-amber-500" />
-                    <h3 className="text-sm font-bold text-slate-950 dark:text-white">
-                      {t("userApplicationhistory.mentorSessionReviewTitle")}
-                    </h3>
+                <div className="border-b border-slate-200 bg-slate-50/70 px-4 py-3 text-center dark:border-slate-800 dark:bg-slate-950/20">
+                  <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-2">
+                    <div className="flex items-center">
+                      <h3 className="text-sm font-bold text-slate-950 dark:text-white">
+                        {t("userApplicationhistory.mentorSessionReviewTitle")}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={cn(
+                            "h-5 w-5 transition-all",
+                            i < Math.round(review.rating ?? 0)
+                              ? "fill-amber-400 text-amber-500 drop-shadow-sm"
+                              : "text-slate-300 dark:text-slate-700"
+                          )}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  {review.rating !== undefined && (
-                    <span className="inline-flex h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-3 text-sm font-bold text-amber-700 tabular-nums dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
-                      {review.rating}/5
-                    </span>
-                  )}
                 </div>
 
                 <div className="space-y-4 p-5">
-                  <div className="grid gap-3 xl:grid-cols-3">
+                  <div className="flex flex-col gap-3">
                     {review.strength && (
                       <ReviewInsight
                         title={t("userApplicationhistory.mentorSessionReviewStrength")}
                         content={review.strength}
+                        icon={<CheckCircle2 className="h-4 w-4" />}
                         tone="emerald"
                       />
                     )}
@@ -2206,6 +2218,7 @@ function CompletedResultView({
                       <ReviewInsight
                         title={t("userApplicationhistory.mentorSessionReviewWeakness")}
                         content={review.weakness}
+                        icon={<AlertTriangle className="h-4 w-4" />}
                         tone="rose"
                       />
                     )}
@@ -2213,6 +2226,7 @@ function CompletedResultView({
                       <ReviewInsight
                         title={t("userApplicationhistory.mentorSessionReviewImprove")}
                         content={review.improve}
+                        icon={<Sparkles className="h-4 w-4" />}
                         tone="sky"
                       />
                     )}
@@ -2234,12 +2248,13 @@ function CompletedResultView({
                         </div>
                       </div>
 
-                      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                      <div className="mt-4 grid aspect-square grid-cols-2 gap-3">
                         {review.situationNote && (
                           <StarNoteBlock
                             tone="indigo"
                             label="Situation"
                             title="Bối cảnh"
+                            icon={<CalendarCheck className="h-4 w-4" />}
                             content={review.situationNote}
                           />
                         )}
@@ -2248,6 +2263,7 @@ function CompletedResultView({
                             tone="sky"
                             label="Task"
                             title="Mục tiêu"
+                            icon={<Target className="h-4 w-4" />}
                             content={review.taskNote}
                           />
                         )}
@@ -2256,6 +2272,7 @@ function CompletedResultView({
                             tone="emerald"
                             label="Action"
                             title="Cách xử lý"
+                            icon={<Sparkles className="h-4 w-4" />}
                             content={review.actionNote}
                           />
                         )}
@@ -2264,6 +2281,7 @@ function CompletedResultView({
                             tone="amber"
                             label="Result"
                             title="Kết quả"
+                            icon={<BadgeCheck className="h-4 w-4" />}
                             content={review.resultNote}
                           />
                         )}
@@ -2382,14 +2400,12 @@ function CandidateMentorFeedbackBlock({
 
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-      <div className="relative flex items-center justify-center border-b border-slate-200 bg-slate-50/70 px-5 py-4 text-center dark:border-slate-800 dark:bg-slate-950/20">
-        <div className="space-y-1">
-          <div className="flex items-center justify-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-500/10 text-indigo-500 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
-              <Star className="h-4 w-4" />
-            </div>
-            <h3 className="text-sm font-bold text-slate-950 dark:text-white">Đánh giá mentor</h3>
+      <div className="relative border-b border-slate-200 bg-slate-50/70 px-5 py-4 text-center dark:border-slate-800 dark:bg-slate-950/20">
+        <div className="mx-auto flex max-w-md flex-col items-center gap-3">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+            Đánh giá của Mentor
           </div>
+          <h3 className="text-base font-bold text-slate-950 dark:text-white">Đánh giá mentor</h3>
         </div>
 
         {hasFeedback && !editing && (
@@ -2416,9 +2432,9 @@ function CandidateMentorFeedbackBlock({
                   <Star
                     key={i}
                     className={cn(
-                      "h-8 w-8 transition-colors",
+                      "h-10 w-10 transition-all duration-300",
                       i < Math.round(feedback?.rating ?? 0)
-                        ? "fill-amber-400 text-amber-400 drop-shadow-sm"
+                        ? "fill-amber-400 text-amber-500 drop-shadow-md scale-105"
                         : "text-slate-300 dark:text-slate-700"
                     )}
                   />
@@ -2627,42 +2643,42 @@ function InfoTile({ icon, label, value }: { icon: React.ReactNode; label: string
 function ReviewInsight({
   title,
   content,
+  icon,
   tone,
 }: {
   title: string;
   content: string;
+  icon: React.ReactNode;
   tone: "emerald" | "rose" | "sky";
 }) {
   const toneClass = {
     emerald:
-      "border-emerald-200 bg-emerald-50/60 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300",
-    rose: "border-rose-200 bg-rose-50/60 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-300",
-    sky: "border-sky-200 bg-sky-50/60 text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/20 dark:text-sky-300",
+      "border-emerald-300 bg-emerald-500/10 text-emerald-200 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-200",
+    rose:
+      "border-rose-300 bg-rose-500/10 text-rose-200 dark:border-rose-700/60 dark:bg-rose-950/40 dark:text-rose-200",
+    sky: "border-sky-300 bg-sky-500/10 text-sky-200 dark:border-sky-700/60 dark:bg-sky-950/40 dark:text-sky-200",
   }[tone];
 
   return (
-    <div className="flex h-full flex-row items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
+    <div className="flex h-full flex-row items-start gap-3 rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4 shadow-sm ring-1 ring-white/5">
       <div
         className={cn(
-          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-[11px] font-bold tracking-[0.14em] uppercase",
+          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
           toneClass
         )}>
-        {title.slice(0, 1)}
+        {icon}
       </div>
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <span
             className={cn(
-              "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+              "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm",
               toneClass
             )}>
             {title}
           </span>
-          <span className="text-[10px] font-semibold tracking-[0.16em] text-slate-400 uppercase">
-            note
-          </span>
         </div>
-        <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{content}</p>
+        <p className="text-[15px] leading-7 text-slate-100">{content}</p>
       </div>
     </div>
   );
@@ -2672,38 +2688,39 @@ function StarNoteBlock({
   tone,
   label,
   title,
+  icon,
   content,
 }: {
   tone: "indigo" | "sky" | "emerald" | "amber";
   label: string;
   title: string;
+  icon: React.ReactNode;
   content: string;
 }) {
   const toneClass = {
     indigo:
-      "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/25 dark:text-indigo-200",
-    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/25 dark:text-sky-200",
+      "border-indigo-300 bg-indigo-500/15 text-indigo-100 dark:border-indigo-700/60 dark:bg-indigo-950/40 dark:text-indigo-100",
+    sky: "border-sky-300 bg-sky-500/15 text-sky-100 dark:border-sky-700/60 dark:bg-sky-950/40 dark:text-sky-100",
     emerald:
-      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/25 dark:text-emerald-200",
+      "border-emerald-300 bg-emerald-500/15 text-emerald-100 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-100",
     amber:
-      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-200",
+      "border-amber-300 bg-amber-500/15 text-amber-100 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-100",
   }[tone];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
+    <div className="rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4 shadow-sm ring-1 ring-white/5">
       <div className="flex items-center gap-2">
-        <span
-          className={cn(
-            "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
-            toneClass
-          )}>
+        <span className={cn("flex h-8 w-8 items-center justify-center rounded-xl border", toneClass)}>
+          {icon}
+        </span>
+        <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm", toneClass)}>
           {label}
         </span>
-        <span className="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-slate-400">
+        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-200/80">
           {title}
         </span>
       </div>
-      <p className="mt-3 text-sm leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-100">
         {content}
       </p>
     </div>
