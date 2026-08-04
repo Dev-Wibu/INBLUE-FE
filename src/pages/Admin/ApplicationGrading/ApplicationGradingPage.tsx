@@ -72,6 +72,7 @@ interface GradingListItem {
   overallScore?: number;
   userId?: number;
   userName?: string;
+  userAvatar?: string;
   createdAt?: string;
   // Staff-only fields
   detailId?: number;
@@ -128,7 +129,7 @@ interface RoundCardProps {
   isStartGrading: boolean;
   onToggle: () => void;
   onStartGrading: () => void;
-  onViewEmailSubmission: (emailSubmissionId: number) => void;
+  onViewEmailSubmission: (_emailSubmissionId: number) => void;
   onHrScoreSuccess: () => void;
 }
 
@@ -180,16 +181,16 @@ function RoundCard({
   return (
     <div
       className={cn(
-        "group overflow-hidden rounded-[20px] border transition-all duration-200",
+        "group overflow-hidden rounded-xl border transition-all duration-200",
         isExpanded
-          ? "border-indigo-400 shadow-xl shadow-indigo-500/10 dark:border-indigo-500/50 dark:shadow-indigo-950/30"
-          : "border-slate-200 hover:border-slate-300 dark:border-slate-800/80 dark:hover:border-slate-700",
+          ? "border-indigo-400 shadow-lg shadow-indigo-500/10 dark:border-indigo-500/50 dark:shadow-indigo-950/30"
+          : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-slate-700",
         needsHrScore && !hasExistingGrade && !isExpanded && "border-amber-300 dark:border-amber-600"
       )}>
       {/* Card Header — Always visible */}
-      <div className="relative p-5">
-        {/* Dark inner panel matching ApplicationHistoryPage style */}
-        <div className="rounded-[14px] border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-[#0F172A]/90">
+      <div className="relative p-4">
+        {/* Inner panel */}
+        <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3.5 dark:border-slate-800/80 dark:bg-[#0F172A]/90">
           <div className="flex items-start justify-between gap-3">
             {/* Left: expand toggle + round info */}
             <div className="flex items-start gap-3">
@@ -309,221 +310,229 @@ function RoundCard({
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="border-t border-slate-100 p-5 dark:border-slate-800">
-          <div className="space-y-5">
-            {/* Submission Content */}
-            {data && (
-              <div>
-                <h4 className="mb-2 flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
-                  <FileText className="h-3.5 w-3.5" />
-                  {t("submission.content")}
-                </h4>
-                <SubmissionPreview detail={detail} onViewEmailSubmission={onViewEmailSubmission} />
-              </div>
-            )}
-
-            {/* AI Feedback */}
-            {detail.aiScore !== undefined || detail.aiFeedback ? (
-              <div>
-                <h4 className="mb-2 flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
-                  <Star className="h-3.5 w-3.5 text-purple-400" />
-                  {t("grading.aiFeedback")}
-                </h4>
-                <div className="rounded-[14px] border border-purple-100 bg-purple-50/80 p-4 dark:border-purple-500/20 dark:bg-purple-500/5">
-                  <AIFeedbackPanel feedback={detail.aiFeedback} score={detail.aiScore} />
-                </div>
-              </div>
-            ) : null}
-
-            <div className="h-px bg-slate-100 dark:bg-slate-800" />
-
-            {/* HR Grading Section */}
-            <div>
-              <div className="mb-4 flex items-center justify-between">
-                <h4 className="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
-                  <ClipboardCheck className="h-3.5 w-3.5" />
-                  {hasExistingGrade
-                    ? isEditing
-                      ? t("grading.editScore")
-                      : t("grading.hrResult")
-                    : t("grading.hrGrading")}
-                </h4>
-                {hasExistingGrade && isEditing && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setScore(String(detail.hrScore ?? detail.aiScore ?? ""));
-                      setNote(detail.hrNote ?? "");
-                    }}
-                    className="h-7 gap-1.5 text-xs">
-                    {t("common.cancel")}
-                  </Button>
-                )}
-              </div>
-
-              {/* Existing Grade Display — Đã chấm */}
-              {hasExistingGrade && !isEditing && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-4 rounded-[14px] border border-emerald-200 bg-emerald-50/80 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-500/10">
-                        <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="text-3xl font-extrabold text-slate-900 dark:text-white">
-                          {detail.hrScore}
-                        </p>
-                        <p className="text-xs font-medium text-slate-400">/100</p>
-                      </div>
-                    </div>
-                    <div className="h-10 w-px bg-emerald-200 dark:bg-emerald-500/20" />
-                    <Badge
-                      className={
-                        detail.finalResult === "PASSED"
-                          ? "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-                          : "bg-red-500/15 text-red-700 dark:bg-red-500/10 dark:text-red-300"
-                      }>
-                      {detail.finalResult === "PASSED"
-                        ? t("userApplicationhistory.passed")
-                        : t("userApplicationhistory.failed")}
-                    </Badge>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditing(true)}
-                    className="gap-1.5 rounded-lg text-xs">
-                    {t("grading.editScore")}
-                  </Button>
+        <div className="border-t border-slate-100 p-4 sm:p-5 dark:border-slate-800">
+          <div className="grid gap-5 lg:grid-cols-5">
+            {/* ─── LEFT COLUMN: Submission + AI Feedback (3/5 width) ─── */}
+            <div className="space-y-5 lg:col-span-3">
+              {/* Submission Content */}
+              {data && (
+                <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                  <h4 className="mb-3 flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
+                    <FileText className="h-3.5 w-3.5" />
+                    {t("submission.content")}
+                  </h4>
+                  <SubmissionPreview
+                    detail={detail}
+                    onViewEmailSubmission={onViewEmailSubmission}
+                  />
                 </div>
               )}
 
-              {/* Grading Form — Chưa chấm / Đang sửa / Bấm nút "Chấm" */}
-              {!hasExistingGrade || isEditing || isStartGrading ? (
-                <div className="space-y-4 rounded-[14px] border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-[#0F172A]/90">
-                  {/* AI Score Reference */}
-                  {detail.aiScore !== undefined && (
-                    <div className="flex items-center gap-2.5 rounded-lg border border-purple-100 bg-purple-50/70 p-3 dark:border-purple-500/20 dark:bg-purple-500/5">
-                      <Star className="h-4 w-4 shrink-0 text-purple-400" />
-                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                        {t("grading.aiScoreReference")}
-                      </span>
-                      <span className="ml-auto text-sm font-extrabold text-purple-600 dark:text-purple-400">
-                        {detail.aiScore}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Decision */}
-                  <div>
-                    <label className="mb-2.5 block text-xs font-semibold text-slate-600 dark:text-slate-400">
-                      {t("grading.decision")}
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        type="button"
-                        variant={isPass ? "default" : "outline"}
-                        size="sm"
-                        className={cn(
-                          "h-10 gap-1.5 rounded-xl text-sm font-semibold",
-                          isPass
-                            ? "bg-emerald-600 shadow-sm hover:bg-emerald-700"
-                            : "text-emerald-600 dark:text-emerald-400"
-                        )}
-                        onClick={() => setIsPass(true)}>
-                        <ThumbsUp className="h-4 w-4" />
-                        {t("userApplicationhistory.passed")}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={!isPass ? "default" : "outline"}
-                        size="sm"
-                        className={cn(
-                          "h-10 gap-1.5 rounded-xl text-sm font-semibold",
-                          !isPass
-                            ? "bg-red-600 shadow-sm hover:bg-red-700"
-                            : "text-red-600 dark:text-red-400"
-                        )}
-                        onClick={() => setIsPass(false)}>
-                        <ThumbsDown className="h-4 w-4" />
-                        {t("userApplicationhistory.failed")}
-                      </Button>
-                    </div>
+              {/* AI Feedback */}
+              {detail.aiScore !== undefined || detail.aiFeedback ? (
+                <div className="rounded-xl border border-purple-200 bg-white p-4 dark:border-purple-500/20 dark:bg-slate-900/60">
+                  <h4 className="mb-3 flex items-center gap-2 text-xs font-bold tracking-widest text-purple-500 uppercase dark:text-purple-400">
+                    <Star className="h-3.5 w-3.5 text-purple-400" />
+                    {t("grading.aiFeedback")}
+                  </h4>
+                  <div className="rounded-lg border border-purple-100 bg-purple-50/80 p-3.5 dark:border-purple-500/15 dark:bg-purple-500/5">
+                    <AIFeedbackPanel feedback={detail.aiFeedback} score={detail.aiScore} />
                   </div>
-
-                  {/* Score Input */}
-                  <div>
-                    <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">
-                      {t("grading.hrScore")}
-                    </label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={score}
-                      onChange={(e) => setScore(e.target.value)}
-                      placeholder={t("grading.enterScore")}
-                      className="h-10 rounded-xl"
-                    />
-                  </div>
-
-                  {/* Note */}
-                  <div>
-                    <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">
-                      {t("general.notes")}
-                    </label>
-                    <Textarea
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      placeholder={t("grading.enterHrNotes")}
-                      rows={3}
-                      className="resize-none rounded-xl"
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className={cn(
-                      "h-10 w-full gap-2 rounded-xl text-sm font-semibold shadow-sm",
-                      isPass ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"
-                    )}>
-                    {isSubmitting ? (
-                      <>
-                        <Spinner className="h-4 w-4" />
-                        {t("common.saving")}
-                      </>
-                    ) : (
-                      <>
-                        {isPass ? (
-                          <ThumbsUp className="h-4 w-4" />
-                        ) : (
-                          <ThumbsDown className="h-4 w-4" />
-                        )}
-                        {t("general.save")} {t("grading.hrResult")}
-                      </>
-                    )}
-                  </Button>
                 </div>
               ) : null}
+            </div>
 
-              {/* Existing HR Note */}
-              {detail.hrNote && !isEditing && (
-                <div className="mt-4">
-                  <h5 className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                    <FileText className="h-3.5 w-3.5" />
-                    {t("general.notes")} HR
-                  </h5>
-                  <div className="rounded-[14px] border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-500/20 dark:bg-blue-500/5">
-                    <p className="text-sm whitespace-pre-wrap text-blue-700 dark:text-blue-300">
-                      {detail.hrNote}
-                    </p>
-                  </div>
+            {/* ─── RIGHT COLUMN: HR Grading Panel (2/5 width) ─── */}
+            <div className="lg:col-span-2">
+              <div className="rounded-xl border border-slate-200 bg-white p-4 lg:sticky lg:top-4 dark:border-slate-800 dark:bg-slate-900/60">
+                <div className="mb-4 flex items-center justify-between">
+                  <h4 className="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 uppercase">
+                    <ClipboardCheck className="h-3.5 w-3.5" />
+                    {hasExistingGrade
+                      ? isEditing
+                        ? t("grading.editScore")
+                        : t("grading.hrResult")
+                      : t("grading.hrGrading")}
+                  </h4>
+                  {hasExistingGrade && isEditing && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setScore(String(detail.hrScore ?? detail.aiScore ?? ""));
+                        setNote(detail.hrNote ?? "");
+                      }}
+                      className="h-7 gap-1.5 text-xs">
+                      {t("common.cancel")}
+                    </Button>
+                  )}
                 </div>
-              )}
+
+                {/* Existing Grade Display — Đã chấm */}
+                {hasExistingGrade && !isEditing && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-4 rounded-lg border border-emerald-200 bg-emerald-50/80 p-3.5 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-500/10">
+                          <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+                        </div>
+                        <div>
+                          <p className="text-3xl font-extrabold text-slate-900 dark:text-white">
+                            {detail.hrScore}
+                          </p>
+                          <p className="text-xs font-medium text-slate-400">/100</p>
+                        </div>
+                      </div>
+                      <div className="h-10 w-px bg-emerald-200 dark:bg-emerald-500/20" />
+                      <Badge
+                        className={
+                          detail.finalResult === "PASSED"
+                            ? "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                            : "bg-red-500/15 text-red-700 dark:bg-red-500/10 dark:text-red-300"
+                        }>
+                        {detail.finalResult === "PASSED"
+                          ? t("userApplicationhistory.passed")
+                          : t("userApplicationhistory.failed")}
+                      </Badge>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditing(true)}
+                      className="w-full gap-1.5 rounded-lg text-xs">
+                      {t("grading.editScore")}
+                    </Button>
+
+                    {/* HR Note integrated here */}
+                    {detail.hrNote && (
+                      <div>
+                        <h5 className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                          <FileText className="h-3.5 w-3.5" />
+                          {t("general.notes")} HR
+                        </h5>
+                        <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-3 dark:border-blue-500/20 dark:bg-blue-500/5">
+                          <p className="text-sm whitespace-pre-wrap text-blue-700 dark:text-blue-300">
+                            {detail.hrNote}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Grading Form — Chưa chấm / Đang sửa / Bấm nút "Chấm" */}
+                {!hasExistingGrade || isEditing || isStartGrading ? (
+                  <div className="space-y-3.5">
+                    {/* AI Score Reference */}
+                    {detail.aiScore !== undefined && (
+                      <div className="flex items-center gap-2.5 rounded-lg border border-purple-100 bg-purple-50/70 p-2.5 dark:border-purple-500/20 dark:bg-purple-500/5">
+                        <Star className="h-4 w-4 shrink-0 text-purple-400" />
+                        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                          {t("grading.aiScoreReference")}
+                        </span>
+                        <span className="ml-auto text-sm font-extrabold text-purple-600 dark:text-purple-400">
+                          {detail.aiScore}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Decision */}
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        {t("grading.decision")}
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant={isPass ? "default" : "outline"}
+                          size="sm"
+                          className={cn(
+                            "h-9 gap-1.5 rounded-lg text-sm font-semibold",
+                            isPass
+                              ? "bg-emerald-600 shadow-sm hover:bg-emerald-700"
+                              : "text-emerald-600 dark:text-emerald-400"
+                          )}
+                          onClick={() => setIsPass(true)}>
+                          <ThumbsUp className="h-4 w-4" />
+                          {t("userApplicationhistory.passed")}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={!isPass ? "default" : "outline"}
+                          size="sm"
+                          className={cn(
+                            "h-9 gap-1.5 rounded-lg text-sm font-semibold",
+                            !isPass
+                              ? "bg-red-600 shadow-sm hover:bg-red-700"
+                              : "text-red-600 dark:text-red-400"
+                          )}
+                          onClick={() => setIsPass(false)}>
+                          <ThumbsDown className="h-4 w-4" />
+                          {t("userApplicationhistory.failed")}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Score Input */}
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        {t("grading.hrScore")}
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={score}
+                        onChange={(e) => setScore(e.target.value)}
+                        placeholder={t("grading.enterScore")}
+                        className="h-9 rounded-lg"
+                      />
+                    </div>
+
+                    {/* Notes */}
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        {t("general.notes")}
+                      </label>
+                      <Textarea
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder={t("grading.enterHrNotes")}
+                        rows={3}
+                        className="resize-none rounded-lg"
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={isSubmitting}
+                      className={cn(
+                        "h-9 w-full gap-2 rounded-lg text-sm font-semibold shadow-sm",
+                        isPass
+                          ? "bg-emerald-600 hover:bg-emerald-700"
+                          : "bg-red-600 hover:bg-red-700"
+                      )}>
+                      {isSubmitting ? (
+                        <>
+                          <Spinner className="h-4 w-4" />
+                          {t("common.saving")}
+                        </>
+                      ) : (
+                        <>
+                          {isPass ? (
+                            <ThumbsUp className="h-4 w-4" />
+                          ) : (
+                            <ThumbsDown className="h-4 w-4" />
+                          )}
+                          {t("general.save")} {t("grading.hrResult")}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
@@ -538,7 +547,7 @@ function RoundCard({
 
 interface SubmissionPreviewProps {
   detail: ApplicationDetail;
-  onViewEmailSubmission?: (emailSubmissionId: number) => void;
+  onViewEmailSubmission?: (_emailSubmissionId: number) => void;
 }
 
 function SubmissionPreview({ detail, onViewEmailSubmission }: SubmissionPreviewProps) {
@@ -954,6 +963,19 @@ export function ApplicationGradingPage({
     return map;
   }, [allUsers]);
 
+  const userAvatarMap = useMemo(() => {
+    const map = new Map<number, string>();
+    if (allUsers) {
+      const userList = Array.isArray(allUsers) ? allUsers : [];
+      userList.forEach((user: { id?: number; avatarUrl?: string }) => {
+        if (user.id != null && user.avatarUrl) {
+          map.set(user.id, user.avatarUrl);
+        }
+      });
+    }
+    return map;
+  }, [allUsers]);
+
   // Map of applicationId -> { userId, jdId } (dùng cho Staff để join từ
   // reviewerDetails, vì schema ApplicationDetail không chứa 2 field này).
   const applicationMap = useMemo(() => {
@@ -985,13 +1007,14 @@ export function ApplicationGradingPage({
         overallScore: detail.finalScore ?? undefined,
         userId,
         userName: userId != null ? (userMap.get(userId) ?? `User #${userId}`) : undefined,
+        userAvatar: userId != null ? userAvatarMap.get(userId) : undefined,
         jdId: appMeta?.jdId,
         detailId: detail.id,
         detailStatus: detail.status,
         detail,
       };
     });
-  }, [isStaff, reviewerDetails, applicationMap, userMap]);
+  }, [isStaff, reviewerDetails, applicationMap, userMap, userAvatarMap]);
 
   const filteredApplications = useMemo((): GradingListItem[] => {
     if (isStaff) {
@@ -1050,10 +1073,12 @@ export function ApplicationGradingPage({
         status: app.status ?? "IN_PROGRESS",
         currentRoundOrder: app.currentRoundOrder,
         overallScore: app.overallScore,
+        userId: app.userId,
         userName: userMap.get(app.userId!) ?? `User #${app.userId}`,
+        userAvatar: app.userId ? userAvatarMap.get(app.userId) : undefined,
         createdAt: app.createdAt,
       }));
-  }, [isStaff, staffItems, applications, searchQuery, statusFilter, userMap]);
+  }, [isStaff, staffItems, applications, searchQuery, statusFilter, userMap, userAvatarMap]);
 
   // Transform for sortable hook with sort metadata
   const sortableApplications = useMemo((): SortableApplication[] => {
@@ -1065,8 +1090,22 @@ export function ApplicationGradingPage({
     }));
   }, [filteredApplications]);
 
+  // Wire sortBy dropdown to useSortable sort options
+  const sortOptions = useMemo(() => {
+    const sortMap: Record<
+      typeof sortBy,
+      { key: keyof SortableApplication; direction: "asc" | "desc" }
+    > = {
+      newest: { key: "idSortValue", direction: "desc" },
+      oldest: { key: "idSortValue", direction: "asc" },
+      "score-high": { key: "scoreSortValue", direction: "desc" },
+      "score-low": { key: "scoreSortValue", direction: "asc" },
+    };
+    return sortMap[sortBy];
+  }, [sortBy]);
+
   const { sortedData } = useSortable(sortableApplications, {
-    defaultSort: { key: "idSortValue", direction: "desc" },
+    defaultSort: sortOptions,
     noSortBehavior: "preserve",
     tieBreaker: { key: "idSortValue", direction: "desc" },
   });
@@ -1107,7 +1146,7 @@ export function ApplicationGradingPage({
   );
 
   return (
-    <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
@@ -1185,7 +1224,7 @@ export function ApplicationGradingPage({
       </div>
 
       {/* ── CARD GRID CONTENT ──────────────────────────────────────────────── */}
-      <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
+      <div className="flex flex-1 flex-col bg-slate-50 dark:bg-slate-950">
         {paginatedData.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 px-4 py-20">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -1201,17 +1240,20 @@ export function ApplicationGradingPage({
             </div>
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col duration-300">
             {/* Card Grid */}
-            <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            <div className="grid flex-1 grid-cols-1 content-start gap-4 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {paginatedData.map((item) => {
                 const status = item.detailStatus ?? item.status;
                 const score = item.overallScore;
+                const scorePercent = score !== undefined ? Math.min(Math.round(score), 100) : 0;
                 const roundId = item.detail?.roundId ?? item.currentRoundOrder;
                 const jdId = item.jdId;
                 const userId = item.userId;
                 const userName =
                   item.userName ?? userMap.get(userId!) ?? (userId ? `User #${userId}` : "-");
+                const userAvatar =
+                  item.userAvatar ?? (userId ? userAvatarMap.get(userId) : undefined);
                 const statusCfg = STATUS_CONFIG[status ?? ""] ?? {
                   label: status,
                   className: "bg-slate-100 text-slate-600",
@@ -1222,77 +1264,113 @@ export function ApplicationGradingPage({
                   <button
                     key={item.detailId ?? item.id}
                     onClick={() => handleOpenGrading(item.id, item.detailId, item)}
-                    className="group relative flex w-full flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200/80 bg-white p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/10 dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-950/30">
-                    {/* Top: Avatar + Status */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <Avatar className="h-11 w-11 shrink-0 rounded-[14px]">
-                          <AvatarFallback className="rounded-[14px] bg-indigo-50 text-sm font-bold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-                            {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                            {userName}
-                          </h3>
-                          <div className="mt-1 flex items-center gap-1.5">
-                            <span className="h-2 w-2 shrink-0 rounded-full bg-slate-300 dark:bg-slate-600" />
-                            <span className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">
+                    className="group relative flex w-full flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/10 dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-950/30">
+                    <div className="space-y-4">
+                      {/* Top: Avatar + Name + Status */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <Avatar className="h-11 w-11 shrink-0 rounded-[14px] shadow-sm ring-1 ring-slate-200/80 dark:ring-slate-700">
+                            <AvatarImage src={userAvatar ?? undefined} alt={userName} />
+                            <AvatarFallback className="rounded-[14px] bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-bold text-white">
+                              {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                              {userName}
+                            </h3>
+                            <p className="mt-0.5 truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
                               #{item.id}
                               {jdId != null ? ` · JD#${jdId}` : ""}
-                            </span>
+                            </p>
                           </div>
                         </div>
+                        <span
+                          className={cn(
+                            "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider",
+                            statusCfg.className
+                          )}>
+                          {statusCfg.dot && (
+                            <span className={cn("h-1.5 w-1.5 rounded-full", statusCfg.dot)} />
+                          )}
+                          {statusCfg.label}
+                        </span>
                       </div>
-                      <span
-                        className={cn(
-                          "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider",
-                          statusCfg.className
-                        )}>
-                        {statusCfg.dot && (
-                          <span className={cn("h-1.5 w-1.5 rounded-full", statusCfg.dot)} />
-                        )}
-                        {statusCfg.label}
-                      </span>
-                    </div>
 
-                    {/* Middle: Score + Round */}
-                    <div className="mt-4 flex items-center justify-between">
-                      {score !== undefined ? (
-                        <div className="flex items-center gap-1.5">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-500 dark:bg-amber-500/10">
-                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      {/* Inner Hub Panel — Score Gauge (matching candidate JobSearchTab style) */}
+                      <div className="rounded-[16px] border border-slate-100 bg-slate-50/80 p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A]/90">
+                        <div className="flex items-center justify-between gap-3">
+                          {/* Score Circular Gauge */}
+                          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+                            <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 96 96">
+                              <circle
+                                cx="48"
+                                cy="48"
+                                r="36"
+                                className="stroke-slate-200 dark:stroke-slate-800"
+                                strokeWidth="5"
+                                fill="transparent"
+                              />
+                              {score !== undefined && (
+                                <circle
+                                  cx="48"
+                                  cy="48"
+                                  r="36"
+                                  className={cn(
+                                    "transition-all duration-700 ease-out",
+                                    scorePercent >= 70
+                                      ? "stroke-emerald-500"
+                                      : scorePercent >= 40
+                                        ? "stroke-amber-500"
+                                        : "stroke-red-500"
+                                  )}
+                                  strokeWidth="5"
+                                  strokeDasharray={2 * Math.PI * 36}
+                                  strokeDashoffset={
+                                    2 * Math.PI * 36 - (scorePercent / 100) * 2 * Math.PI * 36
+                                  }
+                                  strokeLinecap="round"
+                                  fill="transparent"
+                                />
+                              )}
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center text-center">
+                              {score !== undefined ? (
+                                <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+                                  {score}
+                                </span>
+                              ) : (
+                                <span className="text-sm font-bold text-slate-400">—</span>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+
+                          {/* Score Label + Round Info */}
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <p className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                               {t("userApplicationhistory.totalScore")}
                             </p>
                             <p className="text-lg font-extrabold text-slate-900 dark:text-white">
-                              {score}
+                              {score !== undefined ? score : "—"}
                               <span className="text-xs font-normal text-slate-400">/100</span>
                             </p>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-3 w-3 text-slate-400" />
+                              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                {t("userApplicationhistory.round")} {roundId ?? 1}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
-                            <Star className="h-4 w-4" />
-                          </div>
-                          <p className="text-sm text-slate-400 dark:text-slate-500">—</p>
-                        </div>
-                      )}
-
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-400">
-                        <ClipboardCheck className="h-4 w-4" />
                       </div>
                     </div>
 
-                    {/* Bottom: Round + Action */}
-                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+                    {/* Bottom Action */}
+                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3.5 dark:border-slate-800">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5 text-slate-400" />
-                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                          {t("userApplicationhistory.round")} {roundId ?? 1}
+                        <ClipboardCheck className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                          {t("grading.grade")}
                         </span>
                       </div>
                       <span className="flex items-center gap-1 text-xs font-bold text-indigo-600 transition-colors group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300">
@@ -1306,7 +1384,11 @@ export function ApplicationGradingPage({
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-center border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-950">
+            <div className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {pagination.startIndex + 1}-{Math.min(pagination.endIndex + 1, sortedData.length)} /{" "}
+                {sortedData.length}
+              </span>
               <PaginationControl pagination={pagination} />
             </div>
           </div>
@@ -1510,7 +1592,7 @@ export function ApplicationGradingDetailPage({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-full flex-col">
       {/* ── HEADER BANNER ───────────────────────────────────────────────────── */}
       <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-white to-purple-50 px-4 py-5 sm:px-6 dark:border-slate-800 dark:from-[#0F172A]/40 dark:via-slate-900 dark:to-indigo-950/30">
         {/* Back button row */}
@@ -1530,7 +1612,7 @@ export function ApplicationGradingDetailPage({
         <div className="flex items-center gap-4">
           <Avatar className="h-14 w-14 shrink-0 rounded-[16px] shadow-sm ring-2 ring-white dark:ring-indigo-500/20">
             <AvatarImage src={candidateAvatar ?? undefined} alt={candidateName ?? "User"} />
-            <AvatarFallback className="rounded-[16px] bg-indigo-100 text-lg font-bold text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300">
+            <AvatarFallback className="rounded-[16px] bg-gradient-to-br from-indigo-500 to-purple-600 text-lg font-bold text-white">
               {(candidateName ?? "?")[0]?.toUpperCase() ?? "?"}
             </AvatarFallback>
           </Avatar>
@@ -1580,62 +1662,62 @@ export function ApplicationGradingDetailPage({
       </div>
 
       {/* NEW LAYOUT: Single page with all rounds as expandable cards */}
-      <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
+      <div className="flex flex-1 flex-col bg-slate-50 dark:bg-slate-950">
         {/* ── SUMMARY STATS BAR ────────────────────────────────────────────────── */}
-        <div className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="mx-auto grid w-full max-w-5xl grid-cols-2 gap-2.5 sm:grid-cols-4">
             {/* Total Rounds */}
-            <div className="flex items-center gap-3 rounded-[14px] border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-[#0F172A]/90">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-500/10">
-                <ClipboardCheck className="h-4 w-4 text-indigo-500" />
+            <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5 dark:border-slate-800 dark:bg-[#0F172A]/90">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-500/10">
+                <ClipboardCheck className="h-3.5 w-3.5 text-indigo-500" />
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   {t("round.totalRounds")}
                 </p>
-                <p className="text-lg font-bold text-slate-900 dark:text-white">
+                <p className="text-base font-bold text-slate-900 dark:text-white">
                   {summaryStats.total}
                 </p>
               </div>
             </div>
             {/* Pending */}
-            <div className="flex items-center gap-3 rounded-[14px] border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-500/20 dark:bg-amber-500/5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15">
-                <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50/60 p-2.5 dark:border-amber-500/20 dark:bg-amber-500/5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-amber-100 dark:bg-amber-500/15">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
               </div>
               <div>
                 <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
                   {t("grading.needsGrading")}
                 </p>
-                <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                <p className="text-base font-bold text-amber-600 dark:text-amber-400">
                   {summaryStats.pending}
                 </p>
               </div>
             </div>
             {/* Graded */}
-            <div className="flex items-center gap-3 rounded-[14px] border border-emerald-200 bg-emerald-50/60 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            <div className="flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50/60 p-2.5 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-500/15">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
               </div>
               <div>
                 <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                   {t("grading.gradedCount")}
                 </p>
-                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">
                   {summaryStats.completed}
                 </p>
               </div>
             </div>
             {/* Average Score */}
-            <div className="flex items-center gap-3 rounded-[14px] border border-purple-200 bg-purple-50/60 p-3 dark:border-purple-500/20 dark:bg-purple-500/5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-500/15">
-                <Star className="h-4 w-4 text-purple-500" />
+            <div className="flex items-center gap-2.5 rounded-lg border border-purple-200 bg-purple-50/60 p-2.5 dark:border-purple-500/20 dark:bg-purple-500/5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-purple-100 dark:bg-purple-500/15">
+                <Star className="h-3.5 w-3.5 text-purple-500" />
               </div>
               <div>
                 <p className="text-xs font-medium text-purple-600 dark:text-purple-400">
                   {t("grading.hrAverageScore")}
                 </p>
-                <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                <p className="text-base font-bold text-purple-600 dark:text-purple-400">
                   {summaryStats.avgScore}
                 </p>
               </div>
@@ -1677,9 +1759,9 @@ export function ApplicationGradingDetailPage({
         )}
 
         {/* Expandable Round Cards */}
-        <div className="space-y-3 p-4 sm:p-6">
+        <div className="mx-auto w-full max-w-5xl flex-1 space-y-3 p-4 sm:p-6">
           {filteredDetails.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-4 rounded-[20px] border border-dashed border-slate-200 bg-slate-50/60 py-16 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 py-16 dark:border-slate-800 dark:bg-slate-900/40">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
                 <ClipboardCheck className="h-7 w-7 text-slate-400 dark:text-slate-500" />
               </div>
