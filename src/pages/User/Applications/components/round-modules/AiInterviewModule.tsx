@@ -433,7 +433,7 @@ export function AiInterviewModule({
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
           <div className="space-y-6">
             <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-              <div className="border-b border-slate-200 px-4 py-3.5 sm:px-5 sm:py-4 dark:border-slate-800">
+              <div className="border-b border-slate-200 px-4 pt-3 pb-3.5 sm:px-5 sm:pt-3 sm:pb-4 dark:border-slate-800">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-black text-slate-950 dark:text-white">
@@ -495,7 +495,7 @@ export function AiInterviewModule({
             </Card>
 
             <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-              <div className="border-b border-slate-200 px-4 py-3.5 sm:px-5 sm:py-4 dark:border-slate-800">
+              <div className="border-b border-slate-200 px-4 pt-3 pb-3.5 sm:px-5 sm:pt-3 sm:pb-4 dark:border-slate-800">
                 <h3 className="flex items-center gap-2 text-sm font-black text-slate-950 dark:text-white">
                   <Clock3 className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
                   Lịch hoạt động của trạm
@@ -555,6 +555,11 @@ export function AiInterviewModule({
                     icon={<MapPin className="h-4 w-4" />}
                     label="Kiosk"
                     value={selectedKiosk?.name ?? "Chưa chọn"}
+                  />
+                  <SummaryItem
+                    icon={<MapPin className="h-4 w-4" />}
+                    label="Địa điểm"
+                    value={selectedKiosk?.location ?? "Chưa cập nhật"}
                   />
                   <SummaryItem
                     icon={<CalendarClock className="h-4 w-4" />}

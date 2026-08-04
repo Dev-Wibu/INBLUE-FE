@@ -246,7 +246,7 @@ export function SlotCalendar({
       </div>
 
       {/* Slots for the selected day */}
-      <div className="border-border border-t px-4 py-3 sm:px-5">
+      <div className="border-border border-t px-4 py-4 sm:px-5">
         <div className="mb-2.5 flex items-center justify-between gap-2">
           <div>
             <p className="text-xs font-extrabold tracking-wider text-slate-600 uppercase dark:text-slate-300">
@@ -258,13 +258,6 @@ export function SlotCalendar({
               })}
             </p>
           </div>
-          {availableSlotsForSelectedDay.length > 0 && (
-            <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-xs font-semibold">
-              {t("common.slotCalendar.slotCount", {
-                count: availableSlotsForSelectedDay.filter((slot) => slot.available).length,
-              })}
-            </span>
-          )}
         </div>
 
         {isLoading ? (
