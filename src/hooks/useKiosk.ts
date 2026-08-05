@@ -156,8 +156,11 @@ export const useKioskBooking = (bookingId: number | undefined, enabled = true) =
 
 export const useEnterKiosk = () => {
   return useMutation({
-    mutationFn: async (sessionKey: string) => {
-      const result = await kioskManager.enterKiosk(sessionKey);
+    mutationFn: async (params: { sessionKey: string; kioskId: number }) => {
+      const result = await kioskManager.enterKiosk({
+        sessionKey: params.sessionKey,
+        kioskId: params.kioskId,
+      });
       if (!result.success) {
         throw new Error(result.error);
       }

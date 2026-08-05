@@ -7,7 +7,6 @@ import { Video } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
 
 export function MentorKioskEntryPage() {
   const { t } = useTranslation();
@@ -33,15 +32,18 @@ export function MentorKioskEntryPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sessionKey.trim()) return;
+    if (!sessionKey.trim() || !kioskId.trim()) return;
 
     try {
-      const result = await enterKiosk(sessionKey.trim());
-      // Backend returns { aiSessionKey: "..." } - handle accordingly
-      // The actual room URL will be available after getting the AI session
-      if (result?.aiSessionKey) {
-        // For now, redirect or show success - the actual room joining logic needs backend support
-        toast.success("Đã xác thực thành công! AI Session đã được tạo.");
+      const result = await enterKiosk({
+        sessionKey: sessionKey.trim(),
+        kioskId: Number(kioskId),
+      });
+      const url = result?.roomUrl;
+      if (url) {
+        setRoomUrl(url);
+        setJoinMode("room");
+        setIsDeviceCheckOpen(true);
       }
     } catch {
       // toast handled in hook
