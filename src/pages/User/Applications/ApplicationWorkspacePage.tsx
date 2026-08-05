@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
 import { HorizontalPipeline, type JdRound } from "./components/HorizontalPipeline";
 import { RoundWorkspaceDispatcher } from "./components/RoundWorkspaceDispatcher";
+import { applicationTheme } from "./components/applicationTheme";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 type JobDescription = components["schemas"]["JobDescription"];
@@ -355,7 +356,7 @@ export function ApplicationWorkspacePage() {
     isAiInterviewRound;
 
   return (
-    <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">
+    <div className={applicationTheme.page}>
       {/* Top Header Navigation (Single Sleek 1-Line Breadcrumb Standard) */}
       <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
         <div className="mx-auto flex w-full max-w-[1700px] items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
@@ -410,7 +411,7 @@ export function ApplicationWorkspacePage() {
       {/* Main Studio Body (Widescreen Full Width Container) */}
       <div className="mx-auto w-full max-w-[1700px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         {/* Horizontal Pipeline Bar */}
-        <Card className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+        <Card className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/70">
           <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("userApplicationhistory.pipelineTitle", {
@@ -686,39 +687,39 @@ export function ApplicationWorkspacePage() {
 
                 {/* Widget 4: Candidate Q&A & Support OR Email Instruction */}
                 {isEmailSimulatorRound ? (
-                  <Card className="space-y-3.5 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-md">
-                    <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-                      <Send className="h-4 w-4 text-indigo-400" />
-                      <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
+                  <Card className="space-y-3.5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80">
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
+                      <Send className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                      <h4 className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-200">
                         HƯỚNG DẪN CÁC BƯỚC NỘP BÀI
                       </h4>
                     </div>
 
-                    <ol className="space-y-3 text-xs leading-relaxed text-slate-300">
+                    <ol className="space-y-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                       <li className="flex items-start gap-2.5">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 font-mono text-[10px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                           1
                         </span>
                         <span>Mở Gmail hoặc Outlook để tiến hành soạn bài.</span>
                       </li>
                       <li className="flex items-start gap-2.5">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 font-mono text-[10px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                           2
                         </span>
                         <span>
                           Gửi tới địa chỉ{" "}
-                          <code className="font-mono text-indigo-300">
+                          <code className="font-mono text-indigo-700 dark:text-indigo-300">
                             hanptse184261@fpt.edu.vn
                           </code>{" "}
                           và đặt tiêu đề chứa mã{" "}
-                          <code className="font-mono text-amber-300">
+                          <code className="font-mono text-amber-700 dark:text-amber-300">
                             [INBLUE-APP-{applicationId}]
                           </code>
                           .
                         </span>
                       </li>
                       <li className="flex items-start gap-2.5">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/20 font-mono text-[10px] font-bold text-indigo-300">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 font-mono text-[10px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                           3
                         </span>
                         <span>

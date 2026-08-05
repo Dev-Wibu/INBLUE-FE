@@ -71,6 +71,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
+import { applicationTheme } from "../applicationTheme";
 import type { JdRound } from "../HorizontalPipeline";
 import { MentorReviewSubheader } from "./MentorReviewSubheader";
 
@@ -314,7 +315,7 @@ function ProgressHub({
   onSelectStep: (step: StepKey) => void;
 }) {
   return (
-    <Card className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 shadow-lg backdrop-blur-md">
+    <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/40 dark:shadow-lg dark:backdrop-blur-md">
       <div className="flex w-full items-start justify-between">
         {STEP_DEFS.map((step, i) => {
           const isActive = i === viewedIndex;
@@ -329,7 +330,7 @@ function ProgressHub({
                 <div
                   className={cn(
                     "absolute top-5 left-[60%] h-0.5 w-[calc(100%-2.5rem)]",
-                    isDone ? "bg-emerald-500/50" : "bg-slate-800"
+                    isDone ? "bg-emerald-500/50" : "bg-slate-200 dark:bg-slate-800"
                   )}
                 />
               )}
@@ -342,16 +343,16 @@ function ProgressHub({
                 className={cn(
                   "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-indigo-400/60 focus-visible:outline-none",
                   isActive
-                    ? "border-indigo-500 bg-indigo-950/50 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-600 shadow-sm dark:bg-indigo-950/50 dark:text-indigo-400 dark:shadow-[0_0_15px_rgba(99,102,241,0.3)]"
                     : isDone
-                      ? "border-emerald-500 bg-emerald-950/20 text-emerald-400"
-                      : "border-slate-700 bg-slate-800/50 text-slate-500"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400"
+                      : "border-slate-200 bg-slate-100/70 text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
                 )}>
                 {isDone ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
 
                 {/* Active indicator dot */}
                 {isCurrent && (
-                  <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] ring-2 ring-slate-900" />
+                  <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.35)] ring-2 ring-white dark:ring-slate-900" />
                 )}
               </button>
 
@@ -359,7 +360,11 @@ function ProgressHub({
               <span
                 className={cn(
                   "text-[10px] font-extrabold tracking-wider uppercase transition-colors duration-300",
-                  isActive ? "text-indigo-300" : isDone ? "text-emerald-500" : "text-slate-500"
+                  isActive
+                    ? "text-indigo-600 dark:text-indigo-300"
+                    : isDone
+                      ? "text-emerald-600 dark:text-emerald-500"
+                      : "text-slate-400 dark:text-slate-500"
                 )}>
                 {step.short}
               </span>
@@ -378,21 +383,21 @@ function ProgressHub({
 function AwaitingMentorStep() {
   const { t } = useTranslation();
   return (
-    <Card className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-xl backdrop-blur-md">
+    <Card className={`overflow-hidden ${applicationTheme.card}`}>
       {/* Hero Visual Section */}
-      <div className="relative overflow-hidden border-b border-slate-800/80 bg-gradient-to-b from-slate-900 via-slate-900/95 to-slate-950/90 px-6 py-8 sm:px-8">
-        <div className="pointer-events-none absolute -top-16 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-amber-500/10 blur-3xl" />
+      <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-white via-slate-50 to-slate-100/80 px-6 py-8 sm:px-8 dark:border-slate-800/80 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-950/90">
+        <div className="pointer-events-none absolute -top-16 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-amber-400/15 blur-3xl dark:bg-amber-500/10" />
 
         <div className="relative mx-auto flex flex-col items-center text-center">
           {/* Animated Hero Radar Icon */}
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
-            <span className="absolute -inset-2 animate-ping rounded-2xl border border-amber-500/20 opacity-40" />
-            <Hourglass className="h-8 w-8 animate-pulse text-amber-400" />
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+            <span className="absolute -inset-2 animate-ping rounded-2xl border border-amber-300/40 opacity-40 dark:border-amber-500/20" />
+            <Hourglass className="h-8 w-8 animate-pulse text-amber-500 dark:text-amber-400" />
           </div>
 
           {/* Live Badge */}
           <div className="mt-4">
-            <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/15 px-3.5 py-1 text-xs font-bold text-amber-300 shadow-xs">
+            <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-xs font-bold text-amber-700 shadow-xs dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
@@ -405,10 +410,10 @@ function AwaitingMentorStep() {
           </div>
 
           {/* Heading & Description */}
-          <h3 className="mt-3 text-lg font-extrabold tracking-tight text-white sm:text-xl">
+          <h3 className="mt-3 text-lg font-extrabold tracking-tight text-slate-950 sm:text-xl dark:text-white">
             {t("userApplicationhistory.mentorAwaitingTitle", "Chờ Admin phân bổ mentor phù hợp")}
           </h3>
-          <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">
+          <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-slate-300">
             {t(
               "userApplicationhistory.mentorAwaitingDesc",
               "Hệ thống đang tiến hành rà soát chuyên môn và kết nối mentor thích hợp nhất theo yêu cầu của JD. Khi mentor được gán, danh sách đề xuất sẽ xuất hiện ngay ở bước tiếp theo để bạn chọn người phỏng vấn."
@@ -418,64 +423,70 @@ function AwaitingMentorStep() {
       </div>
 
       {/* Next Steps Roadmap */}
-      <div className="bg-slate-950/40 p-6 sm:p-7">
+      <div className="bg-white p-6 sm:p-7 dark:bg-slate-950/40">
         <div className="mb-4 flex items-center justify-between">
-          <h4 className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
+          <h4 className="text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
             Quy trình các bước tiếp theo
           </h4>
         </div>
 
         <div className="grid grid-cols-1 gap-3.5 md:grid-cols-3">
           {/* Card Step 1 */}
-          <div className="relative flex flex-col justify-between rounded-xl border border-amber-500/40 bg-amber-500/[0.04] p-4.5 shadow-xs">
+          <div className="relative flex flex-col justify-between rounded-xl border border-amber-200 bg-amber-50/60 p-4.5 shadow-xs dark:border-amber-500/40 dark:bg-amber-500/[0.04]">
             <div>
               <div className="flex items-center justify-between gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/15 text-amber-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-400">
                   <Users className="h-4 w-4" />
                 </div>
-                <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
                   Đang xử lý
                 </span>
               </div>
-              <h5 className="mt-3 text-xs font-bold text-white">1. Admin đề xuất Mentor</h5>
-              <p className="mt-1 text-[11px] leading-relaxed text-slate-300">
+              <h5 className="mt-3 text-xs font-bold text-slate-950 dark:text-white">
+                1. Admin đề xuất Mentor
+              </h5>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
                 Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí.
               </p>
             </div>
           </div>
 
           {/* Card Step 2 */}
-          <div className="relative flex flex-col justify-between rounded-xl border border-slate-800/80 bg-slate-900/60 p-4.5">
+          <div className="relative flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/70 p-4.5 dark:border-slate-800/80 dark:bg-slate-900/60">
             <div>
               <div className="flex items-center justify-between gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
                   <UserCheck className="h-4 w-4" />
                 </div>
-                <span className="inline-flex items-center rounded-md border border-slate-800 bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                <span className="inline-flex items-center rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400">
                   Bước tiếp theo
                 </span>
               </div>
-              <h5 className="mt-3 text-xs font-bold text-slate-200">2. Bạn chọn Mentor</h5>
-              <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+              <h5 className="mt-3 text-xs font-bold text-slate-800 dark:text-slate-200">
+                2. Bạn chọn Mentor
+              </h5>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
                 Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn.
               </p>
             </div>
           </div>
 
           {/* Card Step 3 */}
-          <div className="relative flex flex-col justify-between rounded-xl border border-slate-800/80 bg-slate-900/60 p-4.5">
+          <div className="relative flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/70 p-4.5 dark:border-slate-800/80 dark:bg-slate-900/60">
             <div>
               <div className="flex items-center justify-between gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
                   <CalendarCheck className="h-4 w-4" />
                 </div>
-                <span className="inline-flex items-center rounded-md border border-slate-800 bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                <span className="inline-flex items-center rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400">
                   Bước 3
                 </span>
               </div>
-              <h5 className="mt-3 text-xs font-bold text-slate-200">3. Đặt lịch & Phỏng vấn</h5>
-              <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+              <h5 className="mt-3 text-xs font-bold text-slate-800 dark:text-slate-200">
+                3. Đặt lịch & Phỏng vấn
+              </h5>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
                 Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến.
               </p>
             </div>
@@ -544,18 +555,18 @@ function SelectMentorStep({
   return (
     <>
       <div className="space-y-5">
-        <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-r from-slate-900/95 via-slate-900/90 to-slate-950/95 p-4 shadow-lg backdrop-blur-md sm:p-5">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800/80 dark:bg-gradient-to-r dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-950/95 dark:shadow-lg dark:backdrop-blur-md">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400 shadow-sm">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
                 <Users className="h-5 w-5" />
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-lg font-bold text-slate-100">
+                  <h3 className="text-lg font-bold text-slate-950 dark:text-slate-100">
                     {t("userApplicationhistory.mentorSelectTitle", "Chọn mentor phù hợp")}
                   </h3>
-                  <span className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-[11px] font-semibold text-indigo-300">
+                  <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300">
                     {t(
                       "userApplicationhistory.mentorSelectCount",
                       "{{count}} mentor được đề xuất",
@@ -565,7 +576,7 @@ function SelectMentorStep({
                     )}
                   </span>
                 </div>
-                <p className="mt-1 text-sm leading-6 text-slate-300">
+                <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {t(
                     "userApplicationhistory.mentorSelectDescription",
                     "Chọn 1 mentor từ danh sách được đề xuất cho vị trí ứng tuyển này."
@@ -574,7 +585,7 @@ function SelectMentorStep({
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-950/60 px-3 py-1.5 text-xs font-semibold text-slate-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
               <span>
                 {t("userApplicationhistory.mentorSelectHintShort", "Xem hồ sơ trước khi chọn")}
@@ -582,8 +593,8 @@ function SelectMentorStep({
             </div>
           </div>
 
-          <div className="mt-4 border-t border-slate-800/70 pt-4">
-            <p className="text-xs leading-5 text-slate-400">
+          <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800/70">
+            <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
               {t(
                 "userApplicationhistory.mentorSelectHint",
                 "Mở hồ sơ để xem kinh nghiệm, đánh giá và phản hồi trước khi chọn."
@@ -693,21 +704,21 @@ function MentorCard({
           onOpenDetails();
         }
       }}
-      className="group flex h-full w-full max-w-[290px] flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-500/30 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:bg-slate-900/80">
-      <div className="relative overflow-hidden border-b border-slate-800/80 bg-slate-900/80 px-4 pt-4 pb-4 dark:bg-slate-900/80">
+      className="group flex h-full w-full max-w-[290px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:border-slate-800/80 dark:bg-slate-900/80 dark:hover:border-indigo-500/30">
+      <div className="relative overflow-hidden border-b border-slate-200 bg-slate-50/70 px-4 pt-4 pb-4 dark:border-slate-800/80 dark:bg-slate-900/80">
         <div className="relative">
           <div className="flex items-start justify-between gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/25 bg-indigo-500/10 px-2.5 py-1 text-[11px] font-semibold text-indigo-200 shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 shadow-sm dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-200">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
               <span>{rating > 0 ? rating.toFixed(1) : "—"}</span>
             </div>
-            <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-slate-300 shadow-sm">
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
               {feedbackCountLabel}
             </span>
           </div>
 
           <div className="mt-2.5 flex flex-col items-center text-center">
-            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-sm ring-1 ring-slate-950/50">
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-200/70 dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-950/50">
               <img
                 src={mentor.avatarUrl || "/placeholder.png"}
                 alt={mentor.name ?? "Mentor"}
@@ -716,10 +727,10 @@ function MentorCard({
             </div>
 
             <div className="mt-2 min-h-[4rem] space-y-0.5">
-              <h4 className="text-[16px] leading-6 font-semibold break-words whitespace-normal text-white">
+              <h4 className="text-[16px] leading-6 font-semibold break-words whitespace-normal text-slate-950 dark:text-white">
                 {mentor.name ?? "—"}
               </h4>
-              <p className="line-clamp-2 min-h-[2.5rem] text-[13px] leading-5 text-slate-300">
+              <p className="line-clamp-2 min-h-[2.5rem] text-[13px] leading-5 text-slate-500 dark:text-slate-300">
                 {mentor.currentCompany || mentor.email || "—"}
               </p>
             </div>
@@ -730,20 +741,20 @@ function MentorCard({
       <div className="flex flex-1 flex-col px-4 pt-4 pb-4">
         <div className="flex flex-1 flex-col">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 font-medium text-indigo-200 shadow-sm">
-              <Users className="h-3.5 w-3.5 text-indigo-300" />
+            <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-medium text-indigo-700 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-200">
+              <Users className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
               {t("userApplicationhistory.mentorSelectSessionsValue", "{{count}} sessions", {
                 count: mentor.totalSession ?? 0,
               })}
             </span>
-            <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 font-medium text-slate-300 shadow-sm">
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 font-medium text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
               {feedbackCountLabel}
             </span>
           </div>
 
           <div className="mt-4">
-            <p className="relative min-h-[7rem] pl-6 text-sm leading-6 text-slate-200 italic">
-              <span className="absolute top-0 left-0.5 text-lg leading-none text-indigo-300">
+            <p className="relative min-h-[7rem] pl-6 text-sm leading-6 text-slate-700 italic dark:text-slate-200">
+              <span className="absolute top-0 left-0.5 text-lg leading-none text-indigo-500 dark:text-indigo-300">
                 “
               </span>
               {bio ||
@@ -751,7 +762,7 @@ function MentorCard({
                   "userApplicationhistory.mentorSelectNoBio",
                   "Chưa có giới thiệu chi tiết từ mentor này."
                 )}
-              <span className="ml-1 text-indigo-300">”</span>
+              <span className="ml-1 text-indigo-500 dark:text-indigo-300">”</span>
             </p>
           </div>
         </div>
@@ -793,9 +804,9 @@ function MentorDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-h-[90vh] max-w-5xl overflow-hidden border border-slate-800 bg-slate-950 p-0 text-slate-100 shadow-2xl">
-        <div className="flex items-center justify-end border-b border-slate-800/80 bg-slate-900/70 px-4 py-3">
-          <DialogClose className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 bg-slate-950/60 text-slate-300 transition-colors hover:border-slate-500 hover:text-white">
+        className="max-h-[90vh] max-w-5xl overflow-hidden border border-slate-200 bg-white p-0 text-slate-900 shadow-xl dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:shadow-2xl">
+        <div className="flex items-center justify-end border-b border-slate-200 bg-slate-50/70 px-4 py-3 dark:border-slate-800/80 dark:bg-slate-900/70">
+          <DialogClose className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white">
             <X className="h-4 w-4" />
             <span className="sr-only">{t("compUi.close", "Đóng")}</span>
           </DialogClose>
@@ -804,10 +815,10 @@ function MentorDetailDialog({
         <div className="max-h-[calc(90vh-57px)] overflow-y-auto px-6 py-6">
           <div className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr]">
             <section className="space-y-4 self-start">
-              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-sm">
-                <div className="border-b border-slate-800 px-5 py-5">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                <div className="border-b border-slate-200 px-5 py-5 dark:border-slate-800">
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-sm">
+                    <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                       <img
                         src={mentor.avatarUrl || "/placeholder.png"}
                         alt={mentor.name ?? "Mentor"}
@@ -816,16 +827,20 @@ function MentorDetailDialog({
                     </div>
 
                     <div className="space-y-1">
-                      <h3 className="text-2xl font-bold text-white">{mentor.name || "—"}</h3>
-                      <p className="text-sm text-slate-400">{mentor.currentCompany || "—"}</p>
+                      <h3 className="text-2xl font-bold text-slate-950 dark:text-white">
+                        {mentor.name || "—"}
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {mentor.currentCompany || "—"}
+                      </p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-xs font-semibold text-indigo-300">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300">
                         <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                         {mentor.averageRating ? mentor.averageRating.toFixed(1) : "—"}
                       </span>
-                      <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-xs font-semibold text-slate-300">
+                      <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
                         {t(
                           "userApplicationhistory.mentorSelectSessionsValue",
                           "{{count}} sessions",
@@ -839,29 +854,33 @@ function MentorDetailDialog({
                 </div>
 
                 <div className="space-y-4 p-5">
-                  <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                    <div className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+                  <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                    <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                       {t("userApplicationhistory.mentorSelectExpertise", "Chuyên môn")}
                     </div>
-                    <p className="text-sm leading-6 text-slate-100">{mentor.expertise || "—"}</p>
+                    <p className="text-sm leading-6 text-slate-800 dark:text-slate-100">
+                      {mentor.expertise || "—"}
+                    </p>
                   </div>
 
-                  <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                    <div className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+                  <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                    <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                       {t("userApplicationhistory.mentorSelectContact", "Liên hệ")}
                     </div>
-                    <p className="text-sm leading-6 text-slate-100">{mentor.email || "—"}</p>
+                    <p className="text-sm leading-6 text-slate-800 dark:text-slate-100">
+                      {mentor.email || "—"}
+                    </p>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                    <div className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                    <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                       {t("userApplicationhistory.mentorSelectBioLabel", "Bio")}
                     </div>
-                    <p className="mt-3 text-sm leading-7 text-slate-200 italic">
-                      <span className="mr-1 text-indigo-300">“</span>
+                    <p className="mt-3 text-sm leading-7 text-slate-700 italic dark:text-slate-200">
+                      <span className="mr-1 text-indigo-500 dark:text-indigo-300">“</span>
                       {mentor.bio ||
                         t("userApplicationhistory.mentorSelectNoBio", "No bio available.")}
-                      <span className="ml-1 text-indigo-300">”</span>
+                      <span className="ml-1 text-indigo-500 dark:text-indigo-300">”</span>
                     </p>
                   </div>
                 </div>
@@ -869,11 +888,11 @@ function MentorDetailDialog({
             </section>
 
             <section className="space-y-3">
-              <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900/80 px-4 py-3">
-                <h4 className="text-sm font-semibold text-white">
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900/80">
+                <h4 className="text-sm font-semibold text-slate-950 dark:text-white">
                   {t("userApplicationhistory.mentorFeedbackTitle", "Feedback history")}
                 </h4>
-                <span className="rounded-full border border-slate-700 bg-slate-950/80 px-2.5 py-1 text-xs font-semibold text-slate-300">
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-300">
                   {t("userApplicationhistory.mentorSelectFeedbackCountValue", "{{count}} reviews", {
                     count: feedbacks.length,
                   })}
@@ -882,7 +901,7 @@ function MentorDetailDialog({
 
               <div className="max-h-[58vh] space-y-3 overflow-y-auto pr-1">
                 {isLoading ? (
-                  <div className="flex items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/60 px-4 py-10 text-sm text-slate-400">
+                  <div className="flex items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-10 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
                     {t("userApplicationhistory.mentorFeedbackLoading", "Loading feedback...")}
                   </div>
                 ) : feedbacks.length > 0 ? (
@@ -893,7 +912,7 @@ function MentorDetailDialog({
                     />
                   ))
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/60 px-4 py-8 text-sm text-slate-400">
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-8 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
                     {t(
                       "userApplicationhistory.mentorFeedbackEmpty",
                       "No feedback has been shared yet."
@@ -915,20 +934,20 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
   const session = feedback.session;
 
   return (
-    <article className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-sm">
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
       <div className="flex items-start gap-3">
         <img
           src={feedback.user?.avatarUrl || "/placeholder.png"}
           alt={feedback.user?.name || "User"}
-          className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-slate-700"
+          className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-white">
+              <div className="truncate text-sm font-semibold text-slate-950 dark:text-white">
                 {feedback.user?.name || "—"}
               </div>
-              <div className="mt-0.5 text-xs text-slate-400">
+              <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 {session?.id
                   ? `${t("userApplicationhistory.mentorFeedbackSessionLabel", "Session")} #${session.id}`
                   : t("userApplicationhistory.mentorFeedbackSessionUnknown", "Session unavailable")}
@@ -940,7 +959,7 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
               {rating.toFixed(1)}
             </div>
           </div>
-          <p className="mt-2 text-sm leading-6 text-slate-300">
+          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
             {feedback.comment ||
               t("userApplicationhistory.mentorFeedbackNoComment", "No comment provided.")}
           </p>

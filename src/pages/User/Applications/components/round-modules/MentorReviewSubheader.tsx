@@ -1,5 +1,6 @@
 import { Calendar, CheckCircle2, Clock, Hourglass, Users, Video, X } from "lucide-react";
 import type { components } from "../../../../../../schema-from-be";
+import { applicationTheme } from "../applicationTheme";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -82,20 +83,26 @@ export function MentorReviewSubheader({
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+    <div
+      className={`flex flex-wrap items-center justify-between gap-4 ${applicationTheme.subheader}`}>
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${applicationTheme.subheaderIcon}`}>
           {renderIcon()}
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+            <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {getSubheaderTitle()}
             </span>
             <span className="text-slate-600">•</span>
-            <span className="text-xs font-semibold text-indigo-400">Vòng {roundOrder}</span>
+            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+              Vòng {roundOrder}
+            </span>
           </div>
-          <p className="mt-0.5 text-sm font-semibold text-slate-200">{getDescription()}</p>
+          <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
+            {getDescription()}
+          </p>
         </div>
       </div>
 
@@ -104,8 +111,8 @@ export function MentorReviewSubheader({
           <span
             className={
               detail.finalResult === "PASSED"
-                ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40"
-                : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-300 shadow-sm shadow-rose-950/40"
+                ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40"
+                : "inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-xs font-extrabold text-rose-700 shadow-sm dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-300 dark:shadow-rose-950/40"
             }>
             {detail.finalResult === "PASSED" ? (
               <CheckCircle2 className="h-4 w-4" />
@@ -115,32 +122,32 @@ export function MentorReviewSubheader({
             <span>KẾT QUẢ: {detail.finalResult}</span>
           </span>
         ) : isFinished ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40">
             <CheckCircle2 className="h-4 w-4" />
             <span>ĐÃ HOÀN THÀNH PHỎNG VẤN</span>
           </span>
         ) : activeStep === "IN_CALL" ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40">
             <span className="h-2 w-2 animate-ping rounded-full bg-emerald-400" />
             <span>PHÒNG PHỎNG VẤN ĐANG MỞ</span>
           </span>
         ) : activeStep === "WAITING" ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-4 py-1.5 text-xs font-extrabold text-amber-300 shadow-sm shadow-amber-950/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-extrabold text-amber-700 shadow-sm dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-300 dark:shadow-amber-950/40">
             <Clock className="h-3.5 w-3.5 text-amber-400" />
             <span>ĐÃ ĐẶT LỊCH • CHỜ ĐẾN GIỜ</span>
           </span>
         ) : activeStep === "SCHEDULE" ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
             <Calendar className="h-3.5 w-3.5 text-indigo-400" />
             <span>ĐẶT LỊCH PHỎNG VẤN</span>
           </span>
         ) : activeStep === "SELECT_MENTOR" ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
             <Users className="h-3.5 w-3.5 text-indigo-400" />
             <span>CHỌN MENTOR PHÙ HỢP</span>
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
             <Hourglass className="h-3.5 w-3.5 animate-pulse text-indigo-400" />
             <span>CHỜ ADMIN GÁN MENTOR</span>
           </span>

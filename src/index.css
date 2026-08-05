@@ -231,6 +231,154 @@
   }
 }
 
+@layer components {
+  html:not(.dark)
+    .application-workspace
+    :where(
+      .bg-slate-900,
+      .bg-slate-950,
+      .bg-slate-900\/95,
+      .bg-slate-900\/90,
+      .bg-slate-900\/80,
+      .bg-slate-900\/70,
+      .bg-slate-900\/60,
+      .bg-slate-900\/40,
+      .bg-slate-950\/90,
+      .bg-slate-950\/80,
+      .bg-slate-950\/70,
+      .bg-slate-950\/60,
+      .bg-slate-950\/50,
+      .bg-slate-950\/40,
+      .bg-slate-950\/30,
+      .bg-\[\#030712\]
+    ) {
+    background-color: rgb(255 255 255 / 0.96);
+  }
+
+  html:not(.dark)
+    .application-workspace
+    :where(
+      .from-slate-900,
+      .from-slate-950,
+      .from-indigo-950,
+      .via-slate-900,
+      .to-slate-950,
+      .to-slate-900
+    ) {
+    background-image: none;
+    background-color: rgb(255 255 255 / 0.96);
+  }
+
+  html:not(.dark)
+    .application-workspace
+    :where(
+      .border-slate-700,
+      .border-slate-800,
+      .border-slate-700\/60,
+      .border-slate-700\/80,
+      .border-slate-800\/60,
+      .border-slate-800\/70,
+      .border-slate-800\/80
+    ) {
+    border-color: rgb(226 232 240 / 1);
+  }
+
+  html:not(.dark)
+    .application-workspace
+    :where(
+      .bg-slate-900,
+      .bg-slate-950,
+      .bg-slate-900\/95,
+      .bg-slate-900\/90,
+      .bg-slate-900\/80,
+      .bg-slate-900\/70,
+      .bg-slate-900\/60,
+      .bg-slate-900\/40,
+      .bg-slate-950\/90,
+      .bg-slate-950\/80,
+      .bg-slate-950\/70,
+      .bg-slate-950\/60,
+      .bg-slate-950\/50,
+      .bg-slate-950\/40,
+      .bg-slate-950\/30,
+      .bg-\[\#030712\]
+    )
+    :where(.text-white, .text-slate-100, .text-slate-200):not([class*="bg-indigo"]):not(
+      [class*="bg-emerald"]
+    ):not([class*="bg-rose"]):not([class*="bg-amber"]) {
+    color: rgb(15 23 42 / 1);
+  }
+
+  html:not(.dark)
+    .application-workspace
+    :where(
+      .bg-slate-900,
+      .bg-slate-950,
+      .bg-slate-900\/95,
+      .bg-slate-900\/90,
+      .bg-slate-900\/80,
+      .bg-slate-900\/70,
+      .bg-slate-900\/60,
+      .bg-slate-900\/40,
+      .bg-slate-950\/90,
+      .bg-slate-950\/80,
+      .bg-slate-950\/70,
+      .bg-slate-950\/60,
+      .bg-slate-950\/50,
+      .bg-slate-950\/40,
+      .bg-slate-950\/30,
+      .bg-\[\#030712\]
+    )
+    :where(.text-slate-300, .text-slate-400) {
+    color: rgb(71 85 105 / 1);
+  }
+
+  html:not(.dark) body:has(.application-workspace) [role="dialog"] {
+    border-color: rgb(226 232 240 / 1);
+    background-color: rgb(255 255 255 / 1);
+    color: rgb(15 23 42 / 1);
+  }
+
+  html:not(.dark)
+    body:has(.application-workspace)
+    [role="dialog"]
+    :where(
+      .bg-slate-900,
+      .bg-slate-950,
+      .bg-slate-900\/90,
+      .bg-slate-900\/80,
+      .bg-slate-900\/70,
+      .bg-slate-950\/80,
+      .bg-slate-950\/70,
+      .bg-slate-950\/60
+    ) {
+    background-color: rgb(248 250 252 / 0.95);
+  }
+
+  html:not(.dark)
+    body:has(.application-workspace)
+    [role="dialog"]
+    :where(.border-slate-700, .border-slate-800, .border-slate-800\/80) {
+    border-color: rgb(226 232 240 / 1);
+  }
+
+  html:not(.dark)
+    body:has(.application-workspace)
+    [role="dialog"]
+    :where(.text-white, .text-slate-100, .text-slate-200):not([class*="bg-indigo"]):not(
+      [class*="bg-emerald"]
+    ):not([class*="bg-rose"]):not([class*="bg-amber"]) {
+    color: rgb(15 23 42 / 1);
+  }
+
+  html:not(.dark)
+    body:has(.application-workspace)
+    [role="dialog"]
+    :where(.text-slate-300, .text-slate-400) {
+    color: rgb(71 85 105 / 1);
+  }
+}
+
 /* Global custom scrollbar - replaces default browser scrollbar across entire project */
 * {
   scrollbar-width: thin;

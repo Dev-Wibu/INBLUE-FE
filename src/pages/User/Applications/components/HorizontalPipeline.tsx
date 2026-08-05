@@ -79,10 +79,10 @@ export function HorizontalPipeline({
                   className={cn(
                     "h-[2px] w-6 shrink-0 rounded-full transition-all duration-300 sm:w-10",
                     isCompleted
-                      ? "bg-gradient-to-r from-emerald-500 to-indigo-500 shadow-xs shadow-indigo-500/30"
+                      ? "bg-gradient-to-r from-emerald-500 to-indigo-500 shadow-xs shadow-indigo-500/20"
                       : isCurrent
-                        ? "bg-gradient-to-r from-indigo-500 to-slate-800"
-                        : "bg-slate-800/80"
+                        ? "bg-gradient-to-r from-indigo-500 to-slate-300 dark:to-slate-800"
+                        : "bg-slate-200 dark:bg-slate-800/80"
                   )}
                 />
               )}
@@ -93,30 +93,30 @@ export function HorizontalPipeline({
                 onClick={() => onSelectRound?.(roundOrder)}
                 disabled={isLocked}
                 className={cn(
-                  "group relative flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 text-xs font-semibold backdrop-blur-md transition-all duration-200 focus:outline-hidden",
+                  "group relative flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-hidden",
                   isFailedNeedsImprove &&
-                    "border-amber-500/40 bg-amber-500/10 text-amber-300 shadow-sm shadow-amber-950/40 hover:bg-amber-500/20",
+                    "border-amber-300 bg-amber-50 text-amber-800 shadow-sm hover:bg-amber-100 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300 dark:shadow-amber-950/40 dark:hover:bg-amber-500/20",
                   !isFailedNeedsImprove &&
                     isCompleted &&
-                    "border-emerald-500/35 bg-emerald-500/10 text-emerald-300 shadow-xs hover:border-emerald-500/50 hover:bg-emerald-500/20",
+                    "border-emerald-200 bg-emerald-50 text-emerald-700 shadow-xs hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-500/35 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:border-emerald-500/50 dark:hover:bg-emerald-500/20",
                   isCurrent &&
-                    "border-indigo-500 bg-gradient-to-r from-indigo-950/90 to-slate-900/90 text-white shadow-md ring-2 shadow-indigo-500/20 ring-indigo-500/80",
+                    "border-indigo-500 bg-indigo-600 text-white shadow-md ring-2 shadow-indigo-500/20 ring-indigo-500/60 dark:bg-gradient-to-r dark:from-indigo-950/90 dark:to-slate-900/90 dark:ring-indigo-500/80",
                   isLocked &&
-                    "cursor-not-allowed border-slate-800/60 bg-slate-950/50 text-slate-500 opacity-60",
+                    "cursor-not-allowed border-slate-200 bg-slate-100/70 text-slate-400 opacity-70 dark:border-slate-800/60 dark:bg-slate-950/50 dark:text-slate-500",
                   isSelected &&
                     !isCurrent &&
-                    "ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950"
+                    "ring-2 ring-indigo-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-950"
                 )}>
                 {/* Stage Order Badge Icon */}
                 <div
                   className={cn(
                     "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg font-mono text-[10px] font-black transition-all",
-                    isFailedNeedsImprove && "bg-amber-500 text-slate-950 shadow-xs",
+                    isFailedNeedsImprove && "bg-amber-500 text-white shadow-xs dark:text-slate-950",
                     !isFailedNeedsImprove &&
                       isCompleted &&
-                      "bg-emerald-500 text-slate-950 shadow-xs shadow-emerald-500/30",
+                      "bg-emerald-500 text-white shadow-xs shadow-emerald-500/30 dark:text-slate-950",
                     isCurrent && "bg-indigo-500 text-white shadow-xs shadow-indigo-500/40",
-                    isLocked && "bg-slate-800 text-slate-500"
+                    isLocked && "bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500"
                   )}>
                   {isFailedNeedsImprove ? (
                     <AlertTriangle className="h-3.5 w-3.5 stroke-[3]" />
