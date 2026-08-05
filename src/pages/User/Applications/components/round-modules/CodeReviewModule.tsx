@@ -111,27 +111,27 @@ const SEVERITY_TOKENS: Record<
 > = {
   CRITICAL: {
     bar: "bg-rose-500",
-    bg: "bg-rose-950/40",
-    border: "border-rose-800/80",
-    text: "text-rose-400",
+    bg: "bg-rose-50 dark:bg-rose-950/40",
+    border: "border-rose-200 dark:border-rose-800/80",
+    text: "text-rose-700 dark:text-rose-400",
     icon: AlertOctagon,
     dot: "bg-rose-500",
     glow: "shadow-rose-500/10",
   },
   WARNING: {
     bar: "bg-amber-500",
-    bg: "bg-amber-950/40",
-    border: "border-amber-800/80",
-    text: "text-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-950/40",
+    border: "border-amber-200 dark:border-amber-800/80",
+    text: "text-amber-700 dark:text-amber-400",
     icon: AlertTriangle,
     dot: "bg-amber-500",
     glow: "shadow-amber-500/10",
   },
   INFO: {
     bar: "bg-sky-500",
-    bg: "bg-sky-950/40",
-    border: "border-sky-800/80",
-    text: "text-sky-400",
+    bg: "bg-sky-50 dark:bg-sky-950/40",
+    border: "border-sky-200 dark:border-sky-800/80",
+    text: "text-sky-700 dark:text-sky-400",
     icon: Info,
     dot: "bg-sky-500",
     glow: "shadow-sky-500/10",
@@ -608,7 +608,7 @@ export function CodeReviewModule({
   // Empty state
   if (problems.length === 0 || !activeProblem) {
     return (
-      <Card className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-6 text-amber-300">
+      <Card className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800 dark:border-slate-800/80 dark:bg-slate-900/80 dark:text-amber-300">
         <div className="flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 shrink-0 text-amber-400" />
           <span className="text-sm font-semibold">
@@ -627,7 +627,7 @@ export function CodeReviewModule({
       {/* ── FULLSCREEN SUBMITTING / GRADING OVERLAY BLOCKER ── */}
       {submitting && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md transition-all duration-300">
-          <div className="relative mx-4 flex max-w-md flex-col items-center gap-5 rounded-3xl border border-slate-800 bg-slate-900/95 p-8 text-center shadow-2xl shadow-indigo-500/10">
+          <div className="relative mx-4 flex max-w-md flex-col items-center gap-5 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-2xl shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-900/95">
             <div className="relative flex h-16 w-16 items-center justify-center">
               <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500/20 duration-1000" />
               <div className="absolute inset-0 animate-spin rounded-full border-2 border-indigo-500/30 border-t-indigo-500" />
@@ -637,13 +637,13 @@ export function CodeReviewModule({
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-base font-black tracking-tight text-white">
+              <h3 className="text-base font-black tracking-tight text-slate-950 dark:text-white">
                 {t(
                   "userApplicationhistory.codeReviewSubmittingTitle",
                   "AI đang chấm điểm Code Review..."
                 )}
               </h3>
-              <p className="text-xs leading-relaxed text-slate-400">
+              <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                 {t(
                   "userApplicationhistory.codeReviewSubmittingSubtitle",
                   "Mô hình AI đang đối chiếu các phát hiện của bạn với bộ Expected Issues để tính điểm chi tiết. Vui lòng không đóng trình duyệt."
@@ -652,7 +652,7 @@ export function CodeReviewModule({
             </div>
 
             <div className="w-full space-y-2 pt-1">
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                 <div className="h-full w-full animate-pulse rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
               </div>
               <div className="flex items-center justify-center gap-2 font-mono text-[11px] font-bold text-indigo-400">
@@ -665,32 +665,32 @@ export function CodeReviewModule({
       )}
 
       {/* ── TOP SUB-HEADER (Single Standalone Header Standard) ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
             <Bug className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+              <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {isFinished
                   ? "BÁO CÁO ĐÁNH GIÁ CODE REVIEW AI"
                   : `VÒNG ${round.roundOrder ?? 5}: CODE REVIEW • TRẠM THI TRỰC TUYẾN`}
               </span>
               <span className="text-slate-600">•</span>
-              <span className="text-xs font-semibold text-indigo-400">
+              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                 Vòng {round.roundOrder ?? 5}
               </span>
               {problems.length > 1 && (
                 <>
                   <span className="text-slate-600">•</span>
-                  <span className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-extrabold text-indigo-300">
+                  <span className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-extrabold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
                     {problems.length} BÀI TẬP
                   </span>
                 </>
               )}
             </div>
-            <p className="mt-0.5 text-sm font-semibold text-slate-200">
+            <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
                 ? "Hệ thống AI đã hoàn tất phân tích các lỗi (bugs, code smells, security) và đối chiếu điểm số bài review."
                 : round.configData?.instruction ||
@@ -705,8 +705,8 @@ export function CodeReviewModule({
             <span
               className={
                 detail.finalResult === "PASSED"
-                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40"
-                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-300 shadow-sm shadow-rose-950/40"
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40"
+                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-1.5 text-xs font-extrabold text-rose-700 shadow-sm shadow-rose-100 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-300 dark:shadow-rose-950/40"
               }>
               {detail.finalResult === "PASSED" ? (
                 <CheckCircle2 className="h-4 w-4" />
@@ -716,12 +716,12 @@ export function CodeReviewModule({
               <span>KẾT QUẢ: {detail.finalResult}</span>
             </span>
           ) : isFinished ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40">
               <CheckCircle2 className="h-4 w-4" />
               <span>ĐÃ HOÀN THÀNH BÀI THI</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
               <span>ĐANG TRONG THỜI GIAN LÀM BÀI</span>
             </span>
@@ -731,8 +731,8 @@ export function CodeReviewModule({
 
       {/* ── ERROR BANNER ── */}
       {step === "ERROR" && (
-        <div className="flex items-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs font-medium text-rose-300">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-rose-400" />
+        <div className="flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-rose-500 dark:text-rose-400" />
           <span>
             {t(
               "userApplicationhistory.codeReviewSubmitFailedHint",
@@ -757,14 +757,14 @@ export function CodeReviewModule({
       ) : (
         <>
           {/* ── UNIFIED PROBLEM CONTROL & CONTEXT CARD ── */}
-          <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/90 shadow-xl backdrop-blur-md">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90">
             {/* Top Toolbar: Multi-problem Tabs or Single Identity + Live Stats */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/70 px-5 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-3 dark:border-slate-800">
               {/* Left: Problem Selection Tabs */}
               <div className="flex flex-wrap items-center gap-2">
                 {problems.length > 1 ? (
                   <div className="flex items-center gap-1.5 overflow-x-auto">
-                    <div className="flex items-center gap-1.5 pr-2 font-mono text-xs font-bold text-slate-400">
+                    <div className="flex items-center gap-1.5 pr-2 font-mono text-xs font-bold text-slate-500 dark:text-slate-400">
                       <Layers className="h-4 w-4 text-indigo-400" />
                       <span className="hidden sm:inline">Danh sách bài:</span>
                     </div>
@@ -782,7 +782,7 @@ export function CodeReviewModule({
                             "flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all",
                             isActive
                               ? "border border-indigo-500/50 bg-indigo-600 text-white shadow-md shadow-indigo-500/25"
-                              : "border border-slate-800 bg-slate-900/90 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                              : "border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200"
                           )}>
                           <span className="font-mono text-[11px] opacity-80">#{idx + 1}</span>
                           <span className="max-w-[200px] truncate">
@@ -795,10 +795,10 @@ export function CodeReviewModule({
                                 isActive
                                   ? "bg-white/20 text-white"
                                   : p.difficulty === "EASY"
-                                    ? "bg-emerald-500/15 text-emerald-400"
+                                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
                                     : p.difficulty === "MEDIUM"
-                                      ? "bg-amber-500/15 text-amber-400"
-                                      : "bg-rose-500/15 text-rose-400"
+                                      ? "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
+                                      : "bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400"
                               )}>
                               {p.difficulty}
                             </span>
@@ -821,7 +821,7 @@ export function CodeReviewModule({
                     <span className="flex h-6 w-6 items-center justify-center rounded-md border border-indigo-500/30 bg-indigo-500/10 font-mono text-xs font-black text-indigo-400">
                       #1
                     </span>
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">
                       {activeProblem.title || "Code Review Problem #1"}
                     </span>
                   </div>
@@ -835,16 +835,16 @@ export function CodeReviewModule({
                     className={cn(
                       "rounded-full px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider uppercase",
                       activeProblem.difficulty === "EASY"
-                        ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                        ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
                         : activeProblem.difficulty === "MEDIUM"
-                          ? "border border-amber-500/30 bg-amber-500/10 text-amber-400"
-                          : "border border-rose-500/30 bg-rose-500/10 text-rose-400"
+                          ? "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
+                          : "border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400"
                     )}>
                     {activeProblem.difficulty}
                   </span>
                 )}
                 {activeProblem.language && (
-                  <span className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-indigo-300 uppercase">
+                  <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-indigo-700 uppercase dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
                     {activeProblem.language}
                   </span>
                 )}
@@ -855,10 +855,10 @@ export function CodeReviewModule({
                     className={cn(
                       "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-extrabold tabular-nums transition-colors",
                       timedOut
-                        ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
+                        ? "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-300"
                         : remainingMs < 5 * 60 * 1000
-                          ? "animate-pulse border-amber-500/40 bg-amber-500/10 text-amber-300"
-                          : "border-slate-700 bg-slate-800/80 text-slate-200"
+                          ? "animate-pulse border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300"
+                          : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
                     )}>
                     <Clock className="h-3.5 w-3.5 text-indigo-400" />
                     <span>{formatRemaining(remainingMs)}</span>
@@ -867,14 +867,14 @@ export function CodeReviewModule({
 
                 {/* Navigation Chevrons */}
                 {problems.length > 1 && (
-                  <div className="flex items-center gap-1 border-l border-slate-800 pl-2">
+                  <div className="flex items-center gap-1 border-l border-slate-200 pl-2 dark:border-slate-800">
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       disabled={activeProblemIdx === 0}
                       onClick={() => setActiveProblemIdx((i) => Math.max(0, i - 1))}
-                      className="h-7 w-7 rounded-lg border-slate-800 bg-slate-900 p-0 text-slate-400 hover:text-white disabled:opacity-30">
+                      className="h-7 w-7 rounded-lg border-slate-200 bg-white p-0 text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white">
                       <ChevronLeft className="h-3.5 w-3.5" />
                     </Button>
                     <Button
@@ -885,7 +885,7 @@ export function CodeReviewModule({
                       onClick={() =>
                         setActiveProblemIdx((i) => Math.min(problems.length - 1, i + 1))
                       }
-                      className="h-7 w-7 rounded-lg border-slate-800 bg-slate-900 p-0 text-slate-400 hover:text-white disabled:opacity-30">
+                      className="h-7 w-7 rounded-lg border-slate-200 bg-white p-0 text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white">
                       <ChevronRight className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -900,7 +900,7 @@ export function CodeReviewModule({
                   <Lightbulb className="h-4 w-4 text-amber-400" />
                   <span>Yêu cầu Code Review:</span>
                 </h4>
-                <div className="rounded-xl border border-slate-700/80 bg-slate-950/80 p-4 font-sans text-sm leading-relaxed font-semibold whitespace-pre-wrap text-slate-100 shadow-inner sm:p-5">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 font-sans text-sm leading-relaxed font-semibold whitespace-pre-wrap text-slate-800 shadow-inner sm:p-5 dark:border-slate-700/80 dark:bg-slate-950/80 dark:text-slate-100">
                   {activeProblem.problemStatement ||
                     t(
                       "userApplicationhistory.codeReviewDefaultStatement",
@@ -913,7 +913,7 @@ export function CodeReviewModule({
 
           {/* ── FULL-WIDTH CODE VIEWER WITH INLINE ANNOTATIONS ── */}
           {currentFiles.length === 0 ? (
-            <Card className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-6 text-amber-300">
+            <Card className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800 dark:border-slate-800/80 dark:bg-slate-900/80 dark:text-amber-300">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="h-5 w-5 shrink-0 text-amber-400" />
                 <span className="text-sm font-semibold">
@@ -924,7 +924,7 @@ export function CodeReviewModule({
           ) : (
             <div className="overflow-hidden rounded-2xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
               {/* Header: File Switcher Tabs */}
-              <div className="flex flex-wrap items-center justify-between border-b border-slate-800/80 bg-slate-900/95 px-4 py-2.5">
+              <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
@@ -952,8 +952,8 @@ export function CodeReviewModule({
                           className={cn(
                             "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
                             isActive
-                              ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-200 shadow-xs shadow-indigo-950/50"
-                              : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+                              ? "border border-indigo-200 bg-indigo-50 text-indigo-700 shadow-xs shadow-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-200 dark:shadow-indigo-950/50"
+                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
                           )}>
                           <FileCode2 className="h-3.5 w-3.5" />
                           <span>{filenameShort(file.filename ?? "")}</span>
@@ -970,7 +970,7 @@ export function CodeReviewModule({
 
                 {/* Meta stats right */}
                 {currentFile && (
-                  <div className="flex items-center gap-3 font-mono text-[11px] text-slate-400">
+                  <div className="flex items-center gap-3 font-mono text-[11px] text-slate-500 dark:text-slate-400">
                     <span>
                       {normalizeFormattedCode(currentFile.content).split("\n").length} dòng
                     </span>
@@ -1003,11 +1003,11 @@ export function CodeReviewModule({
           )}
 
           {/* ── REVIEW SUMMARY & SUBMIT BAR ── */}
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
             {/* Left: Issues summary badges */}
             <div className="flex flex-wrap items-center gap-2.5 text-xs">
-              <span className="font-bold text-slate-300">Tổng kết:</span>
-              <div className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1 font-bold text-slate-200">
+              <span className="font-bold text-slate-700 dark:text-slate-300">Tổng kết:</span>
+              <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200">
                 <Target className="h-3.5 w-3.5 text-indigo-400" />
                 <span>
                   {allFlattenedIssues.length} Issues
@@ -1026,7 +1026,7 @@ export function CodeReviewModule({
                   variant="ghost"
                   size="sm"
                   onClick={clearCurrentDraft}
-                  className="h-9 gap-1.5 rounded-xl px-3 text-xs font-bold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300">
+                  className="h-9 gap-1.5 rounded-xl px-3 text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-300">
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Xóa draft bài này</span>
                 </Button>
@@ -1047,15 +1047,15 @@ export function CodeReviewModule({
 
       {/* ── CONFIRM SUBMIT MODAL (macOS traffic-light modal) ── */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="max-w-md overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-0 text-slate-100 shadow-2xl">
-          <div className="border-b border-slate-800 bg-slate-950/60 px-6 py-4">
+        <DialogContent className="max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+          <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/60">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5">
                 <span className="h-3 w-3 rounded-full bg-rose-500/80 shadow-xs shadow-rose-500/30" />
                 <span className="h-3 w-3 rounded-full bg-amber-500/80 shadow-xs shadow-amber-500/30" />
                 <span className="h-3 w-3 rounded-full bg-emerald-500/80 shadow-xs shadow-emerald-500/30" />
               </div>
-              <span className="ml-2 text-xs font-bold text-slate-400">
+              <span className="ml-2 text-xs font-bold text-slate-600 dark:text-slate-400">
                 Xác nhận nộp bài Code Review
               </span>
             </div>
@@ -1067,10 +1067,10 @@ export function CodeReviewModule({
                 <Send className="h-5 w-5" />
               </div>
               <div>
-                <DialogTitle className="text-base font-bold text-white">
+                <DialogTitle className="text-base font-bold text-slate-950 dark:text-white">
                   Bạn có chắc chắn muốn nộp bài?
                 </DialogTitle>
-                <DialogDescription className="mt-1 text-xs text-slate-400">
+                <DialogDescription className="mt-1 text-xs text-slate-600 dark:text-slate-400">
                   {allFlattenedIssues.length === 0
                     ? "Bạn chưa thêm issue nào. Hệ thống AI vẫn sẽ đối chiếu và chấm điểm với 0 issue."
                     : `Hệ thống AI sẽ đối chiếu ${allFlattenedIssues.length} issue(s) trên ${problems.length} bài tập và chấm điểm ngay lập tức.`}
@@ -1081,32 +1081,38 @@ export function CodeReviewModule({
             {/* Severity stats breakdown */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-2">
-                <div className="text-[10px] font-bold text-rose-400 uppercase">CRITICAL</div>
-                <div className="mt-0.5 text-base font-extrabold text-rose-300">
+                <div className="text-[10px] font-bold text-rose-600 uppercase dark:text-rose-400">
+                  CRITICAL
+                </div>
+                <div className="mt-0.5 text-base font-extrabold text-rose-700 dark:text-rose-300">
                   {severityCounts.CRITICAL}
                 </div>
               </div>
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-2">
-                <div className="text-[10px] font-bold text-amber-400 uppercase">WARNING</div>
-                <div className="mt-0.5 text-base font-extrabold text-amber-300">
+                <div className="text-[10px] font-bold text-amber-600 uppercase dark:text-amber-400">
+                  WARNING
+                </div>
+                <div className="mt-0.5 text-base font-extrabold text-amber-700 dark:text-amber-300">
                   {severityCounts.WARNING}
                 </div>
               </div>
               <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-2">
-                <div className="text-[10px] font-bold text-sky-400 uppercase">INFO</div>
-                <div className="mt-0.5 text-base font-extrabold text-sky-300">
+                <div className="text-[10px] font-bold text-sky-600 uppercase dark:text-sky-400">
+                  INFO
+                </div>
+                <div className="mt-0.5 text-base font-extrabold text-sky-700 dark:text-sky-300">
                   {severityCounts.INFO}
                 </div>
               </div>
             </div>
           </div>
 
-          <DialogFooter className="border-t border-slate-800 bg-slate-950/60 px-6 py-4">
+          <DialogFooter className="border-t border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/60">
             <Button
               variant="outline"
               onClick={() => setConfirmOpen(false)}
               disabled={submitting}
-              className="rounded-xl border-slate-700 bg-slate-800/80 text-xs font-bold text-slate-300 hover:bg-slate-700 hover:text-white">
+              className="rounded-xl border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white">
               Hủy
             </Button>
             <Button
@@ -1201,7 +1207,7 @@ function renderSyntaxTokens(line: string): React.ReactNode[] {
       );
     } else if (/^[;=.+*/,<>!&|:-]$/.test(token)) {
       parts.push(
-        <span key={key} className="font-bold text-slate-300">
+        <span key={key} className="font-bold text-slate-700 dark:text-slate-300">
           {token}
         </span>
       );
@@ -1356,7 +1362,7 @@ function CodeViewPane({
 
               {/* Inline Issue Annotations attached directly below this line */}
               {hasIssues && (
-                <div className="ml-14 space-y-2 border-l-4 border-slate-800 bg-slate-900/95 px-4 py-2">
+                <div className="ml-14 space-y-2 border-l-4 border-slate-800 bg-white px-4 py-2">
                   {lineIssues.map((iss, iIdx) => {
                     const issTok = SEVERITY_TOKENS[iss.severity];
                     const Icon = issTok.icon;
@@ -1429,7 +1435,7 @@ function CodeViewPane({
                 onCloseInlineEditor && (
                   <div className="animate-in fade-in zoom-in-98 my-2 ml-14 rounded-xl border border-indigo-500/50 bg-slate-900/98 p-4 shadow-2xl ring-1 ring-indigo-500/30 duration-150">
                     {/* Header of Inline Box */}
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
                       <div className="flex items-center gap-2">
                         <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500/20 text-indigo-300">
                           <MessageSquarePlus className="h-3.5 w-3.5" />
@@ -1470,7 +1476,7 @@ function CodeViewPane({
                                     sTok.text,
                                     "shadow-xs ring-2 ring-indigo-500/50"
                                   )
-                                : "border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                                : "border border-slate-200 bg-slate-50/70 text-slate-400 hover:border-slate-700 hover:text-slate-200 dark:border-slate-800 dark:bg-slate-950/60"
                             )}>
                             <Icon className={cn("h-3.5 w-3.5", sTok.text)} />
                             <span>{SEVERITY_KEYS[s].label}</span>
@@ -1560,14 +1566,14 @@ function ModernGaugeClock({
   const styles =
     color === "emerald"
       ? {
-          ring: "text-emerald-400",
-          text: "text-emerald-400",
-          bg: "border-emerald-500/20 bg-emerald-950/20",
+          ring: "text-emerald-500 dark:text-emerald-400",
+          text: "text-emerald-600 dark:text-emerald-400",
+          bg: "border-emerald-200 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-950/20",
         }
       : {
-          ring: "text-indigo-400",
-          text: "text-indigo-400",
-          bg: "border-indigo-500/20 bg-indigo-950/20",
+          ring: "text-indigo-500 dark:text-indigo-400",
+          text: "text-indigo-600 dark:text-indigo-400",
+          bg: "border-indigo-200 bg-indigo-50 dark:border-indigo-500/20 dark:bg-indigo-950/20",
         };
 
   return (
@@ -1581,7 +1587,7 @@ function ModernGaugeClock({
             r={radius}
             stroke="currentColor"
             strokeWidth="7"
-            className="text-slate-800"
+            className="text-slate-200 dark:text-slate-800"
             fill="transparent"
           />
           {hasData && (
@@ -1803,24 +1809,24 @@ function GradedResultView({
         {/* 🧠 LEFT COLUMN (7 cols): AI Storytelling, Strengths, Weaknesses & Missed Issues */}
         <div className="space-y-5 lg:col-span-7">
           {/* SECTION 1: AI Executive Summary (Notion AI Theme) */}
-          <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-lg shadow-indigo-950/20 backdrop-blur-md">
+          <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-none backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
             <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/20 text-indigo-300">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                   <Bot className="h-4 w-4" />
                 </div>
-                <h3 className="text-xs font-extrabold tracking-wider text-indigo-300 uppercase">
+                <h3 className="text-xs font-extrabold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
                   BÁO CÁO PHÂN TÍCH TỔNG QUAN AI
                 </h3>
               </div>
 
-              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-400/40 bg-indigo-500/15 px-3 py-1 text-[11px] font-extrabold text-indigo-200 shadow-xs">
-                <Sparkles className="h-3.5 w-3.5 text-indigo-300" />
+              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-extrabold text-indigo-700 shadow-xs dark:border-indigo-400/40 dark:bg-indigo-500/15 dark:text-indigo-200">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
                 <span>AI EVALUATED</span>
               </span>
             </div>
 
-            <p className="text-sm leading-relaxed font-normal text-slate-200">
+            <p className="text-sm leading-relaxed font-normal text-slate-700 dark:text-slate-200">
               {generalComment ||
                 "Hệ thống AI đã phân tích chi tiết bài đánh giá mã nguồn, đối chiếu danh sách bug và kiểm tra độ chính xác của các ghi chú."}
             </p>
@@ -1828,20 +1834,20 @@ function GradedResultView({
 
           {/* SECTION 2: Strengths Card (Green Theme) */}
           {strengths.length > 0 && (
-            <Card className="space-y-3 rounded-2xl border border-emerald-500/30 bg-slate-900/80 p-5 shadow-md">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-                <div className="flex h-6 w-6 items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+            <Card className="space-y-3 rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+              <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 </div>
-                <h4 className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
+                <h4 className="text-xs font-bold tracking-wider text-emerald-700 uppercase dark:text-emerald-400">
                   Điểm mạnh nổi bật
                 </h4>
               </div>
 
-              <ul className="space-y-2 text-sm text-slate-200">
+              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
                 {strengths.map((st, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500 dark:text-emerald-400" />
                     <span className="leading-relaxed">{st}</span>
                   </li>
                 ))}
@@ -1851,20 +1857,20 @@ function GradedResultView({
 
           {/* SECTION 3: Weaknesses Card (Amber Theme) */}
           {weaknesses.length > 0 && (
-            <Card className="space-y-3 rounded-2xl border border-amber-500/30 bg-slate-900/80 p-5 shadow-md">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-                <div className="flex h-6 w-6 items-center justify-center rounded-md border border-amber-500/20 bg-amber-500/10 text-amber-400">
+            <Card className="space-y-3 rounded-2xl border border-amber-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+              <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
                   <AlertTriangle className="h-3.5 w-3.5" />
                 </div>
-                <h4 className="text-xs font-bold tracking-wider text-amber-400 uppercase">
+                <h4 className="text-xs font-bold tracking-wider text-amber-700 uppercase dark:text-amber-400">
                   Điểm cần bổ sung & Cải thiện
                 </h4>
               </div>
 
-              <ul className="space-y-2 text-sm text-slate-200">
+              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
                 {weaknesses.map((wk, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
                     <span className="leading-relaxed">{wk}</span>
                   </li>
                 ))}
@@ -1874,17 +1880,17 @@ function GradedResultView({
 
           {/* SECTION 4: Missed Issues Card (Red/Rose Theme) */}
           {missedIssuesText && (
-            <Card className="space-y-3 rounded-2xl border border-rose-500/50 bg-rose-950/30 p-5 shadow-lg ring-1 shadow-rose-950/20 ring-rose-500/30">
-              <div className="flex items-center gap-2 border-b border-rose-500/30 pb-2.5">
-                <div className="flex h-6 w-6 animate-pulse items-center justify-center rounded-md border border-rose-500/40 bg-rose-500/20 text-rose-400">
+            <Card className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50 p-5 shadow-sm ring-1 shadow-rose-100 ring-rose-200 dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none dark:ring-0">
+              <div className="flex items-center gap-2 border-b border-rose-200 pb-2.5 dark:border-rose-500/30">
+                <div className="flex h-6 w-6 animate-pulse items-center justify-center rounded-md border border-rose-300 bg-rose-100 text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/20 dark:text-rose-400">
                   <ShieldAlert className="h-4 w-4" />
                 </div>
-                <h4 className="text-xs font-bold tracking-wider text-rose-300 uppercase">
+                <h4 className="text-xs font-bold tracking-wider text-rose-700 uppercase dark:text-rose-300">
                   Các lỗi quan trọng bỏ sót (Missed Issues)
                 </h4>
               </div>
 
-              <div className="rounded-xl border border-rose-500/30 bg-rose-950/40 p-3.5 text-sm leading-relaxed text-rose-200">
+              <div className="rounded-xl border border-rose-200 bg-white p-3.5 text-sm leading-relaxed text-rose-800 dark:border-rose-500/30 dark:bg-rose-950/40 dark:text-rose-200">
                 {missedIssuesText}
               </div>
             </Card>
@@ -1894,11 +1900,13 @@ function GradedResultView({
         {/* 📊 RIGHT COLUMN (5 cols): Clocks, Detailed Stat Bars & HR Feedback */}
         <div className="space-y-5 lg:col-span-5">
           {/* WIDGET 1: Dual Gauge Clocks (AI Score & HR Score) */}
-          <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-800/80 dark:bg-slate-900/80">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-indigo-400" />
-                <h4 className="text-xs font-bold text-slate-200">Chỉ số Match Score</h4>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
+                  Chỉ số Match Score
+                </h4>
               </div>
               <span className="text-[10px] font-semibold text-slate-400">AI vs HR</span>
             </div>
@@ -1916,11 +1924,13 @@ function GradedResultView({
 
           {/* WIDGET 2: Criteria Stat Progress Bars */}
           {numericMetrics.length > 0 && (
-            <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+            <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-800/80 dark:bg-slate-900/80">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <Code2 className="h-4 w-4 text-indigo-400" />
-                  <h4 className="text-xs font-bold text-slate-200">Phân tích tiêu chí chi tiết</h4>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
+                    Phân tích tiêu chí chi tiết
+                  </h4>
                 </div>
                 <span className="text-[10px] font-bold tracking-wider text-indigo-400 uppercase">
                   STAT BARS
@@ -1931,12 +1941,14 @@ function GradedResultView({
                 {numericMetrics.map((item) => (
                   <div key={item.key} className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium text-slate-300">{item.label}</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {item.label}
+                      </span>
                       <span className={cn("font-mono font-bold tabular-nums", item.style.color)}>
                         {item.max === 10 ? `${item.score}/10` : `${item.pct}%`}
                       </span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                       <div
                         className={cn(
                           "h-full rounded-full transition-all duration-700",
@@ -1952,13 +1964,13 @@ function GradedResultView({
           )}
 
           {/* WIDGET 3: HR Feedback Card (Direct Human Comment) */}
-          <Card className="space-y-3 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-md">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700/80 dark:bg-slate-900/90">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/20 text-indigo-300">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                   <UserCheck className="h-4 w-4" />
                 </div>
-                <h4 className="text-xs font-bold tracking-wider text-indigo-300 uppercase">
+                <h4 className="text-xs font-bold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
                   NHẬN XÉT TỪ HỘI ĐỒNG HR
                 </h4>
               </div>
@@ -1967,11 +1979,11 @@ function GradedResultView({
             </div>
 
             {detail?.hrNote ? (
-              <div className="rounded-xl border-l-2 border-indigo-500 bg-slate-950/60 p-3.5 text-sm leading-relaxed text-slate-200 italic">
+              <div className="rounded-xl border-l-2 border-indigo-500 bg-indigo-50 p-3.5 text-sm leading-relaxed text-slate-700 italic dark:bg-slate-950/60 dark:text-slate-200">
                 "{detail.hrNote}"
               </div>
             ) : (
-              <p className="text-xs leading-relaxed text-slate-400 italic">
+              <p className="text-xs leading-relaxed text-slate-500 italic dark:text-slate-400">
                 Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi
                 HR hoàn tất rà soát).
               </p>
@@ -1982,7 +1994,7 @@ function GradedResultView({
 
       {/* ── FULL-WIDTH CODE VIEWER WITH SUBMITTED ISSUES ── */}
       <div className="overflow-hidden rounded-2xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
-        <div className="flex flex-wrap items-center justify-between border-b border-slate-800/80 bg-slate-900/95 px-4 py-2.5">
+        <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
@@ -1992,7 +2004,7 @@ function GradedResultView({
 
             <div className="flex items-center gap-2">
               <FileCode2 className="h-4 w-4 text-indigo-400" />
-              <span className="text-xs font-bold text-slate-200">
+              <span className="text-xs font-bold text-slate-900 dark:text-slate-200">
                 Mã nguồn & ghi chú bạn đã nộp
               </span>
             </div>
@@ -2007,8 +2019,8 @@ function GradedResultView({
                     className={cn(
                       "rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
                       activeProblemIdx === idx
-                        ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-200"
-                        : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                        ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-700 dark:text-indigo-200"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                     )}>
                     #{idx + 1} {p.title || `Bài ${idx + 1}`}
                   </button>
@@ -2027,7 +2039,7 @@ function GradedResultView({
                   "rounded-md px-2.5 py-1 text-xs font-medium transition-all",
                   (activeFilename || currentFiles[0]?.filename) === file.filename
                     ? "bg-slate-800 font-bold text-white"
-                    : "text-slate-400 hover:text-slate-200"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                 )}>
                 {filenameShort(file.filename ?? "")}
               </button>

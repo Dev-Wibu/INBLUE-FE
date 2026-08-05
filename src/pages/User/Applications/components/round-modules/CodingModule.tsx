@@ -661,7 +661,7 @@ export function CodingModule({
       {/* ── FULLSCREEN SUBMITTING / GRADING OVERLAY BLOCKER ── */}
       {(submitting || awaitingGrade) && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md transition-all duration-300">
-          <div className="relative mx-4 flex max-w-md flex-col items-center gap-5 rounded-3xl border border-slate-800 bg-slate-900/95 p-8 text-center shadow-2xl shadow-indigo-500/10">
+          <div className="relative mx-4 flex max-w-md flex-col items-center gap-5 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-2xl shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-900/95">
             {/* Spinning glowing status indicator */}
             <div className="relative flex h-16 w-16 items-center justify-center">
               <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500/20 duration-1000" />
@@ -672,12 +672,12 @@ export function CodingModule({
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-base font-black tracking-tight text-white">
+              <h3 className="text-base font-black tracking-tight text-slate-950 dark:text-white">
                 {awaitingGrade
                   ? t("userApplicationhistory.gradingTitle", "Hệ thống đang chấm bài...")
                   : t("userApplicationhistory.submittingTitle", "Đang nộp bài làm...")}
               </h3>
-              <p className="text-xs leading-relaxed text-slate-400">
+              <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                 {awaitingGrade
                   ? t(
                       "userApplicationhistory.gradingSubtitle",
@@ -692,7 +692,7 @@ export function CodingModule({
 
             {/* Live Progress Indicator */}
             <div className="w-full space-y-2 pt-1">
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                 <div className="h-full w-full animate-pulse rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
               </div>
               <div className="flex items-center justify-center gap-2 font-mono text-[11px] font-bold text-indigo-400">
@@ -705,24 +705,24 @@ export function CodingModule({
       )}
 
       {/* ── TOP SUB-HEADER (Single Standalone Header Standard) ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
             <Code2 className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+              <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {isFinished
                   ? "BÁO CÁO ĐÁNH GIÁ BÀI THI LẬP TRÌNH"
                   : `VÒNG ${round.roundOrder ?? 4}: LẬP TRÌNH • TRẠM THI TRỰC TUYẾN`}
               </span>
               <span className="text-slate-600">•</span>
-              <span className="text-xs font-semibold text-indigo-400">
+              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                 Vòng {round.roundOrder ?? 4}
               </span>
             </div>
-            <p className="mt-0.5 text-sm font-semibold text-slate-200">
+            <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
                 ? "Hệ thống đã hoàn tất chấm điểm mã nguồn và kiểm thử toàn bộ test cases trên Sandbox."
                 : round.configData?.instruction ||
@@ -737,8 +737,8 @@ export function CodingModule({
             <span
               className={
                 detail.finalResult === "PASSED"
-                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40"
-                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-300 shadow-sm shadow-rose-950/40"
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40"
+                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-1.5 text-xs font-extrabold text-rose-700 shadow-sm shadow-rose-100 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-300 dark:shadow-rose-950/40"
               }>
               {detail.finalResult === "PASSED" ? (
                 <CheckCircle2 className="h-4 w-4" />
@@ -748,12 +748,12 @@ export function CodingModule({
               <span>KẾT QUẢ: {detail.finalResult}</span>
             </span>
           ) : isFinished ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40">
               <CheckCircle2 className="h-4 w-4" />
               <span>ĐÃ HOÀN THÀNH BÀI THI</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
               <span>ĐANG TRONG THỜI GIAN LÀM BÀI</span>
             </span>
@@ -778,7 +778,7 @@ export function CodingModule({
 
       {/* No problems warning */}
       {problems.length === 0 && (
-        <Card className="border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+        <Card className="border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-slate-800/80 dark:bg-slate-900/80 dark:text-amber-200">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
             <span className="text-xs font-bold">
@@ -841,9 +841,9 @@ export function CodingModule({
           if (submitting) return;
           setConfirmOpen(next);
         }}>
-        <DialogContent className="max-w-lg overflow-hidden border border-slate-800 bg-slate-900/95 p-0 text-slate-100 shadow-2xl backdrop-blur-xl sm:rounded-2xl">
+        <DialogContent className="max-w-lg overflow-hidden border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl backdrop-blur-xl sm:rounded-2xl dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-100">
           {/* MacBook Window Header */}
-          <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-5 py-3.5">
+          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3.5 dark:border-slate-800/80 dark:bg-slate-950/90">
             <div className="flex items-center gap-3">
               {/* Window Dots */}
               <div className="flex items-center gap-1.5">
@@ -856,13 +856,13 @@ export function CodingModule({
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/15 text-indigo-400">
                   <Send className="h-3.5 w-3.5" />
                 </div>
-                <DialogTitle className="font-mono text-xs font-bold text-slate-200">
+                <DialogTitle className="font-mono text-xs font-bold text-slate-900 dark:text-slate-200">
                   {t("userApplicationhistory.confirmSubmitTitle", "Xác nhận nộp bài thi lập trình")}
                 </DialogTitle>
               </div>
             </div>
 
-            <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-0.5 font-mono text-[10px] font-bold text-indigo-300">
+            <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 font-mono text-[10px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
               ● Sandbox Grader
             </span>
           </div>
@@ -877,41 +877,43 @@ export function CodingModule({
           <div className="space-y-4 px-5 py-4">
             {/* Quick Metrics */}
             <div className="grid grid-cols-3 gap-2.5 text-center">
-              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 shadow-inner">
-                <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 shadow-inner dark:border-slate-800 dark:bg-slate-950/70">
+                <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   Số bài tập
                 </div>
-                <div className="mt-0.5 text-lg font-black text-white tabular-nums">
+                <div className="mt-0.5 text-lg font-black text-slate-900 tabular-nums dark:text-white">
                   {problems.length}
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 shadow-inner">
-                <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 shadow-inner dark:border-slate-800 dark:bg-slate-950/70">
+                <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   Tổng số dòng
                 </div>
-                <div className="mt-0.5 text-lg font-black text-indigo-300 tabular-nums">
+                <div className="mt-0.5 text-lg font-black text-indigo-700 tabular-nums dark:text-indigo-300">
                   {submissionStats.totalLines}
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 shadow-inner">
-                <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 shadow-inner dark:border-slate-800 dark:bg-slate-950/70">
+                <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   Dung lượng
                 </div>
-                <div className="mt-0.5 text-lg font-black text-emerald-300 tabular-nums">
+                <div className="mt-0.5 text-lg font-black text-emerald-700 tabular-nums dark:text-emerald-300">
                   {submissionStats.totalChars}{" "}
-                  <span className="text-[11px] font-normal text-slate-400">chars</span>
+                  <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                    chars
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Per-problem breakdown */}
-            <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/60 shadow-inner">
-              <div className="border-b border-slate-800 bg-slate-950 px-3.5 py-2">
-                <span className="font-mono text-[11px] font-bold text-slate-400 uppercase">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 shadow-inner dark:border-slate-800 dark:bg-slate-950/60">
+              <div className="border-b border-slate-200 bg-slate-100 px-3.5 py-2 dark:border-slate-800 dark:bg-slate-950">
+                <span className="font-mono text-[11px] font-bold text-slate-500 uppercase dark:text-slate-400">
                   Danh sách bài làm sẽ nộp
                 </span>
               </div>
-              <div className="divide-y divide-slate-800/70">
+              <div className="divide-y divide-slate-200 dark:divide-slate-800/70">
                 {submissionStats.problemsList.map((p, i) => {
                   const sampleRes = p.sampleResult;
                   const sampleTotal =
@@ -924,15 +926,17 @@ export function CodingModule({
                   return (
                     <div
                       key={p.problemId}
-                      className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs transition-colors hover:bg-slate-900/50">
+                      className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs transition-colors hover:bg-slate-100/80 dark:hover:bg-slate-900/50">
                       <div className="flex min-w-0 items-center gap-2.5">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-800 font-mono text-[10px] font-bold text-slate-400">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-200 font-mono text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                           {i + 1}
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate font-semibold text-slate-200">{p.title}</p>
-                          <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                            <span className="rounded border border-indigo-500/30 bg-indigo-950/60 px-1.5 py-0.5 font-mono text-[10px] font-bold text-indigo-300">
+                          <p className="truncate font-semibold text-slate-800 dark:text-slate-200">
+                            {p.title}
+                          </p>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                            <span className="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 font-mono text-[10px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-950/60 dark:text-indigo-300">
                               {p.language}
                             </span>
                             <span>·</span>
@@ -960,7 +964,7 @@ export function CodingModule({
                             {samplePassed}/{sampleTotal} Tests
                           </span>
                         ) : (
-                          <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-800/80 px-2 py-0.5 font-mono text-[10px] text-slate-400">
+                          <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] text-slate-500 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400">
                             Chưa test thử
                           </span>
                         )}
@@ -972,8 +976,8 @@ export function CodingModule({
             </div>
 
             {/* Warning banner */}
-            <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-300">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
               <p className="leading-relaxed">
                 {t(
                   "userApplicationhistory.confirmSubmitHint",
@@ -983,8 +987,8 @@ export function CodingModule({
             </div>
           </div>
 
-          <DialogFooter className="flex items-center justify-between border-t border-slate-800/80 bg-slate-950/90 px-5 py-3.5">
-            <span className="hidden text-[11px] text-slate-400 sm:inline">
+          <DialogFooter className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-5 py-3.5 dark:border-slate-800/80 dark:bg-slate-950/90">
+            <span className="hidden text-[11px] text-slate-500 sm:inline dark:text-slate-400">
               Kiểm tra kỹ trước khi bấm nộp
             </span>
             <div className="flex items-center gap-2">
@@ -993,7 +997,7 @@ export function CodingModule({
                 variant="ghost"
                 onClick={() => setConfirmOpen(false)}
                 disabled={submitting}
-                className="h-8 text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200">
+                className="h-8 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
                 {t("general.cancel", "Hủy")}
               </Button>
               <Button

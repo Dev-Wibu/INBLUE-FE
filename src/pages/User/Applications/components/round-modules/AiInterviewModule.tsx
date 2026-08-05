@@ -111,20 +111,20 @@ function AiInterviewSubheader({
   const roundOrder = round.roundOrder ?? 7;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
           <Bot className="h-5 w-5" />
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+            <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Vòng {roundOrder}: Phỏng vấn AI tại Kiosk
             </span>
             <span className="text-slate-600">•</span>
             <span className="text-xs font-semibold text-indigo-400">Vòng {roundOrder}</span>
           </div>
-          <p className="mt-0.5 text-sm font-semibold text-slate-200">
+          <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
             Chọn trạm Kiosk và khung giờ phù hợp. Sau khi đặt lịch, hệ thống sẽ cấp mã PIN 6 số để
             bạn nhập tại Kiosk đúng giờ phỏng vấn.
           </p>
@@ -133,12 +133,12 @@ function AiInterviewSubheader({
 
       <div className="flex items-center gap-2">
         {isCompleted ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:text-emerald-300 dark:shadow-emerald-950/40">
             <CheckCircle2 className="h-4 w-4" />
             <span>{finalScore != null ? `ĐIỂM AI ${finalScore}/100` : "ĐÃ HOÀN TẤT"}</span>
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40">
             <CalendarClock className="h-3.5 w-3.5 text-indigo-400" />
             <span>ĐẶT LỊCH KIOSK</span>
           </span>
@@ -300,17 +300,17 @@ function KioskPinDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[520px] overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-0 text-slate-100 shadow-2xl">
-        <div className="border-b border-slate-800 bg-slate-900 px-6 py-5">
+      <DialogContent className="max-w-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100">
+        <div className="border-b border-slate-200 bg-slate-50 px-6 py-5 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
               <KeyRound className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-black text-white">
+              <DialogTitle className="text-lg font-black text-slate-950 dark:text-white">
                 Đặt lịch Kiosk thành công
               </DialogTitle>
-              <DialogDescription className="mt-1 text-sm leading-6 text-slate-300">
+              <DialogDescription className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                 Hãy đến đúng trạm, đúng giờ và nhập mã PIN này để bắt đầu vòng phỏng vấn AI.
               </DialogDescription>
             </div>
@@ -319,10 +319,10 @@ function KioskPinDialog({
 
         <div className="px-6 py-6">
           <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center">
-            <p className="text-xs font-extrabold tracking-[0.2em] text-emerald-300 uppercase">
+            <p className="text-xs font-extrabold tracking-[0.2em] text-emerald-700 uppercase dark:text-emerald-300">
               Mã PIN phiên Kiosk
             </p>
-            <p className="mt-3 font-mono text-4xl font-black tracking-[0.28em] text-emerald-200">
+            <p className="mt-3 font-mono text-4xl font-black tracking-[0.28em] text-emerald-800 dark:text-emerald-200">
               {sessionKey || "------"}
             </p>
             <Button
@@ -336,18 +336,18 @@ function KioskPinDialog({
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
               <p className="text-xs font-bold text-slate-400">Thời gian</p>
-              <p className="mt-1 text-sm font-extrabold text-white">
+              <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
                 {booking?.scheduledStart ? formatDateTime(booking.scheduledStart) : "Chưa có"}
               </p>
-              <p className="mt-1 text-xs font-semibold text-indigo-300">
+              <p className="mt-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
                 {duration ? `${duration} phút` : "Theo slot đã đặt"}
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
               <p className="text-xs font-bold text-slate-400">Trạm Kiosk</p>
-              <p className="mt-1 text-sm font-extrabold text-white">
+              <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
                 {kiosk?.name ?? (booking?.kioskId ? `Kiosk #${booking.kioskId}` : "Chưa có")}
               </p>
               <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-400">
@@ -356,8 +356,8 @@ function KioskPinDialog({
             </div>
           </div>
 
-          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-indigo-500/25 bg-indigo-500/10 p-4 text-sm leading-6 text-indigo-100">
-            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-indigo-300" />
+          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm leading-6 text-indigo-800 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-100">
+            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-300" />
             <p>
               Thông tin chi tiết cũng sẽ được gửi qua email hoặc hộp thư thông báo. Chúc bạn làm bài
               thật tốt, bình tĩnh trả lời rõ ràng và đến sớm trước giờ hẹn 10-15 phút nhé.

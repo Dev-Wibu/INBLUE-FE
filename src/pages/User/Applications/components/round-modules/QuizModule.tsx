@@ -87,7 +87,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
   return (
     <div className="my-4 overflow-hidden rounded-xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
       {/* IDE Code Header */}
-      <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/95 px-4 py-2 text-xs">
+      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2 text-xs dark:border-slate-800/80">
         <div className="flex items-center gap-2.5">
           {/* Mac window dots */}
           <div className="flex items-center gap-1.5">
@@ -104,7 +104,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-[11px] font-semibold text-slate-400 transition-colors hover:border-slate-700 hover:text-slate-200">
+          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200">
           {copied ? (
             <>
               <Check className="h-3 w-3 text-emerald-400" />
@@ -288,12 +288,12 @@ function ModernGaugeClock({
     color === "emerald"
       ? {
           text: "text-emerald-400",
-          bg: "border-emerald-500/20 bg-emerald-950/20",
+          bg: "border-emerald-200 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-950/20",
           stroke: "#10b981",
         }
       : {
           text: "text-indigo-400",
-          bg: "border-indigo-500/20 bg-indigo-950/20",
+          bg: "border-indigo-200 bg-indigo-50 dark:border-indigo-500/20 dark:bg-indigo-950/20",
           stroke: "#6366f1",
         };
 
@@ -308,7 +308,7 @@ function ModernGaugeClock({
             r={radius}
             stroke="currentColor"
             strokeWidth="7"
-            className="text-slate-800"
+            className="text-slate-200 dark:text-slate-800"
             fill="transparent"
           />
           {hasData && (
@@ -333,7 +333,7 @@ function ModernGaugeClock({
           <span className="text-[10px] font-bold text-slate-400">/ 100</span>
         </div>
       </div>
-      <span className="mt-1 text-xs font-bold text-slate-300">{label}</span>
+      <span className="mt-1 text-xs font-bold text-slate-600 dark:text-slate-300">{label}</span>
     </div>
   );
 }
@@ -547,14 +547,14 @@ export function QuizModule({
   return (
     <div className="space-y-6">
       {/* 🎯 TOP HEADER: Single Standalone Sub-header & Status Badge */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
             <HelpCircle className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+              <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {isFinished
                   ? "BÁO CÁO KẾT QUẢ THI TRẮC NGHIỆM"
                   : `VÒNG ${round.roundOrder ?? 3}: TRẮC NGHIỆM • TRẠM THI TRỰC TUYẾN`}
@@ -564,7 +564,7 @@ export function QuizModule({
                 Vòng {round.roundOrder ?? 3}
               </span>
             </div>
-            <p className="mt-0.5 text-sm font-semibold text-slate-200">
+            <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
                 ? "Bạn đã hoàn tất bài thi trắc nghiệm. Hệ thống đã chấm điểm và lưu trữ câu trả lời."
                 : round.configData?.instruction ||
@@ -578,8 +578,8 @@ export function QuizModule({
             <span
               className={
                 detail.finalResult === "PASSED"
-                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40"
-                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-300 shadow-sm shadow-rose-950/40"
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:text-emerald-300 dark:shadow-emerald-950/40"
+                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-700 shadow-sm shadow-rose-100 dark:text-rose-300 dark:shadow-rose-950/40"
               }>
               {detail.finalResult === "PASSED" ? (
                 <CheckCircle2 className="h-4 w-4" />
@@ -589,17 +589,17 @@ export function QuizModule({
               <span>KẾT QUẢ: {detail.finalResult}</span>
             </span>
           ) : isFinished ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:text-emerald-300 dark:shadow-emerald-950/40">
               <CheckCircle2 className="h-4 w-4" />
               <span>ĐÃ HOÀN THÀNH BÀI THI</span>
             </span>
           ) : hasStarted ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
               <span>ĐANG TRONG THỜI GIAN LÀM BÀI</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-4 py-1.5 text-xs font-extrabold text-amber-300 shadow-sm shadow-amber-950/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-4 py-1.5 text-xs font-extrabold text-amber-700 shadow-sm shadow-amber-100 dark:text-amber-300 dark:shadow-amber-950/40">
               <Lock className="h-3.5 w-3.5" />
               <span>SẴN SÀNG BẮT ĐẦU</span>
             </span>
@@ -613,15 +613,15 @@ export function QuizModule({
           {/* 👈 LEFT COLUMN (30% - lg:col-span-4): Question Table & Timer */}
           <div className="space-y-4 lg:col-span-4">
             {/* Card 1: Question Matrix Table */}
-            <Card className="space-y-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <Card className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-indigo-400" />
-                  <h4 className="text-xs font-extrabold tracking-wider text-slate-200 uppercase">
+                  <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <h4 className="text-xs font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
                     DANH SÁCH CÂU HỎI
                   </h4>
                 </div>
-                <span className="rounded bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-300">
+                <span className="rounded bg-indigo-50 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                   {answeredCount}/{totalQuestions} Đã chọn
                 </span>
               </div>
@@ -634,18 +634,20 @@ export function QuizModule({
                   const isBm = bookmarked[idx] === true;
 
                   let btnStyle =
-                    "border-slate-800 bg-slate-950/80 text-slate-400 hover:border-slate-700";
+                    "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-400 dark:hover:border-slate-700";
 
                   if (!hasStarted) {
                     btnStyle =
-                      "border-slate-800/60 bg-slate-950/40 text-slate-600 opacity-60 cursor-not-allowed";
+                      "border-slate-200 bg-slate-50/70 text-slate-500 opacity-60 cursor-not-allowed dark:border-slate-800/60 dark:bg-slate-950/40 dark:text-slate-600";
                   } else if (isCurr) {
                     btnStyle =
-                      "border-indigo-500 bg-indigo-600/30 text-indigo-300 font-bold ring-2 ring-indigo-500/40";
+                      "border-indigo-500 bg-indigo-50 text-indigo-700 font-bold ring-2 ring-indigo-500/30 dark:bg-indigo-950/40 dark:text-indigo-300 dark:ring-indigo-500/40";
                   } else if (isAns) {
-                    btnStyle = "border-emerald-500/40 bg-emerald-500/20 text-emerald-300 font-bold";
+                    btnStyle =
+                      "border-emerald-500/40 bg-emerald-50 text-emerald-700 font-bold dark:bg-emerald-500/20 dark:text-emerald-300";
                   } else if (isBm) {
-                    btnStyle = "border-amber-500/40 bg-amber-500/20 text-amber-300 font-bold";
+                    btnStyle =
+                      "border-amber-500/40 bg-amber-50 text-amber-700 font-bold dark:bg-amber-500/20 dark:text-amber-300";
                   }
 
                   return (
@@ -674,7 +676,7 @@ export function QuizModule({
               </div>
 
               {/* Legend Note */}
-              <div className="flex flex-wrap items-center gap-3 border-t border-slate-800/80 pt-3 text-[10px] text-slate-400">
+              <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-3 text-[10px] text-slate-400 dark:border-slate-800/80">
                 <div className="flex items-center gap-1">
                   <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
                   <span>Đang xem</span>
@@ -691,12 +693,14 @@ export function QuizModule({
             </Card>
 
             {/* Card 2: Circular Progress Timer Clock */}
-            <Card className="flex flex-col items-center justify-center space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-5 text-center shadow-md backdrop-blur-md">
-              <div className="flex w-full items-center justify-center gap-2 border-b border-slate-800/80 pb-2">
+            <Card className="flex flex-col items-center justify-center space-y-3 rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
+              <div className="flex w-full items-center justify-center gap-2 border-b border-slate-200 pb-2 dark:border-slate-800/80">
                 <Clock
                   className={`h-4 w-4 ${hasStarted && isLowTime ? "animate-pulse text-rose-400" : "text-amber-400"}`}
                 />
-                <h4 className="text-xs font-bold text-slate-200">Thời gian làm bài</h4>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  Thời gian làm bài
+                </h4>
               </div>
 
               {/* Circular Countdown Ring */}
@@ -708,7 +712,7 @@ export function QuizModule({
                     r="40"
                     stroke="currentColor"
                     strokeWidth="6"
-                    className="text-slate-950"
+                    className="text-slate-200 dark:text-slate-950"
                     fill="transparent"
                   />
                   <circle
@@ -743,7 +747,7 @@ export function QuizModule({
 
             {/* Card 3: Submit Action Card (Only shown when candidate has started the exam) */}
             {hasStarted && (
-              <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+              <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-md backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90">
                 <Button
                   onClick={handleSubmitQuiz}
                   disabled={submitMutation.isPending || !isCurrent}
@@ -768,7 +772,7 @@ export function QuizModule({
           <div className="space-y-4 lg:col-span-8">
             {!hasStarted ? (
               /* 🔒 START LOCK SCREEN / CHALLENGE GATE CARD */
-              <Card className="space-y-6 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 via-slate-900/90 to-slate-900/90 p-8 shadow-2xl backdrop-blur-md">
+              <Card className="space-y-6 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
                 <div className="flex flex-col items-center justify-center space-y-4 py-4 text-center">
                   {/* Glowing Lock Badge Icon */}
                   <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl border border-indigo-500/40 bg-gradient-to-br from-indigo-600/30 to-blue-600/30 text-indigo-400 shadow-xl shadow-indigo-500/10">
@@ -779,14 +783,14 @@ export function QuizModule({
                   </div>
 
                   <div className="max-w-xl space-y-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 font-mono text-[10px] font-extrabold text-indigo-300 uppercase">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 font-mono text-[10px] font-extrabold text-indigo-700 uppercase dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
                       <ShieldAlert className="h-3.5 w-3.5" />
                       <span>BẢO MẬT & GIÁM SÁT TỰ ĐỘNG</span>
                     </span>
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-100">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-950 dark:text-slate-100">
                       XÁC NHẬN BẮT ĐẦU THI TRẮC NGHIỆM
                     </h3>
-                    <p className="text-xs leading-relaxed text-slate-300">
+                    <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                       {round.configData?.instruction ||
                         "Bài thi trắc nghiệm nhằm đánh giá kiến thức chuyên môn cốt lõi, tư duy kỹ thuật và khả năng xử lý tình huống thực tế của ứng viên."}
                     </p>
@@ -794,20 +798,20 @@ export function QuizModule({
                 </div>
 
                 {/* Test Parameters Overview Grid */}
-                <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-800 bg-slate-950/80 p-4 sm:grid-cols-3">
-                  <div className="space-y-1 border-r border-slate-800/80 text-center last:border-r-0">
+                <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-3 dark:border-slate-800 dark:bg-slate-950/80">
+                  <div className="space-y-1 border-r border-slate-200 text-center last:border-r-0 dark:border-slate-800/80">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
                       Số lượng câu
                     </span>
-                    <p className="font-mono text-base font-extrabold text-indigo-300">
+                    <p className="font-mono text-base font-extrabold text-indigo-700 dark:text-indigo-300">
                       {totalQuestions} Câu
                     </p>
                   </div>
-                  <div className="space-y-1 border-r border-slate-800/80 text-center last:border-r-0">
+                  <div className="space-y-1 border-r border-slate-200 text-center last:border-r-0 dark:border-slate-800/80">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
                       Thời gian
                     </span>
-                    <p className="font-mono text-base font-extrabold text-amber-300">
+                    <p className="font-mono text-base font-extrabold text-amber-700 dark:text-amber-300">
                       {timeLimitMinutes} Phút
                     </p>
                   </div>
@@ -815,19 +819,19 @@ export function QuizModule({
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
                       Điểm sàn đạt
                     </span>
-                    <p className="font-mono text-base font-extrabold text-emerald-300">
+                    <p className="font-mono text-base font-extrabold text-emerald-700 dark:text-emerald-300">
                       {round.passThreshold ?? 70}/100
                     </p>
                   </div>
                 </div>
 
                 {/* Important Regulations Notice */}
-                <div className="space-y-2.5 rounded-xl border border-amber-500/30 bg-amber-950/15 p-4 text-xs leading-relaxed text-slate-200">
-                  <div className="flex items-center gap-2 font-bold text-amber-400">
+                <div className="space-y-2.5 rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs leading-relaxed text-slate-700 dark:border-amber-500/30 dark:bg-amber-950/15 dark:text-slate-200">
+                  <div className="flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
                     <AlertTriangle className="h-4 w-4" />
                     <span>LƯU Ý QUAN TRỌNG TRƯỚC KHI BẮT ĐẦU:</span>
                   </div>
-                  <ul className="list-disc space-y-1.5 pl-6 text-slate-300">
+                  <ul className="list-disc space-y-1.5 pl-6 text-slate-600 dark:text-slate-300">
                     <li>
                       Đồng hồ đếm ngược sẽ bắt đầu chạy **ngay lập tức** sau khi bấm xác nhận.
                     </li>
@@ -852,14 +856,14 @@ export function QuizModule({
               </Card>
             ) : (
               /* 📝 ACTIVE QUESTION & OPTION CHOICES CARD */
-              <Card className="space-y-6 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-6 shadow-xl backdrop-blur-md">
+              <Card className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
                 {/* Question Header Toolbar */}
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">
                   <div className="flex items-center gap-2">
-                    <span className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 font-mono text-xs font-bold text-indigo-300">
+                    <span className="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 font-mono text-xs font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
                       CÂU HỎI {currentIndex + 1} / {totalQuestions}
                     </span>
-                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2.5 py-1 text-[11px] font-semibold text-slate-400">
+                    <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
                       Chuyên môn
                     </span>
                   </div>
@@ -871,8 +875,8 @@ export function QuizModule({
                     onClick={() => handleToggleBookmark(currentIndex)}
                     className={`h-8 gap-1.5 text-xs font-semibold ${
                       bookmarked[currentIndex]
-                        ? "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
-                        : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                        ? "bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500/30"
+                        : "text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                     }`}>
                     <Flag className="h-3.5 w-3.5" />
                     <span>
@@ -883,7 +887,7 @@ export function QuizModule({
 
                 {/* Question Prompt */}
                 <div className="space-y-3">
-                  <div className="text-sm leading-relaxed font-bold text-slate-100 md:text-base">
+                  <div className="text-sm leading-relaxed font-bold text-slate-900 md:text-base dark:text-slate-100">
                     <FormattedQuestionText text={currentQuestion.questionText} />
                   </div>
                 </div>
@@ -898,14 +902,14 @@ export function QuizModule({
                         onClick={() => handleSelectOption(opt)}
                         className={`group flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
                           isSelected
-                            ? "border-indigo-500 bg-indigo-950/40 text-slate-100 shadow-md ring-1 ring-indigo-500/50"
-                            : "border-slate-800/80 bg-slate-950/70 text-slate-300 hover:border-slate-700 hover:bg-slate-950"
+                            ? "border-indigo-500 bg-indigo-50 text-slate-900 shadow-md ring-1 ring-indigo-500/40 dark:bg-indigo-950/40 dark:text-slate-100 dark:ring-indigo-500/50"
+                            : "border-slate-200 bg-slate-50/70 text-slate-700 hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800/80 dark:bg-slate-950/70 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-950"
                         }`}>
                         <div
                           className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
                             isSelected
                               ? "border-indigo-400 bg-indigo-600 text-white"
-                              : "border-slate-700 bg-slate-900 group-hover:border-slate-500"
+                              : "border-slate-300 bg-white group-hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:group-hover:border-slate-500"
                           }`}>
                           {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
                         </div>
@@ -918,13 +922,13 @@ export function QuizModule({
                 </div>
 
                 {/* Bottom Navigation Controls */}
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4 dark:border-slate-800">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={currentIndex === 0}
                     onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-                    className="h-9 gap-2 border-slate-700 bg-slate-800 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white">
+                    className="h-9 gap-2 border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white">
                     <ArrowLeft className="h-4 w-4" />
                     <span>Câu trước</span>
                   </Button>
@@ -962,15 +966,15 @@ export function QuizModule({
           {/* Left Column (4 cols - Pinned Sticky Sidebar): Score Gauge & Jump Matrix */}
           <div className="space-y-4 lg:sticky lg:top-24 lg:col-span-4">
             {/* Card 1: Score & Status Gauge */}
-            <Card className="space-y-4 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-xl backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
+            <Card className="space-y-4 rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800/80">
                 <div className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-emerald-400" />
-                  <h3 className="text-xs font-extrabold tracking-wider text-emerald-300 uppercase">
+                  <Award className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <h3 className="text-xs font-extrabold tracking-wider text-emerald-700 uppercase dark:text-emerald-300">
                     KẾT QUẢ ĐÁNH GIÁ
                   </h3>
                 </div>
-                <span className="rounded-full border border-emerald-400/40 bg-emerald-500/20 px-3 py-0.5 text-xs font-extrabold text-emerald-300">
+                <span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-0.5 text-xs font-extrabold text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-300">
                   {detail?.finalResult ?? "PASSED"}
                 </span>
               </div>
@@ -986,18 +990,18 @@ export function QuizModule({
               </div>
 
               {/* Stat breakdown pills */}
-              <div className="grid grid-cols-2 gap-2 border-t border-slate-800/80 pt-3">
-                <div className="flex flex-col items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-2.5 text-center">
+              <div className="grid grid-cols-2 gap-2 border-t border-slate-200 pt-3 dark:border-slate-800/80">
+                <div className="flex flex-col items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 text-center dark:border-emerald-500/20 dark:bg-emerald-950/20">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">
                     Số câu đúng
                   </span>
-                  <span className="font-mono text-base font-extrabold text-emerald-400">
+                  <span className="font-mono text-base font-extrabold text-emerald-700 dark:text-emerald-400">
                     {correctCount} / {totalCount}
                   </span>
                 </div>
-                <div className="flex flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-rose-950/20 p-2.5 text-center">
+                <div className="flex flex-col items-center justify-center rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-center dark:border-rose-500/20 dark:bg-rose-950/20">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Số câu sai</span>
-                  <span className="font-mono text-base font-extrabold text-rose-400">
+                  <span className="font-mono text-base font-extrabold text-rose-700 dark:text-rose-400">
                     {totalCount - correctCount} / {totalCount}
                   </span>
                 </div>
@@ -1005,11 +1009,11 @@ export function QuizModule({
             </Card>
 
             {/* Card 2: Interactive Jump Matrix */}
-            <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+            <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-indigo-400" />
-                  <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
+                  <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <h4 className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-200">
                     MA TRẬN CÂU HỎI
                   </h4>
                 </div>
@@ -1030,8 +1034,8 @@ export function QuizModule({
                     }}
                     className={`flex h-9 items-center justify-center rounded-xl border font-mono text-xs font-bold transition-all hover:scale-105 ${
                       res.isCorrect
-                        ? "border-emerald-500/40 bg-emerald-950/60 text-emerald-300 hover:border-emerald-400"
-                        : "border-rose-500/40 bg-rose-950/60 text-rose-300 hover:border-rose-400"
+                        ? "border-emerald-500/40 bg-emerald-50 text-emerald-700 hover:border-emerald-400 dark:bg-emerald-950/60 dark:text-emerald-300"
+                        : "border-rose-500/40 bg-rose-50 text-rose-700 hover:border-rose-400 dark:bg-rose-950/60 dark:text-rose-300"
                     }`}>
                     <span>{idx + 1}</span>
                   </button>
@@ -1042,25 +1046,25 @@ export function QuizModule({
 
           {/* Right Column (8 cols): Question Answers Review & Filters */}
           <div className="space-y-4 lg:col-span-8">
-            <Card className="space-y-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-5 shadow-xl backdrop-blur-md">
+            <Card className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
               {/* Header & Filter Tabs */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <HelpCircle className="h-4 w-4 text-indigo-400" />
-                  <h4 className="text-xs font-extrabold tracking-wider text-slate-200 uppercase">
+                  <HelpCircle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <h4 className="text-xs font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
                     CHI TIẾT CÂU HỎI VÀ ĐÁP ÁN
                   </h4>
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1">
+                <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-950">
                   <button
                     type="button"
                     onClick={() => setResultFilter("ALL")}
                     className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
                       resultFilter === "ALL"
                         ? "bg-indigo-600 text-white shadow-sm"
-                        : "text-slate-400 hover:text-slate-200"
+                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                     }`}>
                     Tất cả ({allResults.length})
                   </button>
@@ -1070,7 +1074,7 @@ export function QuizModule({
                     className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
                       resultFilter === "CORRECT"
                         ? "bg-emerald-600 text-white shadow-sm"
-                        : "text-slate-400 hover:text-slate-200"
+                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                     }`}>
                     Đúng ({correctCount})
                   </button>
@@ -1080,7 +1084,7 @@ export function QuizModule({
                     className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
                       resultFilter === "INCORRECT"
                         ? "bg-rose-600 text-white shadow-sm"
-                        : "text-slate-400 hover:text-slate-200"
+                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                     }`}>
                     Sai ({totalCount - correctCount})
                   </button>
@@ -1100,22 +1104,22 @@ export function QuizModule({
                       id={`review-question-${res.originalIndex}`}
                       className={`overflow-hidden rounded-2xl border transition-all ${
                         res.isCorrect
-                          ? "border-emerald-500/30 bg-slate-900/90 shadow-md"
-                          : "border-rose-500/30 bg-slate-900/90 shadow-md"
+                          ? "border-emerald-200 bg-white shadow-sm dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none"
+                          : "border-rose-200 bg-white shadow-sm dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none"
                       }`}>
                       {/* Prominent Header Banner */}
                       <div
                         className={`flex items-center justify-between border-b px-5 py-3 ${
                           res.isCorrect
-                            ? "border-emerald-500/20 bg-emerald-950/40"
-                            : "border-rose-500/20 bg-rose-950/40"
+                            ? "border-emerald-200 bg-emerald-50/70 dark:border-emerald-500/20 dark:bg-emerald-950/40"
+                            : "border-rose-200 bg-rose-50/70 dark:border-rose-500/20 dark:bg-rose-950/40"
                         }`}>
                         <div className="flex items-center gap-3">
                           <div
                             className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-xs font-black uppercase ${
                               res.isCorrect
-                                ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300"
-                                : "border-rose-500/40 bg-rose-500/20 text-rose-300"
+                                ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                                : "border-rose-500/40 bg-rose-500/15 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
                             }`}>
                             {res.isCorrect ? (
                               <CheckCircle2 className="h-4 w-4 text-emerald-400" />
@@ -1132,8 +1136,8 @@ export function QuizModule({
                         <span
                           className={`rounded-lg border px-3 py-1 font-mono text-[11px] font-extrabold tracking-wider uppercase ${
                             res.isCorrect
-                              ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
-                              : "border-rose-500/30 bg-rose-500/20 text-rose-300"
+                              ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                              : "border-rose-500/30 bg-rose-500/15 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
                           }`}>
                           {res.isCorrect ? "ĐÚNG" : "SAI"}
                         </span>
@@ -1141,17 +1145,17 @@ export function QuizModule({
 
                       {/* Question Content & Answer Comparison */}
                       <div className="space-y-4 p-5">
-                        <div className="text-xs leading-relaxed font-bold text-slate-100">
+                        <div className="text-xs leading-relaxed font-bold text-slate-900 dark:text-slate-100">
                           <FormattedQuestionText text={res.questionText} />
                         </div>
 
                         {/* Options / Answer Box Comparison */}
-                        <div className="space-y-2 border-t border-slate-800/80 pt-3 text-xs">
+                        <div className="space-y-2 border-t border-slate-200 pt-3 text-xs dark:border-slate-800/80">
                           <div
                             className={`flex items-start gap-2 rounded-xl border p-3 ${
                               res.isCorrect
-                                ? "border-emerald-500/30 bg-emerald-950/30 text-emerald-200"
-                                : "border-rose-500/30 bg-rose-950/30 text-rose-200"
+                                ? "border-emerald-500/30 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200"
+                                : "border-rose-500/30 bg-rose-50 text-rose-800 dark:bg-rose-950/30 dark:text-rose-200"
                             }`}>
                             <span className="font-semibold text-slate-400">Lựa chọn của bạn:</span>
                             <span className="font-mono font-bold">
@@ -1160,8 +1164,8 @@ export function QuizModule({
                           </div>
 
                           {res.correctAnswer && !res.isCorrect && (
-                            <div className="flex items-start gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950/30 p-3 text-emerald-300">
-                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                            <div className="flex items-start gap-2 rounded-xl border border-emerald-500/40 bg-emerald-50 p-3 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                               <div>
                                 <span className="font-semibold text-emerald-400">
                                   Đáp án chính xác:{" "}
@@ -1183,12 +1187,12 @@ export function QuizModule({
 
       {/* ⚠️ CONFIRMATION START MODAL */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="max-w-sm border-slate-800 bg-slate-900/95 text-slate-100 shadow-2xl backdrop-blur-xl">
+        <DialogContent className="max-w-sm border-slate-200 bg-white text-slate-900 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-100">
           <DialogHeader className="space-y-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/15 text-indigo-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-400">
               <Play className="h-5 w-5 fill-current" />
             </div>
-            <DialogTitle className="text-sm font-bold text-slate-100">
+            <DialogTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
               Bắt đầu bài thi trắc nghiệm?
             </DialogTitle>
             <DialogDescription className="text-xs leading-relaxed text-slate-400">
@@ -1202,7 +1206,7 @@ export function QuizModule({
               variant="ghost"
               size="sm"
               onClick={() => setShowConfirmDialog(false)}
-              className="h-8 text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200">
+              className="h-8 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
               Hủy
             </Button>
             <Button

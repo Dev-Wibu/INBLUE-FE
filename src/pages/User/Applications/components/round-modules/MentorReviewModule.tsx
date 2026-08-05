@@ -315,7 +315,7 @@ function ProgressHub({
   onSelectStep: (step: StepKey) => void;
 }) {
   return (
-    <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/40 dark:shadow-lg dark:backdrop-blur-md">
+    <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
       <div className="flex w-full items-start justify-between">
         {STEP_DEFS.map((step, i) => {
           const isActive = i === viewedIndex;
@@ -537,7 +537,7 @@ function SelectMentorStep({
 
   if (error || !mentors || mentors.length === 0) {
     return (
-      <Card className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center shadow-sm dark:border-rose-900/40 dark:bg-rose-950/20">
+      <Card className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80">
         <AlertCircle className="mx-auto h-12 w-12 text-rose-400" />
         <h3 className="mt-4 text-lg font-black text-rose-900 dark:text-rose-100">
           Chưa có mentor nào được chỉ định
@@ -555,7 +555,7 @@ function SelectMentorStep({
   return (
     <>
       <div className="space-y-5">
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800/80 dark:bg-gradient-to-r dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-950/95 dark:shadow-lg dark:backdrop-blur-md">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
@@ -804,7 +804,7 @@ function MentorDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-h-[90vh] max-w-5xl overflow-hidden border border-slate-200 bg-white p-0 text-slate-900 shadow-xl dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:shadow-2xl">
+        className="max-h-[90vh] max-w-5xl overflow-hidden border border-slate-200 bg-white p-0 text-slate-900 shadow-xl dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:shadow-none">
         <div className="flex items-center justify-end border-b border-slate-200 bg-slate-50/70 px-4 py-3 dark:border-slate-800/80 dark:bg-slate-900/70">
           <DialogClose className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white">
             <X className="h-4 w-4" />
@@ -2104,7 +2104,7 @@ function CompletedResultView({
           )}
 
           {session.recordUrl && (
-            <Card className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 shadow-sm dark:border-indigo-900/60 dark:bg-indigo-950/30">
+            <Card className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-indigo-900 dark:text-indigo-100">
                   <Video className="h-4 w-4" />

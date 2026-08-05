@@ -74,7 +74,7 @@ function CompanyAvatar({
 
   return (
     <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden border border-slate-700/80 bg-slate-800 text-indigo-400 shadow-2xs ${className}`}>
+      className={`flex shrink-0 items-center justify-center overflow-hidden border border-slate-200 bg-white text-indigo-600 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800 dark:text-indigo-400 ${className}`}>
       {logoUrl && !imgError ? (
         <img
           src={logoUrl}
@@ -109,14 +109,14 @@ function ModernGaugeClock({
   const styles =
     color === "emerald"
       ? {
-          ring: "text-emerald-400",
-          text: "text-emerald-400",
-          bg: "border-emerald-500/20 bg-emerald-950/20",
+          ring: "text-emerald-500 dark:text-emerald-400",
+          text: "text-emerald-600 dark:text-emerald-400",
+          bg: "border-emerald-200 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-950/20",
         }
       : {
-          ring: "text-indigo-400",
-          text: "text-indigo-400",
-          bg: "border-indigo-500/20 bg-indigo-950/20",
+          ring: "text-indigo-500 dark:text-indigo-400",
+          text: "text-indigo-600 dark:text-indigo-400",
+          bg: "border-indigo-200 bg-indigo-50 dark:border-indigo-500/20 dark:bg-indigo-950/20",
         };
 
   return (
@@ -130,7 +130,7 @@ function ModernGaugeClock({
             r={radius}
             stroke="currentColor"
             strokeWidth="7"
-            className="text-slate-800"
+            className="text-slate-200 dark:text-slate-800"
             fill="transparent"
           />
           {hasData && (
@@ -153,7 +153,7 @@ function ModernGaugeClock({
             className={`text-xl font-black tracking-tight ${hasData ? styles.text : "text-slate-500"}`}>
             {hasData ? `${displayScore}%` : "--"}
           </span>
-          <span className="text-[8px] font-extrabold tracking-wider text-slate-400 uppercase">
+          <span className="text-[8px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
             {label}
           </span>
         </div>
@@ -291,14 +291,14 @@ export function CvScreeningModule({
   return (
     <div className="space-y-6">
       {/* 🌟 Single Unified Top Storyline Banner (Consolidated Instruction & Report Bar) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-md backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+              <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {fileUrl || isCompleted
                   ? "BÁO CÁO ĐÁNH GIÁ CV HỒ SƠ AI"
                   : "VÒNG 1: LỌC CV • HƯỚNG DẪN LÀM BÀI"}
@@ -306,7 +306,7 @@ export function CvScreeningModule({
               <span className="text-slate-600">•</span>
               <span className="text-xs font-semibold text-indigo-400">Vòng 1: Lọc CV</span>
             </div>
-            <p className="mt-0.5 text-sm font-semibold text-slate-200">
+            <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {fileUrl || isCompleted
                 ? detail?.finalResult === "PASSED" || isCompleted
                   ? "Ứng viên đạt yêu cầu lọc hồ sơ và đủ điều kiện bước vào vòng đánh giá tiếp theo."
@@ -326,8 +326,8 @@ export function CvScreeningModule({
             <span
               className={
                 detail.finalResult === "PASSED"
-                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-300 shadow-sm shadow-emerald-950/40"
-                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-300 shadow-sm shadow-rose-950/40"
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:text-emerald-300 dark:shadow-emerald-950/40"
+                  : "inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-4 py-1.5 text-xs font-extrabold text-rose-700 shadow-sm shadow-rose-100 dark:text-rose-300 dark:shadow-rose-950/40"
               }>
               {detail.finalResult === "PASSED" ? (
                 <CheckCircle2 className="h-4 w-4" />
@@ -337,7 +337,7 @@ export function CvScreeningModule({
               <span>KẾT QUẢ: {detail.finalResult}</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-300 shadow-sm shadow-indigo-950/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
               <span>{fileUrl ? "ĐÃ NỘP CV" : "SẮN SÀNG PHÂN TÍCH"}</span>
             </span>
@@ -349,15 +349,17 @@ export function CvScreeningModule({
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         {/* 📄 LEFT COLUMN (30% - lg:col-span-4): Supporting Resume Preview (Sticky) */}
         <div className="space-y-4 lg:sticky lg:top-20 lg:col-span-4">
-          <Card className="flex flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md backdrop-blur-md">
+          <Card className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80">
             {/* Header */}
-            <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="mb-3 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
                   <FileCheck2 className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-100">Hồ sơ CV (Trang 1/1)</h3>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                    Hồ sơ CV (Trang 1/1)
+                  </h3>
                   <p className="text-[10px] text-slate-400">Tài liệu minh chứng</p>
                 </div>
               </div>
@@ -368,7 +370,7 @@ export function CvScreeningModule({
                     href={fileUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/80 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-700">
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-700">
                     <ExternalLink className="h-3 w-3" />
                     <span>Mở tab mới</span>
                   </a>
@@ -376,7 +378,7 @@ export function CvScreeningModule({
                     href={fileUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2 py-1 text-[11px] font-semibold text-indigo-300 hover:bg-indigo-500/20">
+                    className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20">
                     <Download className="h-3 w-3" />
                     <span>Tải CV</span>
                   </a>
@@ -387,11 +389,11 @@ export function CvScreeningModule({
             {/* Document Preview Canvas (First Page Focus) */}
             {fileUrl ? (
               <div className="space-y-2">
-                <div className="relative h-[600px] w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-inner">
+                <div className="relative h-[600px] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-inner dark:border-slate-800 dark:bg-slate-950">
                   <iframe
                     src={`${fileUrl}#toolbar=0&navpanes=0&view=FitH`}
                     title="Resume Preview"
-                    className="h-full w-full rounded-xl border-none bg-slate-950"
+                    className="h-full w-full rounded-xl border-none bg-white dark:bg-slate-950"
                   />
                 </div>
                 <p className="text-center text-[10px] text-slate-500">
@@ -399,7 +401,7 @@ export function CvScreeningModule({
                 </p>
               </div>
             ) : (
-              <div className="flex min-h-[380px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6 text-center">
+              <div className="flex min-h-[380px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-6 text-center dark:border-slate-800 dark:bg-slate-950/40">
                 {!isCompleted && isCurrent ? (
                   <div className="relative flex min-h-[300px] w-full flex-1 flex-col items-center justify-center">
                     <input
@@ -410,7 +412,7 @@ export function CvScreeningModule({
                       className="absolute inset-0 cursor-pointer opacity-0"
                     />
                     <Upload className="pointer-events-none mb-3 h-9 w-9 text-indigo-400" />
-                    <p className="pointer-events-none text-xs font-bold text-slate-200">
+                    <p className="pointer-events-none text-xs font-bold text-slate-800 dark:text-slate-200">
                       {selectedFileName ? (
                         <span className="font-mono text-xs text-indigo-400">
                           📄 {selectedFileName}
@@ -459,24 +461,24 @@ export function CvScreeningModule({
         {/* 🧠 CENTER COLUMN (45% - lg:col-span-5): Main Storytelling Area */}
         <div className="space-y-5 lg:col-span-5">
           {/* SECTION 1: AI Executive Summary (Priority 1 - Notion AI Theme) */}
-          <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/90 to-slate-900/90 p-5 shadow-lg shadow-indigo-950/20 backdrop-blur-md">
-            <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
+          <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800/80">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/20 text-indigo-300">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                   <Bot className="h-4 w-4" />
                 </div>
-                <h3 className="text-xs font-extrabold tracking-wider text-indigo-300 uppercase">
+                <h3 className="text-xs font-extrabold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
                   BÁO CÁO TỔNG QUAN AI
                 </h3>
               </div>
 
-              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-400/40 bg-indigo-500/15 px-3 py-1 text-[11px] font-extrabold text-indigo-200 shadow-xs">
-                <Sparkles className="h-3.5 w-3.5 text-indigo-300" />
+              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-extrabold text-indigo-700 shadow-xs dark:border-indigo-400/40 dark:bg-indigo-500/15 dark:text-indigo-200">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
                 <span>ĐỀ XUẤT TỪ AI</span>
               </span>
             </div>
 
-            <p className="text-sm leading-relaxed font-normal text-slate-200">
+            <p className="text-sm leading-relaxed font-normal text-slate-700 dark:text-slate-200">
               {aiFeedback?.generalComment ||
                 (hasAiData
                   ? "Báo cáo phân tích đang được cập nhật..."
@@ -485,21 +487,21 @@ export function CvScreeningModule({
           </Card>
 
           {/* SECTION 2: Strengths Card (Priority 2 - Green Theme) */}
-          <Card className="space-y-3 rounded-2xl border border-emerald-500/30 bg-slate-900/80 p-5 shadow-md">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+          <Card className="space-y-3 rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
                 <CheckCircle2 className="h-3.5 w-3.5" />
               </div>
-              <h4 className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
+              <h4 className="text-xs font-bold tracking-wider text-emerald-700 uppercase dark:text-emerald-400">
                 Điểm mạnh nổi bật
               </h4>
             </div>
 
             {strengths.length > 0 ? (
-              <ul className="space-y-2 text-sm text-slate-200">
+              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
                 {strengths.map((st, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                     <span className="leading-relaxed">{st}</span>
                   </li>
                 ))}
@@ -512,21 +514,21 @@ export function CvScreeningModule({
           </Card>
 
           {/* SECTION 3: Weaknesses Card (Priority 2 - Orange/Amber Theme) */}
-          <Card className="space-y-3 rounded-2xl border border-amber-500/30 bg-slate-900/80 p-5 shadow-md">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md border border-amber-500/20 bg-amber-500/10 text-amber-400">
+          <Card className="space-y-3 rounded-2xl border border-amber-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
                 <AlertTriangle className="h-3.5 w-3.5" />
               </div>
-              <h4 className="text-xs font-bold tracking-wider text-amber-400 uppercase">
+              <h4 className="text-xs font-bold tracking-wider text-amber-700 uppercase dark:text-amber-400">
                 Điểm cần bổ sung & Cải thiện
               </h4>
             </div>
 
             {weaknesses.length > 0 ? (
-              <ul className="space-y-2 text-sm text-slate-200">
+              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
                 {weaknesses.map((wk, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
                     <span className="leading-relaxed">{wk}</span>
                   </li>
                 ))}
@@ -540,12 +542,12 @@ export function CvScreeningModule({
 
           {/* SECTION 4: Red Flags Card (Highest Visual Emphasis - Red Theme) */}
           {redFlags.length > 0 && (
-            <Card className="space-y-3 rounded-2xl border border-rose-500/50 bg-rose-950/30 p-5 shadow-lg ring-1 shadow-rose-950/20 ring-rose-500/30">
-              <div className="flex items-center gap-2 border-b border-rose-500/30 pb-2.5">
-                <div className="flex h-6 w-6 animate-pulse items-center justify-center rounded-md border border-rose-500/40 bg-rose-500/20 text-rose-400">
+            <Card className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-sm ring-1 ring-rose-100 dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none dark:ring-0">
+              <div className="flex items-center gap-2 border-b border-rose-200 pb-2.5 dark:border-rose-500/30">
+                <div className="flex h-6 w-6 animate-pulse items-center justify-center rounded-md border border-rose-300 bg-rose-100 text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/20 dark:text-rose-400">
                   <ShieldAlert className="h-4 w-4" />
                 </div>
-                <h4 className="text-xs font-bold tracking-wider text-rose-300 uppercase">
+                <h4 className="text-xs font-bold tracking-wider text-rose-700 uppercase dark:text-rose-300">
                   Cảnh báo rủi ro tiềm ẩn
                 </h4>
               </div>
@@ -554,8 +556,8 @@ export function CvScreeningModule({
                 {redFlags.map((rf, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-950/40 p-3 text-sm leading-relaxed text-rose-200">
-                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
+                    className="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-white p-3 text-sm leading-relaxed text-rose-800 dark:border-rose-500/30 dark:bg-rose-950/40 dark:text-rose-200">
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
                     <span>{rf}</span>
                   </div>
                 ))}
@@ -564,13 +566,13 @@ export function CvScreeningModule({
           )}
 
           {/* SECTION 5: HR Feedback Card (Styled like a Linear Human Comment) */}
-          <Card className="space-y-3 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-md">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/20 text-indigo-300">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                   <UserCheck className="h-4 w-4" />
                 </div>
-                <h4 className="text-xs font-bold tracking-wider text-indigo-300 uppercase">
+                <h4 className="text-xs font-bold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
                   NHẬN XÉT TRỰC TIẾP TỪ HỘI ĐỒNG HR
                 </h4>
               </div>
@@ -579,7 +581,7 @@ export function CvScreeningModule({
             </div>
 
             {detail?.hrNote ? (
-              <div className="rounded-xl border-l-2 border-indigo-500 bg-slate-950/60 p-3.5 text-sm leading-relaxed text-slate-200 italic">
+              <div className="rounded-xl border-l-2 border-indigo-500 bg-slate-50 p-3.5 text-sm leading-relaxed text-slate-700 italic dark:bg-slate-950/60 dark:text-slate-200">
                 "{detail.hrNote}"
               </div>
             ) : (
@@ -593,11 +595,13 @@ export function CvScreeningModule({
         {/* 📊 RIGHT COLUMN (25% - lg:col-span-3): Compact Analytics & ATS Insight Panel */}
         <div className="space-y-5 lg:col-span-3">
           {/* WIDGET 1: Modern Dual Match Score Clocks (AI Score & HR Score) */}
-          <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-indigo-400" />
-                <h4 className="text-xs font-bold text-slate-200">Chỉ số Match Score</h4>
+                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
+                  Chỉ số Match Score
+                </h4>
               </div>
               <span className="text-[10px] font-semibold text-slate-400">AI vs HR</span>
             </div>
@@ -618,14 +622,14 @@ export function CvScreeningModule({
             </div>
 
             {/* WIDGET 2: Full 5-Metrics Criteria Breakdown Progress Bars */}
-            <div className="space-y-2.5 border-t border-slate-800 pt-3 text-xs">
+            <div className="space-y-2.5 border-t border-slate-200 pt-3 text-xs dark:border-slate-800">
               <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
                 Phân tích tiêu chí chi tiết
               </span>
 
               {/* 1. Overall CV Match */}
               <div>
-                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
+                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                   <span>Độ phù hợp tổng thể:</span>
                   <span className={`font-bold ${hasAiData ? "text-indigo-400" : "text-slate-500"}`}>
                     {hasAiData
@@ -633,7 +637,7 @@ export function CvScreeningModule({
                       : "--"}
                   </span>
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                   <div
                     className="h-full rounded-full bg-indigo-500 transition-all duration-500"
                     style={{
@@ -645,7 +649,7 @@ export function CvScreeningModule({
 
               {/* 2. Skills Match Score */}
               <div>
-                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
+                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                   <span>Kỹ năng chuyên môn:</span>
                   <span className={`font-bold ${hasAiData ? "text-violet-400" : "text-slate-500"}`}>
                     {hasAiData
@@ -653,7 +657,7 @@ export function CvScreeningModule({
                       : "--"}
                   </span>
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                   <div
                     className="h-full rounded-full bg-violet-500 transition-all duration-500"
                     style={{
@@ -665,7 +669,7 @@ export function CvScreeningModule({
 
               {/* 3. Experience Match Score */}
               <div>
-                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
+                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                   <span>Kinh nghiệm làm việc:</span>
                   <span className={`font-bold ${hasAiData ? "text-amber-400" : "text-slate-500"}`}>
                     {hasAiData
@@ -673,7 +677,7 @@ export function CvScreeningModule({
                       : "--"}
                   </span>
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                   <div
                     className="h-full rounded-full bg-amber-500 transition-all duration-500"
                     style={{
@@ -685,7 +689,7 @@ export function CvScreeningModule({
 
               {/* 4. Education Match Score */}
               <div>
-                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
+                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                   <span>Trình độ học vấn:</span>
                   <span
                     className={`font-bold ${hasAiData ? "text-emerald-400" : "text-slate-500"}`}>
@@ -694,7 +698,7 @@ export function CvScreeningModule({
                       : "--"}
                   </span>
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                   <div
                     className="h-full rounded-full bg-emerald-400 transition-all duration-500"
                     style={{
@@ -706,7 +710,7 @@ export function CvScreeningModule({
 
               {/* 5. CV Readability Score */}
               <div>
-                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-300">
+                <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                   <span>Trình bày & Cấu trúc:</span>
                   <span className={`font-bold ${hasAiData ? "text-blue-400" : "text-slate-500"}`}>
                     {hasAiData
@@ -714,7 +718,7 @@ export function CvScreeningModule({
                       : "--"}
                   </span>
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                   <div
                     className="h-full rounded-full bg-blue-400 transition-all duration-500"
                     style={{
@@ -727,18 +731,20 @@ export function CvScreeningModule({
           </Card>
 
           {/* WIDGET 3: ATS Keyword Matching Cloud */}
-          <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-indigo-400" />
-                <h4 className="text-xs font-bold text-slate-200">Từ khóa ATS</h4>
+                <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
+                  Từ khóa ATS
+                </h4>
               </div>
               {/* Prominent High-Contrast ATS Match Percentage Badge */}
               <span
                 className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-xs font-extrabold ${
                   hasAiData && keywordCoveragePct !== null
-                    ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300 shadow-xs shadow-emerald-950/40"
-                    : "border-slate-800 bg-slate-950 text-slate-500"
+                    ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-700 shadow-xs shadow-emerald-100 dark:text-emerald-300 dark:shadow-emerald-950/40"
+                    : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950"
                 }`}>
                 {hasAiData && keywordCoveragePct !== null
                   ? `${matchedKeywordsCount}/${totalKeywordsCount} (${keywordCoveragePct}%)`
@@ -755,8 +761,8 @@ export function CvScreeningModule({
                       key={kw}
                       className={
                         isMatched
-                          ? "inline-flex items-center gap-1 rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-extrabold text-emerald-300 shadow-2xs"
-                          : "inline-flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-[11px] font-medium text-slate-500"
+                          ? "inline-flex items-center gap-1 rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-extrabold text-emerald-700 shadow-2xs dark:text-emerald-300"
+                          : "inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-950"
                       }>
                       {isMatched ? (
                         <CheckCircle2 className="h-3 w-3" />
@@ -769,7 +775,7 @@ export function CvScreeningModule({
                 })}
               </div>
             ) : (
-              <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 p-3 text-center text-[11px] text-slate-500">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center text-[11px] text-slate-500 dark:border-slate-800/60 dark:bg-slate-950/60">
                 {hasAiData
                   ? "Chưa trích xuất từ khóa ATS từ CV."
                   : "Vui lòng tải lên CV để hệ thống phân tích mật độ từ khóa."}
@@ -778,31 +784,35 @@ export function CvScreeningModule({
           </Card>
 
           {/* WIDGET 4: Job Requirements Matrix (Full Length - No Inner Scrollbar!) */}
-          <Card className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-md">
-            <div className="flex items-center gap-2.5 border-b border-slate-800 pb-2.5">
+          <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+            <div className="flex items-center gap-2.5 border-b border-slate-200 pb-2.5 dark:border-slate-800">
               <CompanyAvatar
                 logoUrl={jdInfo?.logoUrl}
                 companyName={jdInfo?.companyName}
                 className="h-8 w-8 rounded-lg"
               />
               <div className="min-w-0 flex-1">
-                <h4 className="truncate text-xs font-bold text-slate-100">{jdInfo?.companyName}</h4>
-                <p className="truncate text-[11px] font-medium text-indigo-400">{jdInfo?.title}</p>
+                <h4 className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
+                  {jdInfo?.companyName}
+                </h4>
+                <p className="truncate text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+                  {jdInfo?.title}
+                </p>
               </div>
             </div>
 
             <div className="space-y-2.5">
-              <div className="flex items-center justify-between border-b border-slate-800/60 pb-2">
-                <span className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
-                  <BadgeCheck className="h-4 w-4 text-indigo-400" />
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800/60">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   <span>Độ khớp Yêu cầu</span>
                 </span>
                 {/* Prominent High-Contrast Requirement Coverage Percentage Badge */}
                 <span
                   className={`inline-flex items-center gap-1 rounded-full border px-3 py-0.5 font-mono text-xs font-extrabold ${
                     hasAiData && keywordCoveragePct !== null
-                      ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-300 shadow-xs shadow-indigo-950/40"
-                      : "border-slate-800 bg-slate-950 text-slate-500"
+                      ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-700 shadow-xs shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40"
+                      : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950"
                   }`}>
                   {hasAiData && keywordCoveragePct !== null
                     ? `${keywordCoveragePct}% Match`
@@ -815,8 +825,8 @@ export function CvScreeningModule({
                 {parsedRequirements.map((req, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-2.5 rounded-xl border border-slate-800/80 bg-slate-950/80 p-2.5 text-xs leading-relaxed text-slate-200 shadow-2xs transition-colors hover:border-indigo-500/30">
-                    <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
+                    className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 text-xs leading-relaxed text-slate-700 shadow-2xs transition-colors hover:border-indigo-200 dark:border-slate-800/80 dark:bg-slate-950/80 dark:text-slate-200 dark:hover:border-indigo-500/30">
+                    <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
                     <span>{req}</span>
                   </div>
                 ))}
