@@ -365,7 +365,7 @@ export function MentorOverviewPage() {
     setSelectedDateKey(todayKey);
   };
   const renderCalendarContent = () => (
-    <Card className="border-slate-200/80 dark:border-slate-800">
+    <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
       <CardHeader className="gap-4 pb-4">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -546,7 +546,7 @@ export function MentorOverviewPage() {
     </Card>
   );
   const renderAgendaContent = () => (
-    <Card className="border-slate-200/80 dark:border-slate-800">
+    <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
       <CardHeader className="space-y-4 pb-4">
         <div className="space-y-1">
           <CardTitle className="text-lg">{t("common.appointmentScheduleByDay")}</CardTitle>
@@ -725,95 +725,125 @@ export function MentorOverviewPage() {
       </CardContent>
     </Card>
   );
+  const mentorName = user?.name?.split(" ").pop() || t("common.mentor");
+  const greetingTime = now.getHours();
+  const greetingLabel =
+    greetingTime < 12
+      ? t("common.goodMorning")
+      : greetingTime < 18
+        ? t("common.goodAfternoon")
+        : t("common.goodEvening");
+
   return (
     <div className="flex flex-col gap-6">
-      <Card className="border-emerald-200/70 bg-white dark:border-emerald-900/50 dark:bg-slate-950">
-        <CardContent className="flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-              {t("common.dashboard")} {t("common.mentor")}
-            </p>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+      {/* Mentor Welcome Banner */}
+      <Card className="overflow-hidden rounded-2xl border-emerald-200/60 bg-gradient-to-r from-emerald-50/80 via-teal-50/50 to-indigo-50/80 p-1 shadow-xs dark:border-emerald-900/40 dark:bg-slate-900 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-indigo-950/30">
+        <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100/80 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              {greetingLabel}, {mentorName} 👋
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
               {t("mentorOverview.welcomeBack")} {user?.name || t("common.mentor")}
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
               {t("mentorOverview.trackAppointmentsMentoringProgressAnd")}
             </p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/mentor?tab=sessions")}>
+          <Button
+            className="h-11 shrink-0 rounded-xl bg-emerald-600 font-medium text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+            onClick={() => navigate("/mentor?tab=sessions")}>
+            <Calendar className="mr-2 h-4 w-4" />
             {t("mentorOverview.sessionManagement")}
           </Button>
         </CardContent>
       </Card>
 
+      {/* Metrics Cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="border-slate-200/80 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200/80 bg-white p-2 shadow-xs transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            <CardTitle className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("common.totalInterviewSession")}
             </CardTitle>
-            <Calendar className="h-5 w-5 text-emerald-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+              <Calendar className="h-5 w-5" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               {totalSessions}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {completedSessions} {t("mentorOverview.complete")} {upcomingSessions}{" "}
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                {completedSessions}
+              </span>{" "}
+              {t("mentorOverview.complete")}
+              {" • "}
+              <span className="font-semibold text-blue-600 dark:text-blue-400">
+                {upcomingSessions}
+              </span>{" "}
               {t("common.upcoming")}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/80 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200/80 bg-white p-2 shadow-xs transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            <CardTitle className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("mentorOverview.studentsAssisted")}
             </CardTitle>
-            <Users className="h-5 w-5 text-blue-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+              <Users className="h-5 w-5" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               {totalStudents}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
               {t("mentorOverview.calculatedBasedOnMentoringHistory")}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/80 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200/80 bg-white p-2 shadow-xs transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            <CardTitle className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("common.averageRating")}
             </CardTitle>
-            <Star className="h-5 w-5 text-yellow-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/50 dark:text-amber-400">
+              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                 {averageRating}
               </span>
-              <span className="text-sm text-slate-500">/5</span>
+              <span className="text-xs font-semibold text-slate-400">/ 5.0</span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {t("mentorOverview.basedOnSubmittedReviews")}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/80 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200/80 bg-white p-2 shadow-xs transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            <CardTitle className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("mentorOverview.estimatedTotalIncome")}
             </CardTitle>
-            <TrendingUp className="h-5 w-5 text-green-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+              <TrendingUp className="h-5 w-5" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
               {formatCurrency(totalEarnings)}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {t("mentorOverview.fromCompletedSessions")}
             </p>
           </CardContent>
@@ -822,9 +852,13 @@ export function MentorOverviewPage() {
 
       <div className="xl:hidden">
         <Tabs value={mobileView} onValueChange={setMobileView}>
-          <TabsList className="mb-3 grid w-full grid-cols-2">
-            <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list")}</TabsTrigger>
-            <TabsTrigger value={MOBILE_VIEW_CALENDAR}>{t("common.monthlyCalendar")}</TabsTrigger>
+          <TabsList className="mb-3 grid w-full grid-cols-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+            <TabsTrigger value={MOBILE_VIEW_AGENDA} className="rounded-lg">
+              {t("common.list")}
+            </TabsTrigger>
+            <TabsTrigger value={MOBILE_VIEW_CALENDAR} className="rounded-lg">
+              {t("common.monthlyCalendar")}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value={MOBILE_VIEW_AGENDA}>{renderAgendaContent()}</TabsContent>
           <TabsContent value={MOBILE_VIEW_CALENDAR}>{renderCalendarContent()}</TabsContent>
