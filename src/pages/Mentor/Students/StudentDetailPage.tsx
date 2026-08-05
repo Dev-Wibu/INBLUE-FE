@@ -148,7 +148,7 @@ export function StudentDetailPage() {
       </Button>
 
       {/* Student Profile Card */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <div className="flex items-start gap-6">
             <Avatar className="h-20 w-20">
@@ -196,37 +196,41 @@ export function StudentDetailPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <Card className="border-emerald-100 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
+              <Calendar className="h-4 w-4 text-blue-500" />
               {t("common.totalSession")}
             </CardDescription>
-            <CardTitle className="text-2xl">{totalSessions}</CardTitle>
+            <CardTitle className="text-2xl font-bold">{totalSessions}</CardTitle>
           </CardHeader>
         </Card>
-        <Card className="border-emerald-100 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <CardHeader className="pb-2">
             <CardDescription>{t("general.completed")}</CardDescription>
-            <CardTitle className="text-2xl text-green-600">{completedSessions}</CardTitle>
+            <CardTitle className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              {completedSessions}
+            </CardTitle>
           </CardHeader>
         </Card>
-        <Card className="border-emerald-100 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="h-4 w-4 text-sky-500" />
               {t("common.responseReceived")}
             </CardDescription>
-            <CardTitle className="text-2xl text-blue-600">{totalFeedbacks}</CardTitle>
+            <CardTitle className="text-2xl font-bold text-sky-600 dark:text-sky-400">
+              {totalFeedbacks}
+            </CardTitle>
           </CardHeader>
         </Card>
-        <Card className="border-emerald-100 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
-              <Star className="h-4 w-4" />
+              <Star className="h-4 w-4 text-amber-500" />
               {t("mentorMentordashboard.reviewSent")}
             </CardDescription>
-            <CardTitle className="text-2xl text-[#FFD700]">{totalReviews}</CardTitle>
+            <CardTitle className="text-2xl font-bold text-amber-500">{totalReviews}</CardTitle>
           </CardHeader>
         </Card>
       </div>
