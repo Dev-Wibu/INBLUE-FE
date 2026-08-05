@@ -22,6 +22,7 @@ import {
   RotateCcw,
   Save,
   Trash2,
+  Users,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -30,8 +31,9 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { getAvailableRoundsTemplates } from "./constants";
+import type { StaffUserOption } from "./RoundCanvasEditorWorkspace";
 import type { RoundType, UIRound, UIRoundConfig } from "./types";
-import { getBestConnection, getDistanceToSegment } from "./utils";
+import { getBestConnection, getDistanceToSegment, getLocalizedRoundName } from "./utils";
 
 export interface RoundCanvasEditorDialogProps {
   isOpen: boolean;
@@ -44,6 +46,7 @@ export interface RoundCanvasEditorDialogProps {
   isSaving?: boolean;
   showMetadataInputs?: boolean;
   initialMetadata?: { name: string; category: string; description: string };
+  staffUsers?: StaffUserOption[];
 }
 
 export function RoundCanvasEditorDialog({
@@ -54,6 +57,7 @@ export function RoundCanvasEditorDialog({
   isSaving = false,
   showMetadataInputs = false,
   initialMetadata = { name: "", category: "", description: "" },
+  staffUsers,
 }: RoundCanvasEditorDialogProps) {
   const { t } = useTranslation();
   const AVAILABLE_ROUNDS_TEMPLATES = useMemo(() => getAvailableRoundsTemplates(t), [t]);
@@ -255,7 +259,11 @@ export function RoundCanvasEditorDialog({
       setRounds([newRound].map((r, idx) => ({ ...r, roundOrder: idx + 1 })));
       setPositions([{ x: 80, y: 80 }]);
       setActiveDragType(null);
-      toast.success(`Đã thêm vòng ${template.title}`);
+      toast.success(
+        t("enterpriseJobdetailpage.addedRound", "Đã thêm vòng {{roundTitle}}", {
+          roundTitle: template.title,
+        })
+      );
       return;
     }
     if (!canvasRef.current) return;
@@ -291,7 +299,11 @@ export function RoundCanvasEditorDialog({
     setRounds(updatedRounds.map((r, idx) => ({ ...r, roundOrder: idx + 1 })));
     setPositions(newPositions);
     setActiveDragType(null);
-    toast.success(`Đã thêm vòng ${template.title}`);
+    toast.success(
+      t("enterpriseJobdetailpage.addedRound", "Đã thêm vòng {{roundTitle}}", {
+        roundTitle: template.title,
+      })
+    );
   };
 
   const handleCardPointerDown = (e: React.PointerEvent<HTMLDivElement>, idx: number) => {
@@ -359,7 +371,13 @@ export function RoundCanvasEditorDialog({
           newPositions[overlapIdx] = tempPos;
           setRounds(newRounds.map((r, i) => ({ ...r, roundOrder: i + 1 })));
           setPositions(newPositions);
-          toast.success(`Đã đổi vị trí vòng ${idx + 1} và vòng ${overlapIdx + 1}`);
+          toast.success(
+            t(
+              "enterpriseJobdetailpage.swappedRounds",
+              "Đã đổi vị trí vòng {{from}} và vòng {{to}}",
+              { from: idx + 1, to: overlapIdx + 1 }
+            )
+          );
         }
       }
     }
@@ -559,8 +577,10 @@ export function RoundCanvasEditorDialog({
                       {t("template.emptyTemplate")}
                     </h4>
                     <p className="mt-1.5 max-w-[200px] text-xs leading-relaxed text-slate-400 dark:text-slate-500">
-                      {/*Kéo các*/} {t("userApplicationhistory.rounds")} từ cột bên trái và thả vào
-                      đây để thiết lập
+                      {t(
+                        "adminInterviewTemplate.dragRoundsInstruction",
+                        "Kéo các vòng từ cột bên trái và thả vào đây để thiết lập"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -717,7 +737,7 @@ export function RoundCanvasEditorDialog({
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <h4 className="truncate text-sm font-bold text-slate-800 dark:text-slate-200">
-                                      {round.name}
+                                      {getLocalizedRoundName(round.name || "", round.roundType, t)}
                                     </h4>
                                     <p className="mt-0.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                                       {template?.title}
@@ -733,8 +753,8 @@ export function RoundCanvasEditorDialog({
                                       {round.configData?.timeLimitMinutes
                                         ? round.roundType === "MENTOR_REVIEW" ||
                                           round.roundType === "MENTROR_REVIEW"
-                                          ? `${round.configData.timeLimitMinutes / 1440} ngày`
-                                          : `${round.configData.timeLimitMinutes}p`
+                                          ? `${round.configData.timeLimitMinutes / 1440} ${t("common.days", "ngày")}`
+                                          : `${round.configData.timeLimitMinutes}${t("common.minutesShort", "p")}`
                                         : "∞"}
                                     </span>
                                   </div>
@@ -743,6 +763,27 @@ export function RoundCanvasEditorDialog({
                                     {Math.round((round.passThreshold ?? 0.8) * 100)}%
                                   </span>
                                 </div>
+                                {staffUsers && round.reviewerId != null && (
+                                  <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                                    <Users className="h-3 w-3" />
+                                    <span className="truncate">
+                                      {t("adminCompanymanagement.reviewerLabel", "Reviewer")}:{" "}
+                                      {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
+                                        `#${round.reviewerId}`}
+                                    </span>
+                                  </div>
+                                )}
+                                {staffUsers && round.reviewerId == null && (
+                                  <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    <span className="truncate">
+                                      {t(
+                                        "adminCompanymanagement.reviewerStaffCardWarning",
+                                        "Chưa gán người chấm"
+                                      )}
+                                    </span>
+                                  </div>
+                                )}
 
                                 {/* Quiz warning */}
                                 {round.roundType === "QUIZ" &&
@@ -945,6 +986,57 @@ export function RoundCanvasEditorDialog({
                       </h4>
                     </div>
                     <div className="space-y-3">
+                      {staffUsers && staffUsers.length > 0 && (
+                        <div className="space-y-1.5">
+                          <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                            {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
+                          </Label>
+                          <Select
+                            value={
+                              selectedRound.reviewerId != null
+                                ? String(selectedRound.reviewerId)
+                                : "__none__"
+                            }
+                            onValueChange={(val) =>
+                              updateRoundField(
+                                selectedRoundIndex,
+                                "reviewerId",
+                                val === "__none__" ? null : Number(val)
+                              )
+                            }>
+                            <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                              <SelectValue
+                                placeholder={t(
+                                  "adminCompanymanagement.reviewerStaffPlaceholder",
+                                  "— Chưa gán người chấm —"
+                                )}
+                              />
+                            </SelectTrigger>
+                            <SelectContent className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-900 dark:text-slate-200">
+                              <SelectItem value="__none__">
+                                {t(
+                                  "adminCompanymanagement.reviewerStaffUnassigned",
+                                  "Chưa gán người chấm"
+                                )}
+                              </SelectItem>
+                              {staffUsers.map((s) => (
+                                <SelectItem key={s.id} value={String(s.id)}>
+                                  {s.name ?? `User #${s.id}`}
+                                  {s.email ? ` (${s.email})` : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {selectedRound.reviewerId == null && (
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                              {t(
+                                "adminCompanymanagement.reviewerStaffWarning",
+                                "Cảnh báo: bài sẽ không xuất hiện trong queue chấm của Staff nào."
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-start gap-4">
                         <div
                           className={cn(
@@ -1007,7 +1099,7 @@ export function RoundCanvasEditorDialog({
                                   <span className="shrink-0 text-[9px] text-slate-400">
                                     {selectedRound.roundType === "MENTROR_REVIEW" ||
                                     selectedRound.roundType === "MENTOR_REVIEW"
-                                      ? "ngày"
+                                      ? t("common.days", "ngày")
                                       : t("common.minute")}
                                   </span>
                                 </div>
@@ -1020,8 +1112,8 @@ export function RoundCanvasEditorDialog({
                                   {(selectedRound.configData?.timeLimitMinutes ?? 0) > 0
                                     ? selectedRound.roundType === "MENTROR_REVIEW" ||
                                       selectedRound.roundType === "MENTOR_REVIEW"
-                                      ? `${(selectedRound.configData?.timeLimitMinutes ?? 0) / 1440} ngày`
-                                      : `${selectedRound.configData?.timeLimitMinutes} phút`
+                                      ? `${(selectedRound.configData?.timeLimitMinutes ?? 0) / 1440} ${t("common.days", "ngày")}`
+                                      : `${selectedRound.configData?.timeLimitMinutes} ${t("common.minutes", "phút")}`
                                     : t("adminCompanymanagement.noLimit")}
                                 </button>
                               )}

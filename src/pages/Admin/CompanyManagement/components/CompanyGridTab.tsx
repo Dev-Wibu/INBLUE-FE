@@ -15,7 +15,6 @@ import type {
   JobDescription,
   JobDescriptionFormData,
 } from "../types";
-import { CompanyDeleteDialog } from "./CompanyDeleteDialog";
 import { CompanyFormDialog } from "./CompanyFormDialog";
 import { CompanyTable } from "./CompanyTable";
 import { JobDescriptionDetailView } from "./JobDescriptionDetailView";
@@ -56,14 +55,11 @@ export function CompanyGridTab({
   const selectedJdId = propSelectedJdId !== undefined ? propSelectedJdId : internalSelectedJdId;
   const setSelectedJdId = onSelectJdId || setInternalSelectedJdId;
 
-  // Edit/Delete Company states
+  // Edit Company states (delete is disabled — soft-delete via status toggle only)
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CompanyFormData>({});
-
-  const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -162,21 +158,10 @@ export function CompanyGridTab({
     setIsFormOpen(true);
   };
 
-  const handleDeleteClick = (company: Company, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setDeletingCompany(company);
-    setIsDeleteOpen(true);
-  };
-
-  const handleToggleCompanyStatus = async (company: Company, nextStatus: "ACTIVE" | "INACTIVE") => {
+  const handleToggleCompanyStatus = async (company: Company) => {
     if (!company.id) return;
     try {
-      const res = await companyManager.update({
-        data: {
-          id: company.id,
-          status: nextStatus,
-        },
-      });
+      const res = await companyManager.toggleStatus(company.id);
       if (res.success) {
         toast.success(t("common.updateSuccess", "Cập nhật thành công"));
         onCompanyUpdate?.();
@@ -213,27 +198,6 @@ export function CompanyGridTab({
       }
     } catch {
       toast.error(t("common.cannotUpdateCompany", "Không thể cập nhật công ty"));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deletingCompany?.id) return;
-    try {
-      setIsSubmitting(true);
-      const res = await companyManager.delete(deletingCompany.id);
-      if (res.success) {
-        toast.success(
-          t("adminCompanymanagement.successfullyDeletedCompany", "Xóa công ty thành công")
-        );
-        setIsDeleteOpen(false);
-        onCompanyUpdate?.();
-      } else {
-        toast.error(res.error || t("common.cannotDeleteCompany", "Không thể xóa công ty"));
-      }
-    } catch {
-      toast.error(t("common.cannotDeleteCompany", "Không thể xóa công ty"));
     } finally {
       setIsSubmitting(false);
     }
@@ -320,12 +284,9 @@ export function CompanyGridTab({
             <JobDescriptionTable
               jobDescriptions={enrichedCompanyJds}
               onView={(jd) => setSelectedJdId(jd.id!)}
-              onToggleStatus={async (job, nextStatus) => {
+              onToggleStatus={async (job) => {
                 try {
-                  const res = await jobDescriptionManager.update({
-                    id: job.id,
-                    status: nextStatus,
-                  });
+                  const res = await jobDescriptionManager.toggleStatus(job.id!);
                   if (res.success) {
                     toast.success(t("common.updateSuccess", "Cập nhật thành công"));
                     void refetchCompanyJds();
@@ -378,11 +339,11 @@ export function CompanyGridTab({
       {searchQuery && (
         <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
           <span className="text-xs text-slate-500">
-            Hiển thị{" "}
+            {t("common.showing", "Hiển thị")}{" "}
             <strong className="text-slate-800 dark:text-slate-200">
               {filteredCompanies.length}
             </strong>{" "}
-            / <strong>{companies.length}</strong> kết quả
+            / <strong>{companies.length}</strong> {t("common.resultsUnit", "kết quả")}
           </span>
         </div>
       )}
@@ -392,7 +353,6 @@ export function CompanyGridTab({
           companies={pageCompanies}
           onSelectCompany={(company) => setSelectedCompanyId(company.id!)}
           onEditCompany={handleEditClick}
-          onDeleteCompany={handleDeleteClick}
           onToggleStatus={handleToggleCompanyStatus}
         />
       </div>
@@ -409,7 +369,7 @@ export function CompanyGridTab({
         </div>
       )}
 
-      {/* Edit / Delete Dialogs */}
+      {/* Edit Dialog (Delete is not exposed — soft-delete via status toggle only) */}
       <CompanyFormDialog
         isOpen={isFormOpen}
         onOpenChange={setIsFormOpen}
@@ -423,13 +383,6 @@ export function CompanyGridTab({
         )}
         submitLabel={t("common.save", "Lưu thay đổi")}
         isSubmitting={isSubmitting}
-      />
-
-      <CompanyDeleteDialog
-        isOpen={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        company={deletingCompany}
-        onConfirm={handleDeleteConfirm}
       />
     </div>
   );

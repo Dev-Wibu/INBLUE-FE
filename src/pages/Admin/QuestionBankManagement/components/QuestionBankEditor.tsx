@@ -72,6 +72,7 @@ export function QuestionBankEditor({
 
   const [formData, setFormData] = useState<Partial<QuestionBankFormData>>({
     options: ["", "", "", ""],
+    questionLevel: "EASY",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Category creation
@@ -99,7 +100,7 @@ export function QuestionBankEditor({
         correctAnswer: initialData.correctAnswer,
       });
     } else {
-      setFormData({ options: ["", "", "", ""] });
+      setFormData({ options: ["", "", "", ""], questionLevel: "EASY" });
     }
   }, [initialData]);
 
@@ -156,19 +157,41 @@ export function QuestionBankEditor({
     const oldValue = opts[index];
     opts[index] = value;
 
-    if (formData.correctAnswer && formData.correctAnswer === oldValue && oldValue !== "") {
-      patch({ options: opts, correctAnswer: value });
-    } else {
-      patch({ options: opts });
+    // If the edited option was the currently-selected correct answer, keep
+    // the selection pinned to this option by tracking its letter rather than
+    // the previous text. That way, if the user clears the text we don't lose
+    // the "this row is the answer" intent – we'll just fall back to the
+    // letter and re-attach to the new text as soon as it's typed.
+    if (formData.correctAnswer) {
+      const optLetter = String.fromCharCode(65 + index);
+      const wasSelectedAsText = formData.correctAnswer === oldValue && oldValue !== "";
+      const wasSelectedAsLetter = formData.correctAnswer === optLetter;
+
+      if (wasSelectedAsText || wasSelectedAsLetter) {
+        const next = value.trim() !== "" ? value : optLetter;
+        patch({ options: opts, correctAnswer: next });
+        return;
+      }
     }
+
+    patch({ options: opts });
   };
 
-  const toggleCorrectAnswer = (value: string) => {
-    if (!value.trim()) return;
-    if (formData.correctAnswer === value) {
+  const toggleCorrectAnswer = (index: number) => {
+    const optLetter = String.fromCharCode(65 + index);
+    const optText = (formData.options || [])[index] ?? "";
+
+    // The backend persists `correctAnswer` as a string that must match one
+    // of the `options` entries (or be a letter that resolves to one). Pick
+    // the most descriptive value available so the API never receives an
+    // empty string – which is what produced the
+    // "Correct answer is required" error.
+    const candidate = optText.trim() !== "" ? optText : optLetter;
+
+    if (formData.correctAnswer === candidate) {
       patch({ correctAnswer: "" });
     } else {
-      patch({ correctAnswer: value });
+      patch({ correctAnswer: candidate });
     }
   };
 
@@ -184,13 +207,50 @@ export function QuestionBankEditor({
       return;
     }
 
+    // Validate that the user has picked a correct answer. We also resolve
+    // the answer back to the matching option text if the user only set a
+    // letter (e.g. "A") while the option was still empty, so the backend
+    // always receives a fully-populated value that matches one of the
+    // `options` entries.
+    const rawAnswer = (formData.correctAnswer ?? "").trim();
+    if (!rawAnswer) {
+      toast.error(
+        t(
+          "question.pleaseSelectCorrectAnswer",
+          "Please select a correct answer (click the A/B/C/D badge next to one option)."
+        )
+      );
+      return;
+    }
+    const opts = formData.options || [];
+    const answerIndex = (() => {
+      if (rawAnswer.length === 1) {
+        const idx = rawAnswer.toUpperCase().charCodeAt(0) - 65;
+        if (idx >= 0 && idx < opts.length) return idx;
+      }
+      return opts.findIndex((o) => o === rawAnswer);
+    })();
+    if (answerIndex === -1 || !opts[answerIndex] || opts[answerIndex].trim() === "") {
+      toast.error(
+        t(
+          "question.pleaseSelectCorrectAnswer",
+          "Please select a correct answer (click the A/B/C/D badge next to one option)."
+        )
+      );
+      return;
+    }
+    const payload: QuestionBankFormData = {
+      ...(formData as QuestionBankFormData),
+      correctAnswer: opts[answerIndex],
+    };
+
     setIsSubmitting(true);
     try {
       let res;
       if (initialData?.id) {
-        res = await questionBankManager.update(initialData.id, formData as QuestionBankFormData);
+        res = await questionBankManager.update(initialData.id, payload);
       } else {
-        res = await questionBankManager.create(formData as QuestionBankFormData);
+        res = await questionBankManager.create(payload);
       }
 
       if (res.success) {
@@ -276,8 +336,17 @@ export function QuestionBankEditor({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] w-full max-w-6xl flex-col gap-0 overflow-hidden rounded-2xl border-slate-200 p-0 shadow-2xl dark:border-slate-800 [&>button]:hidden">
         <DialogHeader className="hidden">
-          <DialogTitle>{initialData?.id ? "Chi tiết câu hỏi" : "Tạo câu hỏi mới"}</DialogTitle>
-          <DialogDescription>Tạo hoặc chỉnh sửa câu hỏi trắc nghiệm</DialogDescription>
+          <DialogTitle>
+            {initialData?.id
+              ? t("adminQuestionbankmanagement.questionDetails", "Chi tiết câu hỏi")
+              : t("adminQuestionbankmanagement.createQuestion", "Tạo câu hỏi mới")}
+          </DialogTitle>
+          <DialogDescription>
+            {t(
+              "adminQuestionbankmanagement.createOrEditDesc",
+              "Tạo hoặc chỉnh sửa câu hỏi trắc nghiệm"
+            )}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex h-full flex-col overflow-hidden bg-slate-50/50 dark:bg-slate-950">
@@ -285,7 +354,9 @@ export function QuestionBankEditor({
           <div className="flex flex-none items-center justify-between border-b border-slate-200/80 bg-white px-6 py-3.5 dark:border-slate-800/80 dark:bg-slate-900">
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                {initialData?.id ? "Chi tiết câu hỏi" : "Tạo câu hỏi mới"}
+                {initialData?.id
+                  ? t("adminQuestionbankmanagement.questionDetails", "Chi tiết câu hỏi")
+                  : t("adminQuestionbankmanagement.createQuestion", "Tạo câu hỏi mới")}
               </h2>
             </div>
             <Button
@@ -308,7 +379,10 @@ export function QuestionBankEditor({
                       <FileText className="h-3.5 w-3.5" />
                     </div>
                     <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                      Nội dung câu hỏi (Live Document)
+                      {t(
+                        "adminQuestionbankmanagement.liveDocTitle",
+                        "Nội dung câu hỏi (Live Document)"
+                      )}
                     </span>
                   </div>
                   {!showAI && (
@@ -323,11 +397,12 @@ export function QuestionBankEditor({
                           id: `b-${Date.now()}`,
                           type: "code",
                           lang: "javascript",
-                          content: "// Thêm mã nguồn tại đây\n",
+                          content: `${t("adminQuestionbankmanagement.addCodeHereComment", "// Thêm mã nguồn tại đây")}\n`,
                         });
                         patch({ questionText: serializeBlocks(blocks) });
                       }}>
-                      <Plus className="h-3.5 w-3.5" /> Chèn Code Block
+                      <Plus className="h-3.5 w-3.5" />{" "}
+                      {t("adminQuestionbankmanagement.insertCodeBlock", "Chèn Code Block")}
                     </Button>
                   )}
                 </div>
@@ -338,7 +413,10 @@ export function QuestionBankEditor({
                       <div className="flex items-center gap-2 border-b border-indigo-50 pb-3 dark:border-indigo-950">
                         <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                         <h3 className="text-xs font-bold tracking-wider text-indigo-900 uppercase dark:text-indigo-200">
-                          Sinh câu hỏi thông minh bằng AI
+                          {t(
+                            "adminQuestionbankmanagement.aiGenTitle",
+                            "Sinh câu hỏi thông minh bằng AI"
+                          )}
                         </h3>
                       </div>
                       <div className="space-y-2">
@@ -422,7 +500,7 @@ export function QuestionBankEditor({
                                   patch({ questionText: serializeBlocks(nextBlocks) });
                                 }}
                                 className="text-xs text-slate-500 transition-colors hover:text-rose-400">
-                                Xóa Code Block
+                                {t("adminQuestionbankmanagement.deleteCodeBlock", "Xóa Code Block")}
                               </button>
                             </div>
                             <Textarea
@@ -433,7 +511,10 @@ export function QuestionBankEditor({
                                 patch({ questionText: serializeBlocks(nextBlocks) });
                               }}
                               rows={Math.max(4, block.content.split("\n").length)}
-                              placeholder="Nhập mã nguồn..."
+                              placeholder={t(
+                                "adminQuestionbankmanagement.enterSourceCode",
+                                "Nhập mã nguồn..."
+                              )}
                               className="w-full resize-y border-0 bg-transparent p-4 font-mono text-[13px] leading-relaxed text-emerald-400 focus:outline-none focus-visible:ring-0 dark:text-emerald-300"
                             />
                           </div>
@@ -450,7 +531,10 @@ export function QuestionBankEditor({
                             patch({ questionText: serializeBlocks(nextBlocks) });
                           }}
                           rows={Math.max(3, block.content.split("\n").length)}
-                          placeholder="Nhập nội dung văn bản câu hỏi..."
+                          placeholder={t(
+                            "adminQuestionbankmanagement.enterTextContent",
+                            "Nhập nội dung văn bản câu hỏi..."
+                          )}
                           className="w-full resize-y rounded-xl border-slate-200 bg-slate-50/50 p-3.5 text-[14px] leading-relaxed text-slate-800 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                         />
                       );
@@ -471,7 +555,7 @@ export function QuestionBankEditor({
                         <FolderTree className="h-3.5 w-3.5" />
                       </div>
                       <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                        Cấu Hình Câu Hỏi
+                        {t("adminQuestionbankmanagement.questionConfig", "Cấu Hình Câu Hỏi")}
                       </span>
                     </div>
                     {initialData?.id && (
@@ -539,25 +623,28 @@ export function QuestionBankEditor({
                       </Label>
                       <ToggleGroup
                         type="single"
-                        value={formData.questionLevel || "EASY"}
+                        value={formData.questionLevel ?? "EASY"}
                         onValueChange={(val: "EASY" | "MEDIUM" | "HARD") => {
                           if (val) patch({ questionLevel: val });
                         }}
                         className="justify-start gap-2">
                         <ToggleGroupItem
                           value="EASY"
+                          aria-label="easy"
                           className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-emerald-300 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-700 dark:data-[state=on]:border-emerald-800/60 dark:data-[state=on]:bg-emerald-950/40 dark:data-[state=on]:text-emerald-400">
-                          Dễ
+                          {t("adminQuestionbankmanagement.easy", "Dễ")}
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="MEDIUM"
+                          aria-label="medium"
                           className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-amber-300 data-[state=on]:bg-amber-50 data-[state=on]:text-amber-700 dark:data-[state=on]:border-amber-800/60 dark:data-[state=on]:bg-amber-950/40 dark:data-[state=on]:text-amber-400">
-                          TB
+                          {t("adminQuestionbankmanagement.medium", "TB")}
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="HARD"
+                          aria-label="hard"
                           className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-rose-300 data-[state=on]:bg-rose-50 data-[state=on]:text-rose-700 dark:data-[state=on]:border-rose-800/60 dark:data-[state=on]:bg-rose-950/40 dark:data-[state=on]:text-rose-400">
-                          Khó
+                          {t("adminQuestionbankmanagement.hard", "Khó")}
                         </ToggleGroupItem>
                       </ToggleGroup>
                     </div>
@@ -587,15 +674,22 @@ export function QuestionBankEditor({
                   <div className="space-y-3 p-5">
                     {(formData.options || []).map((opt, idx) => {
                       const optLetter = String.fromCharCode(65 + idx);
+                      // "Correct" means either the saved answer matches this
+                      // option's text, or it matches this option's letter
+                      // (used while the option is still empty so the user
+                      // can mark an answer before typing its text).
                       const isCorrect =
-                        (formData.correctAnswer === opt && opt.trim() !== "") ||
-                        formData.correctAnswer?.trim().toUpperCase() === optLetter;
+                        (formData.correctAnswer != null &&
+                          formData.correctAnswer !== "" &&
+                          (formData.correctAnswer === opt ||
+                            formData.correctAnswer.toUpperCase() === optLetter)) ||
+                        false;
 
                       return (
                         <div key={idx} className="group relative">
                           <button
                             type="button"
-                            onClick={() => toggleCorrectAnswer(opt)}
+                            onClick={() => toggleCorrectAnswer(idx)}
                             title={t("question.markAsCorrect")}
                             className={`absolute top-1/2 left-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-[11px] font-bold transition-all ${
                               isCorrect
@@ -607,7 +701,10 @@ export function QuestionBankEditor({
                           <Input
                             value={opt}
                             onChange={(e) => updateOption(idx, e.target.value)}
-                            placeholder={`Nhập đáp án...`}
+                            placeholder={t(
+                              "adminQuestionbankmanagement.enterAnswerPlaceholder",
+                              "Nhập đáp án..."
+                            )}
                             className={`h-10 pr-9 pl-10 text-[13px] shadow-none transition-colors focus-visible:ring-indigo-500 ${
                               isCorrect
                                 ? "border-emerald-500/80 bg-emerald-50/50 font-medium text-emerald-950 dark:border-emerald-500/50 dark:bg-emerald-950/20 dark:text-emerald-50"
@@ -641,7 +738,9 @@ export function QuestionBankEditor({
                       : "text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-300"
                   }`}>
                   <Sparkles className="mr-1.5 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  {showAI ? "Ẩn Sinh AI" : "Tạo AI"}
+                  {showAI
+                    ? t("adminQuestionbankmanagement.hideAiGen", "Ẩn Sinh AI")
+                    : t("adminQuestionbankmanagement.createAi", "Tạo AI")}
                 </Button>
 
                 <Button

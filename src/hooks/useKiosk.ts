@@ -106,10 +106,35 @@ export const usePickKioskSlot = () => {
         queryClient.invalidateQueries({ queryKey: ["kiosks"] });
         queryClient.invalidateQueries({ queryKey: ["kiosk-booking", data.id] });
       }
+      if (data?.applicationDetailId) {
+        queryClient.invalidateQueries({
+          queryKey: ["kiosk-bookings", "application-detail", data.applicationDetailId],
+        });
+      }
     },
     onError: (error: Error) => {
       toast.error(getNormalizedErrorMessage(error, t("userKiosk.unableToBookKioskSlot")));
     },
+  });
+};
+
+export const useKioskBookingByApplicationDetail = (
+  applicationDetailId: number | undefined | null,
+  enabled = true
+) => {
+  return useQuery({
+    queryKey: ["kiosk-bookings", "application-detail", applicationDetailId],
+    queryFn: async (): Promise<MentorInterviewBooking | null> => {
+      if (!applicationDetailId) return null;
+      const result = await kioskManager.getBookingByApplicationDetail(applicationDetailId);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data ?? null;
+    },
+    enabled: enabled && !!applicationDetailId,
+    retry: false,
+    staleTime: 30_000,
   });
 };
 

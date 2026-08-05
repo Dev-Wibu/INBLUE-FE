@@ -74,17 +74,17 @@ export const API_ENDPOINTS = {
     UPLOAD_CV: "/api/users/upload-cv",
   },
 
-  // Mentor endpoints - Based on schema-from-be.d.ts
+  // Mentor endpoints - Based on MENTOR_AVATAR_UPDATE_GUIDE.md
   // GET /api/mentors - getAllMentors
   // POST /api/mentors - createMentor (multipart/form-data)
-  // PUT /api/mentors - updateMentor (JSON body)
+  // PUT /api/mentors/{id} - updateMentor (multipart/form-data)
   // GET /api/mentors/{id} - getMentorById
   // GET /api/mentors/toggle/{id} - toggleActive
   MENTOR: {
     LIST: "/api/mentors",
     DETAIL: "/api/mentors/:id",
     CREATE: "/api/mentors",
-    UPDATE: "/api/mentors",
+    UPDATE: "/api/mentors/:id",
     TOGGLE: "/api/mentors/toggle/:id",
   },
 
@@ -341,6 +341,7 @@ export const API_ENDPOINTS = {
     CREATE: "/api/companies",
     UPDATE: "/api/companies",
     DELETE: "/api/companies/:id",
+    TOGGLE: "/api/companies/toggle/:id",
   },
 
   // Job Descriptions endpoints - Based on schema-from-be.d.ts
@@ -352,6 +353,7 @@ export const API_ENDPOINTS = {
     SEARCH: "/api/job-descriptions/search",
     BY_COMPANY: "/api/job-descriptions/company/:companyId",
     SOFT_DELETE: "/api/job-descriptions/:id/soft",
+    TOGGLE: "/api/job-descriptions/toggle/:id",
   },
 
   // Interview rounds endpoints (Job Description rounds)

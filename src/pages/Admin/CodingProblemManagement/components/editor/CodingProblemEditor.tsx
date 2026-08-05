@@ -119,11 +119,14 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
       const res = await codingProblemManager.getById(id);
       if (res.success && res.data) setFormData(res.data);
       else {
-        toast.error(res.error || "Không thể tải chi tiết.");
+        toast.error(
+          res.error ||
+            t("adminCodingproblemmanagement.unableToLoadDetail", "Không thể tải chi tiết.")
+        );
         onBack();
       }
     } catch {
-      toast.error("Lỗi hệ thống.");
+      toast.error(t("adminCodingproblemmanagement.systemError", "Lỗi hệ thống."));
       onBack();
     } finally {
       setIsLoadingData(false);
@@ -134,7 +137,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
   const handleGenerateAI = async () => {
     if (!aiTopic.trim()) {
-      toast.error("Vui lòng nhập chủ đề bài tập");
+      toast.error(t("adminCodingproblemmanagement.enterTopic", "Vui lòng nhập chủ đề bài tập"));
       return;
     }
     setAiLoading(true);
@@ -150,14 +153,20 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
         },
       });
       if (res.success && res.data) {
-        toast.success("Tạo tự động thành công!");
+        toast.success(
+          t("adminCodingproblemmanagement.autoGenerateSuccess", "Tạo tự động thành công!")
+        );
         patch(res.data);
         setIsAiMode(false);
       } else {
-        toast.error(res.error || "Tạo thất bại");
+        toast.error(
+          res.error || t("adminCodingproblemmanagement.autoGenerateFailed", "Tạo thất bại")
+        );
       }
     } catch {
-      toast.error("Lỗi xảy ra trong quá trình tạo");
+      toast.error(
+        t("adminCodingproblemmanagement.errorDuringGenerate", "Lỗi xảy ra trong quá trình tạo")
+      );
     } finally {
       setAiLoading(false);
     }
@@ -224,7 +233,9 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
       <div className="flex h-full items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
-          <p className="text-sm text-slate-500">Đang tải bài tập…</p>
+          <p className="text-sm text-slate-500">
+            {t("adminCodingProblem.loadingProblem", "Đang tải bài tập…")}
+          </p>
         </div>
       </div>
     );
@@ -238,11 +249,14 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
             type="button"
             onClick={onBack}
             className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-            Vòng Coding
+            {t("adminAdmindashboard.codingProblems", "Vòng Coding")}
           </button>
           <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
           <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
-            {formData.title || (formData.id ? "Chi tiết bài tập" : "Tạo bài tập mới")}
+            {formData.title ||
+              (formData.id
+                ? t("adminCodingProblem.problemDetails", "Chi tiết bài tập")
+                : t("adminCodingProblem.createProblem", "Tạo bài tập mới"))}
           </h1>
           {formData.difficulty && (
             <span
@@ -263,14 +277,22 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
             {[
-              { id: "general", label: "Đề bài & Cấu hình", icon: FileText },
+              {
+                id: "general",
+                label: t("adminCodingProblem.tabProblemAndConfig", "Đề bài & Cấu hình"),
+                icon: FileText,
+              },
               {
                 id: "testcases",
-                label: "Test Cases Ẩn",
+                label: t("adminCodingProblem.tabHiddenTestCases", "Test Cases Ẩn"),
                 icon: PlaySquare,
                 badge: formData.hiddenTestCases?.length,
               },
-              { id: "codestubs", label: "Mã nguồn Mẫu", icon: Code2 },
+              {
+                id: "codestubs",
+                label: t("adminCodingProblem.tabCodeStubs", "Mã nguồn Mẫu"),
+                icon: Code2,
+              },
             ].map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -301,7 +323,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
           </div>
 
           <Button variant="outline" size="sm" onClick={onBack} className="h-8 text-xs">
-            Quay lại
+            {t("common.back", "Quay lại")}
           </Button>
         </div>
       </div>
@@ -322,25 +344,28 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           <Sparkles className="h-3.5 w-3.5" />
                         </div>
                         <span className="text-[11px] font-bold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
-                          Cấu Hình Đề Bài Bằng AI
+                          {t("adminCodingProblem.aiConfigTitle", "Cấu Hình Đề Bài Bằng AI")}
                         </span>
                       </div>
                       <span className="text-[10px] font-medium text-indigo-500/70">
-                        Hỗ trợ sinh tự động
+                        {t("adminCodingProblem.aiAutoSupport", "Hỗ trợ sinh tự động")}
                       </span>
                     </div>
                     <div className="flex-1 overflow-y-auto p-6">
                       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                         <div className="space-y-5">
                           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                            Thông tin bắt buộc
+                            {t("adminCodingProblem.requiredInfo", "Thông tin bắt buộc")}
                           </h3>
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Chủ đề bài toán
+                              {t("adminCodingProblem.problemTopic", "Chủ đề bài toán")}
                             </label>
                             <Input
-                              placeholder="VD: Quy hoạch động, Đồ thị..."
+                              placeholder={t(
+                                "adminCodingProblem.topicPlaceholder",
+                                "VD: Quy hoạch động, Đồ thị..."
+                              )}
                               value={aiTopic}
                               onChange={(e) => setAiTopic(e.target.value)}
                               className="h-10 border-slate-200 bg-slate-50/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
@@ -348,7 +373,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           </div>
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Độ khó mong muốn
+                              {t("adminCodingProblem.desiredDifficulty", "Độ khó mong muốn")}
                             </label>
                             <Select
                               value={aiDifficulty}
@@ -357,21 +382,29 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="EASY">Dễ (EASY)</SelectItem>
-                                <SelectItem value="MEDIUM">Trung bình (MEDIUM)</SelectItem>
-                                <SelectItem value="HARD">Khó (HARD)</SelectItem>
+                                <SelectItem value="EASY">
+                                  {t("adminCodingProblem.easyLabel", "Dễ (EASY)")}
+                                </SelectItem>
+                                <SelectItem value="MEDIUM">
+                                  {t("adminCodingProblem.mediumLabel", "Trung bình (MEDIUM)")}
+                                </SelectItem>
+                                <SelectItem value="HARD">
+                                  {t("adminCodingProblem.hardLabel", "Khó (HARD)")}
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                         </div>
                         <div className="space-y-5">
                           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                            Ngữ cảnh tuỳ chỉnh{" "}
-                            <span className="font-normal text-slate-400">(Tùy chọn)</span>
+                            {t("adminCodingProblem.customContext", "Ngữ cảnh tuỳ chỉnh")}{" "}
+                            <span className="font-normal text-slate-400">
+                              {t("common.optional", "(Tùy chọn)")}
+                            </span>
                           </h3>
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Vị trí tuyển dụng
+                              {t("adminCompanymanagement.position", "Vị trí tuyển dụng")}
                             </label>
                             <Input
                               placeholder="VD: Backend Developer"
@@ -382,10 +415,13 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           </div>
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Yêu cầu kỹ năng
+                              {t("adminCodingProblem.skillRequirements", "Yêu cầu kỹ năng")}
                             </label>
                             <Input
-                              placeholder="VD: Tối ưu bộ nhớ, Concurrency"
+                              placeholder={t(
+                                "adminCodingproblemmanagement.skillRequirementsPlaceholder",
+                                "VD: Tối ưu bộ nhớ, Concurrency"
+                              )}
                               value={aiRequirement}
                               onChange={(e) => setAiRequirement(e.target.value)}
                               className="h-10 border-slate-200 bg-slate-50/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
@@ -393,10 +429,13 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           </div>
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Ghi chú riêng
+                              {t("adminCodingProblem.privateNotes", "Ghi chú riêng")}
                             </label>
                             <Textarea
-                              placeholder="Yêu cầu bẫy, edge cases..."
+                              placeholder={t(
+                                "adminCodingProblem.privateNotesPlaceholder",
+                                "Yêu cầu bẫy, edge cases..."
+                              )}
                               value={aiPrompting}
                               onChange={(e) => setAiPrompting(e.target.value)}
                               className="h-20 resize-none border-slate-200 bg-slate-50/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
@@ -414,17 +453,20 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           <FileText className="h-3.5 w-3.5" />
                         </div>
                         <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                          Nội dung đề bài
+                          {t("adminCodingProblem.problemContent", "Nội dung đề bài")}
                         </span>
                       </div>
                       <span className="text-[10px] font-medium text-slate-400">
-                        Hỗ trợ Markdown
+                        {t("common.markdownSupported", "Hỗ trợ Markdown")}
                       </span>
                     </div>
                     <Textarea
                       value={formData.problemStatement || ""}
                       onChange={(e) => patch({ problemStatement: e.target.value })}
-                      placeholder="Mô tả bài toán chi tiết tại đây (hỗ trợ Markdown)..."
+                      placeholder={t(
+                        "adminCodingProblem.contentPlaceholder",
+                        "Mô tả bài toán chi tiết tại đây (hỗ trợ Markdown)..."
+                      )}
                       className="flex-1 resize-none rounded-none border-0 bg-transparent p-6 font-mono text-[13px] leading-relaxed focus-visible:ring-0 dark:text-slate-200"
                     />
                   </>
@@ -439,7 +481,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       <Code2 className="h-3.5 w-3.5" />
                     </div>
                     <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                      Cấu Hình Bài Tập
+                      {t("adminCodingProblem.problemConfig", "Cấu Hình Bài Tập")}
                     </span>
                   </div>
                   {formData.id && (
@@ -454,7 +496,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                   <div className="space-y-5">
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Tiêu đề
+                        {t("common.title", "Tiêu đề")}
                       </Label>
                       <Input
                         value={formData.title || ""}
@@ -467,7 +509,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                     <div className="grid grid-cols-3 gap-3">
                       <div className="space-y-2">
                         <Label className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                          Độ khó
+                          {t("general.difficulty", "Độ khó")}
                         </Label>
                         <Select
                           value={formData.difficulty || "MEDIUM"}
@@ -499,7 +541,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                          Thời gian
+                          {t("adminCodingProblem.columnTime", "Thời gian")}
                         </Label>
                         <div className="relative">
                           <Input
@@ -517,7 +559,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                          Bộ nhớ
+                          {t("adminCodingProblem.columnMemory", "Bộ nhớ")}
                         </Label>
                         <div className="relative">
                           <Input
@@ -539,7 +581,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Điều kiện & Giới hạn
+                          {t("adminCodingProblem.constraints", "Điều kiện & Giới hạn")}
                         </Label>
                         <button
                           onClick={() =>
@@ -548,7 +590,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                             })
                           }
                           className="flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-600 transition-colors hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50">
-                          <Plus className="h-3 w-3" /> Thêm
+                          <Plus className="h-3 w-3" /> {t("common.add", "Thêm")}
                         </button>
                       </div>
                       <div className="space-y-2">
@@ -583,7 +625,9 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                         {(!formData.rulesAndConstraints ||
                           formData.rulesAndConstraints.length === 0) && (
                           <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 py-6 text-center dark:border-slate-800 dark:bg-slate-900/30">
-                            <p className="text-xs text-slate-400">Chưa có điều kiện nào.</p>
+                            <p className="text-xs text-slate-400">
+                              {t("adminCodingProblem.noConstraints", "Chưa có điều kiện nào.")}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -596,7 +640,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                   <div className="space-y-6">
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Kiểu dữ liệu trả về
+                        {t("adminCodingProblem.returnType", "Kiểu dữ liệu trả về")}
                       </Label>
                       <Select
                         value={
@@ -608,7 +652,12 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           if (v !== "__custom__") patch({ returnType: v });
                         }}>
                         <SelectTrigger className="h-10 w-full border-slate-200 bg-slate-50/50 font-mono text-xs shadow-none dark:border-slate-700 dark:bg-slate-950/50">
-                          <SelectValue placeholder="Chọn kiểu trả về…" />
+                          <SelectValue
+                            placeholder={t(
+                              "adminCodingProblem.selectReturnType",
+                              "Chọn kiểu trả về…"
+                            )}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {COMMON_TYPES.map((t) => (
@@ -617,7 +666,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                             </SelectItem>
                           ))}
                           <SelectItem value="__custom__" className="text-xs text-slate-400">
-                            Tùy chỉnh…
+                            {t("adminCodingProblem.customType", "Tùy chỉnh…")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -634,14 +683,14 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Danh sách tham số (Params)
+                          {t("adminCodingProblem.paramsList", "Danh sách tham số (Params)")}
                         </Label>
                         <button
                           onClick={() =>
                             patch({ paramTypes: [...(formData.paramTypes || []), "integer"] })
                           }
                           className="flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50">
-                          <Plus className="h-3 w-3" /> Thêm
+                          <Plus className="h-3 w-3" /> {t("common.add", "Thêm")}
                         </button>
                       </div>
                       <div className="space-y-2">
@@ -669,7 +718,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                                   </SelectItem>
                                 ))}
                                 <SelectItem value="__custom__" className="text-xs text-slate-400">
-                                  Tùy chỉnh…
+                                  {t("adminCodingProblem.customType", "Tùy chỉnh…")}
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -697,7 +746,9 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                         ))}
                         {(!formData.paramTypes || formData.paramTypes.length === 0) && (
                           <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 py-6 text-center dark:border-slate-800 dark:bg-slate-900/30">
-                            <p className="text-xs text-slate-400">Chưa có tham số đầu vào.</p>
+                            <p className="text-xs text-slate-400">
+                              {t("adminCodingProblem.noParams", "Chưa có tham số đầu vào.")}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -710,7 +761,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Ví dụ mẫu
+                        {t("adminCodingProblem.sampleExamples", "Ví dụ mẫu")}
                       </Label>
                       <button
                         onClick={() =>
@@ -722,7 +773,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           })
                         }
                         className="flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50">
-                        <Plus className="h-3 w-3" /> Thêm
+                        <Plus className="h-3 w-3" /> {t("common.add", "Thêm")}
                       </button>
                     </div>
                     <div className="space-y-4">
@@ -732,7 +783,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           className="overflow-hidden rounded-xl border border-slate-200/80 shadow-sm dark:border-slate-800">
                           <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-4 py-2.5 dark:border-slate-800/50 dark:bg-slate-900/50">
                             <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                              Ví dụ {exIdx + 1}
+                              {t("adminCodingProblem.examplePrefix", "Ví dụ")} {exIdx + 1}
                             </span>
                             <button
                               onClick={() => {
@@ -749,7 +800,10 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                             <div className="space-y-2">
                               {paramCount === 0 ? (
                                 <p className="text-xs text-slate-400 italic">
-                                  Vui lòng khai báo tham số đầu vào trước.
+                                  {t(
+                                    "adminCodingProblem.declareParamsFirst",
+                                    "Vui lòng khai báo tham số đầu vào trước."
+                                  )}
                                 </p>
                               ) : (
                                 formData.paramTypes?.map((pt, pIdx) => (
@@ -765,7 +819,11 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                                         patch({ visibleExamples: l });
                                       }}
                                       className="h-8 flex-1 border-slate-200 bg-slate-50/50 font-mono text-xs shadow-none focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900"
-                                      placeholder={`Giá trị ${pt}`}
+                                      placeholder={t(
+                                        "adminCodingproblemmanagement.valueTypePlaceholder",
+                                        "Giá trị {{type}}",
+                                        { type: pt }
+                                      )}
                                     />
                                   </div>
                                 ))
@@ -774,7 +832,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                             {/* Output */}
                             <div className="flex items-center gap-3 pt-2">
                               <span className="w-12 shrink-0 text-xs font-semibold text-slate-500">
-                                Output
+                                {t("common.output", "Đầu ra")}
                               </span>
                               {formData.returnType && <TypeTag value={formData.returnType} />}
                               <Input
@@ -785,7 +843,10 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                                   patch({ visibleExamples: l });
                                 }}
                                 className="h-8 flex-1 border-slate-200 bg-slate-50/50 font-mono text-xs shadow-none focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900"
-                                placeholder="Kết quả trả về..."
+                                placeholder={t(
+                                  "adminCodingProblem.outputPlaceholder",
+                                  "Kết quả trả về..."
+                                )}
                               />
                             </div>
                             {/* Explanation */}
@@ -798,7 +859,10 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                                   patch({ visibleExamples: l });
                                 }}
                                 className="h-16 resize-none border-slate-200 bg-slate-50/50 text-xs shadow-none focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900"
-                                placeholder="Giải thích (không bắt buộc)…"
+                                placeholder={t(
+                                  "adminCodingProblem.explanationPlaceholder",
+                                  "Giải thích (không bắt buộc)…"
+                                )}
                               />
                             </div>
                           </div>
@@ -818,7 +882,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                             <Plus className="h-5 w-5" />
                           </div>
                           <span className="text-sm font-medium text-slate-500 group-hover:text-indigo-600 dark:text-slate-400 dark:group-hover:text-indigo-400">
-                            Thêm ví dụ đầu tiên
+                            {t("adminCodingProblem.addFirstExample", "Thêm ví dụ đầu tiên")}
                           </span>
                         </button>
                       )}
@@ -832,7 +896,9 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                     onClick={() => setIsAiMode((p) => !p)}
                     className={`h-10 w-full rounded-xl border-indigo-200 bg-white font-bold transition-colors dark:border-indigo-800 dark:bg-slate-900 dark:hover:bg-indigo-900/40 ${isAiMode ? "bg-indigo-50 text-indigo-700 shadow-inner" : "text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"}`}>
                     <Sparkles className="mr-2 h-4 w-4" />
-                    {isAiMode ? "Tắt Sinh AI" : "Tạo AI"}
+                    {isAiMode
+                      ? t("adminCodingProblem.disableAiGen", "Tắt Sinh AI")
+                      : t("adminCodingProblem.enableAiGen", "Tạo AI")}
                   </Button>
 
                   {isAiMode ? (
@@ -845,7 +911,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       ) : (
                         <Sparkles className="mr-2 h-4 w-4" />
                       )}
-                      Bắt đầu tạo
+                      {t("adminCodingProblem.startGenerate", "Bắt đầu tạo")}
                     </Button>
                   ) : (
                     <Button
@@ -857,7 +923,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       ) : (
                         <Save className="mr-2 h-4 w-4" />
                       )}
-                      Lưu Bài Tập
+                      {t("adminCodingProblem.saveProblem", "Lưu Bài Tập")}
                     </Button>
                   )}
                 </div>
@@ -878,10 +944,13 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                      Test Cases Ẩn
+                      {t("adminCodingProblem.tabHiddenTestCases", "Test Cases Ẩn")}
                     </p>
                     <p className="text-[11px] font-medium text-slate-500">
-                      Dùng để chấm điểm hệ thống (thí sinh không thấy được)
+                      {t(
+                        "adminCodingProblem.hiddenTcDesc",
+                        "Dùng để chấm điểm hệ thống (thí sinh không thấy được)"
+                      )}
                     </p>
                   </div>
                   {(formData.hiddenTestCases?.length ?? 0) > 0 && (
@@ -895,13 +964,13 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           test cases
                         </span>
                         <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">
-                          Tổng điểm:{" "}
+                          {t("adminCodingProblem.totalScore", "Tổng điểm:")}{" "}
                           <strong>
                             {formData.hiddenTestCases?.reduce(
                               (s, tc) => s + (tc.weightPoints || 0),
                               0
-                            )}
-                            đ
+                            )}{" "}
+                            {t("common.pointsAbbr", "đ")}
                           </strong>
                         </span>
                         {paramCount > 0 && (
@@ -920,7 +989,8 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                 <Button
                   onClick={addHiddenTc}
                   className="h-9 bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
-                  <Plus className="mr-1.5 h-4 w-4" /> Thêm Test Case
+                  <Plus className="mr-1.5 h-4 w-4" />{" "}
+                  {t("adminCodingProblem.addTestCase", "Thêm Test Case")}
                 </Button>
               </div>
 
@@ -934,17 +1004,20 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       </div>
                       <div>
                         <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                          Chưa có Test Case nào
+                          {t("adminCodingProblem.noTestCaseYet", "Chưa có Test Case nào")}
                         </h3>
                         <p className="mt-1 text-xs text-slate-500">
-                          Thêm test case ẩn để hệ thống có thể chấm điểm bài làm của thí sinh tự
-                          động.
+                          {t(
+                            "adminCodingProblem.hiddenTcHelp",
+                            "Thêm test case ẩn để hệ thống có thể chấm điểm bài làm của thí sinh tự động."
+                          )}
                         </p>
                       </div>
                       <Button
                         onClick={addHiddenTc}
                         className="mt-2 bg-indigo-600 px-6 text-sm font-bold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
-                        <Plus className="mr-1.5 h-4 w-4" /> Thêm test case đầu tiên
+                        <Plus className="mr-1.5 h-4 w-4" />{" "}
+                        {t("adminCodingProblem.addFirstTestCase", "Thêm test case đầu tiên")}
                       </Button>
                     </div>
                   </div>
@@ -963,24 +1036,28 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                                   key={i}
                                   className="min-w-[150px] px-5 py-4 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
                                   <div className="flex items-center gap-2">
-                                    <span>Tham số {i + 1}</span>
+                                    <span>
+                                      {t("adminCodingProblem.paramPrefix", "Tham số")} {i + 1}
+                                    </span>
                                     <TypeTag value={pt} />
                                   </div>
                                 </th>
                               ))
                             ) : (
                               <th className="min-w-[150px] px-5 py-4 text-[11px] font-bold tracking-wider text-slate-400 uppercase italic">
-                                Cần định nghĩa tham số
+                                {t("adminCodingProblem.needDefineParams", "Cần định nghĩa tham số")}
                               </th>
                             )}
                             <th className="min-w-[200px] px-5 py-4 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
                               <div className="flex items-center gap-2">
-                                <span>Kết quả kỳ vọng</span>
+                                <span>
+                                  {t("adminCodingProblem.expectedOutput", "Kết quả kỳ vọng")}
+                                </span>
                                 {formData.returnType && <TypeTag value={formData.returnType} />}
                               </div>
                             </th>
                             <th className="w-32 px-5 py-4 text-center text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                              Điểm số
+                              {t("adminCodingProblem.score", "Điểm số")}
                             </th>
                             <th className="w-16 px-5 py-4 text-center"></th>
                           </tr>
@@ -1006,7 +1083,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                                         updateHiddenTc(idx, { inputs });
                                       }}
                                       className="h-10 min-h-[40px] resize-y border-slate-200 bg-white font-mono text-[13px] shadow-none focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
-                                      placeholder="Giá trị..."
+                                      placeholder={t("common.valuePlaceholder", "Giá trị...")}
                                     />
                                   </td>
                                 ))
@@ -1069,10 +1146,13 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                      Mã Nguồn Mẫu (Code Stubs)
+                      {t("adminCodingProblem.codeStubsTitle", "Mã Nguồn Mẫu (Code Stubs)")}
                     </p>
                     <p className="text-[11px] font-medium text-slate-500">
-                      Đoạn mã được nạp sẵn cho thí sinh khi mở bài trên trình biên dịch.
+                      {t(
+                        "adminCodingProblem.codeStubsDesc",
+                        "Đoạn mã được nạp sẵn cho thí sinh khi mở bài trên trình biên dịch."
+                      )}
                     </p>
                   </div>
                 </div>

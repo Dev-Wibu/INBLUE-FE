@@ -38,7 +38,7 @@ interface ApplicationDetailDrawerProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderAiFeedback(feedback: any) {
+function renderAiFeedback(feedback: any, t: any) {
   if (!feedback) return null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,16 +62,22 @@ function renderAiFeedback(feedback: any) {
                 : JSON.stringify(content.generalComment)}
             </p>
           )}
-          {Array.isArray(content.strengths) && content.strengths.length > 0 && (
-            <div className="text-emerald-600 dark:text-emerald-400">
-              <strong>Điểm mạnh:</strong> {content.strengths.join(", ")}
-            </div>
-          )}
-          {Array.isArray(content.weaknesses) && content.weaknesses.length > 0 && (
-            <div className="text-amber-600 dark:text-amber-400">
-              <strong>Cần cải thiện:</strong> {content.weaknesses.join(", ")}
-            </div>
-          )}
+          {content.strengths &&
+            Array.isArray(content.strengths) &&
+            content.strengths.length > 0 && (
+              <div className="text-emerald-600 dark:text-emerald-400">
+                <strong>{t("adminApplicationManagement.strengths", "Điểm mạnh:")}</strong>{" "}
+                {content.strengths.join(", ")}
+              </div>
+            )}
+          {content.weaknesses &&
+            Array.isArray(content.weaknesses) &&
+            content.weaknesses.length > 0 && (
+              <div className="text-amber-600 dark:text-amber-400">
+                <strong>{t("adminApplicationManagement.weaknesses", "Cần cải thiện:")}</strong>{" "}
+                {content.weaknesses.join(", ")}
+              </div>
+            )}
         </div>
       );
     }
@@ -108,7 +114,6 @@ export function ApplicationDetailDrawer({
 
   useEffect(() => {
     if (isOpen && applicationId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadDetail(applicationId);
     } else {
       setDetail(null);
@@ -123,12 +128,16 @@ export function ApplicationDetailDrawer({
       case "COMPLETED":
         return (
           <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-            ĐẠT (PASSED)
+            {t("adminApplicationManagement.statusPassed", "ĐẠT")}
           </Badge>
         );
       case "REJECTED":
       case "FAILED":
-        return <Badge variant="destructive">TỪ CHỐI (REJECTED)</Badge>;
+        return (
+          <Badge variant="destructive">
+            {t("adminApplicationManagement.statusRejected", "TỪ CHỐI")}
+          </Badge>
+        );
       case "IN_PROGRESS":
       case "PENDING":
       default:
@@ -136,7 +145,7 @@ export function ApplicationDetailDrawer({
           <Badge
             variant="secondary"
             className="border-amber-500/30 bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-            ĐANG XỬ LÝ
+            {t("adminApplicationManagement.statusInProgress", "ĐANG XỬ LÝ")}
           </Badge>
         );
     }
@@ -152,15 +161,20 @@ export function ApplicationDetailDrawer({
             <div>
               <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                 <Briefcase className="h-3.5 w-3.5" />
-                <span>Đơn ứng tuyển #{applicationId}</span>
+                <span>
+                  {t("adminApplicationManagement.applicationNum", "Đơn ứng tuyển #{{id}}", {
+                    id: applicationId,
+                  })}
+                </span>
               </div>
               <SheetTitle className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
-                {detail?.candidateInfo?.name || "Chi tiết đơn ứng tuyển"}
+                {detail?.candidateInfo?.name ||
+                  t("adminApplicationManagement.drawerTitle", "Chi tiết đơn ứng tuyển")}
               </SheetTitle>
               <SheetDescription className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Ứng tuyển vị trí:{" "}
+                {t("adminApplicationManagement.applyingForPosition", "Ứng tuyển vị trí: ")}{" "}
                 <strong className="text-slate-700 dark:text-slate-300">
-                  {detail?.jobDescriptionInfo?.title || "Chưa xác định"}
+                  {detail?.jobDescriptionInfo?.title || t("common.unspecified", "Chưa xác định")}
                 </strong>
               </SheetDescription>
             </div>
@@ -173,36 +187,45 @@ export function ApplicationDetailDrawer({
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
           </div>
         ) : detail ? (
-          <ScrollArea className="flex-1 p-6">
-            <div className="space-y-6">
+          <ScrollArea className="min-h-0 flex-1 px-6 py-4">
+            <div className="space-y-6 pb-2">
               {/* 1. Thông tin cá nhân ứng viên */}
               <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <h4 className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-slate-400 uppercase">
                   <User className="h-3.5 w-3.5 text-indigo-500" />
-                  Thông tin ứng viên
+                  {t("adminApplicationManagement.candidateInfo", "Thông tin ứng viên")}
                 </h4>
 
                 <div className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                     <span className="truncate">
-                      {detail?.candidateInfo?.email || "Chưa có Email"}
+                      {detail?.candidateInfo?.email ||
+                        t("adminApplicationManagement.noEmail", "Chưa có Email")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                    <span>{"Chưa có SDT"}</span>
+                    <span>{t("adminApplicationManagement.noPhone", "Chưa có SĐT")}</span>
                   </div>
                   {detail?.candidateInfo?.targetRole && (
                     <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                       <BookOpen className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                      <span>Vị trí mục tiêu: {detail.candidateInfo.targetRole}</span>
+                      <span>
+                        {t("adminApplicationManagement.targetRole", "Vị trí mục tiêu: {{role}}", {
+                          role: detail.candidateInfo.targetRole,
+                        })}
+                      </span>
                     </div>
                   )}
                   {detail?.candidateInfo?.targetLevel && (
                     <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                       <Award className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                      <span>Cấp độ: {detail.candidateInfo.targetLevel}</span>
+                      <span>
+                        {t("adminApplicationManagement.level", "Cấp độ: {{level}}", {
+                          level: detail.candidateInfo.targetLevel,
+                        })}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -211,7 +234,7 @@ export function ApplicationDetailDrawer({
                   <div className="flex items-center justify-between border-t border-slate-100 pt-2 dark:border-slate-800/60">
                     <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
                       <FileText className="h-3.5 w-3.5 text-indigo-500" />
-                      File CV ứng tuyển
+                      {t("adminApplicationManagement.cvFile", "File CV ứng tuyển")}
                     </span>
                     <a
                       href={detail.candidateInfo.cvUrl}
@@ -219,7 +242,7 @@ export function ApplicationDetailDrawer({
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400">
                       <Download className="h-3.5 w-3.5" />
-                      Xem / Tải CV PDF
+                      {t("adminApplicationManagement.viewDownloadCv", "Xem / Tải CV PDF")}
                     </a>
                   </div>
                 )}
@@ -229,7 +252,7 @@ export function ApplicationDetailDrawer({
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-xl border border-slate-200 bg-white p-3 text-center dark:border-slate-800 dark:bg-slate-900">
                   <span className="text-[11px] font-semibold text-slate-400 uppercase">
-                    Điểm tổng
+                    {t("adminApplicationManagement.totalScore", "Điểm tổng")}
                   </span>
                   <div className="mt-1 text-lg font-extrabold text-indigo-600 dark:text-indigo-400">
                     {detail?.applicationOverview?.overallScore !== undefined
@@ -239,18 +262,18 @@ export function ApplicationDetailDrawer({
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-3 text-center dark:border-slate-800 dark:bg-slate-900">
                   <span className="text-[11px] font-semibold text-slate-400 uppercase">
-                    Vòng hiện tại
+                    {t("adminApplicationManagement.currentRound", "Vòng hiện tại")}
                   </span>
                   <div className="mt-1 truncate text-xs font-bold text-slate-800 dark:text-slate-200">
                     {detail?.applicationOverview?.currentRoundName ||
                       (detail?.applicationOverview?.currentRoundOrder
-                        ? `Vòng ${detail.applicationOverview.currentRoundOrder}`
+                        ? `${t("adminApplicationManagement.roundPrefix", "Vòng ")}${detail.applicationOverview.currentRoundOrder}`
                         : "—")}
                   </div>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-3 text-center dark:border-slate-800 dark:bg-slate-900">
                   <span className="text-[11px] font-semibold text-slate-400 uppercase">
-                    Trạng thái
+                    {t("common.status", "Trạng thái")}
                   </span>
                   <div className="mt-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     {detail?.applicationOverview?.status || "IN_PROGRESS"}
@@ -262,7 +285,11 @@ export function ApplicationDetailDrawer({
               <div className="space-y-3">
                 <h4 className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-slate-400 uppercase">
                   <Clock className="h-3.5 w-3.5 text-indigo-500" />
-                  Kết quả từng vòng thi ({detail?.roundDetails?.length || 0} vòng)
+                  {t(
+                    "adminApplicationManagement.roundResults",
+                    "Kết quả từng vòng thi ({{count}} vòng)",
+                    { count: detail?.roundDetails?.length || 0 }
+                  )}
                 </h4>
 
                 {detail?.roundDetails && detail.roundDetails.length > 0 ? (
@@ -278,13 +305,16 @@ export function ApplicationDetailDrawer({
                               {idx + 1}
                             </span>
                             <h5 className="text-xs font-bold text-slate-900 dark:text-white">
-                              {round.roundName || round.name || `Vòng ${idx + 1}`}
+                              {round.roundName ||
+                                round.name ||
+                                `${t("adminApplicationManagement.roundPrefix", "Vòng ")}${idx + 1}`}
                             </h5>
                           </div>
                           <div className="flex items-center gap-2">
                             {round.score !== undefined && (
                               <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                                {round.score} / 100 điểm
+                                {round.score}{" "}
+                                {t("adminApplicationManagement.pointsUnit", "/ 100 điểm")}
                               </span>
                             )}
                             {round.passed ? (
@@ -298,16 +328,16 @@ export function ApplicationDetailDrawer({
                         {round.aiFeedback && (
                           <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
                             <strong className="text-slate-800 dark:text-slate-200">
-                              Đánh giá AI:{" "}
+                              {t("adminApplicationManagement.aiEvaluation", "Đánh giá AI: ")}
                             </strong>
-                            {renderAiFeedback(round.aiFeedback)}
+                            {renderAiFeedback(round.aiFeedback, t)}
                           </div>
                         )}
 
                         {round.hrNotes && (
                           <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-2.5 text-xs text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/20 dark:text-indigo-200">
                             <strong className="text-indigo-800 dark:text-indigo-300">
-                              Ghi chú HR:{" "}
+                              {t("adminApplicationManagement.hrNotes", "Ghi chú HR: ")}
                             </strong>
                             {round.hrNotes}
                           </div>
@@ -318,7 +348,10 @@ export function ApplicationDetailDrawer({
                 ) : (
                   <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400 dark:border-slate-800">
                     <AlertCircle className="mx-auto mb-2 h-6 w-6 text-slate-300" />
-                    Chưa có kết quả vòng thi chi tiết.
+                    {t(
+                      "adminApplicationManagement.noRoundDetails",
+                      "Chưa có kết quả vòng thi chi tiết."
+                    )}
                   </div>
                 )}
               </div>
@@ -326,13 +359,13 @@ export function ApplicationDetailDrawer({
           </ScrollArea>
         ) : (
           <div className="flex flex-1 items-center justify-center p-8 text-xs text-slate-400">
-            Không tìm thấy thông tin đơn ứng tuyển.
+            {t("adminApplicationManagement.notFound", "Không tìm thấy thông tin đơn ứng tuyển.")}
           </div>
         )}
 
         <div className="flex items-center justify-end gap-3 border-t border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <Button variant="outline" size="sm" onClick={onClose} className="h-8 text-xs">
-            Đóng
+            {t("common.close", "Đóng")}
           </Button>
         </div>
       </SheetContent>

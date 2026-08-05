@@ -5,6 +5,7 @@ const t = i18n.t.bind(i18n);
  * Uses React Query for server state
  */
 
+import type { Mentor, User } from "@/interfaces";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type {
   CreateMentorReviewRequest,
@@ -12,7 +13,9 @@ import type {
   UpdateMentorReviewRequest,
 } from "@/services/mentor-review.manager";
 import { mentorReviewManager } from "@/services/mentor-review.manager";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { mentorManager } from "@/services/mentor.manager";
+import { userManager } from "@/services/user.manager";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // Query Keys
@@ -24,23 +27,43 @@ export const REVIEW_QUERY_KEYS = {
   bySession: (sessionId: number) => ["mentor-reviews", "session", sessionId] as const,
 };
 const getReviewMentorId = (review: MentorReview): number | undefined => {
-  if (typeof review.mentor?.id === "number") {
-    return review.mentor.id;
+  if (review.mentor?.id != null) {
+    return typeof review.mentor.id === "string" ? parseInt(review.mentor.id, 10) : review.mentor.id;
   }
-  return review.session?.userId2;
+  // Fallback: Session schema uses userId2 for the mentor side when the
+  // list endpoint doesn't embed a mentor object.
+  if (review.session?.userId2 != null) {
+    return typeof review.session.userId2 === "string"
+      ? parseInt(review.session.userId2, 10)
+      : review.session.userId2;
+  }
+  return undefined;
 };
 const getReviewUserId = (review: MentorReview): number | undefined => {
-  if (typeof review.user?.id === "number") {
-    return review.user.id;
+  if (review.user?.id != null) {
+    return typeof review.user.id === "string" ? parseInt(review.user.id, 10) : review.user.id;
   }
-  return review.session?.userId;
+  // Fallback: userId on the embedded session refers to the candidate.
+  if (review.session?.userId != null) {
+    return typeof review.session.userId === "string"
+      ? parseInt(review.session.userId, 10)
+      : review.session.userId;
+  }
+  return undefined;
 };
 
 /**
- * Hook to fetch all mentor reviews
+ * Hook to fetch all mentor reviews.
+ *
+ * The list endpoint may omit the nested `mentor` and `user` objects, in
+ * which case the table falls back to the IDs on the embedded `session`
+ * (`userId` = candidate, `userId2` = mentor per the Session schema) and
+ * resolves display name/avatar from the User and Mentor managers. Results
+ * are merged in-place so existing pages that read `review.mentor?.name`
+ * keep working without changes.
  */
 export const useMentorReviews = () => {
-  return useQuery({
+  const base = useQuery({
     queryKey: REVIEW_QUERY_KEYS.all,
     queryFn: async (): Promise<MentorReview[]> => {
       const response = await mentorReviewManager.getAll();
@@ -57,6 +80,78 @@ export const useMentorReviews = () => {
       return [];
     },
   });
+
+  const reviews = base.data ?? [];
+
+  // Collect all unique fallback IDs we need to hydrate.
+  const mentorLookupIds = Array.from(
+    new Set(
+      reviews
+        .filter((r) => !r.mentor?.name && r.session?.userId2 != null)
+        .map((r) => Number(r.session?.userId2))
+        .filter((id) => Number.isFinite(id) && id > 0)
+    )
+  );
+  const userLookupIds = Array.from(
+    new Set(
+      reviews
+        .filter((r) => !r.user?.name && r.session?.userId != null)
+        .map((r) => Number(r.session?.userId))
+        .filter((id) => Number.isFinite(id) && id > 0)
+    )
+  );
+
+  const mentorQueries = useQueries({
+    queries: mentorLookupIds.map((id) => ({
+      queryKey: ["mentor-by-id-for-review", id],
+      queryFn: async (): Promise<Mentor | null> => {
+        const res = await mentorManager.getById(id);
+        return res.success && res.data ? res.data : null;
+      },
+      enabled: mentorLookupIds.length > 0,
+      staleTime: 5 * 60_000,
+    })),
+  });
+
+  const userQueries = useQueries({
+    queries: userLookupIds.map((id) => ({
+      queryKey: ["user-by-id-for-review", id],
+      queryFn: async (): Promise<User | null> => {
+        const res = await userManager.getProfile(id);
+        return res.success && res.data ? (res.data as User) : null;
+      },
+      enabled: userLookupIds.length > 0,
+      staleTime: 5 * 60_000,
+    })),
+  });
+
+  const mentorById = new Map<number, Mentor>();
+  mentorQueries.forEach((q, idx) => {
+    if (q.data) mentorById.set(mentorLookupIds[idx], q.data);
+  });
+  const userById = new Map<number, User>();
+  userQueries.forEach((q, idx) => {
+    if (q.data) userById.set(userLookupIds[idx], q.data);
+  });
+
+  const enrichedReviews: MentorReview[] = reviews.map((r) => {
+    let mentor = r.mentor;
+    if ((!mentor || !mentor.name) && r.session?.userId2 != null) {
+      const m = mentorById.get(Number(r.session.userId2));
+      if (m) mentor = m;
+    }
+    let user = r.user;
+    if ((!user || !user.name) && r.session?.userId != null) {
+      const u = userById.get(Number(r.session.userId));
+      if (u) user = u;
+    }
+    return { ...r, mentor, user };
+  });
+
+  return {
+    ...base,
+    data: enrichedReviews,
+  };
 };
 
 /**
@@ -80,8 +175,9 @@ export const useMentorReviewById = (id: number) => {
  * Hook to fetch reviews by mentor ID
  */
 export const useMentorReviewsByMentor = (mentorId: number) => {
+  const numericMentorId = typeof mentorId === "string" ? parseInt(mentorId, 10) : mentorId;
   const { data: allReviews = [], ...rest } = useMentorReviews();
-  if (!mentorId) {
+  if (!numericMentorId) {
     return {
       data: [] as MentorReview[],
       ...rest,
@@ -90,7 +186,7 @@ export const useMentorReviewsByMentor = (mentorId: number) => {
 
   // Filter reviews by mentor ID
   const mentorReviews = allReviews.filter(
-    (review: MentorReview) => getReviewMentorId(review) === mentorId
+    (review: MentorReview) => getReviewMentorId(review) === numericMentorId
   );
   return {
     data: mentorReviews,
@@ -102,8 +198,9 @@ export const useMentorReviewsByMentor = (mentorId: number) => {
  * Hook to fetch reviews by user ID
  */
 export const useMentorReviewsByUser = (userId: number) => {
+  const numericUserId = typeof userId === "string" ? parseInt(userId, 10) : userId;
   const { data: allReviews = [], ...rest } = useMentorReviews();
-  if (!userId) {
+  if (!numericUserId) {
     return {
       data: [] as MentorReview[],
       ...rest,
@@ -112,7 +209,7 @@ export const useMentorReviewsByUser = (userId: number) => {
 
   // Filter reviews by user ID
   const userReviews = allReviews.filter(
-    (review: MentorReview) => getReviewUserId(review) === userId
+    (review: MentorReview) => getReviewUserId(review) === numericUserId
   );
   return {
     data: userReviews,
@@ -233,12 +330,17 @@ export const useDeleteMentorReview = () => {
 };
 
 /**
- * Calculate average rating from reviews
+ * Calculate average star rating from reviews (1-5 scale only)
  */
 export const calculateAverageRating = (reviews: MentorReview[]): number => {
   if (!reviews.length) return 0;
-  const total = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
-  return total / reviews.length;
+  // Filter only valid star ratings (1-5)
+  const starReviews = reviews.filter(
+    (r) => typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
+  );
+  if (!starReviews.length) return 0;
+  const total = starReviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+  return total / starReviews.length;
 };
 
 // Re-export types for convenience

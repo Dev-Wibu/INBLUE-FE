@@ -194,7 +194,7 @@ export function getAccountPath(role?: string): string {
     case "STAFF":
       return "/staff?tab=account";
     case "MENTOR":
-      return "/mentor";
+      return "/mentor?tab=account";
     default:
       return "/user/account";
   }

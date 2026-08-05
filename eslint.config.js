@@ -35,6 +35,7 @@ export default defineConfig([
           argsIgnorePattern: "^_",
         },
       ],
+      "react-hooks/set-state-in-effect": "off",
       // Disabled linebreak-style as files use LF (Unix) not CRLF (Windows)
       // "linebreak-style": ["error", "windows"],
     },

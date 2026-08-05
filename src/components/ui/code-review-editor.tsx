@@ -1,7 +1,10 @@
 "use client";
 import i18n from "@/lib/i18n";
-const t = (k: string, opts?: string | Record<string, unknown>): string =>
-  i18n.t(k, opts as string) as unknown as string;
+const t = (
+  k: string,
+  opts?: string | Record<string, unknown>,
+  options?: Record<string, unknown>
+): string => i18n.t(k, opts as string, options) as unknown as string;
 
 import {
   AlertTriangle,
@@ -441,7 +444,15 @@ export const CodeReviewEditor = React.forwardRef<
       onChange(newIds, newProblems);
       setRightView("idle");
       setSelectedBankIds([]);
-      toast.success(`Đã thêm ${selectedBankIds.length} bài tập Code Review vào vòng thi`);
+      toast.success(
+        t(
+          "adminCodeReviewProblem.addedProblemsToRound",
+          "Đã thêm {{count}} bài tập Code Review vào vòng thi",
+          {
+            count: selectedBankIds.length,
+          }
+        )
+      );
     };
 
     const toggleBankSelection = (id: number) => {

@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
 import { toTimestamp } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
 import { useCreateComment, usePostComments } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { ChevronDown, ChevronUp, Send, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -129,6 +131,8 @@ interface CommentThreadProps {
   highlightedCommentId: number | null;
   onMentionClick: (_parentCommentId: number) => void;
   depth?: number;
+  allowDelete?: boolean;
+  onDeleteComment?: (_commentId: number) => void;
 }
 function CommentThread({
   node,
@@ -144,6 +148,8 @@ function CommentThread({
   highlightedCommentId,
   onMentionClick,
   depth = 0,
+  allowDelete,
+  onDeleteComment,
 }: CommentThreadProps) {
   const { t } = useTranslation();
   const { comment } = node;
@@ -174,6 +180,8 @@ function CommentThread({
         parentCommentId={depth > 0 ? comment.parentCommentId : undefined}
         isHighlighted={highlightedCommentId === comment.id}
         onMentionClick={onMentionClick}
+        allowDelete={allowDelete}
+        onDeleteComment={onDeleteComment}
       />
 
       {isReplyingToThis && (
@@ -227,6 +235,8 @@ function CommentThread({
                           parentCommentId={reply.parentCommentId}
                           isHighlighted={highlightedCommentId === reply.id}
                           onMentionClick={onMentionClick}
+                          allowDelete={allowDelete}
+                          onDeleteComment={onDeleteComment}
                         />
                         {isReplyingToReply && (
                           <ReplyInput
@@ -259,6 +269,8 @@ function CommentThread({
                       highlightedCommentId={highlightedCommentId}
                       onMentionClick={onMentionClick}
                       depth={depth + 1}
+                      allowDelete={allowDelete}
+                      onDeleteComment={onDeleteComment}
                     />
                   ))}
               <Button
@@ -294,7 +306,22 @@ export function CommentSection({
 }: CommentSectionProps) {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const { data: currentMentorProfile } = useCurrentMentorProfile();
+  // User.id from JWT (sub) is NOT the same as Mentor.id. For MENTOR role,
+  // BE stores comments against Mentor.id, so use that for the API payload.
+  // currentUserId is still used for UI (delete button visibility) — that
+  // stays as user.id from JWT.
   const currentUserId = user?.id;
+  const apiUserId =
+    user?.role === "MENTOR" && currentMentorProfile?.id != null
+      ? typeof currentMentorProfile.id === "string"
+        ? parseInt(currentMentorProfile.id, 10)
+        : currentMentorProfile.id
+      : currentUserId != null
+        ? typeof currentUserId === "string"
+          ? parseInt(currentUserId, 10)
+          : currentUserId
+        : null;
   const { data: commentsData } = usePostComments(postId, !externalComments);
   const createComment = useCreateComment();
   const commentTree = useMemo(() => {
@@ -327,6 +354,7 @@ export function CommentSection({
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [sortOrder, setSortOrder] = useState<"oldest" | "newest">("oldest");
   const [highlightedCommentId, setHighlightedCommentId] = useState<number | null>(null);
+  const [commentSearchQuery, setCommentSearchQuery] = useState("");
   const invalidate = () => {
     queryClient.invalidateQueries({
       queryKey: ["postComments", postId],
@@ -337,12 +365,12 @@ export function CommentSection({
   };
   const handleCommentSubmit = () => {
     const content = newContent.trim();
-    if (!content || !currentUserId) return;
+    if (!content || apiUserId == null) return;
     createComment.mutate(
       {
         body: {
           postId,
-          userId: currentUserId,
+          userId: apiUserId,
           content,
         },
       } as never,
@@ -361,14 +389,14 @@ export function CommentSection({
   };
   const handleReplySubmit = (parentCommentId: number) => {
     const content = replyContent.trim();
-    if (!content || !currentUserId) return;
+    if (!content || apiUserId == null) return;
     const parentUser = commentById.get(parentCommentId)?.userName;
     const contentWithMention = parentUser ? `@${parentUser} ${content}` : content;
     createComment.mutate(
       {
         body: {
           postId,
-          userId: currentUserId,
+          userId: apiUserId,
           content: contentWithMention,
           parentCommentId,
         },
@@ -411,6 +439,7 @@ export function CommentSection({
       );
     }
   };
+  const totalCommentCount = commentById.size;
   const sortedRoots = useMemo(() => {
     const arr = [...commentTree];
     arr.sort((a, b) => {
@@ -420,15 +449,26 @@ export function CommentSection({
     });
     return arr;
   }, [commentTree, sortOrder]);
-  const flatComments = useMemo(() => {
-    const values = Array.from(commentById.values());
-    values.sort((a, b) => {
-      const tA = toTimestamp(a.createdAt) ?? 0;
-      const tB = toTimestamp(b.createdAt) ?? 0;
-      return tB - tA;
+
+  // Filter roots (and their descendants) by search query
+  const filteredRoots = useMemo(() => {
+    if (!commentSearchQuery.trim()) return sortedRoots;
+    const q = commentSearchQuery.toLowerCase();
+    return sortedRoots.filter((node) => {
+      // Match root comment itself
+      if (
+        node.comment.content?.toLowerCase().includes(q) ||
+        node.comment.userName?.toLowerCase().includes(q)
+      )
+        return true;
+      // Match any descendant
+      const descendants = flattenDescendants(node);
+      return descendants.some(
+        (c) => c.content?.toLowerCase().includes(q) || c.userName?.toLowerCase().includes(q)
+      );
     });
-    return values;
-  }, [commentById]);
+  }, [sortedRoots, commentSearchQuery]);
+
   return (
     <div className="space-y-3">
       {!hideInput && (
@@ -446,7 +486,7 @@ export function CommentSection({
           <Button
             className="self-end"
             onClick={handleCommentSubmit}
-            disabled={!newContent.trim() || createComment.isPending}>
+            disabled={!newContent.trim() || createComment.isPending || !apiUserId}>
             <Send className="mr-1 h-4 w-4" />
             {t("compPost.send")}
           </Button>
@@ -456,7 +496,7 @@ export function CommentSection({
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium">
           {t("staffPostmoderation.comment")}
-          {flatComments.length})
+          {totalCommentCount})
         </p>
         <div className="flex items-center gap-2">
           <Button
@@ -474,13 +514,26 @@ export function CommentSection({
         </div>
       </div>
 
-      {sortedRoots.length === 0 ? (
+      {/* Search comments (shown when allowDelete=true, i.e. admin context) */}
+      {allowDelete && (
+        <div className="relative">
+          <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+          <Input
+            placeholder={t("compPost.searchComments")}
+            value={commentSearchQuery}
+            onChange={(e) => setCommentSearchQuery(e.target.value)}
+            className="h-8 pl-8 text-sm"
+          />
+        </div>
+      )}
+
+      {filteredRoots.length === 0 ? (
         <p className="text-muted-foreground py-4 text-center text-sm">
-          {t("compPost.noCommentsYet")}
+          {commentSearchQuery.trim() ? t("common.noResults") : t("compPost.noCommentsYet")}
         </p>
       ) : (
         <div className="space-y-1">
-          {sortedRoots.map((node) => (
+          {filteredRoots.map((node) => (
             <CommentThread
               key={node.comment.id}
               node={node}
@@ -495,30 +548,9 @@ export function CommentSection({
               commentById={commentById}
               highlightedCommentId={highlightedCommentId}
               onMentionClick={handleMentionClick}
+              allowDelete={allowDelete}
+              onDeleteComment={onDeleteComment}
             />
-          ))}
-        </div>
-      )}
-
-      {allowDelete && onDeleteComment && flatComments.length > 0 && (
-        <div className="space-y-2 border-t pt-4">
-          <p className="text-sm font-medium">{t("compPost.commentManagement")}</p>
-          {flatComments.map((comment) => (
-            <div
-              key={comment.id}
-              className="flex items-start justify-between rounded-lg border p-3 dark:border-slate-700">
-              <div>
-                <p className="text-sm font-medium">{comment.userName || t("common.anonymous")}</p>
-                <p className="text-sm text-gray-600 dark:text-slate-400">{comment.content}</p>
-              </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                onClick={() => comment.id && onDeleteComment(comment.id)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
           ))}
         </div>
       )}

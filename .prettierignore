@@ -1,10 +1,56 @@
-# Add files here to ignore them from prettier formatting
-/dist
-/coverage
-/.nx/cache
-/.nx/workspace-data
-*lock*
+# Dependencies & Environment Folders
+node_modules
 .nx
-.next
+.vercel
 .husky
+.agents
+.impeccable
+.playwright-mcp
+.cursor
+
+# Build & Compilation Outputs
+/dist
+/dist-ssr
+/build
+/out
+.next
+
+# Package Manager Lock Files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lockb
+
+# Generated Type & API Schemas
 *.d.ts
+schema-from-be.d.ts
+swagger.json
+scripts/i18n-audit/*.json
+
+# Logs, Temp Files & Data Reports
+*.log
+*.txt
+*.csv
+eslint_*.txt
+lint_*.txt
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+
+# One-off / Temporary Refactoring Scripts & Scratch Files
+*.cjs
+artifacts/
+scratch/
+
+# Test Reports, Coverage & Captures
+/coverage
+/.nyc_output
+test-output/
+cypress/videos/
+cypress/screenshots/
+
+# Media & Static Assets
+public/

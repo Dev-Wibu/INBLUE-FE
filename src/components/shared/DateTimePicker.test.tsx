@@ -115,7 +115,7 @@ describe("DateTimePicker Component", () => {
 
     // Warning message should be rendered in the dark tooltip below the trigger input
     const errorText = screen.getByText(
-      /trường không hoàn chỉnh hoặc có giá trị không hợp lệ|incomplete or has an invalid value/i
+      /trường không hoàn chỉnh hoặc có giá trị không hợp lệ|incomplete or has an invalid (value|date)/i
     );
     expect(errorText).toBeInTheDocument();
   });
@@ -158,7 +158,7 @@ describe("DateTimePicker Component", () => {
     fireEvent.blur(input);
 
     const errorText = screen.getByText(
-      /trường không hoàn chỉnh hoặc có giá trị không hợp lệ|incomplete or has an invalid value/i
+      /trường không hoàn chỉnh hoặc có giá trị không hợp lệ|incomplete or has an invalid (value|date)/i
     );
     expect(errorText).toBeInTheDocument();
     expect(onChangeMock).not.toHaveBeenCalled();

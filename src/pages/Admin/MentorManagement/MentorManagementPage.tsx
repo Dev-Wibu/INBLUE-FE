@@ -1,5 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PaginationControl, ReloadButton } from "@/components/shared";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +40,8 @@ export function MentorManagementPage() {
   const [viewMode, setViewMode] = useState<"list" | "detail" | "create">("list");
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [formData, setFormData] = useState<Partial<MentorFormData>>({});
+  const [pendingToggleMentor, setPendingToggleMentor] = useState<Mentor | null>(null);
+  const [isToggling, setIsToggling] = useState(false);
 
   // Load mentors using the mentor manager service
   const loadMentors = useCallback(
@@ -158,11 +170,19 @@ export function MentorManagementPage() {
       toast.error(t("common.unableToUpdateMentor"));
     }
   };
-  const handleToggleActive = async (mentor: Mentor) => {
+  const handleToggleActive = (mentor: Mentor) => {
     if (!mentor.id) return;
-    const action = mentor.active !== false ? "Vô hiệu hóa" : "Kích hoạt";
-    if (!window.confirm(`Bạn có chắc chắn muốn ${action.toLowerCase()} mentor này?`)) return;
+    setPendingToggleMentor(mentor);
+  };
 
+  const handleConfirmToggleActive = async () => {
+    const mentor = pendingToggleMentor;
+    if (!mentor?.id) return;
+    const willBeActive = mentor.active === false;
+    const action = willBeActive
+      ? t("adminMentormanagement.activate")
+      : t("adminMentormanagement.disable");
+    setIsToggling(true);
     try {
       const response = await mentorManager.toggleActive(mentor.id);
       if (response.success) {
@@ -176,13 +196,16 @@ export function MentorManagementPage() {
             prev ? { ...prev, active: prev.active === false ? true : false } : null
           );
         }
-        void loadMentors(); // Refresh the list
+        void loadMentors();
       } else {
         toast.error(response.error || t("adminMentormanagement.mentorStatusCannotBeChanged"));
       }
     } catch (error) {
       console.error("Error toggling mentor status:", error);
       toast.error(t("adminMentormanagement.mentorStatusCannotBeChanged"));
+    } finally {
+      setIsToggling(false);
+      setPendingToggleMentor(null);
     }
   };
   return (
@@ -409,6 +432,53 @@ export function MentorManagementPage() {
           </div>
         ) : null}
       </div>
+
+      <AlertDialog
+        open={pendingToggleMentor !== null}
+        onOpenChange={(open) => {
+          if (!open && !isToggling) {
+            setPendingToggleMentor(null);
+          }
+        }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingToggleMentor?.active === false
+                ? t("adminMentormanagement.confirmActivateTitle")
+                : t("adminMentormanagement.confirmDisableTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingToggleMentor?.active === false
+                ? t("adminMentormanagement.confirmActivateDescription", {
+                    name: pendingToggleMentor?.name || "",
+                  })
+                : t("adminMentormanagement.confirmDisableDescription", {
+                    name: pendingToggleMentor?.name || "",
+                  })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isToggling}>{t("general.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isToggling}
+              onClick={(e) => {
+                e.preventDefault();
+                void handleConfirmToggleActive();
+              }}
+              className={
+                pendingToggleMentor?.active === false
+                  ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                  : "bg-red-600 text-white hover:bg-red-700"
+              }>
+              {isToggling
+                ? t("common.processing")
+                : pendingToggleMentor?.active === false
+                  ? t("adminMentormanagement.confirmActivateAction")
+                  : t("adminMentormanagement.confirmDisableAction")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

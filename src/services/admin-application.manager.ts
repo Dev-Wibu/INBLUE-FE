@@ -9,6 +9,16 @@ export type AdminApplicationFullDetailResponseDto =
   components["schemas"]["AdminApplicationFullDetailResponseDto"];
 export type ApplicationListItemDto = components["schemas"]["AdminApplicationSummaryDto"];
 export type CandidateRoundDetailDto = components["schemas"]["AdminRoundDetailDto"];
+export type AdminApplicationDetailResponse =
+  components["schemas"]["AdminApplicationDetailResponse"];
+export type ApplicationDetailStatus =
+  | "PENDING"
+  | "AWAITING_MENTOR"
+  | "AWAITING_CANDIDATE_SELECT_MENTOR"
+  | "SLOT_PICKED"
+  | "SUBMITTED"
+  | "AI_EVALUATED"
+  | "COMPLETED";
 
 export class AdminApplicationManager {
   /**
@@ -99,6 +109,43 @@ export class AdminApplicationManager {
       return {
         success: false,
         error: "Không thể lấy chi tiết đơn ứng tuyển",
+      };
+    } catch (err) {
+      console.error(err);
+      return {
+        success: false,
+        error: "Lỗi kết nối máy chủ",
+      };
+    }
+  }
+
+  /**
+   * GET /api/admin/application-details?status=AWAITING_MENTOR
+   * Lấy danh sách ApplicationDetail cho trang Mentor Review Assignment (admin).
+   * Trả về full list (BE sort updatedAt DESC). FE có thể filter thêm theo roundName,
+   * candidateName, jdTitle, v.v.
+   */
+  async getApplicationDetails(
+    status?: ApplicationDetailStatus
+  ): Promise<ApiResponse<AdminApplicationDetailResponse[]>> {
+    try {
+      const query: { status?: ApplicationDetailStatus } | undefined = status
+        ? { status }
+        : undefined;
+      const response = await fetchClient.GET("/api/admin/application-details", {
+        params: { query },
+      });
+
+      if (response.data) {
+        return {
+          success: true,
+          data: response.data as unknown as AdminApplicationDetailResponse[],
+        };
+      }
+
+      return {
+        success: false,
+        error: "Không thể lấy danh sách ApplicationDetail",
       };
     } catch (err) {
       console.error(err);

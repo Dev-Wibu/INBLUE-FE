@@ -21,20 +21,26 @@ import {
   Mail,
   Pencil,
   Receipt,
+  Settings,
   User,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { JdPurchaseHistoryTab, ProfileEditTab } from "./AccountTabs";
+import { JdPurchaseHistoryTab, ProfileEditTab, SettingsTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
-type AccountSubTab = "candidateProfile" | "jdPurchases" | "editProfile";
+type AccountSubTab = "candidateProfile" | "jdPurchases" | "editProfile" | "settings";
 
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
-  if (value === "candidateProfile" || value === "jdPurchases" || value === "editProfile") {
+  if (
+    value === "candidateProfile" ||
+    value === "jdPurchases" ||
+    value === "editProfile" ||
+    value === "settings"
+  ) {
     return value as AccountSubTab;
   }
   return null;
@@ -80,13 +86,9 @@ export function AccountPage() {
           major: userData.major || "",
           cvUrl: userData.cvUrl || null,
           cv_public_id: userData.cv_public_id || null,
-          // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields
           phone: userData.phone || "",
-          // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields
           address: userData.address || "",
-          // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields
           linkedInUrl: userData.linkedInUrl || "",
-          // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields
           githubUrl: userData.githubUrl || "",
           createdAt: new Date().toISOString(),
         });
@@ -200,9 +202,15 @@ export function AccountPage() {
         );
       case "jdPurchases":
         return (
-          <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <JdPurchaseHistoryTab />
-          </Card>
+          </div>
+        );
+      case "settings":
+        return (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <SettingsTab />
+          </div>
         );
       default:
         return <CandidateProfileTab />;
@@ -314,6 +322,14 @@ export function AccountPage() {
       label: t("payment.jdPurchaseHistory"),
       description: t("payment.jdPurchaseNoPurchases"),
       icon: Receipt,
+    },
+    {
+      id: "settings",
+      label: t("userAccount.quickSettings", { defaultValue: "Cài đặt" }),
+      description: t("userAccount.quickSettingsDescription", {
+        defaultValue: "Giao diện, ngôn ngữ, thông báo",
+      }),
+      icon: Settings,
     },
   ];
 

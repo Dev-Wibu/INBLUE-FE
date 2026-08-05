@@ -68,16 +68,25 @@ export function CodingProblemManagementPage() {
         isDeleted: !isActive,
       });
       if (!res.success) {
-        toast.error(res.error || "Không thể cập nhật trạng thái");
+        toast.error(
+          res.error ||
+            t("adminCodingproblemmanagement.unableToUpdateStatus", "Không thể cập nhật trạng thái")
+        );
         // Revert on failure
         setProblems((prev) =>
           prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: problem.isDeleted } : p))
         );
       } else {
-        toast.success(`Đã ${isActive ? "bật" : "tắt"} bài tập`);
+        toast.success(
+          isActive
+            ? t("adminCodingproblemmanagement.problemEnabled", "Đã bật bài tập")
+            : t("adminCodingproblemmanagement.problemDisabled", "Đã tắt bài tập")
+        );
       }
     } catch {
-      toast.error("Lỗi xảy ra khi cập nhật trạng thái");
+      toast.error(
+        t("adminCodingproblemmanagement.errorUpdatingStatus", "Lỗi xảy ra khi cập nhật trạng thái")
+      );
       setProblems((prev) =>
         prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: problem.isDeleted } : p))
       );
@@ -148,10 +157,10 @@ export function CodingProblemManagementPage() {
           <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex flex-col justify-center">
               <h1 className="text-lg leading-tight font-bold text-slate-900 dark:text-white">
-                Vòng Coding
+                {t("adminAdmindashboard.codingProblems", "Vòng Coding")}
               </h1>
               <p className="mt-0.5 text-xs leading-tight text-slate-500 dark:text-slate-400">
-                Quản lý danh sách bài tập lập trình thuật toán
+                {t("adminCodingProblem.subtitle", "Quản lý danh sách bài tập lập trình thuật toán")}
               </p>
             </div>
 
@@ -161,7 +170,7 @@ export function CodingProblemManagementPage() {
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Tìm kiếm bài tập..."
+                  placeholder={t("adminCodingProblem.searchPlaceholder", "Tìm kiếm bài tập...")}
                   className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
                 />
               </div>
@@ -189,7 +198,7 @@ export function CodingProblemManagementPage() {
                                 : "bg-rose-600 text-white"
                           : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                       }`}>
-                      {d === "ALL" ? "Tất cả" : d}
+                      {d === "ALL" ? t("common.all", "Tất cả") : d}
                       <span
                         className={`rounded-full px-1.5 py-0.5 text-[9px] ${
                           isActive
@@ -210,16 +219,16 @@ export function CodingProblemManagementPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="newest" className="text-xs">
-                    Mới nhất trước
+                    {t("adminCodingProblem.sortNewest", "Mới nhất trước")}
                   </SelectItem>
                   <SelectItem value="oldest" className="text-xs">
-                    Cũ nhất trước
+                    {t("adminCodingProblem.sortOldest", "Cũ nhất trước")}
                   </SelectItem>
                   <SelectItem value="title_asc" className="text-xs">
-                    Tiêu đề A → Z
+                    {t("adminCodingProblem.sortTitleAsc", "Tiêu đề A → Z")}
                   </SelectItem>
                   <SelectItem value="title_desc" className="text-xs">
-                    Tiêu đề Z → A
+                    {t("adminCodingProblem.sortTitleDesc", "Tiêu đề Z → A")}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -241,7 +250,7 @@ export function CodingProblemManagementPage() {
                   }}
                   className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
                   <Plus className="mr-1.5 h-3.5 w-3.5" />
-                  Thêm Bài Tập
+                  {t("adminCodingProblem.addProblem", "Thêm Bài Tập")}
                 </Button>
               </div>
             </div>
@@ -252,7 +261,9 @@ export function CodingProblemManagementPage() {
             {isLoading ? (
               <div className="flex h-64 flex-col items-center justify-center gap-3">
                 <Loader2 className="h-7 w-7 animate-spin text-indigo-500" />
-                <p className="text-sm text-slate-500">Đang tải danh sách bài tập…</p>
+                <p className="text-sm text-slate-500">
+                  {t("adminCodingProblem.loadingList", "Đang tải danh sách bài tập…")}
+                </p>
               </div>
             ) : (
               <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
@@ -260,11 +271,14 @@ export function CodingProblemManagementPage() {
                 {(query || difficulty !== "ALL") && (
                   <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
                     <span className="text-xs text-slate-500">
-                      Hiển thị{" "}
-                      <strong className="text-slate-800 dark:text-slate-200">
-                        {filteredProblems.length}
-                      </strong>{" "}
-                      / <strong>{problems.length}</strong> kết quả
+                      {t(
+                        "common.showingFilteredResults",
+                        "Hiển thị {{filtered}} / {{total}} kết quả",
+                        {
+                          filtered: filteredProblems.length,
+                          total: problems.length,
+                        }
+                      )}
                     </span>
                     <button
                       onClick={() => {
@@ -272,7 +286,7 @@ export function CodingProblemManagementPage() {
                         setDifficulty("ALL");
                       }}
                       className="text-xs text-indigo-600 hover:underline dark:text-indigo-400">
-                      Xóa bộ lọc
+                      {t("common.clearFilter", "Xóa bộ lọc")}
                     </button>
                   </div>
                 )}

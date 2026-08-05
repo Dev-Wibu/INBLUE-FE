@@ -187,11 +187,14 @@ export function KioskManagementPage() {
         {searchQuery.trim().length > 0 && (
           <div className="mb-3 flex items-center gap-2 px-6 pt-4">
             <span className="text-xs text-slate-500">
-              Hiển thị{" "}
-              <strong className="text-slate-800 dark:text-slate-200">
-                {filteredKiosks.length}
-              </strong>{" "}
-              / <strong>{kiosks.length}</strong> trạm Kiosk
+              {t(
+                "adminKioskManagement.showingFilteredKiosks",
+                "Hiển thị {{filtered}} / {{total}} trạm Kiosk",
+                {
+                  filtered: filteredKiosks.length,
+                  total: kiosks.length,
+                }
+              )}
             </span>
           </div>
         )}

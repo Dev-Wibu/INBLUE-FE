@@ -5,6 +5,7 @@ const t = i18n.t.bind(i18n);
  * Uses React Query for server state
  */
 
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type {
   CreateMentorFeedbackRequest,
@@ -23,17 +24,11 @@ export const FEEDBACK_QUERY_KEYS = {
   byUser: (userId: number) => ["mentor-feedbacks", "user", userId] as const,
   bySession: (sessionId: number) => ["mentor-feedbacks", "session", sessionId] as const,
 };
-const getFeedbackMentorId = (feedback: MentorFeedback): number | undefined => {
-  if (typeof feedback.mentor?.id === "number") {
-    return feedback.mentor.id;
-  }
-  return feedback.session?.userId2;
-};
 const getFeedbackUserId = (feedback: MentorFeedback): number | undefined => {
-  if (typeof feedback.user?.id === "number") {
-    return feedback.user.id;
+  if (feedback.user?.id != null) {
+    return typeof feedback.user.id === "string" ? parseInt(feedback.user.id, 10) : feedback.user.id;
   }
-  return feedback.session?.userId;
+  return undefined;
 };
 
 /**
@@ -80,27 +75,49 @@ export const useMentorFeedbackById = (id: number) => {
  * Hook to fetch feedbacks by mentor ID
  */
 export const useMentorFeedbacksByMentor = (mentorId: number) => {
+  const numericMentorId = typeof mentorId === "string" ? parseInt(mentorId, 10) : mentorId;
+  // 2026-08-02: BE returns `mentor: null` / `user: null` for the nested
+  //   objects (lazy-loaded proxies), so the local `getFeedbackMentorId`
+  //   helper resolves to undefined and the original `.filter(...)` step
+  //   dropped every row. The endpoint already filters by mentor, so just
+  //   return what BE gave us.
+  //
+  //   ⚠️ CRITICAL — caller MUST pass the `Mentor.id` (bảng mentor PK),
+  //   NOT the `User.id` (JWT sub). See docs/BE_RESPONSE_MENTOR_BUG.md §3
+  //   and `useCurrentMentorProfile` for the resolution helper.
   return useQuery({
-    queryKey: FEEDBACK_QUERY_KEYS.byMentor(mentorId),
+    queryKey: FEEDBACK_QUERY_KEYS.byMentor(numericMentorId),
     queryFn: async () => {
-      const response = await mentorFeedbackManager.getByMentorId(mentorId);
+      const response = await mentorFeedbackManager.getByMentorId(numericMentorId);
       if (response.success && response.data) {
-        return response.data.filter(
-          (feedback: MentorFeedback) => getFeedbackMentorId(feedback) === mentorId
-        );
+        return response.data;
       }
       return [];
     },
-    enabled: !!mentorId,
+    enabled: !!numericMentorId,
   });
+};
+
+/**
+ * Convenience hook that resolves the current user's `Mentor.id` (bảng
+ * mentor PK — different from `User.id` returned by JWT) and then fetches
+ * feedbacks for that mentor. Use this instead of `useMentorFeedbacksByMentor`
+ * on mentor pages so we don't silently hit `/api/mentor-feedbacks/mentor/{userId}`
+ * which always returns `[]` when `Mentor.id ≠ User.id`.
+ */
+export const useMentorFeedbacksForCurrentUser = () => {
+  const { data: profile } = useCurrentMentorProfile();
+  const mentorId = (profile as { id?: number } | null)?.id ?? 0;
+  return useMentorFeedbacksByMentor(mentorId);
 };
 
 /**
  * Hook to fetch feedbacks by user ID
  */
 export const useMentorFeedbacksByUser = (userId: number) => {
+  const numericUserId = typeof userId === "string" ? parseInt(userId, 10) : userId;
   const { data: allFeedbacks = [], ...rest } = useMentorFeedbacks();
-  if (!userId) {
+  if (!numericUserId) {
     return {
       data: [] as MentorFeedback[],
       ...rest,
@@ -109,7 +126,7 @@ export const useMentorFeedbacksByUser = (userId: number) => {
 
   // Filter feedbacks by user ID
   const userFeedbacks = allFeedbacks.filter(
-    (feedback: MentorFeedback) => getFeedbackUserId(feedback) === userId
+    (feedback: MentorFeedback) => getFeedbackUserId(feedback) === numericUserId
   );
   return {
     data: userFeedbacks,
@@ -192,6 +209,10 @@ export const useUpdateMentorFeedback = () => {
       queryClient.invalidateQueries({
         queryKey: FEEDBACK_QUERY_KEYS.byId(variables.id),
       });
+      // 2026-08-02: updateCandidateMentorFeedback needs the parent session
+      //   query to refresh so `session.mentorFeedback` reflects the new
+      //   rating/comment without manual reload.
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
       toast.success(t("general.responseUpdatedSuccessfully"));
     },
     onError: (error: Error) => {
@@ -226,12 +247,17 @@ export const useDeleteMentorFeedback = () => {
 };
 
 /**
- * Calculate average rating from feedbacks
+ * Calculate average star rating from feedbacks (1-5 scale only)
  */
 export const calculateAverageFeedbackRating = (feedbacks: MentorFeedback[]): number => {
   if (!feedbacks.length) return 0;
-  const total = feedbacks.reduce((sum, feedback) => sum + (feedback.rating || 0), 0);
-  return total / feedbacks.length;
+  // Filter only valid star ratings (1-5)
+  const starFeedbacks = feedbacks.filter(
+    (f) => typeof f.rating === "number" && f.rating >= 1 && f.rating <= 5
+  );
+  if (!starFeedbacks.length) return 0;
+  const total = starFeedbacks.reduce((sum, feedback) => sum + (feedback.rating || 0), 0);
+  return total / starFeedbacks.length;
 };
 
 // Re-export types for convenience

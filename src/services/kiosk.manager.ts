@@ -208,6 +208,26 @@ export class KioskManager {
     }
   }
 
+  async deleteSchedule(id: number): Promise<ApiResponse<void>> {
+    try {
+      const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/kiosks/schedule/${id}`;
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        return { success: false, error: this.extractErrorMessage(await response.text()) };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error("[KioskManager] deleteSchedule error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
   async getAvailableSlots(kioskId: number, date: string): Promise<ApiResponse<SlotDto[]>> {
     try {
       const response = await fetchClient
@@ -279,6 +299,50 @@ export class KioskManager {
       return { success: true, data: (data ?? null) as MentorInterviewBooking };
     } catch (error) {
       console.error("[KioskManager] getBooking error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  async getBookingByApplicationDetail(
+    applicationDetailId: number
+  ): Promise<ApiResponse<MentorInterviewBooking | null>> {
+    try {
+      const { useAuthStore } = await import("@/stores/authStore");
+      const token = useAuthStore.getState().token;
+      const url =
+        toApiUrl("/api/kiosk-bookings/application-detail/") +
+        encodeURIComponent(String(applicationDetailId));
+      const headers = new Headers({ Accept: "application/json" });
+      if (token) headers.set("Authorization", `Bearer ${token}`);
+
+      const response = await fetch(url, { method: "GET", headers });
+
+      if (response.status === 404) {
+        return { success: true, data: null };
+      }
+
+      if (!response.ok) {
+        const data = await parseJson(response);
+        let message = this.t("general.anErrorHasOccurred");
+        if (data && typeof data === "object" && "message" in data) {
+          message = String((data as Record<string, unknown>)["message"]);
+        }
+        return { success: false, error: message };
+      }
+
+      const raw = await parseJson(response);
+      let data = raw;
+      if (raw && typeof raw === "object" && "traceId" in raw) {
+        data = Object.fromEntries(
+          Object.entries(raw as Record<string, unknown>).filter(([key]) => key !== "traceId")
+        );
+      }
+      return { success: true, data: (data ?? null) as MentorInterviewBooking | null };
+    } catch (error) {
+      console.error("[KioskManager] getBookingByApplicationDetail error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),

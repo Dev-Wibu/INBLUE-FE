@@ -50,20 +50,26 @@ export function FeedbackStats({
     );
   }
   return (
-    <Card className={className}>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <TrendingUp className="h-5 w-5 text-emerald-600" />
+    <Card
+      className={cn(
+        "rounded-2xl border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900/90",
+        className
+      )}>
+      <CardHeader className="px-0 pt-0 pb-3">
+        <CardTitle className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-slate-100">
+          <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           {t("compFeedback.feedbackStatistics")}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0 pb-0">
         <div className="flex flex-col gap-6 sm:flex-row">
           {/* Average Rating */}
-          <div className="flex flex-col items-center justify-center rounded-lg bg-emerald-50 p-4 sm:min-w-[150px] dark:bg-emerald-900/20">
-            <span className="text-4xl font-bold text-emerald-600">{averageRating.toFixed(1)}</span>
+          <div className="flex flex-col items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50/80 p-4 sm:min-w-[150px] dark:border-emerald-800/50 dark:bg-emerald-950/30">
+            <span className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
+              {averageRating.toFixed(1)}
+            </span>
             <StarRating value={averageRating} readOnly size="sm" className="mt-2" />
-            <span className="mt-1 text-sm text-slate-500">
+            <span className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
               {totalFeedbacks} {t("common.feedback")}
             </span>
           </div>
@@ -73,11 +79,13 @@ export function FeedbackStats({
             <div className="flex-1 space-y-2">
               {distribution.map(({ rating, count, percentage }) => (
                 <div key={rating} className="flex items-center gap-2">
-                  <span className="w-8 text-sm font-medium text-slate-600 dark:text-slate-400">
+                  <span className="w-8 text-sm font-medium text-slate-600 dark:text-slate-300">
                     {rating} ★
                   </span>
                   <Progress value={percentage} className="h-2 flex-1" />
-                  <span className="w-8 text-right text-sm text-slate-500">{count}</span>
+                  <span className="w-8 text-right text-sm font-medium text-slate-500 dark:text-slate-400">
+                    {count}
+                  </span>
                 </div>
               ))}
             </div>

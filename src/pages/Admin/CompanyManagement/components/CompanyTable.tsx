@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Building2, Edit, Trash2 } from "lucide-react";
+import { Building2, Edit } from "lucide-react";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Company } from "../types";
@@ -17,15 +17,13 @@ interface CompanyTableProps {
   companies: Company[];
   onSelectCompany: (company: Company) => void;
   onEditCompany: (company: Company, e: React.MouseEvent) => void;
-  onDeleteCompany: (company: Company, e: React.MouseEvent) => void;
-  onToggleStatus?: (company: Company, nextStatus: "ACTIVE" | "INACTIVE") => void;
+  onToggleStatus?: (company: Company) => void;
 }
 
 export function CompanyTable({
   companies,
   onSelectCompany,
   onEditCompany,
-  onDeleteCompany,
   onToggleStatus,
 }: CompanyTableProps) {
   const { t } = useTranslation();
@@ -50,10 +48,10 @@ export function CompanyTable({
   }
 
   return (
-    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <div className="border-y border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-950">
       <Table>
-        <TableHeader>
-          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+        <TableHeader className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+          <TableRow>
             <TableHead className="w-20 pl-6 font-medium text-slate-500">
               {t("common.id", "ID")}
             </TableHead>
@@ -87,7 +85,22 @@ export function CompanyTable({
                   isInactive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
                 <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                  #{company.id}
+                  <div className="flex items-center gap-2">
+                    <span>#{company.id}</span>
+                    {/* Dummy element to force row height alignment */}
+                    <div
+                      className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                      aria-hidden="true">
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span className="h-3.5 w-3.5"></span>
+                        <span>dummy</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span className="h-3.5 w-3.5"></span>
+                        <span>sample</span>
+                      </div>
+                    </div>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -119,15 +132,13 @@ export function CompanyTable({
                 </TableCell>
                 <TableCell className="text-center">
                   <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {company.jobDescriptions?.length || 0} JD
+                    {company.jobDescriptions?.length || 0} {t("adminCompanymanagement.jdShort")}
                   </span>
                 </TableCell>
                 <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                   <Switch
                     checked={company.status === "ACTIVE"}
-                    onCheckedChange={(checked) =>
-                      onToggleStatus?.(company, checked ? "ACTIVE" : "INACTIVE")
-                    }
+                    onCheckedChange={() => onToggleStatus?.(company)}
                     className="shadow-sm data-[state=checked]:bg-emerald-500"
                     aria-label={`Toggle status for ${company.name}`}
                   />
@@ -141,14 +152,6 @@ export function CompanyTable({
                       onClick={(e) => onEditCompany(company, e)}
                       title={t("common.edit", "Chỉnh sửa")}>
                       <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-slate-400 hover:bg-slate-100 hover:text-rose-600 dark:hover:bg-slate-800 dark:hover:text-rose-400"
-                      onClick={(e) => onDeleteCompany(company, e)}
-                      title={t("common.delete", "Xóa")}>
-                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>

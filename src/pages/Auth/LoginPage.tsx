@@ -3,9 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { candidateProfileManager } from "@/services/candidate-profile.manager";
+import { mentorManager } from "@/services/mentor.manager";
+import { userManager } from "@/services/user.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import { Eye, EyeOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -65,19 +68,48 @@ export function LoginPage() {
 
       let resolvedUser = { ...baseUser, name: payload.user.fullName };
 
-      // Fetch candidate profile to get actual name, avatar, etc.
+      const userRole = payload.user.role?.toUpperCase();
+
+      // Fetch role-specific profile to get actual name, email, avatar
       if (userId) {
         try {
-          const profileResult = await candidateProfileManager.getByUserId(userId);
-          if (profileResult.success && profileResult.data) {
-            const profile = profileResult.data as Record<string, unknown>;
-            const userData = profile.user as Record<string, unknown> | undefined;
-            resolvedUser = {
-              ...baseUser,
-              name: (userData?.name as string) || payload.user.fullName,
-              email: (userData?.email as string) || payload.user.email,
-              avatarUrl: (userData?.avatarUrl as string) || payload.user.avatar || undefined,
-            };
+          if (userRole === "MENTOR") {
+            const mentorResult = await mentorManager.getById(userId);
+            if (mentorResult.success && mentorResult.data) {
+              const mentor = mentorResult.data;
+              resolvedUser = {
+                ...baseUser,
+                name: mentor.name || payload.user.fullName,
+                email: mentor.email || payload.user.email,
+                avatarUrl: mentor.avatarUrl || payload.user.avatar || undefined,
+              };
+            }
+          } else if (userRole === "ADMIN" || userRole === "STAFF") {
+            const userProfileResult = await userManager.getProfile(userId);
+            if (userProfileResult.success && userProfileResult.data) {
+              const u = userProfileResult.data as Record<string, unknown>;
+              resolvedUser = {
+                ...baseUser,
+                name: (typeof u.name === "string" && u.name) || payload.user.fullName,
+                email: (typeof u.email === "string" && u.email) || payload.user.email,
+                avatarUrl:
+                  (typeof u.avatarUrl === "string" && u.avatarUrl) ||
+                  payload.user.avatar ||
+                  undefined,
+              };
+            }
+          } else if (userRole === "USER") {
+            const profileResult = await candidateProfileManager.getByUserId(userId);
+            if (profileResult.success && profileResult.data) {
+              const profile = profileResult.data as Record<string, unknown>;
+              const userData = profile.user as Record<string, unknown> | undefined;
+              resolvedUser = {
+                ...baseUser,
+                name: (userData?.name as string) || payload.user.fullName,
+                email: (userData?.email as string) || payload.user.email,
+                avatarUrl: (userData?.avatarUrl as string) || payload.user.avatar || undefined,
+              };
+            }
           }
         } catch {
           // Fall back to baseUser if profile fetch fails
@@ -89,6 +121,18 @@ export function LoginPage() {
         user: resolvedUser,
         token: payload.token ?? null,
       });
+
+      // Prefetch mentor profile so useCurrentMentorProfile() is already
+      // populated when the user navigates to any mentor page or comment section.
+      // This prevents race condition where the user clicks "send" before the
+      // query has resolved, falling back to User.id instead of Mentor.id.
+      if (resolvedUser.role === "MENTOR" && resolvedUser.email) {
+        queryClient.prefetchQuery({
+          queryKey: ["mentors", "by-email", resolvedUser.email],
+          queryFn: () => mentorManager.findByEmail(resolvedUser.email!),
+          staleTime: 5 * 60_000,
+        });
+      }
 
       // Navigate AFTER user state is set to prevent race condition
       setRedirectTo(redirectPath);

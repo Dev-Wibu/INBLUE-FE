@@ -10,7 +10,7 @@ export type SchemaUserResponse = components["schemas"]["UserResponse"];
 export type SchemaMentor = components["schemas"]["Mentor"];
 export type SchemaMentorResponse = components["schemas"]["MentorResponse"];
 export type SchemaUserInfo = components["schemas"]["UserInfo"];
-export type SchemaMentorInfo = components["schemas"]["MentorInfo"];
+export type SchemaCreateMentorRequest = components["schemas"]["CreateMentorRequest"];
 export type SchemaMentorInterviewDto = components["schemas"]["MentorInterviewDto"];
 /** MemberShipPlan is no longer in schema-from-be; defined locally to match expected BE shape */
 export type SchemaMembershipPlan = {
@@ -68,7 +68,11 @@ export type PaymentPurpose = "FULLY_PAID" | "MENTOR_INTERVIEW" | "JD_PURCHASE";
 export type PaymentEntity = components["schemas"]["Payment"] & {
   paymentPurpose?: PaymentPurpose | null;
 };
-export type JobDescription = SchemaJobDescription;
+export type CreateMentorRequest = SchemaCreateMentorRequest;
+export type JobDescription = SchemaJobDescription & {
+  companyName?: string;
+  companyLogo?: string;
+};
 export type JobDescriptionLevel = NonNullable<SchemaJobDescription["level"]>;
 export type JobDescriptionStatus = NonNullable<SchemaJobDescription["status"]>;
 export type CreateJobDescriptionRequest = SchemaCreateJobDescriptionRequest;
@@ -155,7 +159,7 @@ export interface UserFormData extends Omit<SchemaUserInfo, "id" | "name" | "emai
  * Mentor form data for create/update operations
  * Updated to match MentorInfo schema (doesn't include rate)
  */
-export interface MentorFormData extends Omit<SchemaMentorInfo, "id" | "name" | "email"> {
+export interface MentorFormData extends Omit<SchemaCreateMentorRequest, "name" | "email"> {
   name: string;
   email: string;
   active?: boolean;
@@ -200,6 +204,8 @@ export interface Session {
   duration?: number;
   totalPrice?: number;
   transactionCode?: string;
+  /** Kiosk ID where this offline session takes place (null for online) */
+  kioskId?: number;
   /** Mentor review of the student (set by mentor after session ends) */
   mentorReview?: MentorReview | null;
   /** Student feedback of the mentor (set by student after session ends) */
@@ -220,8 +226,12 @@ export interface MentorReview {
 
 /** Student feedback of mentor (filled by student after session) */
 export interface MentorFeedback {
+  /** Backend assigns this on POST; FE needs it to decide POST vs PUT. */
+  id?: number;
   rating?: number;
   comment?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**

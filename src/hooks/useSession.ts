@@ -61,6 +61,13 @@ export const useSessionById = (id: number) => {
       throw new Error(response.error || t("common.noInterviewSessionsFound"));
     },
     enabled: !!id,
+    // 2026-08-02: mentor may write `mentorReview` AFTER the candidate has
+    //   navigated to the result step. Without refetchOnWindowFocus +
+    //   refetchInterval the candidate would have to manually click "Làm
+    //   mới" to see the new review. With these settings, switching tabs
+    //   back to the app OR letting 30s tick picks the new review up.
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
 };
 

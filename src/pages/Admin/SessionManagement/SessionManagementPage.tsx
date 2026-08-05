@@ -47,11 +47,11 @@ export function SessionManagementPage() {
           const sessionData = Array.isArray(response.data) ? response.data : response.data.data;
           setSessions(sessionData as Session[]);
         } else {
-          toast.error(response.error || t("adminSessionmanagement.unableToLoadLessonList"));
+          toast.error(response.error || t("adminSessionmanagement.unableToLoadSessionList"));
         }
       } catch (error) {
         console.error("Error loading sessions:", error);
-        toast.error(t("adminSessionmanagement.unableToLoadLessonList"));
+        toast.error(t("adminSessionmanagement.unableToLoadSessionList"));
       } finally {
         if (showReloading) {
           setIsReloading(false);
@@ -127,7 +127,7 @@ export function SessionManagementPage() {
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            {t("adminSessionmanagement.managingLessons")}
+            {t("adminSessionmanagement.managingSessions")}
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t("adminSessionmanagement.manageInterviewsViewRecordingsAnd")}
@@ -205,7 +205,7 @@ export function SessionManagementPage() {
       <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isInitialLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <SpinnerBlock size="lg" label={t("adminSessionmanagement.loadingClassList")} />
+            <SpinnerBlock size="lg" label={t("adminSessionmanagement.loadingSessionList")} />
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">

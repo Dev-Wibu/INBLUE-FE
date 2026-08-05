@@ -16,16 +16,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
   CalendarDays,
   Clock4,
   Hourglass,
   Loader2,
-  Power,
   Sparkles,
   Sun,
   Sunset,
+  Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,6 +42,7 @@ interface ScheduleFormDialogProps {
   kioskId: number;
   initialSchedule?: KioskSchedule | null;
   onSubmit: (values: ScheduleFormValues) => Promise<void> | void;
+  onToggleStatus: (schedule: KioskSchedule) => Promise<boolean> | void;
   isSubmitting?: boolean;
 }
 
@@ -79,10 +79,13 @@ export function ScheduleFormDialog({
   kioskId,
   initialSchedule,
   onSubmit,
+  onToggleStatus,
   isSubmitting,
 }: ScheduleFormDialogProps) {
   const { t } = useTranslation();
   const isEdit = !!initialSchedule?.id;
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const initialValues: ScheduleFormValues = initialSchedule
     ? valuesFromSchedule(initialSchedule)
@@ -242,48 +245,89 @@ export function ScheduleFormDialog({
             </p>
           </div>
 
-          <div className="border-border bg-muted/30 flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-lg">
-                <Power className="h-4 w-4" />
-              </div>
-              <div>
-                <Label htmlFor="schedule-active" className="text-sm font-medium">
-                  {t("adminKioskManagement.statusLabel")}
-                </Label>
-                <p className="text-muted-foreground text-xs">
-                  {t("adminKioskManagement.statusDescription")}
+          <DialogFooter className="gap-2">
+            {isEdit && initialSchedule && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isSubmitting || isDeleting}
+                className="mr-auto gap-2">
+                <Trash2 className="h-4 w-4" />
+                {t("common.delete")}
+              </Button>
+            )}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}>
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" disabled={isSubmitting || isInvalid} className="min-w-32 gap-2">
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("common.saving")}
+                  </>
+                ) : isEdit ? (
+                  t("adminKioskManagement.saveChanges")
+                ) : (
+                  t("adminKioskManagement.createScheduleButton")
+                )}
+              </Button>
+            </div>
+          </DialogFooter>
+
+          {/* Delete Confirmation Dialog */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div className="mx-4 w-full max-w-sm rounded-xl bg-white p-6 shadow-lg dark:bg-slate-900">
+                <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
+                  {t("adminKioskManagement.confirmDeleteSchedule", "Xác nhận xóa lịch?")}
+                </h3>
+                <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+                  {t(
+                    "adminKioskManagement.confirmDeleteScheduleMessage",
+                    "Bạn có chắc muốn xóa lịch này không? Hành động này không thể hoàn tác."
+                  )}
                 </p>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeleting}>
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={async () => {
+                      if (!initialSchedule) return;
+                      setIsDeleting(true);
+                      const success = await onToggleStatus(initialSchedule);
+                      setIsDeleting(false);
+                      if (success !== false) {
+                        onOpenChange(false);
+                      }
+                    }}
+                    disabled={isDeleting}
+                    className="gap-2">
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {t("common.deleting", "Đang xóa...")}
+                      </>
+                    ) : (
+                      t("common.delete")
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
-            <Switch
-              id="schedule-active"
-              checked={values.isActive}
-              onCheckedChange={(checked) => setValues((prev) => ({ ...prev, isActive: checked }))}
-            />
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}>
-              {t("common.cancel")}
-            </Button>
-            <Button type="submit" disabled={isSubmitting || isInvalid} className="min-w-32 gap-2">
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("common.saving")}
-                </>
-              ) : isEdit ? (
-                t("adminKioskManagement.saveChanges")
-              ) : (
-                t("adminKioskManagement.createScheduleButton")
-              )}
-            </Button>
-          </DialogFooter>
+          )}
         </form>
       </DialogContent>
     </Dialog>

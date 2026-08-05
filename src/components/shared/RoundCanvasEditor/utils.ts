@@ -1,3 +1,5 @@
+import type { TFunction } from "i18next";
+
 export const getDistanceToSegment = (
   px: number,
   py: number,
@@ -124,3 +126,68 @@ export const getBestConnection = (
     cp2y: bestTo.y + bestTo.ny * cpDist,
   };
 };
+
+export function getLocalizedRoundName(
+  name: string,
+  roundType: string | undefined,
+  t: TFunction
+): string {
+  const cvTitle = t("adminInterviewTemplate.cvScreening.title", "Lọc CV");
+  if (
+    name === cvTitle ||
+    name === "Lọc CV" ||
+    name === "CV Screening" ||
+    roundType === "CV_SCREENING"
+  ) {
+    if (name === cvTitle || name === "Lọc CV" || name === "CV Screening") return cvTitle;
+  }
+  const emailTitle = t("adminInterviewTemplate.emailSimulator.title", "Mô phỏng Email");
+  if (
+    name === emailTitle ||
+    name === "Mô phỏng Email" ||
+    name === "Email Simulator" ||
+    roundType === "EMAIL_SIMULATOR"
+  ) {
+    if (name === emailTitle || name === "Mô phỏng Email" || name === "Email Simulator")
+      return emailTitle;
+  }
+  const quizTitle = t("adminInterviewTemplate.quiz.title", "Trắc nghiệm");
+  if (name === quizTitle || name === "Trắc nghiệm" || name === "Quiz" || roundType === "QUIZ") {
+    if (name === quizTitle || name === "Trắc nghiệm" || name === "Quiz") return quizTitle;
+  }
+  const codingTitle = t("adminInterviewTemplate.coding.title", "Lập trình");
+  if (name === codingTitle || name === "Lập trình" || name === "Coding" || roundType === "CODING") {
+    if (name === codingTitle || name === "Lập trình" || name === "Coding") return codingTitle;
+  }
+  const codeReviewTitle = t("adminInterviewTemplate.codeReview.title", "Đánh giá Code");
+  if (
+    name === codeReviewTitle ||
+    name === "Đánh giá Code" ||
+    name === "Code Review" ||
+    roundType === "CODE_REVIEW"
+  ) {
+    if (name === codeReviewTitle || name === "Đánh giá Code" || name === "Code Review")
+      return codeReviewTitle;
+  }
+  const mentorTitle = t("adminInterviewTemplate.mentorReview.title", "Đánh giá Mentor");
+  if (
+    name === mentorTitle ||
+    name === "Đánh giá Mentor" ||
+    name === "Mentor Review" ||
+    roundType === "MENTROR_REVIEW" ||
+    roundType === "MENTOR_REVIEW"
+  ) {
+    if (name === mentorTitle || name === "Đánh giá Mentor" || name === "Mentor Review")
+      return mentorTitle;
+  }
+  const aiTitle = t("adminInterviewTemplate.aiInterview.title", "Phỏng vấn AI");
+  if (
+    name === aiTitle ||
+    name === "Phỏng vấn AI" ||
+    name === "AI Interview" ||
+    roundType === "AI_INTERVIEW"
+  ) {
+    if (name === aiTitle || name === "Phỏng vấn AI" || name === "AI Interview") return aiTitle;
+  }
+  return name;
+}

@@ -56,11 +56,11 @@ export function ReviewCard({
     <Card
       onClick={onClick}
       className={cn(
-        "overflow-hidden",
-        onClick && "cursor-pointer transition-shadow hover:shadow-md",
+        "rounded-2xl border-slate-200/80 bg-white p-5 shadow-xs transition-all hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-indigo-700/60",
+        onClick && "cursor-pointer hover:shadow-md",
         className
       )}>
-      <CardHeader className="pb-3">
+      <CardHeader className="px-0 pt-0 pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             {/* Avatar */}
@@ -69,20 +69,20 @@ export function ReviewCard({
                 src={showMentor ? review.mentor?.avatarUrl : review.user?.avatarUrl}
                 alt={displayName}
               />
-              <AvatarFallback className="bg-[#0047AB]/10 text-[#0047AB]">
+              <AvatarFallback className="bg-indigo-100 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
                 <User className="h-5 w-5" />
               </AvatarFallback>
             </Avatar>
 
             <div className="min-w-0 flex-1">
               {/* Name */}
-              <p className="font-medium text-slate-900 dark:text-slate-100">{displayName}</p>
+              <p className="font-semibold text-slate-900 dark:text-slate-100">{displayName}</p>
 
               {/* Meta info */}
-              <div className="flex items-center gap-2 text-sm text-slate-500">
+              <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                 {review.session?.roomName && (
                   <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
+                    <Calendar className="h-3.5 w-3.5" />
                     {review.session.roomName}
                   </span>
                 )}
@@ -93,49 +93,51 @@ export function ReviewCard({
           {/* Rating */}
           <div className="flex flex-col items-end gap-1">
             <StarRating value={review.rating || 0} readOnly size="sm" />
-            {occurredAt && <TimeAgo date={occurredAt} className="text-xs" />}
+            {occurredAt && (
+              <TimeAgo date={occurredAt} className="text-xs text-slate-500 dark:text-slate-400" />
+            )}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 px-0 pb-0">
         {/* STAR Method Notes */}
         {hasStarNotes && (
-          <div className="space-y-3">
+          <div className="space-y-3 rounded-xl border border-slate-100 bg-slate-50/60 p-4 dark:border-slate-800/60 dark:bg-slate-950/40">
             {review.situationNote && (
               <div>
-                <p className="text-xs font-semibold tracking-wider text-[#0047AB] uppercase">
+                <p className="text-xs font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
                   {t("compReview.situationS")}
                 </p>
-                <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
                   {review.situationNote}
                 </p>
               </div>
             )}
             {review.taskNote && (
               <div>
-                <p className="text-xs font-semibold tracking-wider text-[#0047AB] uppercase">
+                <p className="text-xs font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
                   {t("compReview.missionT")}
                 </p>
-                <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{review.taskNote}</p>
+                <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">{review.taskNote}</p>
               </div>
             )}
             {review.actionNote && (
               <div>
-                <p className="text-xs font-semibold tracking-wider text-[#0047AB] uppercase">
+                <p className="text-xs font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
                   {t("compReview.actionA")}
                 </p>
-                <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
                   {review.actionNote}
                 </p>
               </div>
             )}
             {review.resultNote && (
               <div>
-                <p className="text-xs font-semibold tracking-wider text-[#0047AB] uppercase">
+                <p className="text-xs font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
                   {t("compReview.resultsR")}
                 </p>
-                <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
                   {review.resultNote}
                 </p>
               </div>
@@ -145,34 +147,40 @@ export function ReviewCard({
 
         {/* Separator */}
         {hasStarNotes && hasAdditionalNotes && (
-          <hr className="border-slate-200 dark:border-slate-700" />
+          <hr className="border-slate-200 dark:border-slate-800" />
         )}
 
         {/* Additional Notes */}
         {hasAdditionalNotes && (
           <div className="grid gap-3 sm:grid-cols-3">
             {review.strength && (
-              <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-                <p className="text-xs font-semibold text-green-700 dark:text-green-400">
+              <div className="rounded-xl border border-emerald-100 bg-emerald-50/80 p-3.5 dark:border-emerald-800/40 dark:bg-emerald-950/30">
+                <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
                   {t("common.strengths")}
                 </p>
-                <p className="mt-1 text-sm text-green-800 dark:text-green-300">{review.strength}</p>
+                <p className="mt-1 text-sm leading-relaxed text-emerald-900 dark:text-emerald-200">
+                  {review.strength}
+                </p>
               </div>
             )}
             {review.weakness && (
-              <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
-                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+              <div className="rounded-xl border border-amber-100 bg-amber-50/80 p-3.5 dark:border-amber-800/40 dark:bg-amber-950/30">
+                <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
                   {t("common.pointsForImprovement")}
                 </p>
-                <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">{review.weakness}</p>
+                <p className="mt-1 text-sm leading-relaxed text-amber-900 dark:text-amber-200">
+                  {review.weakness}
+                </p>
               </div>
             )}
             {review.improve && (
-              <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+              <div className="rounded-xl border border-sky-100 bg-sky-50/80 p-3.5 dark:border-sky-800/40 dark:bg-sky-950/30">
+                <p className="text-xs font-bold text-sky-700 dark:text-sky-400">
                   {t("common.suggestedImprovements1")}
                 </p>
-                <p className="mt-1 text-sm text-blue-800 dark:text-blue-300">{review.improve}</p>
+                <p className="mt-1 text-sm leading-relaxed text-sky-900 dark:text-sky-200">
+                  {review.improve}
+                </p>
               </div>
             )}
           </div>
@@ -180,7 +188,9 @@ export function ReviewCard({
 
         {/* No content fallback */}
         {!hasStarNotes && !hasAdditionalNotes && (
-          <p className="text-sm text-slate-500 italic">{t("compReview.thereIsNoDetailedReview")}</p>
+          <p className="text-sm text-slate-500 italic dark:text-slate-400">
+            {t("compReview.thereIsNoDetailedReview")}
+          </p>
         )}
 
         {/* Actions */}

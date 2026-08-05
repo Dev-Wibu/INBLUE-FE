@@ -240,7 +240,10 @@ export function QuestionBankCategoryTab({
             <div className="flex h-64 flex-col items-center justify-center">
               <Folder className="mb-3 h-10 w-10 text-slate-300" />
               <p className="text-sm font-medium text-slate-500">
-                Chưa có câu hỏi nào trong chuyên mục này.
+                {t(
+                  "adminQuestionbankmanagement.noQuestionsInCategory",
+                  "Chưa có câu hỏi nào trong chuyên mục này."
+                )}
               </p>
             </div>
           ) : (
@@ -327,8 +330,11 @@ export function QuestionBankCategoryTab({
                       {cat.categoryName}
                     </h3>
                   )}
-                  <p className="mt-1 px-1 text-xs text-slate-500 dark:text-slate-400">
-                    ID: {cat.id}
+                  <p className="mt-1 flex items-center gap-2 px-1 text-xs text-slate-500 dark:text-slate-400">
+                    <span>
+                      {questions.filter((q) => q.questionCategory?.id === cat.id).length}{" "}
+                      {t("question.questions", "Câu hỏi")}
+                    </span>
                   </p>
                 </div>
               </div>

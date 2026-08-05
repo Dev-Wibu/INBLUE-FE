@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
 import { formatDateTime, toTimestamp } from "@/lib/formatting";
 import type { TFunction } from "i18next";
+import { Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 interface CommentItemProps {
@@ -13,6 +14,8 @@ interface CommentItemProps {
   parentCommentId?: number;
   onMentionClick?: (_parentCommentId: number) => void;
   isHighlighted?: boolean;
+  allowDelete?: boolean;
+  onDeleteComment?: (_commentId: number) => void;
 }
 function renderContent(
   text: string | undefined,
@@ -81,6 +84,8 @@ export function CommentItem({
   parentCommentId,
   onMentionClick,
   isHighlighted,
+  allowDelete,
+  onDeleteComment,
 }: CommentItemProps) {
   const { t } = useTranslation();
 
@@ -108,27 +113,45 @@ export function CommentItem({
         <AvatarImage src={comment.userAvatar} alt={comment.userName} />
         <AvatarFallback>{initials || "?"}</AvatarFallback>
       </Avatar>
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{comment.userName ?? t("common.anonymous")}</span>
-          {relativeTime && (
-            <span title={absoluteTime || undefined} className="text-muted-foreground text-xs">
-              {relativeTime}
-            </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">
+                {comment.userName ?? t("common.anonymous")}
+              </span>
+              {relativeTime && (
+                <span title={absoluteTime || undefined} className="text-muted-foreground text-xs">
+                  {relativeTime}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-sm wrap-break-word whitespace-pre-wrap">
+              {renderContent(comment.content, mentionedUserName, parentCommentId, onMentionClick)}
+            </p>
+            {onReply && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-1 h-6 px-2 text-xs"
+                onClick={() => onReply(comment)}>
+                {t("compPost.reply")}
+              </Button>
+            )}
+          </div>
+          {allowDelete && onDeleteComment && comment.id != null && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteComment(comment.id!);
+              }}
+              className="shrink-0 rounded p-1 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+              title={t("adminPostmanagement.deleteComments")}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
           )}
         </div>
-        <p className="mt-1 text-sm wrap-break-word whitespace-pre-wrap">
-          {renderContent(comment.content, mentionedUserName, parentCommentId, onMentionClick)}
-        </p>
-        {onReply && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-1 h-6 px-2 text-xs"
-            onClick={() => onReply(comment)}>
-            {t("compPost.reply")}
-          </Button>
-        )}
       </div>
     </div>
   );

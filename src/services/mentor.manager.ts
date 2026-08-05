@@ -13,19 +13,19 @@ import type {
   Mentor,
   PaginatedResponse,
   PaginationParams,
-  SchemaMentorInfo,
+  SchemaCreateMentorRequest,
 } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
 
 // Re-export Mentor type for convenience
 export type { Mentor } from "@/interfaces";
-export type MentorInfo = SchemaMentorInfo;
+export type CreateMentorRequest = SchemaCreateMentorRequest;
 
 /**
  * Extended mentor data for creation with file uploads
  * Files: avatar
  */
-export interface CreateMentorData extends MentorInfo {
+export interface CreateMentorData extends CreateMentorRequest {
   avatar?: File;
   active?: boolean;
 }
@@ -144,15 +144,15 @@ export class MentorManager implements BaseManager<Mentor> {
       // According to schema, createMentor uses multipart/form-data
       const formData = new FormData();
 
-      // Prepare MentorInfo data (JSON object)
+      // Prepare CreateMentorRequest data (JSON object)
       // Note: Password should be handled securely by the backend (e.g., hashing)
       // The frontend sends the password in plain text over HTTPS
       // IMPORTANT: Backend comment says POST /api/mentors is shared for create & update
       // When creating, don't include id. When updating, include id.
       // Adding 'active: true' to ensure new mentors are active by default
-      const mentorInfo: MentorInfo = {
-        name: _data.name.trim(),
-        email: _data.email.trim(),
+      const mentorInfo: CreateMentorRequest = {
+        name: _data.name?.trim(),
+        email: _data.email?.trim(),
         password: _data.password,
         bio: _data.bio,
         expertise: _data.expertise,
@@ -163,7 +163,7 @@ export class MentorManager implements BaseManager<Mentor> {
       };
 
       // Add active field to the payload to ensure new mentors are active
-      // Note: This extends MentorInfo with the active field from Mentor schema
+      // Note: This extends CreateMentorRequest with the active field from Mentor schema
       const mentorPayload = {
         ...mentorInfo,
         active: (_data as Partial<Mentor>).active !== false, // Default true unless explicitly false
@@ -244,7 +244,7 @@ export class MentorManager implements BaseManager<Mentor> {
         // Ignore
       }
 
-      // Build MentorInfo payload with id for update.
+      // Build CreateMentorRequest payload with id for update.
       // SECURITY/PASSWORD-PRESERVATION NOTE:
       // The backend controller wipes the mentor's password whenever the
       // `password` field is missing from the request body OR arrives as
@@ -252,17 +252,18 @@ export class MentorManager implements BaseManager<Mentor> {
       // hash that came back from GET /api/mentors/{id}. We only do that
       // when the field is actually a truthy string — never emit null /
       // undefined / empty.
-      const mentorInfo: MentorInfo & {
+      const mentorInfo: CreateMentorRequest & {
+        id?: number;
         active?: boolean;
       } = {
         id: Number(_id),
-        name: _data.name?.trim() || existingMentor.name,
-        email: _data.email?.trim() || existingMentor.email,
-        bio: _data.bio || existingMentor.bio,
-        expertise: _data.expertise || existingMentor.expertise,
+        name: (_data.name ?? existingMentor.name)?.trim(),
+        email: (_data.email ?? existingMentor.email)?.trim(),
+        bio: _data.bio ?? existingMentor.bio,
+        expertise: _data.expertise ?? existingMentor.expertise,
         yearsOfExperience: _data.yearsOfExperience ?? existingMentor.yearsOfExperience,
-        linkedInUrl: _data.linkedInUrl || existingMentor.linkedInUrl,
-        currentCompany: _data.currentCompany || existingMentor.currentCompany,
+        linkedInUrl: _data.linkedInUrl ?? existingMentor.linkedInUrl,
+        currentCompany: _data.currentCompany ?? existingMentor.currentCompany,
         pricePerMinute: _data.pricePerMinute ?? existingMentor.pricePerMinute,
       };
 
@@ -301,24 +302,21 @@ export class MentorManager implements BaseManager<Mentor> {
         formData.append("avatar", createEmptyFilePlaceholder());
       }
 
-      // Use POST endpoint (API_ENDPOINTS.MENTOR.CREATE) for BOTH create and update operations
-      // Backend schema comment: "dùng chung cho create và update mentor"
-      // The difference: create has no id, update includes id in the JSON data
-      // Remove Content-Type to let axios set multipart boundary automatically
-      const response = await fetchClient
-        .POST("/api/mentors", {
-          ...{
-            headers: {
-              "Content-Type": undefined,
-            },
+      // Use PUT endpoint for update per MENTOR_AVATAR_UPDATE_GUIDE.md
+      // PUT /api/mentors/{id}
+      // Content-Type: multipart/form-data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await (fetchClient as any)
+        .PUT(`/api/mentors/${_id}`, {
+          headers: {
+            "Content-Type": undefined,
           },
-          // @ts-expect-error: Backend Swagger schema mismatch
           body: formData,
         })
-        .then((res) => ({
-          data: res.data,
-          status: res.response?.status,
-          headers: res.response?.headers,
+        .then((res: { data: Mentor }) => ({
+          data: res.data as Mentor,
+          status: res.data,
+          headers: undefined,
         }));
       return {
         success: true,
@@ -381,6 +379,38 @@ export class MentorManager implements BaseManager<Mentor> {
       success: result.success,
       error: result.error,
     };
+  }
+
+  /**
+   * Change mentor password
+   * PUT /api/mentors/{id}/change-password
+   */
+  async changePassword(
+    id: string | number,
+    oldPassword: string,
+    newPassword: string
+  ): Promise<ApiResponse<Mentor>> {
+    try {
+      const response = await fetchClient.PUT("/api/mentors/{id}/change-password", {
+        params: {
+          path: { id: Number(id) },
+        },
+        body: {
+          oldPassword,
+          newPassword,
+        },
+      });
+
+      return {
+        success: true,
+        data: response.data as Mentor,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : t("changePassword.unableToUpdatePassword"),
+      };
+    }
   }
 }
 

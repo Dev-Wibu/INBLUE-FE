@@ -8,6 +8,7 @@ import { MentorReviewForm } from "@/components/review";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import {
   useCreateMentorReview,
   useMentorReviewBySession,
@@ -32,6 +33,23 @@ export function WriteFeedbackPage() {
     useMentorReviewBySession(numericSessionId);
   const { mutate: createReview, isPending: isCreating } = useCreateMentorReview();
   const { mutate: updateReview, isPending: isUpdating } = useUpdateMentorReview();
+  // 2026-07-28: User.id (from JWT sub) is NOT the same as Mentor.id. BE stores
+  //   the Mentor.id in `session.mentorId` and validates the create-review
+  //   payload against it, so when submitting a mentor review we MUST send
+  //   Mentor.id, not User.id — otherwise the access guard short-circuits to
+  //   "No access / You are not the mentor".
+  //   Same fix as commit eb834e6 (join-session) applied to write-feedback.
+  const { data: currentMentorProfile } = useCurrentMentorProfile();
+  const mentorProfileId =
+    currentMentorProfile?.id != null
+      ? typeof currentMentorProfile.id === "string"
+        ? parseInt(currentMentorProfile.id, 10)
+        : currentMentorProfile.id
+      : null;
+  // Prefer Mentor.id; fall back to user.id if the profile hasn't loaded yet
+  //   so the access check still passes for accounts where User.id and
+  //   Mentor.id happen to coincide (legacy mentors, dev seed data, etc.).
+  const submitterMentorId = mentorProfileId ?? user?.id ?? null;
   const isLoading = sessionLoading || reviewLoading;
   const isSubmitting = isCreating || isUpdating;
   const isEdit = !!existingReview;
@@ -48,7 +66,7 @@ export function WriteFeedbackPage() {
     mentorId: number;
     userId: number;
   }) => {
-    if (!session || !user?.id || !isSessionMentor(session, user.id)) {
+    if (!session || !submitterMentorId || !isSessionMentor(session, submitterMentorId)) {
       toast.error(t("mentorSessions.youDoNotHavePermission"));
       return;
     }
@@ -88,7 +106,7 @@ export function WriteFeedbackPage() {
     }
     const payload = {
       sessionId: session.id,
-      mentorId: user.id,
+      mentorId: submitterMentorId,
       userId: session.userId,
       rating: normalizedRating,
       situationNote: normalizedSituationNote,
@@ -173,8 +191,10 @@ export function WriteFeedbackPage() {
     );
   }
 
-  // Check if current user is the mentor for this session
-  if (!isSessionMentor(session, user?.id)) {
+  // Check if current user is the mentor for this session. Use
+  //   submitterMentorId (resolved via useCurrentMentorProfile) because
+  //   User.id (from JWT sub) is not the same as Mentor.id.
+  if (!isSessionMentor(session, submitterMentorId)) {
     return (
       <div className="space-y-6">
         <Button variant="ghost" onClick={() => navigate(-1)}>
@@ -200,7 +220,7 @@ export function WriteFeedbackPage() {
       </Button>
 
       {/* Session Info */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
@@ -223,7 +243,7 @@ export function WriteFeedbackPage() {
       </Card>
 
       {/* Feedback Form */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Star className="h-5 w-5 text-[#FFD700]" />
@@ -240,7 +260,7 @@ export function WriteFeedbackPage() {
         <CardContent>
           <MentorReviewForm
             sessionId={numericSessionId}
-            mentorId={user?.id || 0}
+            mentorId={submitterMentorId ?? 0}
             userId={session.userId || 0}
             existingReview={existingReview}
             onSubmit={handleSubmit}

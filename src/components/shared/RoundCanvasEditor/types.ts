@@ -38,5 +38,7 @@ export interface UIRound {
   roundOrder?: number;
   roundType?: RoundType;
   passThreshold?: number;
+  /** ID of the STAFF User who will review this round (null = unassigned) */
+  reviewerId?: number | null;
   configData?: UIRoundConfig;
 }

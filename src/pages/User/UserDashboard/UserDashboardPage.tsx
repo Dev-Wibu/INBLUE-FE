@@ -7,12 +7,14 @@ import { useTabsState } from "@/hooks/useTabsState";
 import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
+import type { TFunction } from "i18next";
 import {
   Bot,
   Briefcase,
   LayoutDashboard,
   MessageSquare,
   Newspaper,
+  Search,
   User as UserIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -21,6 +23,7 @@ import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { AIInterviewListPage } from "../AIInterview";
 import { ApplicationHistoryPage } from "../ApplicationHistory";
 import { HomeFeedPage } from "../HomeFeed";
+import { JobSearchTab } from "../JobSearch";
 import { MentorListPage } from "../MentorList/MentorListPage";
 import { MessengerPage } from "../Messenger";
 import { UserNotificationsPage } from "../Notifications";
@@ -29,6 +32,7 @@ import { UserHeader } from "./components/UserHeader";
 
 type TabType =
   | "homeFeed"
+  | "jobSearch"
   | "overview"
   | "mentors"
   | "applicationHistory"
@@ -39,6 +43,7 @@ type TabType =
 const isValidTabType = (value: string): value is TabType => {
   return [
     "homeFeed",
+    "jobSearch",
     "overview",
     "mentors",
     "applicationHistory",
@@ -49,7 +54,7 @@ const isValidTabType = (value: string): value is TabType => {
 };
 
 const getAvailableTabs = (
-  t: (_key: string) => string
+  t: TFunction
 ): Array<{
   type: TabType;
   label: string;
@@ -57,6 +62,10 @@ const getAvailableTabs = (
   {
     type: "homeFeed",
     label: t("common.home"),
+  },
+  {
+    type: "jobSearch",
+    label: t("userDashboard.jobSearch", { defaultValue: "Việc làm" }),
   },
   {
     type: "overview",
@@ -84,7 +93,7 @@ const getAvailableTabs = (
   },
 ];
 
-const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] => [
+const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
   {
     label: t("common.home"),
     items: [
@@ -93,6 +102,12 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
         icon: Newspaper,
         label: t("common.home"),
         color: "text-orange-600 dark:text-orange-500",
+      },
+      {
+        type: "jobSearch",
+        icon: Search,
+        label: t("userDashboard.jobSearch", { defaultValue: "Việc làm" }),
+        color: "text-[#0047AB] dark:text-[#66B2FF]",
       },
     ],
   },
@@ -260,6 +275,8 @@ export function UserDashboardPage() {
     switch (typedActiveTab) {
       case "homeFeed":
         return <HomeFeedPage />;
+      case "jobSearch":
+        return <JobSearchTab />;
       case "overview":
         return <OverviewPage />;
       case "mentors":
@@ -335,8 +352,13 @@ export function UserDashboardPage() {
           ref={handleContentRef}
           className={cn(
             "flex-1 overflow-hidden",
-            typedActiveTab === "messenger" || typedActiveTab === "mentors"
-              ? "p-0"
+            typedActiveTab === "messenger" ||
+              typedActiveTab === "mentors" ||
+              typedActiveTab === "jobSearch" ||
+              typedActiveTab === "applicationHistory" ||
+              typedActiveTab === "aiInterview" ||
+              location.pathname.startsWith("/user/application")
+              ? "overflow-auto p-0"
               : location.pathname.startsWith("/user/account") ||
                   location.pathname.startsWith("/user/settings")
                 ? "overflow-auto p-0"

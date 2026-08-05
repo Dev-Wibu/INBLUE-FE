@@ -143,10 +143,10 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
 
   const statusFilters = [
     { id: "ALL", label: t("common.all") },
-    { id: "COMPLETED", label: "Hoàn thành" },
-    { id: "IN_PROGRESS", label: "Đang diễn ra" },
-    { id: "AWAITING_MENTOR", label: "Chờ mentor" },
-    { id: "CANCELLED", label: "Đã hủy" },
+    { id: "COMPLETED", label: t("common.completed", "Hoàn thành") },
+    { id: "IN_PROGRESS", label: t("common.inProgress", "Đang diễn ra") },
+    { id: "AWAITING_MENTOR", label: t("common.awaitingMentor", "Chờ mentor") },
+    { id: "CANCELLED", label: t("common.cancelled", "Đã hủy") },
   ];
 
   if (loading) {
@@ -201,9 +201,10 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
       {(searchQuery.trim().length > 0 || statusFilter !== "ALL") && (
         <div className="flex items-center gap-2 px-6 py-2">
           <span className="text-xs text-slate-500">
-            Hiển thị{" "}
-            <strong className="text-slate-800 dark:text-slate-200">{filteredHistory.length}</strong>{" "}
-            / <strong>{history.length}</strong> kết quả
+            {t("common.showingResults", "Hiển thị {{shown}} / {{total}} kết quả", {
+              shown: filteredHistory.length,
+              total: history.length,
+            })}
           </span>
         </div>
       )}
@@ -223,15 +224,27 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                <TableHead className="w-[80px] pl-6 font-medium text-slate-500">Mã</TableHead>
-                <TableHead className="w-[220px] font-medium text-slate-500">Ứng viên</TableHead>
-                <TableHead className="w-[200px] font-medium text-slate-500">
-                  Vị trí ứng tuyển
+                <TableHead className="w-[80px] pl-6 font-medium text-slate-500">
+                  {t("common.code", "Mã")}
                 </TableHead>
-                <TableHead className="w-[100px] font-medium text-slate-500">Cấp độ</TableHead>
-                <TableHead className="w-[140px] font-medium text-slate-500">Thời gian</TableHead>
-                <TableHead className="w-[90px] font-medium text-slate-500">Thời lượng</TableHead>
-                <TableHead className="w-[130px] font-medium text-slate-500">Trạng thái</TableHead>
+                <TableHead className="w-[220px] font-medium text-slate-500">
+                  {t("common.candidate", "Ứng viên")}
+                </TableHead>
+                <TableHead className="w-[200px] font-medium text-slate-500">
+                  {t("general.jobPosition", "Vị trí ứng tuyển")}
+                </TableHead>
+                <TableHead className="w-[100px] font-medium text-slate-500">
+                  {t("general.level", "Cấp độ")}
+                </TableHead>
+                <TableHead className="w-[140px] font-medium text-slate-500">
+                  {t("common.time", "Thời gian")}
+                </TableHead>
+                <TableHead className="w-[90px] font-medium text-slate-500">
+                  {t("common.duration", "Thời lượng")}
+                </TableHead>
+                <TableHead className="w-[130px] font-medium text-slate-500">
+                  {t("general.status", "Trạng thái")}
+                </TableHead>
                 <TableHead className="w-[120px] pr-6 font-medium text-slate-500">
                   Session Key
                 </TableHead>
@@ -260,7 +273,8 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                          {item.candidateInfo?.name || "Ứng viên ẩn danh"}
+                          {item.candidateInfo?.name ||
+                            t("common.anonymousCandidate", "Ứng viên ẩn danh")}
                         </p>
                         <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
                           {item.candidateInfo?.email || "—"}
@@ -275,7 +289,7 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                         title={item.jobDescriptionInfo?.title}>
                         {item.jobDescriptionInfo?.title ||
                           item.candidateInfo?.targetRole ||
-                          "Chưa có vị trí"}
+                          t("common.noPositionYet", "Chưa có vị trí")}
                       </p>
                       <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
                         {item.jobDescriptionInfo?.companyName || "—"}

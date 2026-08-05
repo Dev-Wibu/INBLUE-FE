@@ -396,6 +396,7 @@ function ProblemSidebarItem({
   submission?: CodeSubmission;
   onClick: () => void;
 }) {
+  const { t } = useTranslation();
   const passed = submission?.testCases?.passedTestCases ?? 0;
   const total = submission?.testCases?.totalTestCases ?? 0;
   const submitted = submission !== undefined;
@@ -449,7 +450,7 @@ function ProblemSidebarItem({
           )}
         </div>
         <p className="mt-0.5 truncate text-xs font-medium text-slate-700 group-hover:text-slate-900 dark:text-slate-200 dark:group-hover:text-white">
-          {problem.title ?? `Bài #${idx + 1}`}
+          {problem.title ?? t("common.problemNum", "Bài #{{num}}", { num: idx + 1 })}
         </p>
         {submitted && (
           <p className="mt-0.5 text-[10px] text-slate-400">
@@ -581,7 +582,7 @@ function ProblemDescriptionPanel({
           <div className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-1 dark:bg-indigo-900/20">
             <Cpu className="h-3 w-3 text-indigo-400" />
             <span className="text-[10px] font-medium text-indigo-600 dark:text-indigo-300">
-              max {roundConfig.maxScore}đ
+              max {roundConfig.maxScore} {t("common.pointsAbbr", "đ")}
             </span>
           </div>
         )}

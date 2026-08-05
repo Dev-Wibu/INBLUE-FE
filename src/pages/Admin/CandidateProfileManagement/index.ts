@@ -1,1 +1,0 @@
-export { CandidateProfileManagementPage } from "./CandidateProfileManagementPage";

@@ -505,10 +505,46 @@ export class SessionManager implements BaseManager<Session> {
   /**
    * Update session
    * PUT /api/sessions (JSON body with Session object)
+   *
+   * BE schema (Session entity) uses primitive long/int fields (not nullable):
+   *   - durationSeconds1, durationSeconds2, kioskId  → int64 (must be sent as numbers, not null)
+   *   - userId2  → mentor's user id
+   * BE response (SessionDetailResponse) renames userId2 → mentorId. If the
+   * caller spread the response back into the payload, mentorId is unknown to
+   * the BE PUT schema while userId2 becomes null and Jackson fails with
+   * FAIL_ON_NULL_FOR_PRIMITIVES. We therefore:
+   *   - copy mentorId → userId2 when userId2 is missing
+   *   - drop null/undefined primitive fields (Jackson will preserve the DB value)
+   *   - coerce NaN/null → 0 for primitive numeric fields so the body is always valid
    */
   async update(_id: string | number, _data: Partial<Session>): Promise<ApiResponse<Session>> {
     try {
-      const sessionData: Session = { ..._data, id: Number(_id) };
+      const merged: Partial<Session> = { ..._data, id: Number(_id) };
+
+      if (merged.userId2 === undefined && merged.mentorId !== undefined) {
+        merged.userId2 = merged.mentorId;
+      }
+
+      const numericPrimitives: Array<keyof Session> = [
+        "durationSeconds1",
+        "durationSeconds2",
+        "kioskId",
+      ];
+
+      const sanitized: Record<string, unknown> = { ...(merged as Record<string, unknown>) };
+      for (const key of numericPrimitives) {
+        const value = sanitized[key as string];
+        if (
+          value === null ||
+          value === undefined ||
+          (typeof value === "number" && Number.isNaN(value))
+        ) {
+          delete sanitized[key as string];
+        }
+      }
+      delete sanitized.mentorId;
+
+      const sessionData = sanitized as Session;
       const response = await fetchClient
         .PUT("/api/sessions", { body: sessionData })
         .then((res) => ({

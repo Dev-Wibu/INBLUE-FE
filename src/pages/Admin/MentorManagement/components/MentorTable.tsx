@@ -61,10 +61,18 @@ export function MentorTable({
             </TableHead>
             <TableHead className="font-medium text-slate-500">{t("common.email")}</TableHead>
             <TableHead className="font-medium text-slate-500">{t("common.expertise")}</TableHead>
-            <TableHead className="font-medium text-slate-500">Kinh nghiệm</TableHead>
-            <TableHead className="w-24 font-medium text-slate-500">Đánh giá</TableHead>
-            <TableHead className="w-32 font-medium text-slate-500">Ngày tham gia</TableHead>
-            <TableHead className="w-32 font-medium text-slate-500">Cập nhật lần cuối</TableHead>
+            <TableHead className="font-medium text-slate-500">
+              {t("adminMentormanagement.experience")}
+            </TableHead>
+            <TableHead className="w-24 font-medium text-slate-500">
+              {t("adminMentormanagement.rating")}
+            </TableHead>
+            <TableHead className="w-32 font-medium text-slate-500">
+              {t("adminMentormanagement.joinedDate")}
+            </TableHead>
+            <TableHead className="w-32 font-medium text-slate-500">
+              {t("adminMentormanagement.lastUpdated")}
+            </TableHead>
             <TableHead className="w-24 pr-6 font-medium text-slate-500">
               {t("common.status")}
             </TableHead>
@@ -77,27 +85,53 @@ export function MentorTable({
               onClick={() => onViewDetail(mentor)}
               className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
               <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                #{mentor.id}
+                <div className="flex items-center gap-2">
+                  <span>#{mentor.id}</span>
+                  {/* Dummy element to force row height alignment */}
+                  <div
+                    className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                    aria-hidden="true">
+                    <div className="flex items-center gap-1.5 text-[11px]">
+                      <span className="h-3.5 w-3.5"></span>
+                      <span>dummy</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px]">
+                      <span className="h-3.5 w-3.5"></span>
+                      <span>sample</span>
+                    </div>
+                  </div>
+                </div>
               </TableCell>
-              <TableCell>
+
+              <TableCell className="font-medium text-slate-900 dark:text-slate-100">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={mentor.avatarUrl}
-                      alt={mentor.name}
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                  <Avatar className="h-8 w-8 border border-slate-200 dark:border-slate-800">
+                    <AvatarImage src={mentor.avatarUrl} alt={mentor.name} />
+                    <AvatarFallback className="bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                       {mentor.name?.charAt(0)?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium">{mentor.name}</span>
+                  <div>
+                    <div className="text-xs font-semibold text-slate-900 dark:text-white">
+                      {mentor.name}
+                    </div>
+                    <div className="text-[11px] text-slate-400">{mentor.email}</div>
+                  </div>
                 </div>
               </TableCell>
-              <TableCell className="text-muted-foreground">{mentor.email}</TableCell>
-              <TableCell className="max-w-xs truncate">{mentor.expertise || "-"}</TableCell>
-              <TableCell className="text-muted-foreground">
-                {mentor.yearsOfExperience ? `${mentor.yearsOfExperience} năm` : "—"}
+
+              <TableCell className="text-xs text-slate-600 dark:text-slate-300">
+                {mentor.email}
+              </TableCell>
+
+              <TableCell className="text-xs text-slate-600 dark:text-slate-300">
+                {mentor.expertise || "—"}
+              </TableCell>
+
+              <TableCell className="text-xs text-slate-600 dark:text-slate-300">
+                {mentor.yearsOfExperience
+                  ? `${mentor.yearsOfExperience} ${t("common.yearCount")}`
+                  : "—"}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1 font-medium text-amber-500">

@@ -14,11 +14,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
-import type { User } from "@/interfaces";
+import type { Mentor, User } from "@/interfaces";
 import { formatCurrency, formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { openUrlInNewTab } from "@/lib/media-file-utils";
 import { getSessionStatusBadge } from "@/lib/status-utils";
-import { sessionManager, usersAdminManager } from "@/services";
+import { mentorManager, sessionManager, usersAdminManager } from "@/services";
 import {
   ArrowLeft,
   CheckCircle,
@@ -125,7 +125,7 @@ export function SessionFormPage() {
   const [originalSession, setOriginalSession] = useState<Session | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [participant1Info, setParticipant1Info] = useState<User | null>(null);
-  const [participant2Info, setParticipant2Info] = useState<User | null>(null);
+  const [participant2Info, setParticipant2Info] = useState<Mentor | null>(null);
 
   const handleApprove = async () => {
     if (!id) return;
@@ -167,15 +167,15 @@ export function SessionFormPage() {
         status: "CANCELED",
       });
       if (response.success) {
-        toast.success(t("adminSessionmanagement.lessonCanceledSuccessfully"));
+        toast.success(t("adminSessionmanagement.sessionCanceledSuccessfully"));
         setIsCancelDialogOpen(false);
         window.location.reload();
       } else {
-        toast.error(response.error || t("adminSessionmanagement.lessonsCannotBeCanceled"));
+        toast.error(response.error || t("adminSessionmanagement.sessionsCannotBeCanceled"));
       }
     } catch (error) {
       console.error("Error canceling session:", error);
-      toast.error(t("adminSessionmanagement.lessonsCannotBeCanceled"));
+      toast.error(t("adminSessionmanagement.sessionsCannotBeCanceled"));
     }
   };
 
@@ -187,37 +187,48 @@ export function SessionFormPage() {
           if (response.success && response.data) {
             const session = Array.isArray(response.data) ? response.data[0] : response.data;
             if (!session) throw new Error("Session not found");
-            setOriginalSession(session as Session);
+            // BE GET returns `mentorId` (alias of userId2); normalize it so the
+            // form binds correctly and the PUT body contains a valid userId2.
+            const normalized: Session = {
+              ...session,
+              userId2: session.userId2 ?? session.mentorId,
+            };
+            setOriginalSession(normalized);
 
-            if (session.userId) {
-              usersAdminManager.getById(session.userId).then((res) => {
+            if (normalized.userId) {
+              usersAdminManager.getById(normalized.userId).then((res) => {
                 if (res.success && res.data) setParticipant1Info(res.data);
               });
             }
-            if (session.userId2) {
-              usersAdminManager.getById(session.userId2).then((res) => {
+            if (normalized.userId2) {
+              // `userId2` in the Session BE schema is the mentor's id from the
+              // Mentor table (admin types in the Mentor.id when creating a
+              // session). Look it up via mentorManager so the displayed name,
+              // email, and avatar match the actual mentor – not a coincidentally
+              // same-numbered user account.
+              mentorManager.getById(normalized.userId2).then((res) => {
                 if (res.success && res.data) setParticipant2Info(res.data);
               });
             }
 
             setFormData({
-              userId: session.userId,
-              userId2: session.userId2,
-              status: session.status,
-              joinTime: session.joinTime,
-              duration: session.duration,
-              totalPrice: session.totalPrice,
-              transactionCode: session.transactionCode,
+              userId: normalized.userId,
+              userId2: normalized.userId2,
+              status: normalized.status,
+              joinTime: normalized.joinTime,
+              duration: normalized.duration,
+              totalPrice: normalized.totalPrice,
+              transactionCode: normalized.transactionCode,
               start_video_off: true,
               start_audio_off: true,
             });
           } else {
-            toast.error(response.error || t("adminSessionmanagement.unableToLoadLessonList"));
+            toast.error(response.error || t("adminSessionmanagement.unableToLoadSessionList"));
             navigate("/admin/sessions");
           }
         } catch (error) {
           console.error("Error loading session:", error);
-          toast.error(t("adminSessionmanagement.unableToLoadLessonList"));
+          toast.error(t("adminSessionmanagement.unableToLoadSessionList"));
           navigate("/admin/sessions");
         } finally {
           setIsLoading(false);
@@ -230,6 +241,31 @@ export function SessionFormPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      if (!formData.userId) {
+        toast.error(t("adminSessionmanagement.enterUserId"));
+        setIsSubmitting(false);
+        return;
+      }
+      if (!formData.userId2) {
+        toast.error(t("adminSessionmanagement.enterMentorId"));
+        setIsSubmitting(false);
+        return;
+      }
+      if (
+        formData.totalPrice === undefined ||
+        formData.totalPrice === null ||
+        Number.isNaN(formData.totalPrice) ||
+        formData.totalPrice < 1
+      ) {
+        toast.error(t("adminSessionmanagement.totalPriceRequired"));
+        setIsSubmitting(false);
+        return;
+      }
+      if (!formData.joinTime) {
+        toast.error(t("adminSessionmanagement.meetingStartTime"));
+        setIsSubmitting(false);
+        return;
+      }
       if (isEditMode && id) {
         if (!originalSession) return;
         const mergedData: Partial<Session> = {
@@ -244,27 +280,27 @@ export function SessionFormPage() {
         };
         const response = await sessionManager.update(parseInt(id, 10), mergedData);
         if (response.success) {
-          toast.success(t("adminSessionmanagement.lessonUpdatedSuccessfully"));
+          toast.success(t("adminSessionmanagement.sessionUpdatedSuccessfully"));
           setIsEditing(false);
           window.location.reload();
         } else {
-          toast.error(response.error || t("adminSessionmanagement.unableToUpdateLesson"));
+          toast.error(response.error || t("adminSessionmanagement.unableToUpdateSession"));
         }
       } else {
         const response = await sessionManager.create(formData);
         if (response.success) {
-          toast.success(t("adminSessionmanagement.lessonCreatedSuccessfully"));
+          toast.success(t("adminSessionmanagement.sessionCreatedSuccessfully"));
           navigate("/admin/sessions");
         } else {
-          toast.error(response.error || t("adminSessionmanagement.unableToCreateLesson"));
+          toast.error(response.error || t("adminSessionmanagement.unableToCreateSession"));
         }
       }
     } catch (error) {
       console.error("Error submitting session:", error);
       toast.error(
         isEditMode
-          ? t("adminSessionmanagement.unableToUpdateLesson")
-          : t("adminSessionmanagement.unableToCreateLesson")
+          ? t("adminSessionmanagement.unableToUpdateSession")
+          : t("adminSessionmanagement.unableToCreateSession")
       );
     } finally {
       setIsSubmitting(false);
@@ -366,7 +402,7 @@ export function SessionFormPage() {
             <Input
               id="totalPrice"
               type="number"
-              min={0}
+              min={1}
               value={formData.totalPrice ?? ""}
               onChange={(e) =>
                 setFormData({
@@ -495,9 +531,7 @@ export function SessionFormPage() {
           ) : (
             <>
               <Save className="mr-2 h-4 w-4" />
-              {isEditMode
-                ? t("common.saveChanges")
-                : t("adminSessionmanagement.createAStudySession")}
+              {isEditMode ? t("common.saveChanges") : t("adminSessionmanagement.createASession")}
             </>
           )}
         </Button>
@@ -520,10 +554,10 @@ export function SessionFormPage() {
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
             {isEditMode && isEditing
-              ? t("adminSessionmanagement.editingLessons")
+              ? t("adminSessionmanagement.editingSession")
               : !isEditMode
-                ? t("adminSessionmanagement.createANewLesson")
-                : "Chi tiết phiên phỏng vấn"}
+                ? t("adminSessionmanagement.createANewSession")
+                : t("adminSessionmanagement.sessionDetails", "Chi tiết phiên phỏng vấn")}
           </h2>
         </div>
       </div>
@@ -569,7 +603,7 @@ export function SessionFormPage() {
                       className="w-full bg-slate-100 text-slate-900 shadow-none hover:bg-slate-200 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
                       onClick={() => setIsEditing(true)}>
                       <Edit3 className="mr-2 h-4 w-4" />
-                      Chỉnh sửa thông tin
+                      {t("adminSessionmanagement.editInformation", "Chỉnh sửa thông tin")}
                     </Button>
                   </div>
 
@@ -578,15 +612,17 @@ export function SessionFormPage() {
                   <div className="grid grid-cols-2 gap-4 text-left">
                     <div>
                       <p className="text-[10px] font-medium tracking-wider text-slate-500 uppercase">
-                        Thời lượng
+                        {t("common.duration", "Thời lượng")}
                       </p>
                       <p className="mt-0.5 text-sm font-medium text-slate-900 dark:text-slate-200">
-                        {originalSession?.duration ? `${originalSession.duration} phút` : "-"}
+                        {originalSession?.duration
+                          ? `${originalSession.duration} ${t("common.minutes", "phút")}`
+                          : "-"}
                       </p>
                     </div>
                     <div>
                       <p className="text-[10px] font-medium tracking-wider text-slate-500 uppercase">
-                        Lịch hẹn
+                        {t("adminSessionmanagement.appointment", "Lịch hẹn")}
                       </p>
                       <p className="mt-0.5 text-sm font-medium text-slate-900 dark:text-slate-200">
                         {originalSession?.joinTime
@@ -607,7 +643,9 @@ export function SessionFormPage() {
                           {originalSession.roomUrl}
                         </a>
                       ) : (
-                        <p className="text-sm text-slate-400 italic">Chưa có liên kết phòng</p>
+                        <p className="text-sm text-slate-400 italic">
+                          {t("adminSessionmanagement.noRoomUrlYet", "Chưa có liên kết phòng")}
+                        </p>
                       )}
                     </div>
                     <div className="col-span-2">
@@ -636,14 +674,14 @@ export function SessionFormPage() {
                               className="w-full border-slate-200/60 text-slate-700 shadow-none hover:bg-emerald-50 hover:text-emerald-700 dark:border-slate-700/60 dark:text-slate-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
                               onClick={handleApprove}>
                               <CheckCircle className="mr-2 h-4 w-4" />
-                              Duyệt phiên
+                              {t("adminSessionmanagement.approveSession", "Duyệt phiên")}
                             </Button>
                             <Button
                               variant="outline"
                               className="w-full border-slate-200/60 text-slate-700 shadow-none hover:bg-amber-50 hover:text-amber-700 dark:border-slate-700/60 dark:text-slate-300 dark:hover:bg-amber-900/20 dark:hover:text-amber-400"
                               onClick={handleReject}>
                               <XSquare className="mr-2 h-4 w-4" />
-                              Từ chối
+                              {t("adminSessionmanagement.rejectSession", "Từ chối")}
                             </Button>
                           </>
                         )}
@@ -655,7 +693,7 @@ export function SessionFormPage() {
                             className="w-full border-slate-200/60 text-slate-700 shadow-none hover:bg-rose-50 hover:text-rose-700 dark:border-slate-700/60 dark:text-slate-300 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
                             onClick={() => setIsCancelDialogOpen(true)}>
                             <XCircle className="mr-2 h-4 w-4" />
-                            Hủy phiên này
+                            {t("adminSessionmanagement.cancelThisSession", "Hủy phiên này")}
                           </Button>
                         )}
                       </div>
@@ -666,7 +704,11 @@ export function SessionFormPage() {
 
               {!isEditing && (
                 <div className="lg:sticky lg:top-0">
-                  <CollapsibleCard id="media" title="Bản ghi hình" icon={Video} className="p-4">
+                  <CollapsibleCard
+                    id="media"
+                    title={t("adminSessionmanagement.videoRecordTitle", "Bản ghi hình")}
+                    icon={Video}
+                    className="p-4">
                     <div className="space-y-4">
                       {originalSession?.recordUrl ? (
                         <div className="space-y-4">
@@ -687,7 +729,10 @@ export function SessionFormPage() {
                                     controls
                                     className="absolute top-0 left-0 h-full w-full object-contain"
                                     src={originalSession.recordUrl}>
-                                    Trình duyệt của bạn không hỗ trợ thẻ video.
+                                    {t(
+                                      "adminSessionmanagement.videoTagNotSupported",
+                                      "Trình duyệt của bạn không hỗ trợ thẻ video."
+                                    )}
                                   </video>
                                 )}
                               </div>
@@ -698,7 +743,8 @@ export function SessionFormPage() {
                             size="sm"
                             className="w-full"
                             onClick={() => openUrlInNewTab(originalSession.recordUrl!)}>
-                            Mở video tab mới <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                            {t("adminSessionmanagement.openVideoInNewTab", "Mở video tab mới")}{" "}
+                            <ExternalLink className="ml-2 h-3.5 w-3.5" />
                           </Button>
                         </div>
                       ) : (
@@ -707,10 +753,13 @@ export function SessionFormPage() {
                             <Video className="h-6 w-6" />
                           </div>
                           <p className="mt-4 text-sm font-medium text-slate-900 dark:text-white">
-                            Chưa có bản ghi hình
+                            {t("adminSessionmanagement.noRecordingYet", "Chưa có bản ghi hình")}
                           </p>
                           <p className="mt-1 max-w-[200px] text-center text-xs text-slate-500">
-                            Bản ghi sẽ được upload tự động sau khi phiên kết thúc.
+                            {t(
+                              "adminSessionmanagement.autoUploadNotice",
+                              "Bản ghi sẽ được upload tự động sau khi phiên kết thúc."
+                            )}
                           </p>
                         </div>
                       )}
@@ -729,18 +778,24 @@ export function SessionFormPage() {
               </div>
             ) : (
               <div className="space-y-6 lg:col-span-8">
-                <CollapsibleCard id="participants" title="Người tham gia" icon={Users}>
+                <CollapsibleCard
+                  id="participants"
+                  title={t("adminSessionmanagement.participantsTitle", "Người tham gia")}
+                  icon={Users}>
                   <div className="flex flex-col gap-6">
                     {/* Participant 1 */}
                     <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-900/50">
                       <h4 className="mb-4 flex items-center gap-2 font-semibold text-indigo-600 dark:text-indigo-400">
                         <div className="h-2 w-2 rounded-full bg-indigo-500" />
-                        Ứng viên (Participant 1)
+                        {t(
+                          "adminSessionmanagement.participant1Candidate",
+                          "Ứng viên (Participant 1)"
+                        )}
                       </h4>
                       <div className="grid grid-cols-1 gap-6 pt-2 sm:grid-cols-2 lg:grid-cols-3">
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Tài khoản hệ thống
+                            {t("adminSessionmanagement.systemAccount", "Tài khoản hệ thống")}
                           </span>
                           {participant1Info ? (
                             <div className="mt-2 flex items-center gap-3">
@@ -767,7 +822,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Vai trò
+                            {t("adminSessionmanagement.role", "Vai trò")}
                           </span>
                           <span className="mt-2 block text-sm font-medium text-slate-900 dark:text-white">
                             {participant1Info?.role || "USER"}
@@ -775,7 +830,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Ngành học
+                            {t("adminSessionmanagement.major", "Ngành học")}
                           </span>
                           <span className="mt-2 block text-sm font-medium text-slate-900 dark:text-white">
                             {participant1Info?.major || "-"}
@@ -783,7 +838,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Mã kết nối (LiveKit)
+                            {t("adminSessionmanagement.connectionCode", "Mã kết nối (LiveKit)")}
                           </span>
                           <span className="mt-2 block truncate text-sm font-medium text-slate-900 dark:text-white">
                             {originalSession?.participantId1 || "-"}
@@ -791,7 +846,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Vào lúc
+                            {t("adminSessionmanagement.joinedAt", "Vào lúc")}
                           </span>
                           <span className="mt-2 block text-sm font-medium text-slate-900 dark:text-white">
                             {originalSession?.startTime1
@@ -801,7 +856,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Thoát lúc
+                            {t("adminSessionmanagement.leftAt", "Thoát lúc")}
                           </span>
                           <span className="mt-2 block text-sm font-medium text-slate-900 dark:text-white">
                             {originalSession?.endTime1
@@ -811,7 +866,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Tổng trực tuyến
+                            {t("adminSessionmanagement.totalOnline", "Tổng trực tuyến")}
                           </span>
                           <span className="mt-1 block text-lg font-bold text-indigo-600 dark:text-indigo-400">
                             {formatDuration(originalSession?.durationSeconds1)}
@@ -824,12 +879,12 @@ export function SessionFormPage() {
                     <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-900/50">
                       <h4 className="mb-4 flex items-center gap-2 font-semibold text-teal-600 dark:text-teal-400">
                         <div className="h-2 w-2 rounded-full bg-teal-500" />
-                        Mentor (Participant 2)
+                        {t("adminSessionmanagement.participant2Mentor", "Mentor (Participant 2)")}
                       </h4>
                       <div className="grid grid-cols-1 gap-6 pt-2 sm:grid-cols-2 lg:grid-cols-3">
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Tài khoản hệ thống
+                            {t("adminSessionmanagement.systemAccount", "Tài khoản hệ thống")}
                           </span>
                           {participant2Info ? (
                             <div className="mt-2 flex items-center gap-3">
@@ -856,7 +911,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Vai trò
+                            {t("adminSessionmanagement.role", "Vai trò")}
                           </span>
                           <span className="mt-2 block text-sm font-medium text-slate-900 dark:text-white">
                             {participant2Info?.role || "MENTOR"}
@@ -864,15 +919,15 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Ngành học
+                            {t("adminSessionmanagement.expertise", "Chuyên môn")}
                           </span>
                           <span className="mt-2 block text-sm font-medium text-slate-900 dark:text-white">
-                            {participant2Info?.major || "-"}
+                            {participant2Info?.expertise || "-"}
                           </span>
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Mã kết nối (LiveKit)
+                            {t("adminSessionmanagement.connectionCode", "Mã kết nối (LiveKit)")}
                           </span>
                           <span className="mt-2 block truncate text-sm font-medium text-slate-900 dark:text-white">
                             {originalSession?.participantId2 || "-"}
@@ -880,7 +935,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Vào lúc
+                            {t("adminSessionmanagement.joinedAt", "Vào lúc")}
                           </span>
                           <span className="mt-2 block text-sm font-medium text-slate-900 dark:text-white">
                             {originalSession?.startTime2
@@ -890,7 +945,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Thoát lúc
+                            {t("adminSessionmanagement.leftAt", "Thoát lúc")}
                           </span>
                           <span className="mt-2 block text-sm font-medium text-slate-900 dark:text-white">
                             {originalSession?.endTime2
@@ -900,7 +955,7 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            Tổng trực tuyến
+                            {t("adminSessionmanagement.totalOnline", "Tổng trực tuyến")}
                           </span>
                           <span className="mt-1 block text-lg font-bold text-teal-600 dark:text-teal-400">
                             {formatDuration(originalSession?.durationSeconds2)}

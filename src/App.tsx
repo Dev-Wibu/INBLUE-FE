@@ -42,14 +42,7 @@ import {
   WriteFeedbackPage,
 } from "@/pages/Mentor";
 import { PaymentCancelPage, PaymentSuccessPage } from "@/pages/Payment";
-import {
-  FeedbackModerationPage,
-  MentorApplicationsPage,
-  PostModerationPage,
-  ReviewModerationPage,
-  SessionProcessingPage,
-  StaffDashboardPage,
-} from "@/pages/Staff";
+import { StaffDashboardPage } from "@/pages/Staff";
 import {
   AccountPage,
   AIInterviewResultPage,
@@ -59,6 +52,7 @@ import {
   ApplicationHistoryPage,
   ApplicationMentorReviewPage,
   ApplicationQuizPage,
+  ApplicationWorkspacePage,
   BookingSuccessPage,
   ChangePasswordPage,
   FeedbackDetailPage,
@@ -134,6 +128,10 @@ function App() {
             <Route path="/questions/tips" element={<InterviewTipsPage />} />
 
             {/* Enterprise Simulation pages (public) */}
+            <Route
+              path="/enterprise/jobs"
+              element={<Navigate to="/user?tab=jobSearch" replace />}
+            />
             <Route path="/enterprise/companies" element={<CompanySearchPage />} />
             <Route path="/enterprise/company/:id" element={<CompanyDetailPage />} />
             <Route path="/enterprise/job/:id" element={<JobDescriptionDetailPage />} />
@@ -224,6 +222,13 @@ function App() {
                 to joined-meeting and POST /api/sessions/join-session. */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
               <Route path="/user/sessions/room/:sessionId" element={<StudentSessionRoomPage />} />
+            </Route>
+            {/* Application Workspace — full page, no sidebar */}
+            <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+              <Route
+                path="/user/application/:applicationId"
+                element={<ApplicationWorkspacePage />}
+              />
             </Route>
             {/* AI Interview for Application — full page, no sidebar */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
@@ -341,11 +346,6 @@ function App() {
             {/* Staff Dashboard routes */}
             <Route element={<ProtectedRoute allowedRoles={["STAFF"]} />}>
               <Route path="/staff" element={<StaffDashboardPage />} />
-              <Route path="/staff/reviews" element={<ReviewModerationPage />} />
-              <Route path="/staff/feedback" element={<FeedbackModerationPage />} />
-              <Route path="/staff/posts" element={<PostModerationPage />} />
-              <Route path="/staff/mentor-applications" element={<MentorApplicationsPage />} />
-              <Route path="/staff/sessions" element={<SessionProcessingPage />} />
             </Route>
 
             {/* Error pages */}

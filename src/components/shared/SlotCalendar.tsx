@@ -84,6 +84,7 @@ export function SlotCalendar({
 }: SlotCalendarProps) {
   const { t, i18n } = useTranslation();
   const today = startOfDayLocal(new Date());
+  const currentMonth = startOfMonthLocal(today);
   const locale = i18n.language === "en" ? undefined : vi;
   const monthAnchor = startOfMonthLocal(selectedDate);
 
@@ -118,7 +119,11 @@ export function SlotCalendar({
     [monthAnchor, locale]
   );
 
-  const goPrevMonth = () => onSelectDate(addMonthsLocal(selectedDate, -1));
+  const canGoPrevMonth = monthAnchor.getTime() > currentMonth.getTime();
+  const goPrevMonth = () => {
+    if (!canGoPrevMonth) return;
+    onSelectDate(addMonthsLocal(selectedDate, -1));
+  };
   const goNextMonth = () => onSelectDate(addMonthsLocal(selectedDate, 1));
   const goToday = () => onSelectDate(new Date());
 
@@ -139,19 +144,20 @@ export function SlotCalendar({
         className
       )}>
       {/* Header: month nav */}
-      <div className="border-border flex items-center justify-between gap-2 border-b px-4 py-3 sm:px-6">
+      <div className="border-border flex items-center justify-between gap-2 border-b px-4 py-2.5 sm:px-5">
         <Button
           type="button"
           variant="ghost"
           size="icon"
           onClick={goPrevMonth}
+          disabled={!canGoPrevMonth}
           aria-label={t("common.slotCalendar.previousMonth", "Previous month")}
-          className="text-muted-foreground hover:text-foreground">
+          className="text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-35">
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
         <div className="flex flex-1 items-center justify-center gap-2">
-          <h3 className="text-base font-semibold capitalize sm:text-lg" aria-live="polite">
+          <h3 className="text-foreground text-base font-black capitalize" aria-live="polite">
             {monthLabel}
           </h3>
           <Button
@@ -159,7 +165,7 @@ export function SlotCalendar({
             variant="ghost"
             size="sm"
             onClick={goToday}
-            className="text-muted-foreground hover:text-foreground h-7 px-2 text-xs tracking-wide uppercase">
+            className="text-muted-foreground hover:text-foreground h-7 px-2 text-xs font-bold tracking-wide uppercase">
             {t("common.slotCalendar.today", "Today")}
           </Button>
         </div>
@@ -180,7 +186,7 @@ export function SlotCalendar({
         {weekdayLabels.map((label) => (
           <div
             key={label}
-            className="text-muted-foreground px-1 py-2 text-[0.7rem] font-semibold tracking-wider uppercase">
+            className="px-1 py-1.5 text-[0.7rem] font-extrabold tracking-wider text-slate-600 uppercase dark:text-slate-300">
             {label}
           </div>
         ))}
@@ -200,7 +206,7 @@ export function SlotCalendar({
           const hasSlots = slotsForCell.some((slot) => slot.available);
 
           const baseClasses = cn(
-            "group relative flex aspect-square flex-col items-center justify-center gap-0.5 border-r border-b border-border/60 transition-colors",
+            "group relative flex min-h-10 flex-col items-center justify-center gap-0 border-r border-b border-border/60 transition-colors",
             !inMonth && "text-muted-foreground/40 bg-muted/20"
           );
 
@@ -224,10 +230,10 @@ export function SlotCalendar({
               )}>
               <span
                 className={cn(
-                  "text-sm font-semibold",
+                  "text-sm font-extrabold",
                   cellToday &&
                     !isSelected &&
-                    "text-primary ring-primary/40 flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-offset-0"
+                    "text-primary ring-primary/40 flex h-6 w-6 items-center justify-center rounded-full ring-1 ring-offset-0"
                 )}>
                 {format(cell, "d")}
               </span>
@@ -246,33 +252,26 @@ export function SlotCalendar({
       </div>
 
       {/* Slots for the selected day */}
-      <div className="border-border border-t px-4 py-4 sm:px-6">
-        <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="border-border border-t px-4 py-4 sm:px-5">
+        <div className="mb-2.5 flex items-center justify-between gap-2">
           <div>
-            <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+            <p className="text-xs font-extrabold tracking-wider text-slate-600 uppercase dark:text-slate-300">
               {t("common.slotCalendar.availableSlots", "Available time slots")}
             </p>
-            <p className="text-base font-semibold capitalize">
+            <p className="text-sm font-black text-slate-950 capitalize dark:text-white">
               {format(selectedDate, "EEEE, d MMMM yyyy", {
                 locale,
               })}
             </p>
           </div>
-          {availableSlotsForSelectedDay.length > 0 && (
-            <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-xs font-semibold">
-              {t("common.slotCalendar.slotCount", {
-                count: availableSlotsForSelectedDay.filter((slot) => slot.available).length,
-              })}
-            </span>
-          )}
         </div>
 
         {isLoading ? (
-          <div className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
+          <div className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-sm">
             {t("common.loading", "Loading...")}
           </div>
         ) : availableSlotsForSelectedDay.length === 0 ? (
-          <div className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
+          <div className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-sm">
             {noSlotsMessage ??
               emptyMessage ??
               t(
@@ -296,7 +295,7 @@ export function SlotCalendar({
                   onClick={() => onSelectSlot(slot)}
                   aria-pressed={isSelected}
                   className={cn(
-                    "group flex flex-col items-center justify-center gap-1 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all",
+                    "group flex flex-col items-center justify-center gap-1 rounded-xl border px-3 py-2 text-sm font-extrabold transition-all",
                     "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
                     isSelected
                       ? "border-primary bg-primary text-primary-foreground shadow-md"
@@ -304,7 +303,7 @@ export function SlotCalendar({
                     !slot.available &&
                       "text-muted-foreground hover:bg-background cursor-not-allowed border-dashed opacity-60 hover:border-dashed"
                   )}>
-                  <span className="text-sm font-semibold tracking-tight tabular-nums">
+                  <span className="text-sm font-extrabold tracking-tight tabular-nums">
                     {format(start, "HH:mm")}
                     <span aria-hidden> – </span>
                     {format(end, "HH:mm")}

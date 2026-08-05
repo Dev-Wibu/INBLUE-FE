@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 962,
+    "character": 45,
+    "type": "TemplateLiteral",
+    "category": "japanese",
+    "text": "月"
+  },
+  {
+    "file": "src/pages/User/Account/AccountTabs/SettingsTab.tsx",
+    "line": 137,
+    "character": 35,
+    "type": "StringLiteral",
+    "category": "japanese",
+    "text": "日本語"
+  }
+]

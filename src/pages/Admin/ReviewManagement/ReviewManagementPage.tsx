@@ -234,34 +234,61 @@ export function ReviewManagementPage() {
             {hasActiveFilters && (
               <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
                 <span className="text-xs text-slate-500">
-                  Hiển thị{" "}
-                  <strong className="text-slate-800 dark:text-slate-200">
-                    {filteredReviews.length}
-                  </strong>{" "}
-                  / <strong>{reviews.length}</strong> kết quả
+                  {t(
+                    "adminReviewmanagement.showingFilteredResults",
+                    "Hiển thị {{filtered}} / {{total}} kết quả",
+                    {
+                      filtered: filteredReviews.length,
+                      total: reviews.length,
+                    }
+                  )}
                 </span>
               </div>
             )}
             <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">{t("common.id")}</TableHead>
-                    <TableHead>{t("common.mentorSent")}</TableHead>
-                    <TableHead>{t("common.candidatesAreEvaluated")}</TableHead>
-                    <TableHead className="w-32">{t("common.session")}</TableHead>
-                    <TableHead className="w-36">
+                  <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+                    <TableHead className="w-16 pl-6 font-medium text-slate-500">
+                      {t("common.id")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.mentorSent")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.candidatesAreEvaluated")}
+                    </TableHead>
+                    <TableHead className="w-32 font-medium text-slate-500">
+                      {t("common.session")}
+                    </TableHead>
+                    <TableHead className="w-36 font-medium text-slate-500">
                       <SortButton {...getSortProps("rating" as keyof MentorReview)}>
                         {t("common.evaluate")}
                       </SortButton>
                     </TableHead>
-                    <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
+                    <TableHead className="w-24 pr-6 text-right font-medium text-slate-500">
+                      {t("common.operation")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pageData.map((review: MentorReview) => (
-                    <TableRow key={review.id}>
-                      <TableCell className="font-medium">#{review.id}</TableCell>
+                    <TableRow
+                      key={review.id}
+                      onClick={() => handleViewDetail(review)}
+                      className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                      <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-2">
+                          <span>#{review.id}</span>
+                          {/* Dummy element to force row height alignment */}
+                          <div
+                            className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                            aria-hidden="true">
+                            <div className="h-3.5 w-3.5"></div>
+                            <div className="h-3.5 w-3.5"></div>
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
@@ -271,7 +298,10 @@ export function ReviewManagementPage() {
                             </AvatarFallback>
                           </Avatar>
                           <span className="font-medium">
-                            {review.mentor?.name || t("common.noDataAvailable")}
+                            {review.mentor?.name ||
+                              (review.mentor?.id
+                                ? `Mentor #${review.mentor.id}`
+                                : t("common.noDataAvailable"))}
                           </span>
                         </div>
                       </TableCell>
@@ -284,7 +314,10 @@ export function ReviewManagementPage() {
                             </AvatarFallback>
                           </Avatar>
                           <span className="font-medium">
-                            {review.user?.name || t("common.noDataAvailable")}
+                            {review.user?.name ||
+                              (review.user?.id
+                                ? `Candidate #${review.user.id}`
+                                : t("common.noDataAvailable"))}
                           </span>
                         </div>
                       </TableCell>
@@ -294,7 +327,7 @@ export function ReviewManagementPage() {
                       <TableCell>
                         <StarRating value={review.rating || 0} readOnly size="sm" />
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">
                           <Button
                             variant="ghost"

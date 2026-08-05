@@ -20,10 +20,12 @@ import {
   ArrowRight,
   ChevronLeft,
   Clock,
+  FileText,
   RotateCcw,
   Save,
   Sparkles,
   Trash2,
+  Users,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -33,7 +35,17 @@ import { toast } from "sonner";
 
 import { getAvailableRoundsTemplates } from "./constants";
 import type { RoundType, UIRound, UIRoundConfig } from "./types";
-import { getBestConnection, getDistanceToSegment } from "./utils";
+import { getBestConnection, getDistanceToSegment, getLocalizedRoundName } from "./utils";
+
+/** Minimal staff user shape needed by the reviewer dropdown. */
+export interface StaffUserOption {
+  id: number;
+  name?: string;
+  email?: string;
+  avatarUrl?: string | null;
+  role?: string;
+  isActive?: boolean | null;
+}
 
 export interface RoundCanvasEditorWorkspaceProps {
   isOpen?: boolean;
@@ -41,12 +53,41 @@ export interface RoundCanvasEditorWorkspaceProps {
   initialRounds: UIRound[];
   onSave: (
     rounds: UIRound[],
-    metadata: { name: string; category: string; description: string }
+    metadata: { name: string; category: string; description: string },
+    options?: { closeEditorAfter?: boolean }
   ) => Promise<void>;
   isSaving?: boolean;
   showMetadataInputs?: boolean;
   initialMetadata?: { name: string; category: string; description: string };
   title?: string;
+  /**
+   * Whether this workspace is creating a brand new template (`"create"`) or
+   * editing an existing one (`"edit"`).
+   *
+   * The workspace exposes two save surfaces:
+   *   1. Per-round save inside the round config dialog (footer button)
+   *   2. Whole-template save on the top toolbar (rightmost button)
+   *
+   * In `"create"` mode, the template row doesn't exist on the server yet, so
+   * there is nothing to "save a single round against". The per-round button
+   * therefore only applies the changes to the local draft and closes the
+   * dialog — it does NOT call `onSave`. Only the toolbar's full-template
+   * save can persist (and will create exactly one template).
+   *
+   * In `"edit"` mode both buttons call `onSave`; per-round passes
+   * `closeEditorAfter: false` so the user stays in the workspace, full save
+   * passes `closeEditorAfter: true`.
+   *
+   * Defaults to `"edit"` for backwards compatibility with callers that don't
+   * care about the distinction.
+   */
+  mode?: "create" | "edit";
+  /**
+   * Optional list of STAFF users (already filtered by `role === "STAFF"`) to
+   * populate the per-round "Reviewer (Staff)" dropdown. If omitted the
+   * dropdown is hidden and rounds save with `reviewerId = null`.
+   */
+  staffUsers?: StaffUserOption[];
 }
 
 export function RoundCanvasEditorWorkspace({
@@ -58,6 +99,8 @@ export function RoundCanvasEditorWorkspace({
   showMetadataInputs = false,
   initialMetadata = { name: "", category: "", description: "" },
   title,
+  mode = "edit",
+  staffUsers,
 }: RoundCanvasEditorWorkspaceProps) {
   const { t } = useTranslation();
   const AVAILABLE_ROUNDS_TEMPLATES = useMemo(() => getAvailableRoundsTemplates(t), [t]);
@@ -254,7 +297,11 @@ export function RoundCanvasEditorWorkspace({
       setRounds([newRound].map((r, idx) => ({ ...r, roundOrder: idx + 1 })));
       setPositions([{ x: 80, y: 80 }]);
       setActiveDragType(null);
-      toast.success(`Đã thêm vòng ${template.title}`);
+      toast.success(
+        t("enterpriseJobdetailpage.addedRound", "Đã thêm vòng {{roundTitle}}", {
+          roundTitle: template.title,
+        })
+      );
       return;
     }
     if (!canvasRef.current) return;
@@ -290,7 +337,11 @@ export function RoundCanvasEditorWorkspace({
     setRounds(updatedRounds.map((r, idx) => ({ ...r, roundOrder: idx + 1 })));
     setPositions(newPositions);
     setActiveDragType(null);
-    toast.success(`Đã thêm vòng ${template.title}`);
+    toast.success(
+      t("enterpriseJobdetailpage.addedRound", "Đã thêm vòng {{roundTitle}}", {
+        roundTitle: template.title,
+      })
+    );
   };
 
   const handleCardPointerDown = (e: React.PointerEvent<HTMLDivElement>, idx: number) => {
@@ -358,7 +409,13 @@ export function RoundCanvasEditorWorkspace({
           newPositions[overlapIdx] = tempPos;
           setRounds(newRounds.map((r, i) => ({ ...r, roundOrder: i + 1 })));
           setPositions(newPositions);
-          toast.success(`Đã đổi vị trí vòng ${idx + 1} và vòng ${overlapIdx + 1}`);
+          toast.success(
+            t(
+              "enterpriseJobdetailpage.swappedRounds",
+              "Đã đổi vị trí vòng {{from}} và vòng {{to}}",
+              { from: idx + 1, to: overlapIdx + 1 }
+            )
+          );
         }
       }
     }
@@ -409,11 +466,15 @@ export function RoundCanvasEditorWorkspace({
       return;
     }
     const savingRounds = customRounds || rounds;
-    await onSave(savingRounds, {
-      name: templateName,
-      category: templateCategory,
-      description: templateDescription,
-    });
+    await onSave(
+      savingRounds,
+      {
+        name: templateName,
+        category: templateCategory,
+        description: templateDescription,
+      },
+      { closeEditorAfter: forceCloseAfter }
+    );
     if (forceCloseAfter) {
       onClose();
     }
@@ -480,24 +541,18 @@ export function RoundCanvasEditorWorkspace({
             </Button>
 
             {showMetadataInputs ? (
-              <div className="flex max-w-2xl flex-1 items-center gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
                 <Input
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder={t("adminCompanymanagement.templateNamePlaceholder")}
-                  className="h-8 border-slate-200 bg-slate-50 text-xs font-bold dark:border-slate-800 dark:bg-slate-950"
+                  className="h-8 max-w-[280px] min-w-[180px] flex-1 border-slate-200 bg-slate-50 text-xs font-bold dark:border-slate-800 dark:bg-slate-950"
                 />
                 <Input
                   value={templateCategory}
                   onChange={(e) => setTemplateCategory(e.target.value)}
                   placeholder={t("template.categoryRequired")}
-                  className="h-8 w-36 border-slate-200 bg-slate-50 text-xs dark:border-slate-800 dark:bg-slate-950"
-                />
-                <Input
-                  value={templateDescription}
-                  onChange={(e) => setTemplateDescription(e.target.value)}
-                  placeholder={t("template.descriptionPlaceholder")}
-                  className="hidden h-8 flex-1 border-slate-200 bg-slate-50 text-xs md:block dark:border-slate-800 dark:bg-slate-950"
+                  className="h-8 w-44 border-slate-200 bg-slate-50 text-xs dark:border-slate-800 dark:bg-slate-950"
                 />
               </div>
             ) : (
@@ -507,7 +562,11 @@ export function RoundCanvasEditorWorkspace({
                   {title || t("adminCompanymanagement.recruitmentRoundTemplate")}
                 </div>
                 <h1 className="truncate text-sm font-bold tracking-tight text-slate-900 dark:text-white">
-                  {initialMetadata.name || "Chỉnh sửa quy trình vòng tuyển dụng"}
+                  {initialMetadata.name ||
+                    t(
+                      "adminInterviewTemplate.editRecruitmentPipeline",
+                      "Chỉnh sửa quy trình vòng tuyển dụng"
+                    )}
                 </h1>
               </div>
             )}
@@ -562,6 +621,25 @@ export function RoundCanvasEditorWorkspace({
           </div>
         </div>
 
+        {showMetadataInputs && (
+          <div className="flex shrink-0 items-start gap-3 border-b border-slate-200 bg-slate-50/60 px-6 py-3 dark:border-slate-800 dark:bg-slate-900/30">
+            <div className="flex shrink-0 items-center gap-1.5 pt-1.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+              <FileText className="h-3 w-3 text-indigo-500" />
+              {t("template.description", "Description")}
+            </div>
+            <Textarea
+              value={templateDescription}
+              onChange={(e) => setTemplateDescription(e.target.value)}
+              placeholder={t(
+                "template.descriptionPlaceholder",
+                "Mô tả ngắn gọn về mục đích, đối tượng và bối cảnh sử dụng của template…"
+              )}
+              rows={1}
+              className="min-h-[36px] flex-1 resize-y border-slate-200 bg-white text-xs leading-relaxed text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+            />
+          </div>
+        )}
+
         {/* Canvas viewport */}
         <div className="flex min-h-0 flex-1 overflow-hidden bg-slate-100 dark:bg-slate-950">
           {rounds.length === 0 ? (
@@ -587,7 +665,10 @@ export function RoundCanvasEditorWorkspace({
                   {t("template.emptyTemplate")}
                 </h4>
                 <p className="mt-1.5 max-w-[200px] text-xs leading-relaxed text-slate-400 dark:text-slate-500">
-                  {t("userApplicationhistory.rounds")} từ cột bên trái và thả vào đây để thiết lập
+                  {t(
+                    "adminInterviewTemplate.dragRoundsInstruction",
+                    "Kéo các vòng từ cột bên trái và thả vào đây để thiết lập"
+                  )}
                 </p>
               </div>
             </div>
@@ -741,7 +822,7 @@ export function RoundCanvasEditorWorkspace({
                               </div>
                               <div className="min-w-0 flex-1">
                                 <h4 className="truncate text-sm font-bold text-slate-800 dark:text-slate-200">
-                                  {round.name}
+                                  {getLocalizedRoundName(round.name || "", round.roundType, t)}
                                 </h4>
                                 <p className="mt-0.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                                   {template?.title}
@@ -756,8 +837,8 @@ export function RoundCanvasEditorWorkspace({
                                   {round.configData?.timeLimitMinutes
                                     ? round.roundType === "MENTOR_REVIEW" ||
                                       round.roundType === "MENTROR_REVIEW"
-                                      ? `${round.configData.timeLimitMinutes / 1440} ngày`
-                                      : `${round.configData.timeLimitMinutes}p`
+                                      ? `${round.configData.timeLimitMinutes / 1440} ${t("common.days", "ngày")}`
+                                      : `${round.configData.timeLimitMinutes}${t("common.minutesShort", "p")}`
                                     : "∞"}
                                 </span>
                               </div>
@@ -766,6 +847,27 @@ export function RoundCanvasEditorWorkspace({
                                 {Math.round((round.passThreshold ?? 0.8) * 100)}%
                               </span>
                             </div>
+                            {staffUsers && round.reviewerId != null && (
+                              <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                                <Users className="h-3 w-3" />
+                                <span className="truncate">
+                                  {t("adminCompanymanagement.reviewerLabel", "Reviewer")}:{" "}
+                                  {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
+                                    `#${round.reviewerId}`}
+                                </span>
+                              </div>
+                            )}
+                            {staffUsers && round.reviewerId == null && (
+                              <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                                <AlertTriangle className="h-3 w-3" />
+                                <span className="truncate">
+                                  {t(
+                                    "adminCompanymanagement.reviewerStaffCardWarning",
+                                    "Chưa gán người chấm"
+                                  )}
+                                </span>
+                              </div>
+                            )}
 
                             {round.roundType === "QUIZ" &&
                               (!round.configData?.quizQuestions ||
@@ -947,6 +1049,59 @@ export function RoundCanvasEditorWorkspace({
                       </h4>
                     </div>
                     <div className="space-y-3">
+                      {/* Reviewer (STAFF) — required for non-auto rounds so the
+                          application detail lands in some staff's grading queue. */}
+                      {staffUsers && staffUsers.length > 0 && (
+                        <div className="space-y-1.5">
+                          <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                            {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
+                          </Label>
+                          <Select
+                            value={
+                              selectedRound.reviewerId != null
+                                ? String(selectedRound.reviewerId)
+                                : "__none__"
+                            }
+                            onValueChange={(val) =>
+                              updateRoundField(
+                                selectedRoundIndex,
+                                "reviewerId",
+                                val === "__none__" ? null : Number(val)
+                              )
+                            }>
+                            <SelectTrigger className="h-9 border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                              <SelectValue
+                                placeholder={t(
+                                  "adminCompanymanagement.reviewerStaffPlaceholder",
+                                  "— Chưa gán người chấm —"
+                                )}
+                              />
+                            </SelectTrigger>
+                            <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                              <SelectItem value="__none__">
+                                {t(
+                                  "adminCompanymanagement.reviewerStaffUnassigned",
+                                  "Chưa gán người chấm"
+                                )}
+                              </SelectItem>
+                              {staffUsers.map((s) => (
+                                <SelectItem key={s.id} value={String(s.id)}>
+                                  {s.name ?? `User #${s.id}`}
+                                  {s.email ? ` (${s.email})` : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {selectedRound.reviewerId == null && (
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                              {t(
+                                "adminCompanymanagement.reviewerStaffWarning",
+                                "Cảnh báo: bài sẽ không xuất hiện trong queue chấm của Staff nào."
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-start gap-4">
                         <div
                           className={cn(
@@ -1009,7 +1164,7 @@ export function RoundCanvasEditorWorkspace({
                                   <span className="shrink-0 text-[9px] text-slate-400">
                                     {selectedRound.roundType === "MENTROR_REVIEW" ||
                                     selectedRound.roundType === "MENTOR_REVIEW"
-                                      ? "ngày"
+                                      ? t("common.days", "ngày")
                                       : t("common.minute")}
                                   </span>
                                 </div>
@@ -1022,8 +1177,8 @@ export function RoundCanvasEditorWorkspace({
                                   {(selectedRound.configData?.timeLimitMinutes ?? 0) > 0
                                     ? selectedRound.roundType === "MENTROR_REVIEW" ||
                                       selectedRound.roundType === "MENTOR_REVIEW"
-                                      ? `${(selectedRound.configData?.timeLimitMinutes ?? 0) / 1440} ngày`
-                                      : `${selectedRound.configData?.timeLimitMinutes} phút`
+                                      ? `${(selectedRound.configData?.timeLimitMinutes ?? 0) / 1440} ${t("common.days", "ngày")}`
+                                      : `${selectedRound.configData?.timeLimitMinutes} ${t("common.minutes", "phút")}`
                                     : t("adminCompanymanagement.noLimit")}
                                 </button>
                               )}
@@ -1271,9 +1426,20 @@ export function RoundCanvasEditorWorkspace({
                   }
                   setConfigModalOpen(false);
                   setSelectedRoundIndex(null);
+                  // In create mode the template row doesn't exist on the
+                  // server yet, so per-round "save" only commits the round's
+                  // config to the local draft and closes the dialog. Calling
+                  // onSave here would fire createTemplate() a second time and
+                  // produce duplicate rows when the user later presses the
+                  // toolbar's full-template save.
+                  if (mode === "create") {
+                    return;
+                  }
                   await handleSaveWrapper(false, finalRounds);
                 }}>
-                {t("template.saveTemplate")} {t("userApplicationhistory.rounds")}
+                {mode === "create"
+                  ? t("template.applyToDraft", "Apply to draft")
+                  : `${t("template.saveTemplate")} ${t("userApplicationhistory.rounds")}`}
               </Button>
             </div>
           </DialogContent>

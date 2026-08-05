@@ -48,7 +48,7 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
           <Search className="h-6 w-6 text-slate-400 dark:text-slate-500" />
         </div>
         <p className="text-sm font-medium text-slate-500">
-          {t("adminSessionmanagement.noLessonsFound")}
+          {t("adminSessionmanagement.noSessionsFound")}
         </p>
       </div>
     );
@@ -59,11 +59,15 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-16">{t("common.id")}</TableHead>
-            <TableHead>{t("common.roomName1")}</TableHead>
-            <TableHead className="w-24">{t("general.userId1")}</TableHead>
-            <TableHead className="w-24">{t("common.idMentor")}</TableHead>
-            <TableHead>
+            <TableHead className="w-16 pl-6 font-medium text-slate-500">{t("common.id")}</TableHead>
+            <TableHead className="font-medium text-slate-500">{t("common.roomName1")}</TableHead>
+            <TableHead className="w-24 font-medium text-slate-500">
+              {t("general.userId1")}
+            </TableHead>
+            <TableHead className="w-24 font-medium text-slate-500">
+              {t("common.idMentor")}
+            </TableHead>
+            <TableHead className="font-medium text-slate-500">
               {getSortProps ? (
                 <SortButton {...getSortProps("startTimeSortValue")}>
                   {t("adminSessionmanagement.startTime")}
@@ -72,10 +76,16 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
                 t("adminSessionmanagement.startTime")
               )}
             </TableHead>
-            <TableHead>{t("adminSessionmanagement.meetingTime")}</TableHead>
-            <TableHead className="w-24">{t("common.duration")}</TableHead>
-            <TableHead className="w-36">{t("adminSessionmanagement.totalPrice")} (VNĐ)</TableHead>
-            <TableHead className="w-28">
+            <TableHead className="font-medium text-slate-500">
+              {t("adminSessionmanagement.meetingTime")}
+            </TableHead>
+            <TableHead className="w-24 font-medium text-slate-500">
+              {t("common.duration")}
+            </TableHead>
+            <TableHead className="w-36 font-medium text-slate-500">
+              {t("adminSessionmanagement.totalPriceVnd", "Tổng giá (VNĐ)")}
+            </TableHead>
+            <TableHead className="w-28 pr-6 font-medium text-slate-500">
               {getSortProps ? (
                 <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
               ) : (
@@ -89,8 +99,19 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
             <TableRow
               key={session.id}
               onClick={() => onView(session)}
-              className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50">
-              <TableCell className="font-medium">{session.id}</TableCell>
+              className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+              <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-2">
+                  <span>#{session.id}</span>
+                  {/* Dummy element to force row height alignment */}
+                  <div
+                    className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                    aria-hidden="true">
+                    <div className="h-3.5 w-3.5"></div>
+                    <div className="h-3.5 w-3.5"></div>
+                  </div>
+                </div>
+              </TableCell>
               <TableCell className="max-w-xs truncate font-medium">
                 {session.roomName || "-"}
               </TableCell>
@@ -130,7 +151,7 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
                     )
                   : "-"}
               </TableCell>
-              <TableCell>
+              <TableCell className="pr-6">
                 {(() => {
                   const statusConfig = getSessionStatusBadge(session.status);
                   return (

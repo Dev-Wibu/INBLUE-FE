@@ -8,10 +8,8 @@ import { ReloadButton } from "@/components/shared/ReloadButton";
 import { SortButton } from "@/components/shared/SortButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { LoadingCardList } from "@/components/ui/loading-card";
 import {
   Select,
   SelectContent,
@@ -19,11 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { useSessionsByUserId, useUpdateSessionStatus } from "@/hooks/useSession";
+import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import {
@@ -33,8 +33,20 @@ import {
   toTimestamp,
   treatZuluAsVietnamLocal,
 } from "@/lib/formatting";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { Calendar, Check, Clock, LogIn, MessageSquare, Search, User, Video, X } from "lucide-react";
+import {
+  Calendar,
+  Check,
+  Clock,
+  Filter,
+  LogIn,
+  MessageSquare,
+  Search,
+  User,
+  Video,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -52,6 +64,39 @@ type OtherStatusFilter =
 type SortableSession = Session & {
   sessionSortValue: number;
 };
+
+const getStatusConfig = (
+  t: (key: string) => string
+): Record<string, { label: string; badgeClass: string }> => ({
+  DRAFT: {
+    label: t("common.waitingForApproval"),
+    badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  },
+  SCHEDULED: {
+    label: t("common.comingSoon"),
+    badgeClass: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  },
+  PAID: {
+    label: t("common.paid"),
+    badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  },
+  ONGOING: {
+    label: t("common.ongoing"),
+    badgeClass: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  },
+  COMPLETED: {
+    label: t("general.completed"),
+    badgeClass: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  },
+  REJECTED: {
+    label: t("common.rejected"),
+    badgeClass: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
+  },
+  CANCELED: {
+    label: t("common.canceled"),
+    badgeClass: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
+  },
+});
 const getSessionSortValue = (session: Session): number => {
   const joinTimeSort = toTimestamp(session.joinTime);
   if (typeof joinTimeSort === "number") {
@@ -107,51 +152,8 @@ function SessionCard({
   isUpdatingStatus,
 }: SessionCardProps) {
   const { t } = useTranslation();
-  const statusMap: Record<
-    string,
-    {
-      label: string;
-      variant: "default" | "secondary" | "destructive" | "outline";
-      color: string;
-    }
-  > = {
-    DRAFT: {
-      label: t("common.waitingForApproval"),
-      variant: "secondary",
-      color: "bg-amber-100 text-amber-700",
-    },
-    SCHEDULED: {
-      label: t("common.comingSoon"),
-      variant: "secondary",
-      color: "bg-blue-100 text-blue-700",
-    },
-    PAID: {
-      label: t("common.paid"),
-      variant: "secondary",
-      color: "bg-emerald-100 text-emerald-700",
-    },
-    ONGOING: {
-      label: t("common.ongoing"),
-      variant: "default",
-      color: "bg-green-100 text-green-700",
-    },
-    COMPLETED: {
-      label: t("general.completed"),
-      variant: "outline",
-      color: "bg-slate-100 text-slate-600",
-    },
-    REJECTED: {
-      label: t("common.rejected"),
-      variant: "destructive",
-      color: "bg-red-100 text-red-600",
-    },
-    CANCELED: {
-      label: t("common.canceled"),
-      variant: "destructive",
-      color: "bg-red-100 text-red-600",
-    },
-  };
-  const status = statusMap[session.status || "SCHEDULED"] || statusMap.SCHEDULED;
+  const statusConfig = useMemo(() => getStatusConfig(t), [t]);
+  const status = statusConfig[session.status || "SCHEDULED"] || statusConfig.SCHEDULED;
   const isCompleted = session.status === "COMPLETED";
   // 2026-07-17: Mentor Interview (RoundType.MENTROR_REVIEW) sessions are
   //   persisted with status SCHEDULED until the first peer joins. The
@@ -179,191 +181,194 @@ function SessionCard({
     session.roomUrl !== "OFFLINE" &&
     isTimeReached;
   return (
-    <Card className="border-emerald-100 transition-all hover:shadow-md dark:border-slate-800">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-              <Video className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div>
-              <CardTitle className="text-base">
-                {session.roomName ||
-                  t("common.sessionVar0", {
-                    var_0: session.id,
-                  })}
-              </CardTitle>
-              <CardDescription className="flex items-center gap-2">
-                <User className="h-3 w-3" />
-                {t("common.student")}
-                {session.userId}
-              </CardDescription>
-            </div>
+    <div className="group space-y-3 rounded-xl border border-slate-200/80 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-500/5 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:border-indigo-800 dark:hover:shadow-indigo-500/10">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-900/20">
+            <Video className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <div className="flex items-center gap-2">
-            <Badge className={status.color}>{status.label}</Badge>
-            {!isTimeReached &&
-              !isCompleted &&
-              session.status !== "CANCELED" &&
-              session.joinTime && (
-                <Badge className="border-amber-200 bg-amber-50 text-amber-700">
-                  <Clock className="mr-1 h-3 w-3" />
-                  {t("common.itsNotTimeYet")}
-                </Badge>
-              )}
-            {/* Always expose a Join button for SCHEDULED Mentor Interview
-                sessions within 15 minutes of the scheduled start, even
-                before BE flips status to ONGOING. */}
-            {canJoin && (
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onJoinSession();
-                }}
-                className="gap-1 bg-emerald-600 hover:bg-emerald-700">
-                <LogIn className="h-3.5 w-3.5" />
-                {t("common.join")}
-              </Button>
-            )}
-            {isDraft && (
-              <div className="flex items-center gap-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAcceptSession();
-                        }}
-                        disabled={isUpdatingStatus}
-                        className="gap-1 bg-emerald-600 hover:bg-emerald-700">
-                        <Check className="h-3.5 w-3.5" />
-                        {t("common.browse")}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{t("mentorSessions.acceptInterviewSession")}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRejectSession();
-                        }}
-                        disabled={isUpdatingStatus}
-                        className="gap-1">
-                        <X className="h-3.5 w-3.5" />
-                        {t("common.refuse")}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{t("common.refuseTheInterviewSession")}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            )}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+              {session.roomName ||
+                t("common.sessionVar0", {
+                  var_0: session.id,
+                })}
+            </p>
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+              <User className="h-3 w-3" />
+              {t("common.student")}
+              {session.userId}
+            </p>
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4 flex items-center gap-4 text-sm text-slate-500">
-          {session.joinTime && (
-            <span className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              {t("common.meetingHours")} {formatDateTime(session.joinTime)}
-            </span>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+          <Badge className={cn("border-0", status.badgeClass)}>{status.label}</Badge>
+          {!isTimeReached && !isCompleted && session.status !== "CANCELED" && session.joinTime && (
+            <Badge className="border-0 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              <Clock className="mr-1 h-3 w-3" />
+              {t("common.itsNotTimeYet")}
+            </Badge>
           )}
-          {session.startTime1 && (
-            <>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                {formatDate(treatZuluAsVietnamLocal(session.startTime1))}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                {formatTime(treatZuluAsVietnamLocal(session.startTime1))}
-              </span>
-            </>
-          )}
-          {!session.startTime1 && (
-            <span className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              {t("common.session2")}
-              {session.id}
-            </span>
-          )}
-        </div>
-
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onViewDetails} className="gap-1">
-            {t("common.seeDetails")}
-          </Button>
-          {isCompleted && !hasReview && (
+          {/* Always expose a Join button for SCHEDULED Mentor Interview
+              sessions within 15 minutes of the scheduled start, even
+              before BE flips status to ONGOING. */}
+          {canJoin && (
             <Button
               size="sm"
-              onClick={onWriteReview}
-              className="gap-1 bg-emerald-600 hover:bg-emerald-700">
-              <MessageSquare className="h-4 w-4" />
-              {t("common.writeAReview")}
+              onClick={(e) => {
+                e.stopPropagation();
+                onJoinSession();
+              }}
+              className="h-7 gap-1 bg-emerald-600 px-2.5 text-xs hover:bg-emerald-700">
+              <LogIn className="h-3.5 w-3.5" />
+              {t("common.join")}
             </Button>
           )}
-          {isCompleted && hasReview && (
-            <>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onViewReview}
-                disabled={!reviewId}
-                className="gap-1">
-                <MessageSquare className="h-4 w-4 text-emerald-600" />
-                {t("common.seeDetails")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onEditReview}
-                disabled={typeof session.id !== "number"}
-                className="gap-1">
-                {t("common.editReview")}
-              </Button>
-            </>
-          )}
-          {!isCompleted && !canJoin && (
-            <span className="text-sm text-slate-500 italic">
-              {/* Mentor Interview sessions start in SCHEDULED with no
-                  upfront payment; the only blocking condition is the
-                  15-minute pre-join window not yet being open. */}
-              {session.status === "SCHEDULED" && !isTimeReached
-                ? t("common.itsNotTimeYet")
-                : session.status === "PAID" && !isTimeReached
-                  ? t("mentorSessions.itSNotTimeTo")
-                  : t("mentorSessions.theSessionIsNotYet")}
-            </span>
+          {isDraft && (
+            <div className="flex items-center gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAcceptSession();
+                      }}
+                      disabled={isUpdatingStatus}
+                      className="h-7 gap-1 bg-emerald-600 px-2.5 text-xs hover:bg-emerald-700">
+                      <Check className="h-3.5 w-3.5" />
+                      {t("common.browse")}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("mentorSessions.acceptInterviewSession")}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRejectSession();
+                      }}
+                      disabled={isUpdatingStatus}
+                      className="h-7 gap-1 px-2.5 text-xs">
+                      <X className="h-3.5 w-3.5" />
+                      {t("common.refuse")}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("common.refuseTheInterviewSession")}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+        {session.joinTime && (
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3.5 w-3.5" />
+            {t("common.meetingHours")} {formatDateTime(session.joinTime)}
+          </span>
+        )}
+        {session.startTime1 && (
+          <>
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5" />
+              {formatDate(treatZuluAsVietnamLocal(session.startTime1))}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" />
+              {formatTime(treatZuluAsVietnamLocal(session.startTime1))}
+            </span>
+          </>
+        )}
+        {!session.startTime1 && (
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3.5 w-3.5" />
+            {t("common.session2")}
+            {session.id}
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={onViewDetails} className="h-7 px-2.5 text-xs">
+          {t("common.seeDetails")}
+        </Button>
+        {isCompleted && !hasReview && (
+          <Button
+            size="sm"
+            onClick={onWriteReview}
+            className="h-7 gap-1 bg-emerald-600 px-2.5 text-xs hover:bg-emerald-700">
+            <MessageSquare className="h-3.5 w-3.5" />
+            {t("common.writeAReview")}
+          </Button>
+        )}
+        {isCompleted && hasReview && (
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onViewReview}
+              disabled={!reviewId}
+              className="h-7 gap-1 px-2.5 text-xs">
+              <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
+              {t("common.seeDetails")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEditReview}
+              disabled={typeof session.id !== "number"}
+              className="h-7 px-2.5 text-xs">
+              {t("common.editReview")}
+            </Button>
+          </>
+        )}
+        {!isCompleted && !canJoin && (
+          <span className="text-xs text-slate-500 italic">
+            {/* Mentor Interview sessions start in SCHEDULED with no
+                upfront payment; the only blocking condition is the
+                15-minute pre-join window not yet being open. */}
+            {session.status === "SCHEDULED" && !isTimeReached
+              ? t("common.itsNotTimeYet")
+              : session.status === "PAID" && !isTimeReached
+                ? t("mentorSessions.itSNotTimeTo")
+                : t("mentorSessions.theSessionIsNotYet")}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 export function MentorSessionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const [activeTab, setActiveTab] = useState<SessionListTab>("draft");
+  // Default to "others" tab since the "Approval" (draft) tab is hidden per requirement.
+  // Draft logic is preserved in code for future use.
+  const [activeTab, setActiveTab] = useState<SessionListTab>("others");
   const [searchQuery, setSearchQuery] = useState("");
   const [draftTimeFilter, setDraftTimeFilter] = useState<DraftTimeFilter>("all");
   const [otherStatusFilter, setOtherStatusFilter] = useState<OtherStatusFilter>("all");
+  // 2026-08-02: BE SecurityConfig permitAll + mentor also has admin role in
+  //   this project, so the admin endpoint still works for the Sessions tab
+  //   and `useSessions()` was returning data before. `useUserSessions()` was
+  //   returning `[]` for user 15 (likely BE filter behaves differently than
+  //   documented for the test case where userId == userId2). Keeping the
+  //   admin endpoint for now; FE-side mentor filter (below) still narrows to
+  //   the mentor's own sessions.
   const {
     data: allSessions = [],
     isLoading: sessionsLoading,
     isRefetching: sessionsRefetching,
     refetch: refetchSessions,
-  } = useSessionsByUserId(user?.id ?? 0);
+  } = useSessions();
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
@@ -371,6 +376,11 @@ export function MentorSessionsPage() {
     refetch: refetchReviews,
   } = useMentorReviews();
   const updateStatusMutation = useUpdateSessionStatus();
+  // 2026-07-28: User.id (from JWT sub) is NOT the same as Mentor.id. The
+  //   admin assignment stores the Mentor.id in `session.mentorId` /
+  //   `session.userId`, so we resolve the mentor profile for the current
+  //   auth user and use BOTH ids when filtering.
+  const { data: currentMentorProfile } = useCurrentMentorProfile();
 
   // Current time state for joinTime-based blocking (updates every 5s).
   // 2026-07-17 mentor-interview: Mentor Interview sessions can be joined
@@ -384,41 +394,31 @@ export function MentorSessionsPage() {
   const isLoading = sessionsLoading || reviewsLoading;
 
   // Keep source data deterministic so default sort always yields newest-first consistently.
-  // BE sometimes returns the mentor id under `userId2` (DB column) and sometimes
-  // under `mentorId` (response DTO). Accept both so the list stays in sync with
-  // whatever the active BE controller is doing.
+  // 2026-07-28: Mentor sessions store the Mentor.id (NOT User.id) under
+  //   userId/userId2/mentorId. User.id != Mentor.id, so we resolve the
+  //   mentor profile for the current auth user and match against both ids.
   const mentorSessions = useMemo(() => {
-    const userIdStr = user?.id != null ? String(user.id) : "";
+    const userId = user?.id;
+    const mentorProfileId =
+      currentMentorProfile?.id != null
+        ? typeof currentMentorProfile.id === "string"
+          ? parseInt(currentMentorProfile.id, 10)
+          : currentMentorProfile.id
+        : undefined;
     const all = [...allSessions];
-    if (typeof window !== "undefined") {
-      // Temporary debug aid — remove once mentor can see their session.
-      console.debug("[MentorSessions] filter debug", {
-        userId: user?.id,
-        userIdType: typeof user?.id,
-        userRole: user?.role,
-        totalSessions: all.length,
-        sample: all.slice(0, 3).map((s) => ({
-          id: s.id,
-          status: s.status,
-          roomName: s.roomName,
-          userId: s.userId,
-          userId2: s.userId2,
-          mentorId: s.mentorId,
-          userId2Match: s.userId2 === user?.id,
-          mentorIdMatch: s.mentorId === user?.id,
-        })),
-      });
-    }
     return all
-      .filter(
-        (session: Session) =>
-          session.userId2 === user?.id ||
-          session.mentorId === user?.id ||
-          (userIdStr && String(session.userId2 ?? "") === userIdStr) ||
-          (userIdStr && String(session.mentorId ?? "") === userIdStr)
-      )
+      .filter((session: Session) => {
+        const candidates = [userId, mentorProfileId].filter(
+          (id): id is number => typeof id === "number" && Number.isFinite(id)
+        );
+        if (candidates.length === 0) return false;
+        const sessionIds = [session.userId, session.userId2, session.mentorId]
+          .filter((id): id is number => typeof id === "number")
+          .map((id) => String(id));
+        return candidates.some((id) => sessionIds.includes(String(id)));
+      })
       .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
-  }, [allSessions, user?.id, user?.role]);
+  }, [allSessions, user, currentMentorProfile]);
 
   // Get session IDs that already have mentor reviews
   const reviewBySessionId = useMemo(() => {
@@ -539,82 +539,122 @@ export function MentorSessionsPage() {
     }
   };
 
-  // Stats — DRAFT is counted separately, not in "Sắp diễn ra"
-  const draftCount = mentorSessions.filter((s: Session) => s.status === "DRAFT").length;
   const scheduledCount = mentorSessions.filter(
     (s: Session) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
   ).length;
+  const completedCount = mentorSessions.filter((s: Session) => s.status === "COMPLETED").length;
+  const waitingForReviewCount = mentorSessions.filter(
+    (s: Session) =>
+      s.status === "COMPLETED" && typeof s.id === "number" && !reviewSessionIds.has(s.id)
+  ).length;
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            {t("mentorSessions.interviewSession")}
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {t("mentorSessions.manageInterviewSessionsAndSend")}
-          </p>
+    <div className="flex flex-col gap-6">
+      {/* Header — elevated gradient hero */}
+      <div className="relative overflow-hidden rounded-2xl border border-indigo-100/80 bg-gradient-to-br from-indigo-50/80 via-white to-sky-50/80 p-5 shadow-sm dark:border-indigo-900/40 dark:from-indigo-950/40 dark:via-slate-900 dark:to-sky-950/40">
+        <div className="pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full bg-gradient-to-br from-indigo-300/40 to-sky-300/40 blur-3xl dark:from-indigo-700/30 dark:to-sky-700/30" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500 text-white shadow-md shadow-indigo-500/30">
+              <Video className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                {t("mentorSessions.interviewSession")}
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {t("mentorSessions.manageInterviewSessionsAndSend")}
+              </p>
+            </div>
+          </div>
+          <ReloadButton
+            onReload={async () => {
+              await Promise.all([refetchSessions(), refetchReviews()]);
+            }}
+            isLoading={sessionsRefetching || reviewsRefetching}
+            tooltip={t("mentorSessions.reloadInterviewSessionList")}
+          />
         </div>
-        <ReloadButton
-          onReload={async () => {
-            await Promise.all([refetchSessions(), refetchReviews()]);
-          }}
-          isLoading={sessionsRefetching || reviewsRefetching}
-          tooltip={t("mentorSessions.reloadInterviewSessionList")}
-        />
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
-        <Card className="border-emerald-100 dark:border-slate-800">
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.totalSession")}</CardDescription>
-            <CardTitle className="text-2xl">{mentorSessions.length}</CardTitle>
-          </CardHeader>
-        </Card>
-        {draftCount > 0 && (
-          <Card className="border-amber-200 dark:border-amber-900">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.waitingForApproval")}</CardDescription>
-              <CardTitle className="text-2xl text-amber-600">{draftCount}</CardTitle>
-            </CardHeader>
-          </Card>
-        )}
-        <Card className="border-emerald-100 dark:border-slate-800">
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.comingSoon")}</CardDescription>
-            <CardTitle className="text-2xl text-blue-600">{scheduledCount}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="border-emerald-100 dark:border-slate-800">
-          <CardHeader className="pb-2">
-            <CardDescription>{t("general.completed")}</CardDescription>
-            <CardTitle className="text-2xl text-green-600">
-              {mentorSessions.filter((s: Session) => s.status === "COMPLETED").length}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="border-emerald-100 dark:border-slate-800">
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.waitingForReview")}</CardDescription>
-            <CardTitle className="text-2xl text-amber-600">
-              {
-                mentorSessions.filter(
-                  (s: Session) =>
-                    s.status === "COMPLETED" &&
-                    typeof s.id === "number" &&
-                    !reviewSessionIds.has(s.id)
-                ).length
-              }
-            </CardTitle>
-          </CardHeader>
-        </Card>
+      {/* Stats — elevated with gradients + icon badges + hover lift */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="group relative overflow-hidden rounded-xl border border-indigo-100/80 bg-gradient-to-br from-white via-indigo-50/40 to-white p-4 transition-all hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-500/5 dark:border-indigo-900/40 dark:from-slate-950/40 dark:via-indigo-950/20 dark:to-slate-950/40 dark:hover:border-indigo-800">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+              {t("common.totalSession")}
+            </p>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-500/30 transition-transform group-hover:scale-110">
+              <Video className="h-4 w-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            {mentorSessions.length}
+          </p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {completedCount} {t("general.completed").toLowerCase()}
+          </p>
+          <div className="pointer-events-none absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-indigo-500/5 blur-2xl dark:bg-indigo-500/10" />
+        </div>
+        <div className="group relative overflow-hidden rounded-xl border border-sky-100/80 bg-gradient-to-br from-white via-sky-50/40 to-white p-4 transition-all hover:border-sky-200 hover:shadow-md hover:shadow-sky-500/5 dark:border-sky-900/40 dark:from-slate-950/40 dark:via-sky-950/20 dark:to-slate-950/40 dark:hover:border-sky-800">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+              {t("common.comingSoon")}
+            </p>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-sm shadow-sky-500/30 transition-transform group-hover:scale-110">
+              <Calendar className="h-4 w-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            {scheduledCount}
+          </p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {t("common.scheduled")}, {t("common.paid")}, {t("common.ongoing")}
+          </p>
+          <div className="pointer-events-none absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-sky-500/5 blur-2xl dark:bg-sky-500/10" />
+        </div>
+        <div className="group relative overflow-hidden rounded-xl border border-emerald-100/80 bg-gradient-to-br from-white via-emerald-50/40 to-white p-4 transition-all hover:border-emerald-200 hover:shadow-md hover:shadow-emerald-500/5 dark:border-emerald-900/40 dark:from-slate-950/40 dark:via-emerald-950/20 dark:to-slate-950/40 dark:hover:border-emerald-800">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+              {t("general.completed")}
+            </p>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-sm shadow-emerald-500/30 transition-transform group-hover:scale-110">
+              <Check className="h-4 w-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            {completedCount}
+          </p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {t("mentorOverview.complete")}
+          </p>
+          <div className="pointer-events-none absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-emerald-500/5 blur-2xl dark:bg-emerald-500/10" />
+        </div>
+        <div className="group relative overflow-hidden rounded-xl border border-amber-100/80 bg-gradient-to-br from-white via-amber-50/40 to-white p-4 transition-all hover:border-amber-200 hover:shadow-md hover:shadow-amber-500/5 dark:border-amber-900/40 dark:from-slate-950/40 dark:via-amber-950/20 dark:to-slate-950/40 dark:hover:border-amber-800">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+              {t("common.waitingForReview")}
+            </p>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm shadow-amber-500/30 transition-transform group-hover:scale-110">
+              <MessageSquare className="h-4 w-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            {waitingForReviewCount}
+          </p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {t("common.waitingForReview")}
+          </p>
+          <div className="pointer-events-none absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-amber-500/5 blur-2xl dark:bg-amber-500/10" />
+        </div>
       </div>
 
       {/* Session List */}
       {isLoading ? (
-        <LoadingCardList count={4} />
+        <div className="space-y-3">
+          <Skeleton className="h-28" />
+          <Skeleton className="h-28" />
+          <Skeleton className="h-28" />
+        </div>
       ) : mentorSessions.length === 0 ? (
         <EmptyState
           icon={Video}
@@ -623,108 +663,80 @@ export function MentorSessionsPage() {
         />
       ) : (
         <>
-          {/* Controls */}
-          <Card className="border-emerald-100 p-4 dark:border-slate-800">
-            <div className="space-y-4">
-              <Tabs
-                value={activeTab}
-                onValueChange={(tab) => {
-                  setActiveTab(tab as SessionListTab);
+          {/* Filters — elevated card with subtle gradient */}
+          <div className="space-y-4 rounded-xl border border-slate-200/80 bg-gradient-to-b from-white to-slate-50/60 p-4 shadow-xs dark:border-slate-800 dark:from-slate-950/40 dark:to-slate-900/30">
+            <Tabs
+              value={activeTab}
+              onValueChange={(tab) => {
+                setActiveTab(tab as SessionListTab);
+                pagination.goToFirstPage();
+              }}>
+              <TabsList className="grid w-full grid-cols-1">
+                <TabsTrigger value="others">
+                  {t("mentorSessions.remainingSessions")}
+                  {otherSessions.length})
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_200px]">
+              <div className="relative">
+                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={searchQuery}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    pagination.goToFirstPage();
+                  }}
+                  placeholder={t("mentorSessions.searchBySessionIdStudent")}
+                  className="border-slate-200 bg-white pl-9 dark:border-slate-700 dark:bg-slate-900"
+                />
+              </div>
+              <Select
+                value={otherStatusFilter}
+                onValueChange={(value) => {
+                  setOtherStatusFilter(value as OtherStatusFilter);
                   pagination.goToFirstPage();
                 }}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="draft">
-                    {t("mentorSessions.waitingForApproval")}
-                    {draftSessions.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="others">
-                    {t("mentorSessions.remainingSessions")}
-                    {otherSessions.length})
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                <div className="relative">
-                  <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-                  <Input
-                    value={searchQuery}
-                    onChange={(event) => {
-                      setSearchQuery(event.target.value);
-                      pagination.goToFirstPage();
-                    }}
-                    placeholder={t("mentorSessions.searchBySessionIdStudent")}
-                    className="pl-9"
-                  />
-                </div>
-                {activeTab === "draft" ? (
-                  <Select
-                    value={draftTimeFilter}
-                    onValueChange={(value) => {
-                      setDraftTimeFilter(value as DraftTimeFilter);
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("mentorSessions.filterByCalendarInformation")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">
-                        {t("mentorSessions.allSessionsPendingApproval")}
-                      </SelectItem>
-                      <SelectItem value="hasJoinTime">
-                        {t("mentorSessions.itSMeetingTime")}
-                      </SelectItem>
-                      <SelectItem value="noJoinTime">
-                        {t("mentorSessions.thereIsNoMeetingTime")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Select
-                    value={otherStatusFilter}
-                    onValueChange={(value) => {
-                      setOtherStatusFilter(value as OtherStatusFilter);
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("common.filterByStatus")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-                      <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
-                      <SelectItem value="PAID">{t("common.paid")}</SelectItem>
-                      <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
-                      <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
-                      <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
-                      <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {t("common.sortBy")}
-                </span>
-                <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
-                <SortButton {...getSortProps("sessionSortValue")}>{t("common.time")}</SortButton>
-                <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
-                {(searchQuery || draftTimeFilter !== "all" || otherStatusFilter !== "all") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setDraftTimeFilter("all");
-                      setOtherStatusFilter("all");
-                      pagination.goToFirstPage();
-                    }}>
-                    {t("common.clearFilter")}
-                  </Button>
-                )}
-              </div>
+                <SelectTrigger className="border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+                  <SelectValue placeholder={t("common.filterByStatus")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                  <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
+                  <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+                  <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
+                  <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                  <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
+                  <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </Card>
+
+            <div className="flex flex-wrap items-center gap-3 border-t border-slate-200/80 pt-3 dark:border-slate-700/80">
+              <span className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <Filter className="h-3.5 w-3.5" />
+                {t("common.sortBy")}
+              </span>
+              <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
+              <SortButton {...getSortProps("sessionSortValue")}>{t("common.time")}</SortButton>
+              <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
+              {(searchQuery || draftTimeFilter !== "all" || otherStatusFilter !== "all") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setDraftTimeFilter("all");
+                    setOtherStatusFilter("all");
+                    pagination.goToFirstPage();
+                  }}
+                  className="ml-auto h-7 text-xs">
+                  {t("common.clearFilter")}
+                </Button>
+              )}
+            </div>
+          </div>
 
           {sortedData.length === 0 ? (
             <EmptyState
@@ -738,7 +750,7 @@ export function MentorSessionsPage() {
             />
           ) : (
             <>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {pageData.map((session) => (
                   // Prefer opening existing review detail when available.
                   <SessionCard

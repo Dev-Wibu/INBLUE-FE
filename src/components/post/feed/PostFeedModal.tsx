@@ -61,12 +61,13 @@ export function PostFeedModal({
   };
   const handleCommentSubmit = () => {
     const content = newComment.trim();
-    if (!content || !user?.id) return;
+    const numericUserId = typeof user?.id === "string" ? parseInt(user.id, 10) : user?.id;
+    if (!content || !numericUserId) return;
     createComment.mutate(
       {
         body: {
           postId,
-          userId: user.id,
+          userId: numericUserId,
           content,
         },
       } as never,

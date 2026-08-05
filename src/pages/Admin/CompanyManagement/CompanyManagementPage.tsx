@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, ChevronRight, Plus, Search } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,6 +25,7 @@ import type { Company, CompanyFormData, JobDescription, JobDescriptionFormData }
 export function CompanyManagementPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState("companies");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -260,6 +261,7 @@ export function CompanyManagementPage() {
     setJdFormData({
       status: "OPEN",
       currency: "VND",
+      ...(companyId ? { companyId } : {}),
     });
     if (companyId) {
       setSelectedCompanyId(companyId);
@@ -273,7 +275,12 @@ export function CompanyManagementPage() {
 
       const targetCompanyId = selectedCompanyId || (jdFormData as any).companyId;
       if (!targetCompanyId) {
-        toast.error("Vui lòng chọn công ty cho vị trí tuyển dụng này");
+        toast.error(
+          t(
+            "adminCompanymanagement.selectCompanyForJd",
+            "Vui lòng chọn công ty cho vị trí tuyển dụng này"
+          )
+        );
         return;
       }
 
@@ -501,23 +508,31 @@ export function CompanyManagementPage() {
               jobDescription={selectedJd}
               companyName={selectedJdCompany}
               onBack={handleBackFromDetail}
-              onEdit={() => void refetchAllJds()}
+              onEdit={() => {
+                void refetchAllJds();
+                if (selectedJdId) {
+                  queryClient.invalidateQueries({
+                    queryKey: ["admin", "jd-detail-header", selectedJdId],
+                  });
+                }
+                queryClient.invalidateQueries({ queryKey: ["admin", "open-jds"] });
+              }}
             />
           ) : (
             <div className="flex h-full flex-col">
               {jdSearchQuery && (
                 <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
                   <span className="text-xs text-slate-500">
-                    Hiển thị{" "}
+                    {t("common.showing", "Hiển thị")}{" "}
                     <strong className="text-slate-800 dark:text-slate-200">
                       {processedJds.length}
                     </strong>{" "}
-                    / <strong>{allJds.length}</strong> kết quả
+                    / <strong>{allJds.length}</strong> {t("common.resultsUnit", "kết quả")}
                   </span>
                   <button
                     onClick={() => setJdSearchQuery("")}
                     className="text-xs text-indigo-600 hover:underline dark:text-indigo-400">
-                    Xóa bộ lọc
+                    {t("common.clearFilter", "Xóa bộ lọc")}
                   </button>
                 </div>
               )}
@@ -526,12 +541,9 @@ export function CompanyManagementPage() {
                   showCompany={true}
                   jobDescriptions={pageJds}
                   onView={(jd) => setSelectedJdId(jd.id!)}
-                  onToggleStatus={async (job, nextStatus) => {
+                  onToggleStatus={async (job) => {
                     try {
-                      const res = await jobDescriptionManager.update({
-                        id: job.id,
-                        status: nextStatus,
-                      });
+                      const res = await jobDescriptionManager.toggleStatus(job.id!);
                       if (res.success) {
                         toast.success(t("common.updateSuccess", "Cập nhật thành công"));
                         void refetchAllJds();
@@ -593,6 +605,8 @@ export function CompanyManagementPage() {
           "Nhập thông tin vị trí tuyển dụng mới."
         )}
         isSubmitting={isSubmittingJd}
+        companies={companies.map((c) => ({ id: c.id!, name: c.name || "" }))}
+        preselectedCompanyId={selectedCompanyId}
       />
 
       <JobDescriptionFormDialog

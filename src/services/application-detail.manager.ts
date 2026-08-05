@@ -1,6 +1,5 @@
 import type { ApiResponse } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
-import type { SubmissionData } from "@/lib/application-detail-utils";
 import i18n from "@/lib/i18n";
 import type { components } from "../../schema-from-be";
 
@@ -267,55 +266,6 @@ export class ApplicationDetailManager {
   }
 
   /**
-   * Get ALL application details from ALL applications that need HR scoring.
-   * This is a workaround because endpoint /reviewer only returns details
-   * with assigned reviewers, but CV rounds don't have reviewers (auto AI).
-   *
-   * 1. Fetch all applications
-   * 2. Fetch details for each application
-   * 3. Filter to only AI_EVALUATED + no hrScore (needs HR review)
-   */
-  async getAllPendingHRReviews(): Promise<ApiResponse<ApplicationDetail[]>> {
-    try {
-      // Step 1: Get all applications
-      const appsResponse = await fetchClient.GET("/api/applications", {});
-      const appsRaw = appsResponse.data as unknown;
-      const applications = unwrapApplicationPayload(appsRaw);
-
-      if (applications.length === 0) {
-        return { success: true, data: [] };
-      }
-
-      // Step 2: Get details for each application
-      const detailPromises = applications.map((app: { id?: number }) =>
-        this.getByApplicationId(app.id!).then((r) => r.data ?? [])
-      );
-
-      const allDetailArrays = await Promise.all(detailPromises);
-      const allDetails = allDetailArrays.flat();
-
-      // Step 3: Filter to pending HR reviews
-      const pendingHR = allDetails.filter(
-        (detail) =>
-          detail.status === "AI_EVALUATED" &&
-          (detail.hrScore === undefined || detail.hrScore === null) &&
-          !isAutoGradedType(detail)
-      );
-
-      return {
-        success: true,
-        data: pendingHR,
-      };
-    } catch (error) {
-      console.error("[ApplicationDetailManager] getAllPendingHRReviews error:", error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error),
-      };
-    }
-  }
-
-  /**
    * Admin assigns a mentor to a candidate's Mentor Review round
    * PUT /api/application-details/{id}/assign-mentor?mentorId=
    */
@@ -336,6 +286,86 @@ export class ApplicationDetailManager {
       };
     } catch (error) {
       console.error("[ApplicationDetailManager] assignMentor error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Admin assigns multiple mentors to a candidate's Mentor Review round (Option 2)
+   * PUT /api/application-details/{id}/assign-mentors
+   * Body: { mentorIds: [1, 2, 5] }
+   */
+  async assignMentors(
+    applicationDetailId: number,
+    mentorIds: number[]
+  ): Promise<ApiResponse<ApplicationDetail>> {
+    try {
+      const response = await fetchClient.PUT("/api/application-details/{id}/assign-mentors", {
+        params: {
+          path: { id: applicationDetailId },
+        },
+        body: { mentorIds },
+      });
+      return {
+        success: true,
+        data: response.data as ApplicationDetail,
+      };
+    } catch (error) {
+      console.error("[ApplicationDetailManager] assignMentors error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Get the list of assigned mentors for a candidate's Mentor Review round (Option 2)
+   * GET /api/application-details/{id}/assigned-mentors
+   * Returns: MentorResponse[]
+   */
+  async getAssignedMentors(applicationDetailId: number): Promise<ApiResponse<unknown[]>> {
+    try {
+      const response = await fetchClient.GET("/api/application-details/{id}/assigned-mentors", {
+        params: { path: { id: applicationDetailId } },
+      });
+      return {
+        success: true,
+        data: response.data as unknown[],
+      };
+    } catch (error) {
+      console.error("[ApplicationDetailManager] getAssignedMentors error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Candidate selects one mentor from the assigned mentors list (Option 2)
+   * PUT /api/application-details/{id}/select-mentor?mentorId=
+   */
+  async selectMentor(
+    applicationDetailId: number,
+    mentorId: number
+  ): Promise<ApiResponse<ApplicationDetail>> {
+    try {
+      const response = await fetchClient.PUT("/api/application-details/{id}/select-mentor", {
+        params: {
+          path: { id: applicationDetailId },
+          query: { mentorId },
+        },
+      });
+      return {
+        success: true,
+        data: response.data as ApplicationDetail,
+      };
+    } catch (error) {
+      console.error("[ApplicationDetailManager] selectMentor error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -368,47 +398,6 @@ function unwrapReviewerPayload(raw: unknown): ApplicationDetail[] {
     }
   }
   return [];
-}
-
-/**
- * Unwrap the BE applications payload into a flat array.
- */
-function unwrapApplicationPayload(raw: unknown): { id?: number }[] {
-  if (Array.isArray(raw)) return raw as { id?: number }[];
-  if (raw && typeof raw === "object") {
-    const obj = raw as Record<string, unknown>;
-    const candidate = obj["data"] ?? obj["items"] ?? obj["content"] ?? obj["results"];
-    if (Array.isArray(candidate)) return candidate as { id?: number }[];
-  }
-  return [];
-}
-
-/**
- * Check if an ApplicationDetail is auto-graded (QUIZ, CODE_REVIEW, EMAIL_SIMULATOR).
- * CV_SCREENING is NOT auto-graded - it needs human HR review.
- */
-function isAutoGradedType(detail: ApplicationDetail): boolean {
-  const data = detail.submissionData as SubmissionData | undefined;
-  if (!data) return false;
-
-  // Check submission type
-  if (data.quizAnswers && data.quizAnswers.length > 0) return true;
-  if (data.codeReviewSubmissions && data.codeReviewSubmissions.length > 0) return true;
-  if (data.codeSubmissions && data.codeSubmissions.length > 0) return false; // CODING needs HR
-
-  // Check for email content
-  if (data.textContent) {
-    if (
-      data.textContent.includes("To:") ||
-      data.textContent.includes("Subject:") ||
-      data.textContent.includes("Dear") ||
-      data.textContent.includes("Kính gửi")
-    ) {
-      return true; // EMAIL_SIMULATOR
-    }
-  }
-
-  return false;
 }
 
 export const applicationDetailManager = new ApplicationDetailManager();

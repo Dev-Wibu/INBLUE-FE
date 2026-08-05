@@ -4,11 +4,21 @@ import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
   getAvailableRoundsTemplates,
   RoundCanvasEditorWorkspace,
+  type StaffUserOption,
 } from "@/components/shared/RoundCanvasEditor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -16,7 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { formatCurrency } from "@/lib/formatting";
+
+import { useUsers } from "@/hooks/useApplication";
+
 import { cn } from "@/lib/utils";
 import {
   adminApplicationManager,
@@ -135,7 +149,7 @@ function EditableTextList({
   onChange,
   icon: Icon = CheckCircle2,
   iconColor = "text-indigo-500",
-  placeholder = "Nhập nội dung...",
+  placeholder,
 }: {
   value?: string;
   onChange: (newValue: string) => void;
@@ -143,6 +157,8 @@ function EditableTextList({
   iconColor?: string;
   placeholder?: string;
 }) {
+  const { t } = useTranslation();
+  const defaultPlaceholder = placeholder || t("common.enterContent", "Nhập nội dung...");
   const lines = value ? value.split("\n") : [""];
 
   const handleLineChange = (index: number, newContent: string) => {
@@ -169,7 +185,7 @@ function EditableTextList({
           <Input
             value={line}
             onChange={(e) => handleLineChange(idx, e.target.value)}
-            placeholder={`${placeholder} (Dòng ${idx + 1})`}
+            placeholder={`${defaultPlaceholder} (${t("adminCompanymanagement.linePrefix", "Dòng")} ${idx + 1})`}
             className="h-8.5 flex-1 border-slate-200/80 bg-slate-100/60 text-sm font-medium text-slate-800 focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-100"
           />
           {lines.length > 1 && (
@@ -192,7 +208,7 @@ function EditableTextList({
         onClick={handleAddLine}
         className="mt-1 h-7 gap-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/60">
         <Plus className="h-3.5 w-3.5" />
-        <span>Thêm dòng mới</span>
+        <span>{t("adminCompanymanagement.addNewLine", "Thêm dòng mới")}</span>
       </Button>
     </div>
   );
@@ -230,6 +246,10 @@ export function JobDescriptionDetailView({
   const [isLoadingApps, setIsLoadingApps] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Per-round "Change Reviewer" dialog state. Holds the round id currently
+  // being re-assigned so the dialog can render the right initial value.
+  const [changingReviewerRoundId, setChangingReviewerRoundId] = useState<number | null>(null);
 
   useEffect(() => {
     setCurrentJd(jobDescription);
@@ -312,9 +332,12 @@ export function JobDescriptionDetailView({
     );
 
     return sortedRounds.map((r) => ({
+      id: r.id,
       name: r.name,
+      roundOrder: r.roundOrder,
       roundType: r.roundType as RoundType,
       passThreshold: r.passThreshold ?? 0.8,
+      reviewerId: r.reviewerId ?? null,
       configData: {
         ...r.configData,
         codingProblemsId:
@@ -331,14 +354,47 @@ export function JobDescriptionDetailView({
     }));
   }, [currentJd.rounds]);
 
-  const handleSaveRounds = async (rounds: UIRound[]) => {
+  // Load all users and filter to active STAFF only — used by the round editor
+  // dropdown so admins can pick who reviews each round.
+  const { data: allUsersData } = useUsers();
+  const staffUsers = useMemo<StaffUserOption[]>(() => {
+    const list = Array.isArray(allUsersData) ? allUsersData : [];
+    return (
+      list as Array<{
+        id?: number;
+        name?: string;
+        email?: string;
+        avatarUrl?: string | null;
+        role?: string;
+        isActive?: boolean | null;
+      }>
+    )
+      .filter((u) => u.role === "STAFF")
+      .filter((u) => u.isActive !== false)
+      .map((u) => ({
+        id: u.id as number,
+        name: u.name,
+        email: u.email,
+        avatarUrl: u.avatarUrl,
+      }))
+      .filter((u) => u.id != null)
+      .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+  }, [allUsersData]);
+
+  const handleSaveRounds = async (
+    rounds: UIRound[],
+    _metadata?: { name: string; category: string; description: string },
+    options?: { closeEditorAfter?: boolean }
+  ) => {
     setIsSaving(true);
     try {
       const payloadRounds = rounds.map((r, idx) => ({
-        name: r.name || `Vòng ${idx + 1}`,
+        id: r.id,
+        name: r.name || `${t("adminApplicationManagement.roundPrefix", "Vòng ")}${idx + 1}`,
         roundOrder: idx + 1,
         roundType: r.roundType as any,
         passThreshold: Number(r.passThreshold ?? 0.8),
+        ...(r.reviewerId != null ? { reviewerId: r.reviewerId } : {}),
         configData: {
           instruction: r.configData?.instruction || "",
           submissionFormat: r.configData?.submissionFormat || "",
@@ -370,6 +426,10 @@ export function JobDescriptionDetailView({
         setCurrentJd((prev) =>
           prev ? { ...prev, rounds: res.data as unknown as typeof prev.rounds } : prev
         );
+        // Only close the editor on a full save; per-round saves keep the user in the workspace.
+        if (options?.closeEditorAfter !== false) {
+          setIsEditorOpen(false);
+        }
       } else {
         toast.error(
           res.error ||
@@ -390,6 +450,71 @@ export function JobDescriptionDetailView({
     }
   };
 
+  /**
+   * Change the reviewer of a single round without re-saving the whole round
+   * list. Strategy:
+   *   1. Read current `currentJd.rounds` from state (already synced with BE).
+   *   2. Mutate only the target round's `reviewerId`.
+   *   3. Send the full list via `roundManager.updateForJd` (BE merges by id).
+   *   4. Reload JD into state.
+   *
+   * `closeEditorAfter` is `true` so the dialog closes on success.
+   */
+  const handleChangeReviewer = async (
+    roundId: number,
+    newReviewerId: number | null
+  ): Promise<void> => {
+    const jdId = currentJd.id;
+    if (!jdId) return;
+    setIsSaving(true);
+    try {
+      const currentRounds = currentJd.rounds ?? [];
+      const nextRounds = currentRounds.map((r) =>
+        r.id === roundId ? { ...r, reviewerId: newReviewerId } : r
+      );
+      const res = await roundManager.updateForJd(jdId, {
+        rounds: nextRounds.map((r) => ({
+          id: r.id,
+          name: r.name ?? "",
+          roundOrder: r.roundOrder ?? 0,
+          roundType: r.roundType as any,
+          passThreshold: r.passThreshold ?? 0,
+          ...(r.reviewerId != null ? { reviewerId: r.reviewerId } : {}),
+          configData: {
+            instruction: r.configData?.instruction ?? "",
+            submissionFormat: r.configData?.submissionFormat ?? "",
+            timeLimitMinutes: r.configData?.timeLimitMinutes ?? 0,
+            maxScore: r.configData?.maxScore ?? 100,
+            aiSystemPrompt: r.configData?.aiSystemPrompt ?? "",
+            evaluationCriteria: r.configData?.evaluationCriteria ?? "",
+            quizQuestions: (r.configData?.quizQuestions ?? []).map((q: any) => ({
+              questionText: q.questionText ?? "",
+              options: q.options ?? [],
+              correctAnswer: q.correctAnswer ?? "",
+              points: Number(q.points ?? 0),
+            })),
+            codingProblemsId: r.configData?.codingProblems?.map((c: any) => c.problemId) ?? [],
+            codeReviewIds: r.configData?.codeReviewProblems?.map((c: any) => c.problemId) ?? [],
+          },
+        })),
+      });
+      if (res.success && res.data) {
+        toast.success(t("adminCompanymanagement.changeReviewerSuccess", "Đã đổi người chấm"));
+        setCurrentJd((prev) =>
+          prev ? { ...prev, rounds: res.data as unknown as typeof prev.rounds } : prev
+        );
+        setChangingReviewerRoundId(null);
+      } else {
+        toast.error(res.error || t("errors.cannotUpdateInterviewRounds"));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(t("errors.cannotUpdateInterviewRounds"));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const templates = getAvailableRoundsTemplates(t);
 
   const detectedTechStack = useMemo(() => {
@@ -400,8 +525,9 @@ export function JobDescriptionDetailView({
     if (!min && !max) return t("enterpriseJobdescriptiondetailpage.salaryAgreement");
     const curr = currency || "USD";
     if (min && max) return `${min.toLocaleString()} - ${max.toLocaleString()} ${curr}`;
-    if (min) return `Từ ${min.toLocaleString()} ${curr}`;
-    return `Đến ${max?.toLocaleString()} ${curr}`;
+    if (min)
+      return `${t("adminCompanymanagement.fromSalary", "Từ")} ${min.toLocaleString()} ${curr}`;
+    return `${t("adminCompanymanagement.toSalary", "Đến")} ${max?.toLocaleString()} ${curr}`;
   };
 
   const formatDeadline = (dateStr?: string) => {
@@ -417,18 +543,28 @@ export function JobDescriptionDetailView({
     }
   };
 
+  const formatPrice = (price?: number, currency?: string) => {
+    if (price == null) return "—";
+    const curr = currency || "VND";
+    return `${price.toLocaleString()} ${curr}`;
+  };
+
   const getStatusBadge = (status?: string) => {
     switch (status) {
       case "PASSED":
       case "ACCEPTED":
         return (
           <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-            ĐẠT
+            {t("adminApplicationManagement.statusPassed", "ĐẠT")}
           </Badge>
         );
       case "REJECTED":
       case "FAILED":
-        return <Badge variant="destructive">TỪ CHỐI</Badge>;
+        return (
+          <Badge variant="destructive">
+            {t("adminApplicationManagement.statusRejected", "TỪ CHỐI")}
+          </Badge>
+        );
       case "IN_PROGRESS":
       case "PENDING":
       default:
@@ -436,7 +572,7 @@ export function JobDescriptionDetailView({
           <Badge
             variant="secondary"
             className="border-amber-500/30 bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-            ĐANG XỬ LÝ
+            {t("adminApplicationManagement.statusInProgress", "ĐANG XỬ LÝ")}
           </Badge>
         );
     }
@@ -450,10 +586,12 @@ export function JobDescriptionDetailView({
           onClose={() => setIsEditorOpen(false)}
           initialRounds={initialRounds}
           initialMetadata={{ name: currentJd.title || "", category: "", description: "" }}
-          title="Quy trình tuyển dụng JD"
+          title={t("adminCompanymanagement.recruitmentPipelineJd", "Quy trình tuyển dụng JD")}
           showMetadataInputs={false}
+          mode="edit"
           isSaving={isSaving}
           onSave={handleSaveRounds}
+          staffUsers={staffUsers}
         />
       </div>
     );
@@ -469,13 +607,13 @@ export function JobDescriptionDetailView({
             <div className="mb-3.5 flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                 <Sparkles className="h-4 w-4 text-indigo-500" />
-                Quy trình tuyển dụng
+                {t("adminCompanymanagement.recruitmentPipeline", "Quy trình tuyển dụng")}
               </h3>
               <Button
                 onClick={() => setIsEditorOpen(true)}
                 className="h-8 gap-1.5 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
                 <Sparkles className="h-3.5 w-3.5" />
-                Studio Workspace sơ đồ
+                {t("adminCompanymanagement.studioWorkspace", "Studio Workspace sơ đồ")}
               </Button>
             </div>
 
@@ -486,16 +624,22 @@ export function JobDescriptionDetailView({
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                    Chưa cấu hình vòng phỏng vấn nào
+                    {t(
+                      "adminCompanymanagement.noRoundsConfigured",
+                      "Chưa cấu hình vòng phỏng vấn nào"
+                    )}
                   </p>
                   <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    Thiết lập các vòng phỏng vấn để hệ thống tự động chấm bài.
+                    {t(
+                      "adminCompanymanagement.setupRoundsDesc",
+                      "Thiết lập các vòng phỏng vấn để hệ thống tự động chấm bài."
+                    )}
                   </p>
                 </div>
                 <Button
                   onClick={() => setIsEditorOpen(true)}
                   className="h-7 bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
-                  + Cấu hình quy trình tuyển dụng
+                  + {t("adminCompanymanagement.setupPipeline", "Cấu hình quy trình tuyển dụng")}
                 </Button>
               </div>
             ) : (
@@ -503,6 +647,7 @@ export function JobDescriptionDetailView({
                 {initialRounds.map((round, index) => {
                   const meta = templates.find((template) => template.type === round.roundType);
                   const isLast = index === initialRounds.length - 1;
+                  const reviewer = staffUsers.find((s) => s.id === round.reviewerId);
 
                   return (
                     <div key={index} className="flex shrink-0 items-center gap-2.5">
@@ -514,7 +659,8 @@ export function JobDescriptionDetailView({
                           <Badge
                             variant="outline"
                             className={cn("gap-1 text-[11px] font-bold shadow-2xs", meta?.color)}>
-                            Vòng {index + 1}
+                            {t("adminApplicationManagement.roundPrefix", "Vòng ")}
+                            {index + 1}
                           </Badge>
                           {round.passThreshold !== undefined && (
                             <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
@@ -527,6 +673,40 @@ export function JobDescriptionDetailView({
                         <h4 className="mt-2.5 truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
                           {round.name}
                         </h4>
+
+                        {/* Reviewer row — visible when staffUsers have loaded */}
+                        {staffUsers.length > 0 && (
+                          <div className="mt-2 flex items-center justify-between gap-1.5 border-t border-slate-100 pt-2 dark:border-slate-800/60">
+                            <div className="flex min-w-0 items-center gap-1.5">
+                              <Users className="h-3 w-3 shrink-0 text-slate-400" />
+                              <span
+                                className={cn(
+                                  "truncate text-[11px] font-medium",
+                                  reviewer
+                                    ? "text-slate-700 dark:text-slate-300"
+                                    : "text-amber-600 italic dark:text-amber-400"
+                                )}
+                                title={reviewer?.email ?? undefined}>
+                                {reviewer
+                                  ? `${t("adminCompanymanagement.reviewerLabel", "Reviewer")}: ${reviewer.name ?? `#${round.reviewerId}`}`
+                                  : t(
+                                      "adminCompanymanagement.reviewerStaffCardWarning",
+                                      "Chưa gán người chấm"
+                                    )}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (round.id != null) setChangingReviewerRoundId(round.id);
+                              }}
+                              disabled={round.id == null}
+                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-indigo-400 dark:hover:bg-indigo-950/40">
+                              {t("adminCompanymanagement.changeReviewer", "Đổi")}
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       {!isLast && (
@@ -539,7 +719,7 @@ export function JobDescriptionDetailView({
             )}
           </section>
 
-          {/* SECTION 2: COMBINED SPECIFICATION TAB CARD (Mô tả / Yêu cầu / Phúc lợi in 1 card) */}
+          {/* SECTION 2: COMBINED SPECIFICATION TAB CARD */}
           <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
             {/* Sub-Tab Navigation Header */}
             <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
@@ -554,7 +734,7 @@ export function JobDescriptionDetailView({
                       : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
-                  <span>Mô tả công việc</span>
+                  <span>{t("common.describe", "Mô tả công việc")}</span>
                 </button>
 
                 <button
@@ -567,7 +747,7 @@ export function JobDescriptionDetailView({
                       : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <FileCheck className="h-3.5 w-3.5 text-emerald-500" />
-                  <span>Yêu cầu ứng viên</span>
+                  <span>{t("adminCompanymanagement.request", "Yêu cầu ứng viên")}</span>
                 </button>
 
                 <button
@@ -580,18 +760,18 @@ export function JobDescriptionDetailView({
                       : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <Gift className="h-3.5 w-3.5 text-purple-500" />
-                  <span>Phúc lợi & Đãi ngộ</span>
+                  <span>{t("common.welfare", "Phúc lợi & Đãi ngộ")}</span>
                 </button>
               </div>
 
               {isEditing && (
                 <Badge className="border-indigo-500/30 bg-indigo-500/15 text-[11px] font-bold text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400">
-                  Đang chỉnh sửa dòng
+                  {t("adminCompanymanagement.editingInline", "Đang chỉnh sửa dòng")}
                 </Badge>
               )}
             </div>
 
-            {/* Sub-Tab Content Body (Line-by-Line Editable) */}
+            {/* Sub-Tab Content Body */}
             {detailTab === "description" && (
               <div>
                 {isEditing ? (
@@ -602,7 +782,10 @@ export function JobDescriptionDetailView({
                     }
                     icon={Sparkles}
                     iconColor="text-indigo-500"
-                    placeholder="Mô tả nhiệm vụ công việc"
+                    placeholder={t(
+                      "adminCompanymanagement.jobDescriptionPlaceholder",
+                      "Mô tả nhiệm vụ công việc"
+                    )}
                   />
                 ) : currentJd.description ? (
                   <FormattedTextList
@@ -612,7 +795,7 @@ export function JobDescriptionDetailView({
                   />
                 ) : (
                   <p className="text-sm text-slate-400 italic dark:text-slate-500">
-                    Chưa cập nhật mô tả công việc.
+                    {t("adminCompanymanagement.noDescriptionYet", "Chưa cập nhật mô tả công việc.")}
                   </p>
                 )}
               </div>
@@ -628,14 +811,17 @@ export function JobDescriptionDetailView({
                     }
                     icon={CheckCircle2}
                     iconColor="text-emerald-500"
-                    placeholder="Yêu cầu kỹ năng / kinh nghiệm"
+                    placeholder={t(
+                      "adminCompanymanagement.requirementsPlaceholder",
+                      "Yêu cầu kỹ năng / kinh nghiệm"
+                    )}
                   />
                 ) : (
                   <>
                     {detectedTechStack.length > 0 && (
                       <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 p-2.5 dark:border-slate-800/60 dark:bg-slate-950/50">
                         <span className="mr-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-                          Công nghệ & Kỹ năng:
+                          {t("adminCompanymanagement.techAndSkills", "Công nghệ & Kỹ năng:")}
                         </span>
                         {detectedTechStack.map((tech) => (
                           <Badge
@@ -655,7 +841,10 @@ export function JobDescriptionDetailView({
                       />
                     ) : (
                       <p className="text-sm text-slate-400 italic dark:text-slate-500">
-                        Chưa cập nhật yêu cầu ứng viên.
+                        {t(
+                          "adminCompanymanagement.noRequirementsYet",
+                          "Chưa cập nhật yêu cầu ứng viên."
+                        )}
                       </p>
                     )}
                   </>
@@ -671,11 +860,15 @@ export function JobDescriptionDetailView({
                     onChange={(newText) => setEditFormData({ ...editFormData, benefits: newText })}
                     icon={Gift}
                     iconColor="text-purple-500"
-                    placeholder="Quyền lợi & Phúc lợi"
+                    placeholder={t(
+                      "adminCompanymanagement.benefitsPlaceholder",
+                      "Quyền lợi & Phúc lợi"
+                    )}
                   />
                 ) : currentJd.benefits &&
                   currentJd.benefits.trim() &&
-                  currentJd.benefits !== "Không lương" ? (
+                  currentJd.benefits !== t("adminCompanymanagement.unpaidText", "Không lương") &&
+                  currentJd.benefits !== "Unpaid" ? (
                   <FormattedTextList
                     text={currentJd.benefits}
                     icon={Gift}
@@ -684,7 +877,13 @@ export function JobDescriptionDetailView({
                 ) : (
                   <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm font-medium text-slate-600 dark:bg-slate-950/50 dark:text-slate-300">
                     <Gift className="h-4 w-4 shrink-0 text-purple-400" />
-                    <span>{currentJd.benefits || "Thỏa thuận theo chính sách công ty"}</span>
+                    <span>
+                      {currentJd.benefits ||
+                        t(
+                          "adminCompanymanagement.defaultBenefitsPolicy",
+                          "Thỏa thuận theo chính sách công ty"
+                        )}
+                    </span>
                   </div>
                 )}
               </div>
@@ -699,17 +898,17 @@ export function JobDescriptionDetailView({
             {/* Metadata Header with Pencil Button */}
             <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Thông số tuyển dụng
+                {t("adminCompanymanagement.jobMetadata", "Thông số tuyển dụng")}
               </h3>
               {!isEditing ? (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleStartEdit}
-                  title="Chỉnh sửa trực tiếp"
+                  title={t("common.editDirectly", "Chỉnh sửa trực tiếp")}
                   className="h-8 gap-1.5 rounded-lg px-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950">
                   <Pencil className="h-3.5 w-3.5" />
-                  <span>Sửa</span>
+                  <span>{t("common.edit", "Sửa")}</span>
                 </Button>
               ) : (
                 <div className="flex items-center gap-1.5">
@@ -720,7 +919,7 @@ export function JobDescriptionDetailView({
                     disabled={isSavingJd}
                     className="h-7 px-2 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
                     <X className="mr-1 h-3.5 w-3.5" />
-                    Hủy
+                    {t("general.cancel", "Hủy")}
                   </Button>
                   <Button
                     size="sm"
@@ -732,7 +931,7 @@ export function JobDescriptionDetailView({
                     ) : (
                       <>
                         <Check className="mr-1 h-3.5 w-3.5" />
-                        Lưu
+                        {t("general.save", "Lưu")}
                       </>
                     )}
                   </Button>
@@ -740,13 +939,13 @@ export function JobDescriptionDetailView({
               )}
             </div>
 
-            {/* Structured Rows (Seamless Inline Styling) */}
+            {/* Structured Rows */}
             <div className="space-y-3.5 text-sm">
               {/* Row 1: Title */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <FileText className="h-4 w-4 text-indigo-500" />
-                  Vị trí
+                  {t("adminCompanymanagement.position", "Vị trí")}
                 </span>
                 {!isEditing ? (
                   <span className="max-w-[180px] truncate font-bold text-slate-900 dark:text-white">
@@ -766,7 +965,7 @@ export function JobDescriptionDetailView({
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <DollarSign className="h-4 w-4 text-emerald-500" />
-                  Mức lương
+                  {t("adminCompanymanagement.salaryRate", "Mức lương")}
                 </span>
                 {!isEditing ? (
                   <span className="font-bold text-emerald-600 dark:text-emerald-400">
@@ -852,7 +1051,7 @@ export function JobDescriptionDetailView({
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Briefcase className="h-4 w-4 text-indigo-500" />
-                  Cấp bậc
+                  {t("general.level", "Cấp bậc")}
                 </span>
                 {!isEditing ? (
                   <span className="font-bold text-slate-800 dark:text-slate-100">
@@ -865,7 +1064,7 @@ export function JobDescriptionDetailView({
                       setEditFormData({ ...editFormData, level: val as JobDescriptionLevel })
                     }>
                     <SelectTrigger className="h-7.5 w-32 border-slate-200/80 bg-slate-100/60 text-xs font-bold text-slate-900 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white">
-                      <SelectValue placeholder="Cấp bậc" />
+                      <SelectValue placeholder={t("common.chooseLevel", "Cấp bậc")} />
                     </SelectTrigger>
                     <SelectContent>
                       {LEVEL_OPTIONS.map((lvl) => (
@@ -882,7 +1081,7 @@ export function JobDescriptionDetailView({
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Calendar className="h-4 w-4 text-amber-500" />
-                  Hạn ứng tuyển
+                  {t("adminCompanymanagement.applicationDeadline", "Hạn ứng tuyển")}
                 </span>
                 {!isEditing ? (
                   <span className="font-semibold text-slate-800 dark:text-slate-200">
@@ -904,22 +1103,60 @@ export function JobDescriptionDetailView({
                 )}
               </div>
 
-              {/* Row 5: Applications count (Read-only) */}
+              {/* Row 5: Applications count */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Users className="h-4 w-4 text-purple-500" />
-                  Tổng ứng tuyển
+                  {t("adminCompanymanagement.totalApplications", "Tổng ứng tuyển")}
                 </span>
                 <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                  {applications.length} ứng viên
+                  {applications.length}{" "}
+                  {t("adminApplicationManagement.applicationsUnit", "ứng viên")}
                 </span>
               </div>
 
-              {/* Row 6: Status */}
+              {/* Row 6: Price */}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
+                  <DollarSign className="h-4 w-4 text-cyan-500" />
+                  {t("adminCompanymanagement.price", "Giá JD")}
+                </span>
+                {!isEditing ? (
+                  <span className="font-bold text-cyan-600 dark:text-cyan-400">
+                    {formatPrice(currentJd.price, currentJd.currency)}
+                  </span>
+                ) : (
+                  <div className="flex items-center justify-end gap-1">
+                    <Input
+                      type="number"
+                      value={editFormData.price ?? ""}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          price: e.target.value === "" ? undefined : Number(e.target.value),
+                        })
+                      }
+                      placeholder="0"
+                      className="h-7.5 w-24 border-slate-200/80 bg-slate-100/60 px-2 text-right font-mono text-xs dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
+                    />
+                    <Input
+                      value={editFormData.currency || "VND"}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, currency: e.target.value.toUpperCase() })
+                      }
+                      placeholder="VND"
+                      maxLength={5}
+                      className="h-7.5 w-14 border-slate-200/80 bg-slate-100/60 px-1 text-center font-mono text-xs uppercase dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Row 7: Status */}
               <div className="flex items-center justify-between gap-2 pt-0.5">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Clock className="h-4 w-4 text-slate-400" />
-                  Trạng thái
+                  {t("common.status", "Trạng thái")}
                 </span>
                 {!isEditing ? (
                   <Badge
@@ -928,7 +1165,10 @@ export function JobDescriptionDetailView({
                         ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
                         : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                     }>
-                    {currentJd.status || "OPEN"}
+                    {t(
+                      `adminCompanymanagement.status_${currentJd.status}`,
+                      currentJd.status || "OPEN"
+                    )}
                   </Badge>
                 ) : (
                   <Select
@@ -937,12 +1177,12 @@ export function JobDescriptionDetailView({
                       setEditFormData({ ...editFormData, status: val as JobDescriptionStatus })
                     }>
                     <SelectTrigger className="h-7.5 w-28 border-slate-200/80 bg-slate-100/60 text-xs font-semibold text-slate-900 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white">
-                      <SelectValue placeholder="Trạng thái" />
+                      <SelectValue placeholder={t("common.status", "Trạng thái")} />
                     </SelectTrigger>
                     <SelectContent>
                       {STATUS_OPTIONS.map((st) => (
                         <SelectItem key={st} value={st} className="text-xs">
-                          {st}
+                          {t(`adminCompanymanagement.status_${st}`, st)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -952,30 +1192,35 @@ export function JobDescriptionDetailView({
             </div>
           </div>
 
-          {/* Card 2: Applications List (In Sidebar) */}
+          {/* Card 2: Applications List */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-3.5 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
               <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                 <Users className="h-4 w-4 text-purple-500" />
-                Đơn ứng tuyển ({applications.length})
+                {t("adminApplicationManagement.title", "Đơn ứng tuyển")} ({applications.length})
               </h3>
             </div>
 
             {isLoadingApps ? (
               <div className="flex h-32 items-center justify-center gap-2 text-xs text-slate-400">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-                <span>Đang tải danh sách...</span>
+                <span>{t("common.loadingData", "Đang tải danh sách...")}</span>
               </div>
             ) : applications.length === 0 ? (
               <div className="flex h-28 items-center justify-center text-xs text-slate-400 dark:text-slate-500">
-                Chưa có ứng viên nào nộp đơn.
+                {t("adminCompanymanagement.noApplicantsYet", "Chưa có ứng viên nào nộp đơn.")}
               </div>
             ) : (
               <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
                 {applications.map((app, index) => {
                   const name =
-                    app.candidateName || (app as any).applicantName || "Ứng viên ẩn danh";
-                  const email = app.candidateEmail || (app as any).email || "Chưa có email";
+                    app.candidateName ||
+                    (app as any).applicantName ||
+                    t("adminApplicationManagement.anonymousCandidate", "Ứng viên ẩn danh");
+                  const email =
+                    app.candidateEmail ||
+                    (app as any).email ||
+                    t("adminApplicationManagement.noEmail", "Chưa có email");
                   const avatarUrl = (app as any).avatarUrl || (app as any).applicantAvatar;
 
                   return (
@@ -1038,6 +1283,122 @@ export function JobDescriptionDetailView({
           if (currentJd.id) loadApplications(currentJd.id);
         }}
       />
+
+      {/* Dialog: change reviewer for a single round */}
+      <Dialog
+        open={changingReviewerRoundId !== null}
+        onOpenChange={(open) => {
+          if (!open) setChangingReviewerRoundId(null);
+        }}>
+        <DialogContent className="max-w-md border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              {t("adminCompanymanagement.changeReviewerTitle", "Đổi người chấm cho vòng")}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              {t(
+                "adminCompanymanagement.changeReviewerDescription",
+                "Chọn STAFF sẽ chấm các bài ứng viên nộp cho vòng này."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {(() => {
+            const round = (currentJd.rounds ?? []).find((r) => r.id === changingReviewerRoundId);
+            if (!round) return null;
+            return (
+              <div className="space-y-3">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-slate-900/50">
+                  <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                    {t("userApplicationhistory.round")} #{round.roundOrder}
+                  </p>
+                  <p className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">
+                    {round.name}
+                  </p>
+                  {round.reviewerId != null && (
+                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      {t("adminCompanymanagement.currentReviewer", "Hiện tại")}:{" "}
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
+                          `#${round.reviewerId}`}
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                    {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
+                  </Label>
+                  <Select
+                    value={round.reviewerId != null ? String(round.reviewerId) : "__none__"}
+                    onValueChange={(val) => {
+                      // Update local state immediately so the Select reflects the change
+                      // before the BE round-trip. The actual save is triggered by
+                      // clicking the Save button below.
+                      const newId = val === "__none__" ? null : Number(val);
+                      setCurrentJd((prev) => {
+                        if (!prev) return prev;
+                        return {
+                          ...prev,
+                          rounds: (prev.rounds ?? []).map((r) =>
+                            r.id === round.id
+                              ? { ...r, reviewerId: newId as number | undefined }
+                              : r
+                          ),
+                        };
+                      });
+                    }}>
+                    <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                      <SelectValue
+                        placeholder={t(
+                          "adminCompanymanagement.reviewerStaffPlaceholder",
+                          "— Chưa gán người chấm —"
+                        )}
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                      <SelectItem value="__none__">
+                        {t("adminCompanymanagement.reviewerStaffUnassigned", "Chưa gán người chấm")}
+                      </SelectItem>
+                      {staffUsers.map((s) => (
+                        <SelectItem key={s.id} value={String(s.id)}>
+                          {s.name ?? `User #${s.id}`}
+                          {s.email ? ` (${s.email})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            );
+          })()}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setChangingReviewerRoundId(null)}
+              disabled={isSaving}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              size="sm"
+              disabled={isSaving || changingReviewerRoundId == null}
+              onClick={() => {
+                if (changingReviewerRoundId == null) return;
+                const round = (currentJd.rounds ?? []).find(
+                  (r) => r.id === changingReviewerRoundId
+                );
+                if (!round) return;
+                void handleChangeReviewer(round.id!, round.reviewerId ?? null);
+              }}
+              className="bg-indigo-600 hover:bg-indigo-700">
+              {isSaving ? t("common.saving") : t("common.save", "Lưu")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
