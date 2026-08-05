@@ -2632,13 +2632,13 @@ function ReviewInsight({
 }) {
   const toneClass = {
     emerald:
-      "border-emerald-300 bg-emerald-500/10 text-emerald-200 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-200",
-    rose: "border-rose-300 bg-rose-500/10 text-rose-200 dark:border-rose-700/60 dark:bg-rose-950/40 dark:text-rose-200",
-    sky: "border-sky-300 bg-sky-500/10 text-sky-200 dark:border-sky-700/60 dark:bg-sky-950/40 dark:text-sky-200",
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-200",
+    rose: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-700/60 dark:bg-rose-950/40 dark:text-rose-200",
+    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-700/60 dark:bg-sky-950/40 dark:text-sky-200",
   }[tone];
 
   return (
-    <div className="flex h-full flex-row items-start gap-3 rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4 shadow-sm ring-1 ring-white/5">
+    <div className="flex h-full flex-row items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm ring-1 ring-slate-200/70 dark:border-slate-700/60 dark:bg-slate-950/60 dark:ring-white/5">
       <div
         className={cn(
           "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
@@ -2656,7 +2656,7 @@ function ReviewInsight({
             {title}
           </span>
         </div>
-        <p className="text-[15px] leading-7 text-slate-100">{content}</p>
+        <p className="text-[15px] leading-7 text-slate-700 dark:text-slate-100">{content}</p>
       </div>
     </div>
   );
@@ -2677,16 +2677,16 @@ function StarNoteBlock({
 }) {
   const toneClass = {
     indigo:
-      "border-indigo-300 bg-indigo-500/15 text-indigo-100 dark:border-indigo-700/60 dark:bg-indigo-950/40 dark:text-indigo-100",
-    sky: "border-sky-300 bg-sky-500/15 text-sky-100 dark:border-sky-700/60 dark:bg-sky-950/40 dark:text-sky-100",
+      "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-700/60 dark:bg-indigo-950/40 dark:text-indigo-100",
+    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-700/60 dark:bg-sky-950/40 dark:text-sky-100",
     emerald:
-      "border-emerald-300 bg-emerald-500/15 text-emerald-100 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-100",
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-100",
     amber:
-      "border-amber-300 bg-amber-500/15 text-amber-100 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-100",
+      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-100",
   }[tone];
 
   return (
-    <div className="rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4 shadow-sm ring-1 ring-white/5">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm ring-1 ring-slate-200/70 dark:border-slate-700/60 dark:bg-slate-950/60 dark:ring-white/5">
       <div className="flex items-center gap-2">
         <span
           className={cn("flex h-8 w-8 items-center justify-center rounded-xl border", toneClass)}>
@@ -2699,11 +2699,13 @@ function StarNoteBlock({
           )}>
           {label}
         </span>
-        <span className="text-xs font-semibold tracking-[0.12em] text-slate-200/80 uppercase">
+        <span className="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-slate-200/80">
           {title}
         </span>
       </div>
-      <p className="mt-3 text-sm leading-7 whitespace-pre-wrap text-slate-100">{content}</p>
+      <p className="mt-3 text-sm leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-100">
+        {content}
+      </p>
     </div>
   );
 }
