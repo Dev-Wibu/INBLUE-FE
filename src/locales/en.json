@@ -5612,7 +5612,8 @@
   },
   "status": {
     "pendingSubmit": "Pending Submission",
-    "aiGraded": "AI Graded"
+    "aiGraded": "AI Graded",
+    "aiGradedNeedsHr": "AI Graded - Needs HR"
   },
   "round": {
     "number": "Round #",

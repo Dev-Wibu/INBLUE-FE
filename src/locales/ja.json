@@ -5571,7 +5571,8 @@
   },
   "status": {
     "pendingSubmit": "提出待ち",
-    "aiGraded": "AI採点済み"
+    "aiGraded": "AI採点済み",
+    "aiGradedNeedsHr": "AI採点済み - HR要"
   },
   "round": {
     "number": "ラウンド #",

@@ -5613,7 +5613,8 @@
   },
   "status": {
     "pendingSubmit": "Chờ nộp",
-    "aiGraded": "AI đã chấm"
+    "aiGraded": "AI đã chấm",
+    "aiGradedNeedsHr": "AI đã chấm - Cần HR"
   },
   "round": {
     "number": "Vòng #",

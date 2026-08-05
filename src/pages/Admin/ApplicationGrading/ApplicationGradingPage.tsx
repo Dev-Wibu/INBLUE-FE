@@ -111,6 +111,12 @@ const STATUS_CONFIG: Record<string, { label: string; className: string; dot?: st
     className: "bg-red-500/15 text-red-700 dark:bg-red-500/10 dark:text-red-300",
     dot: "bg-red-500",
   },
+  // Staff-only: rounds that AI has graded but still need HR scoring
+  NEEDS_HR_SCORING: {
+    label: t("status.aiGradedNeedsHr"),
+    className: "bg-amber-500/15 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+    dot: "bg-amber-500",
+  },
 };
 
 // ============================================================
@@ -599,7 +605,9 @@ export function ApplicationGradingPage({
 
   const applications = useMemo(() => (Array.isArray(rawApps) ? rawApps : []), [rawApps]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
+  // Staff default: show ALL (so they see AI-graded rounds needing HR score)
+  // Admin default: PENDING (waiting for submission)
+  const [statusFilter, setStatusFilter] = useState<string>(isStaff ? "all" : "PENDING");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "score-high" | "score-low">("newest");
 
   // Sortable fields for the table
@@ -692,12 +700,24 @@ export function ApplicationGradingPage({
               return false;
           }
           // Status filter
-          if (
-            statusFilter !== "all" &&
-            item.detailStatus !== statusFilter &&
-            item.status !== statusFilter
-          ) {
-            return false;
+          if (statusFilter !== "all") {
+            // Special filter: AI-graded rounds that still need HR scoring
+            if (statusFilter === "NEEDS_HR_SCORING") {
+              // Show items where status = AI_EVALUATED and hrScore is null/undefined
+              const detail = item.detail;
+              const hasAiScore = detail?.aiScore !== undefined && detail?.aiScore !== null;
+              const needsHrScore = detail?.hrScore === undefined || detail?.hrScore === null;
+              const isAiEvaluated =
+                item.detailStatus === "AI_EVALUATED" || item.status === "AI_EVALUATED";
+              if (isAiEvaluated && hasAiScore && needsHrScore) {
+                return true;
+              }
+              return false;
+            }
+            // Standard status filters
+            if (item.detailStatus !== statusFilter && item.status !== statusFilter) {
+              return false;
+            }
           }
           return true;
         })
@@ -841,7 +861,7 @@ export function ApplicationGradingPage({
               setStatusFilter(value);
               pagination.setPage(1);
             }}>
-            <SelectTrigger className="h-9 w-[160px] text-xs">
+            <SelectTrigger className="h-9 w-[200px] text-xs">
               <div className="flex items-center gap-2">
                 <Filter className="h-3.5 w-3.5 text-slate-400" />
                 <SelectValue placeholder={t("common.filterByStatus")} />
@@ -849,9 +869,14 @@ export function ApplicationGradingPage({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+              {isStaff && (
+                <>
+                  <SelectItem value="NEEDS_HR_SCORING">{t("status.aiGradedNeedsHr")}</SelectItem>
+                  <SelectItem value="AI_EVALUATED">{t("status.aiGraded")}</SelectItem>
+                </>
+              )}
               <SelectItem value="PENDING">{t("status.pendingSubmit")}</SelectItem>
               <SelectItem value="SUBMITTED">{t("adminQuizsetmanagement.submitted")}</SelectItem>
-              <SelectItem value="AI_EVALUATED">{t("status.aiGraded")}</SelectItem>
               <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
             </SelectContent>
           </Select>

@@ -880,7 +880,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/kiosk/enter": {
+    "/api/kiosk/enter/{sessionKey}": {
         parameters: {
             query?: never;
             header?: never;
@@ -891,7 +891,7 @@ export interface paths {
         put?: never;
         /**
          * Kiosk xác thực và vào phòng phỏng vấn
-         * @description Máy Kiosk vật lý gửi sessionKey và kioskId để xác thực. Hệ thống kiểm tra thời gian hợp lệ (±15 phút so với giờ hẹn) và gọi orchestrator để lấy AI Session.
+         * @description Máy Kiosk vật lý gửi sessionKey để xác thực. Hệ thống kiểm tra thời gian hợp lệ (±15 phút so với giờ hẹn) và gọi orchestrator để lấy AI Session.
          */
         post: operations["enterKiosk"];
         delete?: never;
@@ -3399,14 +3399,7 @@ export interface components {
             subject?: string;
             body?: string;
         };
-        KioskEnterDtoRequest: {
-            sessionKey?: string;
-            /** Format: int64 */
-            kioskId?: number;
-        };
         KioskEnterDtoResponse: {
-            type?: string;
-            roomUrl?: string;
             aiSessionKey?: string;
         };
         PickSlotDtoRequest: {
@@ -3742,10 +3735,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3760,15 +3753,15 @@ export interface components {
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
-            unpaged?: boolean;
         };
         SortObject: {
             sorted?: boolean;
-            empty?: boolean;
             unsorted?: boolean;
+            empty?: boolean;
         };
         Payment: {
             /** Format: int32 */
@@ -3993,9 +3986,9 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
@@ -4097,18 +4090,18 @@ export interface components {
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            includePreludes?: string[];
-            pageEncoding?: string;
-            trimDirectiveWhitespaces?: string;
-            isXml?: string;
-            scriptingInvalid?: string;
-            errorOnELNotFound?: string;
             elIgnored?: string;
+            isXml?: string;
+            errorOnUndeclaredNamespace?: string;
+            errorOnELNotFound?: string;
+            pageEncoding?: string;
+            scriptingInvalid?: string;
+            includePreludes?: string[];
+            includeCodas?: string[];
+            deferredSyntaxAllowedAsLiteral?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            includeCodas?: string[];
+            trimDirectiveWhitespaces?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -4143,14 +4136,14 @@ export interface components {
             };
         };
         ServletContext: {
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
+            serverInfo?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
@@ -4163,10 +4156,10 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
-            initParameterNames?: unknown;
             contextPath?: string;
+            virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            initParameterNames?: unknown;
             attributeNames?: unknown;
             classLoader?: {
                 name?: string;
@@ -4243,11 +4236,11 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
-            secure?: boolean;
             /** Format: int32 */
             maxAge?: number;
-            httpOnly?: boolean;
+            secure?: boolean;
             domain?: string;
+            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -6216,14 +6209,12 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                sessionKey: string;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["KioskEnterDtoRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
