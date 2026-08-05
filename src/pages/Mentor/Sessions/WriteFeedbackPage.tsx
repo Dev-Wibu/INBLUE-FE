@@ -220,7 +220,7 @@ export function WriteFeedbackPage() {
       </Button>
 
       {/* Session Info */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
@@ -243,7 +243,7 @@ export function WriteFeedbackPage() {
       </Card>
 
       {/* Feedback Form */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Star className="h-5 w-5 text-[#FFD700]" />

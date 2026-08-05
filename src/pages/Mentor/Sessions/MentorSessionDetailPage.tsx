@@ -100,7 +100,7 @@ export function MentorSessionDetailPage() {
         {t("common.returnToTheSessionList")}
       </Button>
 
-      <Card className="border-slate-200/80 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -237,7 +237,7 @@ export function MentorSessionDetailPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-slate-200/80 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Star className="h-5 w-5 text-[#FFD700]" />
