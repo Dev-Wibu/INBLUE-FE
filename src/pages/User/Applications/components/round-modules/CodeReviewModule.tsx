@@ -759,7 +759,7 @@ export function CodeReviewModule({
           {/* ── UNIFIED PROBLEM CONTROL & CONTEXT CARD ── */}
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90">
             {/* Top Toolbar: Multi-problem Tabs or Single Identity + Live Stats */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-3 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/70">
               {/* Left: Problem Selection Tabs */}
               <div className="flex flex-wrap items-center gap-2">
                 {problems.length > 1 ? (
@@ -924,7 +924,7 @@ export function CodeReviewModule({
           ) : (
             <div className="overflow-hidden rounded-2xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
               {/* Header: File Switcher Tabs */}
-              <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
+              <div className="flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
@@ -952,8 +952,8 @@ export function CodeReviewModule({
                           className={cn(
                             "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
                             isActive
-                              ? "border border-indigo-200 bg-indigo-50 text-indigo-700 shadow-xs shadow-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-200 dark:shadow-indigo-950/50"
-                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
+                              ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-200 shadow-xs shadow-indigo-950/50 dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-200"
+                              : "border border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-800/60 hover:text-slate-200 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
                           )}>
                           <FileCode2 className="h-3.5 w-3.5" />
                           <span>{filenameShort(file.filename ?? "")}</span>
@@ -974,7 +974,7 @@ export function CodeReviewModule({
                     <span>
                       {normalizeFormattedCode(currentFile.content).split("\n").length} dòng
                     </span>
-                    <span className="text-slate-600">•</span>
+                    <span className="text-slate-600 dark:text-slate-600">•</span>
                     <span>{normalizeFormattedCode(currentFile.content).length} ký tự</span>
                   </div>
                 )}
@@ -1362,7 +1362,7 @@ function CodeViewPane({
 
               {/* Inline Issue Annotations attached directly below this line */}
               {hasIssues && (
-                <div className="ml-14 space-y-2 border-l-4 border-slate-800 bg-white px-4 py-2">
+                <div className="ml-14 space-y-2 border-l-4 border-slate-800 bg-slate-900/90 px-4 py-2 dark:border-slate-800 dark:bg-slate-900/90">
                   {lineIssues.map((iss, iIdx) => {
                     const issTok = SEVERITY_TOKENS[iss.severity];
                     const Icon = issTok.icon;
@@ -1418,7 +1418,7 @@ function CodeViewPane({
                           )}
                         </div>
 
-                        <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-200 select-text">
+                        <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-300 select-text">
                           {iss.description}
                         </p>
                       </div>
@@ -1810,7 +1810,7 @@ function GradedResultView({
         <div className="space-y-5 lg:col-span-7">
           {/* SECTION 1: AI Executive Summary (Notion AI Theme) */}
           <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-none backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
-            <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
+            <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3 dark:border-indigo-500/20">
               <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                   <Bot className="h-4 w-4" />
@@ -1834,8 +1834,8 @@ function GradedResultView({
 
           {/* SECTION 2: Strengths Card (Green Theme) */}
           {strengths.length > 0 && (
-            <Card className="space-y-3 rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
-              <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
+            <Card className="space-y-3 rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm dark:border-emerald-500/30 dark:bg-slate-900/80 dark:shadow-none">
+              <div className="flex items-center gap-2 border-b border-emerald-200 pb-2.5 dark:border-emerald-500/30">
                 <div className="flex h-6 w-6 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 </div>
@@ -1857,8 +1857,8 @@ function GradedResultView({
 
           {/* SECTION 3: Weaknesses Card (Amber Theme) */}
           {weaknesses.length > 0 && (
-            <Card className="space-y-3 rounded-2xl border border-amber-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
-              <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
+            <Card className="space-y-3 rounded-2xl border border-amber-200 bg-white p-5 shadow-sm dark:border-amber-500/30 dark:bg-slate-900/80 dark:shadow-none">
+              <div className="flex items-center gap-2 border-b border-amber-200 pb-2.5 dark:border-amber-500/30">
                 <div className="flex h-6 w-6 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
                   <AlertTriangle className="h-3.5 w-3.5" />
                 </div>
@@ -1880,7 +1880,7 @@ function GradedResultView({
 
           {/* SECTION 4: Missed Issues Card (Red/Rose Theme) */}
           {missedIssuesText && (
-            <Card className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50 p-5 shadow-sm ring-1 shadow-rose-100 ring-rose-200 dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none dark:ring-0">
+            <Card className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50 p-5 shadow-sm ring-1 shadow-rose-100 ring-rose-200 dark:border-rose-500/30 dark:bg-slate-900/80 dark:shadow-none dark:ring-rose-500/30">
               <div className="flex items-center gap-2 border-b border-rose-200 pb-2.5 dark:border-rose-500/30">
                 <div className="flex h-6 w-6 animate-pulse items-center justify-center rounded-md border border-rose-300 bg-rose-100 text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/20 dark:text-rose-400">
                   <ShieldAlert className="h-4 w-4" />
@@ -1901,7 +1901,7 @@ function GradedResultView({
         <div className="space-y-5 lg:col-span-5">
           {/* WIDGET 1: Dual Gauge Clocks (AI Score & HR Score) */}
           <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-800/80 dark:bg-slate-900/80">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800/60">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-indigo-400" />
                 <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
@@ -1925,7 +1925,7 @@ function GradedResultView({
           {/* WIDGET 2: Criteria Stat Progress Bars */}
           {numericMetrics.length > 0 && (
             <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-800/80 dark:bg-slate-900/80">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800/60">
                 <div className="flex items-center gap-2">
                   <Code2 className="h-4 w-4 text-indigo-400" />
                   <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
@@ -1994,7 +1994,7 @@ function GradedResultView({
 
       {/* ── FULL-WIDTH CODE VIEWER WITH SUBMITTED ISSUES ── */}
       <div className="overflow-hidden rounded-2xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
-        <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
+        <div className="flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
@@ -2004,7 +2004,7 @@ function GradedResultView({
 
             <div className="flex items-center gap-2">
               <FileCode2 className="h-4 w-4 text-indigo-400" />
-              <span className="text-xs font-bold text-slate-900 dark:text-slate-200">
+              <span className="text-xs font-bold text-slate-300 dark:text-slate-300">
                 Mã nguồn & ghi chú bạn đã nộp
               </span>
             </div>
@@ -2019,8 +2019,8 @@ function GradedResultView({
                     className={cn(
                       "rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
                       activeProblemIdx === idx
-                        ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-700 dark:text-indigo-200"
-                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                        ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-200 dark:text-indigo-200"
+                        : "border border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-800/60 hover:text-slate-200 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
                     )}>
                     #{idx + 1} {p.title || `Bài ${idx + 1}`}
                   </button>
@@ -2038,8 +2038,8 @@ function GradedResultView({
                 className={cn(
                   "rounded-md px-2.5 py-1 text-xs font-medium transition-all",
                   (activeFilename || currentFiles[0]?.filename) === file.filename
-                    ? "bg-slate-800 font-bold text-white"
-                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                    ? "border border-slate-700 bg-slate-800 font-bold text-white"
+                    : "border border-slate-800 text-slate-400 hover:text-slate-200 dark:text-slate-400 dark:hover:text-slate-200"
                 )}>
                 {filenameShort(file.filename ?? "")}
               </button>

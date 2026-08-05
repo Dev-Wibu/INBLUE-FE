@@ -241,6 +241,32 @@ export function CodingSubmissionModal({
   // Monaco never renders an empty editor with a missing cursor position.
   const activeCode = codes[activeProblemId] ?? getStubForLanguage(activeProblem, language);
 
+  // Monaco editor instance ref for programmatic layout
+  const editorRef = useRef<unknown>(null);
+
+  const handleEditorMount = useCallback((editor: unknown) => {
+    editorRef.current = editor;
+    // Trigger initial layout
+    setTimeout(() => {
+      if (
+        editorRef.current &&
+        typeof (editorRef.current as { layout?: () => void }).layout === "function"
+      ) {
+        (editorRef.current as { layout: () => void }).layout();
+      }
+    }, 0);
+  }, []);
+
+  // Trigger editor layout when code changes (fixes height not shrinking after deletions)
+  useEffect(() => {
+    if (
+      editorRef.current &&
+      typeof (editorRef.current as { layout?: () => void }).layout === "function"
+    ) {
+      (editorRef.current as { layout: () => void }).layout();
+    }
+  }, [activeCode]);
+
   const handleCodeChange = useCallback(
     (value: string | undefined) => {
       setCodes((prev) => ({
@@ -692,7 +718,7 @@ export function CodingSubmissionModal({
             {/* Editor + Test Results tabs */}
             <div className="flex flex-1 flex-col overflow-hidden">
               {/* Tab strip */}
-              <div className="flex shrink-0 items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 dark:border-slate-700 dark:bg-slate-900">
+              <div className="flex shrink-0 items-center gap-1 border-b border-slate-800 bg-slate-950 px-2 dark:border-slate-700 dark:bg-slate-900">
                 <button
                   type="button"
                   onClick={() => setActiveTestTab("editor")}
@@ -732,6 +758,7 @@ export function CodingSubmissionModal({
                     language={monacoLang}
                     value={activeCode}
                     onChange={handleCodeChange}
+                    onMount={handleEditorMount}
                     theme={monacoTheme}
                     options={{
                       minimap: { enabled: false },

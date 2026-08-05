@@ -1430,6 +1430,32 @@ function CodingProblemCard({
     (problemFinalScoreStatus as string) === "COMPLETED";
   const showScore = gradedStatus && finalScore !== null && finalScore !== undefined;
 
+  // Monaco editor instance ref for programmatic layout
+  const editorRef = useRef<unknown>(null);
+
+  const handleEditorMount = useCallback((editor: unknown) => {
+    editorRef.current = editor;
+    // Trigger initial layout
+    setTimeout(() => {
+      if (
+        editorRef.current &&
+        typeof (editorRef.current as { layout?: () => void }).layout === "function"
+      ) {
+        (editorRef.current as { layout: () => void }).layout();
+      }
+    }, 0);
+  }, []);
+
+  // Trigger editor layout when code changes (fixes height not shrinking after deletions)
+  useEffect(() => {
+    if (
+      editorRef.current &&
+      typeof (editorRef.current as { layout?: () => void }).layout === "function"
+    ) {
+      (editorRef.current as { layout: () => void }).layout();
+    }
+  }, [source.code]);
+
   // Monaco language + file extension
   const monacoLang = MONACO_LANG[source.language] ?? "plaintext";
   const fileExt = FILE_EXT[source.language] ?? "txt";
@@ -1553,7 +1579,7 @@ function CodingProblemCard({
       <div ref={containerRef} className="relative flex flex-1" style={{ minHeight: "68vh" }}>
         {/* LEFT PANEL — Description / Test Results */}
         <div
-          className="flex flex-col overflow-hidden border-r border-slate-200/80 bg-slate-50/30 dark:border-slate-800 dark:bg-[#030712]/40"
+          className="flex flex-col overflow-hidden border-r border-slate-200/80 bg-slate-50/30 dark:border-slate-800 dark:bg-slate-900"
           style={{ width: `${leftWidthPercent}%`, minWidth: 0 }}>
           {/* Tab strip for left panel */}
           <div className="flex shrink-0 items-center gap-2 border-b border-slate-200/80 bg-slate-100/70 px-4 py-1.5 dark:border-slate-800 dark:bg-slate-950/80">
@@ -1696,6 +1722,7 @@ function CodingProblemCard({
               language={monacoLang}
               value={source.code}
               onChange={handleEditorChange}
+              onMount={handleEditorMount}
               beforeMount={registerInblueMonacoThemes}
               theme={monacoTheme}
               options={{

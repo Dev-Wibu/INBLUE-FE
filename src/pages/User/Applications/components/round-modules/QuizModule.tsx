@@ -87,7 +87,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
   return (
     <div className="my-4 overflow-hidden rounded-xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
       {/* IDE Code Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2 text-xs dark:border-slate-800/80">
+      <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2 text-xs dark:border-slate-800/80">
         <div className="flex items-center gap-2.5">
           {/* Mac window dots */}
           <div className="flex items-center gap-1.5">
@@ -104,7 +104,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200">
+          className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-slate-400 transition-colors hover:border-slate-700 hover:text-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200">
           {copied ? (
             <>
               <Check className="h-3 w-3 text-emerald-400" />
@@ -641,7 +641,7 @@ export function QuizModule({
                       "border-slate-200 bg-slate-50/70 text-slate-500 opacity-60 cursor-not-allowed dark:border-slate-800/60 dark:bg-slate-950/40 dark:text-slate-600";
                   } else if (isCurr) {
                     btnStyle =
-                      "border-indigo-500 bg-indigo-50 text-indigo-700 font-bold ring-2 ring-indigo-500/30 dark:bg-indigo-950/40 dark:text-indigo-300 dark:ring-indigo-500/40";
+                      "border-indigo-500 bg-indigo-50 text-indigo-700 font-bold ring-2 ring-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-500/20 dark:text-indigo-200 dark:ring-indigo-500/40";
                   } else if (isAns) {
                     btnStyle =
                       "border-emerald-500/40 bg-emerald-50 text-emerald-700 font-bold dark:bg-emerald-500/20 dark:text-emerald-300";
@@ -863,7 +863,7 @@ export function QuizModule({
                     <span className="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 font-mono text-xs font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
                       CÂU HỎI {currentIndex + 1} / {totalQuestions}
                     </span>
-                    <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+                    <span className="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
                       Chuyên môn
                     </span>
                   </div>

@@ -201,7 +201,7 @@ export function CodeSubmissionViewer({
       {isExpanded && (
         <div className="border-t border-slate-200 dark:border-slate-700">
           {/* Tab bar */}
-          <div className="flex border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex border-b border-slate-800 bg-slate-950 dark:border-slate-700 dark:bg-slate-900">
             <button
               type="button"
               onClick={(e) => {
