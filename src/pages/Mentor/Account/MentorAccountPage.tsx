@@ -478,7 +478,7 @@ export function MentorAccountPage() {
 
           <div className="lg:col-span-7">
             {activeTab === "profile" ? (
-              <Card className="border-slate-200/60 p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <Card className="rounded-2xl border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900/40">
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                     {t("common.personalInformation")}
@@ -632,7 +632,7 @@ export function MentorAccountPage() {
                 </form>
               </Card>
             ) : (
-              <Card className="border-slate-200/60 p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <Card className="rounded-2xl border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900/40">
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                     {t("common.changePassword")}
