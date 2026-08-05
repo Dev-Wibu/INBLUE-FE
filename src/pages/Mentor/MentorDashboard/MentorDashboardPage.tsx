@@ -1,16 +1,7 @@
 import icon2 from "@/assets/icon2.svg";
-import { LanguageToggle } from "@/components/LanguageToggle";
-import { NotificationBell } from "@/components/notification";
 import type { SidebarMenuGroup } from "@/components/shared";
-import {
-  DashboardBreadcrumb,
-  DashboardSidebar,
-  DashboardSidebarToggle,
-  getInitialSidebarCollapsed,
-  SettingsModal,
-} from "@/components/shared";
+import { DashboardSidebar, getInitialSidebarCollapsed, SettingsModal } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
-import { useDashboardBreadcrumb } from "@/hooks/useDashboardBreadcrumb";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
@@ -32,6 +23,7 @@ import { MentorOverviewPage } from "../Overview";
 import { MentorReviewsPage } from "../Reviews";
 import { MentorSessionsPage } from "../Sessions";
 import { StudentsListPage } from "../Students";
+import { MentorHeader } from "./components/MentorHeader";
 type TabType =
   | "homeFeed"
   | "overview"
@@ -222,12 +214,21 @@ export function MentorDashboardPage() {
     : isValidTabType(activeTab)
       ? activeTab
       : DEFAULT_TAB;
-  const { items: breadcrumbItems } = useDashboardBreadcrumb({
-    role: "mentor",
-    pathname: location.pathname,
-    activeTab: typedActiveTab,
-    availableTabs: availableTabs,
-  });
+  // Find current title and category for header (Candidate style)
+  const { currentTitle, currentCategory } = useMemo(() => {
+    if (location.pathname.startsWith("/mentor/account")) {
+      return { currentTitle: t("common.account"), currentCategory: t("common.overview") };
+    }
+    for (const group of sidebarMenuGroups) {
+      for (const item of group.items) {
+        if (item.type === typedActiveTab) {
+          return { currentTitle: item.label, currentCategory: group.label };
+        }
+      }
+    }
+    return { currentTitle: t("common.overview"), currentCategory: undefined };
+  }, [typedActiveTab, sidebarMenuGroups, t, location.pathname]);
+
   const shouldHideScrollButton = location.pathname.startsWith("/mentor/sessions/room/");
   const handleContentRef = useCallback((node: HTMLDivElement | null) => {
     contentRef.current = node;
@@ -305,7 +306,7 @@ export function MentorDashboardPage() {
     }
   };
   return (
-    <div className="isolate flex h-screen bg-white dark:bg-slate-950">
+    <div className="isolate flex h-screen bg-slate-50 dark:bg-slate-950">
       <DashboardSidebar
         menuGroups={sidebarMenuGroups}
         activeTab={typedActiveTab}
@@ -336,7 +337,7 @@ export function MentorDashboardPage() {
           divider: "border-slate-200 dark:border-slate-800",
           itemPy: "py-2.5",
           activeItem:
-            "bg-indigo-50 text-indigo-700 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20",
+            "bg-indigo-50 text-indigo-700 font-semibold rounded-xl shadow-xs ring-1 ring-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20",
           inactiveItem:
             "text-slate-600 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
           activeIconOverride: "text-indigo-600 dark:text-indigo-400",
@@ -352,25 +353,18 @@ export function MentorDashboardPage() {
         }}
       />
 
-      <div className="relative z-0 flex flex-1 flex-col overflow-hidden">
-        <div className="relative z-60 flex h-14 items-center justify-between border-b border-slate-200 bg-white pr-4 pl-16 md:px-4 dark:border-slate-800 dark:bg-slate-950">
-          <div className="hidden shrink-0 pr-2 md:flex">
-            <DashboardSidebarToggle
-              isCollapsed={isSidebarCollapsed}
-              onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
-            />
-          </div>
-          <DashboardBreadcrumb items={breadcrumbItems} className="min-w-0 flex-1" />
-          <div className="flex shrink-0 items-center gap-3 pl-3">
-            <LanguageToggle />
-            <NotificationBell notificationsPath="/mentor?tab=notifications" />
-          </div>
-        </div>
+      <div className="relative z-0 flex flex-1 flex-col overflow-x-hidden">
+        <MentorHeader
+          title={currentTitle}
+          category={currentCategory}
+          onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+          isSidebarCollapsed={isSidebarCollapsed}
+        />
         <div
           ref={handleContentRef}
           className={cn(
             "flex-1 overflow-hidden",
-            typedActiveTab === "messenger" ? "p-0" : "overflow-auto p-6"
+            typedActiveTab === "messenger" ? "p-0" : "overflow-auto p-4 md:p-6 lg:p-8"
           )}>
           {outlet ?? renderContent()}
         </div>
