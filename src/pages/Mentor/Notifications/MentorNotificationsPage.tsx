@@ -131,28 +131,32 @@ export function MentorNotificationsPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Card className="border-emerald-100 dark:border-slate-800">
+          <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.generalAnnouncement")}</CardDescription>
-              <CardTitle className="text-2xl">{notifications.length}</CardTitle>
+              <CardTitle className="text-2xl font-bold">{notifications.length}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-emerald-100 dark:border-slate-800">
+          <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.haventReadYet")}</CardDescription>
-              <CardTitle className="text-2xl text-emerald-600">{unreadCount}</CardTitle>
+              <CardTitle className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                {unreadCount}
+              </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-emerald-100 dark:border-slate-800">
+          <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.read")}</CardDescription>
-              <CardTitle className="text-2xl text-green-600">{readCount}</CardTitle>
+              <CardTitle className="text-2xl font-bold text-slate-600 dark:text-slate-400">
+                {readCount}
+              </CardTitle>
             </CardHeader>
           </Card>
         </div>
 
         {/* Notifications List */}
-        <Card className="border-emerald-100 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-emerald-600" />

@@ -145,7 +145,7 @@ export function ReviewDetailPage() {
       </div>
 
       {/* Student Info Card */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5 text-emerald-600" />
@@ -170,7 +170,7 @@ export function ReviewDetailPage() {
       </Card>
 
       {/* Session Info */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-emerald-600" />
@@ -197,7 +197,7 @@ export function ReviewDetailPage() {
       </Card>
 
       {/* Rating Card */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
@@ -223,7 +223,7 @@ export function ReviewDetailPage() {
       </Card>
 
       {/* STAR Method Review */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <CardTitle>{t("mentorReviews.detailedAssessmentStarMethod")}</CardTitle>
           <CardDescription>{t("mentorReviews.starContentYouSentTo")}</CardDescription>
@@ -296,7 +296,7 @@ export function ReviewDetailPage() {
       </Card>
 
       {/* Additional Feedback */}
-      <Card className="border-emerald-100 dark:border-slate-800">
+      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <CardHeader>
           <CardTitle>{t("mentorReviews.additionalComments")}</CardTitle>
         </CardHeader>
