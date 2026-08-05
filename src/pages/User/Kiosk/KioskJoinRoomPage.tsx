@@ -1,9 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DeviceCheckDialog, VideoCallProvider, VideoCallRoom } from "@/components/video-call";
 import { useEnterKiosk, useKioskBooking } from "@/hooks/useKiosk";
-import { useJoinSession, useSessionById } from "@/hooks/useSession";
-import { useAuthStore } from "@/stores/authStore";
 import { Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -99,19 +96,10 @@ function InvalidStatusCard({ status }: { status: string }) {
 function BookingFlow({ bookingId }: { bookingId: number }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
-  const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
-  const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
-  const [hasLeftMeeting, setHasLeftMeeting] = useState(false);
-  const hasJoinedTrackingRef = useRef(false);
 
   const { data: booking, isLoading, error } = useKioskBooking(bookingId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sessionId = (booking as any)?.sessionId;
-  const { data: session } = useSessionById(sessionId ?? 0);
 
   const enterMutation = useEnterKiosk();
-  const joinSessionMutation = useJoinSession();
 
   useEffect(() => {
     if (!isLoading && error) {
@@ -120,30 +108,11 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
   }, [isLoading, error, t]);
 
   const handleEnter = async () => {
-    if (!booking?.sessionKey || !booking?.kioskId) return;
+    if (!booking?.sessionKey) return;
     try {
-      await enterMutation.mutateAsync({
-        sessionKey: booking.sessionKey,
-        kioskId: booking.kioskId,
-      });
+      await enterMutation.mutateAsync(booking.sessionKey);
     } catch {
       // toast handled in hook
-    }
-  };
-
-  const handleJoined = async (participantId: string) => {
-    if (hasJoinedTrackingRef.current || !session?.roomName || !user?.id) return;
-    hasJoinedTrackingRef.current = true;
-    try {
-      await joinSessionMutation.mutateAsync({
-        sessionName: session.roomName,
-        userId: user.id,
-        participantId,
-        mentor: false,
-        isMentor: false,
-      });
-    } catch {
-      hasJoinedTrackingRef.current = false;
     }
   };
 
@@ -192,7 +161,7 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
     booking.status === "AWAITING_MENTOR";
 
   const showSessionKeyCard =
-    !showInvalidStatus && booking.status === "ROOM_CREATED" && !enterMutation.data?.roomUrl;
+    !showInvalidStatus && booking.status === "ROOM_CREATED" && !enterMutation.data?.aiSessionKey;
 
   return (
     <>
@@ -276,47 +245,9 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
         </div>
       )}
 
-      {enterMutation.data?.roomUrl && !hasLeftMeeting && (
-        <>
-          <DeviceCheckDialog
-            isOpen={isDeviceCheckOpen}
-            onOpenChange={setIsDeviceCheckOpen}
-            displayName={`Booking #${booking.id}`}
-            onConfirm={() => {
-              setIsDeviceCheckOpen(false);
-              setHasConfirmedDevices(true);
-            }}
-          />
-          {hasConfirmedDevices ? (
-            <VideoCallProvider>
-              <VideoCallRoom
-                roomUrl={enterMutation.data.roomUrl}
-                userName={`Booking #${booking.id}`}
-                onJoined={handleJoined}
-                onLeave={() => setHasLeftMeeting(true)}
-                className="h-[80vh] w-full"
-              />
-            </VideoCallProvider>
-          ) : (
-            <div className="border-border flex h-[60vh] flex-col items-center justify-center gap-5 rounded-xl border bg-white dark:border-slate-700 dark:bg-slate-900">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                <Video className="h-7 w-7 text-slate-400" />
-              </div>
-              <p className="text-base text-slate-600 dark:text-slate-300">
-                {t("common.pleaseCheckYourEquipmentBeforeParti")}
-              </p>
-              <Button onClick={() => setIsDeviceCheckOpen(true)} className="gap-2">
-                <Video className="h-4 w-4" />
-                {t("common.checkTheDevice")}
-              </Button>
-            </div>
-          )}
-        </>
-      )}
-
-      {enterMutation.data?.roomUrl && hasLeftMeeting && (
+      {enterMutation.data?.aiSessionKey && (
         <div className="border-border rounded-xl border bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-950">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-950">
             <svg
               className="h-7 w-7 animate-pulse text-indigo-600 dark:text-indigo-400"
               fill="none"
@@ -326,15 +257,18 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
               />
             </svg>
           </div>
-          <p className="text-lg font-semibold text-slate-900 dark:text-white">
-            {t("userKiosk.mentorReviewInProgress")}
+          <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
+            AI Session đã được kích hoạt
+          </h3>
+          <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            Session Key: <code className="font-mono">{enterMutation.data.aiSessionKey}</code>
           </p>
-          <p className="text-muted-foreground mt-2 text-sm">
-            {t("userKiosk.mentorReviewInProgressHint")}
+          <p className="text-xs text-slate-500">
+            Tính năng video call đang được cập nhật để phù hợp với API mới.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button
@@ -356,20 +290,13 @@ function SessionKeyFlow() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [sessionKey, setSessionKey] = useState("");
-  const [kioskId, setKioskId] = useState("");
-  const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
-  const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
-  const [hasLeftMeeting, setHasLeftMeeting] = useState(false);
   const enterMutation = useEnterKiosk();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sessionKey.trim() || !kioskId.trim()) return;
+    if (!sessionKey.trim()) return;
     try {
-      await enterMutation.mutateAsync({
-        sessionKey: sessionKey.trim(),
-        kioskId: Number(kioskId),
-      });
+      await enterMutation.mutateAsync(sessionKey.trim());
     } catch {
       // toast handled in hook
     }
@@ -432,30 +359,6 @@ function SessionKeyFlow() {
           </p>
         </div>
 
-        {/* Kiosk ID */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="kioskId"
-              className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-              {t("userKiosk.kioskId")}
-            </label>
-            <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-              Bắt buộc
-            </span>
-          </div>
-          <input
-            id="kioskId"
-            type="number"
-            placeholder={t("userKiosk.kioskIdPlaceholder")}
-            value={kioskId}
-            onChange={(e) => setKioskId(e.target.value)}
-            className="border-border flex h-11 w-full rounded-xl border bg-slate-50 px-4 py-2.5 text-sm text-slate-900 transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:bg-slate-900 dark:focus:ring-indigo-400"
-            required
-          />
-          <p className="text-xs text-slate-400">Số ID của kiosk tại phòng phỏng vấn</p>
-        </div>
-
         {/* Error */}
         {enterMutation.isError && (
           <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900 dark:bg-red-950">
@@ -508,46 +411,9 @@ function SessionKeyFlow() {
         </Button>
       </form>
 
-      {enterMutation.data?.roomUrl && !hasLeftMeeting && (
-        <>
-          <DeviceCheckDialog
-            isOpen={isDeviceCheckOpen}
-            onOpenChange={setIsDeviceCheckOpen}
-            displayName={sessionKey}
-            onConfirm={() => {
-              setIsDeviceCheckOpen(false);
-              setHasConfirmedDevices(true);
-            }}
-          />
-          {hasConfirmedDevices ? (
-            <VideoCallProvider>
-              <VideoCallRoom
-                roomUrl={enterMutation.data.roomUrl}
-                userName={sessionKey}
-                onLeave={() => setHasLeftMeeting(true)}
-                className="h-[80vh] w-full"
-              />
-            </VideoCallProvider>
-          ) : (
-            <div className="border-border flex h-[60vh] flex-col items-center justify-center gap-5 rounded-xl border bg-white dark:border-slate-700 dark:bg-slate-900">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                <Video className="h-7 w-7 text-slate-400" />
-              </div>
-              <p className="text-base text-slate-600 dark:text-slate-300">
-                {t("common.pleaseCheckYourEquipmentBeforeParti")}
-              </p>
-              <Button onClick={() => setIsDeviceCheckOpen(true)} className="gap-2">
-                <Video className="h-4 w-4" />
-                {t("common.checkTheDevice")}
-              </Button>
-            </div>
-          )}
-        </>
-      )}
-
-      {enterMutation.data?.roomUrl && hasLeftMeeting && (
+      {enterMutation.data?.aiSessionKey && (
         <div className="border-border rounded-xl border bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-950">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-950">
             <svg
               className="h-7 w-7 animate-pulse text-indigo-600 dark:text-indigo-400"
               fill="none"
@@ -557,15 +423,18 @@ function SessionKeyFlow() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
               />
             </svg>
           </div>
-          <p className="text-lg font-semibold text-slate-900 dark:text-white">
-            {t("userKiosk.mentorReviewInProgress")}
+          <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
+            AI Session đã được kích hoạt
+          </h3>
+          <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            Session Key: <code className="font-mono">{enterMutation.data.aiSessionKey}</code>
           </p>
-          <p className="text-muted-foreground mt-2 text-sm">
-            {t("userKiosk.mentorReviewInProgressHint")}
+          <p className="text-xs text-slate-500">
+            Tính năng video call đang được cập nhật để phù hợp với API mới.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button

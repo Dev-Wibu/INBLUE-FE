@@ -6,6 +6,7 @@ import { KeyRound, Monitor, Video } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const ENTER_WINDOW_MINUTES = 15;
 
@@ -63,18 +64,13 @@ export function KioskEntryPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sessionKey.trim() || !kioskId.trim()) return;
+    if (!sessionKey.trim()) return;
 
     try {
-      const result = await enterMutation.mutateAsync({
-        sessionKey: sessionKey.trim(),
-        kioskId: Number(kioskId),
-      });
-      const url = result?.roomUrl;
-      if (url) {
-        setRoomUrl(url);
-        setJoinMode("room");
-        setIsDeviceCheckOpen(true);
+      const result = await enterMutation.mutateAsync(sessionKey.trim());
+      // Backend returns { aiSessionKey: "..." } - handle accordingly
+      if (result?.aiSessionKey) {
+        toast.success("Đã xác thực thành công! AI Session đã được tạo.");
       }
     } catch {
       // toast handled in hook

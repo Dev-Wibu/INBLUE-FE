@@ -9,7 +9,6 @@ export type KioskSchedule = components["schemas"]["KioskSchedule"];
 export type SlotDto = components["schemas"]["SlotDto"];
 export type PickSlotDtoRequest = components["schemas"]["PickSlotDtoRequest"];
 export type MentorInterviewBooking = components["schemas"]["KioskBooking"];
-export type KioskEnterDtoRequest = components["schemas"]["KioskEnterDtoRequest"];
 export type KioskEnterDtoResponse = components["schemas"]["KioskEnterDtoResponse"];
 export type KioskHistoryResponseDto = components["schemas"]["KioskHistoryResponseDto"];
 
@@ -350,14 +349,11 @@ export class KioskManager {
     }
   }
 
-  async enterKiosk(body: KioskEnterDtoRequest): Promise<ApiResponse<KioskEnterDtoResponse>> {
+  async enterKiosk(sessionKey: string): Promise<ApiResponse<KioskEnterDtoResponse>> {
     try {
       const response = await fetchClient
-        .POST("/api/kiosk/enter", {
-          body: {
-            sessionKey: body.sessionKey,
-            kioskId: body.kioskId,
-          } as never,
+        .POST("/api/kiosk/enter/{sessionKey}", {
+          params: { path: { sessionKey } },
         })
         .then((res) => ({
           data: res.data,
