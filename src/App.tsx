@@ -70,6 +70,7 @@ import {
   WriteReviewPage,
 } from "@/pages/User";
 import {
+  CompetencyKioskPage,
   KioskBookingListPage,
   KioskBookingSuccessPage,
   KioskEntryPage,
@@ -139,6 +140,9 @@ function App() {
             {/* Features pages (public) */}
             <Route path="/features/ai-interview" element={<AIInterviewFeaturePage />} />
             <Route path="/features/mentor-interview" element={<MentorInterviewFeaturePage />} />
+
+            {/* Full-screen Holobox competency result kiosk */}
+            <Route path="/holobox/competency" element={<CompetencyKioskPage />} />
 
             {/* Resources pages (public) */}
             <Route path="/resources/faq" element={<FAQPage />} />

@@ -1,4 +1,5 @@
 // Kiosk module exports
+export { CompetencyKioskPage } from "./CompetencyKioskPage";
 export { KioskBookingListPage } from "./KioskBookingListPage";
 export { KioskBookingSuccessPage } from "./KioskBookingSuccessPage";
 export { KioskEntryPage } from "./KioskEntryPage";

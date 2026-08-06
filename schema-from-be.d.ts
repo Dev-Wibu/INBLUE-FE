@@ -1096,6 +1096,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/applications/{applicationId}/journey-summary/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["generateJourneySummary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/application-details/submit": {
         parameters: {
             query?: never;
@@ -2161,6 +2177,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/applications/{applicationId}/journey-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getJourneySummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/applications/{applicationId}/competency-chart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCompetencyChart"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/applications/me": {
         parameters: {
             query?: never;
@@ -2169,6 +2217,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getAllApplicationsByUserId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/applications/by-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApplicationsByEmail"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2981,6 +3045,8 @@ export interface components {
             description?: string;
         };
         CodeSubmission: {
+            /** Format: int64 */
+            problemId?: number;
             sourceCode?: string[];
             testCases?: components["schemas"]["CompilerResponseDto"];
         };
@@ -3624,6 +3690,59 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
+        BehavioralSkillScore: {
+            skillName?: string;
+            /** Format: double */
+            score?: number;
+            sourceRounds?: string[];
+        };
+        CompetencyChartResponse: {
+            /** Format: int64 */
+            applicationId?: number;
+            candidateName?: string;
+            jobTitle?: string;
+            /** @enum {string} */
+            overallLevel?: "TECHNICIAN" | "ENTRY_LEVEL_PRACTITIONER" | "PRACTITIONER" | "TECHNICAL_LEADER" | "SENIOR_SOFTWARE_ENGINEER";
+            /** Format: double */
+            overallScore?: number;
+            technicalSkillAreas?: components["schemas"]["SkillAreaScore"][];
+            behavioralSkills?: components["schemas"]["BehavioralSkillScore"][];
+        };
+        DevelopmentRecommendation: {
+            targetSkillArea?: string;
+            recommendation?: string;
+            /** @enum {string} */
+            targetLevel?: "TECHNICIAN" | "ENTRY_LEVEL_PRACTITIONER" | "PRACTITIONER" | "TECHNICAL_LEADER" | "SENIOR_SOFTWARE_ENGINEER";
+        };
+        JourneySummary: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            narrative?: string;
+            competencyChart?: components["schemas"]["CompetencyChartResponse"];
+            swecomAssessments?: components["schemas"]["SwecomSkillAssessment"][];
+            developmentRecommendations?: components["schemas"]["DevelopmentRecommendation"][];
+            /** Format: date-time */
+            generatedAt?: string;
+        };
+        SkillAreaScore: {
+            skillArea?: string;
+            /** Format: double */
+            score?: number;
+            /** @enum {string} */
+            level?: "TECHNICIAN" | "ENTRY_LEVEL_PRACTITIONER" | "PRACTITIONER" | "TECHNICAL_LEADER" | "SENIOR_SOFTWARE_ENGINEER";
+            sourceRounds?: string[];
+        };
+        SwecomSkillAssessment: {
+            skillArea?: string;
+            /** @enum {string} */
+            level?: "TECHNICIAN" | "ENTRY_LEVEL_PRACTITIONER" | "PRACTITIONER" | "TECHNICAL_LEADER" | "SENIOR_SOFTWARE_ENGINEER";
+            /** Format: double */
+            score?: number;
+            evidenceSummary?: string;
+            sourceRounds?: string[];
+        };
         SubmissionResult: {
             /** @enum {string} */
             status?: "PENDING" | "COMPLETED";
@@ -3730,38 +3849,38 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
-            numberOfElements?: number;
+            totalPages?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            first?: boolean;
+            last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         PageableObject: {
-            /** Format: int32 */
-            pageNumber?: number;
-            paged?: boolean;
-            /** Format: int32 */
-            pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
+            paged?: boolean;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int32 */
+            pageNumber?: number;
+            unpaged?: boolean;
         };
         SortObject: {
+            empty?: boolean;
             sorted?: boolean;
             unsorted?: boolean;
-            empty?: boolean;
         };
         Payment: {
             /** Format: int32 */
@@ -3986,13 +4105,13 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            /** Format: int64 */
-            startupDate?: number;
-            applicationName?: string;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
+            applicationName?: string;
+            /** Format: int64 */
+            startupDate?: number;
             environment?: components["schemas"]["Environment"];
             /** Format: int32 */
             beanDefinitionCount?: number;
@@ -4069,40 +4188,40 @@ export interface components {
         FilterRegistration: {
             servletNameMappings?: string[];
             urlPatternMappings?: string[];
+            name?: string;
+            className?: string;
             initParameters?: {
                 [key: string]: string;
             };
-            name?: string;
-            className?: string;
         };
         /** @enum {unknown} */
         HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 CONTENT_TOO_LARGE" | "413 PAYLOAD_TOO_LARGE" | "414 URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "421 MISDIRECTED_REQUEST" | "422 UNPROCESSABLE_CONTENT" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
         HttpStatusCode: {
+            error?: boolean;
             is4xxClientError?: boolean;
             is5xxServerError?: boolean;
             is1xxInformational?: boolean;
             is2xxSuccessful?: boolean;
             is3xxRedirection?: boolean;
-            error?: boolean;
         };
         JspConfigDescriptor: {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
-            isXml?: string;
-            errorOnUndeclaredNamespace?: string;
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
-            scriptingInvalid?: string;
-            includePreludes?: string[];
-            includeCodas?: string[];
-            deferredSyntaxAllowedAsLiteral?: string;
-            urlPatterns?: string[];
-            defaultContentType?: string;
-            trimDirectiveWhitespaces?: string;
             buffer?: string;
+            defaultContentType?: string;
+            urlPatterns?: string[];
+            isXml?: string;
+            elIgnored?: string;
+            includeCodas?: string[];
+            pageEncoding?: string;
+            includePreludes?: string[];
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            trimDirectiveWhitespaces?: string;
+            errorOnELNotFound?: string;
+            scriptingInvalid?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -4125,42 +4244,17 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
-            attributesMap?: {
-                [key: string]: unknown;
-            };
+            propagateQueryProperties?: boolean;
             attributes?: {
                 [key: string]: string;
             };
+            attributesMap?: {
+                [key: string]: unknown;
+            };
+            attributesCSV?: string;
         };
         ServletContext: {
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            requestCharacterEncoding?: string;
-            responseCharacterEncoding?: string;
-            serverInfo?: string;
-            /** Format: int32 */
-            effectiveMajorVersion?: number;
-            /** Format: int32 */
-            effectiveMinorVersion?: number;
-            servletContextName?: string;
-            servletRegistrations?: {
-                [key: string]: components["schemas"]["ServletRegistration"];
-            };
-            filterRegistrations?: {
-                [key: string]: components["schemas"]["FilterRegistration"];
-            };
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            contextPath?: string;
-            virtualServerName?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            initParameterNames?: unknown;
-            attributeNames?: unknown;
             classLoader?: {
                 name?: string;
                 registeredAsParallelCapable?: boolean;
@@ -4225,28 +4319,53 @@ export interface components {
             majorVersion?: number;
             /** Format: int32 */
             minorVersion?: number;
+            attributeNames?: unknown;
+            contextPath?: string;
+            initParameterNames?: unknown;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            responseCharacterEncoding?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
+            serverInfo?: string;
+            servletRegistrations?: {
+                [key: string]: components["schemas"]["ServletRegistration"];
+            };
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            /** Format: int32 */
+            effectiveMajorVersion?: number;
+            servletContextName?: string;
+            /** Format: int32 */
+            effectiveMinorVersion?: number;
+            filterRegistrations?: {
+                [key: string]: components["schemas"]["FilterRegistration"];
+            };
         };
         ServletRegistration: {
-            runAsRole?: string;
             mappings?: string[];
+            runAsRole?: string;
+            name?: string;
+            className?: string;
             initParameters?: {
                 [key: string]: string;
             };
-            name?: string;
-            className?: string;
         };
         SessionCookieConfig: {
-            /** Format: int32 */
-            maxAge?: number;
-            secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
-            path?: string;
             name?: string;
+            path?: string;
             attributes?: {
                 [key: string]: string;
             };
             comment?: string;
+            /** Format: int32 */
+            maxAge?: number;
+            secure?: boolean;
+            httpOnly?: boolean;
         };
         TaglibDescriptor: {
             taglibURI?: string;
@@ -6576,6 +6695,28 @@ export interface operations {
             };
         };
     };
+    generateJourneySummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JourneySummary"];
+                };
+            };
+        };
+    };
     submitApplicationDetail: {
         parameters: {
             query?: never;
@@ -8019,9 +8160,75 @@ export interface operations {
             };
         };
     };
+    getJourneySummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JourneySummary"];
+                };
+            };
+        };
+    };
+    getCompetencyChart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CompetencyChartResponse"];
+                };
+            };
+        };
+    };
     getAllApplicationsByUserId: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Application"][];
+                };
+            };
+        };
+    };
+    getApplicationsByEmail: {
+        parameters: {
+            query: {
+                email: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
