@@ -605,9 +605,11 @@ export function ApplicationGradingPage({
 
   const applications = useMemo(() => (Array.isArray(rawApps) ? rawApps : []), [rawApps]);
   const [searchQuery, setSearchQuery] = useState("");
-  // Staff default: show ALL (so they see AI-graded rounds needing HR score)
+  // Staff default: show items needing HR scoring (AI evaluated but not yet scored by HR)
   // Admin default: PENDING (waiting for submission)
-  const [statusFilter, setStatusFilter] = useState<string>(isStaff ? "all" : "PENDING");
+  const [statusFilter, setStatusFilter] = useState<string>(
+    isStaff ? "NEEDS_HR_SCORING" : "PENDING"
+  );
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "score-high" | "score-low">("newest");
 
   // Sortable fields for the table
@@ -714,7 +716,13 @@ export function ApplicationGradingPage({
               }
               return false;
             }
-            // Standard status filters
+            // AI_EVALUATED: Show all items where AI has graded (regardless of HR status)
+            if (statusFilter === "AI_EVALUATED") {
+              const isAiEvaluated =
+                item.detailStatus === "AI_EVALUATED" || item.status === "AI_EVALUATED";
+              return isAiEvaluated;
+            }
+            // Standard status filters (PENDING, SUBMITTED, COMPLETED)
             if (item.detailStatus !== statusFilter && item.status !== statusFilter) {
               return false;
             }
