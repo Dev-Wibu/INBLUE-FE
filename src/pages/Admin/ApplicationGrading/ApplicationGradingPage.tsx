@@ -39,7 +39,7 @@ import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import {
   filterOutAutoGradedRounds,
-  isAutoGradedRound,
+  inferRoundType,
   needsHrScoring,
 } from "@/lib/application-detail-utils";
 import { formatDateTime } from "@/lib/formatting";
@@ -1421,9 +1421,13 @@ export function ApplicationGradingDetailPage({
   const [emailPreviewId, setEmailPreviewId] = useState<number | null>(null);
 
   // Unified details array (filtered for non-auto-graded rounds)
+  // For staff: include CODE_REVIEW rounds (they need HR scoring)
   const displayDetails = useMemo((): ApplicationDetail[] => {
     if (isStaff && singleDetail) {
-      return isAutoGradedRound(singleDetail) ? [] : [singleDetail];
+      // For staff: show CODE_REVIEW rounds but filter out QUIZ
+      const inferredType = inferRoundType(singleDetail);
+      if (inferredType === "QUIZ") return [];
+      return [singleDetail];
     }
     return filterOutAutoGradedRounds(details);
   }, [isStaff, singleDetail, details]);
