@@ -113,7 +113,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
           ) : (
             <>
               <Copy className="h-3 w-3" />
-              <span>Sao chép code</span>
+              <span>{t("userApplication.quiz.copyCode")}</span>
             </>
           )}
         </button>
@@ -841,14 +841,9 @@ export function QuizModule({
                     <span>{t("userApplication.quiz.importantNoteBeforeStart")}</span>
                   </div>
                   <ul className="list-disc space-y-1.5 pl-6 text-slate-600 dark:text-slate-300">
-                    <li>
-                      Đồng hồ đếm ngược sẽ bắt đầu chạy **ngay lập tức** sau khi bấm xác nhận.
-                    </li>
-                    <li>
-                      Bài thi chỉ có thể thực hiện **01 lần duy nhất**, không thể tạm dừng hay làm
-                      lại.
-                    </li>
-                    <li>Khi hết thời gian, hệ thống sẽ tự động thu bài và chấm điểm tự động.</li>
+                    <li>{t("userApplication.quiz.note1")}</li>
+                    <li>{t("userApplication.quiz.note2")}</li>
+                    <li>{t("userApplication.quiz.note3")}</li>
                   </ul>
                 </div>
 
