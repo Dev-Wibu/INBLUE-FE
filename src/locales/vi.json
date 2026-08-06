@@ -4510,7 +4510,6 @@
     "mentorSessionErrMissingSessionId": "Không tìm thấy ID phiên",
     "mentorSessionErrMissingMentor": "Không tìm thấy mentor"
   },
-
   "userApplication": {
     "applicationWorkspacePage": {
       "applicationDate": "Ngày nộp đơn",
@@ -4656,7 +4655,13 @@
       "criteriaCount": "{{count}} Tiêu chí",
       "popupOpenGmail": "Gmail đang mở trong cửa sổ riêng",
       "popupHint": "Hãy gửi email từ Gmail. Hệ thống sẽ tự động nhận diện và cập nhật kết quả.",
-      "emailSubmittedSuccess": "Xác nhận đã gửi email thành công"
+      "emailSubmittedSuccess": "Xác nhận đã gửi email thành công",
+      "timeLimit": "THỜI GIAN",
+      "submissionLimit": "LƯỢT NỘP",
+      "matchScore": "Chỉ số Match Score",
+      "emailMissingSubjectCode": "Email thiếu mã subject",
+      "errorGradingEmail": "Có lỗi khi chấm email",
+      "confirmEmailSent": "Xác nhận đã gửi email thành công"
     },
     "quiz": {
       "examResultReport": "BÁO CÁO KẾT QUẢ THI TRẮC NGHIỆM",

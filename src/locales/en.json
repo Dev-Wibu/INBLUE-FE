@@ -4513,7 +4513,6 @@
     "mentorSessionErrMissingSessionId": "Missing session ID",
     "mentorSessionErrMissingMentor": "Missing mentor"
   },
-
   "userApplication": {
     "applicationWorkspacePage": {
       "applicationDate": "Application Date",
@@ -4660,7 +4659,13 @@
       "criteriaCount": "{{count}} Criteria",
       "popupOpenGmail": "Gmail is open in a separate window",
       "popupHint": "Send the email from Gmail. The system will automatically recognize and update results.",
-      "emailSubmittedSuccess": "Email submission confirmed successfully"
+      "emailSubmittedSuccess": "Email submission confirmed successfully",
+      "timeLimit": "Time Limit",
+      "submissionLimit": "Submission Limit",
+      "matchScore": "Match Score",
+      "emailMissingSubjectCode": "Email is missing the subject code",
+      "errorGradingEmail": "An error occurred while grading the email",
+      "confirmEmailSent": "Email submission confirmed successfully"
     },
     "quiz": {
       "examResultReport": "EXAM RESULTS REPORT",

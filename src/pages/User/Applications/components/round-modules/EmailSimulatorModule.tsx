@@ -209,14 +209,17 @@ export function EmailSimulatorModule({
         return {
           kind: "REJECTED",
           reason: "IGNORED",
-          message: emailSubmission.errorMessage || "Email thiếu mã subject",
+          message:
+            emailSubmission.errorMessage ||
+            t("userApplication.emailSimulator.emailMissingSubjectCode"),
         };
       }
       if (emailSubmission?.status === "ERROR") {
         return {
           kind: "REJECTED",
           reason: "ERROR",
-          message: emailSubmission.errorMessage || "Có lỗi khi chấm email",
+          message:
+            emailSubmission.errorMessage || t("userApplication.emailSimulator.errorGradingEmail"),
         };
       }
       return { kind: "EMAIL_RECEIVED" };
@@ -241,13 +244,16 @@ export function EmailSimulatorModule({
       return {
         kind: "REJECTED",
         reason: "IGNORED",
-        message: emailSubmission.errorMessage || "Email thiếu mã subject",
+        message:
+          emailSubmission.errorMessage ||
+          t("userApplication.emailSimulator.emailMissingSubjectCode"),
       };
     } else if (emailSubmission.status === "ERROR") {
       return {
         kind: "REJECTED",
         reason: "ERROR",
-        message: emailSubmission.errorMessage || "Có lỗi khi chấm email",
+        message:
+          emailSubmission.errorMessage || t("userApplication.emailSimulator.errorGradingEmail"),
       };
     }
 
@@ -282,7 +288,7 @@ export function EmailSimulatorModule({
   const handleSubmit = () => {
     // Không có submit endpoint — vòng này hoàn toàn dựa vào cronjob server quét email.
     // Chỉ chuyển phase sang WAITING để app bắt đầu poll trạng thái.
-    toast.success(t("userApplicationhistory.emailSubmitted", "Xác nhận đã gửi email thành công"));
+    toast.success(t("userApplication.emailSimulator.confirmEmailSent"));
     setUserWaiting(true);
     onSuccess?.();
   };
@@ -340,18 +346,20 @@ export function EmailSimulatorModule({
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {phase.kind === "EMAIL_RECEIVED" || isCompleted
-                  ? "BÁO CÁO ĐÁNH GIÁ MÔ PHỎNG EMAIL"
-                  : "VÒNG 2: MÔ PHỎNG EMAIL • TRẠM THI TRỰC TUYẾN"}
+                  ? t("userApplication.emailSimulator.reportTitle")
+                  : t("userApplication.emailSimulator.roundHeader")}
               </span>
               <span className="text-slate-600">•</span>
-              <span className="text-xs font-semibold text-indigo-400">Vòng 2</span>
+              <span className="text-xs font-semibold text-indigo-400">
+                {t("userApplication.emailSimulator.roundLabel")}
+              </span>
             </div>
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {phase.kind === "EMAIL_RECEIVED" || isCompleted
-                ? "Email của bạn đã được hệ thống thu thập và AI hoàn tất chấm điểm giao tiếp công sở."
+                ? t("userApplication.emailSimulator.emailCollectedMessage")
                 : phase.kind === "PENDING" || phase.kind === "WAITING_FOR_FIRST_EMAIL"
-                  ? "Hệ thống background scheduler trên Server đang tự động quét hộp thư IMAP để thu thập email của bạn..."
-                  : "Đọc kỹ Đề bài & Tình huống bên dưới, sau đó gửi email trực tiếp từ Gmail/Outlook theo đúng mã định danh."}
+                  ? t("userApplication.emailSimulator.backgroundScanningMessage")
+                  : t("userApplication.emailSimulator.draftInstructions")}
             </p>
           </div>
         </div>
@@ -369,22 +377,26 @@ export function EmailSimulatorModule({
               ) : (
                 <AlertTriangle className="h-4 w-4" />
               )}
-              <span>KẾT QUẢ: {detail.finalResult}</span>
+              <span>
+                {detail.finalResult === "PASSED"
+                  ? t("userApplication.emailSimulator.resultPassed")
+                  : t("userApplication.emailSimulator.resultFailed")}
+              </span>
             </span>
           ) : phase.kind === "PENDING" || phase.kind === "WAITING_FOR_FIRST_EMAIL" ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-4 py-1.5 text-xs font-extrabold text-amber-700 shadow-sm shadow-amber-100 dark:text-amber-300 dark:shadow-amber-950/40">
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-              <span>SERVER ĐANG QUÉT BACKGROUND</span>
+              <span>{t("userApplication.emailSimulator.serverScanningBackground")}</span>
             </span>
           ) : phase.kind === "EMAIL_RECEIVED" ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <UserCheck className="h-3.5 w-3.5 text-indigo-400" />
-              <span>ĐANG CHỜ HR RÀ SOÁT & CHẤM ĐIỂM</span>
+              <span>{t("userApplication.emailSimulator.awaitingHrGrading")}</span>
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-              <span>SẴN SÀNG GỬI MAIL</span>
+              <span>{t("userApplication.emailSimulator.readyToSendMail")}</span>
             </span>
           )}
         </div>
@@ -400,15 +412,15 @@ export function EmailSimulatorModule({
                     TICKET #INC-{applicationId || 892}
                   </span>
                   <span className="rounded border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[10px] font-extrabold text-rose-400 uppercase">
-                    HIGH PRIORITY
+                    {t("userApplication.emailSimulator.highPriority")}
                   </span>
                   <span className="rounded border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-extrabold text-amber-400 uppercase">
-                    CLIENT ESCALATION
+                    {t("userApplication.emailSimulator.clientEscalation")}
                   </span>
                 </div>
                 <h3 className="mt-1 text-sm leading-snug font-bold text-slate-900 dark:text-slate-100">
                   {round.configData?.instruction ||
-                    "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng theo đúng chuẩn mực giao tiếp công sở."}
+                    t("userApplication.emailSimulator.emailInstructionDefault")}
                 </h3>
               </div>
 
@@ -416,12 +428,12 @@ export function EmailSimulatorModule({
                 <div className="flex items-center gap-2 border-b border-indigo-200 pb-2 dark:border-indigo-500/20">
                   <AlertCircle className="h-4 w-4 text-amber-400" />
                   <span className="text-xs font-extrabold tracking-wider text-amber-700 uppercase dark:text-amber-300">
-                    Tình Huống & Bối Cảnh (Scenario Context)
+                    {t("userApplication.emailSimulator.scenarioContext")}
                   </span>
                 </div>
                 <div className="text-xs leading-relaxed font-normal whitespace-pre-line text-slate-700 dark:text-slate-200">
                   {round.configData?.evaluationCriteria ||
-                    "Email từ cấp trên / khách hàng — đóng vai ứng viên phản hồi chuyên nghiệp, đề xuất giải pháp."}
+                    t("userApplication.emailSimulator.emailCriteriaDefault")}
                 </div>
               </div>
             </Card>
@@ -440,7 +452,7 @@ export function EmailSimulatorModule({
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                     <h4 className="text-xs font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-                      KHUNG SOẠN EMAIL
+                      {t("userApplication.emailSimulator.emailDraftingFramework")}
                     </h4>
                   </div>
                 </div>
@@ -453,7 +465,7 @@ export function EmailSimulatorModule({
                 <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 shadow-inner dark:border-slate-800 dark:bg-slate-950">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="w-14 font-mono text-[11px] font-bold text-slate-400 uppercase">
-                      Gửi tới:
+                      {t("userApplication.emailSimulator.sendTo")}
                     </span>
                     <code className="truncate font-mono text-xs font-extrabold text-indigo-700 dark:text-indigo-300">
                       {RECRUITER_EMAIL}
@@ -462,17 +474,25 @@ export function EmailSimulatorModule({
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => copyToClipboard(RECRUITER_EMAIL, "Địa chỉ email", "recipient")}
+                    onClick={() =>
+                      copyToClipboard(
+                        RECRUITER_EMAIL,
+                        t("userApplication.emailSimulator.recipient"),
+                        "recipient"
+                      )
+                    }
                     className="h-7 gap-1.5 px-2.5 text-[11px] font-semibold text-indigo-700 transition-all hover:bg-indigo-50 hover:text-indigo-900 dark:text-indigo-300 dark:hover:bg-indigo-950/60 dark:hover:text-white">
                     {copiedRecipient ? (
                       <>
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                        <span className="font-bold text-emerald-400">Đã chép</span>
+                        <span className="font-bold text-emerald-400">
+                          {t("userApplication.emailSimulator.copied")}
+                        </span>
                       </>
                     ) : (
                       <>
                         <Copy className="h-3.5 w-3.5" />
-                        <span>Sao chép</span>
+                        <span>{t("userApplication.emailSimulator.copyText")}</span>
                       </>
                     )}
                   </Button>
@@ -490,17 +510,25 @@ export function EmailSimulatorModule({
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => copyToClipboard(subjectToken, "Mã subject", "subject")}
+                    onClick={() =>
+                      copyToClipboard(
+                        subjectToken,
+                        t("userApplication.emailSimulator.subjectLabel"),
+                        "subject"
+                      )
+                    }
                     className="h-7 gap-1.5 px-2.5 text-[11px] font-semibold text-amber-700 transition-all hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/50">
                     {copiedSubject ? (
                       <>
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                        <span className="font-bold text-emerald-400">Đã chép mã</span>
+                        <span className="font-bold text-emerald-400">
+                          {t("userApplication.emailSimulator.copied")}
+                        </span>
                       </>
                     ) : (
                       <>
                         <Copy className="h-3.5 w-3.5" />
-                        <span>Sao chép mã</span>
+                        <span>{t("userApplication.emailSimulator.copyCode")}</span>
                       </>
                     )}
                   </Button>
@@ -536,7 +564,7 @@ export function EmailSimulatorModule({
                   disabled={isCompleted || !isCurrent}
                   className="h-9 gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 px-6 text-xs font-bold text-white shadow-lg transition-all hover:from-indigo-500 hover:to-blue-500">
                   <Globe className="h-3.5 w-3.5" />
-                  <span>Mở Gmail</span>
+                  <span>{t("userApplication.emailSimulator.openGmail")}</span>
                 </Button>
               </div>
             </Card>
@@ -548,7 +576,7 @@ export function EmailSimulatorModule({
             <Card className="relative space-y-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
               <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 dark:border-slate-800/80">
                 <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                  VỊ TRÍ ỨNG TUYỂN
+                  {t("userApplication.emailSimulator.candidatePosition")}
                 </span>
                 <span className="rounded bg-indigo-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold text-indigo-400">
                   #APP-{applicationId}
@@ -585,30 +613,30 @@ export function EmailSimulatorModule({
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-indigo-400" />
                   <h4 className="text-xs font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-                    THÔNG TIN & QUY ĐỊNH
+                    {t("userApplication.emailSimulator.imapLive")}
                   </h4>
                 </div>
                 <span className="flex items-center gap-1 font-mono text-[10px] font-bold text-emerald-400">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-                  IMAP Live
+                  {t("userApplication.emailSimulator.imapLive")}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 dark:border-slate-800/80 dark:bg-slate-950/70">
                   <span className="block text-[10px] font-bold text-slate-400 uppercase">
-                    THỜI GIAN
+                    {t("userApplication.emailSimulator.timeLimit")}
                   </span>
                   <span className="mt-1 block text-xs font-extrabold text-slate-700 dark:text-slate-200">
-                    Không giới hạn
+                    {t("userApplication.emailSimulator.unlimitedTime")}
                   </span>
                 </div>
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5 dark:border-amber-500/20 dark:bg-amber-950/20">
                   <span className="block text-[10px] font-bold text-amber-600 uppercase dark:text-amber-400">
-                    LƯỢT NỘP
+                    {t("userApplication.emailSimulator.submissionLimit")}
                   </span>
                   <span className="mt-1 block text-xs font-extrabold text-amber-700 dark:text-amber-300">
-                    1 lần duy nhất
+                    {t("userApplication.emailSimulator.oneSubmissionOnly")}
                   </span>
                 </div>
               </div>
@@ -616,7 +644,9 @@ export function EmailSimulatorModule({
               <div className="space-y-3 border-t border-slate-200 pt-3.5 dark:border-slate-800/80">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
                   <Send className="h-3.5 w-3.5 text-indigo-400" />
-                  <span className="tracking-wider uppercase">BƯỚC THỰC HIỆN NỘP BÀI</span>
+                  <span className="tracking-wider uppercase">
+                    {t("userApplication.emailSimulator.submitInstructions")}
+                  </span>
                 </div>
 
                 <div className="relative space-y-3.5 pl-5 before:absolute before:top-2 before:bottom-2 before:left-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
@@ -625,7 +655,7 @@ export function EmailSimulatorModule({
                       1
                     </span>
                     <p className="text-xs leading-relaxed font-medium text-slate-700 dark:text-slate-200">
-                      Soạn email từ <strong>Gmail</strong> hoặc <strong>Outlook</strong> cá nhân.
+                      {t("userApplication.emailSimulator.submitStep1")}
                     </p>
                   </div>
 
@@ -635,16 +665,10 @@ export function EmailSimulatorModule({
                     </span>
                     <div className="space-y-1 text-xs leading-relaxed font-medium text-slate-700 dark:text-slate-200">
                       <p>
-                        Gửi tới{" "}
-                        <code className="font-mono font-bold text-indigo-700 dark:text-indigo-300">
-                          {RECRUITER_EMAIL}
-                        </code>
-                      </p>
-                      <p className="text-[11px] text-slate-400">
-                        Tiêu đề chứa mã{" "}
-                        <code className="font-mono font-bold text-amber-700 dark:text-amber-300">
-                          {subjectToken}
-                        </code>
+                        {t("userApplication.emailSimulator.submitStep2", {
+                          email: RECRUITER_EMAIL,
+                          subjectCode: subjectToken,
+                        })}
                       </p>
                     </div>
                   </div>
@@ -654,8 +678,7 @@ export function EmailSimulatorModule({
                       3
                     </span>
                     <p className="text-xs leading-relaxed font-medium text-slate-700 dark:text-slate-200">
-                      Bấm nút <strong>"Mở Gmail"</strong> để soạn & gửi mail. Hệ thống sẽ tự động
-                      chấm điểm khi nhận mail.
+                      {t("userApplication.emailSimulator.submitStep3")}
                     </p>
                   </div>
                 </div>
@@ -677,27 +700,29 @@ export function EmailSimulatorModule({
 
             <div className="max-w-md space-y-1.5">
               <h3 className="text-base font-extrabold text-amber-700 dark:text-amber-300">
-                BACKGROUND SCHEDULER ĐANG CHẠY QUÉT MAIL...
+                {t("userApplication.emailSimulator.backgroundSchedulerRunning")}
               </h3>
               <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                Hệ thống Server tự động quét định kỳ hộp thư IMAP để thu thập email gửi tới có mã{" "}
-                <code className="font-mono font-bold text-amber-700 dark:text-amber-300">
-                  {subjectToken}
-                </code>
-                .
+                {t("userApplication.emailSimulator.backgroundSchedulerHint", {
+                  subjectCode: subjectToken,
+                })}
               </p>
             </div>
 
             <div className="flex items-center justify-center gap-2 pt-4 text-xs font-semibold">
               <span className="flex items-center gap-1 text-emerald-400">
-                <CheckCircle2 className="h-4 w-4" /> 1. Đã xác nhận gửi
+                <CheckCircle2 className="h-4 w-4" />{" "}
+                {t("userApplication.emailSimulator.step1Confirmed")}
               </span>
               <ArrowRight className="h-3.5 w-3.5 text-slate-600" />
               <span className="flex animate-pulse items-center gap-1 text-amber-400">
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" /> 2. Server đang quét IMAP
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />{" "}
+                {t("userApplication.emailSimulator.step2ServerScanning")}
               </span>
               <ArrowRight className="h-3.5 w-3.5 text-slate-600" />
-              <span className="text-slate-500">3. AI Chấm điểm</span>
+              <span className="text-slate-500">
+                {t("userApplication.emailSimulator.step3AiGrading")}
+              </span>
             </div>
           </div>
         </Card>
@@ -709,17 +734,13 @@ export function EmailSimulatorModule({
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-amber-700 uppercase dark:text-amber-300">
-                QUÁ THỜI GIAN CHỜ BACKGROUND SCHEDULER (5 PHÚT)
+                {t("userApplication.emailSimulator.timeoutTitle")}
               </h4>
               <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                Hệ thống chưa tìm thấy email. Vui lòng kiểm tra xem bạn đã gửi email tới đúng địa
-                chỉ{" "}
-                <code className="font-mono text-amber-700 dark:text-amber-300">
-                  {RECRUITER_EMAIL}
-                </code>{" "}
-                và tiêu đề có chứa mã{" "}
-                <code className="font-mono text-amber-700 dark:text-amber-300">{subjectToken}</code>{" "}
-                chưa.
+                {t("userApplication.emailSimulator.timeoutHint", {
+                  email: RECRUITER_EMAIL,
+                  subjectCode: subjectToken,
+                })}
               </p>
             </div>
           </div>
@@ -728,7 +749,7 @@ export function EmailSimulatorModule({
             onClick={handleSubmit}
             className="h-9 gap-2 bg-amber-600 text-xs font-bold text-white hover:bg-amber-500">
             <RefreshCw className="h-3.5 w-3.5" />
-            <span>Thử lại lần nữa</span>
+            <span>{t("userApplication.emailSimulator.retryButton")}</span>
           </Button>
         </Card>
       )}
@@ -740,8 +761,8 @@ export function EmailSimulatorModule({
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-rose-700 uppercase dark:text-rose-300">
                 {phase.reason === "IGNORED"
-                  ? "EMAIL KHÔNG HỢP LỆ (THIẾU MÃ SUBJECT)"
-                  : "CÓ LỖI XẢY RA KHI PHÂN TÍCH EMAIL"}
+                  ? t("userApplication.emailSimulator.invalidEmailTitle")
+                  : t("userApplication.emailSimulator.errorParsingEmailTitle")}
               </h4>
               <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                 {phase.message}
@@ -753,7 +774,7 @@ export function EmailSimulatorModule({
             onClick={handleSubmit}
             className="h-9 gap-2 bg-rose-600 text-xs font-bold text-white hover:bg-rose-500">
             <RefreshCw className="h-3.5 w-3.5" />
-            <span>Thử gửi lại email khác</span>
+            <span>{t("userApplication.emailSimulator.resendEmailButton")}</span>
           </Button>
         </Card>
       )}
@@ -766,17 +787,18 @@ export function EmailSimulatorModule({
                 <div className="flex items-center gap-2">
                   <Bot className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
                   <h3 className="text-xs font-extrabold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
-                    BÁO CÁO PHÂN TÍCH EMAIL TỪ AI
+                    {t("userApplication.emailSimulator.aiAnalysisReport")}
                   </h3>
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-0.5 text-xs font-bold text-indigo-700 dark:border-indigo-400/40 dark:bg-indigo-500/15 dark:text-indigo-200">
                   <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
-                  <span>AI EVALUATED</span>
+                  <span>{t("userApplication.emailSimulator.emailEvaluated")}</span>
                 </span>
               </div>
 
               <p className="text-sm leading-relaxed font-normal text-slate-700 dark:text-slate-200">
-                {aiFeedback?.generalComment || "Email đã được thu thập và đánh giá thành công."}
+                {aiFeedback?.generalComment ||
+                  t("userApplication.emailSimulator.emailCollectedSuccess")}
               </p>
             </Card>
 
@@ -785,7 +807,7 @@ export function EmailSimulatorModule({
                 <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                   <h4 className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
-                    Điểm mạnh trong Email
+                    {t("userApplication.emailSimulator.emailStrengths")}
                   </h4>
                 </div>
                 <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
@@ -804,7 +826,7 @@ export function EmailSimulatorModule({
                 <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
                   <AlertTriangle className="h-4 w-4 text-amber-400" />
                   <h4 className="text-xs font-bold tracking-wider text-amber-400 uppercase">
-                    Điểm cần cải thiện
+                    {t("userApplication.emailSimulator.emailWeaknesses")}
                   </h4>
                 </div>
                 <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
@@ -823,10 +845,12 @@ export function EmailSimulatorModule({
                 <div className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
                   <h4 className="text-xs font-bold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
-                    NHẬN XÉT TRỰC TIẾP TỪ HỘI ĐỒNG HR
+                    {t("userApplication.emailSimulator.hrDirectComment")}
                   </h4>
                 </div>
-                <span className="text-[10px] font-medium text-slate-400">HR ĐÁNH GIÁ</span>
+                <span className="text-[10px] font-medium text-slate-400">
+                  {t("userApplication.emailSimulator.hrEvaluation")}
+                </span>
               </div>
 
               {detail?.hrNote ? (
@@ -835,8 +859,7 @@ export function EmailSimulatorModule({
                 </div>
               ) : (
                 <p className="text-xs leading-relaxed text-slate-400 italic">
-                  Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay
-                  khi HR hoàn tất rà soát).
+                  {t("userApplication.emailSimulator.noHrNotePending")}
                 </p>
               )}
             </Card>
@@ -845,7 +868,7 @@ export function EmailSimulatorModule({
               <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
                 <Target className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <h4 className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-                  ĐỀ BÀI & TÌNH HUỐNG BAN ĐẦU
+                  {t("userApplication.emailSimulator.assignmentAndSituation")}
                 </h4>
               </div>
               <div className="space-y-2.5">
@@ -866,7 +889,7 @@ export function EmailSimulatorModule({
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-indigo-400" />
                   <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                    Chỉ số Match Score
+                    {t("userApplication.emailSimulator.matchScore")}
                   </h4>
                 </div>
                 <span className="text-[10px] font-semibold text-slate-400">AI vs HR</span>
@@ -898,10 +921,10 @@ export function EmailSimulatorModule({
                   </div>
                   <div>
                     <h4 className="text-xs font-extrabold tracking-wider text-slate-900 uppercase dark:text-slate-100">
-                      BÀI LÀM EMAIL CỦA ỨNG VIÊN
+                      {t("userApplication.emailSimulator.candidateEmailWork")}
                     </h4>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                      Hệ thống IMAP đã thu thập email bài thi
+                      {t("userApplication.emailSimulator.imapCollectedEmail")}
                     </p>
                   </div>
                 </div>
@@ -915,7 +938,7 @@ export function EmailSimulatorModule({
                     }}
                     className="h-7 gap-1.5 border-indigo-300 bg-indigo-50 px-2.5 text-[11px] font-bold text-indigo-700 shadow-2xs hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/60">
                     <Maximize2 className="h-3.5 w-3.5" />
-                    <span>Xem Pop-up Chi Tiết</span>
+                    <span>{t("userApplication.emailSimulator.viewPopupDetail")}</span>
                   </Button>
                 )}
               </div>
@@ -956,9 +979,10 @@ export function EmailSimulatorModule({
                 {/* Email Reader Box */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between px-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                    <span>NỘI DUNG EMAIL GỬI ĐI</span>
+                    <span>{t("userApplication.emailSimulator.emailContentLabel")}</span>
                     <span className="flex items-center gap-1 font-mono text-[9px] text-emerald-500 dark:text-emerald-400">
-                      <ShieldCheck className="h-3 w-3" /> IMAP Captured Body
+                      <ShieldCheck className="h-3 w-3" />{" "}
+                      {t("userApplication.emailSimulator.imapCapturedBody")}
                     </span>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-inner dark:border-slate-800 dark:bg-slate-950">
@@ -966,7 +990,7 @@ export function EmailSimulatorModule({
                       {emailSubmission?.bodyText ||
                         parsedSubmissionData?.textContent ||
                         parsedSubmissionData?.body ||
-                        "Hệ thống đã ghi nhận bài thi email của ứng viên."}
+                        t("userApplication.emailSimulator.emailSystemRecorded")}
                     </pre>
                   </div>
                 </div>
@@ -979,7 +1003,7 @@ export function EmailSimulatorModule({
                   <div className="flex items-center gap-2">
                     <Target className="h-4 w-4 text-indigo-400" />
                     <h4 className="text-xs font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-                      TIÊU CHÍ CHẤM ĐIỂM CHI TIẾT
+                      {t("userApplication.emailSimulator.gradingCriteriaDetailed")}
                     </h4>
                   </div>
                   <span className="rounded bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-400">
@@ -1075,10 +1099,10 @@ export function EmailSimulatorModule({
             </div>
             <div>
               <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                Gmail đang mở trong cửa sổ riêng
+                {t("userApplication.emailSimulator.popupOpenGmail")}
               </p>
               <p className="mt-0.5 text-[11px] text-slate-400">
-                Hãy gửi email từ Gmail. Hệ thống sẽ tự động nhận diện và cập nhật kết quả.
+                {t("userApplication.emailSimulator.popupHint")}
               </p>
             </div>
             <Button

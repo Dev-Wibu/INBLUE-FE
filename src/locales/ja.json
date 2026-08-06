@@ -4462,7 +4462,6 @@
     "mentorSessionErrMissingSessionId": "セッションIDが見つかりません",
     "mentorSessionErrMissingMentor": "メンターが見つかりません"
   },
-
   "userApplication": {
     "applicationWorkspacePage": {
       "applicationDate": "応募日",
@@ -4608,7 +4607,13 @@
       "criteriaCount": "{{count}}基準",
       "popupOpenGmail": "Gmailは別のウィンドウで開いています",
       "popupHint": "Gmailからメールを送信してください。システムは自動的に認識して結果を更新します。",
-      "emailSubmittedSuccess": "メール送信確認成功了"
+      "emailSubmittedSuccess": "メール送信確認成功了",
+      "timeLimit": "時間制限",
+      "submissionLimit": "提出回数",
+      "matchScore": "マッチスコア",
+      "emailMissingSubjectCode": "メールに件名コードがありません",
+      "errorGradingEmail": "メールの採点中にエラーが発生しました",
+      "confirmEmailSent": "メール送信が確認されました"
     },
     "quiz": {
       "examResultReport": "筆記試験結果レポート",
