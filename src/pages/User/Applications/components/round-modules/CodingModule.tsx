@@ -249,23 +249,23 @@ function getProblems(round: JdRound): CodingProblemVM[] {
 }
 
 const DEFAULT_STUBS: Partial<Record<CompilerLanguage, string>> = {
-  JAVA: `class Solution {\n    // Viết code của bạn tại đây\n}`,
-  PYTHON: `class Solution:\n    # Viết code của bạn tại đây\n    pass`,
-  CPP: `class Solution {\npublic:\n    // Viết code của bạn tại đây\n};`,
-  JS: `/**\n * @return {any}\n */\nfunction solution() {\n    // Viết code của bạn tại đây\n}`,
-  TYPESCRIPT: `function solution(): void {\n    // Viết code của bạn tại đây\n}`,
-  CSHARP: `public class Solution {\n    // Viết code của bạn tại đây\n}`,
-  GO: `package main\n\n// Viết code của bạn tại đây`,
-  C: `// Viết code của bạn tại đây\n`,
-  KOTLIN: `class Solution {\n    // Viết code của bạn tại đây\n}`,
-  RUST: `// Viết code của bạn tại đây\n`,
+  JAVA: `class Solution {\n    // Write your code here\n}`,
+  PYTHON: `class Solution:\n    # Write your code here\n    pass`,
+  CPP: `class Solution {\npublic:\n    // Write your code here\n};`,
+  JS: `/**\n * @return {any}\n */\nfunction solution() {\n    // Write your code here\n}`,
+  TYPESCRIPT: `function solution(): void {\n    // Write your code here\n}`,
+  CSHARP: `public class Solution {\n    // Write your code here\n}`,
+  GO: `package main\n\n// Write your code here`,
+  C: `// Write your code here\n`,
+  KOTLIN: `class Solution {\n    // Write your code here\n}`,
+  RUST: `// Write your code here\n`,
 };
 
 function getCodeStub(problem: CodingProblemVM, language: CompilerLanguage): string {
   return (
     problem.codeStubs[language] ||
     DEFAULT_STUBS[language] ||
-    `// Viết code ${language} của bạn tại đây\n`
+    `// Write your ${language} code here\n`
   );
 }
 
@@ -504,7 +504,7 @@ export function CodingModule({
         ],
       });
       if (!res.success) {
-        throw new Error(res.error || "Run sample failed");
+        throw new Error(t("userApplication.coding.runSampleFailed"));
       }
       const tests = res.data?.testCases ?? [];
       const compiled: CompilerResponse = {
@@ -517,13 +517,13 @@ export function CodingModule({
       setSampleResults((prev) => ({ ...prev, [problemId]: compiled }));
       toast.success(
         t(
-          "userApplicationhistory.testCasesPassed",
-          `Chạy Test cases mẫu thành công (${compiled.passedTestCases}/${compiled.totalTestCases} Passed)`
+          "userApplication.coding.testCasesPassed",
+          `Sample test cases passed (${compiled.passedTestCases}/${compiled.totalTestCases})`
         )
       );
     } catch (err) {
       console.error("[CodingModule] Run sample error:", err);
-      toast.error(err instanceof Error ? err.message : "Run sample failed");
+      toast.error(err instanceof Error ? err.message : t("userApplication.coding.runSampleFailed"));
     } finally {
       setRunningId(null);
     }
@@ -595,8 +595,8 @@ export function CodingModule({
       }
       toast.success(
         t(
-          "userApplicationhistory.solutionSubmitted",
-          "Đã nộp bài giải Coding thành công! Hệ thống đang chấm, vui lòng chờ..."
+          "userApplication.coding.submitSuccess",
+          "Coding solution submitted successfully! System is grading..."
         )
       );
       setAwaitingGrade(true);
@@ -605,7 +605,7 @@ export function CodingModule({
       onSuccess?.();
     } catch (err) {
       console.error("[CodingModule] Submit error:", err);
-      toast.error(err instanceof Error ? err.message : "Nộp bài giải thất bại");
+      toast.error(err instanceof Error ? err.message : t("userApplication.coding.submitFailed"));
     } finally {
       setSubmitting(false);
       setAwaitingGrade(false);
@@ -697,7 +697,7 @@ export function CodingModule({
               </div>
               <div className="flex items-center justify-center gap-2 font-mono text-[11px] font-bold text-indigo-400">
                 <span className="h-2 w-2 animate-ping rounded-full bg-indigo-400" />
-                <span>Sandbox Grader is running...</span>
+                <span>{t("userApplication.coding.sandboxRunning")}</span>
               </div>
             </div>
           </div>
@@ -714,19 +714,18 @@ export function CodingModule({
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {isFinished
-                  ? "BÁO CÁO ĐÁNH GIÁ BÀI THI LẬP TRÌNH"
-                  : `VÒNG ${round.roundOrder ?? 4}: LẬP TRÌNH • TRẠM THI TRỰC TUYẾN`}
+                  ? t("userApplication.coding.codingExamReport")
+                  : t("userApplication.coding.roundHeader", { round: round.roundOrder ?? 4 })}
               </span>
               <span className="text-slate-600">•</span>
               <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                Vòng {round.roundOrder ?? 4}
+                {t("userApplication.coding.roundLabel", { round: round.roundOrder ?? 4 })}
               </span>
             </div>
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
-                ? "Hệ thống đã hoàn tất chấm điểm mã nguồn và kiểm thử toàn bộ test cases trên Sandbox."
-                : round.configData?.instruction ||
-                  "Đọc kỹ Đề bài & Ràng buộc bên dưới, viết giải thuật và chạy thử các test cases trước khi nộp."}
+                ? t("userApplication.coding.examCompletedStatus")
+                : round.configData?.instruction || t("userApplication.coding.examInstructions")}
             </p>
           </div>
         </div>
@@ -745,17 +744,22 @@ export function CodingModule({
               ) : (
                 <XCircle className="h-4 w-4" />
               )}
-              <span>KẾT QUẢ: {detail.finalResult}</span>
+              <span>
+                {t("userApplication.coding.resultPassed").replace(
+                  "PASSED",
+                  detail.finalResult ?? ""
+                )}
+              </span>
             </span>
           ) : isFinished ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40">
               <CheckCircle2 className="h-4 w-4" />
-              <span>ĐÃ HOÀN THÀNH BÀI THI</span>
+              <span>{t("userApplication.coding.examCompletedStatus")}</span>
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-              <span>ĐANG TRONG THỜI GIAN LÀM BÀI</span>
+              <span>{t("userApplication.coding.inExamTime")}</span>
             </span>
           )}
         </div>
@@ -767,12 +771,7 @@ export function CodingModule({
           role="status"
           className="flex items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50/80 p-3 text-xs text-indigo-800 shadow-2xs dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-200">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span>
-            {t(
-              "userApplicationhistory.codingGrading",
-              "Hệ thống đang chấm bài của bạn (sandbox). Vui lòng không đóng trang."
-            )}
-          </span>
+          <span>{t("userApplication.coding.gradingHint")}</span>
         </div>
       )}
 
@@ -857,7 +856,7 @@ export function CodingModule({
                   <Send className="h-3.5 w-3.5" />
                 </div>
                 <DialogTitle className="font-mono text-xs font-bold text-slate-900 dark:text-slate-200">
-                  {t("userApplicationhistory.confirmSubmitTitle", "Xác nhận nộp bài thi lập trình")}
+                  {t("userApplication.coding.confirmSubmitTitle")}
                 </DialogTitle>
               </div>
             </div>
@@ -868,10 +867,7 @@ export function CodingModule({
           </div>
 
           <DialogDescription className="sr-only">
-            {t(
-              "userApplicationhistory.confirmSubmitCoding",
-              "Bạn chắc chắn muốn nộp tất cả bài? Sau khi nộp, hệ thống sẽ chấm và bạn vẫn có thể làm lại vòng này."
-            )}
+            {t("userApplication.coding.confirmSubmitDescription")}
           </DialogDescription>
 
           <div className="space-y-4 px-5 py-4">
@@ -879,7 +875,7 @@ export function CodingModule({
             <div className="grid grid-cols-3 gap-2.5 text-center">
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 shadow-inner dark:border-slate-800 dark:bg-slate-950/70">
                 <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  Số bài tập
+                  {t("userApplication.coding.exercisesLabel")}
                 </div>
                 <div className="mt-0.5 text-lg font-black text-slate-900 tabular-nums dark:text-white">
                   {problems.length}
@@ -887,7 +883,7 @@ export function CodingModule({
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 shadow-inner dark:border-slate-800 dark:bg-slate-950/70">
                 <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  Tổng số dòng
+                  {t("userApplication.coding.totalLinesLabel")}
                 </div>
                 <div className="mt-0.5 text-lg font-black text-indigo-700 tabular-nums dark:text-indigo-300">
                   {submissionStats.totalLines}
@@ -895,7 +891,7 @@ export function CodingModule({
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 shadow-inner dark:border-slate-800 dark:bg-slate-950/70">
                 <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  Dung lượng
+                  {t("userApplication.coding.fileSizeLabel")}
                 </div>
                 <div className="mt-0.5 text-lg font-black text-emerald-700 tabular-nums dark:text-emerald-300">
                   {submissionStats.totalChars}{" "}
@@ -910,7 +906,7 @@ export function CodingModule({
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 shadow-inner dark:border-slate-800 dark:bg-slate-950/60">
               <div className="border-b border-slate-200 bg-slate-100 px-3.5 py-2 dark:border-slate-800 dark:bg-slate-950">
                 <span className="font-mono text-[11px] font-bold text-slate-500 uppercase dark:text-slate-400">
-                  Danh sách bài làm sẽ nộp
+                  {t("userApplication.coding.submissionListTitle")}
                 </span>
               </div>
               <div className="divide-y divide-slate-200 dark:divide-slate-800/70">
@@ -940,7 +936,9 @@ export function CodingModule({
                               {p.language}
                             </span>
                             <span>·</span>
-                            <span className="font-mono">{p.lines} dòng</span>
+                            <span className="font-mono">
+                              {p.lines} {t("userApplication.coding.linesLabel")}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -965,7 +963,7 @@ export function CodingModule({
                           </span>
                         ) : (
                           <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] text-slate-500 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400">
-                            Chưa test thử
+                            {t("userApplication.coding.notTestedYet")}
                           </span>
                         )}
                       </div>
@@ -978,18 +976,13 @@ export function CodingModule({
             {/* Warning banner */}
             <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
-              <p className="leading-relaxed">
-                {t(
-                  "userApplicationhistory.confirmSubmitHint",
-                  "Sau khi nộp bài, hệ thống sẽ gửi code của bạn sang sandbox để chấm các test ẩn. Quá trình này có thể mất 1–3 phút."
-                )}
-              </p>
+              <p className="leading-relaxed">{t("userApplication.coding.confirmSubmitHint")}</p>
             </div>
           </div>
 
           <DialogFooter className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-5 py-3.5 dark:border-slate-800/80 dark:bg-slate-950/90">
             <span className="hidden text-[11px] text-slate-500 sm:inline dark:text-slate-400">
-              Kiểm tra kỹ trước khi bấm nộp
+              {t("userApplication.coding.beforeSubmitHint")}
             </span>
             <div className="flex items-center gap-2">
               <Button
@@ -998,7 +991,7 @@ export function CodingModule({
                 onClick={() => setConfirmOpen(false)}
                 disabled={submitting}
                 className="h-8 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
-                {t("general.cancel", "Hủy")}
+                {t("general.cancel", { defaultValue: "Hủy" })}
               </Button>
               <Button
                 type="button"
@@ -1013,7 +1006,7 @@ export function CodingModule({
                 ) : (
                   <>
                     <Send className="h-3.5 w-3.5" />
-                    <span>{t("common.submit", "Nộp bài")}</span>
+                    <span>{t("userApplication.coding.submit")}</span>
                   </>
                 )}
               </Button>
@@ -1218,7 +1211,7 @@ function FormattedCodingProblemStatement({ text }: { text: string }) {
   if (!text) {
     return (
       <p className="text-xs text-slate-400 italic">
-        Đề bài chưa được cập nhật. Vui lòng xem Ví dụ bên dưới.
+        {t("userApplication.coding.emptyProblemStatement")}
       </p>
     );
   }
@@ -1280,7 +1273,7 @@ function ProblemExampleCard({
     }`;
     void navigator.clipboard.writeText(textToCopy);
     setCopied(true);
-    toast.success(`Đã sao chép Ví dụ ${index + 1}!`);
+    toast.success(t("userApplication.coding.copyExample", { index: index + 1 }));
     setTimeout(() => setCopied(false), 1500);
   };
 
@@ -1289,7 +1282,7 @@ function ProblemExampleCard({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800/60 dark:bg-slate-900/60 dark:text-slate-300">
         <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
-          Ví dụ {index + 1}:
+          {t("userApplication.coding.exampleLabel", { index: index + 1 })}
         </span>
         <button
           type="button"
@@ -1298,12 +1291,12 @@ function ProblemExampleCard({
           {copied ? (
             <>
               <Check className="h-3 w-3 text-emerald-400" />
-              <span className="text-emerald-500">Đã copy</span>
+              <span className="text-emerald-500">{t("userApplication.coding.copySuccess")}</span>
             </>
           ) : (
             <>
               <Copy className="h-3 w-3" />
-              <span>Copy</span>
+              <span>{t("userApplication.coding.copyCode")}</span>
             </>
           )}
         </button>
@@ -1325,7 +1318,9 @@ function ProblemExampleCard({
         </div>
         {example.explanation && (
           <div className="mt-2 flex items-start gap-2 border-t border-slate-100 pt-2 font-sans text-xs text-slate-600 dark:border-slate-800/80 dark:text-slate-400">
-            <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Giải thích:</span>
+            <span className="w-16 shrink-0 font-bold text-slate-400 select-none">
+              {t("userApplication.coding.explanation")}
+            </span>
             <span className="flex-1 leading-relaxed">
               <FormattedInlineMarkdown text={example.explanation} />
             </span>
@@ -1416,10 +1411,10 @@ function CodingProblemCard({
   const timedOut = remainingMs === 0;
 
   const tabs: Array<{ id: "description" | "results"; label: string; badge?: string }> = [
-    { id: "description", label: t("userApplicationhistory.codingTabDesc", "Mô tả bài toán") },
+    { id: "description", label: t("userApplication.coding.codingTabDesc") },
     {
       id: "results",
-      label: t("userApplicationhistory.codingTabResults", "Test Results"),
+      label: t("userApplication.coding.codingTabResults"),
       badge: result ? `${result.passedTestCases}/${result.totalTestCases}` : undefined,
     },
   ];
@@ -1552,10 +1547,7 @@ function CodingProblemCard({
               <SelectContent>
                 {availableLanguages.length === 0 && (
                   <div className="p-2 text-[11px] text-slate-500">
-                    {t(
-                      "userApplicationhistory.codingNoStub",
-                      "Round này chưa cấu hình ngôn ngữ nào."
-                    )}
+                    {t("userApplication.coding.noLanguageConfigured")}
                   </div>
                 )}
                 {availableLanguages.map((lang) => (
@@ -1569,7 +1561,7 @@ function CodingProblemCard({
 
           {showScore && (
             <span className="rounded-full bg-emerald-100 px-3.5 py-1 text-xs font-extrabold text-emerald-700 tabular-nums shadow-xs dark:bg-emerald-950/60 dark:text-emerald-300">
-              ✓ {t("userApplicationhistory.codingScore")}: {finalScore}/100
+              ✓ {t("userApplication.coding.codingScore")}: {finalScore}/100
             </span>
           )}
         </div>
@@ -1621,7 +1613,7 @@ function CodingProblemCard({
                   <section className="space-y-3">
                     <h5 className="flex items-center gap-2 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                       <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                      {t("userApplicationhistory.codingExamples", "Ví dụ:")}
+                      {t("userApplication.coding.codingExamples")}
                     </h5>
                     <div className="space-y-3">
                       {validExamples.map((ex, i) => (
@@ -1636,7 +1628,7 @@ function CodingProblemCard({
                   <section className="space-y-2.5">
                     <h5 className="flex items-center gap-2 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                       <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                      {t("userApplicationhistory.codingConstraints", "Ràng buộc (Constraints):")}
+                      {t("userApplication.coding.codingConstraints")}
                     </h5>
                     <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-950/60">
                       <ul className="space-y-2 pl-1 text-xs text-slate-700 dark:text-slate-300">
@@ -1769,7 +1761,7 @@ function CodingProblemCard({
                 ) : (
                   <Play className="h-4 w-4 fill-slate-700 dark:fill-slate-200" />
                 )}
-                <span>{t("userApplicationhistory.runSample", "Chạy Test Mẫu")}</span>
+                <span>{t("userApplication.coding.runSample")}</span>
               </Button>
             </div>
 
@@ -1784,7 +1776,7 @@ function CodingProblemCard({
                     disabled={index === 0}
                     onClick={onNavigatePrev}
                     className="h-7 w-7 p-0 text-slate-600 hover:text-slate-900 disabled:opacity-30 dark:text-slate-400 dark:hover:text-slate-100"
-                    title="Bài trước">
+                    title={t("userApplication.coding.previousProblem")}>
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
 
@@ -1799,7 +1791,7 @@ function CodingProblemCard({
                     disabled={index === totalProblems - 1}
                     onClick={onNavigateNext}
                     className="h-7 w-7 p-0 text-slate-600 hover:text-slate-900 disabled:opacity-30 dark:text-slate-400 dark:hover:text-slate-100"
-                    title="Bài tiếp theo">
+                    title={t("userApplication.coding.nextProblem")}>
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -1817,11 +1809,8 @@ function CodingProblemCard({
                   )}
                   <span>
                     {totalProblems > 1
-                      ? t("userApplicationhistory.submitAllProblems", {
-                          count: totalProblems,
-                          defaultValue: `Nộp bài (${totalProblems} bài)`,
-                        })
-                      : t("userApplicationhistory.submitSolution", "Nộp bài Solution")}
+                      ? t("userApplication.coding.submitAllProblems", { count: totalProblems })
+                      : t("userApplication.coding.submitSolution")}
                   </span>
                 </Button>
               )}
@@ -1854,11 +1843,13 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
       type="button"
       onClick={handleCopy}
       className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-      title="Sao chép">
+      title={t("userApplication.coding.copyCode")}>
       {copied ? (
         <>
           <Check className="h-3 w-3 text-emerald-500" />
-          <span className="text-emerald-600 dark:text-emerald-400">Đã chép</span>
+          <span className="text-emerald-600 dark:text-emerald-400">
+            {t("userApplication.coding.copySuccess")}
+          </span>
         </>
       ) : (
         <>
@@ -1910,10 +1901,10 @@ function TestResultsPanel({
         </div>
         <div className="space-y-1">
           <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-            {t("userApplicationhistory.runningSamples", "Đang chạy test cases...")}
+            {t("userApplication.coding.runningSamples")}
           </h4>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Hệ thống đang nạp mã nguồn vào sandbox an toàn và thực thi các bộ kiểm thử mẫu.
+            {t("userApplication.coding.gradingHint")}
           </p>
         </div>
       </div>
@@ -1928,11 +1919,10 @@ function TestResultsPanel({
         </div>
         <div className="max-w-xs space-y-1">
           <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-            {t("userApplicationhistory.noTestResultYet", "Chưa có kết quả chạy thử")}
+            {t("userApplication.coding.noTestResultYet")}
           </h4>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Bấm nút <strong className="text-slate-700 dark:text-slate-300">"Chạy Test Mẫu"</strong>{" "}
-            ở thanh công cụ bên dưới để kiểm tra tính đúng đắn của giải thuật.
+            {t("userApplication.coding.runTestHint")}
           </p>
         </div>
       </div>
@@ -2028,7 +2018,9 @@ function TestResultsPanel({
               {verdictTitle}
             </h3>
             <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-              {total > 0 ? `${passed} / ${total} test cases passed` : "Kết quả biên dịch"}
+              {total > 0
+                ? t("userApplication.coding.testCasesPassedCount", { passed, total })
+                : t("userApplication.coding.compileError")}
             </p>
           </div>
         </div>
@@ -2050,9 +2042,9 @@ function TestResultsPanel({
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-xs font-bold text-purple-700 dark:text-purple-400">
               <AlertTriangle className="h-3.5 w-3.5" />
-              Chi tiết lỗi biên dịch (Compiler Error)
+              {t("userApplication.coding.compilerErrorDetails")}
             </span>
-            <CopyButton text={result.errorMessage} label="Sao chép lỗi" />
+            <CopyButton text={result.errorMessage} label={t("userApplication.coding.copyError")} />
           </div>
           <div className="rounded-xl border border-purple-900/40 bg-[#0a0714] p-3.5 shadow-inner">
             <pre className="font-mono text-xs leading-relaxed whitespace-pre-wrap text-purple-200 select-text">
@@ -2130,9 +2122,9 @@ function TestResultsPanel({
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
                       <Bug className="h-3.5 w-3.5" />
-                      Lỗi thực thi (Runtime Error của Testcase #{selectedIdx + 1})
+                      {t("userApplication.coding.runtimeErrorCase", { index: selectedIdx + 1 })}
                     </span>
-                    <CopyButton text={activeError} label="Sao chép log" />
+                    <CopyButton text={activeError} label={t("userApplication.coding.copyLog")} />
                   </div>
                   <div className="overflow-hidden rounded-xl border border-rose-900/50 bg-[#0c0910] p-3.5 shadow-inner">
                     <pre className="font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-rose-300 select-text">
@@ -2146,13 +2138,15 @@ function TestResultsPanel({
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                    Input
+                    {t("userApplication.coding.inputLabel")}
                   </span>
                   {resolvedInput && <CopyButton text={resolvedInput} />}
                 </div>
                 <div className="rounded-lg border border-slate-200/80 bg-slate-100/70 p-3 font-mono text-xs font-semibold text-slate-800 select-all dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200">
                   {resolvedInput || (
-                    <span className="text-slate-400 italic">(Không có dữ liệu đầu vào)</span>
+                    <span className="text-slate-400 italic">
+                      {t("userApplication.coding.noInputData")}
+                    </span>
                   )}
                 </div>
               </div>
@@ -2161,13 +2155,15 @@ function TestResultsPanel({
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                    Expected Output
+                    {t("userApplication.coding.expectedOutput")}
                   </span>
                   {resolvedExpected && <CopyButton text={resolvedExpected} />}
                 </div>
                 <div className="rounded-lg border border-emerald-200/80 bg-emerald-50/40 p-3 font-mono text-xs font-semibold text-emerald-800 select-all dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300">
                   {resolvedExpected || (
-                    <span className="text-slate-400 italic">(Không xác định)</span>
+                    <span className="text-slate-400 italic">
+                      {t("userApplication.coding.undefined")}
+                    </span>
                   )}
                 </div>
               </div>
@@ -2176,7 +2172,7 @@ function TestResultsPanel({
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                    Your Output
+                    {t("userApplication.coding.yourOutput")}
                   </span>
                   {resolvedActual && <CopyButton text={resolvedActual} />}
                 </div>
@@ -2191,10 +2187,12 @@ function TestResultsPanel({
                     resolvedActual
                   ) : activeError ? (
                     <span className="text-rose-500/80 italic dark:text-rose-400/80">
-                      (Không có kết quả trả về do phát sinh ngoại lệ / lỗi thực thi)
+                      {t("userApplication.coding.noReturnDueToError")}
                     </span>
                   ) : (
-                    <span className="text-slate-400 italic">(Trống)</span>
+                    <span className="text-slate-400 italic">
+                      {t("userApplication.coding.empty")}
+                    </span>
                   )}
                 </div>
               </div>
