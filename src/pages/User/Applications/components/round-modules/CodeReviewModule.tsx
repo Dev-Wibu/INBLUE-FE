@@ -85,15 +85,15 @@ interface CodeReviewModuleProps {
 const SEVERITY_KEYS: Record<Severity, { label: string; desc: string }> = {
   CRITICAL: {
     label: "CRITICAL",
-    desc: "Lỗi nghiêm trọng (Crash, Security, Data Loss)",
+    desc: "Critical issue (Crash, Security, Data Loss)",
   },
   WARNING: {
     label: "WARNING",
-    desc: "Lỗi trung bình (Performance, Memory leak, Race condition)",
+    desc: "Warning (Performance, Memory leak, Race condition)",
   },
   INFO: {
     label: "INFO",
-    desc: "Góp ý nhỏ (Code smell, Refactor, Naming, Format)",
+    desc: "Minor suggestion (Code smell, Refactor, Naming, Format)",
   },
 };
 
@@ -674,27 +674,29 @@ export function CodeReviewModule({
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {isFinished
-                  ? "BÁO CÁO ĐÁNH GIÁ CODE REVIEW AI"
-                  : `VÒNG ${round.roundOrder ?? 5}: CODE REVIEW • TRẠM THI TRỰC TUYẾN`}
+                  ? t("userApplication.codeReview.codeReviewReport")
+                  : t("userApplication.codeReview.codeReviewTitle", {
+                      round: round.roundOrder ?? 5,
+                    })}
               </span>
               <span className="text-slate-600">•</span>
               <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                Vòng {round.roundOrder ?? 5}
+                {t("userApplication.roundNumber", { number: round.roundOrder ?? 5 })}
               </span>
               {problems.length > 1 && (
                 <>
                   <span className="text-slate-600">•</span>
                   <span className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-extrabold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
-                    {problems.length} BÀI TẬP
+                    {problems.length} {t("userApplication.codeReview.exercises")}
                   </span>
                 </>
               )}
             </div>
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
-                ? "Hệ thống AI đã hoàn tất phân tích các lỗi (bugs, code smells, security) và đối chiếu điểm số bài review."
+                ? t("userApplication.codeReview.codeReviewCompleted")
                 : round.configData?.instruction ||
-                  "Đọc kỹ Đề bài & Code bên dưới, phát hiện các lỗi bảo mật/hiệu năng và ghi chú trực tiếp vào các dòng code."}
+                  t("userApplication.codeReview.codeReviewInstructions")}
             </p>
           </div>
         </div>
