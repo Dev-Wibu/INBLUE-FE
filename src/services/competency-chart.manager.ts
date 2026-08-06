@@ -13,6 +13,7 @@ export type CompetencyApplication = {
   id: number;
   userId: number;
   jdId: number;
+  applicationName?: string;
   currentRoundOrder: number;
   status: ApplicationStatus;
   overallScore: number;

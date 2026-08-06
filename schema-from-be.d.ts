@@ -427,6 +427,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/interview/tts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["generateAudio"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/interview/submit": {
         parameters: {
             query?: never;
@@ -3105,6 +3121,9 @@ export interface components {
             globalQuestionOrder?: number;
             imageBase64?: string;
         };
+        TtsRequest: {
+            text?: string;
+        };
         SubmitAnswerRequest: {
             sessionKey?: string;
             answer?: string;
@@ -4113,9 +4132,9 @@ export interface components {
             /** Format: int64 */
             startupDate?: number;
             environment?: components["schemas"]["Environment"];
+            beanDefinitionNames?: string[];
             /** Format: int32 */
             beanDefinitionCount?: number;
-            beanDefinitionNames?: string[];
             parentBeanFactory?: components["schemas"]["BeanFactory"];
             classLoader?: {
                 name?: string;
@@ -4182,8 +4201,8 @@ export interface components {
         BeanFactory: unknown;
         DefaultHttpStatusCode: components["schemas"]["HttpStatusCode"];
         Environment: {
-            activeProfiles?: string[];
             defaultProfiles?: string[];
+            activeProfiles?: string[];
         };
         FilterRegistration: {
             servletNameMappings?: string[];
@@ -4200,9 +4219,9 @@ export interface components {
             error?: boolean;
             is4xxClientError?: boolean;
             is5xxServerError?: boolean;
-            is1xxInformational?: boolean;
-            is2xxSuccessful?: boolean;
             is3xxRedirection?: boolean;
+            is2xxSuccessful?: boolean;
+            is1xxInformational?: boolean;
         };
         JspConfigDescriptor: {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
@@ -4210,18 +4229,18 @@ export interface components {
         };
         JspPropertyGroupDescriptor: {
             buffer?: string;
-            defaultContentType?: string;
-            urlPatterns?: string[];
-            isXml?: string;
             elIgnored?: string;
             includeCodas?: string[];
             pageEncoding?: string;
             includePreludes?: string[];
+            errorOnELNotFound?: string;
+            scriptingInvalid?: string;
+            defaultContentType?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
             trimDirectiveWhitespaces?: string;
-            errorOnELNotFound?: string;
-            scriptingInvalid?: string;
+            urlPatterns?: string[];
+            isXml?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -4324,26 +4343,26 @@ export interface components {
             initParameterNames?: unknown;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            responseCharacterEncoding?: string;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
-            serverInfo?: string;
+            responseCharacterEncoding?: string;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            servletContextName?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            /** Format: int32 */
-            effectiveMajorVersion?: number;
-            servletContextName?: string;
-            /** Format: int32 */
-            effectiveMinorVersion?: number;
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            /** Format: int32 */
+            effectiveMinorVersion?: number;
+            /** Format: int32 */
+            effectiveMajorVersion?: number;
+            serverInfo?: string;
         };
         ServletRegistration: {
             mappings?: string[];
@@ -4370,6 +4389,26 @@ export interface components {
         TaglibDescriptor: {
             taglibURI?: string;
             taglibLocation?: string;
+        };
+        ApplicationLookupResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int32 */
+            userId?: number;
+            /** Format: int64 */
+            jdId?: number;
+            applicationName?: string;
+            /** Format: int32 */
+            currentRoundOrder?: number;
+            /** @enum {string} */
+            status?: "IN_PROGRESS" | "PASSED" | "FAILED" | "SOFT_FAILED";
+            /** Format: double */
+            overallScore?: number;
+            isDeleted?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         AdminOpenJdResponseDto: {
             /** Format: int64 */
@@ -5607,6 +5646,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    generateAudio: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TtsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
             };
         };
     };
@@ -8241,7 +8304,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Application"][];
+                    "*/*": components["schemas"]["ApplicationLookupResponse"][];
                 };
             };
         };

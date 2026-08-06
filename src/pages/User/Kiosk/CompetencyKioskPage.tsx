@@ -70,6 +70,10 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatApplicationScore(score: number) {
+  return score >= 0 ? `${Math.round(score)}/100` : "Chưa có điểm";
+}
+
 function KioskHeader({ step, onReset }: { step: KioskStep; onReset: () => void }) {
   return (
     <header className="flex items-center justify-between border-b border-slate-200/80 bg-white/90 px-6 py-4 backdrop-blur sm:px-10">
@@ -300,10 +304,10 @@ function ApplicationsStep({
               </div>
               <div className="min-w-0">
                 <p className="truncate font-semibold text-slate-950">
-                  Application #{application.id}
+                  {application.applicationName ?? `Application #${application.id}`}
                 </p>
                 <p className="mt-1 text-sm text-slate-500">
-                  Job description{" "}
+                  Application #{application.id} · Job description{" "}
                   <span className="font-mono text-slate-700">#{application.jdId}</span> · Tạo ngày{" "}
                   {formatDate(application.createdAt)}
                 </p>
@@ -313,8 +317,7 @@ function ApplicationsStep({
                   Điểm tổng
                 </p>
                 <p className="mt-1 text-xl font-bold text-slate-950">
-                  {Math.round(application.overallScore)}
-                  <span className="text-sm font-medium text-slate-400">/100</span>
+                  {formatApplicationScore(application.overallScore)}
                 </p>
               </div>
               <div className="flex items-center gap-2">
