@@ -3,7 +3,7 @@ import { Footer } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { companyManager, type Company } from "@/services/company.manager";
+import { companyManager, type Company, type JobDescription } from "@/services/company.manager";
 import type { TFunction } from "i18next";
 import { BriefcaseBusiness, Building2, MapPin, Search, ShieldCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";

@@ -847,27 +847,33 @@ export function RoundCanvasEditorWorkspace({
                                 {Math.round((round.passThreshold ?? 0.8) * 100)}%
                               </span>
                             </div>
-                            {staffUsers && round.reviewerId != null && (
-                              <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
-                                <Users className="h-3 w-3" />
-                                <span className="truncate">
-                                  {t("adminCompanymanagement.reviewerLabel", "Reviewer")}:{" "}
-                                  {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
-                                    `#${round.reviewerId}`}
-                                </span>
-                              </div>
-                            )}
-                            {staffUsers && round.reviewerId == null && (
-                              <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
-                                <AlertTriangle className="h-3 w-3" />
-                                <span className="truncate">
-                                  {t(
-                                    "adminCompanymanagement.reviewerStaffCardWarning",
-                                    "Chưa gán người chấm"
-                                  )}
-                                </span>
-                              </div>
-                            )}
+                            {/* Reviewer row — hidden for QUIZ since Quiz rounds are
+                                auto-graded; no human reviewer is required. */}
+                            {staffUsers &&
+                              round.reviewerId != null &&
+                              round.roundType !== "QUIZ" && (
+                                <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                                  <Users className="h-3 w-3" />
+                                  <span className="truncate">
+                                    {t("adminCompanymanagement.reviewerLabel", "Reviewer")}:{" "}
+                                    {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
+                                      `#${round.reviewerId}`}
+                                  </span>
+                                </div>
+                              )}
+                            {staffUsers &&
+                              round.reviewerId == null &&
+                              round.roundType !== "QUIZ" && (
+                                <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  <span className="truncate">
+                                    {t(
+                                      "adminCompanymanagement.reviewerStaffCardWarning",
+                                      "Chưa gán người chấm"
+                                    )}
+                                  </span>
+                                </div>
+                              )}
 
                             {round.roundType === "QUIZ" &&
                               (!round.configData?.quizQuestions ||
@@ -908,8 +914,8 @@ export function RoundCanvasEditorWorkspace({
                 ? "h-[96vh] max-h-[96vh] w-[98vw] max-w-[98vw]"
                 : "h-auto max-h-[85vh] w-[960px] max-w-[96vw]"
             )}>
-            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/30">
-              <div className="flex items-center gap-2.5">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/30">
+              <div className="flex min-w-0 items-center gap-2.5">
                 <div
                   className={cn(
                     "rounded-lg p-1.5",
@@ -941,16 +947,69 @@ export function RoundCanvasEditorWorkspace({
                   </p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 rounded-full px-3 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-                onClick={() => {
-                  setConfigModalOpen(false);
-                  setSelectedRoundIndex(null);
-                }}>
-                {t("compUi.close")}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                {/* Reviewer (Staff) — surfaced inside the round detail dialog for
+                    round types whose body is taken over by a specialized editor
+                    (CODE_REVIEW, CODING) so admins can still pick a mentor here
+                    without leaving the round configuration. Hidden for QUIZ
+                    (auto-graded) and when no staff users are available. */}
+                {staffUsers &&
+                  staffUsers.length > 0 &&
+                  (selectedRound.roundType === "CODE_REVIEW" ||
+                    selectedRound.roundType === "CODING") && (
+                    <div className="flex items-center gap-1.5">
+                      <Label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
+                      </Label>
+                      <Select
+                        value={
+                          selectedRound.reviewerId != null
+                            ? String(selectedRound.reviewerId)
+                            : "__none__"
+                        }
+                        onValueChange={(val) =>
+                          updateRoundField(
+                            selectedRoundIndex,
+                            "reviewerId",
+                            val === "__none__" ? null : Number(val)
+                          )
+                        }>
+                        <SelectTrigger className="h-8 w-48 border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                          <SelectValue
+                            placeholder={t(
+                              "adminCompanymanagement.reviewerStaffPlaceholder",
+                              "— Chưa gán người chấm —"
+                            )}
+                          />
+                        </SelectTrigger>
+                        <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                          <SelectItem value="__none__">
+                            {t(
+                              "adminCompanymanagement.reviewerStaffUnassigned",
+                              "Chưa gán người chấm"
+                            )}
+                          </SelectItem>
+                          {staffUsers.map((s) => (
+                            <SelectItem key={s.id} value={String(s.id)}>
+                              {s.name ?? `User #${s.id}`}
+                              {s.email ? ` (${s.email})` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 rounded-full px-3 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                  onClick={() => {
+                    setConfigModalOpen(false);
+                    setSelectedRoundIndex(null);
+                  }}>
+                  {t("compUi.close")}
+                </Button>
+              </div>
             </div>
 
             <div

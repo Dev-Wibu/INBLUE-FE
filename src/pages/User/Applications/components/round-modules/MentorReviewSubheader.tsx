@@ -1,4 +1,5 @@
 import { Calendar, CheckCircle2, Clock, Hourglass, Users, Video, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { components } from "../../../../../../schema-from-be";
 import { applicationTheme } from "../applicationTheme";
 
@@ -29,6 +30,8 @@ export function MentorReviewSubheader({
   isCompleted = false,
   instruction,
 }: MentorReviewSubheaderProps) {
+  const { t } = useTranslation();
+
   const isFinished =
     isCompleted ||
     activeStep === "RESULT" ||
@@ -54,31 +57,28 @@ export function MentorReviewSubheader({
 
   const getSubheaderTitle = () => {
     if (isFinished) {
-      return "BÁO CÁO KẾT QUẢ ĐÁNH GIÁ MENTOR";
+      return t("userApplication.mentorReview.mentorEvaluationReport");
     }
-    const name = roundLabel || "ĐÁNH GIÁ MENTOR";
-    return `VÒNG ${roundOrder}: ${name.toUpperCase()} • TRẠM PHỎNG VẤN TRỰC TUYẾN`;
+    const name = roundLabel || t("userApplication.mentorReview.mentorReview");
+    return `${t("userApplication.roundNumber", { number: roundOrder })}: ${name.toUpperCase()} • ${t("userApplication.mentorReview.onlineInterviewStation", { defaultValue: "ONLINE INTERVIEW STATION" })}`;
   };
 
   const getDescription = () => {
     if (isFinished) {
-      return "Buổi phỏng vấn đã hoàn tất. Mentor và Hội đồng tuyển dụng đã ghi nhận nhận xét và điểm số đánh giá.";
+      return t("userApplication.mentorReview.mentorReviewCompleted");
     }
     switch (activeStep) {
       case "IN_CALL":
-        return "Phòng phỏng vấn trực tuyến với Mentor đang diễn ra. Vui lòng giữ kết nối ổn định và bật camera/micro.";
+        return t("userApplication.mentorReview.inCallRoom");
       case "WAITING":
-        return "Lịch phỏng vấn đã được xác nhận thành công. Vui lòng chuẩn bị và sẵn sàng tham gia đúng khung giờ đã hẹn.";
+        return t("userApplication.mentorReview.waitingForInterview");
       case "SCHEDULE":
-        return "Chọn ngày giờ và hình thức phỏng vấn phù hợp nhất với thời gian biểu của bạn.";
+        return t("userApplication.mentorReview.scheduleInterview");
       case "SELECT_MENTOR":
-        return "Chọn chuyên gia Mentor đồng hành phù hợp nhất với vị trí ứng tuyển của bạn từ danh sách đề xuất.";
+        return t("userApplication.mentorReview.selectMentor");
       case "AWAITING_MENTOR":
       default:
-        return (
-          instruction ||
-          "Hồ sơ đang chờ Quản trị viên chỉ định Mentor chuyên môn phù hợp cho buổi phỏng vấn của bạn."
-        );
+        return instruction || t("userApplication.mentorReview.awaitingMentor");
     }
   };
 
@@ -97,7 +97,7 @@ export function MentorReviewSubheader({
             </span>
             <span className="text-slate-600">•</span>
             <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-              Vòng {roundOrder}
+              {t("userApplication.roundNumber", { number: roundOrder })}
             </span>
           </div>
           <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
@@ -119,37 +119,39 @@ export function MentorReviewSubheader({
             ) : (
               <X className="h-4 w-4" />
             )}
-            <span>KẾT QUẢ: {detail.finalResult}</span>
+            <span>
+              {t("userApplication.mentorReview.resultPassed")}: {detail.finalResult}
+            </span>
           </span>
         ) : isFinished ? (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40">
             <CheckCircle2 className="h-4 w-4" />
-            <span>ĐÃ HOÀN THÀNH PHỎNG VẤN</span>
+            <span>{t("userApplication.mentorReview.interviewCompleted")}</span>
           </span>
         ) : activeStep === "IN_CALL" ? (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40">
             <span className="h-2 w-2 animate-ping rounded-full bg-emerald-400" />
-            <span>PHÒNG PHỎNG VẤN ĐANG MỞ</span>
+            <span>{t("userApplication.mentorReview.interviewRoomOpen")}</span>
           </span>
         ) : activeStep === "WAITING" ? (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-extrabold text-amber-700 shadow-sm dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-300 dark:shadow-amber-950/40">
             <Clock className="h-3.5 w-3.5 text-amber-400" />
-            <span>ĐÃ ĐẶT LỊCH • CHỜ ĐẾN GIỜ</span>
+            <span>{t("userApplication.mentorReview.waitingSchedule")}</span>
           </span>
         ) : activeStep === "SCHEDULE" ? (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
             <Calendar className="h-3.5 w-3.5 text-indigo-400" />
-            <span>ĐẶT LỊCH PHỎNG VẤN</span>
+            <span>{t("userApplication.mentorReview.scheduleInterviewStep")}</span>
           </span>
         ) : activeStep === "SELECT_MENTOR" ? (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
             <Users className="h-3.5 w-3.5 text-indigo-400" />
-            <span>CHỌN MENTOR PHÙ HỢP</span>
+            <span>{t("userApplication.mentorReview.selectMentorStep")}</span>
           </span>
         ) : (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
             <Hourglass className="h-3.5 w-3.5 animate-pulse text-indigo-400" />
-            <span>CHỜ ADMIN GÁN MENTOR</span>
+            <span>{t("userApplication.mentorReview.awaitingMentorAdmin")}</span>
           </span>
         )}
       </div>

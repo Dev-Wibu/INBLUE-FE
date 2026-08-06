@@ -1,7 +1,7 @@
 import interviewSetupImage from "@/assets/homepage/ai-interview-setup.png";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { companyManager, type Company } from "@/services/company.manager";
+import { companyManager, type Company, type JobDescription } from "@/services/company.manager";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,

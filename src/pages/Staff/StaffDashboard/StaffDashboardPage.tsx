@@ -21,11 +21,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import {
-  ApplicationGradingDetailPage,
-  ApplicationGradingPage,
-} from "../../Admin/ApplicationGrading/ApplicationGradingPage";
+import { ApplicationGradingPage } from "../../Admin/ApplicationGrading/ApplicationGradingPage";
 import { StaffAccountPage } from "../Account/StaffAccountPage";
+import { staffGradingWorkspacePage as StaffGradingWorkspacePage } from "../GradingWorkspace";
 import { StaffHomeFeedPage } from "../HomeFeed/StaffHomeFeedPage";
 import { StaffOverviewPage } from "./StaffOverviewPage";
 
@@ -203,7 +201,7 @@ export function StaffDashboardPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const searchEntries = Object.fromEntries(searchParams.entries());
-  const { appId: gradingAppId, detailId: gradingDetailId } = searchEntries;
+  const { appId: gradingAppId } = searchEntries;
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollTarget, setScrollTarget] = useState<HTMLDivElement | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() =>
@@ -354,17 +352,7 @@ export function StaffDashboardPage() {
       case "applicationGrading":
         return <ApplicationGradingPage onOpenGradingDetail={openGradingTab} basePath="/staff" />;
       case "grading-detail": {
-        const activeTabData = openTabs.find(
-          (t) => t.type === "grading-detail" && t.appId === gradingAppId
-        );
-        return (
-          <ApplicationGradingDetailPage
-            detailId={gradingDetailId ?? gradingAppId}
-            basePath="/staff"
-            candidateName={activeTabData?.candidateName}
-            jdId={activeTabData?.jdId}
-          />
-        );
+        return <StaffGradingWorkspacePage />;
       }
       case "account":
         return <StaffAccountPage />;

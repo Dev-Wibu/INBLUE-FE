@@ -282,7 +282,7 @@ export function CvScreeningModule({
       }
     } catch (err) {
       console.error("[CvScreeningModule] Submit error:", err);
-      toast.error("Có lỗi xảy ra khi nộp CV");
+      toast.error(t("userApplication.cvScreening.submitError"));
     } finally {
       setAnalyzing(false);
     }
@@ -300,21 +300,23 @@ export function CvScreeningModule({
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {fileUrl || isCompleted
-                  ? "BÁO CÁO ĐÁNH GIÁ CV HỒ SƠ AI"
-                  : "VÒNG 1: LỌC CV • HƯỚNG DẪN LÀM BÀI"}
+                  ? t("userApplication.cvScreening.aiReportTitle")
+                  : t("userApplication.cvScreening.roundInstructionHeader")}
               </span>
               <span className="text-slate-600">•</span>
-              <span className="text-xs font-semibold text-indigo-400">Vòng 1: Lọc CV</span>
+              <span className="text-xs font-semibold text-indigo-400">
+                {t("userApplication.cvScreening.roundLabel")}
+              </span>
             </div>
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {fileUrl || isCompleted
                 ? detail?.finalResult === "PASSED" || isCompleted
-                  ? "Ứng viên đạt yêu cầu lọc hồ sơ và đủ điều kiện bước vào vòng đánh giá tiếp theo."
-                  : "Hồ sơ đã nộp thành công, hệ thống AI đã trích xuất báo cáo phân tích."
+                  ? t("userApplication.cvScreening.passedMessage")
+                  : t("userApplication.cvScreening.submittedMessage")
                 : round.configData?.instruction ||
                   t(
                     "userApplicationhistory.cvInstructionDefault",
-                    "Vui lòng tải lên CV định dạng PDF của bạn. Hệ thống AI sẽ tự động phân tích hồ sơ và so sánh mức độ phù hợp (Match Score) với yêu cầu tuyển dụng."
+                    "Please upload your CV in PDF format. The AI system will automatically analyze your profile and compare your Match Score with the recruitment requirements."
                   )}
             </p>
           </div>
@@ -334,12 +336,20 @@ export function CvScreeningModule({
               ) : (
                 <XCircle className="h-4 w-4" />
               )}
-              <span>KẾT QUẢ: {detail.finalResult}</span>
+              <span>
+                {detail.finalResult === "PASSED"
+                  ? t("userApplication.cvScreening.resultPassed")
+                  : t("userApplication.cvScreening.resultFailed")}
+              </span>
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-              <span>{fileUrl ? "ĐÃ NỘP CV" : "SẮN SÀNG PHÂN TÍCH"}</span>
+              <span>
+                {fileUrl
+                  ? t("userApplication.cvScreening.submitted")
+                  : t("userApplication.cvScreening.readyToAnalyze")}
+              </span>
             </span>
           )}
         </div>
@@ -358,9 +368,11 @@ export function CvScreeningModule({
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                    Hồ sơ CV (Trang 1/1)
+                    {t("userApplication.cvScreening.cvPreviewTitle")}
                   </h3>
-                  <p className="text-[10px] text-slate-400">Tài liệu minh chứng</p>
+                  <p className="text-[10px] text-slate-400">
+                    {t("userApplication.cvScreening.cvDocumentLabel")}
+                  </p>
                 </div>
               </div>
 
@@ -372,7 +384,7 @@ export function CvScreeningModule({
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-700">
                     <ExternalLink className="h-3 w-3" />
-                    <span>Mở tab mới</span>
+                    <span>{t("userApplication.cvScreening.openNewTab")}</span>
                   </a>
                   <a
                     href={fileUrl}
@@ -380,7 +392,7 @@ export function CvScreeningModule({
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20">
                     <Download className="h-3 w-3" />
-                    <span>Tải CV</span>
+                    <span>{t("userApplication.cvScreening.downloadCv")}</span>
                   </a>
                 </div>
               )}
@@ -397,7 +409,7 @@ export function CvScreeningModule({
                   />
                 </div>
                 <p className="text-center text-[10px] text-slate-500">
-                  Bản xem trước CV. Nhấn nút "Mở tab mới" để đọc toàn bộ tài liệu full-screen.
+                  {t("userApplication.cvScreening.cvPreviewHint")}
                 </p>
               </div>
             ) : (
@@ -419,13 +431,13 @@ export function CvScreeningModule({
                         </span>
                       ) : (
                         t(
-                          "userApplicationhistory.dropCvHint",
-                          "Kéo thả file CV vào đây hoặc bấm để chọn"
+                          "userApplication.cvScreening.dropCvHint",
+                          "Drop CV file here or click to select"
                         )
                       )}
                     </p>
                     <p className="pointer-events-none mt-1 text-[10px] text-slate-500">
-                      Hỗ trợ định dạng PDF, DOCX (Tối đa 10MB)
+                      {t("userApplication.cvScreening.fileFormatHint")}
                     </p>
                     <Button
                       type="button"
@@ -435,23 +447,25 @@ export function CvScreeningModule({
                       {!selectedFileName ? (
                         <>
                           <Upload className="h-3.5 w-3.5" />
-                          <span>Chọn file CV để nộp</span>
+                          <span>{t("userApplication.cvScreening.selectFileToSubmit")}</span>
                         </>
                       ) : analyzing ? (
                         <>
                           <Sparkles className="h-3.5 w-3.5 animate-spin" />
-                          <span>Đang chấm AI...</span>
+                          <span>{t("userApplication.cvScreening.analyzingAi")}</span>
                         </>
                       ) : (
                         <>
                           <FileText className="h-3.5 w-3.5" />
-                          <span>Gửi CV & Chấm điểm AI</span>
+                          <span>{t("userApplication.cvScreening.submitCvGradeAi")}</span>
                         </>
                       )}
                     </Button>
                   </div>
                 ) : (
-                  <span className="text-xs text-slate-500">Chưa nộp file CV</span>
+                  <span className="text-xs text-slate-500">
+                    {t("userApplication.cvScreening.noCvFileSubmitted")}
+                  </span>
                 )}
               </div>
             )}
@@ -468,21 +482,21 @@ export function CvScreeningModule({
                   <Bot className="h-4 w-4" />
                 </div>
                 <h3 className="text-xs font-extrabold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
-                  BÁO CÁO TỔNG QUAN AI
+                  {t("userApplication.cvScreening.aiOverviewReport")}
                 </h3>
               </div>
 
               <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-extrabold text-indigo-700 shadow-xs dark:border-indigo-400/40 dark:bg-indigo-500/15 dark:text-indigo-200">
                 <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
-                <span>ĐỀ XUẤT TỪ AI</span>
+                <span>{t("userApplication.cvScreening.aiRecommendation")}</span>
               </span>
             </div>
 
             <p className="text-sm leading-relaxed font-normal text-slate-700 dark:text-slate-200">
               {aiFeedback?.generalComment ||
                 (hasAiData
-                  ? "Báo cáo phân tích đang được cập nhật..."
-                  : "Vui lòng tải lên CV ứng tuyển để hệ thống AI tự động chấm điểm và trích xuất báo cáo tổng quan.")}
+                  ? t("userApplication.cvScreening.noDataUpdating")
+                  : t("userApplication.cvScreening.noDataUploadHint"))}
             </p>
           </Card>
 
@@ -493,7 +507,7 @@ export function CvScreeningModule({
                 <CheckCircle2 className="h-3.5 w-3.5" />
               </div>
               <h4 className="text-xs font-bold tracking-wider text-emerald-700 uppercase dark:text-emerald-400">
-                Điểm mạnh nổi bật
+                {t("userApplication.cvScreening.strengths")}
               </h4>
             </div>
 
@@ -508,7 +522,9 @@ export function CvScreeningModule({
               </ul>
             ) : (
               <p className="text-xs text-slate-400 italic">
-                {hasAiData ? "Chưa ghi nhận điểm mạnh nổi bật." : "Chưa có dữ liệu (Cần nộp CV)"}
+                {hasAiData
+                  ? t("userApplication.cvScreening.noStrengthsFound")
+                  : t("userApplication.cvScreening.noDataNeedSubmit")}
               </p>
             )}
           </Card>
@@ -520,7 +536,7 @@ export function CvScreeningModule({
                 <AlertTriangle className="h-3.5 w-3.5" />
               </div>
               <h4 className="text-xs font-bold tracking-wider text-amber-700 uppercase dark:text-amber-400">
-                Điểm cần bổ sung & Cải thiện
+                {t("userApplication.cvScreening.weaknesses")}
               </h4>
             </div>
 
@@ -535,7 +551,9 @@ export function CvScreeningModule({
               </ul>
             ) : (
               <p className="text-xs text-slate-400 italic">
-                {hasAiData ? "Chưa ghi nhận điểm yếu cần bổ sung." : "Chưa có dữ liệu (Cần nộp CV)"}
+                {hasAiData
+                  ? t("userApplication.cvScreening.noWeaknessesFound")
+                  : t("userApplication.cvScreening.noDataNeedSubmit")}
               </p>
             )}
           </Card>
@@ -548,7 +566,7 @@ export function CvScreeningModule({
                   <ShieldAlert className="h-4 w-4" />
                 </div>
                 <h4 className="text-xs font-bold tracking-wider text-rose-700 uppercase dark:text-rose-300">
-                  Cảnh báo rủi ro tiềm ẩn
+                  {t("userApplication.cvScreening.potentialRedFlags")}
                 </h4>
               </div>
 
@@ -573,11 +591,13 @@ export function CvScreeningModule({
                   <UserCheck className="h-4 w-4" />
                 </div>
                 <h4 className="text-xs font-bold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
-                  NHẬN XÉT TRỰC TIẾP TỪ HỘI ĐỒNG HR
+                  {t("userApplication.cvScreening.hrDirectComment")}
                 </h4>
               </div>
 
-              <span className="text-[10px] font-medium text-slate-400">HR ĐÁNH GIÁ</span>
+              <span className="text-[10px] font-medium text-slate-400">
+                {t("userApplication.cvScreening.hrEvaluation")}
+              </span>
             </div>
 
             {detail?.hrNote ? (
@@ -586,7 +606,7 @@ export function CvScreeningModule({
               </div>
             ) : (
               <p className="text-xs text-slate-400 italic">
-                Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR.
+                {t("userApplication.cvScreening.noHrNote")}
               </p>
             )}
           </Card>
@@ -600,10 +620,12 @@ export function CvScreeningModule({
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
-                  Chỉ số Match Score
+                  {t("userApplication.cvScreening.matchScore")}
                 </h4>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">AI vs HR</span>
+              <span className="text-[10px] font-semibold text-slate-400">
+                {t("userApplication.cvScreening.aiVsHr")}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -624,13 +646,13 @@ export function CvScreeningModule({
             {/* WIDGET 2: Full 5-Metrics Criteria Breakdown Progress Bars */}
             <div className="space-y-2.5 border-t border-slate-200 pt-3 text-xs dark:border-slate-800">
               <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                Phân tích tiêu chí chi tiết
+                {t("userApplication.cvScreening.detailedCriteriaAnalysis")}
               </span>
 
               {/* 1. Overall CV Match */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  <span>Độ phù hợp tổng thể:</span>
+                  <span>{t("userApplication.cvScreening.overallMatch")}</span>
                   <span className={`font-bold ${hasAiData ? "text-indigo-400" : "text-slate-500"}`}>
                     {hasAiData
                       ? `${extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] ?? aiScoreVal}%`
@@ -650,7 +672,7 @@ export function CvScreeningModule({
               {/* 2. Skills Match Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  <span>Kỹ năng chuyên môn:</span>
+                  <span>{t("userApplication.cvScreening.skillsMatch")}</span>
                   <span className={`font-bold ${hasAiData ? "text-violet-400" : "text-slate-500"}`}>
                     {hasAiData
                       ? `${extraMetrics?.["Skills Match Score" as keyof typeof extraMetrics] ?? 0}%`
@@ -670,7 +692,7 @@ export function CvScreeningModule({
               {/* 3. Experience Match Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  <span>Kinh nghiệm làm việc:</span>
+                  <span>{t("userApplication.cvScreening.experienceMatch")}</span>
                   <span className={`font-bold ${hasAiData ? "text-amber-400" : "text-slate-500"}`}>
                     {hasAiData
                       ? `${extraMetrics?.["Experience Match Score" as keyof typeof extraMetrics] ?? 0}%`
@@ -690,7 +712,7 @@ export function CvScreeningModule({
               {/* 4. Education Match Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  <span>Trình độ học vấn:</span>
+                  <span>{t("userApplication.cvScreening.educationMatch")}</span>
                   <span
                     className={`font-bold ${hasAiData ? "text-emerald-400" : "text-slate-500"}`}>
                     {hasAiData
@@ -711,7 +733,7 @@ export function CvScreeningModule({
               {/* 5. CV Readability Score */}
               <div>
                 <div className="mb-1 flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  <span>Trình bày & Cấu trúc:</span>
+                  <span>{t("userApplication.cvScreening.presentationStructure")}</span>
                   <span className={`font-bold ${hasAiData ? "text-blue-400" : "text-slate-500"}`}>
                     {hasAiData
                       ? `${extraMetrics?.["CV Readability Score" as keyof typeof extraMetrics] ?? 0}%`
@@ -736,7 +758,7 @@ export function CvScreeningModule({
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
-                  Từ khóa ATS
+                  {t("userApplication.cvScreening.atsKeywords")}
                 </h4>
               </div>
               {/* Prominent High-Contrast ATS Match Percentage Badge */}
@@ -747,8 +769,12 @@ export function CvScreeningModule({
                     : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950"
                 }`}>
                 {hasAiData && keywordCoveragePct !== null
-                  ? `${matchedKeywordsCount}/${totalKeywordsCount} (${keywordCoveragePct}%)`
-                  : "Chờ nộp CV"}
+                  ? t("userApplication.cvScreening.matchedKeywords", {
+                      matched: matchedKeywordsCount,
+                      total: totalKeywordsCount,
+                      pct: keywordCoveragePct,
+                    })
+                  : t("userApplication.cvScreening.waitingForCv")}
               </span>
             </div>
 
@@ -777,8 +803,8 @@ export function CvScreeningModule({
             ) : (
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center text-[11px] text-slate-500 dark:border-slate-800/60 dark:bg-slate-950/60">
                 {hasAiData
-                  ? "Chưa trích xuất từ khóa ATS từ CV."
-                  : "Vui lòng tải lên CV để hệ thống phân tích mật độ từ khóa."}
+                  ? t("userApplication.cvScreening.atsHintNoKeywords")
+                  : t("userApplication.cvScreening.atsHintUpload")}
               </div>
             )}
           </Card>
@@ -805,7 +831,7 @@ export function CvScreeningModule({
               <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800/60">
                 <span className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
                   <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  <span>Độ khớp Yêu cầu</span>
+                  <span>{t("userApplication.cvScreening.requirementMatch")}</span>
                 </span>
                 {/* Prominent High-Contrast Requirement Coverage Percentage Badge */}
                 <span
@@ -815,7 +841,9 @@ export function CvScreeningModule({
                       : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950"
                   }`}>
                   {hasAiData && keywordCoveragePct !== null
-                    ? `${keywordCoveragePct}% Match`
+                    ? t("userApplication.cvScreening.requirementMatchValue", {
+                        pct: keywordCoveragePct,
+                      })
                     : "--%"}
                 </span>
               </div>

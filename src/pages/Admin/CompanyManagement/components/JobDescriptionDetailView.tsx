@@ -643,17 +643,17 @@ export function JobDescriptionDetailView({
                 </Button>
               </div>
             ) : (
-              <div className="scrollbar-thin flex items-center gap-2.5 overflow-x-auto pb-2">
+              <div className="scrollbar-thin flex items-stretch gap-2.5 overflow-x-auto pb-2">
                 {initialRounds.map((round, index) => {
                   const meta = templates.find((template) => template.type === round.roundType);
                   const isLast = index === initialRounds.length - 1;
                   const reviewer = staffUsers.find((s) => s.id === round.reviewerId);
 
                   return (
-                    <div key={index} className="flex shrink-0 items-center gap-2.5">
+                    <div key={index} className="flex shrink-0 items-stretch gap-2.5">
                       <div
                         onClick={() => setIsEditorOpen(true)}
-                        className="group flex max-w-[210px] min-w-[170px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
+                        className="group flex h-full w-full max-w-[210px] min-w-[170px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
                         {/* Round Header */}
                         <div className="flex items-center justify-between gap-2">
                           <Badge
@@ -674,37 +674,50 @@ export function JobDescriptionDetailView({
                           {round.name}
                         </h4>
 
-                        {/* Reviewer row — visible when staffUsers have loaded */}
+                        {/* Reviewer row — visible when staffUsers have loaded.
+                            For QUIZ rounds we render an empty placeholder row with
+                            the same top border so the card layout stays aligned
+                            with the other cards (badge → name → bordered slot),
+                            but no reviewer text or Change button is shown —
+                            Quiz rounds are auto-graded. */}
                         {staffUsers.length > 0 && (
-                          <div className="mt-2 flex items-center justify-between gap-1.5 border-t border-slate-100 pt-2 dark:border-slate-800/60">
-                            <div className="flex min-w-0 items-center gap-1.5">
-                              <Users className="h-3 w-3 shrink-0 text-slate-400" />
-                              <span
-                                className={cn(
-                                  "truncate text-[11px] font-medium",
-                                  reviewer
-                                    ? "text-slate-700 dark:text-slate-300"
-                                    : "text-amber-600 italic dark:text-amber-400"
-                                )}
-                                title={reviewer?.email ?? undefined}>
-                                {reviewer
-                                  ? `${t("adminCompanymanagement.reviewerLabel", "Reviewer")}: ${reviewer.name ?? `#${round.reviewerId}`}`
-                                  : t(
-                                      "adminCompanymanagement.reviewerStaffCardWarning",
-                                      "Chưa gán người chấm"
+                          <div
+                            className={cn(
+                              "mt-2 flex items-center border-t border-slate-100 pt-2 dark:border-slate-800/60",
+                              round.roundType !== "QUIZ" && "justify-between gap-1.5"
+                            )}>
+                            {round.roundType !== "QUIZ" ? (
+                              <>
+                                <div className="flex min-w-0 items-center gap-1.5">
+                                  <Users className="h-3 w-3 shrink-0 text-slate-400" />
+                                  <span
+                                    className={cn(
+                                      "truncate text-[11px] font-medium",
+                                      reviewer
+                                        ? "text-slate-700 dark:text-slate-300"
+                                        : "text-amber-600 italic dark:text-amber-400"
                                     )}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (round.id != null) setChangingReviewerRoundId(round.id);
-                              }}
-                              disabled={round.id == null}
-                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-indigo-400 dark:hover:bg-indigo-950/40">
-                              {t("adminCompanymanagement.changeReviewer", "Đổi")}
-                            </button>
+                                    title={reviewer?.email ?? undefined}>
+                                    {reviewer
+                                      ? `${t("adminCompanymanagement.reviewerLabel", "Reviewer")}: ${reviewer.name ?? `#${round.reviewerId}`}`
+                                      : t(
+                                          "adminCompanymanagement.reviewerStaffCardWarning",
+                                          "Chưa gán người chấm"
+                                        )}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (round.id != null) setChangingReviewerRoundId(round.id);
+                                  }}
+                                  disabled={round.id == null}
+                                  className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-indigo-400 dark:hover:bg-indigo-950/40">
+                                  {t("adminCompanymanagement.changeReviewer", "Đổi")}
+                                </button>
+                              </>
+                            ) : null}
                           </div>
                         )}
                       </div>
