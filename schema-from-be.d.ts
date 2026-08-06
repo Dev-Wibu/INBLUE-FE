@@ -3748,19 +3748,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -4086,22 +4086,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            trimDirectiveWhitespaces?: string;
+            includeCodas?: string[];
+            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
-            includeCodas?: string[];
-            errorOnELNotFound?: string;
-            trimDirectiveWhitespaces?: string;
-            errorOnUndeclaredNamespace?: string;
             deferredSyntaxAllowedAsLiteral?: string;
-            isXml?: string;
+            errorOnUndeclaredNamespace?: string;
             elIgnored?: string;
-            urlPatterns?: string[];
+            isXml?: string;
             defaultContentType?: string;
+            urlPatterns?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -4136,7 +4136,11 @@ export interface components {
             };
         };
         ServletContext: {
-            initParameterNames?: unknown;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -4154,11 +4158,7 @@ export interface components {
             serverInfo?: string;
             /** Format: int32 */
             sessionTimeout?: number;
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            virtualServerName?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -4227,8 +4227,8 @@ export interface components {
             minorVersion?: number;
         };
         ServletRegistration: {
-            runAsRole?: string;
             mappings?: string[];
+            runAsRole?: string;
             initParameters?: {
                 [key: string]: string;
             };

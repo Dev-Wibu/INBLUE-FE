@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useEmailSubmission } from "@/hooks/useEmailSubmission";
+import { formatDateTime } from "@/lib/formatting";
 import {
   AlertCircle,
   AlertTriangle,
@@ -12,11 +13,11 @@ import {
   CheckCircle2,
   Copy,
   Globe,
-  Inbox,
   Italic,
   Link2,
   List,
   Mail,
+  Maximize2,
   Paperclip,
   RefreshCw,
   Send,
@@ -158,10 +159,24 @@ export function EmailSimulatorModule({
     [sampleBody, subjectToken]
   );
 
+  // Safely parse submissionData if string
+  const parsedSubmissionData = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw = (detail as any)?.submissionData;
+    if (typeof raw === "string") {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return { textContent: raw };
+      }
+    }
+    return raw || {};
+  }, [detail]);
+
   // 1. Lấy emailSubmissionId trực tiếp từ application detail object (GET /api/application-details/application/{applicationId})
   const emailSubmissionId: number | null =
     (detail as { emailSubmissionId?: number | null } | undefined)?.emailSubmissionId ??
-    (detail?.submissionData as { emailSubmissionId?: number | null } | undefined)
+    (parsedSubmissionData as { emailSubmissionId?: number | null } | undefined)
       ?.emailSubmissionId ??
     null;
 
@@ -178,8 +193,18 @@ export function EmailSimulatorModule({
   const phase = useMemo<Phase>(() => {
     const detailStatus = detail?.status as string | undefined;
 
-    // Nếu detail đã COMPLETED hoặc AI_EVALUATED
-    if (detail && (detailStatus === "AI_EVALUATED" || detailStatus === "COMPLETED")) {
+    // Nếu detail đã có kết quả hoặc đang được Staff rà soát/chấm điểm
+    if (
+      detail &&
+      (detailStatus === "AI_EVALUATED" ||
+        detailStatus === "COMPLETED" ||
+        detailStatus === "SUBMITTED" ||
+        detailStatus === "GRADING" ||
+        detailStatus === "PASSED" ||
+        detailStatus === "FAILED" ||
+        detail?.hrScore !== undefined ||
+        emailSubmissionId != null)
+    ) {
       if (emailSubmission?.status === "IGNORED") {
         return {
           kind: "REJECTED",
@@ -863,50 +888,89 @@ export function EmailSimulatorModule({
               </div>
             </Card>
 
-            <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-800/80 dark:bg-slate-900/80">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                  <Inbox className="h-4 w-4 text-indigo-400" />
-                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                    Email đã thu thập
-                  </h4>
+            {/* 📬 CANDIDATE SUBMITTED EMAIL CARD (Email App Client Style) */}
+            <Card className="relative overflow-hidden rounded-2xl border border-indigo-200/80 bg-white shadow-md transition-all dark:border-indigo-900/50 dark:bg-slate-900">
+              {/* Card Header Bar */}
+              <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/80">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-extrabold tracking-wider text-slate-900 uppercase dark:text-slate-100">
+                      BÀI LÀM EMAIL CỦA ỨNG VIÊN
+                    </h4>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                      Hệ thống IMAP đã thu thập email bài thi
+                    </p>
+                  </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    if (emailSubmissionId != null) {
+                {emailSubmissionId != null && emailSubmissionId > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
                       setPreviewEmailId(emailSubmissionId);
                       setPreviewOpen(true);
-                    }
-                  }}
-                  disabled={emailSubmissionId == null}
-                  className="h-7 gap-1 border-slate-200 bg-slate-50 text-[11px] font-semibold text-indigo-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-indigo-300 dark:hover:bg-slate-700">
-                  <Mail className="h-3.5 w-3.5" />
-                  <span>Xem đầy đủ</span>
-                </Button>
+                    }}
+                    className="h-7 gap-1.5 border-indigo-300 bg-indigo-50 px-2.5 text-[11px] font-bold text-indigo-700 shadow-2xs hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/60">
+                    <Maximize2 className="h-3.5 w-3.5" />
+                    <span>Xem Pop-up Chi Tiết</span>
+                  </Button>
+                )}
               </div>
 
-              {emailSubmission && (
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex items-baseline gap-2">
-                    <span className="w-12 text-[10px] font-bold text-slate-400 uppercase">
-                      From:
-                    </span>
-                    <span className="truncate font-mono text-slate-700 dark:text-slate-200">
-                      {emailSubmission.senderEmail}
-                    </span>
+              {/* Email Content Body */}
+              <div className="space-y-3 p-4">
+                {/* Meta Box */}
+                <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-xs dark:border-slate-800 dark:bg-slate-950/60">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 pb-2 dark:border-slate-800/60">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="w-14 font-mono text-[10px] font-bold text-slate-400 uppercase">
+                        From:
+                      </span>
+                      <span className="truncate font-mono font-bold text-indigo-600 dark:text-indigo-300">
+                        {emailSubmission?.senderEmail ||
+                          parsedSubmissionData?.senderEmail ||
+                          "Ứng viên"}
+                      </span>
+                    </div>
+                    {(emailSubmission?.receivedAt || emailSubmission?.createdAt) && (
+                      <span className="font-mono text-[10px] text-slate-400">
+                        {formatDateTime(emailSubmission.receivedAt || emailSubmission.createdAt)}
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="w-12 text-[10px] font-bold text-slate-400 uppercase">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="w-14 font-mono text-[10px] font-bold text-slate-400 uppercase">
                       Subject:
                     </span>
-                    <span className="truncate font-mono font-bold text-amber-700 dark:text-amber-300">
-                      {emailSubmission.subject}
+                    <span className="truncate font-mono font-extrabold text-amber-600 dark:text-amber-400">
+                      {emailSubmission?.subject ||
+                        parsedSubmissionData?.subject ||
+                        `[INBLUE-APP-${applicationId}]`}
                     </span>
                   </div>
                 </div>
-              )}
+
+                {/* Email Reader Box */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between px-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                    <span>NỘI DUNG EMAIL GỬI ĐI</span>
+                    <span className="flex items-center gap-1 font-mono text-[9px] text-emerald-500 dark:text-emerald-400">
+                      <ShieldCheck className="h-3 w-3" /> IMAP Captured Body
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-inner dark:border-slate-800 dark:bg-slate-950">
+                    <pre className="max-h-60 overflow-y-auto font-sans text-xs leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200">
+                      {emailSubmission?.bodyText ||
+                        parsedSubmissionData?.textContent ||
+                        parsedSubmissionData?.body ||
+                        "Hệ thống đã ghi nhận bài thi email của ứng viên."}
+                    </pre>
+                  </div>
+                </div>
+              </div>
             </Card>
 
             {aiFeedback?.extraMetrics && Object.keys(aiFeedback.extraMetrics).length > 0 && (

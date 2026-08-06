@@ -696,7 +696,12 @@ export function StaffGradingWorkspacePage() {
   const [loading, setLoading] = useState(true);
 
   // Selected Round View in Workspace
-  const [selectedRoundOrder, setSelectedRoundOrder] = useState<number>(1);
+  const [selectedRoundOrder, setSelectedRoundOrder] = useState<number>(0);
+
+  // Reset selectedRoundOrder when switching applications
+  useEffect(() => {
+    setSelectedRoundOrder(0);
+  }, [primaryId]);
 
   // Modal State
   const [isGradingModalOpen, setIsGradingModalOpen] = useState(false);
@@ -723,7 +728,7 @@ export function StaffGradingWorkspacePage() {
         // primaryId is an Application ID
         setApp(appRes.data);
         const currentOrder = appRes.data.currentRoundOrder ?? 1;
-        setSelectedRoundOrder(currentOrder);
+        setSelectedRoundOrder((prev) => (prev === 0 ? currentOrder : prev));
         fetchedApplicationId = appRes.data.id!;
 
         // 3. Fetch JD Info
@@ -770,7 +775,10 @@ export function StaffGradingWorkspacePage() {
             if (realAppRes.success && realAppRes.data) {
               setApp(realAppRes.data);
               const currentOrder = realAppRes.data.currentRoundOrder ?? 1;
-              setSelectedRoundOrder(currentOrder);
+              const detailRoundOrder = d.roundOrder ?? d.round?.roundOrder;
+              setSelectedRoundOrder((prev) =>
+                prev === 0 ? detailRoundOrder || currentOrder : prev
+              );
 
               // Fetch JD Info
               if (realAppRes.data.jdId) {
