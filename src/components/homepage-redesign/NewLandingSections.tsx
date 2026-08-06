@@ -131,71 +131,6 @@ const rounds: Array<{
   { id: "ai", icon: Bot, status: "skip" },
 ];
 
-const COMMON_TECHS = [
-  "React",
-  "React.js",
-  "Node.js",
-  "JavaScript",
-  "TypeScript",
-  "Python",
-  "Java",
-  "Golang",
-  "Go",
-  "C#",
-  ".NET",
-  "PHP",
-  "Laravel",
-  "Vue",
-  "Angular",
-  "SQL",
-  "MySQL",
-  "PostgreSQL",
-  "MongoDB",
-  "AWS",
-  "Docker",
-  "Kubernetes",
-  "DevOps",
-  "AI",
-  "Machine Learning",
-  "Flutter",
-  "React Native",
-  "iOS",
-  "Android",
-  "Swift",
-  "Kotlin",
-  "Spring Boot",
-  "Ruby",
-  "Git",
-  "Figma",
-  "UI/UX",
-  "QA",
-  "Tester",
-];
-
-function extractCompanyTechTags(company: Company): string[] {
-  const tagsSet = new Set<string>();
-
-  if (company.industry) {
-    tagsSet.add(company.industry);
-  }
-
-  if (Array.isArray(company.jobDescriptions)) {
-    for (const job of company.jobDescriptions) {
-      const textToSearch = `${job.title ?? ""} ${job.description ?? ""} ${job.requirements ?? ""}`;
-      for (const tech of COMMON_TECHS) {
-        if (new RegExp(`\\b${tech.replace(".", "\\.")}\\b`, "i").test(textToSearch)) {
-          tagsSet.add(tech);
-        }
-      }
-    }
-  }
-
-  const tags = Array.from(tagsSet);
-  if (tags.length > 0) return tags.slice(0, 5);
-
-  return ["Software", "IT", "Engineering", "Technology"];
-}
-
 export function JobDescriptionSlice() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -216,7 +151,28 @@ export function JobDescriptionSlice() {
             const content = (res.data as { content?: unknown }).content;
             if (Array.isArray(content)) list = content as Company[];
           }
-          setCompanies(list.filter((c) => c.id && !c.isDeleted));
+          let filteredList = list.filter((c) => c.id && !c.isDeleted);
+
+          filteredList = await Promise.all(
+            filteredList.map(async (c) => {
+              if (c.id && (!c.jobDescriptions || c.jobDescriptions.length === 0)) {
+                try {
+                  const jobsRes = await companyManager.getJobs(c.id);
+                  if (jobsRes.success && jobsRes.data) {
+                    const jobs = Array.isArray(jobsRes.data)
+                      ? jobsRes.data
+                      : (jobsRes.data as { data?: JobDescription[] }).data || [];
+                    return { ...c, jobDescriptions: jobs };
+                  }
+                } catch (err) {
+                  console.error("[JobDescriptionSlice] Error fetching jobs for company", c.id, err);
+                }
+              }
+              return c;
+            })
+          );
+
+          setCompanies(filteredList);
         }
       } catch (err) {
         console.error("[JobDescriptionSlice] Error fetching companies:", err);
@@ -301,7 +257,6 @@ export function JobDescriptionSlice() {
                 (j) => j.id && j.status !== "CLOSED" && !j.isDeleted
               );
               const openJobsCount = activeJobs.length;
-              const techTags = extractCompanyTechTags(company);
 
               return (
                 <div
@@ -345,21 +300,17 @@ export function JobDescriptionSlice() {
                     </div>
                   </div>
 
-                  {/* Card Content / Company Name & Tags */}
+                  {/* Card Content / Company Name & Description */}
                   <div className="flex flex-1 flex-col items-center p-5 text-center">
                     <h3 className="line-clamp-1 text-base font-bold text-slate-950 transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
                       {company.name}
                     </h3>
 
-                    <div className="mt-3 flex min-h-[3.25rem] flex-wrap items-center justify-center gap-1.5">
-                      {techTags.map((tag, idx) => (
-                        <span
-                          key={idx}
-                          className="rounded-md bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 transition-colors group-hover:bg-slate-200/70 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-slate-700/70">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                    {company.description && (
+                      <p className="mt-2.5 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                        {company.description}
+                      </p>
+                    )}
                   </div>
 
                   {/* Card Footer: Location & Job Count */}

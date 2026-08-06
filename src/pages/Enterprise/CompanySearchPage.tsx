@@ -1,21 +1,11 @@
 import { HomepageHeader } from "@/components/homepage-redesign";
 import { Footer } from "@/components/layouts";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { companyManager, type Company } from "@/services/company.manager";
 import type { TFunction } from "i18next";
-import {
-  BriefcaseBusiness,
-  Building2,
-  Globe2,
-  MapPin,
-  Search,
-  ShieldCheck,
-  Users,
-  X,
-} from "lucide-react";
+import { BriefcaseBusiness, Building2, MapPin, Search, ShieldCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
@@ -108,78 +98,84 @@ interface CompanyCardProps {
 
 function CompanyCard({ company, t }: CompanyCardProps) {
   const openRoleCount = getOpenRoleCount(company);
-  const initials = getCompanyInitials(company.name);
 
   return (
     <Link
       to={`/enterprise/company/${company.id}`}
-      className="group flex min-h-[296px] flex-col rounded-2xl border border-slate-200/80 bg-white p-5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[#0047AB]/35 hover:shadow-[0_16px_40px_rgba(15,23,42,0.08)] focus-visible:ring-2 focus-visible:ring-[#0047AB]/40 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-900 dark:hover:border-[#66B2FF]/35">
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 text-lg font-bold text-[#0047AB] dark:border-slate-700 dark:bg-slate-950 dark:text-[#66B2FF]">
+      className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 hover:border-slate-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
+      {/* Header with Radial SVG Grid Pattern + Center Logo Box */}
+      <div className="relative flex h-36 w-full items-center justify-center border-b border-slate-100 bg-gradient-to-b from-slate-50/90 via-slate-50/50 to-white px-4 dark:border-slate-800/80 dark:from-slate-800/40 dark:via-slate-800/20 dark:to-slate-900">
+        <svg
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] stroke-slate-200/50 dark:stroke-slate-700/30"
+          fill="none">
+          <defs>
+            <pattern
+              id={`grid-pattern-search-${company.id}`}
+              width="16"
+              height="16"
+              patternUnits="userSpaceOnUse">
+              <path d="M.5 16V.5H16" />
+            </pattern>
+          </defs>
+          <rect
+            width="100%"
+            height="100%"
+            strokeWidth="0"
+            fill={`url(#grid-pattern-search-${company.id})`}
+          />
+        </svg>
+
+        <div className="relative z-1 flex h-20 w-28 items-center justify-center rounded-xl border border-slate-200/80 bg-white p-2.5 shadow-sm transition-transform duration-300 group-hover:scale-105 dark:border-slate-700 dark:bg-slate-800">
           {company.logoUrl ? (
-            <img src={company.logoUrl} alt={company.name} className="h-12 w-12 object-contain" />
+            <img
+              src={company.logoUrl}
+              alt={company.name || t("common.company")}
+              className="max-h-full max-w-full object-contain"
+            />
           ) : (
-            initials
+            <Building2 className="h-8 w-8 text-[#0047AB] dark:text-[#66B2FF]" />
           )}
         </div>
-
-        <Badge className="rounded-full bg-[#0047AB]/10 px-3 py-1 text-xs font-semibold text-[#0047AB] hover:bg-[#0047AB]/10 dark:bg-[#66B2FF]/15 dark:text-[#66B2FF]">
-          {t("enterpriseCompanysearchpage.openPositionsCount", { count: openRoleCount })}
-        </Badge>
       </div>
 
-      {company.industry && (
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            {company.industry}
+      {/* Card Content / Company Name & Description */}
+      <div className="flex flex-1 flex-col items-center p-5 text-center">
+        <h3 className="line-clamp-1 text-base font-bold text-slate-950 transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
+          {company.name}
+        </h3>
+
+        {company.description && (
+          <p className="mt-2.5 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            {company.description}
+          </p>
+        )}
+      </div>
+
+      {/* Card Footer: Location & Open Jobs Count */}
+      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-5 py-3.5 text-xs dark:border-slate-800 dark:bg-slate-900/60">
+        {company.location ? (
+          <div className="flex max-w-[55%] items-center gap-1.5 font-medium text-slate-500 dark:text-slate-400">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{company.location}</span>
+          </div>
+        ) : (
+          <div />
+        )}
+
+        <div className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+          </span>
+          <span>
+            {t("enterpriseCompanysearchpage.openPositionsCount", { count: openRoleCount })}
           </span>
         </div>
-      )}
-
-      <h3 className="line-clamp-2 text-xl font-semibold tracking-tight text-slate-950 transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
-        {company.name}
-      </h3>
-
-      {company.description && (
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
-          {company.description}
-        </p>
-      )}
-
-      {(company.location || company.size || company.foundedYear || company.website) && (
-        <div className="mt-auto grid gap-2 border-t border-slate-100 pt-4 text-xs font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
-          {company.location && (
-            <div className="flex min-w-0 items-center gap-2">
-              <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className="truncate">{company.location}</span>
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            {company.size && (
-              <span className="inline-flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-slate-400" />
-                {company.size}
-              </span>
-            )}
-            {company.foundedYear && (
-              <span>
-                {t("enterpriseCompanysearchpage.sinceFoundedYear", { year: company.foundedYear })}
-              </span>
-            )}
-            {company.website && (
-              <span className="inline-flex items-center gap-1.5 text-[#0047AB] dark:text-[#66B2FF]">
-                <Globe2 className="h-4 w-4" />
-                {t("enterpriseCompanysearchpage.website")}
-              </span>
-            )}
-          </div>
-        </div>
-      )}
+      </div>
     </Link>
   );
 }
-
 interface FeaturedCompanyDeskProps {
   companies: Company[];
   isLoading: boolean;
@@ -336,6 +332,26 @@ export function CompanySearchPage() {
               company.location?.toLowerCase().includes(term)
           );
         }
+
+        // Fetch jobs for each company to extract real skill tags
+        companyList = await Promise.all(
+          companyList.map(async (c) => {
+            if (c.id && (!c.jobDescriptions || c.jobDescriptions.length === 0)) {
+              try {
+                const jobsRes = await companyManager.getJobs(c.id);
+                if (jobsRes.success && jobsRes.data) {
+                  const jobs = Array.isArray(jobsRes.data)
+                    ? jobsRes.data
+                    : (jobsRes.data as { data?: JobDescription[] }).data || [];
+                  return { ...c, jobDescriptions: jobs };
+                }
+              } catch (err) {
+                console.error("[CompanySearchPage] Error fetching jobs for company", c.id, err);
+              }
+            }
+            return c;
+          })
+        );
 
         setCompanies(companyList);
       } else {
