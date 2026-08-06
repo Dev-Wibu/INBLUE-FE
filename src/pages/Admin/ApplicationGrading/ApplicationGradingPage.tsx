@@ -15,6 +15,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useApplication, useApplications, useUsers } from "@/hooks/useApplication";
 import {
@@ -49,6 +57,8 @@ import {
   ExternalLink,
   FileText,
   Filter,
+  LayoutGrid,
+  List,
   Mail,
   Search,
   Sparkles,
@@ -576,6 +586,187 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
 }
 
 // ============================================================
+// Application Grading Table Component (List View)
+// ============================================================
+
+function ApplicationGradingTable({
+  items,
+  userMap,
+  userAvatarMap,
+  onOpenGrading,
+}: {
+  items: GradingListItem[];
+  userMap: Map<number, string>;
+  userAvatarMap: Map<number, string>;
+  onOpenGrading: (_appId: number, _detailId?: number, _item?: GradingListItem) => void;
+}) {
+  return (
+    <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+      <Table>
+        <TableHeader className="border-b border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90">
+          <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
+            <TableHead className="h-11 pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+              #ID
+            </TableHead>
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+              Ứng viên
+            </TableHead>
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+              Vị trí / JD
+            </TableHead>
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+              Vòng chấm
+            </TableHead>
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+              Trạng thái
+            </TableHead>
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+              Điểm số
+            </TableHead>
+            <TableHead className="h-11 pr-6 text-right text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+              Thao tác
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {items.map((item) => {
+            const status = item.detailStatus ?? item.status;
+            const score = item.overallScore;
+            const aiScore = item.detail?.aiScore;
+            const hrScore = item.detail?.hrScore;
+            const roundId = item.detail?.roundId ?? item.currentRoundOrder;
+            const jdId = item.jdId;
+            const userId = item.userId;
+            const userName =
+              item.userName ?? userMap.get(userId!) ?? (userId ? `User #${userId}` : "-");
+            const userAvatar = item.userAvatar ?? (userId ? userAvatarMap.get(userId) : undefined);
+            const statusCfg = STATUS_CONFIG[status ?? ""] ?? {
+              label: status,
+              className: "bg-slate-100 text-slate-600",
+              dot: "bg-slate-400",
+            };
+
+            return (
+              <TableRow
+                key={item.detailId ?? item.id}
+                onClick={() => onOpenGrading(item.id, item.detailId, item)}
+                className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-indigo-50/40 dark:border-slate-800/60 dark:hover:bg-slate-800/60">
+                {/* ID Column */}
+                <TableCell className="pl-6 font-mono text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                      Đơn #{item.id}
+                    </span>
+                    {item.detailId && (
+                      <span className="text-[10px] font-normal text-slate-400">
+                        Chi tiết #{item.detailId}
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
+
+                {/* Candidate Profile */}
+                <TableCell className="py-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9 shrink-0 rounded-xl shadow-2xs ring-1 ring-slate-200 dark:ring-slate-700">
+                      <AvatarImage src={userAvatar ?? undefined} alt={userName} />
+                      <AvatarFallback className="rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-black text-white">
+                        {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+                        {userName}
+                      </h4>
+                      {userId && (
+                        <p className="text-[10px] font-medium text-slate-400">ID: #{userId}</p>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+
+                {/* Job Position / JD */}
+                <TableCell>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    <Briefcase className="h-3 w-3 text-indigo-500" />
+                    {jdId != null ? `JD #${jdId}` : "Chưa gắn JD"}
+                  </span>
+                </TableCell>
+
+                {/* Round */}
+                <TableCell>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <Clock className="h-3.5 w-3.5 text-indigo-500" />
+                    Vòng #{roundId ?? 1}
+                  </span>
+                </TableCell>
+
+                {/* Status */}
+                <TableCell>
+                  <span
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide uppercase",
+                      statusCfg.className
+                    )}>
+                    {statusCfg.dot && (
+                      <span className={cn("h-1.5 w-1.5 rounded-full", statusCfg.dot)} />
+                    )}
+                    {statusCfg.label}
+                  </span>
+                </TableCell>
+
+                {/* Score */}
+                <TableCell>
+                  {hrScore !== undefined || score !== undefined ? (
+                    <div className="flex items-center gap-1.5">
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400">
+                        {hrScore ?? score}
+                      </span>
+                      <span className="text-[10px] font-normal text-slate-400">/100</span>
+                      {aiScore !== undefined && (
+                        <span className="ml-1 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                          AI: {Math.round(aiScore)}
+                        </span>
+                      )}
+                    </div>
+                  ) : aiScore !== undefined ? (
+                    <div className="flex items-center gap-1">
+                      <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+                      <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                        AI: {Math.round(aiScore)}/100
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="font-mono text-xs text-slate-400">—</span>
+                  )}
+                </TableCell>
+
+                {/* Actions */}
+                <TableCell className="pr-6 text-right">
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenGrading(item.id, item.detailId, item);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 rounded-lg px-2.5 text-xs font-extrabold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/60">
+                    <span>{t("grading.grade")}</span>
+                    <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+// ============================================================
 // Application Grading List Page
 // ============================================================
 
@@ -594,6 +785,9 @@ export function ApplicationGradingPage({
   const dashboardBase = basePath ?? (location.pathname.startsWith("/staff") ? "/staff" : "/admin");
   const { user } = useAuthStore();
   const isStaff = user?.role === "STAFF";
+
+  // View mode state: default to "table" (List View as requested)
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   // Staff & Admin: lấy tất cả applications (chỉ dùng cho Admin để hiển thị danh sách)
   const { data: rawApps, refetch: refetchApps } = useApplications();
@@ -715,12 +909,6 @@ export function ApplicationGradingPage({
                 return true;
               }
               return false;
-            }
-            // AI_EVALUATED: Show all items where AI has graded (regardless of HR status)
-            if (statusFilter === "AI_EVALUATED") {
-              const isAiEvaluated =
-                item.detailStatus === "AI_EVALUATED" || item.status === "AI_EVALUATED";
-              return isAiEvaluated;
             }
             // Standard status filters (PENDING, SUBMITTED, COMPLETED)
             if (item.detailStatus !== statusFilter && item.status !== statusFilter) {
@@ -878,10 +1066,7 @@ export function ApplicationGradingPage({
             <SelectContent>
               <SelectItem value="all">{t("common.allStatus")}</SelectItem>
               {isStaff && (
-                <>
-                  <SelectItem value="NEEDS_HR_SCORING">{t("status.aiGradedNeedsHr")}</SelectItem>
-                  <SelectItem value="AI_EVALUATED">{t("status.aiGraded")}</SelectItem>
-                </>
+                <SelectItem value="NEEDS_HR_SCORING">{t("status.aiGradedNeedsHr")}</SelectItem>
               )}
               <SelectItem value="PENDING">{t("status.pendingSubmit")}</SelectItem>
               <SelectItem value="SUBMITTED">{t("adminQuizsetmanagement.submitted")}</SelectItem>
@@ -901,6 +1086,38 @@ export function ApplicationGradingPage({
               <SelectItem value="score-low">{t("common.sortScoreLow")}</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* View Switcher */}
+          <div className="flex items-center rounded-lg border border-slate-200 bg-slate-100/80 p-0.5 dark:border-slate-800 dark:bg-slate-800/80">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("table")}
+              className={cn(
+                "h-8 rounded-md px-2.5 text-xs font-bold transition-all",
+                viewMode === "table"
+                  ? "bg-white text-indigo-600 shadow-2xs dark:bg-slate-900 dark:text-indigo-400"
+                  : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              )}
+              title="Xem dạng danh sách">
+              <List className="mr-1.5 h-4 w-4" />
+              <span className="hidden sm:inline">Danh sách</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("card")}
+              className={cn(
+                "h-8 rounded-md px-2.5 text-xs font-bold transition-all",
+                viewMode === "card"
+                  ? "bg-white text-indigo-600 shadow-2xs dark:bg-slate-900 dark:text-indigo-400"
+                  : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              )}
+              title="Xem dạng thẻ">
+              <LayoutGrid className="mr-1.5 h-4 w-4" />
+              <span className="hidden sm:inline">Thẻ</span>
+            </Button>
+          </div>
 
           <ReloadButton
             onReload={async () => {
@@ -934,154 +1151,167 @@ export function ApplicationGradingPage({
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col duration-300">
-            {/* Card Grid */}
-            <div className="grid flex-1 grid-cols-1 content-start gap-5 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
-              {paginatedData.map((item) => {
-                const status = item.detailStatus ?? item.status;
-                const score = item.overallScore;
-                const scorePercent = score !== undefined ? Math.min(Math.round(score), 100) : 0;
-                const roundId = item.detail?.roundId ?? item.currentRoundOrder;
-                const jdId = item.jdId;
-                const userId = item.userId;
-                const userName =
-                  item.userName ?? userMap.get(userId!) ?? (userId ? `User #${userId}` : "-");
-                const userAvatar =
-                  item.userAvatar ?? (userId ? userAvatarMap.get(userId) : undefined);
-                const statusCfg = STATUS_CONFIG[status ?? ""] ?? {
-                  label: status,
-                  className: "bg-slate-100 text-slate-600",
-                  dot: "bg-slate-400",
-                };
+            {viewMode === "table" ? (
+              <div className="p-4 sm:p-6">
+                <ApplicationGradingTable
+                  items={paginatedData}
+                  userMap={userMap}
+                  userAvatarMap={userAvatarMap}
+                  onOpenGrading={handleOpenGrading}
+                />
+              </div>
+            ) : (
+              /* Card Grid */
+              <div className="grid flex-1 grid-cols-1 content-start gap-5 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
+                {paginatedData.map((item) => {
+                  const status = item.detailStatus ?? item.status;
+                  const score = item.overallScore;
+                  const scorePercent = score !== undefined ? Math.min(Math.round(score), 100) : 0;
+                  const roundId = item.detail?.roundId ?? item.currentRoundOrder;
+                  const jdId = item.jdId;
+                  const userId = item.userId;
+                  const userName =
+                    item.userName ?? userMap.get(userId!) ?? (userId ? `User #${userId}` : "-");
+                  const userAvatar =
+                    item.userAvatar ?? (userId ? userAvatarMap.get(userId) : undefined);
+                  const statusCfg = STATUS_CONFIG[status ?? ""] ?? {
+                    label: status,
+                    className: "bg-slate-100 text-slate-600",
+                    dot: "bg-slate-400",
+                  };
 
-                return (
-                  <button
-                    key={item.detailId ?? item.id}
-                    onClick={() => handleOpenGrading(item.id, item.detailId, item)}
-                    className="group relative flex w-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-950/30">
-                    <div className="space-y-4">
-                      {/* Top Row: ID Badge & Status Pill */}
-                      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-                        <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                          <User className="h-3 w-3 text-indigo-500" />
-                          Đơn #{item.id}
-                          {jdId != null ? ` · JD #${jdId}` : ""}
-                        </span>
+                  return (
+                    <button
+                      key={item.detailId ?? item.id}
+                      onClick={() => handleOpenGrading(item.id, item.detailId, item)}
+                      className="group relative flex w-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-950/30">
+                      <div className="space-y-4">
+                        {/* Top Row: ID Badge & Status Pill */}
+                        <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                            <User className="h-3 w-3 text-indigo-500" />
+                            Đơn #{item.id}
+                            {jdId != null ? ` · JD #${jdId}` : ""}
+                          </span>
 
-                        <span
-                          className={cn(
-                            "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide",
-                            statusCfg.className
-                          )}>
-                          {statusCfg.dot && (
-                            <span className={cn("h-1.5 w-1.5 rounded-full", statusCfg.dot)} />
-                          )}
-                          {statusCfg.label}
-                        </span>
-                      </div>
-
-                      {/* Candidate Profile Header */}
-                      <div className="flex items-center gap-3.5">
-                        <Avatar className="h-12 w-12 shrink-0 rounded-2xl shadow-sm ring-2 ring-slate-100 dark:ring-slate-800">
-                          <AvatarImage src={userAvatar ?? undefined} alt={userName} />
-                          <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-base font-black text-white">
-                            {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
-                          </AvatarFallback>
-                        </Avatar>
-
-                        <div className="min-w-0 flex-1 space-y-0.5">
-                          <h3 className="truncate text-base font-black tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                            {userName}
-                          </h3>
-                          <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
-                            Candidate Evaluation Workspace
-                          </p>
+                          <span
+                            className={cn(
+                              "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide",
+                              statusCfg.className
+                            )}>
+                            {statusCfg.dot && (
+                              <span className={cn("h-1.5 w-1.5 rounded-full", statusCfg.dot)} />
+                            )}
+                            {statusCfg.label}
+                          </span>
                         </div>
-                      </div>
 
-                      {/* Score Gauge & Round Details Box */}
-                      <div className="rounded-xl border border-slate-100 bg-slate-50/90 p-3.5 dark:border-slate-800 dark:bg-slate-950/60">
+                        {/* Candidate Profile Header */}
                         <div className="flex items-center gap-3.5">
-                          {/* Circular Score Gauge */}
-                          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
-                            <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 96 96">
-                              <circle
-                                cx="48"
-                                cy="48"
-                                r="36"
-                                className="stroke-slate-200 dark:stroke-slate-800"
-                                strokeWidth="6"
-                                fill="transparent"
-                              />
-                              {score !== undefined && (
+                          <Avatar className="h-12 w-12 shrink-0 rounded-2xl shadow-sm ring-2 ring-slate-100 dark:ring-slate-800">
+                            <AvatarImage src={userAvatar ?? undefined} alt={userName} />
+                            <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-base font-black text-white">
+                              {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            <h3 className="truncate text-base font-black tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                              {userName}
+                            </h3>
+                            <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
+                              Candidate Evaluation Workspace
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Score Gauge & Round Details Box */}
+                        <div className="rounded-xl border border-slate-100 bg-slate-50/90 p-3.5 dark:border-slate-800 dark:bg-slate-950/60">
+                          <div className="flex items-center gap-3.5">
+                            {/* Circular Score Gauge */}
+                            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
+                              <svg
+                                className="h-full w-full -rotate-90 transform"
+                                viewBox="0 0 96 96">
                                 <circle
                                   cx="48"
                                   cy="48"
                                   r="36"
-                                  className={cn(
-                                    "transition-all duration-700 ease-out",
-                                    scorePercent >= 70
-                                      ? "stroke-emerald-500"
-                                      : scorePercent >= 40
-                                        ? "stroke-amber-500"
-                                        : "stroke-red-500"
-                                  )}
+                                  className="stroke-slate-200 dark:stroke-slate-800"
                                   strokeWidth="6"
-                                  strokeDasharray={2 * Math.PI * 36}
-                                  strokeDashoffset={
-                                    2 * Math.PI * 36 - (scorePercent / 100) * 2 * Math.PI * 36
-                                  }
-                                  strokeLinecap="round"
                                   fill="transparent"
                                 />
-                              )}
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center text-center">
-                              {score !== undefined ? (
-                                <span className="text-sm font-extrabold text-slate-900 dark:text-white">
-                                  {score}
+                                {score !== undefined && (
+                                  <circle
+                                    cx="48"
+                                    cy="48"
+                                    r="36"
+                                    className={cn(
+                                      "transition-all duration-700 ease-out",
+                                      scorePercent >= 70
+                                        ? "stroke-emerald-500"
+                                        : scorePercent >= 40
+                                          ? "stroke-amber-500"
+                                          : "stroke-red-500"
+                                    )}
+                                    strokeWidth="6"
+                                    strokeDasharray={2 * Math.PI * 36}
+                                    strokeDashoffset={
+                                      2 * Math.PI * 36 - (scorePercent / 100) * 2 * Math.PI * 36
+                                    }
+                                    strokeLinecap="round"
+                                    fill="transparent"
+                                  />
+                                )}
+                              </svg>
+                              <div className="absolute inset-0 flex items-center justify-center text-center">
+                                {score !== undefined ? (
+                                  <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+                                    {score}
+                                  </span>
+                                ) : (
+                                  <span className="text-sm font-bold text-slate-400">—</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Info Column */}
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
+                                  {t("userApplicationhistory.totalScore")}
                                 </span>
-                              ) : (
-                                <span className="text-sm font-bold text-slate-400">—</span>
-                              )}
-                            </div>
-                          </div>
+                                <span className="text-xs font-black text-slate-900 dark:text-white">
+                                  {score !== undefined ? score : "—"}/100
+                                </span>
+                              </div>
 
-                          {/* Info Column */}
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
-                                {t("userApplicationhistory.totalScore")}
-                              </span>
-                              <span className="text-xs font-black text-slate-900 dark:text-white">
-                                {score !== undefined ? score : "—"}/100
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-                              <Clock className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
-                              <span className="truncate font-semibold">
-                                {t("userApplicationhistory.round")} #{roundId ?? 1}
-                              </span>
+                              <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                                <Clock className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
+                                <span className="truncate font-semibold">
+                                  {t("userApplicationhistory.round")} #{roundId ?? 1}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Card Bottom Footer */}
-                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
-                      <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        <ClipboardCheck className="h-4 w-4 text-indigo-500" />
-                        {t("grading.grade")}
-                      </span>
-                      <span className="flex items-center gap-1 text-xs font-bold text-indigo-600 transition-transform group-hover:translate-x-1 dark:text-indigo-400">
-                        {t("grading.grade")} <ArrowRight className="h-3.5 w-3.5" />
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                      {/* Card Bottom Footer */}
+                      <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
+                        <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                          <ClipboardCheck className="h-4 w-4 text-indigo-500" />
+                          {t("grading.grade")}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs font-bold text-indigo-600 transition-transform group-hover:translate-x-1 dark:text-indigo-400">
+                          {t("grading.grade")} <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Pagination */}
             <div className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
