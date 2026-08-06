@@ -51,13 +51,13 @@ interface AiInterviewModuleProps {
 }
 
 const DAY_LABELS: Record<NonNullable<KioskSchedule["dayOfWeek"]>, string> = {
-  MONDAY: "Thứ 2",
-  TUESDAY: "Thứ 3",
-  WEDNESDAY: "Thứ 4",
-  THURSDAY: "Thứ 5",
-  FRIDAY: "Thứ 6",
-  SATURDAY: "Thứ 7",
-  SUNDAY: "Chủ nhật",
+  MONDAY: "Mon",
+  TUESDAY: "Tue",
+  WEDNESDAY: "Wed",
+  THURSDAY: "Thu",
+  FRIDAY: "Fri",
+  SATURDAY: "Sat",
+  SUNDAY: "Sun",
 };
 
 const WEEK_DAYS = [
@@ -108,6 +108,7 @@ function AiInterviewSubheader({
   finalScore?: number;
   isCompleted: boolean;
 }) {
+  const { t } = useTranslation();
   const roundOrder = round.roundOrder ?? 7;
 
   return (
@@ -119,14 +120,15 @@ function AiInterviewSubheader({
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              Vòng {roundOrder}: Phỏng vấn AI tại Kiosk
+              {t("userApplication.aiInterview.aiInterviewTitle", { round: roundOrder })}
             </span>
             <span className="text-slate-600">•</span>
-            <span className="text-xs font-semibold text-indigo-400">Vòng {roundOrder}</span>
+            <span className="text-xs font-semibold text-indigo-400">
+              {t("userApplication.roundNumber", { number: roundOrder })}
+            </span>
           </div>
           <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
-            Chọn trạm Kiosk và khung giờ phù hợp. Sau khi đặt lịch, hệ thống sẽ cấp mã PIN 6 số để
-            bạn nhập tại Kiosk đúng giờ phỏng vấn.
+            {t("userApplication.aiInterview.aiInterviewDescription")}
           </p>
         </div>
       </div>
@@ -135,12 +137,16 @@ function AiInterviewSubheader({
         {isCompleted ? (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:text-emerald-300 dark:shadow-emerald-950/40">
             <CheckCircle2 className="h-4 w-4" />
-            <span>{finalScore != null ? `ĐIỂM AI ${finalScore}/100` : "ĐÃ HOÀN TẤT"}</span>
+            <span>
+              {finalScore != null
+                ? `${t("userApplication.aiInterview.aiScore")} ${finalScore}/100`
+                : t("userApplication.aiInterview.aiCompleted")}
+            </span>
           </span>
         ) : (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40">
             <CalendarClock className="h-3.5 w-3.5 text-indigo-400" />
-            <span>ĐẶT LỊCH KIOSK</span>
+            <span>{t("userApplication.aiInterview.bookKiosk")}</span>
           </span>
         )}
       </div>
@@ -159,6 +165,8 @@ function KioskCard({
   disabled?: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <button
       type="button"
@@ -186,7 +194,7 @@ function KioskCard({
               {kiosk.name ?? `Kiosk #${kiosk.id ?? "-"}`}
             </p>
             <p className="mt-0.5 line-clamp-1 text-xs leading-5 font-semibold text-slate-600 dark:text-slate-300">
-              {kiosk.location ?? "Chưa cập nhật vị trí"}
+              {kiosk.location ?? t("userApplication.aiInterview.locationNotUpdated")}
             </p>
           </div>
         </div>
@@ -196,17 +204,21 @@ function KioskCard({
       </div>
       <div className="mt-auto flex items-center gap-1.5 pt-2.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
         <RadioTower className="h-3.5 w-3.5" />
-        {kiosk.active === false ? "Tạm ngưng" : "Đang hoạt động"}
+        {kiosk.active === false
+          ? t("userApplication.aiInterview.paused")
+          : t("userApplication.aiInterview.active")}
       </div>
     </button>
   );
 }
 
 function ScheduleList({ schedules, loading }: { schedules: KioskSchedule[]; loading: boolean }) {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        Đang tải lịch hoạt động của kiosk...
+        {t("userApplication.aiInterview.scheduleLoading")}
       </div>
     );
   }
@@ -308,10 +320,10 @@ function KioskPinDialog({
             </div>
             <div>
               <DialogTitle className="text-lg font-black text-slate-950 dark:text-white">
-                Đặt lịch Kiosk thành công
+                {t("userApplication.aiInterview.bookingSuccess")}
               </DialogTitle>
               <DialogDescription className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                Hãy đến đúng trạm, đúng giờ và nhập mã PIN này để bắt đầu vòng phỏng vấn AI.
+                {t("userApplication.aiInterview.bookingSuccessDesc")}
               </DialogDescription>
             </div>
           </div>
@@ -320,7 +332,7 @@ function KioskPinDialog({
         <div className="px-6 py-6">
           <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center">
             <p className="text-xs font-extrabold tracking-[0.2em] text-emerald-700 uppercase dark:text-emerald-300">
-              Mã PIN phiên Kiosk
+              {t("userApplication.aiInterview.pinCode")}
             </p>
             <p className="mt-3 font-mono text-4xl font-black tracking-[0.28em] text-emerald-800 dark:text-emerald-200">
               {sessionKey || "------"}
@@ -331,27 +343,36 @@ function KioskPinDialog({
               disabled={!sessionKey}
               className="mt-4 h-10 gap-2 rounded-xl bg-emerald-500 px-5 text-sm font-extrabold text-emerald-950 hover:bg-emerald-400 disabled:opacity-60">
               <Copy className="h-4 w-4" />
-              Copy mã PIN
+              {t("userApplication.aiInterview.copyPinCode")}
             </Button>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
-              <p className="text-xs font-bold text-slate-400">Thời gian</p>
+              <p className="text-xs font-bold text-slate-400">
+                {t("userApplication.aiInterview.timeLabel")}
+              </p>
               <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
-                {booking?.scheduledStart ? formatDateTime(booking.scheduledStart) : "Chưa có"}
+                {booking?.scheduledStart
+                  ? formatDateTime(booking.scheduledStart)
+                  : t("userApplication.aiInterview.noData")}
               </p>
               <p className="mt-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-                {duration ? `${duration} phút` : "Theo slot đã đặt"}
+                {duration ? `${duration} phút` : t("userApplication.aiInterview.perSlot")}
               </p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
-              <p className="text-xs font-bold text-slate-400">Trạm Kiosk</p>
+              <p className="text-xs font-bold text-slate-400">
+                {t("userApplication.aiInterview.kioskStation")}
+              </p>
               <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
-                {kiosk?.name ?? (booking?.kioskId ? `Kiosk #${booking.kioskId}` : "Chưa có")}
+                {kiosk?.name ??
+                  (booking?.kioskId
+                    ? `Kiosk #${booking.kioskId}`
+                    : t("userApplication.aiInterview.noData"))}
               </p>
               <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-400">
-                {kiosk?.location ?? "Kiểm tra email để xem hướng dẫn chi tiết"}
+                {kiosk?.location ?? t("userApplication.aiInterview.checkEmailForDetails")}
               </p>
             </div>
           </div>
