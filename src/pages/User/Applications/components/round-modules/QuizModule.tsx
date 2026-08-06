@@ -556,19 +556,19 @@ export function QuizModule({
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {isFinished
-                  ? "BÁO CÁO KẾT QUẢ THI TRẮC NGHIỆM"
-                  : `VÒNG ${round.roundOrder ?? 3}: TRẮC NGHIỆM • TRẠM THI TRỰC TUYẾN`}
+                  ? t("userApplication.quiz.reportTitle")
+                  : t("userApplication.quiz.roundHeader", { round: round.roundOrder ?? 3 })}
               </span>
               <span className="text-slate-600">•</span>
               <span className="text-xs font-semibold text-indigo-400">
-                Vòng {round.roundOrder ?? 3}
+                {t("userApplication.quiz.roundLabel", { round: round.roundOrder ?? 3 })}
               </span>
             </div>
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
-                ? "Bạn đã hoàn tất bài thi trắc nghiệm. Hệ thống đã chấm điểm và lưu trữ câu trả lời."
+                ? t("userApplication.quiz.examCompletedMessage")
                 : round.configData?.instruction ||
-                  "Đọc kỹ từng câu hỏi và chọn đáp án chính xác nhất trong thời gian quy định."}
+                  t("userApplication.quiz.examInstructionsDefault")}
             </p>
           </div>
         </div>
@@ -586,22 +586,26 @@ export function QuizModule({
               ) : (
                 <XCircle className="h-4 w-4" />
               )}
-              <span>KẾT QUẢ: {detail.finalResult}</span>
+              <span>
+                {detail.finalResult === "PASSED"
+                  ? t("userApplication.quiz.resultPassed")
+                  : t("userApplication.quiz.resultFailed")}
+              </span>
             </span>
           ) : isFinished ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:text-emerald-300 dark:shadow-emerald-950/40">
               <CheckCircle2 className="h-4 w-4" />
-              <span>ĐÃ HOÀN THÀNH BÀI THI</span>
+              <span>{t("userApplication.quiz.examCompletedBadge")}</span>
             </span>
           ) : hasStarted ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-              <span>ĐANG TRONG THỜI GIAN LÀM BÀI</span>
+              <span>{t("userApplication.quiz.duringExamBadge")}</span>
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-4 py-1.5 text-xs font-extrabold text-amber-700 shadow-sm shadow-amber-100 dark:text-amber-300 dark:shadow-amber-950/40">
               <Lock className="h-3.5 w-3.5" />
-              <span>SẴN SÀNG BẮT ĐẦU</span>
+              <span>{t("userApplication.quiz.readyToStartBadge")}</span>
             </span>
           )}
         </div>
@@ -618,11 +622,14 @@ export function QuizModule({
                 <div className="flex items-center gap-2">
                   <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   <h4 className="text-xs font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-                    DANH SÁCH CÂU HỎI
+                    {t("userApplication.quiz.questionsList")}
                   </h4>
                 </div>
                 <span className="rounded bg-indigo-50 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
-                  {answeredCount}/{totalQuestions} Đã chọn
+                  {t("userApplication.quiz.selectedCount", {
+                    answered: answeredCount,
+                    total: totalQuestions,
+                  })}
                 </span>
               </div>
 
@@ -679,15 +686,15 @@ export function QuizModule({
               <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-3 text-[10px] text-slate-400 dark:border-slate-800/80">
                 <div className="flex items-center gap-1">
                   <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
-                  <span>Đang xem</span>
+                  <span>{t("userApplication.quiz.legendCurrent")}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  <span>Đã chọn</span>
+                  <span>{t("userApplication.quiz.legendAnswered")}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                  <span>Xem lại</span>
+                  <span>{t("userApplication.quiz.legendReview")}</span>
                 </div>
               </div>
             </Card>
@@ -699,7 +706,7 @@ export function QuizModule({
                   className={`h-4 w-4 ${hasStarted && isLowTime ? "animate-pulse text-rose-400" : "text-amber-400"}`}
                 />
                 <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  Thời gian làm bài
+                  {t("userApplication.quiz.examTime")}
                 </h4>
               </div>
 
@@ -733,7 +740,9 @@ export function QuizModule({
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    {hasStarted ? "Còn lại" : "Thời lượng"}
+                    {hasStarted
+                      ? t("userApplication.quiz.remaining")
+                      : t("userApplication.quiz.duration")}
                   </span>
                   <span
                     className={`font-mono text-xl font-black ${
@@ -755,12 +764,12 @@ export function QuizModule({
                   {submitMutation.isPending ? (
                     <>
                       <RefreshCw className="h-4 w-4 animate-spin" />
-                      <span>Đang nộp bài...</span>
+                      <span>{t("userApplication.quiz.submitting")}</span>
                     </>
                   ) : (
                     <>
                       <Send className="h-4 w-4" />
-                      <span>Nộp bài thi trắc nghiệm</span>
+                      <span>{t("userApplication.quiz.submitQuiz")}</span>
                     </>
                   )}
                 </Button>
@@ -785,14 +794,14 @@ export function QuizModule({
                   <div className="max-w-xl space-y-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 font-mono text-[10px] font-extrabold text-indigo-700 uppercase dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
                       <ShieldAlert className="h-3.5 w-3.5" />
-                      <span>BẢO MẬT & GIÁM SÁT TỰ ĐỘNG</span>
+                      <span>{t("userApplication.quiz.securityMonitorTitle")}</span>
                     </span>
                     <h3 className="text-xl font-extrabold tracking-tight text-slate-950 dark:text-slate-100">
-                      XÁC NHẬN BẮT ĐẦU THI TRẮC NGHIỆM
+                      {t("userApplication.quiz.confirmStartExamTitle")}
                     </h3>
                     <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                       {round.configData?.instruction ||
-                        "Bài thi trắc nghiệm nhằm đánh giá kiến thức chuyên môn cốt lõi, tư duy kỹ thuật và khả năng xử lý tình huống thực tế của ứng viên."}
+                        t("userApplication.quiz.confirmStartExamHint")}
                     </p>
                   </div>
                 </div>
@@ -801,23 +810,23 @@ export function QuizModule({
                 <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-3 dark:border-slate-800 dark:bg-slate-950/80">
                   <div className="space-y-1 border-r border-slate-200 text-center last:border-r-0 dark:border-slate-800/80">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
-                      Số lượng câu
+                      {t("userApplication.quiz.questionCountLabel")}
                     </span>
                     <p className="font-mono text-base font-extrabold text-indigo-700 dark:text-indigo-300">
-                      {totalQuestions} Câu
+                      {totalQuestions} {t("userApplication.quiz.questions")}
                     </p>
                   </div>
                   <div className="space-y-1 border-r border-slate-200 text-center last:border-r-0 dark:border-slate-800/80">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
-                      Thời gian
+                      {t("userApplication.quiz.timeLimitLabel")}
                     </span>
                     <p className="font-mono text-base font-extrabold text-amber-700 dark:text-amber-300">
-                      {timeLimitMinutes} Phút
+                      {timeLimitMinutes} {t("userApplication.quiz.minutes")}
                     </p>
                   </div>
                   <div className="space-y-1 text-center">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
-                      Điểm sàn đạt
+                      {t("userApplication.quiz.passingScoreLabel")}
                     </span>
                     <p className="font-mono text-base font-extrabold text-emerald-700 dark:text-emerald-300">
                       {round.passThreshold ?? 70}/100
@@ -829,7 +838,7 @@ export function QuizModule({
                 <div className="space-y-2.5 rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs leading-relaxed text-slate-700 dark:border-amber-500/30 dark:bg-amber-950/15 dark:text-slate-200">
                   <div className="flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
                     <AlertTriangle className="h-4 w-4" />
-                    <span>LƯU Ý QUAN TRỌNG TRƯỚC KHI BẮT ĐẦU:</span>
+                    <span>{t("userApplication.quiz.importantNoteBeforeStart")}</span>
                   </div>
                   <ul className="list-disc space-y-1.5 pl-6 text-slate-600 dark:text-slate-300">
                     <li>
