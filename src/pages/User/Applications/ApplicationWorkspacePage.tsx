@@ -602,19 +602,27 @@ export function ApplicationWorkspacePage() {
 
                   <div className="space-y-2.5 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Ngày nộp đơn:</span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {t("userApplication.applicationWorkspacePage.applicationDate")}:
+                      </span>
                       <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
                         {app.createdAt ? formatDateTime(app.createdAt) : ""}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Tổng số vòng:</span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {t("userApplication.applicationWorkspacePage.totalRounds")}:
+                      </span>
                       <span className="font-bold text-slate-900 dark:text-slate-100">
-                        {totalRounds} vòng tuyển dụng
+                        {t("userApplication.applicationWorkspacePage.totalRoundsValue", {
+                          count: totalRounds,
+                        })}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Trạng thái hồ sơ:</span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {t("userApplication.applicationWorkspacePage.applicationStatus")}:
+                      </span>
                       <ApplicationStatusBadge status={app.status} />
                     </div>
                   </div>
@@ -642,7 +650,7 @@ export function ApplicationWorkspacePage() {
                 <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                     <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    <span>Kỹ năng & Yêu cầu vị trí</span>
+                    <span>{t("userApplication.applicationWorkspacePage.skillsRequirements")}</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
@@ -664,22 +672,32 @@ export function ApplicationWorkspacePage() {
                 <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                     <Layers className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                    <span>Tiêu chuẩn đạt Vòng {activeRound.roundOrder}</span>
+                    <span>
+                      {t("userApplication.applicationWorkspacePage.roundStandard", {
+                        round: activeRound.roundOrder,
+                      })}
+                    </span>
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
-                      <span className="text-slate-500">Điểm sàn qua vòng:</span>
+                      <span className="text-slate-500">
+                        {t("userApplication.applicationWorkspacePage.passingScore")}:
+                      </span>
                       <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
                         {activeRound.passThreshold ?? 70}/100
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Thời gian quy định:</span>
+                      <span className="text-slate-500">
+                        {t("userApplication.applicationWorkspacePage.timeLimit")}:
+                      </span>
                       <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
                         <Clock className="h-3 w-3 text-indigo-500" />
                         {activeRound.configData?.timeLimitMinutes
-                          ? `${activeRound.configData.timeLimitMinutes} phút`
-                          : "Không giới hạn"}
+                          ? t("userApplication.applicationWorkspacePage.timeLimitValue", {
+                              minutes: activeRound.configData.timeLimitMinutes,
+                            })
+                          : t("userApplication.applicationWorkspacePage.noTimeLimit")}
                       </span>
                     </div>
                   </div>
@@ -691,7 +709,7 @@ export function ApplicationWorkspacePage() {
                     <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
                       <Send className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                       <h4 className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-                        HƯỚNG DẪN CÁC BƯỚC NỘP BÀI
+                        {t("userApplication.applicationWorkspacePage.emailInstructionsTitle")}
                       </h4>
                     </div>
 
@@ -700,33 +718,24 @@ export function ApplicationWorkspacePage() {
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 font-mono text-[10px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                           1
                         </span>
-                        <span>Mở Gmail hoặc Outlook để tiến hành soạn bài.</span>
+                        <span>{t("userApplication.applicationWorkspacePage.emailStep1")}</span>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 font-mono text-[10px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                           2
                         </span>
                         <span>
-                          Gửi tới địa chỉ{" "}
-                          <code className="font-mono text-indigo-700 dark:text-indigo-300">
-                            hanptse184261@fpt.edu.vn
-                          </code>{" "}
-                          và đặt tiêu đề chứa mã{" "}
-                          <code className="font-mono text-amber-700 dark:text-amber-300">
-                            [INBLUE-APP-{applicationId}]
-                          </code>
-                          .
+                          {t("userApplication.applicationWorkspacePage.emailStep2", {
+                            email: "hanptse184261@fpt.edu.vn",
+                            subjectCode: `[INBLUE-APP-${applicationId}]`,
+                          })}
                         </span>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 font-mono text-[10px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300">
                           3
                         </span>
-                        <span>
-                          Sau khi gửi xong, quay lại màn hình này bấm{" "}
-                          <strong>"Tôi đã gửi email"</strong> để xác nhận. Server sẽ tự động quét
-                          email và trả kết quả.
-                        </span>
+                        <span>{t("userApplication.applicationWorkspacePage.emailStep3")}</span>
                       </li>
                     </ol>
                   </Card>
@@ -734,24 +743,23 @@ export function ApplicationWorkspacePage() {
                   <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                       <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      <span>Trợ giúp & Giải đáp nhanh</span>
+                      <span>{t("userApplication.applicationWorkspacePage.helpSupport")}</span>
                     </div>
                     <div className="space-y-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
                       <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
                         <p className="font-bold text-slate-800 dark:text-slate-200">
-                          ⚡ AI chấm điểm mất bao lâu?
+                          ⚡ {t("userApplication.applicationWorkspacePage.questionAiGrading")}
                         </p>
                         <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-                          Hệ thống tự động chấm điểm và tổng hợp kết quả chỉ trong 30-60 giây.
+                          {t("userApplication.applicationWorkspacePage.answerAiGrading")}
                         </p>
                       </div>
                       <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
                         <p className="font-bold text-slate-800 dark:text-slate-200">
-                          🔒 Có được thi lại không?
+                          🔒 {t("userApplication.applicationWorkspacePage.questionRetake")}
                         </p>
                         <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-                          Mỗi vòng chỉ thực hiện 1 lần duy nhất trừ trường hợp sự cố được nhà tuyển
-                          dụng duyệt cấp lại.
+                          {t("userApplication.applicationWorkspacePage.answerRetake")}
                         </p>
                       </div>
                     </div>
