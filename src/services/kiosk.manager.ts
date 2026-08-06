@@ -9,8 +9,10 @@ export type KioskSchedule = components["schemas"]["KioskSchedule"];
 export type SlotDto = components["schemas"]["SlotDto"];
 export type PickSlotDtoRequest = components["schemas"]["PickSlotDtoRequest"];
 export type MentorInterviewBooking = components["schemas"]["KioskBooking"];
-export type KioskEnterDtoRequest = components["schemas"]["KioskEnterDtoRequest"];
-export type KioskEnterDtoResponse = components["schemas"]["KioskEnterDtoResponse"];
+export type KioskEnterDtoRequest = { sessionKey: string; kioskId?: number };
+export type KioskEnterDtoResponse = components["schemas"]["KioskEnterDtoResponse"] & {
+  roomUrl?: string;
+};
 export type KioskHistoryResponseDto = components["schemas"]["KioskHistoryResponseDto"];
 
 const toApiUrl = (path: string) =>
@@ -353,9 +355,13 @@ export class KioskManager {
   async enterKiosk(body: KioskEnterDtoRequest): Promise<ApiResponse<KioskEnterDtoResponse>> {
     try {
       const response = await fetchClient
-        .POST("/api/kiosk/enter", {
+        .POST("/api/kiosk/enter/{sessionKey}", {
+          params: {
+            path: {
+              sessionKey: body.sessionKey,
+            },
+          },
           body: {
-            sessionKey: body.sessionKey,
             kioskId: body.kioskId,
           } as never,
         })
