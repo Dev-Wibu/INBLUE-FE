@@ -1201,6 +1201,7 @@ function FormattedInlineMarkdown({ text, className }: { text: string; className?
  * Handles paragraphs, lists (* or -), and code blocks.
  */
 function FormattedCodingProblemStatement({ text }: { text: string }) {
+  const { t } = useTranslation();
   const blocks = useMemo(() => {
     if (!text) return [];
     const normalized = text.replace(/\\n/g, "\n");
@@ -1258,6 +1259,7 @@ function ProblemExampleCard({
   index: number;
   example: { inputs: string[]; output: string; explanation?: string };
 }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const cleanInputs = (example.inputs ?? []).map((inp) => String(inp ?? "").trim()).filter(Boolean);
@@ -1827,6 +1829,7 @@ function CodingProblemCard({
 // ============================================================================
 
 function CopyButton({ text, label }: { text: string; label?: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const handleCopy = useCallback(
     (e: React.MouseEvent) => {

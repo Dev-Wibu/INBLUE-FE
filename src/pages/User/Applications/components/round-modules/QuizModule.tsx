@@ -55,6 +55,7 @@ interface QuizModuleProps {
 
 /** Executive VS Code Dark Theme Code Block with Syntax Tokenizer & Copy Button */
 function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {

@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
@@ -308,6 +309,7 @@ function KioskPinDialog({
   duration: number | null;
   onCopy: () => void;
 }) {
+  const { t } = useTranslation();
   const sessionKey = booking?.sessionKey ?? "";
 
   return (
