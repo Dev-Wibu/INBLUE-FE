@@ -1,6 +1,5 @@
 import {
   AnxietyReliefStrip,
-  CompanyGridSection,
   FeedbackActionSection,
   FinalLandingCta,
   HomepageFooter,
@@ -23,7 +22,6 @@ export function HomePage() {
         <PracticeBeforePressureSection />
         <FeedbackActionSection />
         <StartingPointSection />
-        <CompanyGridSection />
         <SimpleTestimonials />
         <FinalLandingCta />
       </main>

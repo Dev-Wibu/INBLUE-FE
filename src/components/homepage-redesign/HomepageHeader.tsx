@@ -48,7 +48,7 @@ export function HomepageHeader() {
   ];
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-40 border-b border-slate-200/90 bg-white/95 dark:border-slate-800 dark:bg-slate-950/95">
+    <header className="fixed top-0 right-0 left-0 z-50 border-b border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-6">
         <Link to="/" className="flex shrink-0 items-center gap-2.5" aria-label="INBLUE AI home">
           <img src={icon2} alt="" className="h-9 w-9" />

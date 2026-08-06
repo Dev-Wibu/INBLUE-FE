@@ -79,3 +79,6 @@ yarn.lock
 /docs/*
 !/docs/technical-spec/
 !/docs/technical-spec/**
+
+.playwright-mcp
+.playwright-mcp/*

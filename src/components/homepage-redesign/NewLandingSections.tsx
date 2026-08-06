@@ -1,18 +1,14 @@
 import interviewSetupImage from "@/assets/homepage/ai-interview-setup.png";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { companyManager, type JobDescription } from "@/services/company.manager";
-import { jobDescriptionManager } from "@/services/job-description.manager";
+import { companyManager, type Company } from "@/services/company.manager";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
-  ArrowUpRight,
   Bot,
   BriefcaseBusiness,
   Building2,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Code2,
   FileCheck2,
   FileSearch,
@@ -22,7 +18,7 @@ import {
   Sparkles,
   UserRoundCheck,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -135,287 +131,264 @@ const rounds: Array<{
   { id: "ai", icon: Bot, status: "skip" },
 ];
 
+const COMMON_TECHS = [
+  "React",
+  "React.js",
+  "Node.js",
+  "JavaScript",
+  "TypeScript",
+  "Python",
+  "Java",
+  "Golang",
+  "Go",
+  "C#",
+  ".NET",
+  "PHP",
+  "Laravel",
+  "Vue",
+  "Angular",
+  "SQL",
+  "MySQL",
+  "PostgreSQL",
+  "MongoDB",
+  "AWS",
+  "Docker",
+  "Kubernetes",
+  "DevOps",
+  "AI",
+  "Machine Learning",
+  "Flutter",
+  "React Native",
+  "iOS",
+  "Android",
+  "Swift",
+  "Kotlin",
+  "Spring Boot",
+  "Ruby",
+  "Git",
+  "Figma",
+  "UI/UX",
+  "QA",
+  "Tester",
+];
+
+function extractCompanyTechTags(company: Company): string[] {
+  const tagsSet = new Set<string>();
+
+  if (company.industry) {
+    tagsSet.add(company.industry);
+  }
+
+  if (Array.isArray(company.jobDescriptions)) {
+    for (const job of company.jobDescriptions) {
+      const textToSearch = `${job.title ?? ""} ${job.description ?? ""} ${job.requirements ?? ""}`;
+      for (const tech of COMMON_TECHS) {
+        if (new RegExp(`\\b${tech.replace(".", "\\.")}\\b`, "i").test(textToSearch)) {
+          tagsSet.add(tech);
+        }
+      }
+    }
+  }
+
+  const tags = Array.from(tagsSet);
+  if (tags.length > 0) return tags.slice(0, 5);
+
+  return ["Software", "IT", "Engineering", "Technology"];
+}
+
 export function JobDescriptionSlice() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [jobs, setJobs] = useState<JobDescription[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
-  const [canScrollRight, setCanScrollRight] = useState<boolean>(false);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
-
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 5);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
-    }
-  };
 
   useEffect(() => {
     let isMounted = true;
-    const fetchJobs = async () => {
+    const fetchCompanies = async () => {
       setIsLoading(true);
       try {
-        const res = await jobDescriptionManager.getAll();
-        if (isMounted && res.success && Array.isArray(res.data) && res.data.length > 0) {
-          const openJobs = res.data.filter((j) => j.status !== "CLOSED" && !j.isDeleted);
-          if (openJobs.length > 0) {
-            setJobs(openJobs);
-            setIsLoading(false);
-            return;
+        const res = await companyManager.getAll();
+        if (isMounted && res.success) {
+          let list: Company[] = [];
+          if (Array.isArray(res.data)) {
+            list = res.data;
+          } else if (res.data && typeof res.data === "object" && "content" in res.data) {
+            const content = (res.data as { content?: unknown }).content;
+            if (Array.isArray(content)) list = content as Company[];
           }
-        }
-
-        const companyRes = await companyManager.getAll();
-        if (isMounted && companyRes.success && Array.isArray(companyRes.data)) {
-          const extractedJobs: JobDescription[] = [];
-          for (const company of companyRes.data) {
-            if (Array.isArray(company.jobDescriptions)) {
-              for (const j of company.jobDescriptions) {
-                if (j.id && j.status !== "CLOSED" && !j.isDeleted) {
-                  extractedJobs.push({
-                    ...j,
-                    companyName: j.companyName || company.name,
-                    companyId: j.companyId || company.id,
-                  });
-                }
-              }
-            }
-          }
-          setJobs(extractedJobs);
+          setCompanies(list.filter((c) => c.id && !c.isDeleted));
         }
       } catch (err) {
-        console.error("[JobDescriptionSlice] Error fetching jobs:", err);
+        console.error("[JobDescriptionSlice] Error fetching companies:", err);
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        if (isMounted) setIsLoading(false);
       }
     };
 
-    fetchJobs();
+    fetchCompanies();
     return () => {
       isMounted = false;
     };
   }, []);
 
-  useEffect(() => {
-    checkScroll();
-    const el = scrollRef.current;
-    if (el) {
-      el.addEventListener("scroll", checkScroll);
-      window.addEventListener("resize", checkScroll);
-      return () => {
-        el.removeEventListener("scroll", checkScroll);
-        window.removeEventListener("resize", checkScroll);
-      };
-    }
-  }, [jobs]);
-
-  const directionRef = useRef<"right" | "left">("right");
-
-  // Ping-Pong continuous 60fps smooth animation
-  useEffect(() => {
-    if (isLoading || jobs.length <= 1) return;
-    let animId: number;
-
-    const step = () => {
-      if (scrollRef.current && !isPaused) {
-        const el = scrollRef.current;
-        const speed = 0.9;
-
-        if (directionRef.current === "right") {
-          el.scrollLeft += speed;
-          if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 4) {
-            directionRef.current = "left";
-          }
-        } else {
-          el.scrollLeft -= speed;
-          if (el.scrollLeft <= 4) {
-            directionRef.current = "right";
-          }
-        }
-      }
-      animId = requestAnimationFrame(step);
-    };
-
-    animId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animId);
-  }, [isLoading, jobs.length, isPaused]);
-
-  const handleScroll = (direction: "left" | "right") => {
-    directionRef.current = direction;
-    if (scrollRef.current) {
-      const scrollAmount = direction === "left" ? -340 : 340;
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  };
-
-  const handleCardClick = (job: JobDescription) => {
-    if (job.id) {
-      navigate(`/enterprise/job/${job.id}`);
-    } else if (job.companyId) {
-      navigate(`/enterprise/company/${job.companyId}`);
+  const handleCompanyClick = (companyId?: number) => {
+    if (companyId) {
+      navigate(`/enterprise/company/${companyId}`);
     } else {
       navigate("/enterprise/companies");
     }
   };
 
-  if (!isLoading && jobs.length === 0) {
+  const featuredCompanies = companies.slice(0, 6);
+
+  if (!isLoading && featuredCompanies.length === 0) {
     return null;
   }
 
   return (
     <div className="mb-14">
-      <div className="mb-6 max-w-3xl">
-        <div className="inline-flex items-center gap-2 rounded-full bg-[#0047AB]/10 px-3.5 py-1 text-xs font-semibold text-[#0047AB] dark:bg-[#66B2FF]/10 dark:text-[#66B2FF]">
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>{t("landingNew.jobSliceKicker")}</span>
+      {/* Section Header */}
+      <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#0047AB]/10 px-3.5 py-1 text-xs font-semibold text-[#0047AB] dark:bg-[#66B2FF]/10 dark:text-[#66B2FF]">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>{t("landingNew.jobSliceKicker")}</span>
+          </div>
+          <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl dark:text-white">
+            {t("landingNew.topCompaniesTitle")}
+          </h3>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            {t("landingNew.topCompaniesDescription")}
+          </p>
         </div>
-        <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl dark:text-white">
-          {t("landingNew.jobSliceTitle")}
-        </h3>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          {t("landingNew.jobSliceDescription")}
-        </p>
+
+        {!isLoading && (
+          <Button
+            asChild
+            variant="outline"
+            className="group h-10 rounded-full bg-white px-4 text-xs font-semibold whitespace-nowrap dark:bg-slate-900">
+            <Link to="/enterprise/companies">
+              {t("common.seeAll")}
+              <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </Button>
+        )}
       </div>
 
-      <div
-        className="group/carousel relative"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}>
-        {/* Floating Left Button */}
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          disabled={!canScrollLeft}
-          onClick={() => handleScroll("left")}
-          aria-label="Scroll left"
-          className="absolute top-1/2 -left-3 z-20 h-11 w-11 -translate-y-1/2 rounded-full border border-slate-200 bg-white/90 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white disabled:pointer-events-none disabled:opacity-0 sm:-left-5 dark:border-slate-700 dark:bg-slate-900/90 dark:text-white dark:hover:bg-slate-900">
-          <ChevronLeft className="h-5 w-5 text-slate-800 dark:text-slate-100" />
-        </Button>
-
-        {/* Floating Right Button */}
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          disabled={!canScrollRight}
-          onClick={() => handleScroll("right")}
-          aria-label="Scroll right"
-          className="absolute top-1/2 -right-3 z-20 h-11 w-11 -translate-y-1/2 rounded-full border border-slate-200 bg-white/90 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white disabled:pointer-events-none disabled:opacity-0 sm:-right-5 dark:border-slate-700 dark:bg-slate-900/90 dark:text-white dark:hover:bg-slate-900">
-          <ChevronRight className="h-5 w-5 text-slate-800 dark:text-slate-100" />
-        </Button>
-
-        <div
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto pt-1 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {isLoading
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-72 shrink-0 animate-pulse rounded-xl border border-slate-200 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-900/50">
-                  <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800" />
-                  <div className="mt-3 h-5 w-44 rounded bg-slate-300 dark:bg-slate-700" />
-                  <div className="mt-4 flex gap-2">
-                    <div className="h-6 w-16 rounded-full bg-slate-200 dark:bg-slate-800" />
-                    <div className="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-800" />
-                  </div>
-                  <div className="mt-6 h-4 w-32 rounded bg-slate-200 dark:bg-slate-800" />
+      {/* ITviec-Style Companies Grid */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex h-72 animate-pulse flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex h-28 w-full items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800">
+                  <div className="h-16 w-24 rounded-lg bg-slate-200 dark:bg-slate-700" />
                 </div>
-              ))
-            : (jobs.length > 0 && jobs.length < 8 ? [...jobs, ...jobs, ...jobs] : jobs).map(
-                (job, idx) => {
-                  const salaryText =
-                    job.salaryMin || job.salaryMax
-                      ? `${job.salaryMin ? job.salaryMin.toLocaleString() : 0} - ${
-                          job.salaryMax ? job.salaryMax.toLocaleString() : "Max"
-                        } ${job.currency || "USD"}`
-                      : t("landingNew.negotiableSalary");
+                <div className="my-4 space-y-3">
+                  <div className="mx-auto h-5 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
+                  <div className="flex justify-center gap-2">
+                    <div className="h-5 w-14 rounded-md bg-slate-100 dark:bg-slate-800" />
+                    <div className="h-5 w-16 rounded-md bg-slate-100 dark:bg-slate-800" />
+                    <div className="h-5 w-12 rounded-md bg-slate-100 dark:bg-slate-800" />
+                  </div>
+                </div>
+                <div className="h-8 w-full rounded bg-slate-100 dark:bg-slate-800" />
+              </div>
+            ))
+          : featuredCompanies.map((company) => {
+              const activeJobs = (company.jobDescriptions ?? []).filter(
+                (j) => j.id && j.status !== "CLOSED" && !j.isDeleted
+              );
+              const openJobsCount = activeJobs.length;
+              const techTags = extractCompanyTechTags(company);
+              const locationText = company.location || "Việt Nam";
 
-                  return (
-                    <div
-                      key={`${job.id || job.title}-${idx}`}
-                      onClick={() => handleCardClick(job)}
-                      className="group relative flex w-80 shrink-0 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#0047AB]/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-[#66B2FF]/40">
-                      <div>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <Building2 className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
-                            <span className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
-                              {job.companyName || "Enterprise Partner"}
-                            </span>
-                          </div>
-                          {job.level && (
-                            <span className="shrink-0 rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                              {job.level}
-                            </span>
-                          )}
-                        </div>
+              return (
+                <div
+                  key={company.id}
+                  onClick={() => handleCompanyClick(company.id)}
+                  className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 hover:border-slate-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
+                  {/* Header with Logo container */}
+                  <div className="relative flex h-36 w-full items-center justify-center border-b border-slate-100 bg-gradient-to-b from-slate-50/90 via-slate-50/50 to-white px-4 dark:border-slate-800/80 dark:from-slate-800/40 dark:via-slate-800/20 dark:to-slate-900">
+                    {/* Background SVG radial grid pattern */}
+                    <svg
+                      aria-hidden="true"
+                      className="absolute inset-0 h-full w-full [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] stroke-slate-200/50 dark:stroke-slate-700/30"
+                      fill="none">
+                      <defs>
+                        <pattern
+                          id={`grid-pattern-${company.id}`}
+                          width="16"
+                          height="16"
+                          patternUnits="userSpaceOnUse">
+                          <path d="M.5 16V.5H16" />
+                        </pattern>
+                      </defs>
+                      <rect
+                        width="100%"
+                        height="100%"
+                        strokeWidth="0"
+                        fill={`url(#grid-pattern-${company.id})`}
+                      />
+                    </svg>
 
-                        <h4 className="mt-3 line-clamp-1 text-base font-bold text-slate-900 group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
-                          {job.title}
-                        </h4>
-
-                        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
-                          {job.location && (
-                            <span className="inline-flex items-center gap-1">
-                              <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                              <span className="max-w-[120px] truncate">{job.location}</span>
-                            </span>
-                          )}
-                          {job.workType && (
-                            <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">
-                              {job.workType}
-                            </span>
-                          )}
-                        </div>
-
-                        {job.skills && job.skills.length > 0 && (
-                          <div className="mt-4 flex flex-wrap gap-1.5">
-                            {job.skills.slice(0, 3).map((skill, idx) => (
-                              <span
-                                key={idx}
-                                className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                                {skill}
-                              </span>
-                            ))}
-                            {job.skills.length > 3 && (
-                              <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                +{job.skills.length - 3}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800/80">
-                        <div>
-                          <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                            {job.rounds && job.rounds.length > 0
-                              ? t("landingNew.roundsCount", { count: job.rounds.length })
-                              : salaryText}
-                          </p>
-                          {job.rounds && job.rounds.length > 0 && (
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                              {salaryText}
-                            </p>
-                          )}
-                        </div>
-
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#0047AB] transition-transform group-hover:translate-x-0.5 dark:text-[#66B2FF]">
-                          {t("landingNew.viewJobDetail")}
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                        </span>
-                      </div>
+                    <div className="relative z-1 flex h-20 w-28 items-center justify-center rounded-xl border border-slate-200/80 bg-white p-2.5 shadow-sm transition-transform duration-300 group-hover:scale-105 dark:border-slate-700 dark:bg-slate-800">
+                      {company.logoUrl ? (
+                        <img
+                          src={company.logoUrl}
+                          alt={company.name || t("common.company")}
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      ) : (
+                        <Building2 className="h-8 w-8 text-[#0047AB] dark:text-[#66B2FF]" />
+                      )}
                     </div>
-                  );
-                }
-              )}
-        </div>
+                  </div>
+
+                  {/* Card Content / Company Name & Tags */}
+                  <div className="flex flex-1 flex-col items-center p-5 text-center">
+                    <h3 className="line-clamp-1 text-base font-bold text-slate-950 transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
+                      {company.name}
+                    </h3>
+
+                    <div className="mt-3 flex min-h-[3.25rem] flex-wrap items-center justify-center gap-1.5">
+                      {techTags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="rounded-md bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 transition-colors group-hover:bg-slate-200/70 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-slate-700/70">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Card Footer: Location & Job Count */}
+                  <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-5 py-3.5 text-xs dark:border-slate-800 dark:bg-slate-900/60">
+                    <div className="flex max-w-[55%] items-center gap-1.5 font-medium text-slate-500 dark:text-slate-400">
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{locationText}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                      </span>
+                      <span>
+                        {openJobsCount}{" "}
+                        {t(
+                          openJobsCount === 1
+                            ? "landingNew.openJobsCount"
+                            : "landingNew.openJobsCount_plural"
+                        )}
+                      </span>
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
       </div>
     </div>
   );

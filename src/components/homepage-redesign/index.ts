@@ -1,4 +1,3 @@
-export { CompanyGridSection } from "./CompanyGridSection";
 export { HeroBackground } from "./HeroBackground";
 export { HomepageFooter } from "./HomepageFooter";
 export { HomepageHeader } from "./HomepageHeader";
