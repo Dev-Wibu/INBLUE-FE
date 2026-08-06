@@ -483,7 +483,7 @@ export function QuizModule({
         applicationId,
         answers: answersArray,
       });
-      toast.success(t("quiz.submitSuccess", "Nộp bài thi trắc nghiệm thành công!"));
+      toast.success(t("userApplication.quiz.submitSuccess"));
       onSuccess?.();
     } catch (err) {
       console.error("[QuizModule] Submit error:", err);
@@ -491,9 +491,9 @@ export function QuizModule({
   }, [applicationId, questions, selectedAnswers, submitMutation, onSuccess, t]);
 
   const handleAutoSubmit = useCallback(async () => {
-    toast.info("Đã hết thời gian làm bài! Hệ thống tự động nộp bài.");
+    toast.info(t("userApplication.quiz.autoSubmitTimeout"));
     await handleSubmitQuiz();
-  }, [handleSubmitQuiz]);
+  }, [handleSubmitQuiz, t]);
 
   // Countdown Timer Effect (only runs when candidate has explicitly started the exam)
   useEffect(() => {
@@ -514,7 +514,7 @@ export function QuizModule({
   const handleConfirmStartExam = () => {
     setShowConfirmDialog(false);
     setHasStarted(true);
-    toast.success("Bắt đầu thời gian làm bài! Chúc bạn làm bài tốt.");
+    toast.success(t("userApplication.quiz.startExamSuccess"));
   };
 
   const handleSelectOption = (option: string) => {
@@ -859,7 +859,7 @@ export function QuizModule({
                     disabled={!isCurrent}
                     className="h-12 gap-3 bg-gradient-to-r from-indigo-600 via-indigo-500 to-blue-600 px-10 text-sm font-extrabold text-white shadow-xl shadow-indigo-600/20 transition-all hover:scale-105 hover:from-indigo-500 hover:to-blue-500">
                     <Play className="h-5 w-5 fill-current" />
-                    <span>BẮT ĐẦU LÀM BÀI THI NGAY</span>
+                    <span>{t("userApplication.quiz.startExamNow")}</span>
                   </Button>
                 </div>
               </Card>
@@ -870,10 +870,13 @@ export function QuizModule({
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <span className="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 font-mono text-xs font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
-                      CÂU HỎI {currentIndex + 1} / {totalQuestions}
+                      {t("userApplication.quiz.questionNumber", {
+                        current: currentIndex + 1,
+                        total: totalQuestions,
+                      })}
                     </span>
                     <span className="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
-                      Chuyên môn
+                      {t("userApplication.quiz.fieldLabel")}
                     </span>
                   </div>
 
@@ -889,7 +892,9 @@ export function QuizModule({
                     }`}>
                     <Flag className="h-3.5 w-3.5" />
                     <span>
-                      {bookmarked[currentIndex] ? "Đã đánh dấu xem lại" : "Đánh dấu xem lại"}
+                      {bookmarked[currentIndex]
+                        ? t("userApplication.quiz.bookmarked")
+                        : t("userApplication.quiz.bookmarkReview")}
                     </span>
                   </Button>
                 </div>
@@ -939,7 +944,7 @@ export function QuizModule({
                     onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
                     className="h-9 gap-2 border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white">
                     <ArrowLeft className="h-4 w-4" />
-                    <span>Câu trước</span>
+                    <span>{t("userApplication.quiz.previousQuestion")}</span>
                   </Button>
 
                   <div className="flex items-center gap-2">
@@ -950,7 +955,7 @@ export function QuizModule({
                           setCurrentIndex((prev) => Math.min(totalQuestions - 1, prev + 1))
                         }
                         className="h-9 gap-2 bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-500">
-                        <span>Câu tiếp theo</span>
+                        <span>{t("userApplication.quiz.nextQuestion")}</span>
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     ) : (
@@ -960,7 +965,7 @@ export function QuizModule({
                         disabled={submitMutation.isPending || !isCurrent}
                         className="h-9 gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-xs font-bold text-white shadow-lg hover:from-emerald-500 hover:to-teal-500">
                         <Send className="h-4 w-4" />
-                        <span>Hoàn tất & Nộp bài</span>
+                        <span>{t("userApplication.quiz.completeAndSubmit")}</span>
                       </Button>
                     )}
                   </div>
@@ -980,7 +985,7 @@ export function QuizModule({
                 <div className="flex items-center gap-2">
                   <Award className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   <h3 className="text-xs font-extrabold tracking-wider text-emerald-700 uppercase dark:text-emerald-300">
-                    KẾT QUẢ ĐÁNH GIÁ
+                    {t("userApplication.quiz.examResultTitle")}
                   </h3>
                 </div>
                 <span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-0.5 text-xs font-extrabold text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-300">
@@ -992,7 +997,7 @@ export function QuizModule({
               <div className="flex justify-center py-1">
                 <ModernGaugeClock
                   score={detail?.finalScore ?? quizResultData.score ?? accuracyPercentage}
-                  label="Điểm Số Trắc Nghiệm"
+                  label={t("userApplication.quiz.quizScore")}
                   color="emerald"
                   hasData={true}
                 />
@@ -1002,14 +1007,16 @@ export function QuizModule({
               <div className="grid grid-cols-2 gap-2 border-t border-slate-200 pt-3 dark:border-slate-800/80">
                 <div className="flex flex-col items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 text-center dark:border-emerald-500/20 dark:bg-emerald-950/20">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    Số câu đúng
+                    {t("userApplication.quiz.correctCount")}
                   </span>
                   <span className="font-mono text-base font-extrabold text-emerald-700 dark:text-emerald-400">
                     {correctCount} / {totalCount}
                   </span>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-center dark:border-rose-500/20 dark:bg-rose-950/20">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Số câu sai</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">
+                    {t("userApplication.quiz.wrongCount")}
+                  </span>
                   <span className="font-mono text-base font-extrabold text-rose-700 dark:text-rose-400">
                     {totalCount - correctCount} / {totalCount}
                   </span>
@@ -1023,10 +1030,12 @@ export function QuizModule({
                 <div className="flex items-center gap-2">
                   <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   <h4 className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-                    MA TRẬN CÂU HỎI
+                    {t("userApplication.quiz.questionMatrix")}
                   </h4>
                 </div>
-                <span className="text-[10px] text-slate-400">Click để xem nhanh</span>
+                <span className="text-[10px] text-slate-400">
+                  {t("userApplication.quiz.clickToQuickView")}
+                </span>
               </div>
 
               <div className="grid grid-cols-5 gap-2">
@@ -1061,7 +1070,7 @@ export function QuizModule({
                 <div className="flex items-center gap-2">
                   <HelpCircle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   <h4 className="text-xs font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-                    CHI TIẾT CÂU HỎI VÀ ĐÁP ÁN
+                    {t("userApplication.quiz.questionsAndAnswers")}
                   </h4>
                 </div>
 
@@ -1075,7 +1084,7 @@ export function QuizModule({
                         ? "bg-indigo-600 text-white shadow-sm"
                         : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                     }`}>
-                    Tất cả ({allResults.length})
+                    {t("userApplication.quiz.filterAll", { count: allResults.length })}
                   </button>
                   <button
                     type="button"
@@ -1085,7 +1094,7 @@ export function QuizModule({
                         ? "bg-emerald-600 text-white shadow-sm"
                         : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                     }`}>
-                    Đúng ({correctCount})
+                    {t("userApplication.quiz.filterCorrect", { count: correctCount })}
                   </button>
                   <button
                     type="button"
@@ -1095,7 +1104,9 @@ export function QuizModule({
                         ? "bg-rose-600 text-white shadow-sm"
                         : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                     }`}>
-                    Sai ({totalCount - correctCount})
+                    {t("userApplication.quiz.filterIncorrect", {
+                      count: totalCount - correctCount,
+                    })}
                   </button>
                 </div>
               </div>
@@ -1104,7 +1115,7 @@ export function QuizModule({
               <div className="space-y-4">
                 {filteredResults.length === 0 ? (
                   <div className="py-8 text-center text-xs text-slate-500">
-                    Không có câu hỏi nào thuộc bộ lọc này.
+                    {t("userApplication.quiz.noQuestionsInFilter")}
                   </div>
                 ) : (
                   filteredResults.map((res) => (
@@ -1135,10 +1146,16 @@ export function QuizModule({
                             ) : (
                               <XCircle className="h-4 w-4 text-rose-400" />
                             )}
-                            <span>CÂU HỎI {res.originalIndex + 1}</span>
+                            <span>
+                              {t("userApplication.quiz.questionLabel", {
+                                num: res.originalIndex + 1,
+                              })}
+                            </span>
                           </div>
                           <span className="text-[11px] font-semibold text-slate-400">
-                            {res.isCorrect ? "Trả lời chính xác" : "Trả lời chưa chính xác"}
+                            {res.isCorrect
+                              ? t("userApplication.quiz.correctAnswer")
+                              : t("userApplication.quiz.incorrectAnswer")}
                           </span>
                         </div>
 
@@ -1148,7 +1165,9 @@ export function QuizModule({
                               ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
                               : "border-rose-500/30 bg-rose-500/15 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
                           }`}>
-                          {res.isCorrect ? "ĐÚNG" : "SAI"}
+                          {res.isCorrect
+                            ? t("userApplication.quiz.correctText")
+                            : t("userApplication.quiz.incorrectText")}
                         </span>
                       </div>
 
@@ -1166,9 +1185,11 @@ export function QuizModule({
                                 ? "border-emerald-500/30 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200"
                                 : "border-rose-500/30 bg-rose-50 text-rose-800 dark:bg-rose-950/30 dark:text-rose-200"
                             }`}>
-                            <span className="font-semibold text-slate-400">Lựa chọn của bạn:</span>
+                            <span className="font-semibold text-slate-400">
+                              {t("userApplication.quiz.yourChoice")}
+                            </span>
                             <span className="font-mono font-bold">
-                              {res.selectedAnswer || "(Chưa chọn)"}
+                              {res.selectedAnswer || t("userApplication.quiz.notYetSelected")}
                             </span>
                           </div>
 
@@ -1177,7 +1198,7 @@ export function QuizModule({
                               <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                               <div>
                                 <span className="font-semibold text-emerald-400">
-                                  Đáp án chính xác:{" "}
+                                  {t("userApplication.quiz.correctAnswerLabel")}{" "}
                                 </span>
                                 <span className="font-mono font-bold">{res.correctAnswer}</span>
                               </div>
@@ -1202,10 +1223,10 @@ export function QuizModule({
               <Play className="h-5 w-5 fill-current" />
             </div>
             <DialogTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
-              Bắt đầu bài thi trắc nghiệm?
+              {t("userApplication.quiz.startQuizConfirmTitle")}
             </DialogTitle>
             <DialogDescription className="text-xs leading-relaxed text-slate-400">
-              Thời gian đếm ngược sẽ bắt đầu ngay khi bạn xác nhận.
+              {t("userApplication.quiz.startQuizConfirmHint")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1216,7 +1237,7 @@ export function QuizModule({
               size="sm"
               onClick={() => setShowConfirmDialog(false)}
               className="h-8 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
-              Hủy
+              {t("userApplication.quiz.cancel")}
             </Button>
             <Button
               type="button"
@@ -1224,7 +1245,7 @@ export function QuizModule({
               onClick={handleConfirmStartExam}
               className="h-8 gap-1.5 bg-indigo-600 px-4 text-xs font-bold text-white shadow-md hover:bg-indigo-500">
               <Play className="h-3.5 w-3.5 fill-current" />
-              <span>Bắt đầu</span>
+              <span>{t("userApplication.quiz.start")}</span>
             </Button>
           </DialogFooter>
         </DialogContent>
