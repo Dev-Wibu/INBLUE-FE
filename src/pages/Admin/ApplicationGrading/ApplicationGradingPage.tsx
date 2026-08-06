@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+import { CodeReviewGrader } from "@/components/ui/code-review-grader";
 import { CodingRoundGrader } from "@/components/ui/coding-round-grader";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ import {
   useApplicationDetailsForReviewer,
   useHrScore,
 } from "@/hooks/useApplicationDetails";
+import { useCodeReviewProblems } from "@/hooks/useCodeReviewProblems";
 import { useEmailSubmission } from "@/hooks/useEmailSubmission";
 import { useJobDescription } from "@/hooks/useJobDescription";
 import { usePagination } from "@/hooks/usePagination";
@@ -245,12 +247,19 @@ function EmbeddedCVViewer({ fileUrl }: { fileUrl: string }) {
 
 interface SubmissionPreviewProps {
   detail: ApplicationDetail;
+  jdId?: number;
   onViewEmailSubmission?: (_emailSubmissionId: number) => void;
 }
 
-function SubmissionPreview({ detail, onViewEmailSubmission }: SubmissionPreviewProps) {
+function SubmissionPreview({ detail, jdId, onViewEmailSubmission }: SubmissionPreviewProps) {
   const data = detail.submissionData as SubmissionData | undefined;
   const [localExpanded, setLocalExpanded] = useState(false);
+
+  // Fetch code review problems for CODE_REVIEW round
+  const { data: codeReviewProblems = [], isLoading: isLoadingCodeReview } = useCodeReviewProblems(
+    jdId ?? 0,
+    detail.roundId
+  );
 
   const emailSubmissionId = data?.emailSubmissionId;
 
@@ -392,15 +401,14 @@ function SubmissionPreview({ detail, onViewEmailSubmission }: SubmissionPreviewP
     return <CodingRoundGrader detail={detail} />;
   }
 
-  // Code review submissions
+  // Code review submissions — use CodeReviewGrader component
   if (data.codeReviewSubmissions && data.codeReviewSubmissions.length > 0) {
     return (
-      <div className="flex items-center gap-2 text-sm text-cyan-600 dark:text-cyan-400">
-        <ClipboardCheck className="h-4 w-4" />
-        <span>
-          {data.codeReviewSubmissions.length} {t("review.issuesReviewed")}
-        </span>
-      </div>
+      <CodeReviewGrader
+        detail={detail}
+        problems={codeReviewProblems}
+        isLoading={isLoadingCodeReview}
+      />
     );
   }
 
@@ -1152,7 +1160,7 @@ export function ApplicationGradingPage({
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col duration-300">
             {viewMode === "table" ? (
-              <div className="p-4 sm:p-6">
+              <div className="flex-1 p-4 sm:p-6">
                 <ApplicationGradingTable
                   items={paginatedData}
                   userMap={userMap}
@@ -1314,7 +1322,7 @@ export function ApplicationGradingPage({
             )}
 
             {/* Pagination */}
-            <div className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mt-auto flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 {pagination.startIndex + 1}-{Math.min(pagination.endIndex + 1, sortedData.length)} /{" "}
                 {sortedData.length}
@@ -1740,6 +1748,7 @@ export function ApplicationGradingDetailPage({
                 <div className="p-6">
                   <SubmissionPreview
                     detail={activeDetail}
+                    jdId={jdId}
                     onViewEmailSubmission={handleViewEmailSubmission}
                   />
                 </div>
