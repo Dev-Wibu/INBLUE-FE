@@ -1,22 +1,30 @@
 import interviewSetupImage from "@/assets/homepage/ai-interview-setup.png";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { companyManager, type JobDescription } from "@/services/company.manager";
+import { jobDescriptionManager } from "@/services/job-description.manager";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
+  ArrowUpRight,
   Bot,
   BriefcaseBusiness,
+  Building2,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Code2,
   FileCheck2,
   FileSearch,
   Mail,
+  MapPin,
   Mic2,
+  Sparkles,
   UserRoundCheck,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const motionEase = [0.16, 1, 0.3, 1] as const;
 
@@ -127,6 +135,292 @@ const rounds: Array<{
   { id: "ai", icon: Bot, status: "skip" },
 ];
 
+export function JobDescriptionSlice() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [jobs, setJobs] = useState<JobDescription[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
+  const [canScrollRight, setCanScrollRight] = useState<boolean>(false);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchJobs = async () => {
+      setIsLoading(true);
+      try {
+        const res = await jobDescriptionManager.getAll();
+        if (isMounted && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const openJobs = res.data.filter((j) => j.status !== "CLOSED" && !j.isDeleted);
+          if (openJobs.length > 0) {
+            setJobs(openJobs);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        const companyRes = await companyManager.getAll();
+        if (isMounted && companyRes.success && Array.isArray(companyRes.data)) {
+          const extractedJobs: JobDescription[] = [];
+          for (const company of companyRes.data) {
+            if (Array.isArray(company.jobDescriptions)) {
+              for (const j of company.jobDescriptions) {
+                if (j.id && j.status !== "CLOSED" && !j.isDeleted) {
+                  extractedJobs.push({
+                    ...j,
+                    companyName: j.companyName || company.name,
+                    companyId: j.companyId || company.id,
+                  });
+                }
+              }
+            }
+          }
+          setJobs(extractedJobs);
+        }
+      } catch (err) {
+        console.error("[JobDescriptionSlice] Error fetching jobs:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchJobs();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener("scroll", checkScroll);
+      window.addEventListener("resize", checkScroll);
+      return () => {
+        el.removeEventListener("scroll", checkScroll);
+        window.removeEventListener("resize", checkScroll);
+      };
+    }
+  }, [jobs]);
+
+  const directionRef = useRef<"right" | "left">("right");
+
+  // Ping-Pong continuous 60fps smooth animation
+  useEffect(() => {
+    if (isLoading || jobs.length <= 1) return;
+    let animId: number;
+
+    const step = () => {
+      if (scrollRef.current && !isPaused) {
+        const el = scrollRef.current;
+        const speed = 0.9;
+
+        if (directionRef.current === "right") {
+          el.scrollLeft += speed;
+          if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 4) {
+            directionRef.current = "left";
+          }
+        } else {
+          el.scrollLeft -= speed;
+          if (el.scrollLeft <= 4) {
+            directionRef.current = "right";
+          }
+        }
+      }
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, [isLoading, jobs.length, isPaused]);
+
+  const handleScroll = (direction: "left" | "right") => {
+    directionRef.current = direction;
+    if (scrollRef.current) {
+      const scrollAmount = direction === "left" ? -340 : 340;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
+  const handleCardClick = (job: JobDescription) => {
+    if (job.id) {
+      navigate(`/enterprise/job/${job.id}`);
+    } else if (job.companyId) {
+      navigate(`/enterprise/company/${job.companyId}`);
+    } else {
+      navigate("/enterprise/companies");
+    }
+  };
+
+  if (!isLoading && jobs.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mb-14">
+      <div className="mb-6 max-w-3xl">
+        <div className="inline-flex items-center gap-2 rounded-full bg-[#0047AB]/10 px-3.5 py-1 text-xs font-semibold text-[#0047AB] dark:bg-[#66B2FF]/10 dark:text-[#66B2FF]">
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>{t("landingNew.jobSliceKicker")}</span>
+        </div>
+        <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl dark:text-white">
+          {t("landingNew.jobSliceTitle")}
+        </h3>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          {t("landingNew.jobSliceDescription")}
+        </p>
+      </div>
+
+      <div
+        className="group/carousel relative"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}>
+        {/* Floating Left Button */}
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          disabled={!canScrollLeft}
+          onClick={() => handleScroll("left")}
+          aria-label="Scroll left"
+          className="absolute top-1/2 -left-3 z-20 h-11 w-11 -translate-y-1/2 rounded-full border border-slate-200 bg-white/90 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white disabled:pointer-events-none disabled:opacity-0 sm:-left-5 dark:border-slate-700 dark:bg-slate-900/90 dark:text-white dark:hover:bg-slate-900">
+          <ChevronLeft className="h-5 w-5 text-slate-800 dark:text-slate-100" />
+        </Button>
+
+        {/* Floating Right Button */}
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          disabled={!canScrollRight}
+          onClick={() => handleScroll("right")}
+          aria-label="Scroll right"
+          className="absolute top-1/2 -right-3 z-20 h-11 w-11 -translate-y-1/2 rounded-full border border-slate-200 bg-white/90 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white disabled:pointer-events-none disabled:opacity-0 sm:-right-5 dark:border-slate-700 dark:bg-slate-900/90 dark:text-white dark:hover:bg-slate-900">
+          <ChevronRight className="h-5 w-5 text-slate-800 dark:text-slate-100" />
+        </Button>
+
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto pt-1 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-72 shrink-0 animate-pulse rounded-xl border border-slate-200 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-900/50">
+                  <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                  <div className="mt-3 h-5 w-44 rounded bg-slate-300 dark:bg-slate-700" />
+                  <div className="mt-4 flex gap-2">
+                    <div className="h-6 w-16 rounded-full bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-800" />
+                  </div>
+                  <div className="mt-6 h-4 w-32 rounded bg-slate-200 dark:bg-slate-800" />
+                </div>
+              ))
+            : (jobs.length > 0 && jobs.length < 8 ? [...jobs, ...jobs, ...jobs] : jobs).map(
+                (job, idx) => {
+                  const salaryText =
+                    job.salaryMin || job.salaryMax
+                      ? `${job.salaryMin ? job.salaryMin.toLocaleString() : 0} - ${
+                          job.salaryMax ? job.salaryMax.toLocaleString() : "Max"
+                        } ${job.currency || "USD"}`
+                      : t("landingNew.negotiableSalary");
+
+                  return (
+                    <div
+                      key={`${job.id || job.title}-${idx}`}
+                      onClick={() => handleCardClick(job)}
+                      className="group relative flex w-80 shrink-0 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#0047AB]/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-[#66B2FF]/40">
+                      <div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Building2 className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                            <span className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
+                              {job.companyName || "Enterprise Partner"}
+                            </span>
+                          </div>
+                          {job.level && (
+                            <span className="shrink-0 rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                              {job.level}
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="mt-3 line-clamp-1 text-base font-bold text-slate-900 group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
+                          {job.title}
+                        </h4>
+
+                        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+                          {job.location && (
+                            <span className="inline-flex items-center gap-1">
+                              <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                              <span className="max-w-[120px] truncate">{job.location}</span>
+                            </span>
+                          )}
+                          {job.workType && (
+                            <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">
+                              {job.workType}
+                            </span>
+                          )}
+                        </div>
+
+                        {job.skills && job.skills.length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-1.5">
+                            {job.skills.slice(0, 3).map((skill, idx) => (
+                              <span
+                                key={idx}
+                                className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                {skill}
+                              </span>
+                            ))}
+                            {job.skills.length > 3 && (
+                              <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                +{job.skills.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800/80">
+                        <div>
+                          <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                            {job.rounds && job.rounds.length > 0
+                              ? t("landingNew.roundsCount", { count: job.rounds.length })
+                              : salaryText}
+                          </p>
+                          {job.rounds && job.rounds.length > 0 && (
+                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                              {salaryText}
+                            </p>
+                          )}
+                        </div>
+
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#0047AB] transition-transform group-hover:translate-x-0.5 dark:text-[#66B2FF]">
+                          {t("landingNew.viewJobDetail")}
+                          <ArrowUpRight className="h-3.5 w-3.5" />
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function InterviewMapSection() {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
@@ -137,6 +431,8 @@ export function InterviewMapSection() {
   return (
     <section id="interview-map" className="scroll-mt-24 bg-white py-20 sm:py-28 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl px-6">
+        <JobDescriptionSlice />
+
         <div className="max-w-3xl lg:max-w-none">
           <p className="text-sm font-semibold text-[#0047AB] dark:text-[#66B2FF]">
             {t("landingNew.mapKicker")}

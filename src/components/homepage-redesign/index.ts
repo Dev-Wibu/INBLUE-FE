@@ -10,6 +10,7 @@ export {
   FeedbackActionSection,
   FinalLandingCta,
   InterviewMapSection,
+  JobDescriptionSlice,
   NewHomepageHero,
   PracticeBeforePressureSection,
   SimpleTestimonials,
