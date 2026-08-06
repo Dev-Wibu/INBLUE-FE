@@ -675,9 +675,10 @@ export function JobDescriptionDetailView({
                         </h4>
 
                         {/* Reviewer row — visible when staffUsers have loaded.
-                            Quiz rounds don't need a reviewer (graded by QuizModule automatically),
-                            so we always show "Not assigned" and hide the "Change" action. */}
-                        {staffUsers.length > 0 && (
+                            Quiz rounds are auto-graded (no human reviewer), so the
+                            entire reviewer row is hidden for QUIZ. Other round types
+                            show the reviewer (or "Not assigned") and a Change button. */}
+                        {staffUsers.length > 0 && round.roundType !== "QUIZ" && (
                           <div className="mt-2 flex items-center justify-between gap-1.5 border-t border-slate-100 pt-2 dark:border-slate-800/60">
                             <div className="flex min-w-0 items-center gap-1.5">
                               <Users className="h-3 w-3 shrink-0 text-slate-400" />
@@ -689,31 +690,24 @@ export function JobDescriptionDetailView({
                                     : "text-amber-600 italic dark:text-amber-400"
                                 )}
                                 title={reviewer?.email ?? undefined}>
-                                {round.roundType === "QUIZ"
-                                  ? t(
+                                {reviewer
+                                  ? `${t("adminCompanymanagement.reviewerLabel", "Reviewer")}: ${reviewer.name ?? `#${round.reviewerId}`}`
+                                  : t(
                                       "adminCompanymanagement.reviewerStaffCardWarning",
                                       "Chưa gán người chấm"
-                                    )
-                                  : reviewer
-                                    ? `${t("adminCompanymanagement.reviewerLabel", "Reviewer")}: ${reviewer.name ?? `#${round.reviewerId}`}`
-                                    : t(
-                                        "adminCompanymanagement.reviewerStaffCardWarning",
-                                        "Chưa gán người chấm"
-                                      )}
+                                    )}
                               </span>
                             </div>
-                            {round.roundType !== "QUIZ" && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (round.id != null) setChangingReviewerRoundId(round.id);
-                                }}
-                                disabled={round.id == null}
-                                className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-indigo-400 dark:hover:bg-indigo-950/40">
-                                {t("adminCompanymanagement.changeReviewer", "Đổi")}
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (round.id != null) setChangingReviewerRoundId(round.id);
+                              }}
+                              disabled={round.id == null}
+                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-indigo-400 dark:hover:bg-indigo-950/40">
+                              {t("adminCompanymanagement.changeReviewer", "Đổi")}
+                            </button>
                           </div>
                         )}
                       </div>
