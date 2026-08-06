@@ -35,11 +35,6 @@ export function MasterJobCard({
           ? "border-2 border-[#0047AB] bg-blue-50/30 shadow-md dark:border-[#66B2FF] dark:bg-blue-950/20"
           : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
       }`}>
-      {/* Indicator arrow for selected item on desktop */}
-      {isSelected && (
-        <div className="absolute top-1/2 -right-2.5 hidden h-4 w-4 -translate-y-1/2 rotate-45 border-t-2 border-r-2 border-[#0047AB] bg-white lg:block dark:border-[#66B2FF] dark:bg-slate-900" />
-      )}
-
       <div>
         {/* Top Header Row */}
         <div className="flex items-center justify-between gap-2 text-xs text-slate-400 dark:text-slate-500">

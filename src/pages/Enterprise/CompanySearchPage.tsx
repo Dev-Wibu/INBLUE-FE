@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { companyManager, type Company } from "@/services/company.manager";
 import type { TFunction } from "i18next";
 import {
-  BadgeCheck,
   BriefcaseBusiness,
   Building2,
   Globe2,
@@ -129,57 +128,54 @@ function CompanyCard({ company, t }: CompanyCardProps) {
         </Badge>
       </div>
 
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        {company.status === "ACTIVE" && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-            <BadgeCheck className="h-3.5 w-3.5" />
-            {t("enterpriseCompanysearchpage.verified")}
-          </span>
-        )}
-        {company.industry && (
+      {company.industry && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             {company.industry}
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       <h3 className="line-clamp-2 text-xl font-semibold tracking-tight text-slate-950 transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
-        {company.name || t("enterpriseCompanysearchpage.companyFallback")}
+        {company.name}
       </h3>
 
-      <p className="mt-3 line-clamp-3 min-h-[72px] text-sm leading-6 text-slate-600 dark:text-slate-400">
-        {company.description ||
-          company.industry ||
-          t("enterpriseCompanysearchpage.companyProfileFallback")}
-      </p>
+      {company.description && (
+        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
+          {company.description}
+        </p>
+      )}
 
-      <div className="mt-auto grid gap-2 border-t border-slate-100 pt-4 text-xs font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        <div className="flex min-w-0 items-center gap-2">
-          <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
-          <span className="truncate">
-            {company.location || t("enterpriseCompanysearchpage.noCompanyLocation")}
-          </span>
+      {(company.location || company.size || company.foundedYear || company.website) && (
+        <div className="mt-auto grid gap-2 border-t border-slate-100 pt-4 text-xs font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
+          {company.location && (
+            <div className="flex min-w-0 items-center gap-2">
+              <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+              <span className="truncate">{company.location}</span>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {company.size && (
+              <span className="inline-flex items-center gap-1.5">
+                <Users className="h-4 w-4 text-slate-400" />
+                {company.size}
+              </span>
+            )}
+            {company.foundedYear && (
+              <span>
+                {t("enterpriseCompanysearchpage.sinceFoundedYear", { year: company.foundedYear })}
+              </span>
+            )}
+            {company.website && (
+              <span className="inline-flex items-center gap-1.5 text-[#0047AB] dark:text-[#66B2FF]">
+                <Globe2 className="h-4 w-4" />
+                {t("enterpriseCompanysearchpage.website")}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          {company.size && (
-            <span className="inline-flex items-center gap-1.5">
-              <Users className="h-4 w-4 text-slate-400" />
-              {company.size}
-            </span>
-          )}
-          {company.foundedYear && (
-            <span>
-              {t("enterpriseCompanysearchpage.sinceFoundedYear", { year: company.foundedYear })}
-            </span>
-          )}
-          {company.website && (
-            <span className="inline-flex items-center gap-1.5 text-[#0047AB] dark:text-[#66B2FF]">
-              <Globe2 className="h-4 w-4" />
-              {t("enterpriseCompanysearchpage.website")}
-            </span>
-          )}
-        </div>
-      </div>
+      )}
     </Link>
   );
 }
@@ -278,15 +274,12 @@ function FeaturedCompanyRow({ company, t }: FeaturedCompanyRowProps) {
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">
           <div className="truncate text-sm font-semibold text-slate-950 group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
-            {company.name || t("enterpriseCompanysearchpage.companyFallback")}
+            {company.name}
           </div>
-          {company.status === "ACTIVE" && (
-            <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-300" />
-          )}
         </div>
-        <div className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
-          {metadata || t("enterpriseCompanysearchpage.noCompanyLocation")}
-        </div>
+        {metadata && (
+          <div className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{metadata}</div>
+        )}
       </div>
 
       <div className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">

@@ -302,7 +302,6 @@ export function JobDescriptionSlice() {
               );
               const openJobsCount = activeJobs.length;
               const techTags = extractCompanyTechTags(company);
-              const locationText = company.location || "Việt Nam";
 
               return (
                 <div
@@ -365,10 +364,14 @@ export function JobDescriptionSlice() {
 
                   {/* Card Footer: Location & Job Count */}
                   <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-5 py-3.5 text-xs dark:border-slate-800 dark:bg-slate-900/60">
-                    <div className="flex max-w-[55%] items-center gap-1.5 font-medium text-slate-500 dark:text-slate-400">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{locationText}</span>
-                    </div>
+                    {company.location ? (
+                      <div className="flex max-w-[55%] items-center gap-1.5 font-medium text-slate-500 dark:text-slate-400">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{company.location}</span>
+                      </div>
+                    ) : (
+                      <div />
+                    )}
 
                     <div className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
                       <span className="relative flex h-2 w-2">

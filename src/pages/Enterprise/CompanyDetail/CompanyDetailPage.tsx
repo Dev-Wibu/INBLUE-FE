@@ -196,7 +196,7 @@ export function CompanyDetailPage() {
             </div>
           </div>
 
-          {/* Master-Detail Split Grid */}
+          {/* Master-Detail Split Container */}
           {filteredJobs.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
               <Search className="mb-3 h-8 w-8 text-slate-400" />
@@ -208,9 +208,9 @@ export function CompanyDetailPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-              {/* Master Column (Left - 4 Cols) */}
-              <div className="space-y-3 lg:col-span-4">
+            <div className="flex flex-col gap-6 lg:flex-row">
+              {/* Master Column (Left - Compact Content-fit Width 280px-300px) */}
+              <div className="w-full shrink-0 space-y-3 lg:w-[280px] xl:w-[300px]">
                 {filteredJobs.map((job) => (
                   <MasterJobCard
                     key={job.id}
@@ -223,8 +223,8 @@ export function CompanyDetailPage() {
                 ))}
               </div>
 
-              {/* Detail Column (Right - 8 Cols, Sticky) */}
-              <div className="lg:col-span-8">
+              {/* Detail Column (Right - Flexible Expanded Area) */}
+              <div className="w-full min-w-0 flex-1">
                 {activeSelectedJob ? (
                   <JobDetailPane job={activeSelectedJob} company={company} />
                 ) : (

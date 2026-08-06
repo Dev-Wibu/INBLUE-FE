@@ -88,41 +88,64 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
                 </div>
               </div>
 
-              {/* Company Logo, Job Title & Price Box */}
-              <div className="mt-4 flex flex-col justify-between gap-4 md:flex-row md:items-start">
-                <div className="flex items-start gap-3.5">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 p-1.5 shadow-2xs dark:border-slate-700 dark:bg-slate-800">
-                    {company.logoUrl ? (
-                      <Avatar className="h-full w-full rounded-lg">
-                        <AvatarImage
-                          src={company.logoUrl}
-                          alt={company.name}
-                          className="object-contain"
-                        />
-                        <AvatarFallback className="rounded-lg bg-transparent text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                          {companyInitials}
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <Building2 className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
-                    )}
-                  </div>
+              {/* Company Logo & Job Title (Full Width) */}
+              <div className="mt-4 flex items-start gap-3.5">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 p-1.5 shadow-2xs dark:border-slate-700 dark:bg-slate-800">
+                  {company.logoUrl ? (
+                    <Avatar className="h-full w-full rounded-lg">
+                      <AvatarImage
+                        src={company.logoUrl}
+                        alt={company.name}
+                        className="object-contain"
+                      />
+                      <AvatarFallback className="rounded-lg bg-transparent text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                        {companyInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <Building2 className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
+                  )}
+                </div>
 
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-950 sm:text-2xl dark:text-white">
-                      {job.title}
-                    </h2>
-                    <p className="mt-0.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                      {company.name}
-                    </p>
-                  </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-xl font-bold break-words text-slate-950 sm:text-2xl dark:text-white">
+                    {job.title}
+                  </h2>
+                  <p className="mt-0.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                    {company.name}
+                  </p>
+                </div>
+              </div>
+
+              {/* Bottom Info Bar & Price CTA Box */}
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3.5 dark:border-slate-800">
+                {/* Info Chips (Salary, Location, HSD) */}
+                <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-600 dark:text-slate-400">
+                  <span className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    {salaryText}
+                  </span>
+
+                  {job.location && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                      <span>{job.location}</span>
+                    </span>
+                  )}
+
+                  {job.deadlineAt && (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                      <span>HSD: {formatDate(job.deadlineAt)}</span>
+                    </span>
+                  )}
                 </div>
 
                 {/* Price Box + Primary Action Button */}
-                <div className="flex shrink-0 items-center gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-3 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+                <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-indigo-100 bg-indigo-50/50 p-2.5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
                   <div className="text-right">
                     <span className="block text-[10px] font-medium text-slate-400 uppercase">
-                      Fee / Fee practice
+                      Fee practice
                     </span>
                     <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
                       {job.price ? `${job.price.toLocaleString()} VND` : "2,000 VND"}
@@ -132,7 +155,7 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
                   <Button
                     size="sm"
                     onClick={handleStartPractice}
-                    className="group rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                    className="group rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
                     <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                     {t("enterpriseCompanydetail.payPractice", "Pay & Practice")}
                     <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -142,32 +165,10 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
                     variant="outline"
                     size="icon"
                     onClick={() => setIsSaved(!isSaved)}
-                    className="h-9 w-9 rounded-xl border-slate-200 dark:border-slate-700">
+                    className="h-8 w-8 rounded-xl border-slate-200 dark:border-slate-700">
                     <Heart className={`h-4 w-4 ${isSaved ? "fill-rose-500 text-rose-500" : ""}`} />
                   </Button>
                 </div>
-              </div>
-
-              {/* Info Chips (Salary, Location, HSD) */}
-              <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-600 dark:text-slate-400">
-                <span className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
-                  <DollarSign className="h-3.5 w-3.5" />
-                  {salaryText}
-                </span>
-
-                {job.location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                    <span>{job.location}</span>
-                  </span>
-                )}
-
-                {job.deadlineAt && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                    <span>HSD: {formatDate(job.deadlineAt)}</span>
-                  </span>
-                )}
               </div>
             </div>
 
