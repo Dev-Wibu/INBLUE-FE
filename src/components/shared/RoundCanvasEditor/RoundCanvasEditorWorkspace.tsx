@@ -847,27 +847,33 @@ export function RoundCanvasEditorWorkspace({
                                 {Math.round((round.passThreshold ?? 0.8) * 100)}%
                               </span>
                             </div>
-                            {staffUsers && round.reviewerId != null && (
-                              <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
-                                <Users className="h-3 w-3" />
-                                <span className="truncate">
-                                  {t("adminCompanymanagement.reviewerLabel", "Reviewer")}:{" "}
-                                  {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
-                                    `#${round.reviewerId}`}
-                                </span>
-                              </div>
-                            )}
-                            {staffUsers && round.reviewerId == null && (
-                              <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
-                                <AlertTriangle className="h-3 w-3" />
-                                <span className="truncate">
-                                  {t(
-                                    "adminCompanymanagement.reviewerStaffCardWarning",
-                                    "Chưa gán người chấm"
-                                  )}
-                                </span>
-                              </div>
-                            )}
+                            {/* Reviewer row — hidden for QUIZ since Quiz rounds are
+                                auto-graded; no human reviewer is required. */}
+                            {staffUsers &&
+                              round.reviewerId != null &&
+                              round.roundType !== "QUIZ" && (
+                                <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                                  <Users className="h-3 w-3" />
+                                  <span className="truncate">
+                                    {t("adminCompanymanagement.reviewerLabel", "Reviewer")}:{" "}
+                                    {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
+                                      `#${round.reviewerId}`}
+                                  </span>
+                                </div>
+                              )}
+                            {staffUsers &&
+                              round.reviewerId == null &&
+                              round.roundType !== "QUIZ" && (
+                                <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  <span className="truncate">
+                                    {t(
+                                      "adminCompanymanagement.reviewerStaffCardWarning",
+                                      "Chưa gán người chấm"
+                                    )}
+                                  </span>
+                                </div>
+                              )}
 
                             {round.roundType === "QUIZ" &&
                               (!round.configData?.quizQuestions ||

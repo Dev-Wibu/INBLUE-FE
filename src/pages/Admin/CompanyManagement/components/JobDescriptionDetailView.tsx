@@ -643,17 +643,17 @@ export function JobDescriptionDetailView({
                 </Button>
               </div>
             ) : (
-              <div className="scrollbar-thin flex items-center gap-2.5 overflow-x-auto pb-2">
+              <div className="scrollbar-thin flex items-stretch gap-2.5 overflow-x-auto pb-2">
                 {initialRounds.map((round, index) => {
                   const meta = templates.find((template) => template.type === round.roundType);
                   const isLast = index === initialRounds.length - 1;
                   const reviewer = staffUsers.find((s) => s.id === round.reviewerId);
 
                   return (
-                    <div key={index} className="flex shrink-0 items-center gap-2.5">
+                    <div key={index} className="flex shrink-0 items-stretch gap-2.5">
                       <div
                         onClick={() => setIsEditorOpen(true)}
-                        className="group flex max-w-[210px] min-w-[170px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
+                        className="group flex h-full w-full max-w-[210px] min-w-[170px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
                         {/* Round Header */}
                         <div className="flex items-center justify-between gap-2">
                           <Badge
