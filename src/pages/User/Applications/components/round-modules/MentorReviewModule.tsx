@@ -109,12 +109,17 @@ interface StepDef {
 }
 
 const STEP_DEFS: StepDef[] = [
-  { key: "AWAITING_MENTOR", title: "Chờ Admin gán mentor", short: "Chờ mentor", icon: Hourglass },
-  { key: "SELECT_MENTOR", title: "Chọn mentor", short: "Chọn mentor", icon: Users },
-  { key: "SCHEDULE", title: "Đặt lịch phỏng vấn", short: "Đặt lịch", icon: Calendar },
-  { key: "WAITING", title: "Chờ đến giờ phỏng vấn", short: "Chờ giờ", icon: Clock },
-  { key: "IN_CALL", title: "Đang phỏng vấn", short: "Phỏng vấn", icon: Video },
-  { key: "RESULT", title: "Kết quả đánh giá", short: "Kết quả", icon: BadgeCheck },
+  {
+    key: "AWAITING_MENTOR",
+    title: "Waiting for Admin to assign mentor",
+    short: "Waiting",
+    icon: Hourglass,
+  },
+  { key: "SELECT_MENTOR", title: "Select mentor", short: "Select", icon: Users },
+  { key: "SCHEDULE", title: "Schedule interview", short: "Schedule", icon: Calendar },
+  { key: "WAITING", title: "Waiting for interview time", short: "Waiting", icon: Clock },
+  { key: "IN_CALL", title: "In interview", short: "Interviewing", icon: Video },
+  { key: "RESULT", title: "Evaluation results", short: "Results", icon: BadgeCheck },
 ];
 
 const MIN_COMMENT_LENGTH = 20;
