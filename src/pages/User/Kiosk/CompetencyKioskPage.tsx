@@ -773,10 +773,10 @@ function ResultStep({
             </div>
             {activeChartData.length > 0 && activeDimension !== "journey" ? (
               <>
-                <div className="holobox-radar-stage h-[300px] w-full sm:h-[340px]">
+                <div className="holobox-radar-stage h-[220px] w-full sm:h-[250px]">
                   <div className="holobox-radar-floor" aria-hidden="true" />
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={activeChartData} outerRadius="58%">
+                    <RadarChart data={activeChartData} outerRadius="62%">
                       <PolarGrid
                         stroke={isFullMode ? "#67a4b5" : "#0891b2"}
                         strokeOpacity={0.35}

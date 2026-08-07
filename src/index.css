@@ -2757,9 +2757,9 @@
 .holobox-command-deck--unified {
   display: flex !important;
   flex-direction: column !important;
-  gap: 1.25rem !important;
+  gap: 0.65rem !important;
   border: 1px solid rgba(14, 116, 144, 0.2) !important;
-  border-radius: 1.75rem !important;
+  border-radius: 1.5rem !important;
   background:
     radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.16), transparent 45%),
     radial-gradient(circle at 10% 90%, rgba(99, 102, 241, 0.08), transparent 35%),
@@ -2768,15 +2768,15 @@
     0 24px 60px rgba(15, 23, 42, 0.08),
     0 4px 20px rgba(8, 145, 178, 0.06),
     inset 0 0 80px rgba(34, 211, 238, 0.05) !important;
-  padding: 1.5rem !important;
+  padding: 1rem 1.25rem !important;
 }
 
 .holobox-unified-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 1rem;
+  gap: 0.75rem;
+  padding-bottom: 0.65rem;
   border-bottom: 1px solid rgba(14, 116, 144, 0.12);
 }
 
@@ -2891,19 +2891,19 @@
 
 .holobox-unified-body {
   display: grid;
-  grid-template-columns: minmax(360px, 1.1fr) minmax(480px, 1.35fr);
-  gap: 1.5rem;
+  grid-template-columns: minmax(320px, 1fr) minmax(420px, 1.3fr);
+  gap: 1rem;
   align-items: stretch;
-  min-height: 540px;
+  min-height: 320px;
 }
 
 /* AI Operator Bay Centering & Clearance */
 .holobox-operator-bay--unified {
   position: relative !important;
-  min-height: 400px !important;
+  min-height: 300px !important;
   border: none !important;
   border-radius: 0 !important;
-  padding-top: 2rem !important;
+  padding-top: 1.25rem !important;
   background: transparent !important;
   box-shadow: none !important;
   overflow: visible !important;
@@ -2918,30 +2918,30 @@
 }
 
 .holobox-operator-bay--unified .holobox-robot {
-  top: 45% !important;
-  scale: 1.05;
-  filter: drop-shadow(0 16px 28px rgba(8, 145, 178, 0.28));
+  top: 42% !important;
+  scale: 0.95;
+  filter: drop-shadow(0 14px 24px rgba(8, 145, 178, 0.28));
   animation: holobox-3d-floating-robot 4.8s ease-in-out infinite alternate !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-halo {
-  top: 43% !important;
+  top: 40% !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-orbit {
-  top: 43% !important;
+  top: 40% !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-floor {
-  top: 80% !important;
-  width: 230px !important;
+  top: 78% !important;
+  width: 210px !important;
   border-color: rgba(8, 145, 178, 0.35) !important;
-  box-shadow: 0 0 30px rgba(34, 211, 238, 0.35) !important;
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.35) !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-floor-shadow {
-  top: 80% !important;
-  width: 140px !important;
+  top: 78% !important;
+  width: 130px !important;
   background: rgba(8, 145, 178, 0.28) !important;
   animation: holobox-floor-shadow-pulse 4.8s ease-in-out infinite alternate !important;
 }
@@ -2998,24 +2998,28 @@
 }
 
 /* Full Mode Specific AI Clearance & Layout */
+.holobox-result-page.is-full-mode {
+  padding: 0.75rem 1rem 1.5rem !important;
+}
+
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified {
-  min-height: 480px !important;
-  padding-top: 3.5rem !important;
+  min-height: 320px !important;
+  padding-top: 1.5rem !important;
 }
 
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot {
-  top: 50% !important;
-  scale: 1.1 !important;
+  top: 44% !important;
+  scale: 1 !important;
 }
 
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot-halo,
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot-orbit {
-  top: 48% !important;
+  top: 42% !important;
 }
 
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot-floor,
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot-floor-shadow {
-  top: 84% !important;
+  top: 80% !important;
 }
 
 @media (max-width: 900px) {
