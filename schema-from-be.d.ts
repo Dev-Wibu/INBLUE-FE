@@ -2508,29 +2508,6 @@ export interface components {
             usedTools?: string[];
             outcome?: string;
         };
-        User: {
-            /** Format: int32 */
-            id?: number;
-            name?: string;
-            email?: string;
-            password?: string;
-            /** @enum {string} */
-            role?: "MENTOR" | "ADMIN" | "STAFF" | "USER";
-            isActive?: boolean;
-            avatarUrl?: string;
-            public_id?: string;
-            cvUrl?: string;
-            cv_public_id?: string;
-            phone?: string;
-            address?: string;
-            linkedInUrl?: string;
-            githubUrl?: string;
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-            candidates?: components["schemas"]["CandidateProfile"][];
-        };
         UserResponse: {
             /** Format: int32 */
             id?: number;
@@ -2780,6 +2757,29 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        User: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            email?: string;
+            password?: string;
+            /** @enum {string} */
+            role?: "MENTOR" | "ADMIN" | "STAFF" | "USER";
+            isActive?: boolean;
+            avatarUrl?: string;
+            public_id?: string;
+            cvUrl?: string;
+            cv_public_id?: string;
+            phone?: string;
+            address?: string;
+            linkedInUrl?: string;
+            githubUrl?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            candidates?: components["schemas"]["CandidateProfile"][];
         };
         UpdateMentorRequest: {
             name?: string;
@@ -3868,10 +3868,10 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3891,9 +3891,9 @@ export interface components {
             sort?: components["schemas"]["SortObject"];
             paged?: boolean;
             /** Format: int32 */
-            pageNumber?: number;
-            /** Format: int32 */
             pageSize?: number;
+            /** Format: int32 */
+            pageNumber?: number;
             unpaged?: boolean;
         };
         SortObject: {
@@ -4127,10 +4127,10 @@ export interface components {
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             /** Format: int64 */
             startupDate?: number;
             applicationName?: string;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             environment?: components["schemas"]["Environment"];
             beanDefinitionNames?: string[];
             /** Format: int32 */
@@ -4205,8 +4205,8 @@ export interface components {
             defaultProfiles?: string[];
         };
         FilterRegistration: {
-            urlPatternMappings?: string[];
             servletNameMappings?: string[];
+            urlPatternMappings?: string[];
             name?: string;
             className?: string;
             initParameters?: {
@@ -4218,29 +4218,29 @@ export interface components {
         HttpStatusCode: {
             error?: boolean;
             is5xxServerError?: boolean;
-            is3xxRedirection?: boolean;
             is1xxInformational?: boolean;
-            is4xxClientError?: boolean;
             is2xxSuccessful?: boolean;
+            is3xxRedirection?: boolean;
+            is4xxClientError?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             buffer?: string;
             defaultContentType?: string;
             urlPatterns?: string[];
-            isXml?: string;
-            includeCodas?: string[];
-            elIgnored?: string;
             pageEncoding?: string;
             includePreludes?: string[];
-            deferredSyntaxAllowedAsLiteral?: string;
-            trimDirectiveWhitespaces?: string;
-            errorOnUndeclaredNamespace?: string;
-            errorOnELNotFound?: string;
+            elIgnored?: string;
+            includeCodas?: string[];
+            isXml?: string;
             scriptingInvalid?: string;
+            errorOnELNotFound?: string;
+            errorOnUndeclaredNamespace?: string;
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -4265,13 +4265,13 @@ export interface components {
             hosts?: string[];
             redirectView?: boolean;
             propagateQueryProperties?: boolean;
+            attributes?: {
+                [key: string]: string;
+            };
             attributesMap?: {
                 [key: string]: unknown;
             };
             attributesCSV?: string;
-            attributes?: {
-                [key: string]: string;
-            };
         };
         ServletContext: {
             classLoader?: {
@@ -4339,26 +4339,26 @@ export interface components {
             /** Format: int32 */
             minorVersion?: number;
             attributeNames?: unknown;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            requestCharacterEncoding?: string;
-            responseCharacterEncoding?: string;
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
-            serverInfo?: string;
             contextPath?: string;
             initParameterNames?: unknown;
-            virtualServerName?: string;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            filterRegistrations?: {
-                [key: string]: components["schemas"]["FilterRegistration"];
-            };
+            serverInfo?: string;
+            responseCharacterEncoding?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             effectiveMajorVersion?: number;
             servletContextName?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
+            };
+            filterRegistrations?: {
+                [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             /** Format: int32 */
@@ -4374,6 +4374,9 @@ export interface components {
             };
         };
         SessionCookieConfig: {
+            domain?: string;
+            /** Format: int32 */
+            maxAge?: number;
             name?: string;
             path?: string;
             attributes?: {
@@ -4382,13 +4385,10 @@ export interface components {
             comment?: string;
             secure?: boolean;
             httpOnly?: boolean;
-            domain?: string;
-            /** Format: int32 */
-            maxAge?: number;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */
@@ -8154,7 +8154,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CandidateProfile"];
+                    "*/*": components["schemas"]["CandidateProfile"][];
                 };
             };
         };

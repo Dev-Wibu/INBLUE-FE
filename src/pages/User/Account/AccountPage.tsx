@@ -5,11 +5,13 @@ import CVUploadModal from "@/components/ui/cv-upload-modal";
 import { Progress } from "@/components/ui/progress";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { useMajorOptions } from "@/constants/majors";
-import type { CandidateProfile } from "@/interfaces/schema.types";
 import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { usersAdminManager } from "@/services";
-import { useCandidateProfile } from "@/services/candidate-profile.manager";
+import {
+  getLatestCandidateProfile,
+  useCandidateProfile,
+} from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
   Calendar,
@@ -51,7 +53,7 @@ export function AccountPage() {
   const authUser = useAuthStore((state) => state.user);
   const authUserId = authUser?.id;
   const { data: candidateProfileData } = useCandidateProfile(authUserId || 0);
-  const candidateProfile = (candidateProfileData as unknown as CandidateProfile) ?? null;
+  const candidateProfile = getLatestCandidateProfile(candidateProfileData);
   const [searchParams, setSearchParams] = useSearchParams();
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [activeTab, setActiveTab] = useState<AccountSubTab>(

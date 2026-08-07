@@ -16,6 +16,7 @@ import { useSortable } from "@/hooks/useSortable";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { cn } from "@/lib/utils";
 import { candidateProfileManager, usersAdminManager } from "@/services";
+import { getLatestCandidateProfile } from "@/services/candidate-profile.manager";
 import { ArrowLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -157,7 +158,7 @@ export function UserManagementPage() {
       try {
         const response = await candidateProfileManager.getByUserId(user.id);
         if (response.success && response.data) {
-          setSelectedProfileData(response.data);
+          setSelectedProfileData(getLatestCandidateProfile(response.data));
         } else {
           setSelectedProfileData(null);
         }

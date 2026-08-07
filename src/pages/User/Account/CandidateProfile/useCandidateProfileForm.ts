@@ -6,13 +6,15 @@ import type {
 } from "@/interfaces/schema.types";
 import { queryClient } from "@/lib/queryClient";
 import {
+  getLatestCandidateProfile,
+  normalizeCandidateProfiles,
   useCandidateProfile,
   useCreateCandidateProfile,
   useUpdateCandidateProfile,
 } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 import type { TFunction } from "i18next";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 export type SkillField = "technicalSkills" | "softSkills" | "tools";
@@ -36,7 +38,24 @@ export function useCandidateProfileForm(overrideUserId?: number) {
   const user = useAuthStore((state) => state.user);
   const userId = overrideUserId ?? user?.id ?? 0;
   const { data: profileData, isLoading, error, refetch } = useCandidateProfile(userId);
-  const profile = (profileData as unknown as CandidateProfile) ?? null;
+  const profiles = useMemo(() => normalizeCandidateProfiles(profileData), [profileData]);
+  const [selectedProfileId, setSelectedProfileId] = useState<number | null>(null);
+  const profile = useMemo(
+    () =>
+      profiles.find((item) => item.id === selectedProfileId) ?? getLatestCandidateProfile(profiles),
+    [profiles, selectedProfileId]
+  );
+
+  useEffect(() => {
+    if (profiles.length === 0) {
+      setSelectedProfileId(null);
+      return;
+    }
+
+    if (!profiles.some((item) => item.id === selectedProfileId)) {
+      setSelectedProfileId(getLatestCandidateProfile(profiles)?.id ?? null);
+    }
+  }, [profiles, selectedProfileId]);
   const createMutation = useCreateCandidateProfile();
   const updateMutation = useUpdateCandidateProfile();
   const [isEditing, setIsEditing] = useState(false);
@@ -310,6 +329,9 @@ export function useCandidateProfileForm(overrideUserId?: number) {
   };
   return {
     profile,
+    profiles,
+    selectedProfileId,
+    setSelectedProfileId,
     isLoading,
     error,
     isEditing,

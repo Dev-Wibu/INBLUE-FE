@@ -2,6 +2,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Award,
@@ -181,7 +188,29 @@ export function CandidateProfileTab() {
               {t("userAccount.overviewOfYourApplicationProfile")}
             </p>
           </div>
-          <Button onClick={form.startEditing}>{t("general.edit")}</Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {form.profiles.length > 1 && (
+              <Select
+                value={form.selectedProfileId ? String(form.selectedProfileId) : undefined}
+                onValueChange={(value) => form.setSelectedProfileId(Number(value))}>
+                <SelectTrigger className="min-h-10 min-w-52">
+                  <SelectValue placeholder="Select a profile" />
+                </SelectTrigger>
+                <SelectContent>
+                  {form.profiles
+                    .filter((profileItem) => profileItem.id !== undefined)
+                    .map((profileItem) => (
+                      <SelectItem key={profileItem.id} value={String(profileItem.id)}>
+                        {profileItem.applicationId
+                          ? `Application #${profileItem.applicationId}`
+                          : `Profile #${profileItem.id}`}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Button onClick={form.startEditing}>{t("general.edit")}</Button>
+          </div>
         </div>
       </div>
 

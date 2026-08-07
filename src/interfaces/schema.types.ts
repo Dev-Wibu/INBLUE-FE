@@ -417,6 +417,7 @@ export interface InterviewConfigOptions {
  */
 export interface CandidateProfile {
   id?: number;
+  applicationId?: number;
   user?: User;
   targetRole?: string;
   targetLevel?: string;

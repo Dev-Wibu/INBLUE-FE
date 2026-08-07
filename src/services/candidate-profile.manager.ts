@@ -11,6 +11,32 @@ import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams } fr
 import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type { CandidateProfile } from "@/interfaces";
 
+export function normalizeCandidateProfiles(data: unknown): CandidateProfile[] {
+  if (Array.isArray(data)) {
+    return data.filter((item): item is CandidateProfile => !!item && typeof item === "object");
+  }
+
+  if (!data || typeof data !== "object") return [];
+
+  const record = data as Record<string, unknown>;
+  if (Array.isArray(record.data)) {
+    return normalizeCandidateProfiles(record.data);
+  }
+
+  return "id" in record ? [record as CandidateProfile] : [];
+}
+
+export function getLatestCandidateProfile(data: unknown): CandidateProfile | null {
+  const profiles = normalizeCandidateProfiles(data);
+  if (profiles.length === 0) return null;
+
+  return [...profiles].sort((left, right) => {
+    const leftDate = Date.parse(left.updatedAt ?? left.createdAt ?? "") || 0;
+    const rightDate = Date.parse(right.updatedAt ?? right.createdAt ?? "") || 0;
+    return rightDate - leftDate || (right.id ?? 0) - (left.id ?? 0);
+  })[0];
+}
+
 export class CandidateProfileManager implements BaseManager<CandidateProfile> {
   /**
    * Get all candidate profiles
@@ -44,7 +70,7 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
    * Get candidate profile by user ID
    * GET /api/candidate-profiles/{userId}
    */
-  async getByUserId(userId: number): Promise<ApiResponse<CandidateProfile>> {
+  async getByUserId(userId: number): Promise<ApiResponse<CandidateProfile[]>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.CANDIDATE_PROFILES.DETAIL, { userId });
       // @ts-expect-error: Backend Swagger schema mismatch
@@ -53,8 +79,7 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
         status: res.response?.status,
         headers: res.response?.headers,
       }));
-      // @ts-expect-error: Backend Swagger schema mismatch
-      return { success: true, data: response.data };
+      return { success: true, data: normalizeCandidateProfiles(response.data) };
     } catch (error) {
       return {
         success: false,
@@ -117,7 +142,11 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
    * Uses getByUserId internally
    */
   async getById(id: string | number): Promise<ApiResponse<CandidateProfile>> {
-    return this.getByUserId(Number(id));
+    const response = await this.getByUserId(Number(id));
+    return {
+      ...response,
+      data: getLatestCandidateProfile(response.data),
+    };
   }
 
   /**

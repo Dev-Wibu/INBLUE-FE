@@ -6,7 +6,10 @@ import { Label } from "@/components/ui/label";
 import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
-import { candidateProfileManager } from "@/services/candidate-profile.manager";
+import {
+  candidateProfileManager,
+  getLatestCandidateProfile,
+} from "@/services/candidate-profile.manager";
 import { mentorManager } from "@/services/mentor.manager";
 import { userManager } from "@/services/user.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
@@ -101,8 +104,8 @@ export function LoginPage() {
           } else if (userRole === "USER") {
             const profileResult = await candidateProfileManager.getByUserId(userId);
             if (profileResult.success && profileResult.data) {
-              const profile = profileResult.data as Record<string, unknown>;
-              const userData = profile.user as Record<string, unknown> | undefined;
+              const profile = getLatestCandidateProfile(profileResult.data);
+              const userData = profile?.user as Record<string, unknown> | undefined;
               resolvedUser = {
                 ...baseUser,
                 name: (userData?.name as string) || payload.user.fullName,
