@@ -9,6 +9,8 @@ import {
   CircleAlert,
   Headphones,
   Mail,
+  Maximize2,
+  Minimize2,
   Play,
   RotateCcw,
   Search,
@@ -467,6 +469,7 @@ function ResultStep({
   const [isVoiceLoading, setIsVoiceLoading] = useState(false);
   const [isScriptExpanded, setIsScriptExpanded] = useState(false);
   const [activeDimension, setActiveDimension] = useState<HoloboxDimension>("overview");
+  const [isFullMode, setIsFullMode] = useState(false);
   const script = useMemo(() => buildHoloboxCompetencyScript(chart, journey), [chart, journey]);
   const isVi = useMemo(
     () => /[àáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i.test(script),
@@ -528,6 +531,34 @@ function ResultStep({
     };
   }, []);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) setIsFullMode(false);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullMode = async () => {
+    if (isFullMode) {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen().catch(() => undefined);
+      }
+      setIsFullMode(false);
+      return;
+    }
+
+    setIsFullMode(true);
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch {
+      // The immersive overlay remains usable when kiosk policies block fullscreen.
+    }
+  };
+
   const speakWithBrowserVoice = () => {
     if (!("speechSynthesis" in window)) return false;
     if (isSpeaking) {
@@ -584,7 +615,33 @@ function ResultStep({
   };
 
   return (
-    <main className="holobox-result-page mx-auto w-full max-w-[3600px] px-5 py-6 sm:px-8 sm:py-8 xl:px-10">
+    <main
+      className={`holobox-result-page mx-auto w-full max-w-[3600px] px-5 py-6 sm:px-8 sm:py-8 xl:px-10 ${isFullMode ? "is-full-mode" : ""}`}>
+      {isFullMode ? (
+        <div className="holobox-full-mode-bar">
+          <div>
+            <p className="holobox-full-mode-kicker">Inblue / Holobox theatre</p>
+            <strong>Immersive competency workspace</strong>
+          </div>
+          <div className="holobox-full-mode-actions">
+            <Button
+              onClick={speak}
+              disabled={isVoiceLoading}
+              className={`holobox-full-mode-voice ${isSpeaking ? "is-speaking" : ""}`}>
+              {isSpeaking ? (
+                <Square className="mr-2.5 h-4 w-4 fill-current" />
+              ) : (
+                <Volume2 className="mr-2.5 h-4 w-4" />
+              )}
+              {isSpeaking ? "Stop voice" : "Read result"}
+            </Button>
+            <Button onClick={toggleFullMode} className="holobox-full-mode-exit">
+              <Minimize2 className="mr-2.5 h-4 w-4" />
+              Exit full mode
+            </Button>
+          </div>
+        </div>
+      ) : null}
       <button
         type="button"
         onClick={onBack}
@@ -602,27 +659,35 @@ function ResultStep({
             {chart.candidateName}
           </h1>
         </div>
-        <Button
-          onClick={speak}
-          disabled={isVoiceLoading}
-          className={`holobox-read-button h-11 rounded-xl px-5 text-sm font-semibold shadow-sm transition ${isSpeaking ? "bg-rose-600 hover:bg-rose-700" : "bg-slate-950 hover:bg-slate-800"}`}>
-          {isVoiceLoading ? (
-            <>
-              <span className="mr-2.5 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              {isVi ? "Đang chuẩn bị..." : "Preparing voice..."}
-            </>
-          ) : isSpeaking ? (
-            <>
-              <Square className="mr-2.5 h-4 w-4 fill-current text-white" />
-              {isVi ? "Dừng đọc" : "Stop reading"}
-            </>
-          ) : (
-            <>
-              <Volume2 className="mr-2.5 h-4 w-4" />
-              {isVi ? "Nghe kết quả" : "Read result"}
-            </>
-          )}
-        </Button>
+        <div className="holobox-result-actions">
+          <Button
+            onClick={toggleFullMode}
+            className="holobox-read-button h-11 rounded-xl border border-cyan-200 bg-white px-5 text-sm font-semibold text-cyan-800 shadow-sm transition hover:bg-cyan-50">
+            <Maximize2 className="mr-2.5 h-4 w-4" />
+            Full mode
+          </Button>
+          <Button
+            onClick={speak}
+            disabled={isVoiceLoading}
+            className={`holobox-read-button h-11 rounded-xl px-5 text-sm font-semibold shadow-sm transition ${isSpeaking ? "bg-rose-600 hover:bg-rose-700" : "bg-slate-950 hover:bg-slate-800"}`}>
+            {isVoiceLoading ? (
+              <>
+                <span className="mr-2.5 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                {isVi ? "Đang chuẩn bị..." : "Preparing voice..."}
+              </>
+            ) : isSpeaking ? (
+              <>
+                <Square className="mr-2.5 h-4 w-4 fill-current text-white" />
+                {isVi ? "Dừng đọc" : "Stop reading"}
+              </>
+            ) : (
+              <>
+                <Volume2 className="mr-2.5 h-4 w-4" />
+                {isVi ? "Nghe kết quả" : "Read result"}
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <section className="holobox-command-deck">
@@ -761,10 +826,14 @@ function ResultStep({
                 <div className="holobox-radar-floor" aria-hidden="true" />
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={activeChartData} outerRadius="72%">
-                    <PolarGrid stroke="#164e63" gridType="polygon" />
+                    <PolarGrid stroke={isFullMode ? "#67a4b5" : "#164e63"} gridType="polygon" />
                     <PolarAngleAxis
                       dataKey="label"
-                      tick={{ fill: "#a5f3fc", fontSize: 11, fontWeight: 600 }}
+                      tick={{
+                        fill: isFullMode ? "#0e7490" : "#a5f3fc",
+                        fontSize: 11,
+                        fontWeight: 600,
+                      }}
                     />
                     <PolarRadiusAxis
                       domain={[0, 100]}
@@ -775,11 +844,11 @@ function ResultStep({
                     <Radar
                       name="Score"
                       dataKey="score"
-                      stroke="#67e8f9"
-                      fill="#06b6d4"
+                      stroke={isFullMode ? "#0891b2" : "#67e8f9"}
+                      fill={isFullMode ? "#22d3ee" : "#06b6d4"}
                       fillOpacity={0.28}
                       strokeWidth={3}
-                      dot={{ r: 4, fill: "#a5f3fc", strokeWidth: 0 }}
+                      dot={{ r: 4, fill: isFullMode ? "#0e7490" : "#a5f3fc", strokeWidth: 0 }}
                     />
                     <Tooltip
                       labelFormatter={(label) =>
