@@ -729,9 +729,9 @@ function ResultStep({
 
           {/* Radar chart (right) */}
           <div className="holobox-radar-panel holobox-radar-panel--unified">
-            <div className="mb-3 flex items-start justify-between">
+            <div className="mb-1.5 flex items-start justify-between">
               <div>
-                <p className="mb-1 text-[10px] font-bold tracking-[0.18em] text-cyan-600 uppercase">
+                <p className="mb-0.5 text-[10px] font-bold tracking-[0.18em] text-cyan-600 uppercase">
                   {activeDimensionCopy[activeDimension].kicker}
                 </p>
                 <h2 className="font-bold text-slate-950">
@@ -742,7 +742,7 @@ function ResultStep({
                 <span /> {activeChartData.length} signals
               </div>
             </div>
-            <div className="mb-3 flex flex-wrap gap-2">
+            <div className="mb-1.5 flex flex-wrap gap-2">
               {(["overview", "technical", "behavioral", "journey"] as HoloboxDimension[]).map(
                 (dimension) => (
                   <button
@@ -761,7 +761,7 @@ function ResultStep({
                 )
               )}
             </div>
-            <div className="mb-3 flex items-center gap-3 text-[11px] font-semibold text-slate-500">
+            <div className="mb-1.5 flex items-center gap-3 text-[11px] font-semibold text-slate-500">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-cyan-500" />
                 Technical
@@ -773,10 +773,10 @@ function ResultStep({
             </div>
             {activeChartData.length > 0 && activeDimension !== "journey" ? (
               <>
-                <div className="holobox-radar-stage h-[300px] w-full sm:h-[340px]">
+                <div className="holobox-radar-stage h-[240px] w-full sm:h-[260px]">
                   <div className="holobox-radar-floor" aria-hidden="true" />
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={activeChartData} outerRadius="70%">
+                    <RadarChart data={activeChartData} outerRadius="75%">
                       <PolarGrid
                         stroke={isFullMode ? "#67a4b5" : "#0891b2"}
                         strokeOpacity={0.35}
