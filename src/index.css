@@ -627,7 +627,17 @@
 .holobox-score-scene {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+}
+
+/* Reduce focus outline gap for chart SVG */
+.holobox-radar-stage .recharts-surface:focus {
+  outline-offset: 0 !important;
+}
+.holobox-radar-stage svg:focus {
+  outline-offset: 0 !important;
+}
+
+.holobox-score-scene {
   background:
     radial-gradient(circle at 72% 20%, rgba(34, 211, 238, 0.2), transparent 25%),
     radial-gradient(circle at 12% 85%, rgba(14, 116, 144, 0.22), transparent 30%), #020617;
@@ -2542,7 +2552,7 @@
 
 .holobox-result-page.is-full-mode .holobox-radar-stage {
   border-color: rgba(8, 145, 178, 0.22);
-  background: radial-gradient(circle at 50% 48%, #ffffff 0%, #effcff 48%, #dff7fb 100%);
+  background: radial-gradient(circle at 50% 48%, #ffffff 0%, #effcff 48%, #c8cccd 100%);
 }
 
 .holobox-result-page.is-full-mode .holobox-radar-panel {
@@ -2550,7 +2560,7 @@
 }
 
 .holobox-result-page.is-full-mode .holobox-radar-panel .holobox-radar-stage {
-  height: clamp(360px, 54vh, 680px) !important;
+  height: clamp(200px, 28vh, 350px) !important;
 }
 
 .holobox-result-page.is-full-mode .holobox-radar-panel .holobox-radar-stage svg text {
@@ -2612,7 +2622,7 @@
   }
 
   .holobox-result-page.is-full-mode .holobox-radar-panel .holobox-radar-stage {
-    height: 500px !important;
+    height: 350px !important;
   }
 }
 
@@ -2996,20 +3006,21 @@
   background: transparent !important;
   box-shadow: none !important;
   /* Default: compact, works across all screen sizes */
-  height: clamp(200px, 35vh, 380px) !important;
+  height: clamp(200px, 35vh, 340px) !important;
   min-height: 200px !important;
+  padding: 0px 10px 0px 10px !important;
 }
 
 @media (min-width: 1200px) {
   .holobox-radar-panel--unified .holobox-radar-stage {
-    height: clamp(240px, 38vh, 440px) !important;
+    height: clamp(240px, 38vh, 400px) !important;
     min-height: 240px !important;
   }
 }
 
 @media (min-width: 1600px) {
   .holobox-radar-panel--unified .holobox-radar-stage {
-    height: clamp(300px, 42vh, 560px) !important;
+    height: clamp(300px, 42vh, 500px) !important;
     min-height: 300px !important;
   }
 }

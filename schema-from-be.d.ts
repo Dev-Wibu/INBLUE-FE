@@ -1200,6 +1200,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/interview/voices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAvailableVoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/interview/start/{sessionKey}": {
         parameters: {
             query?: never;
@@ -3139,6 +3155,7 @@ export interface components {
         };
         TtsRequest: {
             text?: string;
+            voiceId?: string;
         };
         SubmitAnswerRequest: {
             sessionKey?: string;
@@ -3817,6 +3834,12 @@ export interface components {
             roundId?: number;
             submissions?: components["schemas"]["CodeReviewSubmission"][];
         };
+        VoiceResponse: {
+            id?: string;
+            name?: string;
+            description?: string;
+            previewUrl?: string;
+        };
         SummaryResponse: {
             /** Format: int64 */
             id?: number;
@@ -4244,22 +4267,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
+            trimDirectiveWhitespaces?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            trimDirectiveWhitespaces?: string;
+            errorOnUndeclaredNamespace?: string;
             elIgnored?: string;
             isXml?: string;
-            defaultContentType?: string;
             urlPatterns?: string[];
+            defaultContentType?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -4294,13 +4317,12 @@ export interface components {
             };
         };
         ServletContext: {
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            requestCharacterEncoding?: string;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
             /** Format: int32 */
             sessionTimeout?: number;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
+            serverInfo?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
@@ -4316,6 +4338,7 @@ export interface components {
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -6902,6 +6925,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApplicationDetail"];
+                };
+            };
+        };
+    };
+    getAvailableVoices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["VoiceResponse"][];
                 };
             };
         };
