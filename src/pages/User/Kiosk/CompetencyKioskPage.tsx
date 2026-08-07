@@ -648,14 +648,14 @@ function ResultStep({
             <span className="holobox-unified-level rounded-full border border-cyan-300 bg-cyan-100/90 px-3.5 py-1 text-xs font-bold text-cyan-800 shadow-xs sm:text-sm">
               {competencyLevelLabel[chart.overallLevel]}
             </span>
-            <div className="holobox-unified-score-block flex items-center gap-2 rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 px-4 py-2 text-white shadow-md shadow-cyan-950/20">
-              <span className="text-[11px] font-black tracking-wider text-cyan-400 uppercase">
+            <div className="holobox-unified-score-block flex items-center gap-2 rounded-2xl border border-cyan-300/80 bg-cyan-50/90 px-4 py-2 text-cyan-950 shadow-xs">
+              <span className="text-[11px] font-bold tracking-wider text-cyan-700 uppercase">
                 Score
               </span>
-              <span className="text-3xl leading-none font-black text-white sm:text-4xl">
+              <span className="text-3xl leading-none font-black text-cyan-900 sm:text-4xl">
                 {Math.round(chart.overallScore)}
               </span>
-              <span className="text-xs font-bold text-cyan-200/80">/100</span>
+              <span className="text-xs font-bold text-cyan-700">/100</span>
             </div>
           </div>
           {!isFullMode ? (
@@ -692,16 +692,7 @@ function ResultStep({
                 </span>
               </Button>
             </div>
-          ) : (
-            <div className="holobox-unified-actions flex items-center gap-3">
-              <Button
-                onClick={toggleFullMode}
-                className="holobox-unified-action-btn"
-                title="Exit full mode">
-                <Minimize2 className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+          ) : null}
         </div>
 
         {/* Main content: operator center, radar right */}
@@ -785,7 +776,7 @@ function ResultStep({
                 <div className="holobox-radar-stage h-[300px] w-full sm:h-[340px]">
                   <div className="holobox-radar-floor" aria-hidden="true" />
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={activeChartData} outerRadius="72%">
+                    <RadarChart data={activeChartData} outerRadius="58%">
                       <PolarGrid
                         stroke={isFullMode ? "#67a4b5" : "#0891b2"}
                         strokeOpacity={0.35}
