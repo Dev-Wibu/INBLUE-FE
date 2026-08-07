@@ -729,7 +729,7 @@ function ResultStep({
 
           {/* Radar chart (right) */}
           <div className="holobox-radar-panel holobox-radar-panel--unified flex h-full flex-col">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-900/10 pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-900/10">
               <div>
                 <p className="text-[10px] font-bold tracking-[0.18em] text-cyan-600 uppercase">
                   {activeDimensionCopy[activeDimension].kicker}
@@ -833,7 +833,7 @@ function ResultStep({
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="shrink-0 border-t border-slate-200/60" />
+                <div className="shrink-0 border-t border-slate-200/60 pt-1" />
                 <div className="grid min-h-0 flex-1 grid-cols-2 gap-1.5 sm:grid-cols-4">
                   {activeChartData.map((item) => (
                     <div
