@@ -584,7 +584,7 @@ function ResultStep({
   };
 
   return (
-    <main className="mx-auto w-full max-w-[1800px] px-5 py-6 sm:px-8 sm:py-8 xl:px-10">
+    <main className="holobox-result-page mx-auto w-full max-w-[3600px] px-5 py-6 sm:px-8 sm:py-8 xl:px-10">
       <button
         type="button"
         onClick={onBack}
@@ -605,7 +605,7 @@ function ResultStep({
         <Button
           onClick={speak}
           disabled={isVoiceLoading}
-          className={`h-11 rounded-xl px-5 text-sm font-semibold shadow-sm transition ${isSpeaking ? "bg-rose-600 hover:bg-rose-700" : "bg-slate-950 hover:bg-slate-800"}`}>
+          className={`holobox-read-button h-11 rounded-xl px-5 text-sm font-semibold shadow-sm transition ${isSpeaking ? "bg-rose-600 hover:bg-rose-700" : "bg-slate-950 hover:bg-slate-800"}`}>
           {isVoiceLoading ? (
             <>
               <span className="mr-2.5 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
