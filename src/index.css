@@ -2897,13 +2897,13 @@
   min-height: 540px;
 }
 
-/* AI Operator Bay Centering & Clearance (Issue 1 Fix) */
+/* AI Operator Bay Centering & Clearance (Issue 1 & 4 Head Clearance) */
 .holobox-operator-bay--unified {
   position: relative !important;
-  min-height: 520px !important;
+  min-height: 580px !important;
   border: none !important;
   border-radius: 1.5rem !important;
-  padding-top: 3.5rem !important;
+  padding-top: 4.5rem !important;
   background:
     radial-gradient(circle at 50% 35%, rgba(34, 211, 238, 0.24), transparent 45%),
     radial-gradient(circle at 50% 100%, rgba(14, 116, 144, 0.12), transparent 55%),
@@ -2921,35 +2921,35 @@
 }
 
 .holobox-operator-bay--unified .holobox-robot {
-  top: 55% !important;
-  scale: 1.25;
+  top: 58% !important;
+  scale: 1.2;
   filter: drop-shadow(0 20px 35px rgba(8, 145, 178, 0.32));
   animation: holobox-3d-floating-robot 4.8s ease-in-out infinite alternate !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-halo {
-  top: 52% !important;
+  top: 56% !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-orbit {
-  top: 52% !important;
+  top: 56% !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-floor {
-  top: 86% !important;
+  top: 88% !important;
   width: 250px !important;
   border-color: rgba(8, 145, 178, 0.35) !important;
   box-shadow: 0 0 35px rgba(34, 211, 238, 0.35) !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-floor-shadow {
-  top: 86% !important;
+  top: 88% !important;
   width: 160px !important;
   background: rgba(8, 145, 178, 0.28) !important;
   animation: holobox-floor-shadow-pulse 4.8s ease-in-out infinite alternate !important;
 }
 
-/* 3D Dynamic Floating Animation for Robot (Issue 4 Fix) */
+/* 3D Dynamic Floating Animation for Robot */
 @keyframes holobox-3d-floating-robot {
   0% {
     transform: translate(-50%, -46%) rotateY(-10deg) rotateX(4deg) translateY(0px);
@@ -2957,7 +2957,7 @@
       drop-shadow(0 0 20px rgba(34, 211, 238, 0.3));
   }
   50% {
-    transform: translate(-50%, -54%) rotateY(10deg) rotateX(-3deg) translateY(-16px);
+    transform: translate(-50%, -54%) rotateY(10deg) rotateX(-3deg) translateY(-14px);
     filter: drop-shadow(0 34px 45px rgba(8, 145, 178, 0.38))
       drop-shadow(0 0 30px rgba(34, 211, 238, 0.5));
   }
@@ -2983,7 +2983,7 @@
   }
 }
 
-/* Radar Panel & Stage Light Mode Styling (Issue 3 Fix) */
+/* Radar Panel & Stage Light Mode Styling */
 .holobox-radar-panel--unified {
   border: 1px solid rgba(8, 145, 178, 0.16) !important;
   border-radius: 1.5rem !important;
@@ -2998,15 +2998,11 @@
   border-radius: 1.25rem !important;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(207, 250, 254, 0.5) 0%,
-    rgba(236, 254, 255, 0.2) 60%,
+    rgba(207, 250, 254, 0.55) 0%,
+    rgba(236, 254, 255, 0.25) 60%,
     rgba(255, 255, 255, 0.95) 100%
   ) !important;
   box-shadow: inset 0 0 40px rgba(34, 211, 238, 0.08) !important;
-}
-
-.holobox-result-page.is-full-mode .holobox-radar-panel--unified .holobox-radar-stage {
-  background: radial-gradient(circle at 50% 48%, #083344 0%, #061b2b 46%, #020617 100%) !important;
 }
 
 @media (max-width: 900px) {

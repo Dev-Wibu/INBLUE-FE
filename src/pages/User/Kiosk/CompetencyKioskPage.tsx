@@ -642,51 +642,66 @@ function ResultStep({
         {/* Top bar: score info left, audio button right */}
         <div className="holobox-unified-topbar flex w-full flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-            <div className="flex flex-col">
-              <h1 className="holobox-unified-name m-0 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
-                {chart.candidateName}
-              </h1>
-              <span className="holobox-unified-level mt-1 self-start rounded-full border border-cyan-200/80 bg-cyan-50 px-3 py-0.5 text-xs font-semibold text-cyan-700 sm:text-sm">
-                {competencyLevelLabel[chart.overallLevel]}
+            <h1 className="holobox-unified-name m-0 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">
+              {chart.candidateName}
+            </h1>
+            <span className="holobox-unified-level rounded-full border border-cyan-300 bg-cyan-100/90 px-3.5 py-1 text-xs font-bold text-cyan-800 shadow-xs sm:text-sm">
+              {competencyLevelLabel[chart.overallLevel]}
+            </span>
+            <div className="holobox-unified-score-block flex items-center gap-2 rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 px-4 py-2 text-white shadow-md shadow-cyan-950/20">
+              <span className="text-[11px] font-black tracking-wider text-cyan-400 uppercase">
+                Score
               </span>
-            </div>
-            <div className="holobox-unified-score-block flex items-baseline gap-1.5 rounded-2xl bg-gradient-to-r from-cyan-600 to-cyan-500 px-4 py-2 text-white shadow-lg shadow-cyan-500/20">
-              <span className="text-3xl leading-none font-black sm:text-5xl">
+              <span className="text-3xl leading-none font-black text-white sm:text-4xl">
                 {Math.round(chart.overallScore)}
               </span>
-              <span className="text-sm font-bold text-cyan-100">/100</span>
+              <span className="text-xs font-bold text-cyan-200/80">/100</span>
             </div>
           </div>
-          <div className="holobox-unified-actions flex items-center gap-3">
-            <Button onClick={toggleFullMode} className="holobox-unified-action-btn">
-              <Maximize2 className="h-4 w-4" />
-            </Button>
-            <Button
-              onClick={speak}
-              disabled={isVoiceLoading}
-              className={`holobox-unified-voice-btn ${isSpeaking ? "is-speaking" : ""}`}>
-              {isVoiceLoading ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              ) : isSpeaking ? (
-                <Square className="h-4 w-4 fill-current" />
-              ) : (
-                <Volume2 className="h-4 w-4" />
-              )}
-              <span className="holobox-unified-voice-label font-bold">
-                {isVoiceLoading
-                  ? isVi
-                    ? "Chuẩn bị..."
-                    : "Loading..."
-                  : isSpeaking
+          {!isFullMode ? (
+            <div className="holobox-unified-actions flex items-center gap-3">
+              <Button
+                onClick={toggleFullMode}
+                className="holobox-unified-action-btn"
+                title="Full mode">
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={speak}
+                disabled={isVoiceLoading}
+                className={`holobox-unified-voice-btn ${isSpeaking ? "is-speaking" : ""}`}>
+                {isVoiceLoading ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : isSpeaking ? (
+                  <Square className="h-4 w-4 fill-current" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
+                <span className="holobox-unified-voice-label font-bold">
+                  {isVoiceLoading
                     ? isVi
-                      ? "Dừng"
-                      : "Stop"
-                    : isVi
-                      ? "Nghe"
-                      : "Listen"}
-              </span>
-            </Button>
-          </div>
+                      ? "Chuẩn bị..."
+                      : "Loading..."
+                    : isSpeaking
+                      ? isVi
+                        ? "Dừng"
+                        : "Stop"
+                      : isVi
+                        ? "Nghe"
+                        : "Listen"}
+                </span>
+              </Button>
+            </div>
+          ) : (
+            <div className="holobox-unified-actions flex items-center gap-3">
+              <Button
+                onClick={toggleFullMode}
+                className="holobox-unified-action-btn"
+                title="Exit full mode">
+                <Minimize2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Main content: operator center, radar right */}
