@@ -14,9 +14,7 @@ const ALL_FILTER = "ALL";
 
 function getOpenRoleCount(company: Company) {
   return (
-    company.jobDescriptions?.filter(
-      (job) => !job.isDeleted && (!job.status || job.status === "OPEN")
-    ).length || 0
+    company.jobDescriptions?.filter((job) => !job.isDeleted && job.status === "OPEN").length || 0
   );
 }
 

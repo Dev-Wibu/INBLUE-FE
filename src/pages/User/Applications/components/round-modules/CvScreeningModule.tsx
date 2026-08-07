@@ -164,7 +164,7 @@ function ModernGaugeClock({
 
 export function CvScreeningModule({
   round,
-  detail,
+  detail: initialDetail,
   applicationId,
   jdInfo,
   isCompleted,
@@ -172,10 +172,13 @@ export function CvScreeningModule({
   onSuccess,
 }: CvScreeningModuleProps) {
   const { t } = useTranslation();
+  const [submittedDetail, setSubmittedDetail] = useState<ApplicationDetail | null>(null);
+  const detail = submittedDetail ?? initialDetail;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   // Safe parse aiFeedback JSON if object or string
   const aiFeedback = useMemo<AiFeedbackPayload | null>(() => {
@@ -194,6 +197,17 @@ export function CvScreeningModule({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const submissionData = detail?.submissionData as any;
   const fileUrl = submissionData?.fileUrl || submissionData?.url || null;
+  const isAlreadySubmitted =
+    hasSubmitted ||
+    Boolean(
+      fileUrl ||
+      isCompleted ||
+      detail?.finalScore != null ||
+      detail?.aiScore != null ||
+      detail?.status === "SUBMITTED" ||
+      detail?.status === "COMPLETED" ||
+      detail?.status === "AI_EVALUATED"
+    );
 
   // Strict check if real AI feedback or submission exists
   const hasAiData = Boolean(
@@ -251,6 +265,8 @@ export function CvScreeningModule({
     e.stopPropagation();
     e.preventDefault();
 
+    if (isAlreadySubmitted || analyzing) return;
+
     if (!selectedFile && !selectedFileName) {
       // Open file browser if no file selected yet
       fileInputRef.current?.click();
@@ -261,6 +277,8 @@ export function CvScreeningModule({
   };
 
   const handleAnalyzeCV = async () => {
+    if (isAlreadySubmitted) return;
+
     if (!selectedFile && !selectedFileName) {
       fileInputRef.current?.click();
       return;
@@ -275,7 +293,13 @@ export function CvScreeningModule({
       });
 
       if (res.success) {
+        if (res.data?.detail) setSubmittedDetail(res.data.detail);
+        setHasSubmitted(true);
         toast.success(t("userApplicationhistory.cvAnalyzedSuccess", "Phân tích CV thành công!"));
+        onSuccess?.();
+      } else if (res.statusCode === 409) {
+        setHasSubmitted(true);
+        toast.error(res.error || "CV da duoc nop cho vong nay");
         onSuccess?.();
       } else {
         toast.error(res.error || t("general.anUnknownErrorHasOccurred", "Gửi CV không thành công"));
@@ -442,7 +466,7 @@ export function CvScreeningModule({
                     <Button
                       type="button"
                       onClick={handleButtonClick}
-                      disabled={analyzing}
+                      disabled={analyzing || isAlreadySubmitted}
                       className="relative z-10 mt-4 h-9 gap-2 bg-indigo-600 px-5 text-xs font-bold text-white hover:bg-indigo-700">
                       {!selectedFileName ? (
                         <>

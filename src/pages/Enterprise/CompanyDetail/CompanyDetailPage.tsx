@@ -62,6 +62,7 @@ export function CompanyDetailPage() {
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
+      if (job.status !== "OPEN") return false;
       const q = searchQuery.toLowerCase();
       const matchesSearch =
         !q ||

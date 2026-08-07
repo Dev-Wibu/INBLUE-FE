@@ -242,7 +242,7 @@ export function JobSearchTab() {
     try {
       const result = await jobDescriptionManager.getAll();
       if (result.success && result.data) {
-        const validJobs = result.data.filter((job) => !job.isDeleted);
+        const validJobs = result.data.filter((job) => !job.isDeleted && job.status === "OPEN");
         setJobs(validJobs);
       }
     } catch (error) {

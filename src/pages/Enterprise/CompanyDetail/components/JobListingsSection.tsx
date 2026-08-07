@@ -19,6 +19,7 @@ export function JobListingsSection({ jobs, companyName }: JobListingsSectionProp
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
+      if (job.status !== "OPEN") return false;
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         !query ||

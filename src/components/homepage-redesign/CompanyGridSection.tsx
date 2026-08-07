@@ -49,7 +49,7 @@ export function CompanyGridSection() {
   const [isLoading, setIsLoading] = useState(false);
   const availableJobs = companies.flatMap((company) =>
     (company.jobDescriptions ?? [])
-      .filter((job) => job.id && job.status !== "CLOSED")
+      .filter((job) => job.id && job.status === "OPEN")
       .map((job) => ({ company, job }))
   );
 

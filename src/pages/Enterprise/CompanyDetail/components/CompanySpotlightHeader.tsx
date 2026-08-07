@@ -27,7 +27,7 @@ export function CompanySpotlightHeader({
       .slice(0, 2)
       .toUpperCase() || "TN";
 
-  const featuredJobs = jobs.filter((j) => j.id && j.status !== "CLOSED").slice(0, 3);
+  const featuredJobs = jobs.filter((j) => j.id && j.status === "OPEN").slice(0, 3);
 
   return (
     <div className="relative mb-8 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">

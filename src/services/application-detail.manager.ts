@@ -113,8 +113,19 @@ export class ApplicationDetailManager {
       return {
         success: false,
         error: this.extractErrorMessage(error),
+        statusCode: this.extractErrorStatus(error),
       };
     }
+  }
+
+  private extractErrorStatus(error: unknown): number | undefined {
+    if (!error || typeof error !== "object") return undefined;
+    const value = error as {
+      status?: unknown;
+      response?: { status?: unknown };
+    };
+    const status = value.status ?? value.response?.status;
+    return typeof status === "number" ? status : undefined;
   }
 
   /**
@@ -236,6 +247,7 @@ export class ApplicationDetailManager {
       return {
         success: false,
         error: this.extractErrorMessage(error),
+        statusCode: this.extractErrorStatus(error),
       };
     }
   }

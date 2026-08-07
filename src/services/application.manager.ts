@@ -15,6 +15,20 @@ export interface Application {
   updatedAt?: string;
 }
 class ApplicationService {
+  private extractErrorStatus(error: unknown): number | undefined {
+    if (!error || typeof error !== "object") return undefined;
+
+    const value = error as {
+      status?: unknown;
+      statusCode?: unknown;
+      response?: { status?: unknown; statusCode?: unknown };
+    };
+    const status =
+      value.status ?? value.statusCode ?? value.response?.status ?? value.response?.statusCode;
+
+    return typeof status === "number" ? status : undefined;
+  }
+
   private extractErrorMessage(error: unknown): string {
     if (error && typeof error === "object" && "response" in error) {
       return (
@@ -64,6 +78,7 @@ class ApplicationService {
       return {
         success: false,
         error: message,
+        statusCode: this.extractErrorStatus(error),
       };
     }
   }

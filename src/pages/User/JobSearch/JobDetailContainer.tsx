@@ -85,7 +85,8 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const jdIdNum = Number(job.id);
 
-  const { hasPurchased, refetchStatus } = useJdPurchaseStatus(jdIdNum);
+  const { hasPurchased, hasApplied, applicationId, isLoadingStatus, refetchStatus } =
+    useJdPurchaseStatus(jdIdNum);
   const [isApplying, setIsApplying] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [iframeLoading, setIframeLoading] = useState(true);
@@ -112,7 +113,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [checkoutUrl]);
+  }, [checkoutUrl, t]);
 
   const formatTimeLeft = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -210,12 +211,11 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
         toast.success(t("payment.paymentSuccess", "Thanh toán thành công!"));
         setCheckoutUrl(null);
         await refetchStatus();
-        handleApplyAfterPurchased();
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [checkoutUrl, hasPurchased]);
+  }, [checkoutUrl, hasPurchased, jdIdNum, refetchStatus, t]);
 
   const handleCopy = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text);
@@ -239,6 +239,15 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
           navigate(`/user?tab=applicationHistory`);
         }
       } else {
+        if (result.statusCode === 402) {
+          await refetchStatus();
+          toast.error(
+            t("payment.paymentRequiredToApply", "Bạn cần mua gói apply cho JD này trước."),
+            { duration: 5000 }
+          );
+          return;
+        }
+
         const errorMsg =
           result.error ||
           t("enterpriseJobdescriptiondetailpage.applicationUnsuccessfulPleaseTryAgain");
@@ -257,14 +266,23 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       navigate(`/login?redirect=/enterprise/job/${job.id}`);
       return;
     }
-    if (job?.status !== "OPEN") {
+    if (job?.status?.toUpperCase() !== "OPEN") {
       toast.warning(t("enterpriseJobdescriptiondetailpage.thisPositionIsCurrentlyNo"));
+      return;
+    }
+
+    if (hasApplied) {
+      navigate(
+        applicationId
+          ? `/user?tab=applicationHistory&appId=${applicationId}`
+          : "/user?tab=applicationHistory"
+      );
       return;
     }
 
     setIsApplying(true);
     try {
-      if (!hasPurchased && job.price && job.price > 0) {
+      if (!hasPurchased) {
         localStorage.setItem("pending_jd_purchase_id", String(jdIdNum));
         const res = await jdPurchaseManager.createPayment(jdIdNum);
         if (res?.checkoutUrl) {
@@ -292,8 +310,17 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       <JobDetailView
         job={job}
         hasPurchased={hasPurchased}
+        hasApplied={hasApplied}
         onApplyAction={handleApply}
+        onViewApplication={() => {
+          navigate(
+            applicationId
+              ? `/user?tab=applicationHistory&appId=${applicationId}`
+              : "/user?tab=applicationHistory"
+          );
+        }}
         isLoadingAction={isApplying}
+        isLoadingStatus={isLoadingStatus}
         onBack={onClose}
       />
 

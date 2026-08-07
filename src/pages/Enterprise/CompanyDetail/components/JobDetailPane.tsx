@@ -38,7 +38,9 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const [isSaved, setIsSaved] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
-  const { hasPurchased, isLoadingStatus, refetchStatus } = useJdPurchaseStatus(job.id);
+  const { hasPurchased, hasApplied, isLoadingStatus, refetchStatus } = useJdPurchaseStatus(job.id);
+  const normalizedJobStatus = job.status?.toUpperCase();
+  const isJobOpen = normalizedJobStatus === "OPEN";
 
   const salaryText =
     job.salaryMin || job.salaryMax
@@ -65,7 +67,7 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
       return;
     }
 
-    if (job.status !== "OPEN") {
+    if (!isJobOpen) {
       toast.warning(
         t(
           "enterpriseJobdescriptiondetailpage.thisPositionIsCurrentlyNo",
@@ -83,6 +85,11 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
 
     setIsActionLoading(true);
     try {
+      if (hasApplied) {
+        navigate("/user?tab=applicationHistory");
+        return;
+      }
+
       if (!hasPurchased) {
         localStorage.setItem("pending_jd_purchase_id", String(jdId));
         const payment = await jdPurchaseManager.createPayment(jdId);
@@ -95,6 +102,15 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
 
       const result = await applicationService.apply(jdId);
       if (!result.success) {
+        if (result.statusCode === 402) {
+          await refetchStatus();
+          toast.error(
+            t("payment.paymentRequiredToApply", "Bạn cần mua gói apply cho JD này trước."),
+            { duration: 5000 }
+          );
+          return;
+        }
+
         toast.error(
           result.error ||
             t(
@@ -233,18 +249,18 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
                   <Button
                     size="sm"
                     onClick={() => void handlePurchaseOrApply()}
-                    disabled={
-                      isActionLoading || (isLoggedIn && isLoadingStatus) || job.status !== "OPEN"
-                    }
+                    disabled={isActionLoading || (isLoggedIn && isLoadingStatus) || !isJobOpen}
                     className="group rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-600">
                     <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                     {isLoggedIn && isLoadingStatus
                       ? t("common.checking", "Checking...")
                       : isActionLoading
                         ? t("common.processing", "Processing...")
-                        : !hasPurchased
-                          ? t("enterpriseCompanydetail.payPractice", "Pay & Practice")
-                          : t("enterpriseCompanydetail.applyNow", "Apply now")}
+                        : hasApplied
+                          ? t("enterpriseJobdescriptiondetailpage.alreadyApplied", "Đã ứng tuyển ✓")
+                          : !hasPurchased
+                            ? t("payment.buyPackage", "Mua gói")
+                            : t("enterpriseJobdescriptiondetailpage.applyNow", "Apply ngay")}
                     {!isLoadingStatus && hasPurchased && (
                       <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     )}

@@ -254,7 +254,7 @@ export function JobDescriptionSlice() {
             ))
           : featuredCompanies.map((company) => {
               const activeJobs = (company.jobDescriptions ?? []).filter(
-                (j) => j.id && j.status !== "CLOSED" && !j.isDeleted
+                (j) => j.id && j.status === "OPEN" && !j.isDeleted
               );
               const openJobsCount = activeJobs.length;
 

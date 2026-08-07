@@ -23,7 +23,8 @@ export function JobDescriptionDetailPage() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const jdIdNum = Number(id);
 
-  const { hasPurchased, refetchStatus } = useJdPurchaseStatus(jdIdNum);
+  const { hasPurchased, hasApplied, applicationId, isLoadingStatus, refetchStatus } =
+    useJdPurchaseStatus(jdIdNum);
   const [job, setJob] = useState<JobDescription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
@@ -57,15 +58,24 @@ export function JobDescriptionDetailPage() {
       navigate(`/login?redirect=/enterprise/job/${id}`);
       return;
     }
-    if (job?.status !== "OPEN") {
+    if (job?.status?.toUpperCase() !== "OPEN") {
       toast.warning(t("enterpriseJobdescriptiondetailpage.thisPositionIsCurrentlyNo"));
       return;
     }
     if (!jdIdNum) return;
 
+    if (hasApplied) {
+      navigate(
+        applicationId
+          ? `/user?tab=applicationHistory&appId=${applicationId}`
+          : "/user?tab=applicationHistory"
+      );
+      return;
+    }
+
     setIsApplying(true);
     try {
-      if (!hasPurchased && job.price && job.price > 0) {
+      if (!hasPurchased) {
         localStorage.setItem("pending_jd_purchase_id", String(jdIdNum));
         const res = await jdPurchaseManager.createPayment(jdIdNum);
         if (res?.checkoutUrl) {
@@ -89,6 +99,15 @@ export function JobDescriptionDetailPage() {
           navigate(`/user?tab=applicationHistory`);
         }
       } else {
+        if (result.statusCode === 402) {
+          await refetchStatus();
+          toast.error(
+            t("payment.paymentRequiredToApply", "Bạn cần mua gói apply cho JD này trước."),
+            { duration: 5000 }
+          );
+          return;
+        }
+
         const errorMsg =
           result.error ||
           t("enterpriseJobdescriptiondetailpage.applicationUnsuccessfulPleaseTryAgain");
@@ -178,8 +197,17 @@ export function JobDescriptionDetailPage() {
         <JobDetailView
           job={job}
           hasPurchased={hasPurchased}
+          hasApplied={hasApplied}
           onApplyAction={handleApply}
+          onViewApplication={() => {
+            navigate(
+              applicationId
+                ? `/user?tab=applicationHistory&appId=${applicationId}`
+                : "/user?tab=applicationHistory"
+            );
+          }}
           isLoadingAction={isApplying}
+          isLoadingStatus={isLoadingStatus}
         />
       </div>
 

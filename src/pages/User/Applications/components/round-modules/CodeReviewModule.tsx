@@ -558,6 +558,12 @@ export function CodeReviewModule({
       });
 
       if (!res.success) {
+        if (res.statusCode === 409) {
+          setStep("GRADED");
+          toast.error(res.error || "Bai da duoc nop cho vong nay");
+          onSuccess?.();
+          return;
+        }
         throw new Error(res.error || "Submit failed");
       }
 

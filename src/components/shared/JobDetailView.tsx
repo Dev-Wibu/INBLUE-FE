@@ -151,22 +151,29 @@ function getStandardRoundTitle(
 interface JobDetailViewProps {
   job: JobDescription;
   hasPurchased: boolean;
+  hasApplied?: boolean;
   onApplyAction: () => void;
+  onViewApplication?: () => void;
   isLoadingAction: boolean;
+  isLoadingStatus?: boolean;
   onBack?: () => void;
 }
 
 export function JobDetailView({
   job,
   hasPurchased,
+  hasApplied = false,
   onApplyAction,
+  onViewApplication,
   isLoadingAction,
+  isLoadingStatus = false,
   onBack,
 }: JobDetailViewProps) {
   const { t } = useTranslation();
+  const isJobOpen = job.status?.toUpperCase() === "OPEN";
 
   const renderActionButton = () => {
-    if (job.status !== "OPEN") {
+    if (!isJobOpen) {
       return (
         <Button
           disabled
@@ -174,6 +181,30 @@ export function JobDetailView({
           {job.status === "CLOSED"
             ? t("enterpriseJobdescriptiondetailpage.jobClosed", "Đã đóng tuyển dụng")
             : t("enterpriseJobdescriptiondetailpage.draft1", "Bản nháp")}
+        </Button>
+      );
+    }
+
+    if (isLoadingStatus) {
+      return (
+        <Button
+          disabled
+          className="w-full rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          {t("common.checking", "Đang kiểm tra...")}
+        </Button>
+      );
+    }
+
+    if (hasApplied) {
+      return (
+        <Button
+          onClick={onViewApplication || onApplyAction}
+          disabled={isLoadingAction}
+          variant="outline"
+          className="w-full rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/30">
+          {isLoadingAction
+            ? t("common.processing", "Đang xử lý...")
+            : t("enterpriseJobdescriptiondetailpage.alreadyApplied", "Đã ứng tuyển ✓")}
         </Button>
       );
     }
@@ -186,7 +217,7 @@ export function JobDetailView({
           className="w-full rounded-xl bg-emerald-600 text-white hover:bg-emerald-700">
           {isLoadingAction
             ? t("common.processing", "Đang xử lý...")
-            : t("enterpriseJobdetailpage.startTestNow", "Vào làm bài ngay")}
+            : t("enterpriseJobdescriptiondetailpage.applyNow", "Apply ngay")}
         </Button>
       );
     }
@@ -196,7 +227,9 @@ export function JobDetailView({
         onClick={onApplyAction}
         disabled={isLoadingAction}
         className="w-full rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
-        {isLoadingAction ? t("common.processing", "Đang xử lý...") : t("payment.pay", "Thanh toán")}
+        {isLoadingAction
+          ? t("common.processing", "Đang xử lý...")
+          : t("payment.buyPackage", "Mua gói")}
       </Button>
     );
   };

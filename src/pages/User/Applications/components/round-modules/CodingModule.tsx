@@ -20,7 +20,6 @@ import {
   applicationDetailManager,
   type ApplicationDetail as ApiApplicationDetail,
 } from "@/services/application-detail.manager";
-import { applicationService } from "@/services/application.manager";
 import Editor from "@monaco-editor/react";
 import {
   AlertCircle,
@@ -343,13 +342,15 @@ function extractSubmissionResults(
 
 export function CodingModule({
   round,
-  detail,
+  detail: initialDetail,
   applicationId,
   isCompleted,
   isCurrent,
   onSuccess,
 }: CodingModuleProps) {
   const { t } = useTranslation();
+  const [submittedDetail, setSubmittedDetail] = useState<ApplicationDetail | null>(null);
+  const detail = submittedDetail ?? initialDetail;
   const problems = useMemo(() => getProblems(round), [round]);
 
   // ---- Per-problem editing state ------------------------------------------
@@ -430,11 +431,10 @@ export function CodingModule({
   // Active problem tab index (for multi-problem navigation)
   const [currentProblemIdx, setCurrentProblemIdx] = useState(0);
 
-  // Submit-then-poll state. After Submit returns PENDING we poll
-  // GET /api/application-details/application/{id} every 10s looking for an
-  // AI_EVALUATED detail for this round, up to 6 minutes.
+  // The BE grades the real submit synchronously and returns the detail.
   const [submitting, setSubmitting] = useState(false);
-  const [awaitingGrade, setAwaitingGrade] = useState(false);
+  const [awaitingGrade] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const finalScore = detail?.finalScore ?? detail?.aiScore;
   const timeLimitMinutes = round.configData?.timeLimitMinutes ?? null;
@@ -488,6 +488,7 @@ export function CodingModule({
 
   // ---- Run sample tests (isTest = true) -----------------------------------
   const handleRunCode = async (problemId: number) => {
+    if (submitting || hasSubmitted) return;
     const source = sources[problemId];
     if (!source) return;
     setRunningId(problemId);
@@ -530,7 +531,6 @@ export function CodingModule({
   };
 
   // ---- Submit (isTest = false) + poll for grading -------------------------
-  const cancelPollRef = useRef(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Stats for the confirmation modal. We compute them at the moment the
@@ -569,11 +569,12 @@ export function CodingModule({
   }, [problems, sources, sampleResults]);
 
   const handleOpenConfirm = () => {
-    if (problems.length === 0) return;
+    if (problems.length === 0 || submitting || hasSubmitted) return;
     setConfirmOpen(true);
   };
 
   const handleConfirmSubmit = async () => {
+    if (submitting || hasSubmitted) return;
     setConfirmOpen(false);
     setSubmitting(true);
     try {
@@ -591,67 +592,33 @@ export function CodingModule({
         compileRequest,
       });
       if (!res.success) {
+        if (res.statusCode === 409) {
+          setHasSubmitted(true);
+          toast.error(res.error || "Bai da duoc nop cho vong nay");
+          onSuccess?.();
+          return;
+        }
         throw new Error(res.error || "Submit failed");
       }
+      if (res.data?.detail) setSubmittedDetail(res.data.detail);
+      setHasSubmitted(true);
       toast.success(
-        t(
-          "userApplication.coding.submitSuccess",
-          "Coding solution submitted successfully! System is grading..."
-        )
+        t("userApplication.coding.submitSuccess", "Coding solution submitted successfully!")
       );
-      setAwaitingGrade(true);
-      cancelPollRef.current = false;
-      await pollForGrade();
       onSuccess?.();
     } catch (err) {
       console.error("[CodingModule] Submit error:", err);
       toast.error(err instanceof Error ? err.message : t("userApplication.coding.submitFailed"));
     } finally {
       setSubmitting(false);
-      setAwaitingGrade(false);
-    }
-  };
-
-  /**
-   * Poll GET /api/application-details/application/{appId} every 10s until the
-   * detail for this round reaches AI_EVALUATED (BE grading finished) or 6 min
-   * have elapsed.  Returns once onSuccess can refetch the workspace.
-   */
-  const pollForGrade = async () => {
-    const roundIdValue = round.id;
-    if (!roundIdValue) return;
-    const deadline = Date.now() + 6 * 60 * 1000;
-    while (!cancelPollRef.current && Date.now() < deadline) {
-      await new Promise((r) => setTimeout(r, 10_000));
-      if (cancelPollRef.current) return;
-      try {
-        const res = await applicationDetailManager.getByApplicationId(applicationId);
-        if (res.success && res.data) {
-          const d = res.data.find((x) => x.roundId === roundIdValue);
-          if (d?.status === "AI_EVALUATED" || d?.status === "COMPLETED") {
-            if (d.submissionData?.codeSubmissions) {
-              const resObj = extractSubmissionResults(d, problems);
-              setSampleResults((prev) => ({ ...prev, ...resObj }));
-            }
-            return;
-          }
-        }
-      } catch {
-        // ignore transient poll failures
-      }
-      // Refresh the application too so currentRoundOrder updates if this
-      // submission unlocked the next round.
-      try {
-        await applicationService.getById(applicationId);
-      } catch {
-        // ignore
-      }
     }
   };
 
   const isFinished =
+    hasSubmitted ||
     isCompleted ||
     detail?.finalScore != null ||
+    detail?.status === "SUBMITTED" ||
     detail?.status === "COMPLETED" ||
     detail?.status === "AI_EVALUATED";
   const activeProblem = problems[currentProblemIdx];
