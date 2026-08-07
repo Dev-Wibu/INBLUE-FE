@@ -784,30 +784,44 @@ function ResultStep({
                       />
                       <PolarAngleAxis
                         dataKey="label"
-                        tick={{
-                          fill: isFullMode ? "#0e7490" : "#0f172a",
-                          fontSize: 11,
-                          fontWeight: 700,
+                        tick={({ x, y, payload }) => {
+                          // Push top vertex label slightly higher for crisp clearance
+                          return (
+                            <text
+                              x={x}
+                              y={y}
+                              fill={isFullMode ? "#0e7490" : "#0f172a"}
+                              fontSize={12}
+                              fontWeight={800}
+                              textAnchor="middle">
+                              {payload.value}
+                            </text>
+                          );
                         }}
                       />
                       <PolarRadiusAxis
                         domain={[0, 100]}
                         tickCount={6}
-                        angle={90}
+                        angle={30}
                         axisLine={false}
                         stroke="transparent"
-                        tick={({ x, y, payload }) => (
-                          <text
-                            x={x}
-                            y={y}
-                            fill={isFullMode ? "#0891b2" : "#0284c7"}
-                            fontSize={11}
-                            fontWeight={700}
-                            textAnchor="start"
-                            transform={`rotate(0, ${x}, ${y})`}>
-                            {payload.value}
-                          </text>
-                        )}
+                        tick={({ x, y, payload }) => {
+                          // Hide 100 to prevent outer rim clutter, render 0..80 along 30deg diagonal
+                          if (payload.value === 100) return null;
+                          return (
+                            <text
+                              x={x}
+                              y={y}
+                              dx={4}
+                              fill={isFullMode ? "#0891b2" : "#0284c7"}
+                              fontSize={10}
+                              fontWeight={700}
+                              textAnchor="start"
+                              transform={`rotate(0, ${x}, ${y})`}>
+                              {payload.value}
+                            </text>
+                          );
+                        }}
                       />
                       <Radar
                         name="Score"
