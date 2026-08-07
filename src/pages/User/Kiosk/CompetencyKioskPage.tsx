@@ -729,54 +729,44 @@ function ResultStep({
 
           {/* Radar chart (right) */}
           <div className="holobox-radar-panel holobox-radar-panel--unified">
-            <div className="mb-1.5 flex items-start justify-between">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-cyan-900/10 pb-2">
               <div>
-                <p className="mb-0.5 text-[10px] font-bold tracking-[0.18em] text-cyan-600 uppercase">
+                <p className="text-[10px] font-bold tracking-[0.18em] text-cyan-600 uppercase">
                   {activeDimensionCopy[activeDimension].kicker}
                 </p>
                 <h2 className="font-bold text-slate-950">
                   {activeDimensionCopy[activeDimension].title}
                 </h2>
               </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {(["overview", "technical", "behavioral", "journey"] as HoloboxDimension[]).map(
+                  (dimension) => (
+                    <button
+                      key={dimension}
+                      type="button"
+                      onClick={() => setActiveDimension(dimension)}
+                      className={`holobox-dimension-tab ${activeDimension === dimension ? "is-active" : ""}`}>
+                      {dimension === "overview"
+                        ? "Core"
+                        : dimension === "technical"
+                          ? "Technical"
+                          : dimension === "behavioral"
+                            ? "Behavioral"
+                            : "Journey"}
+                    </button>
+                  )
+                )}
+              </div>
               <div className="holobox-radar-status">
                 <span /> {activeChartData.length} signals
               </div>
             </div>
-            <div className="mb-1.5 flex flex-wrap gap-2">
-              {(["overview", "technical", "behavioral", "journey"] as HoloboxDimension[]).map(
-                (dimension) => (
-                  <button
-                    key={dimension}
-                    type="button"
-                    onClick={() => setActiveDimension(dimension)}
-                    className={`holobox-dimension-tab ${activeDimension === dimension ? "is-active" : ""}`}>
-                    {dimension === "overview"
-                      ? "Core"
-                      : dimension === "technical"
-                        ? "Technical"
-                        : dimension === "behavioral"
-                          ? "Behavioral"
-                          : "Journey"}
-                  </button>
-                )
-              )}
-            </div>
-            <div className="mb-1.5 flex items-center gap-3 text-[11px] font-semibold text-slate-500">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-cyan-500" />
-                Technical
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-violet-500" />
-                Behavioral
-              </span>
-            </div>
             {activeChartData.length > 0 && activeDimension !== "journey" ? (
               <>
-                <div className="holobox-radar-stage h-[240px] w-full sm:h-[260px]">
+                <div className="holobox-radar-stage h-[260px] w-full sm:h-[300px]">
                   <div className="holobox-radar-floor" aria-hidden="true" />
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={activeChartData} outerRadius="75%">
+                    <RadarChart data={activeChartData} outerRadius="78%">
                       <PolarGrid
                         stroke={isFullMode ? "#67a4b5" : "#0891b2"}
                         strokeOpacity={0.35}
@@ -841,7 +831,7 @@ function ResultStep({
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="mt-1 grid grid-cols-2 gap-2 border-t border-cyan-950/10 pt-2 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-1.5 pt-1 sm:grid-cols-4">
                   {activeChartData.map((item) => (
                     <div
                       key={`${item.category}-${item.subject}`}
