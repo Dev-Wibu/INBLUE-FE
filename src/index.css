@@ -2749,3 +2749,184 @@
     font-size: 22px !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Holobox Unified Command Deck (55" 4K HoloLab Display)
+   Consolidates score, operator & radar into one 3D floating card.
+   ───────────────────────────────────────────────────────────── */
+.holobox-command-deck--unified {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.25rem !important;
+  border: 1px solid rgba(14, 116, 144, 0.2) !important;
+  border-radius: 1.75rem !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.14), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(99, 102, 241, 0.08), transparent 35%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(240, 249, 255, 0.92)) !important;
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.08),
+    0 4px 20px rgba(8, 145, 178, 0.06),
+    inset 0 0 80px rgba(34, 211, 238, 0.05) !important;
+  padding: 1.5rem !important;
+}
+
+.holobox-unified-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(14, 116, 144, 0.12);
+}
+
+.holobox-unified-score-info {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+.holobox-unified-candidate {
+  display: flex;
+  flex-direction: column;
+}
+
+.holobox-unified-name {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.4rem, 2.2vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.holobox-unified-level {
+  margin-top: 0.35rem;
+  color: #0891b2;
+  font-size: clamp(0.85rem, 1vw, 1.15rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.holobox-unified-score-block {
+  display: flex;
+  align-items: baseline;
+  border: 1px solid rgba(8, 145, 178, 0.28);
+  border-radius: 1.15rem;
+  background: linear-gradient(135deg, rgba(236, 254, 255, 0.95), rgba(207, 250, 254, 0.7));
+  box-shadow: 0 4px 14px rgba(8, 145, 178, 0.1);
+  padding: 0.45rem 1.25rem;
+}
+
+.holobox-unified-score-value {
+  color: #0891b2;
+  font-size: clamp(2rem, 3vw, 3.75rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.holobox-unified-score-label {
+  margin-left: 0.3rem;
+  color: #64748b;
+  font-size: clamp(0.9rem, 1.1vw, 1.3rem);
+  font-weight: 700;
+}
+
+.holobox-unified-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.holobox-unified-action-btn {
+  display: flex;
+  height: 48px;
+  width: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(14, 116, 144, 0.22) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #0891b2 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+  padding: 0 !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.holobox-unified-action-btn:hover {
+  border-color: rgba(8, 145, 178, 0.4) !important;
+  background: rgba(207, 250, 254, 0.9) !important;
+  color: #0e7490 !important;
+}
+
+.holobox-unified-voice-btn {
+  display: flex;
+  height: 48px;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(8, 145, 178, 0.3) !important;
+  border-radius: 14px !important;
+  background: #0891b2 !important;
+  box-shadow: 0 4px 14px rgba(8, 145, 178, 0.28) !important;
+  padding: 0 1.4rem !important;
+  color: #ffffff !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.holobox-unified-voice-btn:hover {
+  background: #0e7490 !important;
+  box-shadow: 0 6px 18px rgba(8, 145, 178, 0.38) !important;
+  color: #ffffff !important;
+}
+
+.holobox-unified-voice-btn.is-speaking {
+  border-color: #be123c !important;
+  background: #e11d48 !important;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35) !important;
+  color: #ffffff !important;
+}
+
+.holobox-unified-body {
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(500px, 1.35fr);
+  gap: 1.5rem;
+  align-items: stretch;
+  min-height: 520px;
+}
+
+.holobox-operator-bay--unified {
+  border: none !important;
+  border-radius: 1.25rem !important;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(34, 211, 238, 0.18), transparent 40%),
+    radial-gradient(circle at 50% 100%, rgba(14, 116, 144, 0.1), transparent 50%),
+    rgba(255, 255, 255, 0.65) !important;
+  box-shadow: inset 0 0 50px rgba(34, 211, 238, 0.08) !important;
+}
+
+.holobox-radar-panel--unified {
+  border: 1px solid rgba(8, 145, 178, 0.16) !important;
+  border-radius: 1.25rem !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04) !important;
+  padding: 1.5rem !important;
+}
+
+/* Enhanced 3D Holographic Robot float effect */
+.holobox-operator-bay .holobox-robot {
+  filter: drop-shadow(0 14px 28px rgba(8, 145, 178, 0.22));
+}
+
+@media (max-width: 900px) {
+  .holobox-unified-body {
+    grid-template-columns: 1fr;
+  }
+  .holobox-unified-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
