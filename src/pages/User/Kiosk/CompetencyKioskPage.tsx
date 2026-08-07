@@ -640,20 +640,24 @@ function ResultStep({
       {/* ── Unified Command Deck: merged Overall Score + AI Operator + Radar ── */}
       <section className="holobox-command-deck holobox-command-deck--unified">
         {/* Top bar: score info left, audio button right */}
-        <div className="holobox-unified-topbar">
-          <div className="holobox-unified-score-info">
-            <div className="holobox-unified-candidate">
-              <h1 className="holobox-unified-name">{chart.candidateName}</h1>
-              <span className="holobox-unified-level">
+        <div className="holobox-unified-topbar flex w-full flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+            <div className="flex flex-col">
+              <h1 className="holobox-unified-name m-0 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
+                {chart.candidateName}
+              </h1>
+              <span className="holobox-unified-level mt-1 self-start rounded-full border border-cyan-200/80 bg-cyan-50 px-3 py-0.5 text-xs font-semibold text-cyan-700 sm:text-sm">
                 {competencyLevelLabel[chart.overallLevel]}
               </span>
             </div>
-            <div className="holobox-unified-score-block">
-              <span className="holobox-unified-score-value">{Math.round(chart.overallScore)}</span>
-              <span className="holobox-unified-score-label">/100</span>
+            <div className="holobox-unified-score-block flex items-baseline gap-1.5 rounded-2xl bg-gradient-to-r from-cyan-600 to-cyan-500 px-4 py-2 text-white shadow-lg shadow-cyan-500/20">
+              <span className="text-3xl leading-none font-black sm:text-5xl">
+                {Math.round(chart.overallScore)}
+              </span>
+              <span className="text-sm font-bold text-cyan-100">/100</span>
             </div>
           </div>
-          <div className="holobox-unified-actions">
+          <div className="holobox-unified-actions flex items-center gap-3">
             <Button onClick={toggleFullMode} className="holobox-unified-action-btn">
               <Maximize2 className="h-4 w-4" />
             </Button>
@@ -668,7 +672,7 @@ function ResultStep({
               ) : (
                 <Volume2 className="h-4 w-4" />
               )}
-              <span className="holobox-unified-voice-label">
+              <span className="holobox-unified-voice-label font-bold">
                 {isVoiceLoading
                   ? isVi
                     ? "Chuẩn bị..."
@@ -767,29 +771,46 @@ function ResultStep({
                   <div className="holobox-radar-floor" aria-hidden="true" />
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart data={activeChartData} outerRadius="72%">
-                      <PolarGrid stroke={isFullMode ? "#67a4b5" : "#164e63"} gridType="polygon" />
+                      <PolarGrid
+                        stroke={isFullMode ? "#67a4b5" : "#0891b2"}
+                        strokeOpacity={0.35}
+                        gridType="polygon"
+                      />
                       <PolarAngleAxis
                         dataKey="label"
                         tick={{
-                          fill: isFullMode ? "#0e7490" : "#a5f3fc",
+                          fill: isFullMode ? "#0e7490" : "#0f172a",
                           fontSize: 11,
-                          fontWeight: 600,
+                          fontWeight: 700,
                         }}
                       />
                       <PolarRadiusAxis
                         domain={[0, 100]}
                         tickCount={6}
-                        tick={{ fill: "#64748b", fontSize: 10 }}
+                        angle={90}
                         axisLine={false}
+                        stroke="transparent"
+                        tick={({ x, y, payload }) => (
+                          <text
+                            x={x}
+                            y={y}
+                            fill={isFullMode ? "#0891b2" : "#0284c7"}
+                            fontSize={11}
+                            fontWeight={700}
+                            textAnchor="start"
+                            transform={`rotate(0, ${x}, ${y})`}>
+                            {payload.value}
+                          </text>
+                        )}
                       />
                       <Radar
                         name="Score"
                         dataKey="score"
-                        stroke={isFullMode ? "#0891b2" : "#67e8f9"}
-                        fill={isFullMode ? "#22d3ee" : "#06b6d4"}
-                        fillOpacity={0.28}
+                        stroke={isFullMode ? "#0891b2" : "#0284c7"}
+                        fill={isFullMode ? "#22d3ee" : "#38bdf8"}
+                        fillOpacity={0.35}
                         strokeWidth={3}
-                        dot={{ r: 4, fill: isFullMode ? "#0e7490" : "#a5f3fc", strokeWidth: 0 }}
+                        dot={{ r: 4, fill: isFullMode ? "#0e7490" : "#0284c7", strokeWidth: 0 }}
                       />
                       <Tooltip
                         labelFormatter={(label) =>
