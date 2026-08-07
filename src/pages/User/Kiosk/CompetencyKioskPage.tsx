@@ -773,10 +773,10 @@ function ResultStep({
             </div>
             {activeChartData.length > 0 && activeDimension !== "journey" ? (
               <>
-                <div className="holobox-radar-stage h-[220px] w-full sm:h-[250px]">
+                <div className="holobox-radar-stage h-[300px] w-full sm:h-[340px]">
                   <div className="holobox-radar-floor" aria-hidden="true" />
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={activeChartData} outerRadius="62%">
+                    <RadarChart data={activeChartData} outerRadius="70%">
                       <PolarGrid
                         stroke={isFullMode ? "#67a4b5" : "#0891b2"}
                         strokeOpacity={0.35}
@@ -841,7 +841,7 @@ function ResultStep({
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="grid grid-cols-2 gap-2 border-t border-cyan-950/10 pt-4 sm:grid-cols-4">
+                <div className="mt-1 grid grid-cols-2 gap-2 border-t border-cyan-950/10 pt-2 sm:grid-cols-4">
                   {activeChartData.map((item) => (
                     <div
                       key={`${item.category}-${item.subject}`}
