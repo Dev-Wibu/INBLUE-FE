@@ -49,6 +49,7 @@ import {
   AIInterviewSessionPage,
   AIInterviewSetupPage,
   ApplicationAIInterviewPage,
+  ApplicationCompetencyReportPage,
   ApplicationHistoryPage,
   ApplicationMentorReviewPage,
   ApplicationQuizPage,
@@ -228,6 +229,12 @@ function App() {
               <Route path="/user/sessions/room/:sessionId" element={<StudentSessionRoomPage />} />
             </Route>
             {/* Application Workspace — full page, no sidebar */}
+            <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+              <Route
+                path="/user/application/:applicationId/report"
+                element={<ApplicationCompetencyReportPage />}
+              />
+            </Route>
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
               <Route
                 path="/user/application/:applicationId"

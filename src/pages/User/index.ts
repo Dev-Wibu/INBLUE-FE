@@ -55,6 +55,7 @@ export { StudentSessionRoomPage } from "./Sessions";
 // Application History & Workspace exports
 export {
   ApplicationAIInterviewPage,
+  ApplicationCompetencyReportPage,
   ApplicationHistoryPage,
   ApplicationMentorReviewPage,
 } from "./ApplicationHistory";
