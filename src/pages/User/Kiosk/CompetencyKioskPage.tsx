@@ -610,7 +610,7 @@ function ResultStep({
             <p className="holobox-full-mode-kicker">Inblue / Holobox theatre</p>
             <strong>Immersive competency workspace</strong>
           </div>
-          <div className="holobox-full-mode-actions">
+          <div className="holobox-full-mode-actions flex-row">
             <Button
               onClick={speak}
               disabled={isVoiceLoading}
@@ -622,9 +622,11 @@ function ResultStep({
               )}
               {isSpeaking ? "Stop voice" : "Read result"}
             </Button>
-            <Button onClick={toggleFullMode} className="holobox-full-mode-exit">
-              <Minimize2 className="mr-2.5 h-4 w-4" />
-              Exit full mode
+            <Button
+              onClick={toggleFullMode}
+              className="holobox-full-mode-exit"
+              title="Exit full mode">
+              <Minimize2 className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
