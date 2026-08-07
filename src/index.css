@@ -2995,6 +2995,31 @@
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+  /* Default: compact, works across all screen sizes */
+  height: clamp(200px, 35vh, 380px) !important;
+  min-height: 200px !important;
+}
+
+@media (min-width: 1200px) {
+  .holobox-radar-panel--unified .holobox-radar-stage {
+    height: clamp(240px, 38vh, 440px) !important;
+    min-height: 240px !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  .holobox-radar-panel--unified .holobox-radar-stage {
+    height: clamp(300px, 42vh, 560px) !important;
+    min-height: 300px !important;
+  }
+}
+
+/* Portrait 4K kiosk (55" rotated): 3840×2160 rotated → 2160×3840 */
+@media (orientation: portrait) and (min-height: 3000px) {
+  .holobox-radar-panel--unified .holobox-radar-stage {
+    height: clamp(700px, 70vh, 1100px) !important;
+    min-height: 700px !important;
+  }
 }
 
 /* Full Mode Specific AI Clearance & Layout */

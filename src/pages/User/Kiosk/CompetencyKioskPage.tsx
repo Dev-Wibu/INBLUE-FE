@@ -763,7 +763,7 @@ function ResultStep({
             </div>
             {activeChartData.length > 0 && activeDimension !== "journey" ? (
               <>
-                <div className="holobox-radar-stage h-[190px] w-full sm:h-[210px]">
+                <div className="holobox-radar-stage holobox-radar-stage--unified w-full">
                   <div className="holobox-radar-floor" aria-hidden="true" />
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart data={activeChartData} outerRadius="75%">
@@ -833,7 +833,8 @@ function ResultStep({
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="-mt-6 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                <div className="-mt-5 mb-2 border-t border-slate-200/60 pt-3" />
+                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                   {activeChartData.map((item) => (
                     <div
                       key={`${item.category}-${item.subject}`}
