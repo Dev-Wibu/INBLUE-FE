@@ -145,7 +145,7 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
     const response = await this.getByUserId(Number(id));
     return {
       ...response,
-      data: getLatestCandidateProfile(response.data),
+      data: getLatestCandidateProfile(response.data) ?? undefined,
     };
   }
 
