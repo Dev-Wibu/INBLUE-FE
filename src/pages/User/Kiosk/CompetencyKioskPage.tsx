@@ -728,8 +728,8 @@ function ResultStep({
           </div>
 
           {/* Radar chart (right) */}
-          <div className="holobox-radar-panel holobox-radar-panel--unified">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-cyan-900/10 pb-2">
+          <div className="holobox-radar-panel holobox-radar-panel--unified flex h-full flex-col">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-900/10 pb-2">
               <div>
                 <p className="text-[10px] font-bold tracking-[0.18em] text-cyan-600 uppercase">
                   {activeDimensionCopy[activeDimension].kicker}
@@ -763,7 +763,7 @@ function ResultStep({
             </div>
             {activeChartData.length > 0 && activeDimension !== "journey" ? (
               <>
-                <div className="holobox-radar-stage holobox-radar-stage--unified w-full">
+                <div className="holobox-radar-stage holobox-radar-stage--unified w-full shrink-0">
                   <div className="holobox-radar-floor" aria-hidden="true" />
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart data={activeChartData} outerRadius="75%">
@@ -833,8 +833,8 @@ function ResultStep({
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="-mt-5 mb-2 border-t border-slate-200/60 pt-3" />
-                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                <div className="shrink-0 border-t border-slate-200/60" />
+                <div className="grid min-h-0 flex-1 grid-cols-2 gap-1.5 sm:grid-cols-4">
                   {activeChartData.map((item) => (
                     <div
                       key={`${item.category}-${item.subject}`}
