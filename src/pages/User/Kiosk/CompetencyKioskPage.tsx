@@ -775,11 +775,14 @@ function ResultStep({
                       <PolarAngleAxis
                         dataKey="label"
                         tick={({ x, y, payload }) => {
-                          // Push top vertex label slightly higher for crisp clearance
+                          // Identify top vertex (y < center y) to push label up for 100% clearance
+                          const numY = typeof y === "number" ? y : Number(y) || 0;
+                          const isTop = numY > 0 && numY < 140;
                           return (
                             <text
                               x={x}
                               y={y}
+                              dy={isTop ? -10 : 10}
                               fill={isFullMode ? "#0e7490" : "#0f172a"}
                               fontSize={12}
                               fontWeight={800}
@@ -792,22 +795,21 @@ function ResultStep({
                       <PolarRadiusAxis
                         domain={[0, 100]}
                         tickCount={6}
-                        angle={30}
+                        angle={90}
                         axisLine={false}
                         stroke="transparent"
                         tick={({ x, y, payload }) => {
-                          // Hide 100 to prevent outer rim clutter, render 0..80 along 30deg diagonal
-                          if (payload.value === 100) return null;
+                          // Hide 0 and 100 to prevent outer rim clutter, render 20..80 straight vertically
+                          if (payload.value === 100 || payload.value === 0) return null;
                           return (
                             <text
                               x={x}
                               y={y}
-                              dx={4}
+                              dx={6}
                               fill={isFullMode ? "#0891b2" : "#0284c7"}
                               fontSize={10}
                               fontWeight={700}
-                              textAnchor="start"
-                              transform={`rotate(0, ${x}, ${y})`}>
+                              textAnchor="start">
                               {payload.value}
                             </text>
                           );
