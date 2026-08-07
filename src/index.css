@@ -2757,7 +2757,7 @@
 .holobox-command-deck--unified {
   display: flex !important;
   flex-direction: column !important;
-  gap: 0.65rem !important;
+  gap: 0.4rem !important;
   border: 1px solid rgba(14, 116, 144, 0.2) !important;
   border-radius: 1.5rem !important;
   background:
@@ -2768,7 +2768,7 @@
     0 24px 60px rgba(15, 23, 42, 0.08),
     0 4px 20px rgba(8, 145, 178, 0.06),
     inset 0 0 80px rgba(34, 211, 238, 0.05) !important;
-  padding: 1rem 1.25rem !important;
+  padding: 0.75rem 1.25rem 0.5rem !important;
 }
 
 .holobox-unified-topbar {
@@ -2776,7 +2776,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-bottom: 0.65rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(14, 116, 144, 0.12);
 }
 
@@ -2891,19 +2891,19 @@
 
 .holobox-unified-body {
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(420px, 1.3fr);
-  gap: 1rem;
-  align-items: stretch;
-  min-height: 320px;
+  grid-template-columns: minmax(300px, 1fr) minmax(420px, 1.3fr);
+  gap: 0.75rem;
+  align-items: start !important;
+  min-height: 240px;
 }
 
 /* AI Operator Bay Centering & Clearance */
 .holobox-operator-bay--unified {
   position: relative !important;
-  min-height: 440px !important;
+  min-height: 280px !important;
   border: none !important;
   border-radius: 0 !important;
-  padding-top: 3.5rem !important;
+  padding-top: 1.5rem !important;
   background: transparent !important;
   box-shadow: none !important;
   overflow: visible !important;
@@ -2918,30 +2918,30 @@
 }
 
 .holobox-operator-bay--unified .holobox-robot {
-  top: 54% !important;
-  scale: 1.1;
-  filter: drop-shadow(0 16px 28px rgba(8, 145, 178, 0.28));
+  top: 45% !important;
+  scale: 0.95;
+  filter: drop-shadow(0 14px 24px rgba(8, 145, 178, 0.28));
   animation: holobox-3d-floating-robot 4.8s ease-in-out infinite alternate !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-halo {
-  top: 52% !important;
+  top: 43% !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-orbit {
-  top: 52% !important;
+  top: 43% !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-floor {
-  top: 86% !important;
-  width: 230px !important;
+  top: 80% !important;
+  width: 210px !important;
   border-color: rgba(8, 145, 178, 0.35) !important;
-  box-shadow: 0 0 30px rgba(34, 211, 238, 0.35) !important;
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.35) !important;
 }
 
 .holobox-operator-bay--unified .holobox-robot-floor-shadow {
-  top: 86% !important;
-  width: 150px !important;
+  top: 80% !important;
+  width: 130px !important;
   background: rgba(8, 145, 178, 0.28) !important;
   animation: holobox-floor-shadow-pulse 4.8s ease-in-out infinite alternate !important;
 }
@@ -2999,27 +2999,27 @@
 
 /* Full Mode Specific AI Clearance & Layout */
 .holobox-result-page.is-full-mode {
-  padding: 1rem 1.25rem 2rem !important;
+  padding: 0.5rem 1rem 1rem !important;
 }
 
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified {
-  min-height: 480px !important;
-  padding-top: 4rem !important;
+  min-height: 300px !important;
+  padding-top: 1.75rem !important;
 }
 
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot {
-  top: 55% !important;
-  scale: 1.15 !important;
+  top: 46% !important;
+  scale: 1 !important;
 }
 
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot-halo,
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot-orbit {
-  top: 53% !important;
+  top: 44% !important;
 }
 
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot-floor,
 .holobox-result-page.is-full-mode .holobox-operator-bay--unified .holobox-robot-floor-shadow {
-  top: 88% !important;
+  top: 82% !important;
 }
 
 @media (max-width: 900px) {

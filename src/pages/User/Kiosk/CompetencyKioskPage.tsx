@@ -831,7 +831,7 @@ function ResultStep({
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="mt-0 grid grid-cols-2 gap-1.5 pt-0 sm:grid-cols-4">
+                <div className="-mt-6 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                   {activeChartData.map((item) => (
                     <div
                       key={`${item.category}-${item.subject}`}
