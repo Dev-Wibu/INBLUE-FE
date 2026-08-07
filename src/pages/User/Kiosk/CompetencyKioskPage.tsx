@@ -48,6 +48,7 @@ import {
 } from "@/services/competency-chart.manager";
 
 type KioskStep = "search" | "applications" | "result";
+type HoloboxDimension = "overview" | "technical" | "behavioral" | "journey";
 
 const statusLabel: Record<CompetencyApplication["status"], string> = {
   IN_PROGRESS: "In progress",
@@ -359,18 +360,52 @@ function compactSkillName(value: string) {
     .replace(/^Team Participation$/i, "Teamwork");
 }
 
-function HoloboxRobot({ score, level }: { score: number; level: string }) {
+function HoloboxRobot({
+  score,
+  level,
+  isSpeaking,
+  activeDimension,
+  onDimensionSelect,
+}: {
+  score: number;
+  level: string;
+  isSpeaking: boolean;
+  activeDimension: HoloboxDimension;
+  onDimensionSelect: (_dimension: HoloboxDimension) => void;
+}) {
+  const dimensions: Array<{ key: HoloboxDimension; label: string; detail: string }> = [
+    { key: "overview", label: "CORE", detail: "Overview" },
+    { key: "technical", label: "TECH", detail: "Technical" },
+    { key: "behavioral", label: "HUMAN", detail: "Behavioral" },
+    { key: "journey", label: "PATH", detail: "Journey" },
+  ];
+
   return (
-    <div className="holobox-robot-stage" aria-hidden="true">
-      <div className="holobox-robot-grid" />
-      <div className="holobox-robot-halo holobox-robot-halo-one" />
-      <div className="holobox-robot-halo holobox-robot-halo-two" />
-      <div className="holobox-robot-orbit holobox-robot-orbit-one">
+    <div className={`holobox-robot-stage ${isSpeaking ? "is-speaking" : ""}`}>
+      <div className="holobox-robot-grid" aria-hidden="true" />
+      <div className="holobox-robot-halo holobox-robot-halo-one" aria-hidden="true" />
+      <div className="holobox-robot-halo holobox-robot-halo-two" aria-hidden="true" />
+      <div className="holobox-robot-orbit holobox-robot-orbit-one" aria-hidden="true">
         <span className="holobox-robot-orb holobox-robot-orb-one" />
       </div>
-      <div className="holobox-robot-orbit holobox-robot-orbit-two">
+      <div className="holobox-robot-orbit holobox-robot-orbit-two" aria-hidden="true">
         <span className="holobox-robot-orb holobox-robot-orb-two" />
       </div>
+
+      {dimensions.map((dimension) => (
+        <button
+          type="button"
+          key={dimension.key}
+          className={`holobox-dimension-node holobox-dimension-node-${dimension.key} ${activeDimension === dimension.key ? "is-active" : ""}`}
+          onClick={() => onDimensionSelect(dimension.key)}
+          aria-label={`Show ${dimension.detail} report`}>
+          <span className="holobox-dimension-node-dot" />
+          <span>
+            <strong>{dimension.label}</strong>
+            <small>{dimension.detail}</small>
+          </span>
+        </button>
+      ))}
 
       <div className="holobox-robot-data holobox-robot-data-one">
         <span>NEURAL LINK</span>
@@ -381,7 +416,7 @@ function HoloboxRobot({ score, level }: { score: number; level: string }) {
         <strong>{Math.round(score).toString().padStart(2, "0")}</strong>
       </div>
 
-      <div className="holobox-robot">
+      <div className={`holobox-robot ${isSpeaking ? "is-speaking" : ""}`} aria-hidden="true">
         <div className="holobox-robot-antenna">
           <span />
         </div>
@@ -431,6 +466,7 @@ function ResultStep({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isVoiceLoading, setIsVoiceLoading] = useState(false);
   const [isScriptExpanded, setIsScriptExpanded] = useState(false);
+  const [activeDimension, setActiveDimension] = useState<HoloboxDimension>("overview");
   const script = useMemo(() => buildHoloboxCompetencyScript(chart, journey), [chart, journey]);
   const isVi = useMemo(
     () => /[àáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i.test(script),
@@ -457,6 +493,33 @@ function ResultStep({
     ],
     [chart]
   );
+  const activeChartData = useMemo(() => {
+    if (activeDimension === "technical") {
+      return radarData.filter((item) => item.category === "Technical");
+    }
+    if (activeDimension === "behavioral") {
+      return radarData.filter((item) => item.category === "Behavioral");
+    }
+    return radarData;
+  }, [activeDimension, radarData]);
+  const activeDimensionCopy: Record<HoloboxDimension, { kicker: string; title: string }> = {
+    overview: { kicker: "Core dimension", title: "Competency radar" },
+    technical: { kicker: "Technical dimension", title: "Technical radar" },
+    behavioral: { kicker: "Human dimension", title: "Behavioral radar" },
+    journey: { kicker: "Journey dimension", title: "Assessment journey" },
+  };
+  const technicalAverage = chart.technicalSkillAreas.length
+    ? Math.round(
+        chart.technicalSkillAreas.reduce((total, item) => total + item.score, 0) /
+          chart.technicalSkillAreas.length
+      )
+    : 0;
+  const behavioralAverage = chart.behavioralSkills.length
+    ? Math.round(
+        chart.behavioralSkills.reduce((total, item) => total + item.score, 0) /
+          chart.behavioralSkills.length
+      )
+    : 0;
 
   useEffect(() => {
     return () => {
@@ -499,6 +562,7 @@ function ResultStep({
       return;
     }
 
+    setIsSpeaking(true);
     setIsVoiceLoading(true);
     try {
       const responsiveVoice = await loadResponsiveVoice();
@@ -512,14 +576,15 @@ function ResultStep({
         onerror: () => setIsSpeaking(false),
       });
     } catch {
-      speakWithBrowserVoice();
+      const started = speakWithBrowserVoice();
+      if (!started) setIsSpeaking(false);
     } finally {
       setIsVoiceLoading(false);
     }
   };
 
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-5 py-6 sm:px-10 sm:py-8">
+    <main className="mx-auto w-full max-w-[1800px] px-5 py-6 sm:px-8 sm:py-8 xl:px-10">
       <button
         type="button"
         onClick={onBack}
@@ -536,10 +601,6 @@ function ResultStep({
           <h1 className="text-3xl font-bold tracking-[-0.035em] text-slate-950 sm:text-4xl">
             {chart.candidateName}
           </h1>
-          <p className="mt-2 text-base text-slate-500">
-            {chart.jobTitle} <span className="mx-2 text-slate-300">/</span> Application #
-            {chart.applicationId}
-          </p>
         </div>
         <Button
           onClick={speak}
@@ -564,8 +625,8 @@ function ResultStep({
         </Button>
       </div>
 
-      <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-        <div className="holobox-score-scene min-h-[470px] rounded-2xl p-6 text-white shadow-2xl shadow-slate-300/60 sm:p-8">
+      <section className="holobox-command-deck">
+        <aside className="holobox-score-scene holobox-metric-rail min-h-[470px] rounded-2xl p-6 text-white shadow-2xl shadow-slate-300/60 sm:p-8">
           <div className="holobox-orbit holobox-orbit-one" />
           <div className="holobox-orbit holobox-orbit-two" />
           <div className="holobox-orbit holobox-orbit-three" />
@@ -600,39 +661,106 @@ function ResultStep({
               <div className="flex items-center gap-2 border-t border-slate-800 pt-5 text-sm text-slate-400">
                 <UserRound className="h-4 w-4 text-cyan-300" /> Assessment completed
               </div>
+              <div className="holobox-metric-stack" aria-label="Key competency signals">
+                <div className="holobox-metric-line">
+                  <span>Technical index</span>
+                  <strong>{technicalAverage}</strong>
+                  <small>/100</small>
+                </div>
+                <div className="holobox-metric-line">
+                  <span>Human index</span>
+                  <strong>{behavioralAverage}</strong>
+                  <small>/100</small>
+                </div>
+                <div className="holobox-metric-line">
+                  <span>Report signals</span>
+                  <strong>{radarData.length}</strong>
+                  <small>active</small>
+                </div>
+              </div>
             </div>
+          </div>
+        </aside>
+
+        <div className="holobox-operator-bay">
+          <div className="holobox-operator-topline">
+            <span>AI operator</span>
+            <span className="holobox-operator-live">
+              <i /> Speaking simulation
+            </span>
           </div>
           <HoloboxRobot
             score={chart.overallScore}
             level={competencyLevelLabel[chart.overallLevel]}
+            isSpeaking={isSpeaking}
+            activeDimension={activeDimension}
+            onDimensionSelect={setActiveDimension}
           />
+          <div className="holobox-operator-caption">
+            <div className="holobox-operator-status">
+              <span className={`holobox-operator-status-dot ${isSpeaking ? "is-speaking" : ""}`} />
+              <strong>{isSpeaking ? "Speaking..." : "Ready to narrate"}</strong>
+            </div>
+            <div className="holobox-wave" aria-hidden="true">
+              {Array.from({ length: 18 }, (_, index) => (
+                <span key={index} />
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="holobox-radar-panel rounded-2xl p-5 shadow-sm sm:p-7">
           <div className="mb-3 flex items-start justify-between">
             <div>
-              <h2 className="font-bold text-slate-950">Competency radar</h2>
+              <p className="mb-1 text-[10px] font-bold tracking-[0.18em] text-cyan-600 uppercase">
+                {activeDimensionCopy[activeDimension].kicker}
+              </p>
+              <h2 className="font-bold text-slate-950">
+                {activeDimensionCopy[activeDimension].title}
+              </h2>
               <p className="mt-1 text-sm text-slate-500">
-                All technical and behavioral areas from the report
+                Tap a dimension node to inspect its report
               </p>
             </div>
-            <div className="flex items-center gap-3 text-[11px] font-semibold text-slate-500">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-cyan-500" />
-                Technical
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-violet-500" />
-                Behavioral
-              </span>
+            <div className="holobox-radar-status">
+              <span /> {activeChartData.length} signals
             </div>
           </div>
-          {radarData.length > 0 ? (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {(["overview", "technical", "behavioral", "journey"] as HoloboxDimension[]).map(
+              (dimension) => (
+                <button
+                  key={dimension}
+                  type="button"
+                  onClick={() => setActiveDimension(dimension)}
+                  className={`holobox-dimension-tab ${activeDimension === dimension ? "is-active" : ""}`}>
+                  {dimension === "overview"
+                    ? "Core"
+                    : dimension === "technical"
+                      ? "Technical"
+                      : dimension === "behavioral"
+                        ? "Behavioral"
+                        : "Journey"}
+                </button>
+              )
+            )}
+          </div>
+          <div className="mb-3 flex items-center gap-3 text-[11px] font-semibold text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-cyan-500" />
+              Technical
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-violet-500" />
+              Behavioral
+            </span>
+          </div>
+          {activeChartData.length > 0 && activeDimension !== "journey" ? (
             <>
               <div className="holobox-radar-stage h-[300px] w-full sm:h-[340px]">
                 <div className="holobox-radar-floor" aria-hidden="true" />
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData} outerRadius="72%">
+                  <RadarChart data={activeChartData} outerRadius="72%">
                     <PolarGrid stroke="#164e63" gridType="polygon" />
                     <PolarAngleAxis
                       dataKey="label"
@@ -655,7 +783,7 @@ function ResultStep({
                     />
                     <Tooltip
                       labelFormatter={(label) =>
-                        radarData.find((item) => item.label === label)?.subject ?? label
+                        activeChartData.find((item) => item.label === label)?.subject ?? label
                       }
                       formatter={(value) => [`${Number(value).toFixed(2)}/100`, "Score"]}
                     />
@@ -663,7 +791,7 @@ function ResultStep({
                 </ResponsiveContainer>
               </div>
               <div className="grid grid-cols-2 gap-2 border-t border-cyan-950/10 pt-4 sm:grid-cols-4">
-                {radarData.map((item) => (
+                {activeChartData.map((item) => (
                   <div
                     key={`${item.category}-${item.subject}`}
                     className="rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2.5">
@@ -683,8 +811,16 @@ function ResultStep({
               </div>
             </>
           ) : (
-            <div className="flex h-[300px] items-center justify-center text-sm text-slate-400">
-              No technical data available.
+            <div className="holobox-journey-preview flex min-h-[300px] flex-col justify-center">
+              <p className="text-xs font-bold tracking-[0.16em] text-cyan-600 uppercase">
+                AI operator feed
+              </p>
+              <p className="mt-3 max-w-lg text-lg leading-7 font-semibold text-slate-800">
+                {journey?.narrative?.trim() || "No detailed journey summary is available yet."}
+              </p>
+              <p className="mt-4 text-xs font-medium text-slate-500">
+                The center operator is ready to narrate this dimension.
+              </p>
             </div>
           )}
         </div>
