@@ -640,19 +640,19 @@ function ResultStep({
       {/* ── Unified Command Deck: merged Overall Score + AI Operator + Radar ── */}
       <section className="holobox-command-deck holobox-command-deck--unified">
         {/* Top bar: score info left, audio button right */}
-        <div className="holobox-unified-topbar flex w-full flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-            <h1 className="holobox-unified-name m-0 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">
+        <div className="holobox-unified-topbar flex w-full flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+            <h1 className="holobox-unified-name m-0 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
               {chart.candidateName}
             </h1>
-            <span className="holobox-unified-level rounded-full border border-cyan-300 bg-cyan-100/90 px-3.5 py-1 text-xs font-bold text-cyan-800 shadow-xs sm:text-sm">
+            <span className="holobox-unified-level rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-0.5 text-xs font-semibold text-cyan-700 shadow-2xs sm:text-xs">
               {competencyLevelLabel[chart.overallLevel]}
             </span>
-            <div className="holobox-unified-score-block flex items-center gap-2 rounded-2xl border border-cyan-300/80 bg-cyan-50/90 px-4 py-2 text-cyan-950 shadow-xs">
-              <span className="text-[11px] font-bold tracking-wider text-cyan-700 uppercase">
+            <div className="holobox-unified-score-block flex items-center gap-1.5 rounded-xl border border-cyan-200/90 bg-cyan-50/90 px-3 py-1 text-cyan-950 shadow-2xs">
+              <span className="text-[10px] font-bold tracking-wider text-cyan-700 uppercase">
                 Score
               </span>
-              <span className="text-3xl leading-none font-black text-cyan-900 sm:text-4xl">
+              <span className="text-xl leading-none font-black text-cyan-900 sm:text-2xl">
                 {Math.round(chart.overallScore)}
               </span>
               <span className="text-xs font-bold text-cyan-700">/100</span>
