@@ -3,14 +3,15 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   CircleAlert,
   Headphones,
   Mail,
   Play,
   RotateCcw,
   Search,
-  Settings2,
   ShieldCheck,
   Square,
   UserRound,
@@ -49,10 +50,10 @@ import {
 type KioskStep = "search" | "applications" | "result";
 
 const statusLabel: Record<CompetencyApplication["status"], string> = {
-  IN_PROGRESS: "Đang thực hiện",
-  PASSED: "Đã hoàn thành",
-  FAILED: "Chưa đạt",
-  SOFT_FAILED: "Cần xem lại",
+  IN_PROGRESS: "In progress",
+  PASSED: "Passed",
+  FAILED: "Failed",
+  SOFT_FAILED: "Needs review",
 };
 
 const statusClass: Record<CompetencyApplication["status"], string> = {
@@ -63,7 +64,7 @@ const statusClass: Record<CompetencyApplication["status"], string> = {
 };
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("vi-VN", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -71,7 +72,7 @@ function formatDate(value: string) {
 }
 
 function formatApplicationScore(score: number) {
-  return score >= 0 ? `${Math.round(score)}/100` : "Chưa có điểm";
+  return score >= 0 ? `${Math.round(score)}/100` : "No score yet";
 }
 
 function KioskHeader({ step, onReset }: { step: KioskStep; onReset: () => void }) {
@@ -90,12 +91,12 @@ function KioskHeader({ step, onReset }: { step: KioskStep; onReset: () => void }
       <div className="hidden items-center gap-2 text-xs text-slate-500 sm:flex">
         <span className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Kiosk sẵn sàng
+          Kiosk ready
         </span>
         {step !== "search" && (
           <Button variant="ghost" size="sm" onClick={onReset} className="gap-1.5 text-slate-500">
             <RotateCcw className="h-3.5 w-3.5" />
-            Bắt đầu lại
+            Start over
           </Button>
         )}
       </div>
@@ -105,14 +106,18 @@ function KioskHeader({ step, onReset }: { step: KioskStep; onReset: () => void }
 
 function StepRail({ activeStep }: { activeStep: KioskStep }) {
   const steps = [
-    { key: "search" as const, label: "Nhập email", detail: "Xác định ứng viên" },
-    { key: "applications" as const, label: "Chọn hồ sơ", detail: "Chọn application cần đọc" },
-    { key: "result" as const, label: "Kết quả năng lực", detail: "Biểu đồ & giọng đọc" },
+    { key: "search" as const, label: "Enter email", detail: "Identify candidate" },
+    {
+      key: "applications" as const,
+      label: "Choose application",
+      detail: "Select a result to read",
+    },
+    { key: "result" as const, label: "Competency result", detail: "Charts & narration" },
   ];
   const activeIndex = steps.findIndex((step) => step.key === activeStep);
 
   return (
-    <div className="flex items-center gap-2" aria-label="Tiến trình kiosk">
+    <div className="flex items-center gap-2" aria-label="Kiosk progress">
       {steps.map((step, index) => {
         const isDone = index < activeIndex;
         const isActive = index === activeIndex;
@@ -158,21 +163,21 @@ function SearchStep({
       <section>
         <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-semibold text-cyan-800">
           <Activity className="h-3.5 w-3.5" />
-          Xem kết quả đánh giá
+          View assessment results
         </div>
         <h1 className="max-w-xl text-4xl font-bold tracking-[-0.035em] text-slate-950 sm:text-6xl">
-          Khám phá năng lực của bạn.
+          Discover your potential.
         </h1>
         <p className="mt-6 max-w-lg text-base leading-7 text-slate-500 sm:text-lg">
-          Nhập email đã dùng trong quy trình tuyển dụng để Holobox hiển thị và đọc bản tổng hợp năng
-          lực.
+          Enter the email used during the hiring journey so Holobox can display and narrate your
+          competency summary.
         </p>
 
         <form onSubmit={onSubmit} className="mt-10 max-w-xl">
           <label
             htmlFor="candidate-email"
             className="mb-2 block text-sm font-semibold text-slate-700">
-            Email ứng viên
+            Candidate email
           </label>
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
@@ -192,7 +197,7 @@ function SearchStep({
               type="submit"
               disabled={isLoading}
               className="h-14 rounded-xl bg-slate-950 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.98] disabled:opacity-60">
-              {isLoading ? "Đang tìm..." : "Tìm hồ sơ"}
+              {isLoading ? "Searching..." : "Find applications"}
               {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
           </div>
@@ -208,7 +213,7 @@ function SearchStep({
 
         <p className="mt-6 flex items-center gap-2 text-xs text-slate-400">
           <ShieldCheck className="h-4 w-4 text-emerald-600" />
-          Thông tin chỉ được dùng để tìm đúng hồ sơ đánh giá.
+          Your information is only used to find the correct assessment.
         </p>
       </section>
 
@@ -224,9 +229,9 @@ function SearchStep({
           </div>
           <div className="space-y-7">
             {[
-              ["01", "Tìm đúng ứng viên", "Xác thực bằng email"],
-              ["02", "Chọn application", "Mỗi vị trí là một hành trình riêng"],
-              ["03", "Nghe kết quả", "Biểu đồ được đọc thành lời"],
+              ["01", "Find the candidate", "Verify with email"],
+              ["02", "Choose an application", "Each role is a different journey"],
+              ["03", "Hear the result", "Charts become a spoken story"],
             ].map(([number, title, description], index) => (
               <div key={number} className="flex gap-4">
                 <span className="font-mono text-xs text-cyan-400">{number}</span>
@@ -239,7 +244,7 @@ function SearchStep({
             ))}
           </div>
           <div className="mt-14 border-t border-slate-800 pt-5 text-xs text-slate-500">
-            Chạm để bắt đầu · Thời lượng trải nghiệm khoảng 2 phút
+            Tap to begin · The experience takes about 2 minutes
           </div>
         </div>
       </aside>
@@ -269,22 +274,22 @@ function ApplicationsStep({
         onClick={onBack}
         className="mb-8 flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
         <ArrowLeft className="h-4 w-4" />
-        Đổi email
+        Change email
       </button>
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="mb-2 text-sm font-medium text-cyan-700">
-            Đã tìm thấy {applications.length} hồ sơ
+            Found {applications.length} application{applications.length === 1 ? "" : "s"}
           </p>
           <h1 className="text-3xl font-bold tracking-[-0.03em] text-slate-950 sm:text-4xl">
-            Chọn application muốn xem
+            Choose an application to explore
           </h1>
           <p className="mt-3 text-sm text-slate-500">
-            Kết quả cho <span className="font-medium text-slate-700">{email}</span>
+            Results for <span className="font-medium text-slate-700">{email}</span>
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          <Search className="h-4 w-4" /> Chạm vào một hồ sơ để tiếp tục
+          <Search className="h-4 w-4" /> Tap a result to continue
         </div>
       </div>
 
@@ -308,13 +313,13 @@ function ApplicationsStep({
                 </p>
                 <p className="mt-1 text-sm text-slate-500">
                   Application #{application.id} · Job description{" "}
-                  <span className="font-mono text-slate-700">#{application.jdId}</span> · Tạo ngày{" "}
+                  <span className="font-mono text-slate-700">#{application.jdId}</span> · Created{" "}
                   {formatDate(application.createdAt)}
                 </p>
               </div>
               <div className="hidden text-right sm:block">
                 <p className="text-[11px] font-semibold tracking-[0.14em] text-slate-400 uppercase">
-                  Điểm tổng
+                  Overall score
                 </p>
                 <p className="mt-1 text-xl font-bold text-slate-950">
                   {formatApplicationScore(application.overallScore)}
@@ -354,12 +359,65 @@ function compactSkillName(value: string) {
     .replace(/^Team Participation$/i, "Teamwork");
 }
 
-type VoiceProfile = "deep" | "clear";
+function HoloboxRobot({ score, level }: { score: number; level: string }) {
+  return (
+    <div className="holobox-robot-stage" aria-hidden="true">
+      <div className="holobox-robot-grid" />
+      <div className="holobox-robot-halo holobox-robot-halo-one" />
+      <div className="holobox-robot-halo holobox-robot-halo-two" />
+      <div className="holobox-robot-orbit holobox-robot-orbit-one">
+        <span className="holobox-robot-orb holobox-robot-orb-one" />
+      </div>
+      <div className="holobox-robot-orbit holobox-robot-orbit-two">
+        <span className="holobox-robot-orb holobox-robot-orb-two" />
+      </div>
 
-const voiceProfileCopy: Record<VoiceProfile, { label: string; rate: number; pitch: number }> = {
-  deep: { label: "Giọng trầm", rate: 0.84, pitch: 0.78 },
-  clear: { label: "Giọng rõ", rate: 0.98, pitch: 1.08 },
-};
+      <div className="holobox-robot-data holobox-robot-data-one">
+        <span>NEURAL LINK</span>
+        <strong>ACTIVE</strong>
+      </div>
+      <div className="holobox-robot-data holobox-robot-data-two">
+        <span>CORE INDEX</span>
+        <strong>{Math.round(score).toString().padStart(2, "0")}</strong>
+      </div>
+
+      <div className="holobox-robot">
+        <div className="holobox-robot-antenna">
+          <span />
+        </div>
+        <div className="holobox-robot-head">
+          <span className="holobox-robot-ear holobox-robot-ear-left" />
+          <span className="holobox-robot-ear holobox-robot-ear-right" />
+          <div className="holobox-robot-face">
+            <div className="holobox-robot-brow" />
+            <div className="holobox-robot-eyes">
+              <span />
+              <span />
+            </div>
+            <div className="holobox-robot-mouth" />
+            <div className="holobox-robot-scanline" />
+          </div>
+        </div>
+        <div className="holobox-robot-neck" />
+        <div className="holobox-robot-body">
+          <div className="holobox-robot-shoulder holobox-robot-shoulder-left" />
+          <div className="holobox-robot-shoulder holobox-robot-shoulder-right" />
+          <div className="holobox-robot-chest">
+            <span className="holobox-robot-chest-label">INBLUE / SYNTH</span>
+            <strong>{level}</strong>
+            <div className="holobox-robot-core">
+              <span />
+            </div>
+          </div>
+          <div className="holobox-robot-arm holobox-robot-arm-left" />
+          <div className="holobox-robot-arm holobox-robot-arm-right" />
+        </div>
+      </div>
+      <div className="holobox-robot-floor" />
+      <div className="holobox-robot-floor-shadow" />
+    </div>
+  );
+}
 
 function ResultStep({
   chart,
@@ -372,17 +430,18 @@ function ResultStep({
 }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isVoiceLoading, setIsVoiceLoading] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoiceName, setSelectedVoiceName] = useState("");
-  const [voiceProfile, setVoiceProfile] = useState<VoiceProfile>("deep");
-  const [voiceEngine, setVoiceEngine] = useState<"responsive" | "browser">("responsive");
+  const [isScriptExpanded, setIsScriptExpanded] = useState(false);
   const script = useMemo(() => buildHoloboxCompetencyScript(chart, journey), [chart, journey]);
+  const isVi = useMemo(
+    () => /[àáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i.test(script),
+    [script]
+  );
   const radarData = useMemo(
     () => [
       ...chart.technicalSkillAreas.map((item) => ({
         subject: item.skillArea,
         label: compactSkillName(item.skillArea),
-        category: "Kỹ thuật",
+        category: "Technical",
         score: item.score,
         fullMark: 100,
         sourceRounds: item.sourceRounds,
@@ -390,7 +449,7 @@ function ResultStep({
       ...chart.behavioralSkills.map((item) => ({
         subject: item.skillName,
         label: compactSkillName(item.skillName),
-        category: "Hành vi",
+        category: "Behavioral",
         score: item.score,
         fullMark: 100,
         sourceRounds: item.sourceRounds,
@@ -400,28 +459,14 @@ function ResultStep({
   );
 
   useEffect(() => {
-    if (!("speechSynthesis" in window)) return;
-
-    const syncVoices = () => {
-      const availableVoices = window.speechSynthesis
-        .getVoices()
-        .filter((voice) => voice.lang.toLowerCase().startsWith("vi"));
-      setVoices(availableVoices);
-      setSelectedVoiceName((current) => current || availableVoices[0]?.name || "");
-    };
-
-    syncVoices();
-    window.speechSynthesis.addEventListener("voiceschanged", syncVoices);
     return () => {
-      window.speechSynthesis.removeEventListener("voiceschanged", syncVoices);
-      window.speechSynthesis.cancel();
+      window.speechSynthesis?.cancel();
       stopResponsiveVoicePlayback();
     };
   }, []);
 
   const speakWithBrowserVoice = () => {
     if (!("speechSynthesis" in window)) return false;
-    setVoiceEngine("browser");
     if (isSpeaking) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
@@ -429,11 +474,14 @@ function ResultStep({
     }
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(script);
-    utterance.lang = "vi-VN";
-    utterance.rate = voiceProfileCopy[voiceProfile].rate;
-    utterance.pitch = voiceProfileCopy[voiceProfile].pitch;
+    utterance.lang = isVi ? "vi-VN" : "en-US";
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
     utterance.volume = 1;
-    const selectedVoice = voices.find((voice) => voice.name === selectedVoiceName);
+    const availableVoices = window.speechSynthesis.getVoices();
+    const selectedVoice = isVi
+      ? availableVoices.find((voice) => voice.lang.toLowerCase().startsWith("vi"))
+      : availableVoices.find((voice) => voice.lang.toLowerCase().startsWith("en"));
     if (selectedVoice) utterance.voice = selectedVoice;
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
@@ -454,10 +502,10 @@ function ResultStep({
     setIsVoiceLoading(true);
     try {
       const responsiveVoice = await loadResponsiveVoice();
-      setVoiceEngine("responsive");
-      responsiveVoice.speak(script, resolveResponsiveVoiceName("vi-VN"), {
-        rate: voiceProfileCopy[voiceProfile].rate,
-        pitch: voiceProfileCopy[voiceProfile].pitch,
+      const lang = isVi ? "vi-VN" : "en-US";
+      responsiveVoice.speak(script, resolveResponsiveVoiceName(lang, "female"), {
+        rate: 0.95,
+        pitch: 1.0,
         volume: 1,
         onstart: () => setIsSpeaking(true),
         onend: () => setIsSpeaking(false),
@@ -477,13 +525,13 @@ function ResultStep({
         onClick={onBack}
         className="mb-6 flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
         <ArrowLeft className="h-4 w-4" />
-        Quay lại danh sách application
+        Back to applications
       </button>
 
       <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
           <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-cyan-700">
-            <span className="h-2 w-2 rounded-full bg-cyan-500" /> Báo cáo đã sẵn sàng
+            <span className="h-2 w-2 rounded-full bg-cyan-500" /> Report ready
           </p>
           <h1 className="text-3xl font-bold tracking-[-0.035em] text-slate-950 sm:text-4xl">
             {chart.candidateName}
@@ -493,62 +541,31 @@ function ResultStep({
             {chart.applicationId}
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2 rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-sm">
-          <span className="px-3 text-slate-500">Holobox audio</span>
-          <div
-            className="flex rounded-lg bg-slate-100 p-1"
-            role="group"
-            aria-label="Kiểu giọng đọc">
-            {(Object.keys(voiceProfileCopy) as VoiceProfile[]).map((profile) => (
-              <button
-                type="button"
-                key={profile}
-                onClick={() => setVoiceProfile(profile)}
-                className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition ${voiceProfile === profile ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
-                {voiceProfileCopy[profile].label}
-              </button>
-            ))}
-          </div>
-          <select
-            aria-label="Chọn giọng dự phòng tiếng Việt"
-            value={selectedVoiceName}
-            onChange={(event) => setSelectedVoiceName(event.target.value)}
-            disabled={voices.length === 0}
-            className="h-9 max-w-[170px] rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-slate-600 outline-none focus:border-cyan-500">
-            {voices.length === 0 ? (
-              <option>Giọng của thiết bị</option>
-            ) : (
-              voices.map((voice) => (
-                <option key={voice.name} value={voice.name}>
-                  {voice.name}
-                </option>
-              ))
-            )}
-          </select>
-          <Button
-            onClick={speak}
-            disabled={isVoiceLoading}
-            className={`h-10 rounded-lg px-4 font-semibold ${isSpeaking ? "bg-rose-600 hover:bg-rose-700" : "bg-slate-950 hover:bg-slate-800"}`}>
-            {isVoiceLoading ? (
-              <>
-                <span className="mr-2 h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                Đang chuẩn bị giọng...
-              </>
-            ) : isSpeaking ? (
-              <>
-                <Square className="mr-2 h-3.5 w-3.5 fill-current" /> Dừng đọc
-              </>
-            ) : (
-              <>
-                <Volume2 className="mr-2 h-4 w-4" /> Đọc kết quả
-              </>
-            )}
-          </Button>
-        </div>
+        <Button
+          onClick={speak}
+          disabled={isVoiceLoading}
+          className={`h-11 rounded-xl px-5 text-sm font-semibold shadow-sm transition ${isSpeaking ? "bg-rose-600 hover:bg-rose-700" : "bg-slate-950 hover:bg-slate-800"}`}>
+          {isVoiceLoading ? (
+            <>
+              <span className="mr-2.5 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              {isVi ? "Đang chuẩn bị..." : "Preparing voice..."}
+            </>
+          ) : isSpeaking ? (
+            <>
+              <Square className="mr-2.5 h-4 w-4 fill-current text-white" />
+              {isVi ? "Dừng đọc" : "Stop reading"}
+            </>
+          ) : (
+            <>
+              <Volume2 className="mr-2.5 h-4 w-4" />
+              {isVi ? "Nghe kết quả" : "Read result"}
+            </>
+          )}
+        </Button>
       </div>
 
       <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-        <div className="holobox-score-scene rounded-2xl p-6 text-white shadow-2xl shadow-slate-300/60 sm:p-8">
+        <div className="holobox-score-scene min-h-[470px] rounded-2xl p-6 text-white shadow-2xl shadow-slate-300/60 sm:p-8">
           <div className="holobox-orbit holobox-orbit-one" />
           <div className="holobox-orbit holobox-orbit-two" />
           <div className="holobox-orbit holobox-orbit-three" />
@@ -570,7 +587,7 @@ function ResultStep({
             <div>
               <div className="mb-5 flex items-end justify-between gap-4">
                 <div>
-                  <p className="text-xs text-slate-500">Mức năng lực tổng quan</p>
+                  <p className="text-xs text-slate-500">Overall competency level</p>
                   <p className="mt-1 text-xl font-semibold text-white">
                     {competencyLevelLabel[chart.overallLevel]}
                   </p>
@@ -581,70 +598,75 @@ function ResultStep({
                 </div>
               </div>
               <div className="flex items-center gap-2 border-t border-slate-800 pt-5 text-sm text-slate-400">
-                <UserRound className="h-4 w-4 text-cyan-300" /> Hồ sơ đã hoàn tất đánh giá
+                <UserRound className="h-4 w-4 text-cyan-300" /> Assessment completed
               </div>
             </div>
           </div>
+          <HoloboxRobot
+            score={chart.overallScore}
+            level={competencyLevelLabel[chart.overallLevel]}
+          />
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <div className="holobox-radar-panel rounded-2xl p-5 shadow-sm sm:p-7">
           <div className="mb-3 flex items-start justify-between">
             <div>
               <h2 className="font-bold text-slate-950">Competency radar</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Tất cả vùng kỹ thuật và hành vi từ báo cáo
+                All technical and behavioral areas from the report
               </p>
             </div>
             <div className="flex items-center gap-3 text-[11px] font-semibold text-slate-500">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-cyan-500" />
-                Kỹ thuật
+                Technical
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-violet-500" />
-                Hành vi
+                Behavioral
               </span>
             </div>
           </div>
           {radarData.length > 0 ? (
             <>
-              <div className="h-[300px] w-full sm:h-[340px]">
+              <div className="holobox-radar-stage h-[300px] w-full sm:h-[340px]">
+                <div className="holobox-radar-floor" aria-hidden="true" />
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData} outerRadius="72%">
-                    <PolarGrid stroke="#dbe5ec" gridType="polygon" />
+                    <PolarGrid stroke="#164e63" gridType="polygon" />
                     <PolarAngleAxis
                       dataKey="label"
-                      tick={{ fill: "#475569", fontSize: 11, fontWeight: 600 }}
+                      tick={{ fill: "#a5f3fc", fontSize: 11, fontWeight: 600 }}
                     />
                     <PolarRadiusAxis
                       domain={[0, 100]}
                       tickCount={6}
-                      tick={{ fill: "#94a3b8", fontSize: 10 }}
+                      tick={{ fill: "#64748b", fontSize: 10 }}
                       axisLine={false}
                     />
                     <Radar
                       name="Score"
                       dataKey="score"
-                      stroke="#0891b2"
-                      fill="#22d3ee"
-                      fillOpacity={0.3}
+                      stroke="#67e8f9"
+                      fill="#06b6d4"
+                      fillOpacity={0.28}
                       strokeWidth={3}
-                      dot={{ r: 4, fill: "#0e7490", strokeWidth: 0 }}
+                      dot={{ r: 4, fill: "#a5f3fc", strokeWidth: 0 }}
                     />
                     <Tooltip
                       labelFormatter={(label) =>
                         radarData.find((item) => item.label === label)?.subject ?? label
                       }
-                      formatter={(value) => [`${Number(value).toFixed(2)}/100`, "Điểm"]}
+                      formatter={(value) => [`${Number(value).toFixed(2)}/100`, "Score"]}
                     />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-4 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 border-t border-cyan-950/10 pt-4 sm:grid-cols-4">
                 {radarData.map((item) => (
                   <div
                     key={`${item.category}-${item.subject}`}
-                    className="rounded-xl bg-slate-50 px-3 py-2.5">
+                    className="rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate text-xs font-semibold text-slate-600">
                         {item.label}
@@ -662,7 +684,7 @@ function ResultStep({
             </>
           ) : (
             <div className="flex h-[300px] items-center justify-center text-sm text-slate-400">
-              Chưa có dữ liệu kỹ thuật.
+              No technical data available.
             </div>
           )}
         </div>
@@ -672,9 +694,9 @@ function ResultStep({
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
           <div className="mb-7 flex items-start justify-between">
             <div>
-              <h2 className="font-bold text-slate-950">Kỹ năng hành vi</h2>
+              <h2 className="font-bold text-slate-950">Behavioral skills</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Những gì được ghi nhận trong quá trình đánh giá
+                What was observed throughout the assessment
               </p>
             </div>
             <Activity className="h-5 w-5 text-cyan-600" />
@@ -696,12 +718,12 @@ function ResultStep({
                     />
                   </div>
                   <p className="mt-1.5 text-xs text-slate-400">
-                    Nguồn: {item.sourceRounds.join(" · ") || "Tổng hợp"}
+                    Source: {item.sourceRounds.join(" · ") || "Summary"}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-slate-400">Chưa có dữ liệu kỹ năng hành vi.</p>
+              <p className="text-sm text-slate-400">No behavioral data available.</p>
             )}
           </div>
         </div>
@@ -713,10 +735,9 @@ function ResultStep({
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-cyan-700 shadow-sm">
                 <Volume2 className="h-5 w-5" />
               </div>
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-cyan-700">
-                <Settings2 className="h-3.5 w-3.5" />{" "}
-                {voiceEngine === "responsive" ? "Natural voice" : "Voice dự phòng"} ·{" "}
-                {voiceProfileCopy[voiceProfile].label}
+              <span className="flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-cyan-800 shadow-xs">
+                <Volume2 className="h-3.5 w-3.5" />
+                {isVi ? "Giọng đọc tự nhiên" : "Natural voice"}
               </span>
             </div>
             <div className="holobox-wave mt-7" aria-hidden="true">
@@ -724,7 +745,34 @@ function ResultStep({
                 <span key={index} />
               ))}
             </div>
-            <p className="mt-7 text-lg leading-7 font-semibold text-slate-950">“{script}”</p>
+
+            <div className="relative mt-7">
+              <p
+                className={`text-lg leading-7 font-semibold text-slate-950 transition-all duration-300 ${
+                  !isScriptExpanded ? "line-clamp-4" : ""
+                }`}>
+                “{script}”
+              </p>
+              {script.length > 180 && (
+                <button
+                  type="button"
+                  onClick={() => setIsScriptExpanded(!isScriptExpanded)}
+                  className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-cyan-800 transition hover:text-cyan-950">
+                  {isScriptExpanded ? (
+                    <>
+                      <ChevronUp className="h-4 w-4" />
+                      {isVi ? "Thu gọn script" : "Collapse script"}
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4" />
+                      {isVi ? "Xem thêm script" : "Expand script"}
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
             <button
               type="button"
               onClick={speak}
@@ -734,7 +782,13 @@ function ResultStep({
               ) : (
                 <Play className="h-4 w-4 fill-current" />
               )}{" "}
-              {isSpeaking ? "Đang đọc kết quả" : "Nghe phần tóm tắt"}
+              {isSpeaking
+                ? isVi
+                  ? "Đang đọc kết quả"
+                  : "Reading result"
+                : isVi
+                  ? "Nghe tóm tắt"
+                  : "Listen to summary"}
             </button>
           </div>
         </div>
@@ -747,14 +801,14 @@ function ResultStep({
               <p className="text-xs font-bold tracking-[0.14em] text-cyan-700 uppercase">
                 AI journey narrative
               </p>
-              <h2 className="mt-2 text-xl font-bold text-slate-950">Câu chuyện năng lực</h2>
+              <h2 className="mt-2 text-xl font-bold text-slate-950">Competency story</h2>
             </div>
             <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
               Journey summary
             </span>
           </div>
           <p className="text-[15px] leading-7 text-slate-600">
-            {journey?.narrative?.trim() || "Bản tóm tắt hành trình chưa có nội dung chi tiết."}
+            {journey?.narrative?.trim() || "No detailed journey summary is available yet."}
           </p>
           {(journey?.swecomAssessments?.length ?? 0) > 0 && (
             <div className="mt-6 space-y-3 border-t border-slate-100 pt-5">
@@ -781,7 +835,7 @@ function ResultStep({
               <p className="text-xs font-bold tracking-[0.14em] text-violet-700 uppercase">
                 Next moves
               </p>
-              <h2 className="mt-2 text-xl font-bold text-slate-950">Gợi ý phát triển</h2>
+              <h2 className="mt-2 text-xl font-bold text-slate-950">Development recommendations</h2>
             </div>
             <ArrowRight className="h-5 w-5 text-violet-500" />
           </div>
@@ -794,14 +848,14 @@ function ResultStep({
                   <p className="text-sm font-bold text-slate-800">{item.targetSkillArea}</p>
                   <p className="mt-1.5 text-sm leading-6 text-slate-500">{item.recommendation}</p>
                   <span className="mt-2 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
-                    Mục tiêu: {competencyLevelLabel[item.targetLevel]}
+                    Target: {competencyLevelLabel[item.targetLevel]}
                   </span>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-sm leading-6 text-slate-500">
-              Chưa có recommendation chi tiết cho hồ sơ này.
+              No detailed recommendations are available for this application.
             </p>
           )}
         </article>
@@ -838,19 +892,21 @@ export function CompetencyKioskPage() {
     try {
       const result = await getApplicationsByEmail(email);
       if (result.length === 0) {
-        setError("Email này chưa có application nào để hiển thị.");
+        setError("This email has no applications to display.");
         return;
       }
       const activeApplications = result.filter((application) => !application.isDeleted);
       if (activeApplications.length === 0) {
-        setError("Các application của email này không còn khả dụng để hiển thị.");
+        setError("The applications for this email are no longer available.");
         return;
       }
       setApplications(activeApplications);
       setStep("applications");
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "Không thể tìm hồ sơ lúc này."
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to find applications right now."
       );
     } finally {
       setIsLoading(false);
@@ -871,10 +927,10 @@ export function CompetencyKioskPage() {
         requestError instanceof CompetencyChartError && requestError.status === 404;
       setError(
         isNotReady
-          ? "Báo cáo năng lực đang được tạo. Vui lòng thử lại sau ít phút."
+          ? "The competency report is still being generated. Please try again in a few minutes."
           : requestError instanceof Error
             ? requestError.message
-            : "Không thể tải báo cáo năng lực."
+            : "Unable to load the competency report."
       );
     } finally {
       setIsLoading(false);

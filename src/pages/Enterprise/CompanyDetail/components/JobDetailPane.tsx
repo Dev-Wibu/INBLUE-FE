@@ -1,8 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
 import { formatDate } from "@/lib/formatting";
+import { applicationService } from "@/services/application.manager";
 import type { Company, JobDescription } from "@/services/company.manager";
+import { jdPurchaseManager } from "@/services/jd-purchase.manager";
+import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft,
   ArrowRight,
@@ -18,7 +22,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { InterviewProcessTimeline } from "./InterviewProcessTimeline";
 
 interface JobDetailPaneProps {
@@ -29,7 +34,11 @@ interface JobDetailPaneProps {
 export function JobDetailPane({ job, company }: JobDetailPaneProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const [isSaved, setIsSaved] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const { hasPurchased, isLoadingStatus, refetchStatus } = useJdPurchaseStatus(job.id);
 
   const salaryText =
     job.salaryMin || job.salaryMax
@@ -47,8 +56,77 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
       .slice(0, 2)
       .toUpperCase() || "TN";
 
-  const handleStartPractice = () => {
-    navigate("/user/ai-interview/setup");
+  const handlePurchaseOrApply = async () => {
+    if (!isLoggedIn) {
+      toast.error(
+        t("enterpriseJobdescriptiondetailpage.pleaseLoginToApply", "Please log in to continue.")
+      );
+      navigate(`/login?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`);
+      return;
+    }
+
+    if (job.status !== "OPEN") {
+      toast.warning(
+        t(
+          "enterpriseJobdescriptiondetailpage.thisPositionIsCurrentlyNo",
+          "This position is no longer open."
+        )
+      );
+      return;
+    }
+
+    const jdId = Number(job.id);
+    if (!Number.isFinite(jdId) || jdId <= 0) {
+      toast.error(t("common.anErrorHasOccurred", "Unable to identify this job."));
+      return;
+    }
+
+    setIsActionLoading(true);
+    try {
+      if (!hasPurchased) {
+        localStorage.setItem("pending_jd_purchase_id", String(jdId));
+        const payment = await jdPurchaseManager.createPayment(jdId);
+        if (!payment.checkoutUrl) {
+          throw new Error("No payment checkout URL received");
+        }
+        window.location.assign(payment.checkoutUrl);
+        return;
+      }
+
+      const result = await applicationService.apply(jdId);
+      if (!result.success) {
+        toast.error(
+          result.error ||
+            t(
+              "enterpriseJobdescriptiondetailpage.applicationUnsuccessfulPleaseTryAgain",
+              "Unable to submit your application. Please try again."
+            ),
+          { duration: 5000 }
+        );
+        return;
+      }
+
+      toast.success(
+        t(
+          "enterpriseJobdescriptiondetailpage.successfulApplicationGoodLuck",
+          "Application submitted successfully!"
+        )
+      );
+      await refetchStatus();
+      const applicationId = result.data?.id;
+      navigate(
+        applicationId
+          ? `/user?tab=applicationHistory&appId=${applicationId}`
+          : "/user?tab=applicationHistory"
+      );
+    } catch (error) {
+      console.error("[JobDetailPane] Purchase/apply error:", error);
+      toast.error(
+        t("common.anErrorOccurredPleaseTryAgain", "Something went wrong. Please try again.")
+      );
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   const hasRounds = Array.isArray(job.rounds) && job.rounds.length > 0;
@@ -154,11 +232,22 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
 
                   <Button
                     size="sm"
-                    onClick={handleStartPractice}
-                    className="group rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                    onClick={() => void handlePurchaseOrApply()}
+                    disabled={
+                      isActionLoading || (isLoggedIn && isLoadingStatus) || job.status !== "OPEN"
+                    }
+                    className="group rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-600">
                     <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                    {t("enterpriseCompanydetail.payPractice", "Pay & Practice")}
-                    <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    {isLoggedIn && isLoadingStatus
+                      ? t("common.checking", "Checking...")
+                      : isActionLoading
+                        ? t("common.processing", "Processing...")
+                        : !hasPurchased
+                          ? t("enterpriseCompanydetail.payPractice", "Pay & Practice")
+                          : t("enterpriseCompanydetail.applyNow", "Apply now")}
+                    {!isLoadingStatus && hasPurchased && (
+                      <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    )}
                   </Button>
 
                   <Button

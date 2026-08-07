@@ -157,8 +157,14 @@ export const loadResponsiveVoice = async (timeoutMs = 8000): Promise<ResponsiveV
   return responsiveVoiceLoadingPromise;
 };
 
-export const resolveResponsiveVoiceName = (language: "vi-VN" | "en-US"): string => {
-  return language === "vi-VN" ? "Vietnamese Male" : "US English Male";
+export const resolveResponsiveVoiceName = (
+  language: "vi-VN" | "en-US",
+  gender: "female" | "male" = "female"
+): string => {
+  if (language === "vi-VN") {
+    return gender === "male" ? "Vietnamese Male" : "Vietnamese Female";
+  }
+  return gender === "male" ? "US English Male" : "US English Female";
 };
 
 export const stopResponsiveVoicePlayback = (): void => {

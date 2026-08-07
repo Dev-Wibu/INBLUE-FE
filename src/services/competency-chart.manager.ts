@@ -123,7 +123,7 @@ export async function getApplicationsByEmail(email: string): Promise<CompetencyA
   const query = new URLSearchParams({ email: email.trim() });
   const body = await requestJson<{ data?: CompetencyApplication[] }>(
     `/api/applications/by-email?${query.toString()}`,
-    "Không thể tìm thấy hồ sơ theo email này."
+    "Unable to find applications for this email."
   );
 
   return body.data ?? [];
@@ -132,7 +132,7 @@ export async function getApplicationsByEmail(email: string): Promise<CompetencyA
 export async function getCompetencyChart(applicationId: number): Promise<CompetencyChart> {
   const body = await requestJson<CompetencyChart>(
     `/api/applications/${applicationId}/competency-chart`,
-    "Báo cáo năng lực chưa sẵn sàng."
+    "The competency report is not ready yet."
   );
 
   return body;
@@ -141,7 +141,7 @@ export async function getCompetencyChart(applicationId: number): Promise<Compete
 export async function getJourneySummary(applicationId: number): Promise<JourneySummary> {
   return requestJson<JourneySummary>(
     `/api/applications/${applicationId}/journey-summary`,
-    "Không thể tải phần tóm tắt hành trình."
+    "Unable to load the journey summary."
   );
 }
 
@@ -157,7 +157,7 @@ export async function getCompetencyResult(applicationId: number): Promise<Compet
   if (!chart)
     throw chartResult.status === "rejected"
       ? chartResult.reason
-      : new Error("Báo cáo năng lực chưa sẵn sàng.");
+      : new Error("The competency report is not ready yet.");
 
   return {
     chart,
@@ -165,62 +165,146 @@ export async function getCompetencyResult(applicationId: number): Promise<Compet
   };
 }
 
+export const competencyLevelLabelVi: Record<CompetencyLevel, string> = {
+  TECHNICIAN: "Kỹ thuật viên",
+  ENTRY_LEVEL_PRACTITIONER: "Thực hành sơ cấp",
+  PRACTITIONER: "Thực hành",
+  TECHNICAL_LEADER: "Trưởng nhóm kỹ thuật",
+  SENIOR_SOFTWARE_ENGINEER: "Kỹ sư cao cấp",
+};
+
+const containsVietnamese = (text?: string): boolean => {
+  if (!text) return false;
+  return /[àáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i.test(text);
+};
+
 export function buildHoloboxCompetencyScript(
   chart: CompetencyChart,
   journey?: JourneySummary | null
 ): string {
+  const narrative = journey?.narrative?.replace(/\s+/g, " ").trim();
+  const assessment = journey?.swecomAssessments?.find((item) => item.evidenceSummary?.trim());
+  const recommendation = journey?.developmentRecommendations?.find((item) =>
+    item.recommendation?.trim()
+  );
+
+  const isVi =
+    containsVietnamese(narrative) ||
+    containsVietnamese(assessment?.evidenceSummary) ||
+    containsVietnamese(recommendation?.recommendation) ||
+    containsVietnamese(chart.candidateName) ||
+    containsVietnamese(chart.jobTitle);
+
   const strongestTechnical = [...chart.technicalSkillAreas].sort((a, b) => b.score - a.score)[0];
   const weakestTechnical = [...chart.technicalSkillAreas].sort((a, b) => a.score - b.score)[0];
   const strongestBehavioral = [...chart.behavioralSkills].sort((a, b) => b.score - a.score)[0];
 
+  if (isVi) {
+    const parts = [
+      `Đây là báo cáo đánh giá năng lực của ứng viên ${chart.candidateName}, ứng tuyển vị trí ${chart.jobTitle}.`,
+      `Điểm tổng thể đạt ${Math.round(chart.overallScore)} trên 100, tương ứng với cấp độ ${competencyLevelLabelVi[chart.overallLevel] ?? competencyLevelLabel[chart.overallLevel]}.`,
+    ];
+
+    if (strongestTechnical) {
+      parts.push(
+        `Năng lực kỹ thuật mạnh nhất là ${strongestTechnical.skillArea}, đạt ${Math.round(strongestTechnical.score)} điểm.`
+      );
+    }
+
+    if (weakestTechnical && weakestTechnical !== strongestTechnical) {
+      parts.push(
+        `Lĩnh vực cần tập trung phát triển là ${weakestTechnical.skillArea}, hiện ở cấp độ ${competencyLevelLabelVi[weakestTechnical.level] ?? competencyLevelLabel[weakestTechnical.level]}.`
+      );
+    }
+
+    if (strongestBehavioral) {
+      parts.push(
+        `Về kỹ năng hành vi công sở, thế mạnh nổi bật nhất là ${strongestBehavioral.skillName}.`
+      );
+    }
+
+    if (narrative) {
+      parts.push(narrative.length > 600 ? `${narrative.slice(0, 597)}...` : narrative);
+    }
+
+    if (assessment?.evidenceSummary) {
+      parts.push(`Bằng chứng đánh giá ghi nhận: ${assessment.evidenceSummary.trim()}`);
+    }
+
+    if (recommendation?.recommendation) {
+      parts.push(
+        `Gợi ý phát triển tiếp theo cho ${recommendation.targetSkillArea} là: ${recommendation.recommendation.trim()}`
+      );
+    }
+
+    parts.push(
+      "Biểu đồ thể hiện chi tiết các nhóm năng lực kỹ thuật và kỹ năng hành vi quan sát được trong quá trình đánh giá."
+    );
+
+    journey?.swecomAssessments?.slice(1, 3).forEach((item) => {
+      if (item.evidenceSummary?.trim()) {
+        parts.push(
+          `Đối với ${item.skillArea}, ứng viên đạt ${Math.round(item.score)} điểm. Minh chứng: ${item.evidenceSummary.trim()}`
+        );
+      }
+    });
+
+    journey?.developmentRecommendations?.slice(1, 3).forEach((item) => {
+      if (item.recommendation?.trim()) {
+        parts.push(
+          `Gợi ý phát triển cho ${item.targetSkillArea} là: ${item.recommendation.trim()}`
+        );
+      }
+    });
+
+    return parts.join(" ");
+  }
+
   const parts = [
-    `Báo cáo năng lực của ${chart.candidateName} cho vị trí ${chart.jobTitle}.`,
-    `Điểm tổng quan là ${Math.round(chart.overallScore)} trên 100, tương ứng mức ${competencyLevelLabel[chart.overallLevel]}.`,
+    `This is the competency report for ${chart.candidateName}, applying for ${chart.jobTitle}.`,
+    `The overall score is ${Math.round(chart.overallScore)} out of 100, corresponding to the ${competencyLevelLabel[chart.overallLevel]} level.`,
   ];
 
   if (strongestTechnical) {
     parts.push(
-      `Năng lực kỹ thuật nổi bật nhất là ${strongestTechnical.skillArea}, đạt ${Math.round(strongestTechnical.score)} điểm.`
+      `The strongest technical area is ${strongestTechnical.skillArea}, with a score of ${Math.round(strongestTechnical.score)}.`
     );
   }
 
   if (weakestTechnical && weakestTechnical !== strongestTechnical) {
     parts.push(
-      `Khu vực nên phát triển thêm là ${weakestTechnical.skillArea}, hiện ở mức ${competencyLevelLabel[weakestTechnical.level]}.`
+      `The main area for development is ${weakestTechnical.skillArea}, currently at the ${competencyLevelLabel[weakestTechnical.level]} level.`
     );
   }
 
   if (strongestBehavioral) {
-    parts.push(`Về hành vi làm việc, điểm mạnh đáng chú ý là ${strongestBehavioral.skillName}.`);
+    parts.push(
+      `For workplace behavior, the most notable strength is ${strongestBehavioral.skillName}.`
+    );
   }
 
-  const narrative = journey?.narrative?.replace(/\s+/g, " ").trim();
   if (narrative) {
     parts.push(narrative.length > 600 ? `${narrative.slice(0, 597)}...` : narrative);
   }
 
-  const assessment = journey?.swecomAssessments?.find((item) => item.evidenceSummary?.trim());
   if (assessment?.evidenceSummary) {
-    parts.push(`Minh chứng nổi bật: ${assessment.evidenceSummary.trim()}`);
+    parts.push(`A notable piece of evidence is: ${assessment.evidenceSummary.trim()}`);
   }
 
-  const recommendation = journey?.developmentRecommendations?.find((item) =>
-    item.recommendation?.trim()
-  );
   if (recommendation?.recommendation) {
     parts.push(
-      `Gợi ý phát triển tiếp theo cho ${recommendation.targetSkillArea} là ${recommendation.recommendation.trim()}`
+      `The next development suggestion for ${recommendation.targetSkillArea} is ${recommendation.recommendation.trim()}`
     );
   }
 
   parts.push(
-    "Biểu đồ radar thể hiện các vùng năng lực kỹ thuật, còn biểu đồ cột thể hiện các kỹ năng hành vi được ghi nhận trong quá trình đánh giá."
+    "The radar chart shows technical competency areas, while the skill bars show behavioral capabilities observed during the assessment."
   );
 
   journey?.swecomAssessments?.slice(1, 3).forEach((item) => {
     if (item.evidenceSummary?.trim()) {
       parts.push(
-        `Ở ${item.skillArea}, ứng viên đạt ${Math.round(item.score)} điểm. Minh chứng: ${item.evidenceSummary.trim()}`
+        `For ${item.skillArea}, the candidate scored ${Math.round(item.score)}. Evidence: ${item.evidenceSummary.trim()}`
       );
     }
   });
@@ -228,7 +312,7 @@ export function buildHoloboxCompetencyScript(
   journey?.developmentRecommendations?.slice(1, 3).forEach((item) => {
     if (item.recommendation?.trim()) {
       parts.push(
-        `Gợi ý phát triển tiếp theo cho ${item.targetSkillArea} là ${item.recommendation.trim()}`
+        `The next development suggestion for ${item.targetSkillArea} is ${item.recommendation.trim()}`
       );
     }
   });

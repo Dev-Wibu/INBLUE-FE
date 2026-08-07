@@ -709,6 +709,509 @@
   text-transform: uppercase;
 }
 
+.holobox-robot-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  perspective: 900px;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+.holobox-robot-grid {
+  position: absolute;
+  right: -14%;
+  bottom: -27%;
+  width: 78%;
+  height: 52%;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.22) 1px, transparent 1px);
+  background-size: 28px 28px;
+  transform: perspective(420px) rotateX(68deg) rotateZ(-7deg);
+  transform-origin: center bottom;
+  mask-image: linear-gradient(to top, black, transparent 86%);
+}
+
+.holobox-robot-halo {
+  position: absolute;
+  top: 44%;
+  left: 70%;
+  width: 210px;
+  height: 210px;
+  border: 1px solid rgba(103, 232, 249, 0.22);
+  border-radius: 50%;
+  box-shadow:
+    0 0 42px rgba(34, 211, 238, 0.14),
+    inset 0 0 36px rgba(34, 211, 238, 0.08);
+  transform: translate(-50%, -50%) rotateX(67deg) rotateZ(-18deg);
+}
+
+.holobox-robot-halo-two {
+  width: 155px;
+  height: 155px;
+  border-color: rgba(167, 243, 208, 0.24);
+  transform: translate(-50%, -50%) rotateY(68deg) rotateZ(21deg);
+}
+
+.holobox-robot-orbit {
+  position: absolute;
+  top: 45%;
+  left: 70%;
+  width: 270px;
+  height: 92px;
+  border: 1px solid rgba(103, 232, 249, 0.24);
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  transform: translate(-50%, -50%) rotateX(68deg) rotateZ(-20deg);
+  animation: holobox-robot-orbit 15s linear infinite;
+}
+
+.holobox-robot-orbit-two {
+  width: 195px;
+  height: 195px;
+  border-color: rgba(167, 243, 208, 0.16);
+  transform: translate(-50%, -50%) rotateY(66deg) rotateZ(28deg);
+  animation-duration: 19s;
+  animation-direction: reverse;
+}
+
+.holobox-robot-orb {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #cffafe;
+  border-radius: 50%;
+  background: #06b6d4;
+  box-shadow: 0 0 16px #22d3ee;
+}
+
+.holobox-robot-orb-two {
+  top: 50%;
+  left: -5px;
+  background: #a7f3d0;
+  box-shadow: 0 0 16px #6ee7b7;
+}
+
+.holobox-robot-data {
+  position: absolute;
+  z-index: 4;
+  display: grid;
+  gap: 2px;
+  color: rgba(165, 243, 252, 0.62);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.holobox-robot-data strong {
+  color: #a5f3fc;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.holobox-robot-data-one {
+  top: 19%;
+  right: 8%;
+}
+
+.holobox-robot-data-two {
+  right: 9%;
+  bottom: 15%;
+  text-align: right;
+}
+
+.holobox-robot {
+  position: absolute;
+  top: 50%;
+  left: 70%;
+  z-index: 3;
+  width: 154px;
+  height: 278px;
+  transform: translate(-50%, -50%) rotateY(-12deg);
+  transform-style: preserve-3d;
+  animation: holobox-robot-float 5s ease-in-out infinite;
+}
+
+.holobox-robot-antenna {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 3px;
+  height: 26px;
+  border-radius: 999px;
+  background: #67e8f9;
+  box-shadow: 0 0 12px #22d3ee;
+  transform: translateX(-50%);
+}
+
+.holobox-robot-antenna::before {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #cffafe;
+  border-radius: 50%;
+  background: #0891b2;
+  box-shadow: 0 0 15px #22d3ee;
+  content: "";
+  transform: translateX(-50%);
+  animation: holobox-robot-pulse 1.8s ease-in-out infinite;
+}
+
+.holobox-robot-head {
+  position: absolute;
+  top: 27px;
+  left: 14px;
+  width: 126px;
+  height: 91px;
+  border: 1px solid rgba(165, 243, 252, 0.82);
+  border-radius: 32px 32px 25px 25px;
+  background: linear-gradient(145deg, #dffbff 0%, #5b91a6 48%, #12324a 100%);
+  box-shadow:
+    12px 13px 0 rgba(2, 6, 23, 0.35),
+    0 0 30px rgba(34, 211, 238, 0.28);
+  transform: translateZ(18px);
+}
+
+.holobox-robot-face {
+  position: absolute;
+  inset: 13px 12px 12px;
+  overflow: hidden;
+  border: 1px solid rgba(165, 243, 252, 0.62);
+  border-radius: 22px 22px 17px 17px;
+  background: radial-gradient(circle at 50% 18%, #183f58, #020617 70%);
+  box-shadow: inset 0 0 22px rgba(34, 211, 238, 0.18);
+}
+
+.holobox-robot-ear {
+  position: absolute;
+  top: 33px;
+  width: 12px;
+  height: 27px;
+  border: 1px solid #67e8f9;
+  background: #0e3d56;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.45);
+}
+
+.holobox-robot-ear-left {
+  left: -8px;
+  border-radius: 8px 0 0 8px;
+}
+
+.holobox-robot-ear-right {
+  right: -8px;
+  border-radius: 0 8px 8px 0;
+}
+
+.holobox-robot-brow {
+  position: absolute;
+  top: 23px;
+  left: 22px;
+  width: 58px;
+  height: 2px;
+  background: rgba(103, 232, 249, 0.42);
+  box-shadow: 0 0 9px #22d3ee;
+}
+
+.holobox-robot-eyes {
+  position: absolute;
+  top: 32px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.holobox-robot-eyes span {
+  width: 19px;
+  height: 8px;
+  border-radius: 50%;
+  background: #a5f3fc;
+  box-shadow: 0 0 12px #22d3ee;
+  animation: holobox-robot-blink 5s ease-in-out infinite;
+}
+
+.holobox-robot-mouth {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  width: 29px;
+  height: 4px;
+  border-radius: 999px;
+  background: #67e8f9;
+  box-shadow: 0 0 10px #22d3ee;
+  transform: translateX(-50%);
+}
+
+.holobox-robot-scanline {
+  position: absolute;
+  top: -20%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(207, 250, 254, 0.76);
+  box-shadow: 0 0 12px #67e8f9;
+  animation: holobox-robot-scan 3.4s linear infinite;
+}
+
+.holobox-robot-neck {
+  position: absolute;
+  top: 114px;
+  left: 61px;
+  width: 34px;
+  height: 24px;
+  border: 1px solid rgba(103, 232, 249, 0.66);
+  background: #12324a;
+  transform: translateZ(8px);
+}
+
+.holobox-robot-body {
+  position: absolute;
+  top: 130px;
+  left: 7px;
+  width: 140px;
+  height: 119px;
+  border: 1px solid rgba(165, 243, 252, 0.72);
+  border-radius: 29px 29px 38px 38px;
+  background: linear-gradient(155deg, #8ed2df 0%, #28536a 42%, #071727 100%);
+  box-shadow:
+    16px 18px 0 rgba(2, 6, 23, 0.35),
+    0 0 30px rgba(34, 211, 238, 0.18);
+  transform: translateZ(8px);
+}
+
+.holobox-robot-shoulder {
+  position: absolute;
+  top: 13px;
+  width: 26px;
+  height: 52px;
+  border: 1px solid rgba(165, 243, 252, 0.58);
+  border-radius: 14px;
+  background: #173a50;
+}
+
+.holobox-robot-shoulder-left {
+  left: -18px;
+  transform: rotate(16deg);
+}
+
+.holobox-robot-shoulder-right {
+  right: -18px;
+  transform: rotate(-16deg);
+}
+
+.holobox-robot-chest {
+  position: absolute;
+  top: 16px;
+  left: 27px;
+  width: 86px;
+  height: 91px;
+  border: 1px solid rgba(103, 232, 249, 0.55);
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.52);
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: inset 0 0 19px rgba(34, 211, 238, 0.15);
+}
+
+.holobox-robot-chest-label {
+  display: block;
+  color: rgba(165, 243, 252, 0.6);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 6px;
+  letter-spacing: 0.12em;
+}
+
+.holobox-robot-chest strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 8px;
+  color: #e0fbff;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.holobox-robot-core {
+  display: flex;
+  width: 29px;
+  height: 29px;
+  align-items: center;
+  justify-content: center;
+  margin: 10px auto 0;
+  border: 1px solid rgba(165, 243, 252, 0.65);
+  border-radius: 50%;
+  background: #082f49;
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.55);
+}
+
+.holobox-robot-core span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #a7f3d0;
+  box-shadow: 0 0 15px #6ee7b7;
+  animation: holobox-robot-pulse 1.5s ease-in-out infinite;
+}
+
+.holobox-robot-arm {
+  position: absolute;
+  top: 61px;
+  width: 17px;
+  height: 67px;
+  border: 1px solid rgba(103, 232, 249, 0.56);
+  border-radius: 12px;
+  background: #0e3046;
+}
+
+.holobox-robot-arm-left {
+  left: -9px;
+  transform: rotate(12deg);
+}
+
+.holobox-robot-arm-right {
+  right: -9px;
+  transform: rotate(-12deg);
+}
+
+.holobox-robot-floor,
+.holobox-robot-floor-shadow {
+  position: absolute;
+  top: 78%;
+  left: 70%;
+  width: 230px;
+  height: 40px;
+  border: 1px solid rgba(103, 232, 249, 0.48);
+  border-radius: 50%;
+  box-shadow: 0 0 27px rgba(34, 211, 238, 0.3);
+  transform: translate(-50%, -50%) rotateX(66deg);
+}
+
+.holobox-robot-floor-shadow {
+  width: 142px;
+  height: 24px;
+  border: 0;
+  background: rgba(34, 211, 238, 0.3);
+  filter: blur(12px);
+  transform: translate(-50%, -50%) rotateX(66deg);
+}
+
+.holobox-radar-panel {
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.1), transparent 34%),
+    linear-gradient(145deg, #f8fdff 0%, #ecfeff 100%);
+}
+
+.holobox-radar-stage {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(8, 145, 178, 0.16);
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 48%, #083344 0%, #061b2b 46%, #020617 100%);
+  perspective: 900px;
+}
+
+.holobox-radar-floor {
+  position: absolute;
+  right: -5%;
+  bottom: -38%;
+  left: -5%;
+  height: 66%;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.22) 1px, transparent 1px);
+  background-size: 24px 24px;
+  transform: perspective(330px) rotateX(68deg);
+  transform-origin: center bottom;
+  mask-image: linear-gradient(to top, black, transparent 86%);
+  pointer-events: none;
+}
+
+.holobox-radar-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(8, 145, 178, 0.18);
+  border-radius: 999px;
+  background: rgba(236, 254, 255, 0.9);
+  padding: 6px 9px;
+  color: #0e7490;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.holobox-radar-status span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #06b6d4;
+  box-shadow: 0 0 8px #22d3ee;
+}
+
+@keyframes holobox-robot-float {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotateY(-12deg) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotateY(-12deg) translateY(-9px);
+  }
+}
+
+@keyframes holobox-robot-orbit {
+  from {
+    transform: translate(-50%, -50%) rotateX(68deg) rotateZ(-20deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotateX(68deg) rotateZ(340deg);
+  }
+}
+
+@keyframes holobox-robot-pulse {
+  0%,
+  100% {
+    opacity: 0.64;
+    transform: translateX(-50%) scale(0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.12);
+  }
+}
+
+@keyframes holobox-robot-blink {
+  0%,
+  44%,
+  48%,
+  100% {
+    transform: scaleY(1);
+  }
+  46% {
+    transform: scaleY(0.15);
+  }
+}
+
+@keyframes holobox-robot-scan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(125px);
+  }
+}
+
 .holobox-wave {
   display: flex;
   height: 30px;
@@ -774,7 +1277,31 @@
   .holobox-orbit-one,
   .holobox-orbit-two,
   .holobox-orbit-three,
-  .holobox-wave span {
+  .holobox-wave span,
+  .holobox-robot,
+  .holobox-robot-orbit,
+  .holobox-robot-antenna::before,
+  .holobox-robot-eyes span,
+  .holobox-robot-scanline,
+  .holobox-robot-core span {
     animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .holobox-robot-stage {
+    opacity: 0.46;
+  }
+
+  .holobox-robot,
+  .holobox-robot-orbit,
+  .holobox-robot-halo,
+  .holobox-robot-floor,
+  .holobox-robot-floor-shadow {
+    left: 72%;
+  }
+
+  .holobox-robot-data {
+    display: none;
   }
 }
