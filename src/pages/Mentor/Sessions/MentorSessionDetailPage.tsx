@@ -1,12 +1,13 @@
 /**
  * Mentor Session Detail Page — "Interview Dossier" v3.
- * Compact, narrow dossier layout (max-w-5xl) that avoids the wide
- * "form dài" tell. Three sections:
- *   1. Hero strip — title, status, code, mentor, student.
- *   2. Two-column grid — left: meta + act-fast. Right: candidate
- *      feedback (if any) + rating distribution.
- *   3. Your review snapshot — single column, compact 2-col grid,
- *      no horizontal stretching.
+ * Tighter, denser, single-tone dark glass layout. No per-card colored
+ * backgrounds (amber/emerald/rose/indigo blocks removed) — replaced
+ * with one neutral dark glass ramp + thin status indicator dots.
+ *
+ * max-w-6xl wrapper so content fills the screen on wider monitors
+ * without stretching the empty sides.
+ *
+ * UI-only refresh. All data + access checks preserved exactly.
  */
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,7 +26,6 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Calendar,
-  Clock,
   CreditCard,
   Hash,
   Link2,
@@ -71,6 +71,16 @@ const childMotion = {
   show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: "easeOut" as const } },
 };
 
+// Single neutral "dark glass" surface — reused for every inner card so
+// the page reads as one continuous dossier, not a fruit salad of color
+// blocks. Status is conveyed via a small dot/ring on the left rail
+// instead of a full-card background.
+const GLASS_SURFACE = cn(
+  "rounded-xl p-4 ring-1 ring-inset",
+  "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
+  "dark:bg-white/[0.03] dark:ring-white/5"
+);
+
 export function MentorSessionDetailPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -103,10 +113,10 @@ export function MentorSessionDetailPage() {
 
   if (sessionLoading) {
     return (
-      <div className="mx-auto w-full max-w-5xl space-y-5">
+      <div className="mx-auto w-full max-w-6xl space-y-5">
         <Skeleton className="h-10 w-44" />
-        <Skeleton className="h-[260px]" />
-        <Skeleton className="h-[220px]" />
+        <Skeleton className="h-44" />
+        <Skeleton className="h-64" />
       </div>
     );
   }
@@ -128,46 +138,43 @@ export function MentorSessionDetailPage() {
     });
 
   const candidateFeedback = session.mentorFeedback;
+  const rating = typeof mentorReview?.rating === "number" ? mentorReview.rating : 0;
 
   return (
     <motion.div
-      className="mx-auto flex w-full max-w-5xl flex-col gap-5"
+      className="mx-auto flex w-full max-w-6xl flex-col gap-5"
       variants={{
         hidden: { opacity: 0 },
         show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
       }}
       initial="hidden"
       animate="show">
-      {/* Back button */}
-      <motion.div variants={childMotion}>
+      {/* Top action bar */}
+      <motion.div variants={childMotion} className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
-          className="w-fit gap-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+          className="gap-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
           onClick={() => navigate("/mentor?tab=sessions")}>
           <ArrowLeft className="h-4 w-4" aria-hidden />
           {t("common.returnToTheSessionList")}
         </Button>
       </motion.div>
 
-      {/* HERO — title strip with status + code, no oversized gradient */}
+      {/* HERO — title + meta chips + status, single dark glass surface */}
       <motion.div variants={heroMotion}>
         <PanelSurface className="relative overflow-hidden">
-          {/* Subtle tone glow */}
           <div
             aria-hidden
-            className={cn(
-              "pointer-events-none absolute -top-16 -right-12 h-48 w-48 rounded-full opacity-50 blur-3xl",
-              "bg-indigo-400/20 dark:bg-indigo-500/20"
-            )}
+            className="pointer-events-none absolute -top-16 -right-12 h-48 w-48 rounded-full bg-sky-400/15 opacity-60 blur-3xl dark:bg-sky-500/20"
           />
-          <div className="relative flex flex-col gap-4 p-5 sm:p-6">
+          <div className="relative flex flex-col gap-5 p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
                 <div
                   className={cn(
-                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset",
-                    "bg-indigo-500/10 text-indigo-600 ring-indigo-500/25",
-                    "dark:bg-indigo-400/15 dark:text-indigo-300 dark:ring-indigo-400/25"
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-600 ring-1 ring-inset",
+                    "bg-slate-900/[0.04] ring-slate-900/10",
+                    "dark:bg-white/[0.05] dark:text-slate-300 dark:ring-white/10"
                   )}>
                   <Video className="h-5 w-5" aria-hidden />
                 </div>
@@ -183,7 +190,7 @@ export function MentorSessionDetailPage() {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 font-mono text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <span className="rounded-full bg-slate-900/[0.04] px-2.5 py-1 font-mono text-xs font-medium text-slate-600 ring-1 ring-slate-900/10 ring-inset dark:bg-white/[0.05] dark:text-slate-300 dark:ring-white/10">
                   {t("common.code")}
                   {session.id || "-"}
                 </span>
@@ -194,7 +201,7 @@ export function MentorSessionDetailPage() {
               </div>
             </div>
 
-            {/* Meta chips — wrap-friendly, max-w to avoid wide row */}
+            {/* Meta chips */}
             <div className="flex flex-wrap gap-2">
               <MetaChip
                 icon={<Hash className="h-3.5 w-3.5" aria-hidden />}
@@ -205,7 +212,6 @@ export function MentorSessionDetailPage() {
                 icon={<User className="h-3.5 w-3.5" aria-hidden />}
                 label={t("mentorFeedback.students")}
                 value={`#${session.userId || "-"}`}
-                tone="indigo"
               />
               <MetaChip
                 icon={<User className="h-3.5 w-3.5" aria-hidden />}
@@ -214,13 +220,11 @@ export function MentorSessionDetailPage() {
                   mentorInfo?.name ||
                   (mentorId != null ? t("common.mentorWithId", { id: mentorId }) : "-")
                 }
-                tone="emerald"
               />
               <MetaChip
                 icon={<Calendar className="h-3.5 w-3.5" aria-hidden />}
                 label={t("common.appointmentTime")}
                 value={formatDateTime(session.joinTime)}
-                tone="sky"
               />
               <MetaChip
                 icon={<Timer className="h-3.5 w-3.5" aria-hidden />}
@@ -239,7 +243,6 @@ export function MentorSessionDetailPage() {
                     ? formatCurrency(session.totalPrice)
                     : "-"
                 }
-                tone="amber"
               />
               {session.transactionCode && (
                 <MetaChip
@@ -257,7 +260,7 @@ export function MentorSessionDetailPage() {
                       href={session.recordUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-300">
+                      className="text-sky-600 underline-offset-2 hover:underline dark:text-sky-300">
                       {t("common.open")}
                     </a>
                   }
@@ -268,11 +271,11 @@ export function MentorSessionDetailPage() {
         </PanelSurface>
       </motion.div>
 
-      {/* 2-column: left = act-fast + your review. right = candidate feedback. */}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
-        {/* LEFT COLUMN */}
+      {/* 2-column dossier: 8/4 split, denser than before */}
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,340px)]">
+        {/* LEFT — act-fast + your review */}
         <motion.div variants={childMotion} className="flex flex-col gap-5">
-          {/* Act-fast action bar — compact, distinct visual treatment */}
+          {/* Act-fast action bar — same dark glass surface as everything else */}
           <PanelSurface className="overflow-hidden">
             <div className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
               <div>
@@ -298,28 +301,19 @@ export function MentorSessionDetailPage() {
                 )}
                 {canReview && !mentorReview && (
                   <Button
-                    className="gap-2"
+                    className="gap-2 bg-sky-600 text-white hover:bg-sky-700"
                     onClick={() => navigate(`/mentor/sessions/${session.id}/review`)}>
                     <MessageSquare className="h-4 w-4" aria-hidden />
                     {t("common.writeAReview")}
                   </Button>
                 )}
                 {canReview && mentorReview?.id && (
-                  <>
-                    <Button
-                      variant="secondary"
-                      className="gap-2"
-                      onClick={() => navigate(`/mentor/reviews/${mentorReview.id}`)}>
-                      <MessageSquare className="h-4 w-4" aria-hidden />
-                      {t("mentorSessions.seeReviews")}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      onClick={() => navigate(`/mentor/sessions/${session.id}/review`)}>
-                      {t("common.editReview")}
-                    </Button>
-                  </>
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => navigate(`/mentor/sessions/${session.id}/review`)}>
+                    {t("common.editReview")}
+                  </Button>
                 )}
                 {!canJoinRoom && !canReview && (
                   <p className="text-sm text-slate-500">
@@ -330,7 +324,7 @@ export function MentorSessionDetailPage() {
             </div>
           </PanelSurface>
 
-          {/* Your review snapshot — compact 2-col grid */}
+          {/* Your review snapshot — 2x2 dark glass, no color blocks */}
           <PanelSurface>
             <div className="flex flex-col gap-4 p-5 sm:p-6">
               <div className="flex items-center justify-between gap-2">
@@ -355,74 +349,52 @@ export function MentorSessionDetailPage() {
               {reviewLoading ? (
                 <Skeleton className="h-28" />
               ) : !mentorReview ? (
-                <p className="text-sm text-slate-500">
+                <div
+                  className={cn(
+                    "ring-dashed rounded-xl p-5 text-center text-sm text-slate-500 ring-1 ring-inset",
+                    "ring-slate-300/70 dark:text-slate-400 dark:ring-slate-700/70"
+                  )}>
                   {t("mentorSessions.thereAreNoReviewsSubmitted")}
-                </p>
+                </div>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div
-                    className={cn(
-                      "rounded-xl p-4 ring-1 ring-inset",
-                      "bg-amber-500/8 ring-amber-500/25",
-                      "dark:bg-amber-500/10"
-                    )}>
-                    <p className="text-[10px] font-semibold tracking-wide text-amber-700 uppercase dark:text-amber-300">
+                  <div className={cn(GLASS_SURFACE, "sm:row-span-1")}>
+                    <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
                       {t("mentorReviews.overallAssessment")}
                     </p>
-                    <div className="mt-1 flex items-baseline gap-1">
-                      <span className="text-3xl font-bold tracking-[-0.03em] text-amber-700 dark:text-amber-300">
-                        {typeof mentorReview.rating === "number"
-                          ? mentorReview.rating.toFixed(1)
-                          : "-"}
+                    <div className="mt-2 flex items-baseline gap-1">
+                      <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                        {rating > 0 ? rating.toFixed(1) : "-"}
                       </span>
-                      <span className="text-sm font-medium text-amber-700/70 dark:text-amber-300/70">
+                      <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
                         /5
                       </span>
                     </div>
-                    <div className="mt-1">
-                      <StarRating
-                        value={typeof mentorReview.rating === "number" ? mentorReview.rating : 0}
-                        readOnly
-                        size="sm"
-                      />
+                    <div className="mt-1.5">
+                      <StarRating value={rating} readOnly size="sm" />
                     </div>
                   </div>
-                  <div
-                    className={cn(
-                      "rounded-xl p-4 ring-1 ring-inset",
-                      "bg-emerald-500/8 ring-emerald-500/25",
-                      "dark:bg-emerald-500/10"
-                    )}>
-                    <p className="text-[10px] font-semibold tracking-wide text-emerald-700 uppercase dark:text-emerald-300">
+                  <div className={GLASS_SURFACE}>
+                    <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
                       {t("mentorSessions.strengths")}
                     </p>
-                    <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                    <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
                       {mentorReview.strength || "-"}
                     </p>
                   </div>
-                  <div
-                    className={cn(
-                      "rounded-xl p-4 ring-1 ring-inset",
-                      "bg-rose-500/8 ring-rose-500/25",
-                      "dark:bg-rose-500/10"
-                    )}>
-                    <p className="text-[10px] font-semibold tracking-wide text-rose-700 uppercase dark:text-rose-300">
+                  <div className={GLASS_SURFACE}>
+                    <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
                       {t("mentorSessions.pointsForImprovement")}
                     </p>
-                    <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                    <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
                       {mentorReview.weakness || "-"}
                     </p>
                   </div>
-                  <div
-                    className={cn(
-                      "rounded-xl p-4 ring-1 ring-inset",
-                      "bg-indigo-500/8 ring-indigo-500/25",
-                      "dark:bg-indigo-500/10"
-                    )}>
-                    <p className="text-[10px] font-semibold tracking-wide text-indigo-700 uppercase dark:text-indigo-300">
+                  <div className={GLASS_SURFACE}>
+                    <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
                       {t("common.suggestedImprovements")}
                     </p>
-                    <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                    <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
                       {mentorReview.improve || "-"}
                     </p>
                   </div>
@@ -432,7 +404,7 @@ export function MentorSessionDetailPage() {
           </PanelSurface>
         </motion.div>
 
-        {/* RIGHT COLUMN — candidate feedback (dossier sidebar) */}
+        {/* RIGHT — candidate feedback dossier + timeline, single tone */}
         <motion.aside variants={childMotion} className="flex flex-col gap-5">
           <PanelSurface className="overflow-hidden">
             <div className="flex flex-col gap-3 p-5 sm:p-6">
@@ -442,7 +414,7 @@ export function MentorSessionDetailPage() {
                     src={studentInfo?.avatarUrl}
                     alt={studentInfo?.name ?? t("common.students")}
                   />
-                  <AvatarFallback className="bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+                  <AvatarFallback className="bg-slate-200/60 text-xs font-semibold text-slate-700 dark:bg-slate-700/40 dark:text-slate-200">
                     {(studentInfo?.name || "S").charAt(0)}
                   </AvatarFallback>
                 </Avatar>
@@ -459,7 +431,7 @@ export function MentorSessionDetailPage() {
               {candidateFeedback ? (
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
+                    <span className="text-2xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
                       {typeof candidateFeedback.rating === "number"
                         ? candidateFeedback.rating.toFixed(1)
                         : "—"}
@@ -475,11 +447,7 @@ export function MentorSessionDetailPage() {
                       size="sm"
                     />
                   </div>
-                  <div
-                    className={cn(
-                      "rounded-xl p-3 ring-1 ring-inset",
-                      "bg-slate-50 ring-slate-200/70 dark:bg-slate-900/50 dark:ring-white/5"
-                    )}>
+                  <div className={GLASS_SURFACE}>
                     <p className="text-xs leading-relaxed text-slate-600 italic dark:text-slate-300">
                       {candidateFeedback.comment
                         ? `“${candidateFeedback.comment}”`
@@ -490,8 +458,8 @@ export function MentorSessionDetailPage() {
               ) : (
                 <div
                   className={cn(
-                    "ring-dashed rounded-xl p-4 text-center ring-1",
-                    "border-slate-200 ring-slate-200/70 dark:border-slate-700 dark:ring-slate-700/70"
+                    "ring-dashed rounded-xl p-5 text-center ring-1 ring-inset",
+                    "ring-slate-300/70 dark:ring-slate-700/70"
                   )}>
                   <Sparkles className="mx-auto h-5 w-5 text-slate-400" aria-hidden />
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
@@ -502,7 +470,7 @@ export function MentorSessionDetailPage() {
             </div>
           </PanelSurface>
 
-          {/* Session timeline strip — compact */}
+          {/* Timeline strip */}
           <PanelSurface variant="flat" className="p-5">
             <p className="mb-3 text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
               {t("common.timeline")}
@@ -511,7 +479,7 @@ export function MentorSessionDetailPage() {
               {session.startTime1 && (
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                    <Clock className="h-3.5 w-3.5" aria-hidden />
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-500/70" aria-hidden />
                     {t("mentorSessions.startTime")}
                   </span>
                   <span className="font-medium text-slate-700 dark:text-slate-200">
@@ -522,7 +490,7 @@ export function MentorSessionDetailPage() {
               {session.endTime1 && (
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                    <Clock className="h-3.5 w-3.5" aria-hidden />
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-400" aria-hidden />
                     {t("mentorSessions.endTime")}
                   </span>
                   <span className="font-medium text-slate-700 dark:text-slate-200">
@@ -533,7 +501,7 @@ export function MentorSessionDetailPage() {
               {session.joinTime && (
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                    <Calendar className="h-3.5 w-3.5" aria-hidden />
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500/70" aria-hidden />
                     {t("common.appointmentTime")}
                   </span>
                   <span className="font-medium text-slate-700 dark:text-slate-200">
