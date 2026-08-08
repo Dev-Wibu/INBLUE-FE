@@ -181,7 +181,7 @@ function StaffGradingModal({
       ? String(detail.hrScore)
       : detail.aiScore !== undefined
         ? String(Math.round(detail.aiScore))
-        : ""
+        : "0"
   );
   const [note, setNote] = useState(detail.hrNote ?? "");
   const [scoreError, setScoreError] = useState<string | null>(null);
@@ -247,7 +247,7 @@ function StaffGradingModal({
         ? String(detail.hrScore)
         : detail.aiScore !== undefined
           ? String(Math.round(detail.aiScore))
-          : ""
+          : "0"
     );
     setNote(detail.hrNote ?? "");
     setScoreError(null);
@@ -614,7 +614,7 @@ function StaffGradingModal({
                             ? "from-indigo-600 to-purple-600"
                             : "from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700"
                         )}>
-                        {score && !scoreError ? score : "—"}
+                        {score && !scoreError ? score : "0"}
                       </span>
                       <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                         {t("staffGrading.outOf", "out of 100")}
