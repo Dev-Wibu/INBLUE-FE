@@ -75,9 +75,6 @@ export function Header() {
   const linkColorClass = showScrolledStyle
     ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
     : "text-white hover:text-white dark:text-slate-200 dark:hover:text-[#66B2FF]";
-  const underlineColorClass = showScrolledStyle
-    ? "bg-[#0047AB] dark:bg-[#66B2FF]"
-    : "bg-white dark:bg-[#66B2FF]";
   const toggleColorClass = showScrolledStyle
     ? "text-slate-700 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]"
     : "text-white hover:text-white dark:text-slate-300 dark:hover:text-[#66B2FF]";
@@ -104,13 +101,10 @@ export function Header() {
           <Button
             variant="ghost"
             asChild
-            className={`group/item relative text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
+            className={`text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
             <Link to="/enterprise/companies">
               <Building2 className="mr-2 h-4 w-4" />
               {t("common.company")}
-              <span
-                className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
-              />
             </Link>
           </Button>
 
@@ -118,13 +112,10 @@ export function Header() {
           <Button
             variant="ghost"
             asChild
-            className={`group/item relative text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
+            className={`text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
             <Link to="/resources/blog">
               <Newspaper className="mr-2 h-4 w-4" />
               {t("common.article")}
-              <span
-                className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
-              />
             </Link>
           </Button>
 
@@ -132,13 +123,10 @@ export function Header() {
           <Button
             variant="ghost"
             asChild
-            className={`group/item relative text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
+            className={`text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
             <Link to="/resources/faq">
               <HelpCircle className="mr-2 h-4 w-4" />
               FAQ
-              <span
-                className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
-              />
             </Link>
           </Button>
         </nav>
