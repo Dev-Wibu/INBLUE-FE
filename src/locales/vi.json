@@ -543,7 +543,8 @@
     "applicationsCount": "lượt",
     "unpaidText": "Chưa thanh toán",
     "selectCompany": "Chọn công ty",
-    "chooseCompany": "Chọn công ty..."
+    "chooseCompany": "Chọn công ty...",
+    "price": "[VI] adminCompanymanagement.price"
   },
   "adminDashboardoverview": {
     "companies": "Doanh nghiệp",
@@ -576,7 +577,30 @@
     "system": "Hệ thống:",
     "systemOverview": "Tổng quan hệ thống",
     "totalUsers": "Tổng người dùng",
-    "trackRecentRevenueAndTransactions": "Theo dõi doanh thu và trạng thái giao dịch gần đây trong hệ thống"
+    "trackRecentRevenueAndTransactions": "Theo dõi doanh thu và trạng thái giao dịch gần đây trong hệ thống",
+    "inProgressApplications": "[VI] adminDashboardoverview.inProgressApplications",
+    "passedApplications": "[VI] adminDashboardoverview.passedApplications",
+    "failedApplications": "[VI] adminDashboardoverview.failedApplications",
+    "topAppliedJobs": "[VI] adminDashboardoverview.topAppliedJobs",
+    "topAppliedJobsDescription": "[VI] adminDashboardoverview.topAppliedJobsDescription",
+    "topAppliedPositions": "[VI] adminDashboardoverview.topAppliedPositions",
+    "topAppliedPositionsDescription": "[VI] adminDashboardoverview.topAppliedPositionsDescription",
+    "activeInterviews": "[VI] adminDashboardoverview.activeInterviews",
+    "activeInterviewsDescription": "[VI] adminDashboardoverview.activeInterviewsDescription",
+    "activeInterviewDetailsUnavailable": "[VI] adminDashboardoverview.activeInterviewDetailsUnavailable",
+    "noActiveInterviews": "[VI] adminDashboardoverview.noActiveInterviews",
+    "startedAt": "[VI] adminDashboardoverview.startedAt",
+    "updatedAt": "[VI] adminDashboardoverview.updatedAt",
+    "showingActiveInterviews": "[VI] adminDashboardoverview.showingActiveInterviews",
+    "showLess": "[VI] adminDashboardoverview.showLess",
+    "showMore": "[VI] adminDashboardoverview.showMore",
+    "applicationPipeline": "[VI] adminDashboardoverview.applicationPipeline",
+    "applicationPipelineDescription": "[VI] adminDashboardoverview.applicationPipelineDescription",
+    "averageApplicationsPerUser": "[VI] adminDashboardoverview.averageApplicationsPerUser",
+    "applicationsPerUserUnit": "[VI] adminDashboardoverview.applicationsPerUserUnit",
+    "uniqueApplicants": "[VI] adminDashboardoverview.uniqueApplicants",
+    "days": "[VI] adminDashboardoverview.days",
+    "latestTransactionsIn": "[VI] adminDashboardoverview.latestTransactionsIn"
   },
   "adminFeedbackmanagement": {
     "areYouSureYouWant": "Bạn có chắc chắn muốn xóa phản hồi #",
@@ -1954,7 +1978,12 @@
     "pointsAbbr": "đ",
     "minutesShort": "p",
     "days": "ngày",
-    "problemNum": "Bài #{{num}}"
+    "problemNum": "Bài #{{num}}",
+    "seeReviews": "[VI] common.seeReviews",
+    "open": "[VI] common.open",
+    "timeline": "[VI] common.timeline",
+    "checkNow": "[VI] common.checkNow",
+    "copied": "[VI] common.copied"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -2375,7 +2404,11 @@
     "jobBenefits": "Quyền lợi công việc",
     "jobDescription": "Mô tả công việc",
     "featuredRoles": "Vị trí tuyển dụng",
-    "viewAllJobs": "Xem tất cả vị trí"
+    "viewAllJobs": "Xem tất cả vị trí",
+    "interviewProcess": "[VI] enterpriseCompanydetail.interviewProcess",
+    "passingScore": "[VI] enterpriseCompanydetail.passingScore",
+    "duration": "[VI] enterpriseCompanydetail.duration",
+    "currentlyRecruiting": "[VI] enterpriseCompanydetail.currentlyRecruiting"
   },
   "enterpriseCompanysearchpage": {
     "activeCompanies": "Công ty đang hoạt động",
@@ -2946,7 +2979,9 @@
     "second": "Giây",
     "language": "Ngôn ngữ",
     "difficulty": "Độ khó",
-    "jobPosition": "Vị trí ứng tuyển"
+    "jobPosition": "Vị trí ứng tuyển",
+    "optional": "[VI] general.optional",
+    "unableToGetAnalyticsData": "[VI] general.unableToGetAnalyticsData"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50+ Mentor chuyên nghiệp",
@@ -3139,7 +3174,9 @@
     "mentorIdNotFound": "Không tìm thấy ID mentor",
     "noMentorInformationFound": "Không tìm thấy thông tin mentor",
     "unitPricePerMinute": "Đơn giá mỗi phút",
-    "writeAFewLinesIntroducing": "Viết vài dòng giới thiệu về bản thân..."
+    "writeAFewLinesIntroducing": "Viết vài dòng giới thiệu về bản thân...",
+    "notUpdatedYet": "[VI] mentorAccount.notUpdatedYet",
+    "priceHint": "[VI] mentorAccount.priceHint"
   },
   "mentorFeedback": {
     "averageScoreForEvaluation": "Điểm TB đánh giá",
@@ -3240,7 +3277,12 @@
     "youCanOnlySubmitA": "Bạn chỉ có thể gửi đánh giá sau khi phiên phỏng vấn hoàn thành.",
     "youCanOnlyWriteA": "Bạn chỉ có thể viết đánh giá sau khi phiên phỏng vấn hoàn thành",
     "youDoNotHavePermission": "Bạn không có quyền gửi đánh giá cho phiên phỏng vấn này.",
-    "yourReview": "Đánh giá của bạn"
+    "yourReview": "Đánh giá của bạn",
+    "recording": "[VI] mentorSessions.recording",
+    "candidateFeedback": "[VI] mentorSessions.candidateFeedback",
+    "candidateHasNotLeftFeedbackYet": "[VI] mentorSessions.candidateHasNotLeftFeedbackYet",
+    "startTime": "[VI] mentorSessions.startTime",
+    "endTime": "[VI] mentorSessions.endTime"
   },
   "mentorStudents": {
     "allStudents": "Tất cả học viên",
@@ -3284,7 +3326,8 @@
     "tools": "Công cụ:",
     "totalStudents": "Tổng học viên",
     "tryAnotherKeywordOrChange": "Hãy thử từ khóa khác hoặc đổi bộ lọc.",
-    "youHaveNotSubmittedAny": "Bạn chưa gửi đánh giá nào cho học viên này."
+    "youHaveNotSubmittedAny": "Bạn chưa gửi đánh giá nào cho học viên này.",
+    "reviewSubmitted": "[VI] mentorStudents.reviewSubmitted"
   },
   "paymentPaymentcancelpage": {
     "callbackHasAValidIdentifier": "Callback có định danh hợp lệ nhưng context local lệch, tiếp tục xử lý theo callback-first.",
@@ -3383,7 +3426,22 @@
     "unableToReconcileReliablyEnough": "Không thể đối chiếu đủ tin cậy cho giao dịch này. Vui lòng thử xác nhận lại.",
     "userSessionNotFoundWhen": "Không tìm thấy user session khi vào callback success.",
     "validPaymentInformationNotReceived": "Không nhận được thông tin thanh toán hợp lệ. Vui lòng thanh toán lại.",
-    "youNeedToLogIn": "Bạn cần đăng nhập lại trước khi kích hoạt gói."
+    "youNeedToLogIn": "Bạn cần đăng nhập lại trước khi kích hoạt gói.",
+    "yeahhPaymentSuccess": "[VI] paymentPaymentsuccesspage.yeahhPaymentSuccess",
+    "paymentPendingTitle": "[VI] paymentPaymentsuccesspage.paymentPendingTitle",
+    "confirmingJdPurchase": "[VI] paymentPaymentsuccesspage.confirmingJdPurchase",
+    "purchaseJdSuccess": "[VI] paymentPaymentsuccesspage.purchaseJdSuccess",
+    "canApplyNow": "[VI] paymentPaymentsuccesspage.canApplyNow",
+    "paymentPendingWebhook": "[VI] paymentPaymentsuccesspage.paymentPendingWebhook",
+    "congratsPaymentSuccess": "[VI] paymentPaymentsuccesspage.congratsPaymentSuccess",
+    "packageActivatedCelebrate": "[VI] paymentPaymentsuccesspage.packageActivatedCelebrate",
+    "yourPremiumFeatures": "[VI] paymentPaymentsuccesspage.yourPremiumFeatures",
+    "aiInterviewCredits": "[VI] paymentPaymentsuccesspage.aiInterviewCredits",
+    "practiceSetCredits": "[VI] paymentPaymentsuccesspage.practiceSetCredits",
+    "quizSetCredits": "[VI] paymentPaymentsuccesspage.quizSetCredits",
+    "whatNext": "[VI] paymentPaymentsuccesspage.whatNext",
+    "exploreJobsNow": "[VI] paymentPaymentsuccesspage.exploreJobsNow",
+    "backToHome": "[VI] paymentPaymentsuccesspage.backToHome"
   },
   "settings": {
     "account": "Tài khoản",
@@ -3752,7 +3810,13 @@
     "youHaveNotParticipatedIn": "Bạn chưa tham gia buổi phỏng vấn nào.",
     "viewYourPastInterviewSessions": "Xem lại các phiên phỏng vấn đã qua của bạn",
     "managePreferencesAndSecurity": "Quản lý tùy chọn và bảo mật",
-    "quickSettingsDescription": "Cài đặt nhanh các tùy chọn tài khoản"
+    "quickSettingsDescription": "Cài đặt nhanh các tùy chọn tài khoản",
+    "profileCompletion": "[VI] userAccount.profileCompletion",
+    "basicInfo": "[VI] userAccount.basicInfo",
+    "bio": "[VI] userAccount.bio",
+    "socialLinks": "[VI] userAccount.socialLinks",
+    "aiOptimizationTips": "[VI] userAccount.aiOptimizationTips",
+    "completeProfileTip": "[VI] userAccount.completeProfileTip"
   },
   "userAiinterview": {
     "14Days": "14 Ngày",
@@ -4523,7 +4587,25 @@
     "codeReviewAiEvaluated": "AI EVALUATED",
     "codeReviewHrCommentTitle": "NHẬN XÉT TỪ HỘI ĐỒNG HR",
     "codeReviewHrEvaluationLabel": "HR ĐÁNH GIÁ",
-    "codeReviewSubmittedSourceTitle": "Mã nguồn & ghi chú bạn đã nộp"
+    "codeReviewSubmittedSourceTitle": "Mã nguồn & ghi chú bạn đã nộp",
+    "codeReviewIssueDeleted": "[VI] userApplicationhistory.codeReviewIssueDeleted",
+    "codeReviewSubmittingTitle": "[VI] userApplicationhistory.codeReviewSubmittingTitle",
+    "codeReviewSubmittingSubtitle": "[VI] userApplicationhistory.codeReviewSubmittingSubtitle",
+    "codeReviewResult": "[VI] userApplicationhistory.codeReviewResult",
+    "inReviewTime": "[VI] userApplicationhistory.inReviewTime",
+    "gradingTitle": "[VI] userApplicationhistory.gradingTitle",
+    "submittingTitle": "[VI] userApplicationhistory.submittingTitle",
+    "gradingSubtitle": "[VI] userApplicationhistory.gradingSubtitle",
+    "submittingSubtitle": "[VI] userApplicationhistory.submittingSubtitle",
+    "cvAnalyzedSuccess": "[VI] userApplicationhistory.cvAnalyzedSuccess",
+    "cvInstructionDefault": "[VI] userApplicationhistory.cvInstructionDefault",
+    "mentorStatusMatching": "[VI] userApplicationhistory.mentorStatusMatching",
+    "mentorAwaitingDesc": "[VI] userApplicationhistory.mentorAwaitingDesc",
+    "mentorSelectHintShort": "[VI] userApplicationhistory.mentorSelectHintShort",
+    "mentorSelectOpenDetail": "[VI] userApplicationhistory.mentorSelectOpenDetail",
+    "mentorSelectExpertise": "[VI] userApplicationhistory.mentorSelectExpertise",
+    "mentorSelectContact": "[VI] userApplicationhistory.mentorSelectContact",
+    "mentorSession": "[VI] userApplicationhistory.mentorSession"
   },
   "userApplication": {
     "applicationWorkspacePage": {
@@ -4602,7 +4684,9 @@
       "submitCvGradeAi": "Gửi CV & Chấm điểm AI",
       "noCvFileSubmitted": "Chưa nộp file CV",
       "noDataPendingCv": "Chưa có dữ liệu (Cần nộp CV)",
-      "hrNotePending": "Hội đồng HR sẽ cập nhật sau khi chấm điểm xong."
+      "hrNotePending": "Hội đồng HR sẽ cập nhật sau khi chấm điểm xong.",
+      "dropCvHint": "[VI] userApplication.cvScreening.dropCvHint",
+      "noHrNote": "[VI] userApplication.cvScreening.noHrNote"
     },
     "emailSimulator": {
       "reportTitle": "BÁO CÁO ĐÁNH GIÁ MÔ PHỎNG EMAIL",
@@ -4779,7 +4863,8 @@
       "minutes": "Phút",
       "seconds": "Giây",
       "question": "Câu hỏi",
-      "viewAllResults": "Xem tất cả kết quả"
+      "viewAllResults": "Xem tất cả kết quả",
+      "copyCode": "[VI] userApplication.quiz.copyCode"
     },
     "coding": {
       "codingExamReport": "BÁO CÁO ĐÁNH GIÁ BÀI THI LẬP TRÌNH",
@@ -5210,7 +5295,8 @@
       "stepResult": "Kết quả đánh giá",
       "stepWaitingShort": "Chờ",
       "stepSelectShort": "Chọn",
-      "stepScheduleShort": "Đặt lịch"
+      "stepScheduleShort": "Đặt lịch",
+      "onlineInterviewStation": "[VI] userApplication.mentorReview.onlineInterviewStation"
     },
     "roundNumber": "Vòng {{number}}"
   },
@@ -6356,7 +6442,8 @@
     "submitPass": "Xác nhận & Phê duyệt",
     "submitFail": "Xác nhận & Từ chối",
     "submitHint": "Quyết định của bạn sẽ được ghi nhận và hiển thị cho ứng viên.",
-    "useAi": "Dùng AI"
+    "useAi": "Dùng AI",
+    "useAiScore": "[VI] staffGrading.useAiScore"
   },
   "quiz": {
     "submitSuccess": "Nộp bài quiz thành công!",
@@ -6369,7 +6456,8 @@
     "selectValid": "Vui lòng chọn một đơn ứng tuyển hợp lệ.",
     "detailsId": "Chi tiết đơn #",
     "noRounds": "Chưa có vòng thi nào cho đơn ứng tuyển này.",
-    "searchByUserOrJob": "Tìm kiếm theo người dùng hoặc công việc"
+    "searchByUserOrJob": "Tìm kiếm theo người dùng hoặc công việc",
+    "gradingDetail": "[VI] application.gradingDetail"
   },
   "status": {
     "pendingSubmit": "Chờ nộp",
@@ -6986,5 +7074,10 @@
       "junior": "Junior",
       "middle": "Middle"
     }
-  }
+  },
+  "codeReviewRound": "[VI] codeReviewRound",
+  "codeReviewIssues": "[VI] codeReviewIssues",
+  "codeReviewContext": "[VI] codeReviewContext",
+  "codeReviewDefaultStatement": "[VI] codeReviewDefaultStatement",
+  "gradingErrorScoreRange": "[VI] gradingErrorScoreRange"
 }

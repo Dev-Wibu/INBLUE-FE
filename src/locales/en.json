@@ -543,7 +543,8 @@
     "applicationsCount": "apps",
     "unpaidText": "Unpaid",
     "selectCompany": "Select company",
-    "chooseCompany": "Choose company..."
+    "chooseCompany": "Choose company...",
+    "price": "[EN] adminCompanymanagement.price"
   },
   "adminDashboardoverview": {
     "companies": "Companies",
@@ -576,7 +577,30 @@
     "system": "System:",
     "systemOverview": "System overview",
     "totalUsers": "Total users",
-    "trackRecentRevenueAndTransactions": "Track recent revenue and transaction status in the system"
+    "trackRecentRevenueAndTransactions": "Track recent revenue and transaction status in the system",
+    "inProgressApplications": "[EN] adminDashboardoverview.inProgressApplications",
+    "passedApplications": "[EN] adminDashboardoverview.passedApplications",
+    "failedApplications": "[EN] adminDashboardoverview.failedApplications",
+    "topAppliedJobs": "[EN] adminDashboardoverview.topAppliedJobs",
+    "topAppliedJobsDescription": "[EN] adminDashboardoverview.topAppliedJobsDescription",
+    "topAppliedPositions": "[EN] adminDashboardoverview.topAppliedPositions",
+    "topAppliedPositionsDescription": "[EN] adminDashboardoverview.topAppliedPositionsDescription",
+    "activeInterviews": "[EN] adminDashboardoverview.activeInterviews",
+    "activeInterviewsDescription": "[EN] adminDashboardoverview.activeInterviewsDescription",
+    "activeInterviewDetailsUnavailable": "[EN] adminDashboardoverview.activeInterviewDetailsUnavailable",
+    "noActiveInterviews": "[EN] adminDashboardoverview.noActiveInterviews",
+    "startedAt": "[EN] adminDashboardoverview.startedAt",
+    "updatedAt": "[EN] adminDashboardoverview.updatedAt",
+    "showingActiveInterviews": "[EN] adminDashboardoverview.showingActiveInterviews",
+    "showLess": "[EN] adminDashboardoverview.showLess",
+    "showMore": "[EN] adminDashboardoverview.showMore",
+    "applicationPipeline": "[EN] adminDashboardoverview.applicationPipeline",
+    "applicationPipelineDescription": "[EN] adminDashboardoverview.applicationPipelineDescription",
+    "averageApplicationsPerUser": "[EN] adminDashboardoverview.averageApplicationsPerUser",
+    "applicationsPerUserUnit": "[EN] adminDashboardoverview.applicationsPerUserUnit",
+    "uniqueApplicants": "[EN] adminDashboardoverview.uniqueApplicants",
+    "days": "[EN] adminDashboardoverview.days",
+    "latestTransactionsIn": "[EN] adminDashboardoverview.latestTransactionsIn"
   },
   "adminFeedbackmanagement": {
     "areYouSureYouWant": "Are you sure you want to delete response #",
@@ -1957,7 +1981,12 @@
     "pointsAbbr": "pts",
     "minutesShort": "m",
     "days": "days",
-    "problemNum": "Problem #{{num}}"
+    "problemNum": "Problem #{{num}}",
+    "seeReviews": "[EN] common.seeReviews",
+    "open": "[EN] common.open",
+    "timeline": "[EN] common.timeline",
+    "checkNow": "[EN] common.checkNow",
+    "copied": "[EN] common.copied"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -2378,7 +2407,11 @@
     "jobBenefits": "Job Benefits",
     "jobDescription": "Job Description",
     "featuredRoles": "Open Roles",
-    "viewAllJobs": "View all jobs"
+    "viewAllJobs": "View all jobs",
+    "interviewProcess": "[EN] enterpriseCompanydetail.interviewProcess",
+    "passingScore": "[EN] enterpriseCompanydetail.passingScore",
+    "duration": "[EN] enterpriseCompanydetail.duration",
+    "currentlyRecruiting": "[EN] enterpriseCompanydetail.currentlyRecruiting"
   },
   "enterpriseCompanysearchpage": {
     "activeCompanies": "Active companies",
@@ -2949,7 +2982,9 @@
     "second": "Second",
     "language": "Language",
     "difficulty": "Difficulty",
-    "jobPosition": "Job Position"
+    "jobPosition": "Job Position",
+    "optional": "[EN] general.optional",
+    "unableToGetAnalyticsData": "[EN] general.unableToGetAnalyticsData"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50+ professional Mentors",
@@ -3142,7 +3177,9 @@
     "mentorIdNotFound": "Mentor ID not found",
     "noMentorInformationFound": "No mentor information found",
     "unitPricePerMinute": "Unit price per minute",
-    "writeAFewLinesIntroducing": "Write a few lines introducing yourself..."
+    "writeAFewLinesIntroducing": "Write a few lines introducing yourself...",
+    "notUpdatedYet": "[EN] mentorAccount.notUpdatedYet",
+    "priceHint": "[EN] mentorAccount.priceHint"
   },
   "mentorFeedback": {
     "averageScoreForEvaluation": "Average score for evaluation",
@@ -3243,7 +3280,12 @@
     "youCanOnlySubmitA": "You can only submit a review after the interview session is completed.",
     "youCanOnlyWriteA": "You can only write a review after the interview session is completed",
     "youDoNotHavePermission": "You do not have permission to submit a review for this interview session.",
-    "yourReview": "Your review"
+    "yourReview": "Your review",
+    "recording": "[EN] mentorSessions.recording",
+    "candidateFeedback": "[EN] mentorSessions.candidateFeedback",
+    "candidateHasNotLeftFeedbackYet": "[EN] mentorSessions.candidateHasNotLeftFeedbackYet",
+    "startTime": "[EN] mentorSessions.startTime",
+    "endTime": "[EN] mentorSessions.endTime"
   },
   "mentorStudents": {
     "allStudents": "All students",
@@ -3287,7 +3329,8 @@
     "tools": "Tools:",
     "totalStudents": "Total students",
     "tryAnotherKeywordOrChange": "Try another keyword or change the filter.",
-    "youHaveNotSubmittedAny": "You have not submitted any reviews for this student yet."
+    "youHaveNotSubmittedAny": "You have not submitted any reviews for this student yet.",
+    "reviewSubmitted": "[EN] mentorStudents.reviewSubmitted"
   },
   "paymentPaymentcancelpage": {
     "callbackHasAValidIdentifier": "Callback has a valid identifier but the context local is wrong, continue processing according to callback-first.",
@@ -3386,7 +3429,22 @@
     "unableToReconcileReliablyEnough": "Unable to reconcile reliably enough for this transaction. Please try to confirm again.",
     "userSessionNotFoundWhen": "User session not found when entering success callback.",
     "validPaymentInformationNotReceived": "Valid payment information not received. Please pay again.",
-    "youNeedToLogIn": "You need to log in again before activating the package."
+    "youNeedToLogIn": "You need to log in again before activating the package.",
+    "yeahhPaymentSuccess": "[EN] paymentPaymentsuccesspage.yeahhPaymentSuccess",
+    "paymentPendingTitle": "[EN] paymentPaymentsuccesspage.paymentPendingTitle",
+    "confirmingJdPurchase": "[EN] paymentPaymentsuccesspage.confirmingJdPurchase",
+    "purchaseJdSuccess": "[EN] paymentPaymentsuccesspage.purchaseJdSuccess",
+    "canApplyNow": "[EN] paymentPaymentsuccesspage.canApplyNow",
+    "paymentPendingWebhook": "[EN] paymentPaymentsuccesspage.paymentPendingWebhook",
+    "congratsPaymentSuccess": "[EN] paymentPaymentsuccesspage.congratsPaymentSuccess",
+    "packageActivatedCelebrate": "[EN] paymentPaymentsuccesspage.packageActivatedCelebrate",
+    "yourPremiumFeatures": "[EN] paymentPaymentsuccesspage.yourPremiumFeatures",
+    "aiInterviewCredits": "[EN] paymentPaymentsuccesspage.aiInterviewCredits",
+    "practiceSetCredits": "[EN] paymentPaymentsuccesspage.practiceSetCredits",
+    "quizSetCredits": "[EN] paymentPaymentsuccesspage.quizSetCredits",
+    "whatNext": "[EN] paymentPaymentsuccesspage.whatNext",
+    "exploreJobsNow": "[EN] paymentPaymentsuccesspage.exploreJobsNow",
+    "backToHome": "[EN] paymentPaymentsuccesspage.backToHome"
   },
   "settings": {
     "englishEn": "English (EN)",
@@ -3755,7 +3813,13 @@
     "youHaveNotParticipatedIn": "You have not participated in any interviews yet.",
     "viewYourPastInterviewSessions": "View your past interview sessions",
     "managePreferencesAndSecurity": "Manage preferences and security",
-    "quickSettingsDescription": "Quick settings for account options"
+    "quickSettingsDescription": "Quick settings for account options",
+    "profileCompletion": "[EN] userAccount.profileCompletion",
+    "basicInfo": "[EN] userAccount.basicInfo",
+    "bio": "[EN] userAccount.bio",
+    "socialLinks": "[EN] userAccount.socialLinks",
+    "aiOptimizationTips": "[EN] userAccount.aiOptimizationTips",
+    "completeProfileTip": "[EN] userAccount.completeProfileTip"
   },
   "userAiinterview": {
     "14Days": "14 Days",
@@ -4526,7 +4590,25 @@
     "codeReviewAiEvaluated": "AI EVALUATED",
     "codeReviewHrCommentTitle": "DIRECT COMMENT FROM HR COMMITTEE",
     "codeReviewHrEvaluationLabel": "HR EVALUATION",
-    "codeReviewSubmittedSourceTitle": "Your submitted source code & notes"
+    "codeReviewSubmittedSourceTitle": "Your submitted source code & notes",
+    "codeReviewIssueDeleted": "[EN] userApplicationhistory.codeReviewIssueDeleted",
+    "codeReviewSubmittingTitle": "[EN] userApplicationhistory.codeReviewSubmittingTitle",
+    "codeReviewSubmittingSubtitle": "[EN] userApplicationhistory.codeReviewSubmittingSubtitle",
+    "codeReviewResult": "[EN] userApplicationhistory.codeReviewResult",
+    "inReviewTime": "[EN] userApplicationhistory.inReviewTime",
+    "gradingTitle": "[EN] userApplicationhistory.gradingTitle",
+    "submittingTitle": "[EN] userApplicationhistory.submittingTitle",
+    "gradingSubtitle": "[EN] userApplicationhistory.gradingSubtitle",
+    "submittingSubtitle": "[EN] userApplicationhistory.submittingSubtitle",
+    "cvAnalyzedSuccess": "[EN] userApplicationhistory.cvAnalyzedSuccess",
+    "cvInstructionDefault": "[EN] userApplicationhistory.cvInstructionDefault",
+    "mentorStatusMatching": "[EN] userApplicationhistory.mentorStatusMatching",
+    "mentorAwaitingDesc": "[EN] userApplicationhistory.mentorAwaitingDesc",
+    "mentorSelectHintShort": "[EN] userApplicationhistory.mentorSelectHintShort",
+    "mentorSelectOpenDetail": "[EN] userApplicationhistory.mentorSelectOpenDetail",
+    "mentorSelectExpertise": "[EN] userApplicationhistory.mentorSelectExpertise",
+    "mentorSelectContact": "[EN] userApplicationhistory.mentorSelectContact",
+    "mentorSession": "[EN] userApplicationhistory.mentorSession"
   },
   "userApplication": {
     "applicationWorkspacePage": {
@@ -4604,7 +4686,10 @@
       "noCvFileSubmitted": "CV file not submitted yet",
       "noHrNotePending": "No direct notes from the HR recruitment committee.",
       "noDataPendingCv": "No data (CV submission required)",
-      "hrNotePending": "HR committee will update after grading is complete."
+      "hrNotePending": "HR committee will update after grading is complete.",
+      "dropCvHint": "[EN] userApplication.cvScreening.dropCvHint",
+      "aiScore": "[EN] userApplication.cvScreening.aiScore",
+      "hrScore": "[EN] userApplication.cvScreening.hrScore"
     },
     "emailSimulator": {
       "reportTitle": "EMAIL SIMULATION EVALUATION REPORT",
@@ -4781,7 +4866,8 @@
       "minutes": "Minutes",
       "seconds": "Seconds",
       "question": "Question",
-      "viewAllResults": "View All Results"
+      "viewAllResults": "View All Results",
+      "copyCode": "[EN] userApplication.quiz.copyCode"
     },
     "coding": {
       "codingExamReport": "CODING EXAM EVALUATION REPORT",
@@ -5210,7 +5296,8 @@
       "stepResult": "Evaluation results",
       "stepWaitingShort": "Waiting",
       "stepSelectShort": "Select",
-      "stepScheduleShort": "Schedule"
+      "stepScheduleShort": "Schedule",
+      "onlineInterviewStation": "[EN] userApplication.mentorReview.onlineInterviewStation"
     },
     "roundNumber": "Round {{number}}"
   },
@@ -6352,7 +6439,8 @@
     "submitPass": "Confirm & Approve",
     "submitFail": "Confirm & Reject",
     "submitHint": "Your decision will be recorded and visible to the candidate.",
-    "useAi": "Use AI"
+    "useAi": "Use AI",
+    "useAiScore": "[EN] staffGrading.useAiScore"
   },
   "quiz": {
     "submitSuccess": "Quiz submitted successfully!",
@@ -6365,7 +6453,8 @@
     "selectValid": "Please select a valid application.",
     "detailsId": "Application Details #",
     "noRounds": "No rounds available for this application.",
-    "searchByUserOrJob": "Search by user or job"
+    "searchByUserOrJob": "Search by user or job",
+    "gradingDetail": "[EN] application.gradingDetail"
   },
   "status": {
     "pendingSubmit": "Pending Submission",
@@ -6982,5 +7071,10 @@
       "junior": "Junior",
       "middle": "Middle"
     }
-  }
+  },
+  "codeReviewRound": "[EN] codeReviewRound",
+  "codeReviewIssues": "[EN] codeReviewIssues",
+  "codeReviewContext": "[EN] codeReviewContext",
+  "codeReviewDefaultStatement": "[EN] codeReviewDefaultStatement",
+  "gradingErrorScoreRange": "[EN] gradingErrorScoreRange"
 }

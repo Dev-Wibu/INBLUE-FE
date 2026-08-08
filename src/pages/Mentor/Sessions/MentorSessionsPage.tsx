@@ -351,7 +351,7 @@ export function MentorSessionsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       {/* Command Deck hero — compact, dense, dark. No oversized gradient. */}
       <HeroCommand
         mentorName={currentMentorProfile?.name ?? user?.name ?? undefined}
