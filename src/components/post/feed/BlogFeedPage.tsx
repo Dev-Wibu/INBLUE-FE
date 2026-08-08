@@ -21,14 +21,8 @@ import { useTranslation } from "react-i18next";
 import { CreatePostModal } from "./CreatePostModal";
 import { PostFeedCard } from "./PostFeedCard";
 type SortBy = "newest" | "popular" | "recent_activity";
-interface BlogFeedPageProps {
-  title?: string;
-  description?: string;
-}
-export function BlogFeedPage({ title, description }: BlogFeedPageProps) {
+export function BlogFeedPage() {
   const { t } = useTranslation();
-  const resolvedTitle = title ?? t("common.home");
-  const resolvedDescription = description ?? t("common.updateTheLatestPostsFromTheCommuni");
   const { user } = useAuthStore();
   const { posts, hasMore, isLoading, isReloading, isFetchingMore, loadMore, refresh } =
     usePublishedFeed();
@@ -96,13 +90,8 @@ export function BlogFeedPage({ title, description }: BlogFeedPageProps) {
   }, [hasMore, isFetchingMore, loadMore]);
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <div>
-        <h1 className="text-xl font-bold">{resolvedTitle}</h1>
-        <p className="text-muted-foreground text-sm">{resolvedDescription}</p>
-      </div>
-
       {user ? (
-        <Card className="overflow-hidden rounded-xl border-slate-200/70 py-0 shadow-sm dark:border-slate-800">
+        <Card className="overflow-hidden rounded-xl border-slate-200/70 bg-white py-0 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
           <div className="flex items-center gap-3 px-4 py-2.5">
             <Avatar className="h-9 w-9 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
               <AvatarImage src={user?.avatarUrl ?? undefined} alt={authorName} />

@@ -55,6 +55,7 @@ export const API_ENDPOINTS = {
     LIST: "/api/payments",
     DETAIL: "/api/payments/:id",
     PAY: "/api/payments/pay",
+    PAY_INFO: "/api/payments/pay/info/:paymentId",
     CANCEL: "/api/payments/cancel",
     WEBHOOK: "/api/payments/webhook",
   },

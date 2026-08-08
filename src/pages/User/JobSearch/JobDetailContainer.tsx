@@ -4,6 +4,7 @@ import { formatNumber } from "@/lib/formatting";
 import { applicationService } from "@/services/application.manager";
 import type { JobDescription } from "@/services/company.manager";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
+import { paymentManager } from "@/services/payment.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { Check, Clock, Copy, ExternalLink, Info, Loader2, ShieldCheck, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -135,33 +136,64 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       return;
     }
 
+    const paymentId = checkoutUrl.split("/web/")[1]?.replace(/\//g, "").split("?")[0];
+    let cancelled = false;
+
+    const fallback: NativePaymentInfo = {
+      bankShortName: "BIDV",
+      accountName: "NGUYEN PHAM THU HA",
+      accountNo: "V3CAS6721131488",
+      amount: String(job.price || 2000),
+    };
+
     const tryFetchNativeInfo = async () => {
-      const paymentId = checkoutUrl.split("/web/")[1]?.replace(/\//g, "").split("?")[0];
-      const targets = [
-        paymentId ? `/payos-proxy/web/${paymentId}` : null,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(checkoutUrl)}`,
-        `https://corsproxy.io/?${encodeURIComponent(checkoutUrl)}`,
-      ].filter(Boolean) as string[];
+      // 1) Ưu tiên gọi BE - nhanh, ổn định trên cả local & deploy
+      if (paymentId) {
+        try {
+          const apiRes = await paymentManager.getPaymentLinkInfo(paymentId);
+          if (cancelled) return;
+          if (apiRes.success && apiRes.data) {
+            const merged: NativePaymentInfo = {
+              ...fallback,
+              ...apiRes.data,
+              amount: apiRes.data.amount ? String(apiRes.data.amount) : fallback.amount,
+            };
+            if (!merged.quicklink && merged.addInfo && merged.accountNo) {
+              merged.quicklink = `https://img.vietqr.io/image/970418-${merged.accountNo}-vietqr_pro.jpg?addInfo=${encodeURIComponent(
+                merged.addInfo
+              )}&amount=${merged.amount || 2000}`;
+            }
+            if (merged.addInfo || merged.quicklink) {
+              setNativeInfo(merged);
+              setShowEmbeddedFallback(false);
+              return;
+            }
+          }
+        } catch {
+          // tiếp tục fallback
+        }
+      }
+
+      // 2) Fallback: scrape HTML qua proxy (chỉ chạy trên local)
+      const targets = paymentId ? [`/payos-proxy/web/${paymentId}`] : [];
+      targets.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(checkoutUrl)}`);
+      targets.push(`https://corsproxy.io/?${encodeURIComponent(checkoutUrl)}`);
 
       for (const target of targets) {
+        if (cancelled) return;
         try {
-          const res = await fetch(target);
+          const res = await fetch(target, { signal: AbortSignal.timeout(4000) });
           if (!res.ok) continue;
           const html = await res.text();
 
-          let extracted: NativePaymentInfo = {
-            bankShortName: "BIDV",
-            accountName: "NGUYEN PHAM THU HA",
-            accountNo: "V3CAS6721131488",
-            amount: String(job.price || 2000),
-          };
+          const extracted: NativePaymentInfo = { ...fallback };
 
           // Extract transactionInfo if embedded in Next.js script
           const matchInfo = html.match(/"transactionInfo":(\{.*?\})/);
           if (matchInfo && matchInfo[1]) {
             try {
               const parsed = JSON.parse(matchInfo[1]);
-              extracted = { ...extracted, ...parsed };
+              Object.assign(extracted, parsed);
             } catch {
               // ignore
             }
@@ -188,6 +220,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
           }
 
           if (extracted.addInfo || extracted.quicklink) {
+            if (cancelled) return;
             setNativeInfo(extracted);
             setShowEmbeddedFallback(false);
             return;
@@ -198,7 +231,20 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       }
     };
 
-    tryFetchNativeInfo();
+    // Safety timeout: nếu sau 5s không có addInfo/quicklink thì chuyển sang embedded
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled) return;
+      if (!nativeInfo?.addInfo && !nativeInfo?.quicklink) {
+        setShowEmbeddedFallback(true);
+      }
+    }, 5000);
+
+    void tryFetchNativeInfo();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, [checkoutUrl, job.price]);
 
   // Auto-poll payment status every 3 seconds while payment modal is open

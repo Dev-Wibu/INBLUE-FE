@@ -16,10 +16,23 @@ import {
   type PaymentRecoveryLookupSource,
   upsertPaymentRecoveryContext,
 } from "@/lib";
+import { cn } from "@/lib/utils";
 import { userManager } from "@/services";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { CheckCircle2, ShieldAlert } from "lucide-react";
+import canvasConfetti from "canvas-confetti";
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  PartyPopper,
+  RefreshCw,
+  ShieldAlert,
+  Sparkles,
+  Wallet,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -538,7 +551,7 @@ export function PaymentSuccessPage() {
 
     setJdPollStatus("checking");
     let attempts = 0;
-    const maxAttempts = 5;
+    const maxAttempts = 20; // ~60s để đợi webhook xử lý
 
     const pollInterval = setInterval(() => {
       attempts++;
@@ -561,9 +574,25 @@ export function PaymentSuccessPage() {
           );
         }
       });
-    }, 2000);
+    }, 3000);
 
     return () => clearInterval(pollInterval);
+  }, [pendingJdId, t]);
+
+  const handleRetryJdCheck = useCallback(() => {
+    if (!pendingJdId) return;
+    setJdPollStatus("checking");
+    void jdPurchaseManager.checkPurchased(pendingJdId).then((isSuccess) => {
+      if (isSuccess) {
+        localStorage.removeItem("pending_jd_purchase_id");
+        setJdPollStatus("success");
+        toast.success(
+          t("payment.purchaseJdSuccess", "Mua gói JD thành công! Bạn có thể nộp đơn ngay.")
+        );
+      } else {
+        setJdPollStatus("pending");
+      }
+    });
   }, [pendingJdId, t]);
   const handleConfirmSubscribe = useCallback(async () => {
     if (!recoveryContext || resolveState === "subscribing") {
@@ -776,59 +805,168 @@ export function PaymentSuccessPage() {
     !!recoveryContext &&
     subscribeKey.length > 0 &&
     autoSubscribeKey === subscribeKey;
+
+  // 🎉 Fire confetti when activation succeeds
+  useEffect(() => {
+    if (resolveState !== "subscribed") return;
+    const duration = 2500;
+    const animationEnd = Date.now() + duration;
+    const defaults = {
+      startVelocity: 30,
+      spread: 360,
+      ticks: 60,
+      zIndex: 9999,
+      colors: ["#10b981", "#34d399", "#fbbf24", "#f59e0b", "#22d3ee", "#a78bfa"],
+    };
+    const interval = window.setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+      if (timeLeft <= 0) {
+        window.clearInterval(interval);
+        return;
+      }
+      const particleCount = 50 * (timeLeft / duration);
+      canvasConfetti({
+        ...defaults,
+        particleCount,
+        origin: { x: Math.random() * 0.3, y: Math.random() - 0.2 },
+      });
+      canvasConfetti({
+        ...defaults,
+        particleCount,
+        origin: { x: Math.random() * 0.4 + 0.6, y: Math.random() - 0.2 },
+      });
+    }, 250);
+    // Initial big burst
+    canvasConfetti({
+      ...defaults,
+      particleCount: 120,
+      origin: { y: 0.6 },
+    });
+    return () => window.clearInterval(interval);
+  }, [resolveState]);
   // ──────────────────────────────────────────────────────────────────────────
   // JD Purchase Success UI (completely separate from subscription flow)
   // Per fe_guideline.md: poll /api/jd-purchases/check, show status, then back
   // ──────────────────────────────────────────────────────────────────────────
   if (pendingJdId) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-emerald-50 to-blue-50 px-4 py-10 dark:from-slate-950 dark:to-slate-900">
-        <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 rounded-2xl border border-emerald-200 bg-white p-8 shadow-sm dark:border-emerald-900/40 dark:bg-slate-900">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
-              <CheckCircle2 className="h-7 w-7" />
+      <div className="payment-success-page relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-50 via-amber-50/40 to-sky-50 px-4 py-10 dark:from-slate-950 dark:via-emerald-950/20 dark:to-slate-900">
+        {/* Background decorative blobs */}
+        <div className="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-emerald-300/30 blur-3xl dark:bg-emerald-500/10" />
+        <div className="pointer-events-none absolute -right-20 -bottom-20 h-80 w-80 rounded-full bg-amber-300/30 blur-3xl dark:bg-amber-500/10" />
+        <div className="pointer-events-none absolute top-1/3 right-1/4 h-64 w-64 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-500/10" />
+
+        <div className="payment-success-card relative mx-auto flex w-full max-w-2xl flex-col items-center gap-6 rounded-3xl border-2 border-emerald-200/70 bg-white/80 p-8 text-center shadow-2xl shadow-emerald-500/10 backdrop-blur-md sm:p-10 dark:border-emerald-500/30 dark:bg-slate-900/70 dark:shadow-emerald-500/5">
+          {/* Animated checkmark hero */}
+          <div className="relative">
+            {jdPollStatus === "success" && (
+              <>
+                <div className="absolute inset-0 animate-ping rounded-full bg-emerald-400/30" />
+                <div className="absolute -inset-6 rounded-full bg-gradient-to-br from-emerald-400/30 via-amber-300/20 to-emerald-400/30 blur-2xl" />
+              </>
+            )}
+            <div
+              className={cn(
+                "relative flex h-28 w-28 items-center justify-center rounded-full text-white shadow-2xl transition-all duration-500",
+                jdPollStatus === "success"
+                  ? "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 shadow-emerald-500/50"
+                  : jdPollStatus === "pending"
+                    ? "bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-500/40"
+                    : "bg-gradient-to-br from-sky-400 to-indigo-500 shadow-sky-500/40"
+              )}>
+              {jdPollStatus === "success" ? (
+                <CheckCircle2
+                  className="animate-in zoom-in-50 h-14 w-14 duration-500"
+                  strokeWidth={2.5}
+                />
+              ) : jdPollStatus === "pending" ? (
+                <Clock className="h-14 w-14" strokeWidth={2.5} />
+              ) : (
+                <Spinner size="lg" tone="white" />
+              )}
             </div>
-            <div>
-              <h1 className="font-['Poppins'] text-2xl font-bold text-emerald-700 dark:text-emerald-400">
-                {t("paymentPaymentsuccesspage.paymentSuccessful")}
-              </h1>
-              <p className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
-                {t("payment.jdPackage", "Gói vị trí việc làm")}
-              </p>
-            </div>
+            {/* Floating particles */}
+            {jdPollStatus === "success" && (
+              <>
+                <Sparkles className="absolute -top-2 -right-2 h-6 w-6 animate-bounce text-amber-400" />
+                <Sparkles className="absolute -bottom-1 -left-3 h-5 w-5 animate-bounce text-emerald-400 [animation-delay:200ms]" />
+                <PartyPopper className="absolute -top-4 -left-6 h-7 w-7 animate-pulse text-rose-400" />
+                <PartyPopper className="absolute top-1/2 -right-4 h-6 w-6 animate-pulse text-amber-400 [animation-delay:300ms]" />
+              </>
+            )}
           </div>
 
+          {/* Title */}
+          <div className="space-y-2">
+            <h1 className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 bg-clip-text font-['Poppins'] text-3xl font-black tracking-tight text-transparent sm:text-4xl dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-400">
+              {jdPollStatus === "success"
+                ? t("paymentPaymentsuccesspage.yeahhPaymentSuccess", "Yeahhh! Thành công rồi! 🎉")
+                : jdPollStatus === "pending"
+                  ? t("paymentPaymentsuccesspage.paymentPendingTitle", "Đang chờ xác nhận...")
+                  : t("paymentPaymentsuccesspage.paymentSuccessful")}
+            </h1>
+            <p className="font-['Inter'] text-sm font-medium text-slate-600 dark:text-slate-300">
+              {t("payment.jdPackage", "Gói vị trí việc làm")}
+            </p>
+          </div>
+
+          {/* Status banners */}
           {jdPollStatus === "checking" && (
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 font-['Inter'] text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              <Spinner size="sm" tone="muted" />
-              {t("payment.confirmingJdPurchase", "Đang xác nhận giao dịch mua gói JD...")}
+            <div className="flex items-center gap-2.5 rounded-2xl border-2 border-sky-200 bg-sky-50/80 px-4 py-3 font-['Inter'] text-sm font-semibold text-sky-700 dark:border-sky-500/30 dark:bg-sky-950/40 dark:text-sky-300">
+              <Spinner size="sm" tone="primary" />
+              {t(
+                "paymentPaymentsuccesspage.confirmingJdPurchase",
+                "Đang xác nhận giao dịch mua gói JD..."
+              )}
             </div>
           )}
 
           {jdPollStatus === "success" && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/40 dark:bg-emerald-900/10">
-              <p className="font-['Inter'] text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                {t("payment.purchaseJdSuccess", "Mua gói JD thành công! Bạn có thể nộp đơn ngay.")}
-              </p>
-            </div>
-          )}
-
-          {jdPollStatus === "pending" && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/10">
-              <p className="font-['Inter'] text-sm text-amber-700 dark:text-amber-300">
+            <div className="w-full rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 via-emerald-100/50 to-amber-50/50 p-5 shadow-inner dark:border-emerald-500/40 dark:from-emerald-900/30 dark:via-emerald-950/20 dark:to-amber-950/20">
+              <div className="flex items-center justify-center gap-2 font-['Inter'] text-base font-bold text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="h-5 w-5" />
                 {t(
-                  "payment.paymentPendingWebhook",
-                  "Thanh toán đang được hệ thống xác nhận. Vui lòng kiểm tra lại sau ít phút."
+                  "paymentPaymentsuccesspage.purchaseJdSuccess",
+                  "Mua gói JD thành công! Bạn có thể nộp đơn ngay."
+                )}
+              </div>
+              <p className="mt-1.5 font-['Inter'] text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">
+                {t(
+                  "paymentPaymentsuccesspage.canApplyNow",
+                  "Hãy quay lại trang vị trí để nộp đơn ứng tuyển ngay nhé!"
                 )}
               </p>
             </div>
           )}
 
-          <div className="flex flex-wrap gap-3">
+          {jdPollStatus === "pending" && (
+            <div className="w-full space-y-2.5 rounded-2xl border-2 border-amber-200 bg-amber-50/80 p-5 dark:border-amber-500/30 dark:bg-amber-950/30">
+              <div className="flex items-start gap-2 font-['Inter'] text-sm text-amber-800 dark:text-amber-200">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>
+                  {t(
+                    "paymentPaymentsuccesspage.paymentPendingWebhook",
+                    "Thanh toán đang được hệ thống xác nhận. Vui lòng kiểm tra lại sau ít phút."
+                  )}
+                </span>
+              </div>
+              <button
+                onClick={handleRetryJdCheck}
+                className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 font-['Inter'] text-xs font-bold text-white transition-all hover:scale-105 hover:bg-amber-600">
+                <RefreshCw className="h-3 w-3" />
+                {t("common.checkNow", "Kiểm tra ngay")}
+              </button>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:gap-4">
             <Link
               to={`/enterprise/job/${pendingJdId}`}
-              className="rounded-xl bg-[#0047AB] px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-[#003b8d]">
+              className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 px-6 py-3 font-['Inter'] text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/40">
+              <CreditCard className="h-4 w-4" />
               {t("payment.returnToJobPosition", "Quay lại trang vị trí việc làm")}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
@@ -837,37 +975,83 @@ export function PaymentSuccessPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-emerald-50 to-blue-50 px-4 py-10 dark:from-slate-950 dark:to-slate-900">
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 rounded-2xl border border-emerald-200 bg-white p-8 shadow-sm dark:border-emerald-900/40 dark:bg-slate-900">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
-            <CheckCircle2 className="h-7 w-7" />
+    <div className="payment-success-page relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-50 via-amber-50/40 to-sky-50 px-4 py-10 dark:from-slate-950 dark:via-emerald-950/20 dark:to-slate-900">
+      {/* Background decorative blobs */}
+      <div className="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-emerald-300/30 blur-3xl dark:bg-emerald-500/10" />
+      <div className="pointer-events-none absolute -right-20 -bottom-20 h-80 w-80 rounded-full bg-amber-300/30 blur-3xl dark:bg-amber-500/10" />
+      <div className="pointer-events-none absolute top-1/3 right-1/4 h-64 w-64 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-500/10" />
+
+      <div className="payment-success-card relative mx-auto flex w-full max-w-2xl flex-col items-center gap-6 rounded-3xl border-2 border-emerald-200/70 bg-white/80 p-8 text-center shadow-2xl shadow-emerald-500/10 backdrop-blur-md sm:p-10 dark:border-emerald-500/30 dark:bg-slate-900/70 dark:shadow-emerald-500/5">
+        {/* Hero checkmark */}
+        <div className="relative">
+          {resolveState === "subscribed" && (
+            <>
+              <div className="absolute inset-0 animate-ping rounded-full bg-emerald-400/30" />
+              <div className="absolute -inset-6 rounded-full bg-gradient-to-br from-emerald-400/30 via-amber-300/20 to-emerald-400/30 blur-2xl" />
+            </>
+          )}
+          <div
+            className={cn(
+              "relative flex h-28 w-28 items-center justify-center rounded-full text-white shadow-2xl transition-all duration-500",
+              resolveState === "subscribed"
+                ? "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 shadow-emerald-500/50"
+                : resolveState === "unmapped"
+                  ? "bg-gradient-to-br from-rose-400 to-orange-500 shadow-rose-500/40"
+                  : "bg-gradient-to-br from-sky-400 to-indigo-500 shadow-sky-500/40"
+            )}>
+            {resolveState === "subscribed" ? (
+              <CheckCircle2
+                className="animate-in zoom-in-50 h-14 w-14 duration-500"
+                strokeWidth={2.5}
+              />
+            ) : resolveState === "unmapped" ? (
+              <ShieldAlert className="h-14 w-14" strokeWidth={2.5} />
+            ) : (
+              <Spinner size="lg" tone="white" />
+            )}
           </div>
-          <div>
-            <h1 className="font-['Poppins'] text-2xl font-bold text-emerald-700 dark:text-emerald-400">
-              {t("paymentPaymentsuccesspage.paymentSuccessful")}
-            </h1>
-            <p className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
-              {successSubtitle}
-            </p>
-          </div>
+          {resolveState === "subscribed" && (
+            <>
+              <Sparkles className="absolute -top-2 -right-2 h-6 w-6 animate-bounce text-amber-400" />
+              <Sparkles className="absolute -bottom-1 -left-3 h-5 w-5 animate-bounce text-emerald-400 [animation-delay:200ms]" />
+              <PartyPopper className="absolute -top-4 -left-6 h-7 w-7 animate-pulse text-rose-400" />
+              <PartyPopper className="absolute top-1/2 -right-4 h-6 w-6 animate-pulse text-amber-400 [animation-delay:300ms]" />
+            </>
+          )}
+        </div>
+
+        {/* Title */}
+        <div className="space-y-2">
+          <p className="font-['Inter'] text-xs font-bold tracking-widest text-emerald-600 uppercase dark:text-emerald-400">
+            {t("paymentPaymentsuccesspage.congratsPaymentSuccess", "Chúc mừng bạn!")}
+          </p>
+          <h1 className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 bg-clip-text font-['Poppins'] text-3xl font-black tracking-tight text-transparent sm:text-4xl dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-400">
+            {resolveState === "subscribed"
+              ? t("paymentPaymentsuccesspage.yeahhPaymentSuccess", "Yeahhh! Thành công rồi!")
+              : resolveState === "unmapped"
+                ? t("paymentPaymentsuccesspage.paymentCouldNotBeConfirmed")
+                : t("paymentPaymentsuccesspage.paymentSuccessful")}
+          </h1>
+          <p className="font-['Inter'] text-sm font-medium text-slate-600 dark:text-slate-300">
+            {successSubtitle}
+          </p>
         </div>
 
         {!paid && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 font-['Inter'] text-sm text-amber-700 dark:border-amber-800/40 dark:bg-amber-900/10 dark:text-amber-300">
+          <div className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 font-['Inter'] text-sm font-semibold text-amber-700 dark:border-amber-800/40 dark:bg-amber-900/10 dark:text-amber-300">
             {t("common.pay")}
           </div>
         )}
 
         {resolveState === "checking" && (
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 font-['Inter'] text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            <Spinner size="sm" tone="muted" />
+          <div className="flex items-center gap-2.5 rounded-2xl border-2 border-sky-200 bg-sky-50/80 px-4 py-3 font-['Inter'] text-sm font-semibold text-sky-700 dark:border-sky-500/30 dark:bg-sky-950/40 dark:text-sky-300">
+            <Spinner size="sm" tone="primary" />
             {t("common.checking")}
           </div>
         )}
 
         {resolveState === "unmapped" && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/40 dark:bg-rose-950/20">
+          <div className="w-full rounded-2xl border-2 border-rose-200 bg-rose-50/80 p-4 dark:border-rose-500/30 dark:bg-rose-950/30">
             <div className="mb-2 flex items-center gap-2 font-['Inter'] text-sm font-semibold text-rose-700 dark:text-rose-300">
               <ShieldAlert className="h-4 w-4" />
               {t("paymentPaymentsuccesspage.paymentCouldNotBeConfirmed")}
@@ -879,7 +1063,7 @@ export function PaymentSuccessPage() {
         )}
 
         {resolveState === "ready" && !!resolveError && paid && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/10">
+          <div className="w-full rounded-2xl border-2 border-amber-200 bg-amber-50/80 p-4 dark:border-amber-500/30 dark:bg-amber-950/20">
             <p className="font-['Inter'] text-sm text-amber-700 dark:text-amber-300">
               {resolveError}
             </p>
@@ -887,7 +1071,7 @@ export function PaymentSuccessPage() {
         )}
 
         {resolvedPurpose === "FULLY_PAID" && !!subscribeError && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/10">
+          <div className="w-full rounded-2xl border-2 border-amber-200 bg-amber-50/80 p-4 dark:border-amber-500/30 dark:bg-amber-950/20">
             <p className="font-['Inter'] text-sm text-amber-700 dark:text-amber-300">
               {subscribeError}
             </p>
@@ -895,24 +1079,101 @@ export function PaymentSuccessPage() {
         )}
 
         {resolvedPurpose === "FULLY_PAID" && isKnownActivatedOrder && (
-          <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 dark:border-violet-800/40 dark:bg-violet-900/10">
-            <p className="font-['Inter'] text-sm text-violet-700 dark:text-violet-300">
+          <div className="w-full rounded-2xl border-2 border-violet-200 bg-violet-50/80 p-4 dark:border-violet-500/30 dark:bg-violet-950/20">
+            <p className="font-['Inter'] text-sm font-semibold text-violet-700 dark:text-violet-300">
               {t("paymentPaymentsuccesspage.packageActivatedPreviously")}
             </p>
           </div>
         )}
 
-        <div className="flex flex-wrap gap-3">
+        {/* Activated credits panel */}
+        {resolvedPurpose === "FULLY_PAID" && resolveState === "subscribed" && (
+          <div className="w-full space-y-4 rounded-3xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 via-emerald-100/50 to-amber-50/40 p-6 shadow-inner dark:border-emerald-500/40 dark:from-emerald-900/30 dark:via-emerald-950/20 dark:to-amber-950/20">
+            <div className="flex items-center justify-center gap-2 font-['Poppins'] text-base font-bold text-emerald-700 dark:text-emerald-300">
+              <Wallet className="h-5 w-5" />
+              {t(
+                "paymentPaymentsuccesspage.packageActivatedCelebrate",
+                "Gói của bạn đã được kích hoạt"
+              )}
+            </div>
+            <p className="text-center font-['Inter'] text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">
+              {t(
+                "paymentPaymentsuccesspage.yourPremiumFeatures",
+                "Bạn đã có thể sử dụng đầy đủ tính năng cao cấp"
+              )}
+            </p>
+
+            {subscription ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="flex flex-col items-center rounded-2xl border border-emerald-200/60 bg-white/80 p-3 text-center dark:border-emerald-500/30 dark:bg-slate-900/50">
+                  <Sparkles className="mb-1 h-4 w-4 text-emerald-500" />
+                  <p className="font-['Inter'] text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("common.plan")}
+                  </p>
+                  <p className="font-['Inter'] text-xs font-bold text-slate-800 dark:text-slate-100">
+                    {subscription.planName || "-"}
+                  </p>
+                </div>
+                <div className="flex flex-col items-center rounded-2xl border border-emerald-200/60 bg-white/80 p-3 text-center dark:border-emerald-500/30 dark:bg-slate-900/50">
+                  <Sparkles className="mb-1 h-4 w-4 text-indigo-500" />
+                  <p className="font-['Inter'] text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("paymentPaymentsuccesspage.aiInterviewCredits")}
+                  </p>
+                  <p className="font-['Inter'] text-base font-black text-slate-800 dark:text-slate-100">
+                    {subscription.aiInterviewRemaining ?? "-"}
+                  </p>
+                </div>
+                <div className="flex flex-col items-center rounded-2xl border border-emerald-200/60 bg-white/80 p-3 text-center dark:border-emerald-500/30 dark:bg-slate-900/50">
+                  <Sparkles className="mb-1 h-4 w-4 text-amber-500" />
+                  <p className="font-['Inter'] text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("paymentPaymentsuccesspage.practiceSetCredits")}
+                  </p>
+                  <p className="font-['Inter'] text-base font-black text-slate-800 dark:text-slate-100">
+                    {subscription.practiceSetRemaining ?? "-"}
+                  </p>
+                </div>
+                <div className="flex flex-col items-center rounded-2xl border border-emerald-200/60 bg-white/80 p-3 text-center dark:border-emerald-500/30 dark:bg-slate-900/50">
+                  <Sparkles className="mb-1 h-4 w-4 text-rose-500" />
+                  <p className="font-['Inter'] text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("paymentPaymentsuccesspage.quizSetCredits")}
+                  </p>
+                  <p className="font-['Inter'] text-base font-black text-slate-800 dark:text-slate-100">
+                    {subscription.quizSetRemaining ?? "-"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-center font-['Inter'] text-xs text-emerald-700/90 dark:text-emerald-300/90">
+                {t("paymentPaymentsuccesspage.packageActivatedButNotLoaded")}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* What next section */}
+        {resolveState === "subscribed" && (
+          <div className="w-full space-y-3 pt-1">
+            <p className="font-['Inter'] text-xs font-bold tracking-widest text-slate-500 uppercase dark:text-slate-400">
+              {t("paymentPaymentsuccesspage.whatNext", "Bạn muốn làm gì tiếp theo?")}
+            </p>
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4">
           <Link
             to={primaryRedirect.to}
-            className="rounded-xl bg-[#0047AB] px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-[#003b8d]">
+            className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 px-6 py-3 font-['Inter'] text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/40">
+            <CreditCard className="h-4 w-4" />
             {primaryRedirect.label}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
 
           {(resolveState === "unmapped" || !paid) && (
             <button
               onClick={() => void handleResolveOrder()}
-              className="rounded-xl border border-slate-300 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-300 bg-white px-5 py-3 font-['Inter'] text-sm font-semibold text-slate-700 transition-all hover:scale-105 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+              <RefreshCw className="h-4 w-4" />
               {t("paymentPaymentsuccesspage.tryConfirmingAgain")}
             </button>
           )}
@@ -920,7 +1181,8 @@ export function PaymentSuccessPage() {
           {resolvedPurpose === "FULLY_PAID" && canRetrySubscribe && (
             <button
               onClick={() => void handleConfirmSubscribe()}
-              className="rounded-xl bg-emerald-600 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-emerald-700">
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 font-['Inter'] text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-105">
+              <RefreshCw className="h-4 w-4" />
               {t("paymentPaymentsuccesspage.tryActivatingAgain")}
             </button>
           )}
@@ -928,51 +1190,29 @@ export function PaymentSuccessPage() {
           {resolvedPurpose === "FULLY_PAID" && resolveState === "subscribing" && (
             <button
               disabled
-              className="flex items-center gap-2 rounded-xl bg-emerald-500/80 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white">
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500/80 px-5 py-3 font-['Inter'] text-sm font-bold text-white">
               <Spinner size="sm" tone="white" />
               {t("general.subscribing")}
             </button>
           )}
 
-          {resolvedPurpose === "FULLY_PAID" && (
-            <Link
-              to="/user?tab=account"
-              className="rounded-xl border border-slate-300 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-              {t("common.chooseAnotherMembershipPackage")}
-            </Link>
+          {resolvedPurpose === "FULLY_PAID" && resolveState === "subscribed" && (
+            <>
+              <Link
+                to="/user/explore-jobs"
+                className="group inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-indigo-300 bg-white px-5 py-3 font-['Inter'] text-sm font-bold text-indigo-700 transition-all hover:scale-105 hover:border-indigo-400 hover:bg-indigo-50 dark:border-indigo-500/50 dark:bg-slate-800 dark:text-indigo-300 dark:hover:bg-slate-700">
+                <Sparkles className="h-4 w-4" />
+                {t("paymentPaymentsuccesspage.exploreJobsNow", "Khám phá việc làm")}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <Link
+                to="/"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-300 bg-white px-5 py-3 font-['Inter'] text-sm font-semibold text-slate-700 transition-all hover:scale-105 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                {t("paymentPaymentsuccesspage.backToHome", "Về trang chủ")}
+              </Link>
+            </>
           )}
         </div>
-
-        {resolvedPurpose === "FULLY_PAID" && resolveState === "subscribed" && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/40 dark:bg-emerald-900/10">
-            <p className="mb-2 font-['Inter'] text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-              {t("paymentPaymentsuccesspage.packageActivatedSuccessfully")}
-            </p>
-            {subscription ? (
-              <div className="grid grid-cols-1 gap-2 font-['Inter'] text-xs text-emerald-700/90 md:grid-cols-2 dark:text-emerald-300/90">
-                <p>
-                  {t("common.plan")}: {subscription.planName || "-"}
-                </p>
-                <p>
-                  {t("paymentPaymentsuccesspage.aiInterviewRemaining")}{" "}
-                  {subscription.aiInterviewRemaining ?? "-"}
-                </p>
-                <p>
-                  {t("paymentPaymentsuccesspage.remainingPracticeSet")}{" "}
-                  {subscription.practiceSetRemaining ?? "-"}
-                </p>
-                <p>
-                  {t("paymentPaymentsuccesspage.remainingQuizSet")}{" "}
-                  {subscription.quizSetRemaining ?? "-"}
-                </p>
-              </div>
-            ) : (
-              <p className="font-['Inter'] text-xs text-emerald-700/90 dark:text-emerald-300/90">
-                {t("paymentPaymentsuccesspage.packageActivatedButNotLoaded")}
-              </p>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

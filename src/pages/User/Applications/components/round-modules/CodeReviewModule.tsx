@@ -721,17 +721,19 @@ export function CodeReviewModule({
               ) : (
                 <XCircle className="h-4 w-4" />
               )}
-              <span>KẾT QUẢ: {detail.finalResult}</span>
+              <span>
+                {t("userApplicationhistory.codeReviewResult", "KẾT QUẢ")}: {detail.finalResult}
+              </span>
             </span>
           ) : isFinished ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40">
               <CheckCircle2 className="h-4 w-4" />
-              <span>ĐÃ HOÀN THÀNH BÀI THI</span>
+              <span>{t("userApplicationhistory.completed", "ĐÃ HOÀN THÀNH")}</span>
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300 dark:shadow-indigo-950/40">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-              <span>ĐANG TRONG THỜI GIAN LÀM BÀI</span>
+              <span>{t("userApplicationhistory.inReviewTime", "TRONG THỜI GIAN REVIEW")}</span>
             </span>
           )}
         </div>
@@ -1693,6 +1695,7 @@ function GradedResultView({
   onSelectProblem: (_idx: number) => void;
   issuesByProblem: Record<number, LocalDraftIssue[]>;
 }) {
+  const { t } = useTranslation();
   const feedback = useMemo<AiFeedback | null>(() => {
     if (!detail.aiFeedback) return null;
     if (typeof detail.aiFeedback === "object") return detail.aiFeedback as AiFeedback;
@@ -1824,13 +1827,13 @@ function GradedResultView({
                   <Bot className="h-4 w-4" />
                 </div>
                 <h3 className="text-xs font-extrabold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
-                  BÁO CÁO PHÂN TÍCH TỔNG QUAN AI
+                  {t("userApplicationhistory.codeReviewReport", "BÁO CÁO PHÂN TÍCH TỔNG QUAN AI")}
                 </h3>
               </div>
 
               <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-extrabold text-indigo-700 shadow-xs dark:border-indigo-400/40 dark:bg-indigo-500/15 dark:text-indigo-200">
                 <Sparkles className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
-                <span>AI EVALUATED</span>
+                <span>{t("userApplicationhistory.codeReviewAiEvaluated", "AI EVALUATED")}</span>
               </span>
             </div>
 
@@ -1979,11 +1982,13 @@ function GradedResultView({
                   <UserCheck className="h-4 w-4" />
                 </div>
                 <h4 className="text-xs font-bold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
-                  NHẬN XÉT TỪ HỘI ĐỒNG HR
+                  {t("userApplicationhistory.codeReviewHrCommentTitle", "NHẬN XÉT TỪ HỘI ĐỒNG HR")}
                 </h4>
               </div>
 
-              <span className="text-[10px] font-medium text-slate-400">HR ĐÁNH GIÁ</span>
+              <span className="text-[10px] font-medium text-slate-400">
+                {t("userApplicationhistory.codeReviewHrEvaluationLabel", "HR ĐÁNH GIÁ")}
+              </span>
             </div>
 
             {detail?.hrNote ? (
@@ -2013,7 +2018,10 @@ function GradedResultView({
             <div className="flex items-center gap-2">
               <FileCode2 className="h-4 w-4 text-indigo-400" />
               <span className="text-xs font-bold text-slate-300 dark:text-slate-300">
-                Mã nguồn & ghi chú bạn đã nộp
+                {t(
+                  "userApplicationhistory.codeReviewSubmittedSourceTitle",
+                  "Mã nguồn & ghi chú bạn đã nộp"
+                )}
               </span>
             </div>
 
