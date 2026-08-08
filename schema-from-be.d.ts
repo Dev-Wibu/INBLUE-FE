@@ -2457,6 +2457,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/analytics/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy dữ liệu tổng quan cho Admin Dashboard
+         * @description Trả về thống kê lượt ứng tuyển, top job/vị trí được quan tâm, interview đang diễn ra và tiến độ theo từng vòng. Tham số limit mặc định là 10, tối đa 50. days là số ngày lấy giao dịch gần đây, mặc định 7 ngày.
+         */
+        get: operations["getDashboardOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/applications-per-user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy số lượt apply trung bình trên mỗi user
+         * @description Thống kê trên các application chưa bị xoá, bao gồm tổng lượt apply, số user đã apply và trung bình lượt apply/user.
+         */
+        get: operations["getApplicationsPerUser"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/posts/likes/{postId}/{userId}": {
         parameters: {
             query?: never;
@@ -3932,10 +3972,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3950,14 +3990,14 @@ export interface components {
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
+            unpaged?: boolean;
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -4183,10 +4223,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -4283,22 +4323,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
-            isXml?: string;
-            trimDirectiveWhitespaces?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            urlPatterns?: string[];
+            errorOnUndeclaredNamespace?: string;
             defaultContentType?: string;
+            elIgnored?: string;
+            urlPatterns?: string[];
+            isXml?: string;
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -4333,19 +4373,18 @@ export interface components {
             };
         };
         ServletContext: {
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
+            servletContextName?: string;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             serverInfo?: string;
-            servletContextName?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
@@ -4356,6 +4395,7 @@ export interface components {
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
             initParameterNames?: unknown;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -4446,8 +4486,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */
@@ -4671,6 +4711,105 @@ export interface components {
             candidateName?: string;
             candidateEmail?: string;
             candidateAvatarUrl?: string;
+        };
+        ActiveInterviewItem: {
+            /** Format: int64 */
+            applicationDetailId?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: int32 */
+            userId?: number;
+            userName?: string;
+            userEmail?: string;
+            /** Format: int64 */
+            jobId?: number;
+            jobTitle?: string;
+            /** Format: int64 */
+            roundId?: number;
+            /** Format: int32 */
+            roundOrder?: number;
+            roundName?: string;
+            /** @enum {string} */
+            roundType?: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "CODING" | "CODE_REVIEW" | "MENTROR_REVIEW" | "AI_INTERVIEW";
+            /** @enum {string} */
+            roundStatus?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            /** Format: date-time */
+            startedAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        AdminDashboardOverviewResponse: {
+            /** Format: date-time */
+            generatedAt?: string;
+            summary?: components["schemas"]["DashboardSummary"];
+            jobTrends?: components["schemas"]["JobTrendItem"][];
+            positionTrends?: components["schemas"]["PositionTrendItem"][];
+            activeInterviews?: components["schemas"]["ActiveInterviewItem"][];
+            /** Format: int32 */
+            recentTransactionDays?: number;
+            recentTransactions?: components["schemas"]["RecentTransactionItem"][];
+        };
+        DashboardSummary: {
+            /** Format: int64 */
+            totalApplications?: number;
+            /** Format: int64 */
+            inProgressApplications?: number;
+            /** Format: int64 */
+            passedApplications?: number;
+            /** Format: int64 */
+            failedApplications?: number;
+            /** Format: int64 */
+            activeInterviewCount?: number;
+        };
+        JobTrendItem: {
+            /** Format: int32 */
+            rank?: number;
+            /** Format: int64 */
+            jobId?: number;
+            jobTitle?: string;
+            /** Format: int64 */
+            applicationCount?: number;
+            /** Format: double */
+            percentage?: number;
+        };
+        PositionTrendItem: {
+            /** Format: int32 */
+            rank?: number;
+            position?: string;
+            /** Format: int64 */
+            applicationCount?: number;
+            /** Format: double */
+            percentage?: number;
+        };
+        RecentTransactionItem: {
+            /** Format: int32 */
+            transactionId?: number;
+            transactionCode?: string;
+            /** Format: int64 */
+            amount?: number;
+            description?: string;
+            /** @enum {string} */
+            status?: "PENDING" | "COMPLETED" | "FAILED";
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: int32 */
+            userId?: number;
+            userName?: string;
+            userEmail?: string;
+            avatarUrl?: string;
+            /** Format: int64 */
+            jobId?: number;
+            jobTitle?: string;
+        };
+        AdminApplicationsPerUserResponse: {
+            /** Format: date-time */
+            generatedAt?: string;
+            /** Format: int64 */
+            totalApplications?: number;
+            /** Format: int64 */
+            uniqueApplicants?: number;
+            /** Format: double */
+            averageApplicationsPerUser?: number;
         };
     };
     responses: never;
@@ -8609,6 +8748,49 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminApplicationDetailResponse"][];
+                };
+            };
+        };
+    };
+    getDashboardOverview: {
+        parameters: {
+            query?: {
+                limit?: number;
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminDashboardOverviewResponse"];
+                };
+            };
+        };
+    };
+    getApplicationsPerUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminApplicationsPerUserResponse"];
                 };
             };
         };
