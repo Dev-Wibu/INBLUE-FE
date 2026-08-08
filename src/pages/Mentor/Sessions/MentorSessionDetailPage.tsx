@@ -1,13 +1,19 @@
-import { Badge } from "@/components/ui/badge";
+/**
+ * Mentor Session Detail Page — "Command Center" hero + meta + actions.
+ * UI-only refresh. All data fetching, navigation, and access logic
+ * preserved exactly.
+ */
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMentorById } from "@/hooks/useMentor";
 import { useMentorReviewBySession } from "@/hooks/useMentorReview";
 import { useSessionById } from "@/hooks/useSession";
 import { formatCurrency, formatDateTime } from "@/lib/formatting";
 import { getSessionMentorId, isSessionMentor } from "@/lib/session-mentor";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Calendar,
@@ -21,6 +27,39 @@ import {
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  MetaChip,
+  PanelSurface,
+  SectionHeading,
+  SessionStatusBadge,
+  sessionToneFromStatus,
+  type SessionStatusTone,
+} from "./components";
+
+type StatusConfig = { label: string; tone: SessionStatusTone };
+
+function buildStatusMap(t: (_key: string) => string): Record<string, StatusConfig> {
+  return {
+    DRAFT: { label: t("common.waitingForApproval"), tone: "draft" },
+    SCHEDULED: { label: t("common.comingSoon"), tone: "scheduled" },
+    PAID: { label: t("common.paid"), tone: "paid" },
+    ONGOING: { label: t("common.ongoing"), tone: "ongoing" },
+    COMPLETED: { label: t("general.completed"), tone: "completed" },
+    REJECTED: { label: t("common.rejected"), tone: "rejected" },
+    CANCELED: { label: t("common.canceled"), tone: "canceled" },
+  };
+}
+
+const heroMotion = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } },
+};
+
+const childMotion = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } },
+};
+
 export function MentorSessionDetailPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -35,37 +74,10 @@ export function MentorSessionDetailPage() {
   const { data: mentorReview, isLoading: reviewLoading } =
     useMentorReviewBySession(numericSessionId);
   const isAllowed = isSessionMentor(session, user?.id);
-  const statusMap: Record<string, { label: string; badgeClass: string }> = {
-    DRAFT: {
-      label: t("common.waitingForApproval"),
-      badgeClass: "bg-amber-100 text-amber-700",
-    },
-    SCHEDULED: {
-      label: t("common.comingSoon"),
-      badgeClass: "bg-blue-100 text-blue-700",
-    },
-    PAID: {
-      label: t("common.paid"),
-      badgeClass: "bg-emerald-100 text-emerald-700",
-    },
-    ONGOING: {
-      label: t("common.ongoing"),
-      badgeClass: "bg-green-100 text-green-700",
-    },
-    COMPLETED: {
-      label: t("general.completed"),
-      badgeClass: "bg-slate-100 text-slate-700",
-    },
-    REJECTED: {
-      label: t("common.rejected"),
-      badgeClass: "bg-red-100 text-red-700",
-    },
-    CANCELED: {
-      label: t("common.canceled"),
-      badgeClass: "bg-red-100 text-red-700",
-    },
-  };
+
+  const statusMap = buildStatusMap(t);
   const fallbackStatus = statusMap.SCHEDULED;
+
   useEffect(() => {
     if (sessionLoading) {
       return;
@@ -76,9 +88,10 @@ export function MentorSessionDetailPage() {
       });
     }
   }, [isAllowed, navigate, session, sessionLoading]);
+
   if (sessionLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <Skeleton className="h-10 w-44" />
         <Skeleton className="h-[260px]" />
         <Skeleton className="h-[220px]" />
@@ -88,114 +101,162 @@ export function MentorSessionDetailPage() {
   if (!session || !isAllowed) {
     return null;
   }
+
   const status = statusMap[session.status || "SCHEDULED"] || fallbackStatus;
   const canJoinRoom =
     (session.status === "PAID" || session.status === "ONGOING") &&
     typeof session.roomUrl === "string";
   const canReview = session.status === "COMPLETED";
+
+  const sessionTitle =
+    session.roomName ||
+    t("common.sessionVar0", {
+      var_0: session.id,
+    });
+
   return (
-    <div className="space-y-5">
-      <Button variant="outline" className="w-fit" onClick={() => navigate("/mentor?tab=sessions")}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        {t("common.returnToTheSessionList")}
-      </Button>
+    <motion.div
+      className="space-y-5"
+      variants={{
+        hidden: { opacity: 0 },
+        show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+      }}
+      initial="hidden"
+      animate="show">
+      {/* Back button — single source of truth, no duplicated header */}
+      <motion.div variants={childMotion}>
+        <Button
+          variant="ghost"
+          className="w-fit gap-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+          onClick={() => navigate("/mentor?tab=sessions")}>
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          {t("common.returnToTheSessionList")}
+        </Button>
+      </motion.div>
 
-      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-                <Video className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+      {/* Hero panel: identity + status + meta chips */}
+      <motion.div variants={heroMotion}>
+        <PanelSurface className="relative overflow-hidden">
+          {/* Decorative glow kept small, no heavy shadow stacking */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-16 -right-12 h-48 w-48 rounded-full bg-indigo-400/20 opacity-60 blur-3xl dark:bg-indigo-500/25"
+          />
+          <div className="relative flex flex-col gap-5 p-5 sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex min-w-0 items-start gap-4">
+                <div
+                  className={cn(
+                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset",
+                    "bg-indigo-500/10 text-indigo-600 ring-indigo-500/25",
+                    "dark:bg-indigo-400/15 dark:text-indigo-300 dark:ring-indigo-400/25"
+                  )}>
+                  <Video className="h-6 w-6" aria-hidden />
+                </div>
+                <div className="min-w-0 space-y-1.5">
+                  <h1
+                    className="text-xl font-semibold tracking-[-0.02em] text-slate-900 sm:text-2xl dark:text-slate-100"
+                    style={{ textWrap: "balance" }}>
+                    {sessionTitle}
+                  </h1>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {t("mentorSessions.detailsOfMentorInterviewSession")}
+                  </p>
+                </div>
               </div>
-              <div>
-                <CardTitle>
-                  {session.roomName ||
-                    t("common.sessionVar0", {
-                      var_0: session.id,
-                    })}
-                </CardTitle>
-                <CardDescription>
-                  {t("mentorSessions.detailsOfMentorInterviewSession")}
-                </CardDescription>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 font-mono text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  {t("common.code")}
+                  {session.id || "-"}
+                </span>
+                <SessionStatusBadge
+                  tone={sessionToneFromStatus(session.status)}
+                  label={status.label}
+                />
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">
-                {t("common.code")}
-                {session.id || "-"}
-              </Badge>
-              <Badge className={status.badgeClass}>{status.label}</Badge>
+
+            {/* Meta chips — one row of distinct atoms, not a uniform grid of grey cards */}
+            <div className="flex flex-wrap gap-2">
+              <MetaChip
+                icon={<Calendar className="h-3.5 w-3.5" aria-hidden />}
+                label={t("common.sessionCode")}
+                value={`#${session.id || "-"}`}
+              />
+              <MetaChip
+                icon={<User className="h-3.5 w-3.5" aria-hidden />}
+                label={t("mentorFeedback.students")}
+                value={`#${session.userId || "-"}`}
+                tone="indigo"
+              />
+              <MetaChip
+                icon={<User className="h-3.5 w-3.5" aria-hidden />}
+                label={t("common.mentor")}
+                value={
+                  mentorInfo?.name ||
+                  (mentorId != null ? t("common.mentorWithId", { id: mentorId }) : "-")
+                }
+                tone="emerald"
+              />
+              <MetaChip
+                icon={<Clock className="h-3.5 w-3.5" aria-hidden />}
+                label={t("common.appointmentTime")}
+                value={formatDateTime(session.joinTime)}
+                tone="sky"
+              />
+              <MetaChip
+                icon={<Clock className="h-3.5 w-3.5" aria-hidden />}
+                label={t("common.duration1")}
+                value={
+                  typeof session.duration === "number" && session.duration > 0
+                    ? t("general.minutes", { var_0: session.duration })
+                    : "-"
+                }
+              />
+              <MetaChip
+                icon={<CreditCard className="h-3.5 w-3.5" aria-hidden />}
+                label={t("common.totalPrice")}
+                value={
+                  typeof session.totalPrice === "number" && session.totalPrice > 0
+                    ? formatCurrency(session.totalPrice)
+                    : "-"
+                }
+                tone="amber"
+              />
+              {session.transactionCode && (
+                <MetaChip
+                  icon={<CreditCard className="h-3.5 w-3.5" aria-hidden />}
+                  label={t("common.transactionCode1")}
+                  value={session.transactionCode}
+                />
+              )}
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <Calendar className="h-4 w-4 text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400">{t("common.sessionCode")}</span>
-              <span className="font-medium">{session.id || "-"}</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <User className="h-4 w-4 text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400">
-                {t("mentorFeedback.students")}
-              </span>
-              <span className="font-medium">#{session.userId || "-"}</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <User className="h-4 w-4 text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400">{t("common.mentor")}:</span>
-              <span className="font-medium">
-                {mentorInfo?.name ||
-                  (mentorId != null ? t("common.mentorWithId", { id: mentorId }) : "-")}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <Clock className="h-4 w-4 text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400">
-                {t("common.appointmentTime")}
-              </span>
-              <span className="font-medium">{formatDateTime(session.joinTime)}</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <Clock className="h-4 w-4 text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400">{t("common.duration1")}</span>
-              <span className="font-medium">
-                {typeof session.duration === "number" && session.duration > 0
-                  ? t("general.minutes", {
-                      var_0: session.duration,
-                    })
-                  : "-"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <CreditCard className="h-4 w-4 text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400">{t("common.totalPrice")}</span>
-              <span className="font-medium">
-                {typeof session.totalPrice === "number" && session.totalPrice > 0
-                  ? formatCurrency(session.totalPrice)
-                  : "-"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm sm:col-span-2 lg:col-span-3 dark:bg-slate-900/50">
-              <CreditCard className="h-4 w-4 text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400">
-                {t("common.transactionCode1")}
-              </span>
-              <span className="font-medium">{session.transactionCode || "-"}</span>
-            </div>
-          </div>
+        </PanelSurface>
+      </motion.div>
 
-          <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/30">
-            <p className="mb-3 text-sm font-semibold text-slate-800 dark:text-slate-200">
-              {t("common.actFast")}
-            </p>
+      {/* Act-fast action bar — distinct visual treatment, not a generic "card" */}
+      <motion.div variants={childMotion}>
+        <PanelSurface className="overflow-hidden">
+          <div className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div>
+              <p className="text-sm font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
+                {t("common.actFast")}
+              </p>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                {canJoinRoom
+                  ? t("mentorSessions.itSMeetingTime")
+                  : canReview
+                    ? t("mentorSessions.evaluateStudentsAfterTheInterview")
+                    : t("mentorSessions.thisSessionIsCurrentlyOnly")}
+              </p>
+            </div>
             <div className="flex flex-wrap gap-2">
               {canJoinRoom && (
                 <Button
-                  className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+                  className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
                   onClick={() => navigate(`/mentor/sessions/room/${session.id}`)}>
-                  <Video className="h-4 w-4" />
+                  <Video className="h-4 w-4" aria-hidden />
                   {t("common.enterTheInterviewRoom")}
                 </Button>
               )}
@@ -204,7 +265,7 @@ export function MentorSessionDetailPage() {
                 <Button
                   className="gap-2"
                   onClick={() => navigate(`/mentor/sessions/${session.id}/review`)}>
-                  <MessageSquare className="h-4 w-4" />
+                  <MessageSquare className="h-4 w-4" aria-hidden />
                   {t("common.writeAReview")}
                 </Button>
               )}
@@ -215,7 +276,7 @@ export function MentorSessionDetailPage() {
                     variant="secondary"
                     className="gap-2"
                     onClick={() => navigate(`/mentor/reviews/${mentorReview.id}`)}>
-                    <MessageSquare className="h-4 w-4" />
+                    <MessageSquare className="h-4 w-4" aria-hidden />
                     {t("mentorSessions.seeReviews")}
                   </Button>
                   <Button
@@ -234,68 +295,87 @@ export function MentorSessionDetailPage() {
               )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </PanelSurface>
+      </motion.div>
 
-      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-[#FFD700]" />
-            <CardTitle>{t("mentorSessions.yourReview")}</CardTitle>
-          </div>
-          <CardDescription>{t("mentorSessions.overviewOfAssessmentContentSent")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {reviewLoading ? (
-            <Skeleton className="h-28" />
-          ) : !mentorReview ? (
-            <p className="text-sm text-slate-500">
-              {t("mentorSessions.thereAreNoReviewsSubmitted")}
-            </p>
-          ) : (
-            <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/30">
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge className="bg-yellow-100 text-yellow-700">
-                  <Star className="mr-1 h-3 w-3 fill-yellow-500 text-yellow-500" />
-                  {typeof mentorReview.rating === "number" ? mentorReview.rating.toFixed(1) : "-"}
-                </Badge>
-                {mentorReview.id && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => navigate(`/mentor/reviews/${mentorReview.id}`)}>
-                    {t("common.seeReviewDetails")}
-                  </Button>
-                )}
+      {/* Your review snapshot */}
+      <motion.div variants={childMotion}>
+        <PanelSurface>
+          <div className="flex flex-col gap-4 p-5 sm:p-6">
+            <SectionHeading
+              title={
+                <span className="inline-flex items-center gap-2">
+                  <Star className="h-5 w-5 text-amber-500" aria-hidden />
+                  {t("mentorSessions.yourReview")}
+                </span>
+              }
+              subtitle={t("mentorSessions.overviewOfAssessmentContentSent")}
+            />
+
+            {reviewLoading ? (
+              <Skeleton className="h-28" />
+            ) : !mentorReview ? (
+              <p className="text-sm text-slate-500">
+                {t("mentorSessions.thereAreNoReviewsSubmitted")}
+              </p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div
+                  className={cn(
+                    "rounded-xl p-3 ring-1 ring-inset",
+                    "bg-amber-500/8 ring-amber-500/20",
+                    "dark:bg-amber-500/10"
+                  )}>
+                  <p className="text-[10px] font-semibold tracking-wide text-amber-700 uppercase dark:text-amber-300">
+                    {t("mentorReviews.overallAssessment")}
+                  </p>
+                  <p className="mt-1 text-2xl font-bold tracking-[-0.02em] text-amber-700 dark:text-amber-300">
+                    {typeof mentorReview.rating === "number" ? mentorReview.rating.toFixed(1) : "-"}
+                    <span className="ml-1 text-sm font-medium opacity-70">/5</span>
+                  </p>
+                </div>
+                <div
+                  className={cn(
+                    "rounded-xl p-3 ring-1 ring-inset",
+                    "bg-emerald-500/8 ring-emerald-500/20",
+                    "dark:bg-emerald-500/10"
+                  )}>
+                  <p className="text-[10px] font-semibold tracking-wide text-emerald-700 uppercase dark:text-emerald-300">
+                    {t("mentorSessions.strengths")}
+                  </p>
+                  <p className="mt-1 line-clamp-3 text-xs text-slate-700 dark:text-slate-300">
+                    {mentorReview.strength || "-"}
+                  </p>
+                </div>
+                <div
+                  className={cn(
+                    "rounded-xl p-3 ring-1 ring-inset",
+                    "bg-rose-500/8 ring-rose-500/20",
+                    "dark:bg-rose-500/10"
+                  )}>
+                  <p className="text-[10px] font-semibold tracking-wide text-rose-700 uppercase dark:text-rose-300">
+                    {t("mentorSessions.pointsForImprovement")}
+                  </p>
+                  <p className="mt-1 line-clamp-3 text-xs text-slate-700 dark:text-slate-300">
+                    {mentorReview.weakness || "-"}
+                  </p>
+                </div>
               </div>
-              {mentorReview.strength && (
-                <p>
-                  <span className="font-semibold text-green-700">
-                    {t("mentorSessions.strengths")}{" "}
-                  </span>
-                  {mentorReview.strength}
-                </p>
-              )}
-              {mentorReview.weakness && (
-                <p>
-                  <span className="font-semibold text-amber-700">
-                    {t("mentorSessions.pointsForImprovement")}{" "}
-                  </span>
-                  {mentorReview.weakness}
-                </p>
-              )}
-              {mentorReview.improve && (
-                <p>
-                  <span className="font-semibold text-blue-700">
-                    {t("mentorSessions.suggestionForImprovement")}{" "}
-                  </span>
-                  {mentorReview.improve}
-                </p>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            )}
+
+            {mentorReview?.id && (
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate(`/mentor/reviews/${mentorReview.id}`)}>
+                  {t("common.seeReviewDetails")}
+                </Button>
+              </div>
+            )}
+          </div>
+        </PanelSurface>
+      </motion.div>
+    </motion.div>
   );
 }
