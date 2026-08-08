@@ -2138,7 +2138,11 @@
     "thereIsNoDetailedReview": "Không có nội dung đánh giá chi tiết",
     "updatedReview": "Cập nhật đánh giá",
     "youCanChooseTheNumber": "Có thể chọn số sao hoặc điền ghi chú chi tiết, cần ít nhất một thông tin",
-    "yourSpecificSuggestionsForStudents": "Đề xuất cụ thể của bạn để học viên cải thiện..."
+    "yourSpecificSuggestionsForStudents": "Đề xuất cụ thể của bạn để học viên cải thiện...",
+    "promptSituation": "Phác thảo bối cảnh: buổi phỏng vấn về chủ đề gì, thông tin về student và bối cảnh rộng hơn?",
+    "promptTask": "Bạn đã giao cho student những thử thách hay nhiệm vụ nào? Họ được kỳ vọng giải quyết ra sao?",
+    "promptAction": "Student đã phản ứng thế nào? Họ dùng những bước cụ thể, quyết định hay kỹ thuật nào?",
+    "promptResult": "Kết quả thế nào? Student đạt được, học được, hay vướng mắc ở điểm nào?"
   },
   "compShared": {
     "addFiles": "Thêm tệp",

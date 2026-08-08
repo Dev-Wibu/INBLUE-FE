@@ -2141,7 +2141,11 @@
     "thereIsNoDetailedReview": "There is no detailed review content",
     "updatedReview": "Updated review",
     "youCanChooseTheNumber": "You can choose the number of stars or fill in detailed notes, at least one piece of information is required",
-    "yourSpecificSuggestionsForStudents": "Your specific suggestions for students to improve..."
+    "yourSpecificSuggestionsForStudents": "Your specific suggestions for students to improve...",
+    "promptSituation": "Set the scene: what was the interview about, who was the student, and what was the wider context?",
+    "promptTask": "What challenges or tasks did you give the student? What were they expected to solve?",
+    "promptAction": "How did the student respond? What specific steps, decisions, or techniques did they use?",
+    "promptResult": "What was the outcome? What did the student achieve, learn, or struggle with?"
   },
   "compShared": {
     "addFiles": "Add files",

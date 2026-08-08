@@ -2128,6 +2128,14 @@
     "text": "INBLUE AI"
   },
   {
+    "file": "src/pages/Mentor/Sessions/MentorSessionDetailPage.tsx",
+    "line": 402,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "STAR"
+  },
+  {
     "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
     "line": 667,
     "character": 62,

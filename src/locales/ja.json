@@ -2103,7 +2103,11 @@
     "thereIsNoDetailedReview": "詳細なレビュー内容がありません",
     "updatedReview": "レビューを更新しました",
     "youCanChooseTheNumber": "星の数を選択するか詳細なメモを記入できます。少なくとも1つの情報が必要です",
-    "yourSpecificSuggestionsForStudents": "学生が改善するための具体的な提案..."
+    "yourSpecificSuggestionsForStudents": "学生が改善するための具体的な提案...",
+    "promptSituation": "状況を設定：面接のテーマ、学生の背景、より広い文脈は？",
+    "promptTask": "どんな課題やタスクを出しましたか？何を解決することが期待されましたか？",
+    "promptAction": "学生はどう反応しましたか？具体的にどんな手順・判断・工夫をしましたか？",
+    "promptResult": "結果はどうでしたか？何が達成され、何を学び、何で苦労しましたか？"
   },
   "compShared": {
     "addFiles": "ファイルを追加",

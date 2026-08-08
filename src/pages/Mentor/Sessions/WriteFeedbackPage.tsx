@@ -237,19 +237,15 @@ export function WriteFeedbackPage() {
         </span>
       </div>
 
-      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <CardContent className="pt-5 sm:pt-6">
-          <MentorReviewForm
-            sessionId={numericSessionId}
-            mentorId={submitterMentorId ?? 0}
-            userId={session.userId || 0}
-            existingReview={existingReview}
-            onSubmit={handleSubmit}
-            onCancel={() => navigate("/mentor?tab=sessions")}
-            isLoading={isSubmitting}
-          />
-        </CardContent>
-      </Card>
+      <MentorReviewForm
+        sessionId={numericSessionId}
+        mentorId={submitterMentorId ?? 0}
+        userId={session.userId || 0}
+        existingReview={existingReview}
+        onSubmit={handleSubmit}
+        onCancel={() => navigate("/mentor?tab=sessions")}
+        isLoading={isSubmitting}
+      />
     </div>
   );
 }

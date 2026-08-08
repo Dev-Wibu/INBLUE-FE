@@ -63,6 +63,26 @@ const T = {
     vi: "Candidate",
     ja: "候補者",
   },
+  "compReview.promptSituation": {
+    en: "Set the scene: what was the interview about, who was the student, and what was the wider context?",
+    vi: "Phác thảo bối cảnh: buổi phỏng vấn về chủ đề gì, thông tin về student và bối cảnh rộng hơn?",
+    ja: "状況を設定：面接のテーマ、学生の背景、より広い文脈は？",
+  },
+  "compReview.promptTask": {
+    en: "What challenges or tasks did you give the student? What were they expected to solve?",
+    vi: "Bạn đã giao cho student những thử thách hay nhiệm vụ nào? Họ được kỳ vọng giải quyết ra sao?",
+    ja: "どんな課題やタスクを出しましたか？何を解決することが期待されましたか？",
+  },
+  "compReview.promptAction": {
+    en: "How did the student respond? What specific steps, decisions, or techniques did they use?",
+    vi: "Student đã phản ứng thế nào? Họ dùng những bước cụ thể, quyết định hay kỹ thuật nào?",
+    ja: "学生はどう反応しましたか？具体的にどんな手順・判断・工夫をしましたか？",
+  },
+  "compReview.promptResult": {
+    en: "What was the outcome? What did the student achieve, learn, or struggle with?",
+    vi: "Kết quả thế nào? Student đạt được, học được, hay vướng mắc ở điểm nào?",
+    ja: "結果はどうでしたか？何が達成され、何を学び、何で苦労しましたか？",
+  },
   "common.timeline": {
     en: "Timeline",
     vi: "Dòng thời gian",
