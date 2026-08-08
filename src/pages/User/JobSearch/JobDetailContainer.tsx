@@ -146,104 +146,118 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       amount: String(job.price || 2000),
     };
 
-    const tryFetchNativeInfo = async () => {
-      // 1) Ưu tiên gọi BE - nhanh, ổn định trên cả local & deploy
-      if (paymentId) {
-        try {
-          const apiRes = await paymentManager.getPaymentLinkInfo(paymentId);
-          if (cancelled) return;
-          if (apiRes.success && apiRes.data) {
-            const merged: NativePaymentInfo = {
-              ...fallback,
-              ...apiRes.data,
-              amount: apiRes.data.amount ? String(apiRes.data.amount) : fallback.amount,
-            };
-            if (!merged.quicklink && merged.addInfo && merged.accountNo) {
-              merged.quicklink = `https://img.vietqr.io/image/970418-${merged.accountNo}-vietqr_pro.jpg?addInfo=${encodeURIComponent(
-                merged.addInfo
-              )}&amount=${merged.amount || 2000}`;
-            }
-            if (merged.addInfo || merged.quicklink) {
-              setNativeInfo(merged);
-              setShowEmbeddedFallback(false);
-              return;
-            }
-          }
-        } catch {
-          // tiếp tục fallback
-        }
+    const buildQuicklink = (info: NativePaymentInfo): string => {
+      if (info.quicklink) return info.quicklink.replace(/\\u0026/g, "&");
+      if (info.addInfo && info.accountNo) {
+        return `https://img.vietqr.io/image/970418-${info.accountNo}-vietqr_pro.jpg?addInfo=${encodeURIComponent(
+          info.addInfo
+        )}&amount=${info.amount || 2000}`;
       }
-
-      // 2) Fallback: scrape HTML qua proxy (chỉ chạy trên local)
-      const targets = paymentId ? [`/payos-proxy/web/${paymentId}`] : [];
-      targets.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(checkoutUrl)}`);
-      targets.push(`https://corsproxy.io/?${encodeURIComponent(checkoutUrl)}`);
-
-      for (const target of targets) {
-        if (cancelled) return;
-        try {
-          const res = await fetch(target, { signal: AbortSignal.timeout(4000) });
-          if (!res.ok) continue;
-          const html = await res.text();
-
-          const extracted: NativePaymentInfo = { ...fallback };
-
-          // Extract transactionInfo if embedded in Next.js script
-          const matchInfo = html.match(/"transactionInfo":(\{.*?\})/);
-          if (matchInfo && matchInfo[1]) {
-            try {
-              const parsed = JSON.parse(matchInfo[1]);
-              Object.assign(extracted, parsed);
-            } catch {
-              // ignore
-            }
-          }
-
-          // Extract addInfo (Nội dung CK) accurately from PayOS HTML
-          const matchAddInfo =
-            html.match(/"addInfo"\s*:\s*"(.*?)"/) ||
-            html.match(/\|\s*([A-Z0-9]+\s+PAYMENT)\s*\|/i) ||
-            html.match(/nội dung\s*<b>(.*?)<\/b>/i);
-
-          if (matchAddInfo && matchAddInfo[1]) {
-            extracted.addInfo = matchAddInfo[1].replace(/<[^>]*>/g, "").trim();
-          }
-
-          // Extract official quicklink from PayOS HTML
-          const matchQuicklink = html.match(/"quicklink"\s*:\s*"(.*?)"/);
-          if (matchQuicklink && matchQuicklink[1]) {
-            extracted.quicklink = matchQuicklink[1].replace(/\\u0026/g, "&");
-          } else if (extracted.addInfo) {
-            extracted.quicklink = `https://img.vietqr.io/image/970418-${extracted.accountNo || "V3CAS6721131488"}-vietqr_pro.jpg?addInfo=${encodeURIComponent(
-              extracted.addInfo
-            )}&amount=${extracted.amount || 2000}`;
-          }
-
-          if (extracted.addInfo || extracted.quicklink) {
-            if (cancelled) return;
-            setNativeInfo(extracted);
-            setShowEmbeddedFallback(false);
-            return;
-          }
-        } catch {
-          // try next proxy target
-        }
-      }
+      return "";
     };
 
-    // Safety timeout: nếu sau 5s không có addInfo/quicklink thì chuyển sang embedded
-    const timeoutId = window.setTimeout(() => {
-      if (cancelled) return;
-      if (!nativeInfo?.addInfo && !nativeInfo?.quicklink) {
-        setShowEmbeddedFallback(true);
+    const parsePayOSHtml = (html: string): Partial<NativePaymentInfo> | null => {
+      const extracted: Partial<NativePaymentInfo> = {};
+
+      const matchInfo = html.match(/"transactionInfo":(\{.*?\})/);
+      if (matchInfo && matchInfo[1]) {
+        try {
+          Object.assign(extracted, JSON.parse(matchInfo[1]));
+        } catch {
+          // ignore
+        }
       }
-    }, 5000);
+
+      const matchAddInfo =
+        html.match(/"addInfo"\s*:\s*"(.*?)"/) ||
+        html.match(/\|\s*([A-Z0-9]+\s+PAYMENT)\s*\|/i) ||
+        html.match(/nội dung\s*<b>(.*?)<\/b>/i);
+      if (matchAddInfo && matchAddInfo[1]) {
+        extracted.addInfo = matchAddInfo[1].replace(/<[^>]*>/g, "").trim();
+      }
+
+      const matchQuicklink = html.match(/"quicklink"\s*:\s*"(.*?)"/);
+      if (matchQuicklink && matchQuicklink[1]) {
+        extracted.quicklink = matchQuicklink[1];
+      }
+
+      return extracted.addInfo || extracted.quicklink ? extracted : null;
+    };
+
+    // 1) Hiển thị QR ngay với data mặc định (UI ảnh 1) - tránh stuck xoay tròn
+    setNativeInfo({ ...fallback });
+    setShowEmbeddedFallback(false);
+
+    const tryFetchNativeInfo = async () => {
+      // Chạy song song 4 nguồn: BE → Vite proxy → CORS proxy 1 → CORS proxy 2
+      // Lấy nguồn đầu tiên có addInfo/quicklink
+      const sources: Array<Promise<Partial<NativePaymentInfo> | null>> = [];
+
+      if (paymentId) {
+        sources.push(
+          paymentManager
+            .getPaymentLinkInfo(paymentId)
+            .then((res) =>
+              res.success && res.data
+                ? ({
+                    addInfo: res.data.addInfo,
+                    quicklink: res.data.quicklink,
+                    amount: res.data.amount ? String(res.data.amount) : undefined,
+                  } as Partial<NativePaymentInfo>)
+                : null
+            )
+            .catch(() => null)
+        );
+
+        sources.push(
+          fetch(`/payos-proxy/web/${paymentId}`, { signal: AbortSignal.timeout(3000) })
+            .then((r) => (r.ok ? r.text() : null))
+            .catch(() => null)
+            .then((html) => (html ? parsePayOSHtml(html) : null))
+        );
+      }
+
+      sources.push(
+        fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(checkoutUrl)}`, {
+          signal: AbortSignal.timeout(5000),
+        })
+          .then((r) => (r.ok ? r.text() : null))
+          .catch(() => null)
+          .then((html) => (html ? parsePayOSHtml(html) : null))
+      );
+
+      sources.push(
+        fetch(`https://corsproxy.io/?${encodeURIComponent(checkoutUrl)}`, {
+          signal: AbortSignal.timeout(5000),
+        })
+          .then((r) => (r.ok ? r.text() : null))
+          .catch(() => null)
+          .then((html) => (html ? parsePayOSHtml(html) : null))
+      );
+
+      const results = await Promise.allSettled(sources);
+      if (cancelled) return;
+
+      const found = results
+        .map((r) => (r.status === "fulfilled" ? r.value : null))
+        .find((v): v is Partial<NativePaymentInfo> => Boolean(v && (v.addInfo || v.quicklink)));
+
+      if (found) {
+        const merged: NativePaymentInfo = {
+          ...fallback,
+          ...found,
+          amount: found.amount || fallback.amount,
+        };
+        merged.quicklink = buildQuicklink(merged);
+        setNativeInfo(merged);
+      }
+      // Nếu scrape thất bại → vẫn giữ fallback UI (ảnh 1 với QR mặc định) - KHÔNG chuyển sang iframe
+    };
 
     void tryFetchNativeInfo();
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timeoutId);
     };
   }, [checkoutUrl, job.price]);
 
