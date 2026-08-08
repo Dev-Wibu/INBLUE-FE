@@ -88,6 +88,11 @@ const T = {
     vi: "Bạn đã chấm candidate {{var_0}} / 5",
     ja: "この候補者を {{var_0}} / 5 で評価しました",
   },
+  "mentorReviews.mentorReviewReport": {
+    en: "Mentor Review Report",
+    vi: "Báo cáo đánh giá của mentor",
+    ja: "メンターレビューレポート",
+  },
   "common.timeline": {
     en: "Timeline",
     vi: "Dòng thời gian",

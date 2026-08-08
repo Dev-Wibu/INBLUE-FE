@@ -3230,7 +3230,8 @@
     "theStudentHasNotFilled": "学生はSTARメソッドの詳細を入力していません。",
     "viewTheAssessmentsYouSent": "各面接セッション後に学生に送信した評価を表示",
     "youHaveNotSentAny": "まだ学生にレビューを送信していません。",
-    "candidate": "候補者"
+    "candidate": "候補者",
+    "mentorReviewReport": "メンターレビューレポート"
   },
   "mentorSessions": {
     "acceptInterviewSession": "面接セッションを承認",

@@ -3241,7 +3241,8 @@
     "theStudentHasNotFilled": "Học viên chưa điền chi tiết STAR method.",
     "viewTheAssessmentsYouSent": "Xem các đánh giá bạn đã gửi cho học viên sau mỗi phiên phỏng vấn",
     "youHaveNotSentAny": "Bạn chưa gửi đánh giá nào cho học viên.",
-    "candidate": "Candidate"
+    "candidate": "Candidate",
+    "mentorReviewReport": "Báo cáo đánh giá của mentor"
   },
   "mentorSessions": {
     "acceptInterviewSession": "Chấp nhận phiên phỏng vấn",

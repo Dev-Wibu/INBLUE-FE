@@ -3244,7 +3244,8 @@
     "theStudentHasNotFilled": "The student has not filled in STAR method details.",
     "viewTheAssessmentsYouSent": "View the assessments you sent to students after each interview session",
     "youHaveNotSentAny": "You have not sent any reviews to your students yet.",
-    "candidate": "Candidate"
+    "candidate": "Candidate",
+    "mentorReviewReport": "Mentor Review Report"
   },
   "mentorSessions": {
     "acceptInterviewSession": "Accept interview session",
