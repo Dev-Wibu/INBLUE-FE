@@ -27,9 +27,11 @@ import {
   Calendar,
   Check,
   Clock,
+  Eye,
   Hourglass,
   LogIn,
   MessageSquare,
+  Pencil,
   User,
   Video,
   X,
@@ -304,13 +306,14 @@ export function SessionCard({
         )}
       </div>
 
-      {/* Action cluster */}
+      {/* Action cluster — single primary entry point + context-aware secondary buttons */}
       <footer className="relative mt-auto flex flex-wrap items-center gap-2 pt-1">
         <Button
           variant="outline"
           size="sm"
           onClick={actions.onViewDetails}
-          className="h-7 px-2.5 text-xs">
+          className="h-7 gap-1 px-2.5 text-xs">
+          <Eye className="h-3.5 w-3.5" aria-hidden />
           {t("common.seeDetails")}
         </Button>
         {isCompleted && !hasReview && (
@@ -318,7 +321,7 @@ export function SessionCard({
             size="sm"
             onClick={actions.onWriteReview}
             className="h-7 gap-1 bg-emerald-600 px-2.5 text-xs hover:bg-emerald-700">
-            <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+            <Pencil className="h-3.5 w-3.5" aria-hidden />
             {t("common.writeAReview")}
           </Button>
         )}
@@ -330,16 +333,24 @@ export function SessionCard({
               onClick={actions.onViewReview}
               className="h-7 gap-1 px-2.5 text-xs">
               <MessageSquare className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
-              {t("common.seeDetails")}
+              {t("common.seeReviews")}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={actions.onEditReview}
-              disabled={typeof session.id !== "number"}
-              className="h-7 px-2.5 text-xs">
-              {t("common.editReview")}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={actions.onEditReview}
+                    disabled={typeof session.id !== "number"}
+                    aria-label={t("common.editReview")}
+                    className="h-7 w-7">
+                    <Pencil className="h-3.5 w-3.5" aria-hidden />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t("common.editReview")}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </>
         )}
         {!isCompleted && !canJoin && (
