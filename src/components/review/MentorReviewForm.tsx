@@ -222,7 +222,7 @@ function FieldCard({
     <motion.div
       initial={reduce ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: 0.04 * index }}
+      transition={{ duration: 0.32, ease: "easeOut" as const, delay: 0.04 * index }}
       className={cn(
         "group flex h-full flex-col gap-3 rounded-2xl p-4 ring-1 transition-shadow ring-inset",
         cls.surface,
@@ -320,7 +320,7 @@ function LivePreviewCard({
             className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500"
             initial={false}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.32, ease: "easeOut" as const }}
           />
         </div>
       </div>

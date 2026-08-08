@@ -20,12 +20,12 @@ import {
 import { cn } from "@/lib/utils";
 import { Calendar, Check, Clock, LogIn, MessageSquare, User, Video, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SessionStatusBadge } from "./mentor-interview-primitives";
 import {
-  SessionStatusBadge,
+  SESSION_CARD_GLOW,
   sessionToneFromStatus,
   type SessionStatusTone,
-} from "./mentor-interview-primitives";
-import { SESSION_CARD_GLOW } from "./mentor-interview.constants";
+} from "./mentor-interview.constants";
 
 type StatusConfig = { label: string; tone: SessionStatusTone };
 

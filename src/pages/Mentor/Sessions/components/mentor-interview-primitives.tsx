@@ -111,8 +111,8 @@ export function PanelSurface({ children, className, variant = "raised" }: PanelS
  * and no eyebrow kicker. Section meta can sit on the right via `meta`.
  */
 export interface SectionHeadingProps {
-  title: string;
-  subtitle?: string;
+  title: ReactNode;
+  subtitle?: ReactNode;
   meta?: ReactNode;
   level?: 2 | 3;
 }

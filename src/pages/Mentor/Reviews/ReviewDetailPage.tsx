@@ -52,12 +52,12 @@ const STAR_CARD_ICON: Record<keyof typeof STAR_CARD_TONE, typeof Target> = {
 
 const heroMotion = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: "easeOut" as const } },
 };
 
 const childMotion = {
   hidden: { opacity: 0, y: 8 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: "easeOut" as const } },
 };
 
 const gridStagger = {
@@ -67,7 +67,7 @@ const gridStagger = {
 
 const cardMotion = {
   hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: "easeOut" as const } },
 };
 
 const STAR_TONE_CLASS: Record<

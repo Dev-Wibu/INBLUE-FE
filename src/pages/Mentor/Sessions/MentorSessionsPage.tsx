@@ -81,7 +81,7 @@ const listMotion = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.05 },
+    transition: { staggerChildren: 0.04, delayChildren: 0.05, ease: "easeOut" as const },
   },
 };
 
@@ -90,7 +90,7 @@ const cardMotion = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.32, ease: "easeOut" as const },
   },
 };
 
