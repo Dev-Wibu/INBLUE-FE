@@ -1978,12 +1978,7 @@
     "pointsAbbr": "đ",
     "minutesShort": "p",
     "days": "ngày",
-    "problemNum": "Bài #{{num}}",
-    "seeReviews": "[VI] common.seeReviews",
-    "open": "[VI] common.open",
-    "timeline": "[VI] common.timeline",
-    "checkNow": "[VI] common.checkNow",
-    "copied": "[VI] common.copied"
+    "problemNum": "Bài #{{num}}"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",

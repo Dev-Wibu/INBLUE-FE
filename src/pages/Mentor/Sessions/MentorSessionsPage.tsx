@@ -223,9 +223,6 @@ export function MentorSessionsPage() {
       navigate(`/mentor/sessions/${session.id}`);
     }
   };
-  const handleViewReview = (reviewId: number) => {
-    navigate(`/mentor/reviews/${reviewId}`);
-  };
   const handleEditReview = (sessionId: number) => {
     navigate(`/mentor/sessions/${sessionId}/review`);
   };
@@ -450,7 +447,7 @@ export function MentorSessionsPage() {
           )}
 
           {sortedData.length === 0 ? (
-            <div className="rounded-2xl bg-white p-2 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-white/5">
+            <div className="flex flex-1 rounded-2xl bg-white p-2 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-white/5">
               <EmptyState
                 icon={Video}
                 title={
@@ -462,7 +459,7 @@ export function MentorSessionsPage() {
               />
             </div>
           ) : (
-            <>
+            <div className="flex flex-1 flex-col gap-4">
               <motion.div
                 key={`${trackFilter}-${otherStatusFilter}-${searchQuery}`}
                 variants={listMotion}
@@ -488,10 +485,12 @@ export function MentorSessionsPage() {
                           onJoinSession: () => handleJoinSession(session),
                           onWriteReview: () => handleWriteReview(session),
                           onViewReview: () => {
-                            if (typeof session.id !== "number") return;
-                            const reviewId = reviewBySessionId.get(session.id);
-                            if (reviewId) {
-                              handleViewReview(reviewId);
+                            // Keep the user in session context — route to
+                            // the session detail page which already shows
+                            // the review snapshot + a link to the deep
+                            // read-only review view.
+                            if (typeof session.id === "number") {
+                              handleViewDetails(session);
                             }
                           },
                           onEditReview: () => {
@@ -508,7 +507,7 @@ export function MentorSessionsPage() {
                 </AnimatePresence>
               </motion.div>
 
-              <div className="rounded-xl border border-slate-200/70 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
+              <div className="mt-auto rounded-xl border border-slate-200/70 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
                 <PaginationControl
                   pagination={pagination}
                   onPageSizeChange={(size) => {
@@ -518,7 +517,7 @@ export function MentorSessionsPage() {
                   pageSizeOptions={[5, 10, 20, 50]}
                 />
               </div>
-            </>
+            </div>
           )}
         </>
       )}

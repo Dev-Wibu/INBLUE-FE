@@ -30,7 +30,6 @@ import {
   Eye,
   Hourglass,
   LogIn,
-  MessageSquare,
   Pencil,
   User,
   Video,
@@ -326,32 +325,22 @@ export function SessionCard({
           </Button>
         )}
         {isCompleted && hasReview && (
-          <>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={actions.onViewReview}
-              className="h-7 gap-1 px-2.5 text-xs">
-              <MessageSquare className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
-              {t("common.seeReviews")}
-            </Button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={actions.onEditReview}
-                    disabled={typeof session.id !== "number"}
-                    aria-label={t("common.editReview")}
-                    className="h-7 w-7">
-                    <Pencil className="h-3.5 w-3.5" aria-hidden />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("common.editReview")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={actions.onEditReview}
+                  disabled={typeof session.id !== "number"}
+                  aria-label={t("common.editReview")}
+                  className="h-7 w-7">
+                  <Pencil className="h-3.5 w-3.5" aria-hidden />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t("common.editReview")}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
         {!isCompleted && !canJoin && (
           <span className="text-xs text-slate-500 italic">

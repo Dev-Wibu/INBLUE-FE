@@ -1943,12 +1943,7 @@
     "pointsAbbr": "pt",
     "minutesShort": "分",
     "days": "日",
-    "problemNum": "問題 #{{num}}",
-    "seeReviews": "[JA] common.seeReviews",
-    "open": "[JA] common.open",
-    "timeline": "[JA] common.timeline",
-    "checkNow": "[JA] common.checkNow",
-    "copied": "[JA] common.copied"
+    "problemNum": "問題 #{{num}}"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",

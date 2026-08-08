@@ -1981,12 +1981,7 @@
     "pointsAbbr": "pts",
     "minutesShort": "m",
     "days": "days",
-    "problemNum": "Problem #{{num}}",
-    "seeReviews": "[EN] common.seeReviews",
-    "open": "[EN] common.open",
-    "timeline": "[EN] common.timeline",
-    "checkNow": "[EN] common.checkNow",
-    "copied": "[EN] common.copied"
+    "problemNum": "Problem #{{num}}"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
