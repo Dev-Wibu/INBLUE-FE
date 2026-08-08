@@ -89,15 +89,12 @@ export function HomepageHeader() {
                 href={link.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200",
+                  "rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200",
                   active
                     ? "bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#66B2FF]/15 dark:text-[#66B2FF]"
                     : "text-slate-600 hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-[#66B2FF]"
                 )}>
                 {link.label}
-                {active && (
-                  <span className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-[#0047AB] to-[#66B2FF] dark:from-[#66B2FF] dark:to-[#0047AB]" />
-                )}
               </a>
             );
           })}
