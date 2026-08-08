@@ -102,7 +102,7 @@ export function BlogFeedPage({ title, description }: BlogFeedPageProps) {
       </div>
 
       {user ? (
-        <Card className="overflow-hidden rounded-xl border-slate-200/70 py-0 shadow-sm dark:border-slate-800">
+        <Card className="overflow-hidden rounded-xl border-slate-200/70 bg-white py-0 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
           <div className="flex items-center gap-3 px-4 py-2.5">
             <Avatar className="h-9 w-9 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
               <AvatarImage src={user?.avatarUrl ?? undefined} alt={authorName} />

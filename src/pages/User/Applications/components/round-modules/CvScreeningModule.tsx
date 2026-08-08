@@ -655,13 +655,13 @@ export function CvScreeningModule({
             <div className="grid grid-cols-2 gap-2">
               <ModernGaugeClock
                 score={aiScoreVal}
-                label="AI Score"
+                label={t("userApplication.cvScreening.aiScore", "AI Score")}
                 color="indigo"
                 hasData={hasAiData}
               />
               <ModernGaugeClock
                 score={hrScoreVal}
-                label="HR Score"
+                label={t("userApplication.cvScreening.hrScore", "HR Score")}
                 color="emerald"
                 hasData={hasAiData}
               />

@@ -72,7 +72,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
   })();
   return (
     <>
-      <Card className="overflow-hidden rounded-xl border-slate-200/70 py-0 shadow-sm hover:shadow-md dark:border-slate-800">
+      <Card className="overflow-hidden rounded-xl border-slate-200/70 bg-white py-0 shadow-sm hover:shadow-md dark:border-slate-800 dark:bg-slate-900/60">
         <CardHeader className="pt-4 pb-2">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">

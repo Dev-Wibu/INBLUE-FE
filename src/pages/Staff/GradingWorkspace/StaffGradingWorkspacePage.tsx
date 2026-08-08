@@ -10,20 +10,31 @@ import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import {
+  AlertCircle,
   AlertTriangle,
   ArrowLeft,
   Award,
   BadgeCheck,
+  CheckCircle2,
   ChevronRight,
   ClipboardCheck,
   Clock,
+  Edit3,
   FileText,
+  Gavel,
   Layers,
+  MessageSquare,
   RefreshCw,
+  Send,
+  Sparkles,
   Star,
+  Target,
   ThumbsDown,
   ThumbsUp,
+  Trophy,
   User,
+  X,
+  XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -187,16 +198,16 @@ function StaffGradingModal({
   const handleScoreChange = (val: string) => {
     setScore(val);
     if (val.trim() === "") {
-      setScoreError("Vui lòng nhập điểm số");
+      setScoreError(t("gradingErrorEmpty", "Vui lòng nhập điểm số"));
       return;
     }
     const num = parseFloat(val);
     if (isNaN(num)) {
-      setScoreError("Điểm số phải là số hợp lệ");
+      setScoreError(t("gradingErrorInvalidNumber", "Điểm số phải là số hợp lệ"));
       return;
     }
     if (num < 0 || num > 100) {
-      setScoreError("Điểm số phải nằm trong khoảng từ 0 đến 100");
+      setScoreError(t("gradingErrorScoreRange", "Điểm số phải nằm trong khoảng từ 0 đến 100"));
       return;
     }
     setScoreError(null);
@@ -205,12 +216,12 @@ function StaffGradingModal({
   const handleSubmit = () => {
     const scoreNum = parseFloat(score);
     if (isNaN(scoreNum) || score.trim() === "") {
-      setScoreError("Vui lòng nhập điểm số hợp lệ từ 0 đến 100");
+      setScoreError(t("gradingErrorScoreRange", "Vui lòng nhập điểm số hợp lệ từ 0 đến 100"));
       toast.error(t("grading.invalidScore", "Điểm không hợp lệ"));
       return;
     }
     if (scoreNum < 0 || scoreNum > 100) {
-      setScoreError("Điểm số phải nằm trong khoảng từ 0 đến 100");
+      setScoreError(t("gradingErrorScoreRange", "Điểm số phải nằm trong khoảng từ 0 đến 100"));
       toast.error(t("grading.invalidScore", "Điểm không hợp lệ"));
       return;
     }
@@ -242,203 +253,425 @@ function StaffGradingModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-            <ClipboardCheck className="h-5 w-5 text-indigo-600" />
-            {hasExistingGrade && !isEditing
-              ? t("grading.hrResult", "Kết quả chấm điểm")
-              : isEditing
-                ? t("grading.editScore", "Sửa điểm")
-                : t("grading.hrGrading", "Chấm điểm HR")}{" "}
-            - {roundName}
-          </DialogTitle>
+      <DialogContent className="max-h-[90vh] max-w-2xl gap-0 overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-slate-50 via-white to-indigo-50/40 p-0 shadow-2xl dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/40">
+        {/* Animated gradient header bar */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+        <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-purple-500/10 blur-3xl" />
+
+        {/* Header */}
+        <DialogHeader className="relative space-y-3 px-7 pt-7 pb-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 opacity-30 blur-md" />
+                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30">
+                  <ClipboardCheck className="h-6 w-6" />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-indigo-700 uppercase dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300">
+                    {t("common.staff", "STAFF")}
+                  </span>
+                  <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {roundName}
+                  </span>
+                </div>
+                <DialogTitle className="mt-1 bg-gradient-to-r from-slate-900 to-indigo-700 bg-clip-text text-xl font-black text-transparent dark:from-white dark:to-indigo-300">
+                  {hasExistingGrade && !isEditing
+                    ? t("grading.hrResult", "Kết quả chấm điểm")
+                    : isEditing
+                      ? t("grading.editScore", "Sửa điểm")
+                      : t("grading.hrGrading", "Chấm điểm HR")}
+                </DialogTitle>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-5">
-          {/* AI Reference */}
+        {/* Body */}
+        <div className="relative max-h-[calc(90vh-100px)] space-y-5 overflow-y-auto px-7 pb-7">
+          {/* AI Reference Card */}
           {detail.aiScore !== undefined && (
-            <div className="flex items-center justify-between rounded-xl border border-purple-100 bg-purple-50/70 px-3.5 py-2.5 dark:border-purple-500/20 dark:bg-purple-500/5">
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300">
-                <Star className="h-3.5 w-3.5 text-purple-500" />
-                {t("grading.aiScoreReference", "Điểm tham khảo AI")}
-              </span>
-              <span className="text-sm font-extrabold text-purple-600 dark:text-purple-400">
-                {detail.aiScore} / 100
-              </span>
-            </div>
-          )}
-
-          {/* Existing Grade */}
-          {hasExistingGrade && !isEditing ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/50 p-5 dark:border-emerald-500/20 dark:from-emerald-950/30 dark:to-teal-950/10">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400/20 text-amber-500 shadow-2xs">
-                    <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+            <div className="group relative overflow-hidden rounded-2xl border border-purple-200/60 bg-gradient-to-br from-purple-50 via-indigo-50/40 to-white p-4 shadow-sm dark:border-purple-500/20 dark:from-purple-950/30 dark:via-indigo-950/20 dark:to-slate-900">
+              <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
+              <div className="relative flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md shadow-purple-500/30">
+                    <Sparkles className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-extrabold tracking-wider text-slate-500 uppercase">
-                      {t("grading.hrScore", "Điểm HR")}
+                    <p className="text-[10px] font-extrabold tracking-widest text-purple-600 uppercase dark:text-purple-300">
+                      {t("grading.aiScoreReference", "AI Reference")}
                     </p>
-                    <p className="text-3xl font-black text-slate-900 dark:text-white">
-                      {detail.hrScore}{" "}
-                      <span className="text-xs font-normal text-slate-400">/100</span>
+                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                      {t("grading.aiReferenceHint", "AI suggested score for this submission")}
                     </p>
                   </div>
                 </div>
-                <span
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-xs font-extrabold shadow-2xs",
-                    detail.finalResult === "PASSED"
-                      ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-400/15 dark:text-emerald-300"
-                      : "border-rose-500/40 bg-rose-500/15 text-rose-700 dark:border-rose-400/40 dark:bg-rose-400/15 dark:text-rose-300"
-                  )}>
-                  {detail.finalResult === "PASSED"
-                    ? t("userApplicationhistory.passed", "ĐẠT")
-                    : t("userApplicationhistory.failed", "KHÔNG ĐẠT")}
-                </span>
+                <div className="text-right">
+                  <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-2xl font-black tracking-tight text-transparent">
+                    {Math.round(detail.aiScore)}
+                  </span>
+                  <span className="ml-0.5 text-xs font-bold text-slate-400">/100</span>
+                </div>
               </div>
+            </div>
+          )}
+
+          {/* Existing Grade (Read-Only Summary) */}
+          {hasExistingGrade && !isEditing ? (
+            <div className="space-y-4">
+              <div
+                className={cn(
+                  "group relative overflow-hidden rounded-3xl border-2 p-5 shadow-xl transition-all",
+                  detail.finalResult === "PASSED"
+                    ? "border-emerald-300/60 bg-gradient-to-br from-emerald-50 via-teal-50/50 to-white dark:border-emerald-500/30 dark:from-emerald-950/40 dark:via-teal-950/20 dark:to-slate-900"
+                    : "border-rose-300/60 bg-gradient-to-br from-rose-50 via-orange-50/50 to-white dark:border-rose-500/30 dark:from-rose-950/40 dark:via-orange-950/20 dark:to-slate-900"
+                )}>
+                <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br from-amber-300/30 to-transparent blur-2xl" />
+                <div className="relative flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div
+                        className={cn(
+                          "absolute inset-0 rounded-2xl opacity-40 blur-md",
+                          detail.finalResult === "PASSED" ? "bg-emerald-400" : "bg-rose-400"
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          "relative flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg",
+                          detail.finalResult === "PASSED"
+                            ? "bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-emerald-500/30"
+                            : "bg-gradient-to-br from-rose-500 to-orange-500 text-white shadow-rose-500/30"
+                        )}>
+                        {detail.finalResult === "PASSED" ? (
+                          <Trophy className="h-7 w-7" />
+                        ) : (
+                          <AlertCircle className="h-7 w-7" />
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
+                        {t("grading.hrScore", "HR Score")}
+                      </p>
+                      <div className="mt-1 flex items-baseline gap-1">
+                        <span className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black tracking-tight text-transparent dark:from-white dark:to-slate-200">
+                          {detail.hrScore}
+                        </span>
+                        <span className="text-sm font-bold text-slate-400">/100</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full border-2 px-4 py-1.5 text-xs font-black tracking-wide shadow-md",
+                        detail.finalResult === "PASSED"
+                          ? "border-emerald-400 bg-emerald-500 text-white shadow-emerald-500/30"
+                          : "border-rose-400 bg-rose-500 text-white shadow-rose-500/30"
+                      )}>
+                      {detail.finalResult === "PASSED" ? (
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                      ) : (
+                        <XCircle className="h-3.5 w-3.5" />
+                      )}
+                      {detail.finalResult === "PASSED"
+                        ? t("userApplicationhistory.passed", "PASSED")
+                        : t("userApplicationhistory.failed", "FAILED")}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {detail.hrNote && (
-                <div className="space-y-1.5">
-                  <h5 className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
-                    <FileText className="h-3.5 w-3.5 text-indigo-500" />
-                    {t("general.notes", "Ghi chú")}
-                  </h5>
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-800/40">
-                    <p className="text-xs whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                <div className="rounded-2xl border border-indigo-200/60 bg-gradient-to-br from-indigo-50/60 to-white p-4 shadow-sm dark:border-indigo-500/20 dark:from-indigo-950/30 dark:to-slate-900">
+                  <div className="mb-2 flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <h5 className="text-xs font-extrabold tracking-wide text-indigo-700 uppercase dark:text-indigo-300">
+                      {t("general.notes", "Notes")}
+                    </h5>
+                  </div>
+                  <div className="rounded-xl border border-indigo-100/50 bg-white/60 p-3.5 dark:border-indigo-500/15 dark:bg-slate-950/40">
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
                       {detail.hrNote}
                     </p>
                   </div>
                 </div>
               )}
+
               <Button
                 variant="outline"
                 onClick={() => setIsEditing(true)}
-                className="w-full gap-2 rounded-xl border-slate-200 font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-                <ThumbsDown className="h-4 w-4" />
-                {t("grading.editScore", "Sửa điểm")}
+                className="h-11 w-full gap-2 rounded-2xl border-2 border-indigo-200 bg-white font-bold text-indigo-600 shadow-sm transition-all hover:border-indigo-400 hover:bg-indigo-50 dark:border-indigo-500/30 dark:bg-slate-900 dark:text-indigo-300 dark:hover:bg-indigo-950/40">
+                <Edit3 className="h-4 w-4" />
+                {t("grading.editScore", "Edit Score")}
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* Decision Toggle */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {t("grading.decision", "Quyết định")}
+              <div className="space-y-2.5">
+                <label className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-slate-700 uppercase dark:text-slate-300">
+                  <Gavel className="h-3.5 w-3.5 text-indigo-500" />
+                  {t("grading.decision", "Decision")}
                 </label>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <Button
+                <div className="grid grid-cols-2 gap-3">
+                  <button
                     type="button"
-                    variant={isPass ? "default" : "outline"}
+                    onClick={() => setIsPass(true)}
                     className={cn(
-                      "h-10 gap-2 rounded-xl text-xs font-bold transition-all",
+                      "group relative overflow-hidden rounded-2xl border-2 p-4 text-left transition-all",
                       isPass
-                        ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700"
-                        : "border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900/40 dark:text-emerald-400"
+                        ? "border-emerald-400 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-emerald-500/40 dark:hover:bg-emerald-950/20"
+                    )}>
+                    {isPass && (
+                      <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-white/20 blur-xl" />
                     )}
-                    onClick={() => setIsPass(true)}>
-                    <ThumbsUp className="h-4 w-4" />
-                    {t("userApplicationhistory.passed", "ĐẠT")}
-                  </Button>
-                  <Button
+                    <div className="relative flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={cn(
+                            "flex h-9 w-9 items-center justify-center rounded-xl shadow-md transition-all",
+                            isPass
+                              ? "bg-white/20 text-white backdrop-blur-sm"
+                              : "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400"
+                          )}>
+                          <ThumbsUp className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p
+                            className={cn(
+                              "text-sm font-black tracking-wide",
+                              isPass ? "text-white" : "text-slate-800 dark:text-slate-100"
+                            )}>
+                            {t("userApplicationhistory.passed", "PASSED")}
+                          </p>
+                          <p
+                            className={cn(
+                              "text-[10px] font-medium",
+                              isPass ? "text-white/80" : "text-slate-500 dark:text-slate-400"
+                            )}>
+                            {t("grading.decisionPassHint", "Candidate meets requirements")}
+                          </p>
+                        </div>
+                      </div>
+                      {isPass && <CheckCircle2 className="h-5 w-5 text-white" />}
+                    </div>
+                  </button>
+                  <button
                     type="button"
-                    variant={!isPass ? "default" : "outline"}
+                    onClick={() => setIsPass(false)}
                     className={cn(
-                      "h-10 gap-2 rounded-xl text-xs font-bold transition-all",
+                      "group relative overflow-hidden rounded-2xl border-2 p-4 text-left transition-all",
                       !isPass
-                        ? "bg-red-600 text-white shadow-md shadow-red-600/20 hover:bg-red-700"
-                        : "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-400"
+                        ? "border-rose-400 bg-gradient-to-br from-rose-500 to-orange-600 text-white shadow-lg shadow-rose-500/30"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-rose-300 hover:bg-rose-50/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-rose-500/40 dark:hover:bg-rose-950/20"
+                    )}>
+                    {!isPass && (
+                      <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-white/20 blur-xl" />
                     )}
-                    onClick={() => setIsPass(false)}>
-                    <ThumbsDown className="h-4 w-4" />
-                    {t("userApplicationhistory.failed", "KHÔNG ĐẠT")}
-                  </Button>
+                    <div className="relative flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={cn(
+                            "flex h-9 w-9 items-center justify-center rounded-xl shadow-md transition-all",
+                            !isPass
+                              ? "bg-white/20 text-white backdrop-blur-sm"
+                              : "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400"
+                          )}>
+                          <ThumbsDown className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p
+                            className={cn(
+                              "text-sm font-black tracking-wide",
+                              !isPass ? "text-white" : "text-slate-800 dark:text-slate-100"
+                            )}>
+                            {t("userApplicationhistory.failed", "FAILED")}
+                          </p>
+                          <p
+                            className={cn(
+                              "text-[10px] font-medium",
+                              !isPass ? "text-white/80" : "text-slate-500 dark:text-slate-400"
+                            )}>
+                            {t("grading.decisionFailHint", "Candidate does not meet requirements")}
+                          </p>
+                        </div>
+                      </div>
+                      {!isPass && <XCircle className="h-5 w-5 text-white" />}
+                    </div>
+                  </button>
                 </div>
               </div>
 
-              {/* Score Input */}
-              <div className="space-y-2">
+              {/* Score Input with Visual Feedback */}
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {t("grading.hrScore")}
+                  <label className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-slate-700 uppercase dark:text-slate-300">
+                    <Target className="h-3.5 w-3.5 text-indigo-500" />
+                    {t("grading.hrScore", "HR Score (0-100)")}
                   </label>
                   {detail.aiScore !== undefined && (
                     <button
                       type="button"
                       onClick={() => handleScoreChange(String(Math.round(detail.aiScore!)))}
-                      className="text-[11px] font-semibold text-purple-600 hover:underline dark:text-purple-400">
-                      {t("grading.useAiScore", "Dùng điểm AI")} ({Math.round(detail.aiScore)})
+                      className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2.5 py-1 text-[11px] font-bold text-purple-700 transition-all hover:border-purple-400 hover:bg-purple-100 dark:border-purple-500/30 dark:bg-purple-500/15 dark:text-purple-300 dark:hover:bg-purple-500/25">
+                      <Sparkles className="h-3 w-3" />
+                      {t("grading.useAiScore", "Use AI")} ({Math.round(detail.aiScore)})
                     </button>
                   )}
                 </div>
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={score}
-                  onChange={(e) => handleScoreChange(e.target.value)}
-                  placeholder={t("grading.enterScore", "Nhập điểm")}
-                  className={cn(
-                    "h-10 rounded-xl text-base font-extrabold transition-colors",
-                    scoreError && "border-red-500 focus-visible:ring-red-500"
-                  )}
-                />
+
+                {/* Visual Score Bar */}
+                <div className="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-5 shadow-inner dark:border-slate-700 dark:bg-slate-900">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
+                  <div className="relative flex items-center justify-between gap-4">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={score}
+                      onChange={(e) => handleScoreChange(e.target.value)}
+                      placeholder={t("grading.enterScore", "Enter score...")}
+                      className={cn(
+                        "h-16 rounded-xl border-2 bg-white/80 text-center text-3xl font-black tracking-tight shadow-sm backdrop-blur-sm transition-all dark:bg-slate-950/60",
+                        scoreError
+                          ? "border-rose-400 focus-visible:ring-rose-500"
+                          : "border-indigo-200 focus-visible:border-indigo-500 focus-visible:ring-indigo-500 dark:border-indigo-500/30"
+                      )}
+                    />
+                    <div className="flex flex-col items-end">
+                      <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-3xl font-black tracking-tight text-transparent">
+                        {score || "0"}
+                      </span>
+                      <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                        {t("grading.outOf", "out of 100")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="relative mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div
+                      className={cn(
+                        "absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out",
+                        scoreError
+                          ? "bg-gradient-to-r from-rose-500 to-orange-500"
+                          : isPass
+                            ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"
+                            : "bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500"
+                      )}
+                      style={{ width: `${Math.min(100, Math.max(0, parseFloat(score) || 0))}%` }}
+                    />
+                  </div>
+                </div>
+
                 {scoreError && (
-                  <p className="flex items-center gap-1.5 text-[11px] font-semibold text-red-500">
+                  <p className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-700 dark:border-rose-500/30 dark:bg-rose-950/30 dark:text-rose-300">
                     <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                     {scoreError}
                   </p>
                 )}
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {[100, 90, 80, 70, 60, 50].map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => handleScoreChange(String(preset))}
-                      className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                      {preset}
-                    </button>
-                  ))}
+
+                {/* Quick presets */}
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
+                    {t("grading.quickPicks", "Quick picks")}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[100, 90, 80, 70, 60, 50].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => handleScoreChange(String(preset))}
+                        className={cn(
+                          "rounded-lg border-2 px-3 py-1.5 text-xs font-bold transition-all",
+                          score === String(preset)
+                            ? "border-indigo-500 bg-indigo-500 text-white shadow-md shadow-indigo-500/30"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-300"
+                        )}>
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* HR Note */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {t("general.notes", "Ghi chú")}
+              <div className="space-y-2.5">
+                <label className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-slate-700 uppercase dark:text-slate-300">
+                  <MessageSquare className="h-3.5 w-3.5 text-indigo-500" />
+                  {t("general.notes", "Notes")}
+                  <span className="text-[10px] font-medium text-slate-400 normal-case">
+                    ({t("general.optional", "optional")})
+                  </span>
                 </label>
-                <Textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder={t("grading.enterHrNotes", "Nhập ghi chú (không bắt buộc)")}
-                  rows={4}
-                  className="resize-none rounded-xl text-xs"
-                />
+                <div className="group relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white transition-colors focus-within:border-indigo-400 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:border-indigo-500/60">
+                  <Textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder={t(
+                      "grading.enterHrNotes",
+                      "Share feedback, observations, or reasons for your decision..."
+                    )}
+                    rows={4}
+                    className="resize-none rounded-2xl border-0 bg-transparent p-3.5 text-sm leading-relaxed focus-visible:ring-0"
+                  />
+                  <div className="pointer-events-none absolute right-3 bottom-3 flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                    <span>{note.length}</span>
+                    <span>/</span>
+                    <span>500</span>
+                  </div>
+                </div>
               </div>
 
               {/* Submit */}
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting || scoreError !== null || score.trim() === ""}
-                className={cn(
-                  "h-11 w-full gap-2 rounded-xl text-sm font-bold shadow-md transition-all",
-                  isPass
-                    ? "bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-700"
-                    : "bg-red-600 shadow-red-600/20 hover:bg-red-700"
-                )}>
-                {isSubmitting ? (
-                  <>
-                    <Spinner className="h-4 w-4 text-white" />
-                    {t("common.saving", "Đang lưu...")}
-                  </>
-                ) : (
-                  <>
-                    <ClipboardCheck className="h-4 w-4" />
-                    {t("general.save", "Lưu")} {t("grading.hrResult", "kết quả chấm điểm")}
-                  </>
-                )}
-              </Button>
+              <div className="space-y-2.5 pt-1">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || scoreError !== null || score.trim() === ""}
+                  className={cn(
+                    "group relative h-12 w-full gap-2 overflow-hidden rounded-2xl text-sm font-black tracking-wide shadow-lg transition-all",
+                    "text-white disabled:cursor-not-allowed disabled:opacity-50",
+                    isPass
+                      ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40"
+                      : "bg-gradient-to-r from-rose-600 via-orange-600 to-amber-600 shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/40"
+                  )}>
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  {isSubmitting ? (
+                    <>
+                      <Spinner className="h-4 w-4 text-white" />
+                      {t("common.saving", "Saving...")}
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      {isPass
+                        ? t("grading.submitPass", "Confirm & Approve")
+                        : t("grading.submitFail", "Confirm & Reject")}
+                    </>
+                  )}
+                </Button>
+                <p className="text-center text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                  {t(
+                    "grading.submitHint",
+                    "Your decision will be recorded and visible to the candidate."
+                  )}
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -488,7 +721,7 @@ function StaffGradingWorkspaceHeaderCard({
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-extrabold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
               <Clock className="h-3.5 w-3.5 text-indigo-500" />
-              Vòng #{selectedRoundOrder} — {roundName}
+              {t("staffGrading.roundLabelShort", "Vòng")} #{selectedRoundOrder} — {roundName}
             </span>
 
             {/* Status & Decision Badge */}
@@ -501,12 +734,14 @@ function StaffGradingWorkspaceHeaderCard({
                     : "bg-rose-500/15 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
                 )}>
                 <BadgeCheck className="h-3.5 w-3.5" />
-                {isPass ? "ĐÃ ĐẠT (PASSED)" : "CHƯA ĐẠT (FAILED)"}
+                {isPass
+                  ? `${t("staffGrading.roundPassed", "ĐẠT")} (PASSED)`
+                  : `${t("staffGrading.roundFailed", "KHÔNG ĐẠT")} (FAILED)`}
               </span>
             ) : needsGrading ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-extrabold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
                 <AlertTriangle className="h-3.5 w-3.5 animate-pulse text-amber-500" />
-                CHỜ STAFF ĐÁNH GIÁ & CHẤM ĐIỂM
+                {t("staffGrading.staffWaitingForGrading", "CHỜ STAFF ĐÁNH GIÁ & CHẤM ĐIỂM")}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
@@ -517,7 +752,7 @@ function StaffGradingWorkspaceHeaderCard({
             {aiScore !== undefined && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/15 px-3 py-1 text-xs font-bold text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">
                 <Star className="h-3.5 w-3.5 text-purple-500" />
-                Tham chiếu AI: {Math.round(aiScore)}/100
+                {t("staffGrading.aiReferenceLabel", { score: Math.round(aiScore) })}
               </span>
             )}
           </div>
@@ -526,13 +761,19 @@ function StaffGradingWorkspaceHeaderCard({
           <div>
             <h2 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">
               {hasHrScore
-                ? `Kết Quả Đánh Giá ${roundName}`
-                : `Không Gian Đánh Giá & Chấm Điểm - ${roundName}`}
+                ? `${t("staffGrading.gradingSpaceTitle", "Kết Quả Đánh Giá")} ${roundName}`
+                : `${t("staffGrading.gradingSpaceTitle", "Không Gian Đánh Giá & Chấm Điểm")} - ${roundName}`}
             </h2>
             <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
               {hasHrScore
-                ? "Kết quả đánh giá bài làm đã được Staff thẩm định và ghi nhận trên hệ thống."
-                : "Xem bài làm của ứng viên trong giao diện bên dưới và nhập điểm số & nhận xét HR."}
+                ? t(
+                    "staffGrading.staffGradedResult",
+                    "Kết quả đánh giá bài làm đã được Staff thẩm định và ghi nhận trên hệ thống."
+                  )
+                : t(
+                    "staffGrading.viewSubmissionAndEnter",
+                    "Xem bài làm của ứng viên trong giao diện bên dưới và nhập điểm số & nhận xét HR."
+                  )}
             </p>
           </div>
 
@@ -541,7 +782,7 @@ function StaffGradingWorkspaceHeaderCard({
             <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-900/30 dark:bg-indigo-950/30">
               <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
                 <FileText className="h-3.5 w-3.5" />
-                Ghi chú & Nhận xét của Staff:
+                {t("staffGrading.staffNotesAndComment", "Ghi chú & Nhận xét của Staff:")}
               </div>
               <p className="text-xs whitespace-pre-wrap text-slate-700 italic dark:text-slate-300">
                 "{detail.hrNote}"
@@ -561,12 +802,16 @@ function StaffGradingWorkspaceHeaderCard({
                   : "bg-indigo-600 text-white shadow-indigo-600/20 hover:bg-indigo-700"
               )}>
               <ClipboardCheck className="h-4 w-4" />
-              {hasHrScore ? "Chỉnh sửa điểm số & nhận xét" : "Nhập điểm số & Nhận xét Staff"}
+              {hasHrScore
+                ? t("staffGrading.editScoreAndNote", "Chỉnh sửa điểm số & nhận xét")
+                : t("staffGrading.enterScoreAndStaffNote", "Nhập điểm số & Nhận xét Staff")}
             </Button>
 
             <span className="text-xs font-medium text-slate-400">|</span>
             <span className="text-xs text-slate-500 dark:text-slate-400">
-              Đơn nộp #{app.id} • Chi tiết vòng #{detail?.id ?? activeRound?.id ?? "-"}
+              {t("common.application", "Đơn nộp")} #{app.id} •{" "}
+              {t("staffGrading.roundLabelShort", "Chi tiết vòng")} #
+              {detail?.id ?? activeRound?.id ?? "-"}
             </span>
           </div>
         </div>
@@ -603,7 +848,9 @@ function StaffGradingWorkspaceHeaderCard({
               <div className="flex items-center justify-between border-b border-white/15 pb-1.5">
                 <span className="flex items-center gap-1 text-[10px] font-black tracking-widest text-white/80 uppercase">
                   <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
-                  {hasHrScore ? "KẾT QUẢ CHẤM" : "ĐIỂM ĐÁNH GIÁ"}
+                  {hasHrScore
+                    ? t("staffGrading.roundResult", "KẾT QUẢ CHẤM")
+                    : t("staffGrading.roundScore", "ĐIỂM ĐÁNH GIÁ")}
                 </span>
                 <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[9px] font-extrabold text-white/90 uppercase">
                   STAFF
@@ -622,7 +869,7 @@ function StaffGradingWorkspaceHeaderCard({
                 ) : aiScore !== undefined ? (
                   <div className="flex flex-col items-center justify-center">
                     <span className="text-[10px] font-extrabold tracking-wider text-purple-200 uppercase">
-                      Tham chiếu AI
+                      {t("staffGrading.referenceAi", "Tham chiếu AI")}
                     </span>
                     <div className="flex items-baseline justify-center gap-1">
                       <span className="text-3xl font-black tracking-tight text-purple-100">
@@ -634,7 +881,9 @@ function StaffGradingWorkspaceHeaderCard({
                 ) : (
                   <div className="text-center">
                     <span className="text-2xl font-black text-white/40">---</span>
-                    <p className="text-[10px] font-semibold text-white/60">Chưa nhập điểm</p>
+                    <p className="text-[10px] font-semibold text-white/60">
+                      {t("staffGrading.scoreAwaiting", "Chưa nhập điểm")}
+                    </p>
                   </div>
                 )}
               </div>
@@ -643,7 +892,11 @@ function StaffGradingWorkspaceHeaderCard({
               <div className="flex items-center justify-between border-t border-white/15 pt-1.5">
                 <span className="flex items-center gap-1 text-[10px] font-bold text-white/80">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  {hasHrScore ? (isPass ? "ĐẠT YÊU CẦU" : "KHÔNG ĐẠT") : "CHỜ CHẤM"}
+                  {hasHrScore
+                    ? isPass
+                      ? t("staffGrading.roundPassed", "ĐẠT YÊU CẦU")
+                      : t("staffGrading.roundFailed", "KHÔNG ĐẠT")
+                    : t("staffGrading.roundAwaiting", "CHỜ CHẤM")}
                 </span>
                 {hasHrScore && (
                   <span
@@ -651,7 +904,9 @@ function StaffGradingWorkspaceHeaderCard({
                       "rounded-full px-2 py-0.5 text-[9px] font-black uppercase shadow-xs",
                       isPass ? "bg-emerald-400 text-slate-950" : "bg-rose-500 text-white"
                     )}>
-                    {isPass ? "VERIFIED" : "REJECTED"}
+                    {isPass
+                      ? t("staffGrading.roundVerified", "VERIFIED")
+                      : t("staffGrading.roundRejected", "REJECTED")}
                   </span>
                 )}
               </div>
@@ -1151,19 +1406,25 @@ export function StaffGradingWorkspacePage() {
 
                   <div className="space-y-2.5 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Ngày nộp đơn:</span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {t("staffGrading.applicationDateLabel", "Ngày nộp đơn:")}
+                      </span>
                       <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
                         {app.createdAt ? formatDateTime(app.createdAt) : ""}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Tổng số vòng:</span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {t("staffGrading.totalRoundsLabel", "Tổng số vòng:")}
+                      </span>
                       <span className="font-bold text-slate-900 dark:text-slate-100">
-                        {totalRounds} vòng tuyển dụng
+                        {t("staffGrading.roundsCount", { count: totalRounds })}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Trạng thái hồ sơ:</span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {t("staffGrading.applicationStatusLabel", "Trạng thái hồ sơ:")}
+                      </span>
                       <ApplicationStatusBadge status={app.status} />
                     </div>
                   </div>
@@ -1185,7 +1446,9 @@ export function StaffGradingWorkspacePage() {
                 <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                     <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    <span>Kỹ năng & Yêu cầu vị trí</span>
+                    <span>
+                      {t("staffGrading.skillsAndRequirements", "Kỹ năng & Yêu cầu vị trí")}
+                    </span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
@@ -1207,21 +1470,29 @@ export function StaffGradingWorkspacePage() {
                 <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                     <Layers className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                    <span>Tiêu chuẩn đạt Vòng {activeRound.roundOrder}</span>
+                    <span>
+                      {t("staffGrading.roundStandard", {
+                        roundOrder: activeRound.roundOrder,
+                      })}
+                    </span>
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
-                      <span className="text-slate-500">Điểm sàn qua vòng:</span>
+                      <span className="text-slate-500">
+                        {t("staffGrading.passThreshold", "Điểm sàn qua vòng:")}
+                      </span>
                       <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
                         {activeRound.passThreshold ?? 70}/100
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Thời gian quy định:</span>
+                      <span className="text-slate-500">
+                        {t("staffGrading.timeLimit", "Thời gian quy định:")}
+                      </span>
                       <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
                         {activeRound.configData?.timeLimitMinutes
-                          ? `${activeRound.configData.timeLimitMinutes} phút`
-                          : "Không giới hạn"}
+                          ? `${activeRound.configData.timeLimitMinutes} ${t("staffGrading.minutes", "phút")}`
+                          : t("staffGrading.unlimited", "Không giới hạn")}
                       </span>
                     </div>
                   </div>
@@ -1231,7 +1502,7 @@ export function StaffGradingWorkspacePage() {
                 <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                     <ClipboardCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    <span>Thao tác chấm điểm</span>
+                    <span>{t("staffGrading.gradingAction", "Thao tác chấm điểm")}</span>
                   </div>
                   <div className="space-y-2">
                     {hasHrScore ? (
