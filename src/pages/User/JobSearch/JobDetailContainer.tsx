@@ -410,7 +410,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
             {/* Modal Body: 100% Native Merged Single Screen */}
             <div className="custom-scrollbar relative flex-1 overflow-y-auto bg-slate-50 p-4.5 dark:bg-slate-950">
               {!showEmbeddedFallback ? (
-                nativeInfo?.addInfo ? (
+                nativeInfo ? (
                   <div className="flex flex-col items-center gap-4">
                     {/* Clean QR Image without gray border or subtext */}
                     <div className="flex flex-col items-center">
