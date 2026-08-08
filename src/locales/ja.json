@@ -1947,7 +1947,8 @@
     "open": "開く",
     "timeline": "タイムライン",
     "checkNow": "今すぐ確認",
-    "copied": "コピーしました"
+    "copied": "コピーしました",
+    "backToTheSession": "セッションに戻る"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -3224,7 +3225,8 @@
     "theEvaluationYouSentTo": "面接セッション後に学生に送信した評価",
     "theStudentHasNotFilled": "学生はSTARメソッドの詳細を入力していません。",
     "viewTheAssessmentsYouSent": "各面接セッション後に学生に送信した評価を表示",
-    "youHaveNotSentAny": "まだ学生にレビューを送信していません。"
+    "youHaveNotSentAny": "まだ学生にレビューを送信していません。",
+    "candidate": "候補者"
   },
   "mentorSessions": {
     "acceptInterviewSession": "面接セッションを承認",
@@ -3270,7 +3272,9 @@
     "candidateFeedback": "候補者からのフィードバック",
     "candidateHasNotLeftFeedbackYet": "候補者からの評価はまだ届いていません",
     "startTime": "開始時刻",
-    "endTime": "終了時刻"
+    "endTime": "終了時刻",
+    "youHaventSubmittedAReview": "このセッションにはまだレビューを送信していません。",
+    "reviewOfSession": "セッションのレビュー"
   },
   "mentorStudents": {
     "allStudents": "すべての学生",

@@ -1985,7 +1985,8 @@
     "open": "Open",
     "timeline": "Timeline",
     "checkNow": "Check now",
-    "copied": "Copied"
+    "copied": "Copied",
+    "backToTheSession": "Back to the session"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -3238,7 +3239,8 @@
     "theEvaluationYouSentTo": "The evaluation you sent to the student after the interview session",
     "theStudentHasNotFilled": "The student has not filled in STAR method details.",
     "viewTheAssessmentsYouSent": "View the assessments you sent to students after each interview session",
-    "youHaveNotSentAny": "You have not sent any reviews to your students yet."
+    "youHaveNotSentAny": "You have not sent any reviews to your students yet.",
+    "candidate": "Candidate"
   },
   "mentorSessions": {
     "acceptInterviewSession": "Accept interview session",
@@ -3284,7 +3286,9 @@
     "candidateFeedback": "Candidate feedback",
     "candidateHasNotLeftFeedbackYet": "Candidate has not left feedback yet",
     "startTime": "Start time",
-    "endTime": "End time"
+    "endTime": "End time",
+    "youHaventSubmittedAReview": "You haven't submitted a review for this session yet.",
+    "reviewOfSession": "Review of session"
   },
   "mentorStudents": {
     "allStudents": "All students",

@@ -1982,7 +1982,8 @@
     "open": "Mở",
     "timeline": "Dòng thời gian",
     "checkNow": "Kiểm tra ngay",
-    "copied": "Đã sao chép"
+    "copied": "Đã sao chép",
+    "backToTheSession": "Về session"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -3235,7 +3236,8 @@
     "theEvaluationYouSentTo": "Đánh giá bạn đã gửi cho học viên sau phiên phỏng vấn",
     "theStudentHasNotFilled": "Học viên chưa điền chi tiết STAR method.",
     "viewTheAssessmentsYouSent": "Xem các đánh giá bạn đã gửi cho học viên sau mỗi phiên phỏng vấn",
-    "youHaveNotSentAny": "Bạn chưa gửi đánh giá nào cho học viên."
+    "youHaveNotSentAny": "Bạn chưa gửi đánh giá nào cho học viên.",
+    "candidate": "Candidate"
   },
   "mentorSessions": {
     "acceptInterviewSession": "Chấp nhận phiên phỏng vấn",
@@ -3281,7 +3283,9 @@
     "candidateFeedback": "Đánh giá của candidate",
     "candidateHasNotLeftFeedbackYet": "Candidate chưa để lại đánh giá",
     "startTime": "Thời gian bắt đầu",
-    "endTime": "Thời gian kết thúc"
+    "endTime": "Thời gian kết thúc",
+    "youHaventSubmittedAReview": "Bạn chưa gửi đánh giá cho session này.",
+    "reviewOfSession": "Đánh giá của session"
   },
   "mentorStudents": {
     "allStudents": "Tất cả học viên",

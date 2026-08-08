@@ -43,6 +43,26 @@ const T = {
     vi: "Tóm tắt đánh giá bạn đã gửi cho candidate.",
     ja: "候補者と共有した評価のサマリー。",
   },
+  "mentorSessions.youHaventSubmittedAReview": {
+    en: "You haven't submitted a review for this session yet.",
+    vi: "Bạn chưa gửi đánh giá cho session này.",
+    ja: "このセッションにはまだレビューを送信していません。",
+  },
+  "mentorSessions.reviewOfSession": {
+    en: "Review of session",
+    vi: "Đánh giá của session",
+    ja: "セッションのレビュー",
+  },
+  "common.backToTheSession": {
+    en: "Back to the session",
+    vi: "Về session",
+    ja: "セッションに戻る",
+  },
+  "mentorReviews.candidate": {
+    en: "Candidate",
+    vi: "Candidate",
+    ja: "候補者",
+  },
   "common.timeline": {
     en: "Timeline",
     vi: "Dòng thời gian",
