@@ -1045,7 +1045,7 @@ export function PaymentSuccessPage() {
 
         {resolveState === "checking" && (
           <div className="flex items-center gap-2.5 rounded-2xl border-2 border-sky-200 bg-sky-50/80 px-4 py-3 font-['Inter'] text-sm font-semibold text-sky-700 dark:border-sky-500/30 dark:bg-sky-950/40 dark:text-sky-300">
-            <Spinner size="sm" tone="sky" />
+            <Spinner size="sm" tone="primary" />
             {t("common.checking")}
           </div>
         )}
