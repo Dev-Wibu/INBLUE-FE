@@ -1982,10 +1982,10 @@
     "minutesShort": "m",
     "days": "days",
     "problemNum": "Problem #{{num}}",
-    "open": "[EN] common.open",
-    "timeline": "[EN] common.timeline",
-    "checkNow": "[EN] common.checkNow",
-    "copied": "[EN] common.copied"
+    "open": "Open",
+    "timeline": "Timeline",
+    "checkNow": "Check now",
+    "copied": "Copied"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -3254,7 +3254,7 @@
     "itSNotTimeTo": "It's not time to join the room yet",
     "manageInterviewSessionsAndSend": "Manage interview sessions and send assessments to students",
     "missingStudentInformationInThe": "Missing student information in the interview session.",
-    "overviewOfAssessmentContentSent": "Overview of assessment content sent to students",
+    "overviewOfAssessmentContentSent": "Snapshot of the assessment you shared with the candidate.",
     "pleaseEnterAtLeastOne": "Please enter at least one review before submitting.",
     "pointsForImprovement": "Points for improvement:",
     "reloadInterviewSessionList": "Reload interview session list",
@@ -3280,11 +3280,11 @@
     "youCanOnlyWriteA": "You can only write a review after the interview session is completed",
     "youDoNotHavePermission": "You do not have permission to submit a review for this interview session.",
     "yourReview": "Your review",
-    "recording": "[EN] mentorSessions.recording",
-    "candidateFeedback": "[EN] mentorSessions.candidateFeedback",
-    "candidateHasNotLeftFeedbackYet": "[EN] mentorSessions.candidateHasNotLeftFeedbackYet",
-    "startTime": "[EN] mentorSessions.startTime",
-    "endTime": "[EN] mentorSessions.endTime"
+    "recording": "Recording",
+    "candidateFeedback": "Candidate feedback",
+    "candidateHasNotLeftFeedbackYet": "Candidate has not left feedback yet",
+    "startTime": "Start time",
+    "endTime": "End time"
   },
   "mentorStudents": {
     "allStudents": "All students",

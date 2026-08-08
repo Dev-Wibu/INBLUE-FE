@@ -1979,10 +1979,10 @@
     "minutesShort": "p",
     "days": "ngày",
     "problemNum": "Bài #{{num}}",
-    "open": "[VI] common.open",
-    "timeline": "[VI] common.timeline",
-    "checkNow": "[VI] common.checkNow",
-    "copied": "[VI] common.copied"
+    "open": "Mở",
+    "timeline": "Dòng thời gian",
+    "checkNow": "Kiểm tra ngay",
+    "copied": "Đã sao chép"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -3251,7 +3251,7 @@
     "itSNotTimeTo": "Chưa đến giờ tham gia phòng",
     "manageInterviewSessionsAndSend": "Quản lý các phiên phỏng vấn và gửi đánh giá cho học viên",
     "missingStudentInformationInThe": "Thiếu thông tin học viên của phiên phỏng vấn.",
-    "overviewOfAssessmentContentSent": "Tổng quan nội dung đánh giá đã gửi cho học viên",
+    "overviewOfAssessmentContentSent": "Tóm tắt đánh giá bạn đã gửi cho candidate.",
     "pleaseEnterAtLeastOne": "Vui lòng nhập ít nhất một nội dung đánh giá trước khi gửi.",
     "pointsForImprovement": "Điểm cần cải thiện:",
     "reloadInterviewSessionList": "Tải lại danh sách phiên phỏng vấn",
@@ -3277,11 +3277,11 @@
     "youCanOnlyWriteA": "Bạn chỉ có thể viết đánh giá sau khi phiên phỏng vấn hoàn thành",
     "youDoNotHavePermission": "Bạn không có quyền gửi đánh giá cho phiên phỏng vấn này.",
     "yourReview": "Đánh giá của bạn",
-    "recording": "[VI] mentorSessions.recording",
-    "candidateFeedback": "[VI] mentorSessions.candidateFeedback",
-    "candidateHasNotLeftFeedbackYet": "[VI] mentorSessions.candidateHasNotLeftFeedbackYet",
-    "startTime": "[VI] mentorSessions.startTime",
-    "endTime": "[VI] mentorSessions.endTime"
+    "recording": "Bản ghi",
+    "candidateFeedback": "Đánh giá của candidate",
+    "candidateHasNotLeftFeedbackYet": "Candidate chưa để lại đánh giá",
+    "startTime": "Thời gian bắt đầu",
+    "endTime": "Thời gian kết thúc"
   },
   "mentorStudents": {
     "allStudents": "Tất cả học viên",

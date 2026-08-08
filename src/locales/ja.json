@@ -1944,10 +1944,10 @@
     "minutesShort": "分",
     "days": "日",
     "problemNum": "問題 #{{num}}",
-    "open": "[JA] common.open",
-    "timeline": "[JA] common.timeline",
-    "checkNow": "[JA] common.checkNow",
-    "copied": "[JA] common.copied"
+    "open": "開く",
+    "timeline": "タイムライン",
+    "checkNow": "今すぐ確認",
+    "copied": "コピーしました"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -3240,7 +3240,7 @@
     "itSNotTimeTo": "まだルームに参加する時間ではありません",
     "manageInterviewSessionsAndSend": "面接セッションを管理し、学生に評価を送信",
     "missingStudentInformationInThe": "面接セッションに学生情報が不足しています。",
-    "overviewOfAssessmentContentSent": "学生に送信した評価内容の概要",
+    "overviewOfAssessmentContentSent": "候補者と共有した評価のサマリー。",
     "pleaseEnterAtLeastOne": "提出前に少なくとも1つのレビューを入力してください。",
     "pointsForImprovement": "改善ポイント:",
     "reloadInterviewSessionList": "面接セッション一覧をリロード",
@@ -3266,11 +3266,11 @@
     "youCanOnlyWriteA": "面接セッション完了後にのみレビューを書けます",
     "youDoNotHavePermission": "この面接セッションのレビューを提出する権限がありません。",
     "yourReview": "あなたのレビュー",
-    "recording": "[JA] mentorSessions.recording",
-    "candidateFeedback": "[JA] mentorSessions.candidateFeedback",
-    "candidateHasNotLeftFeedbackYet": "[JA] mentorSessions.candidateHasNotLeftFeedbackYet",
-    "startTime": "[JA] mentorSessions.startTime",
-    "endTime": "[JA] mentorSessions.endTime"
+    "recording": "録画",
+    "candidateFeedback": "候補者からのフィードバック",
+    "candidateHasNotLeftFeedbackYet": "候補者からの評価はまだ届いていません",
+    "startTime": "開始時刻",
+    "endTime": "終了時刻"
   },
   "mentorStudents": {
     "allStudents": "すべての学生",

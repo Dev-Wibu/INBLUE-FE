@@ -324,26 +324,40 @@ export function MentorSessionDetailPage() {
             </div>
           </PanelSurface>
 
-          {/* Your review snapshot — 2x2 dark glass, no color blocks */}
+          {/* Your review snapshot — STAR narrative + 3-col additional */}
           <PanelSurface>
-            <div className="flex flex-col gap-4 p-5 sm:p-6">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-amber-500" aria-hidden />
-                  <h2 className="text-base font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
-                    {t("mentorSessions.yourReview")}
-                  </h2>
+            <div className="flex flex-col gap-5 p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-xl ring-1 ring-inset",
+                      "bg-slate-900/[0.04] ring-slate-900/10",
+                      "dark:bg-white/[0.05] dark:ring-white/10"
+                    )}>
+                    <Star className="h-5 w-5 text-amber-500" aria-hidden />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
+                      {t("mentorSessions.yourReview")}
+                    </h2>
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      {t("mentorSessions.overviewOfAssessmentContentSent")}
+                    </p>
+                  </div>
                 </div>
-                {mentorReview?.id && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => navigate(`/mentor/reviews/${mentorReview.id}`)}
-                    className="gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-                    <MessageSquare className="h-3.5 w-3.5" aria-hidden />
-                    {t("common.seeReviewDetails")}
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  {mentorReview?.id && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
+                      className="gap-1.5 text-xs">
+                      <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+                      {t("common.seeReviewDetails")}
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {reviewLoading ? (
@@ -357,48 +371,112 @@ export function MentorSessionDetailPage() {
                   {t("mentorSessions.thereAreNoReviewsSubmitted")}
                 </div>
               ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className={cn(GLASS_SURFACE, "sm:row-span-1")}>
-                    <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
-                      {t("mentorReviews.overallAssessment")}
-                    </p>
-                    <div className="mt-2 flex items-baseline gap-1">
-                      <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                <>
+                  {/* Rating hero strip */}
+                  <div
+                    className={cn(
+                      GLASS_SURFACE,
+                      "flex flex-wrap items-center justify-between gap-3"
+                    )}>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
                         {rating > 0 ? rating.toFixed(1) : "-"}
                       </span>
                       <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
                         /5
                       </span>
+                      <span className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
+                        {t("mentorReviews.overallAssessment")}
+                      </span>
                     </div>
-                    <div className="mt-1.5">
-                      <StarRating value={rating} readOnly size="sm" />
+                    <StarRating value={rating} readOnly size="md" />
+                  </div>
+
+                  {/* STAR notes — stacked narrative, full text visible */}
+                  {(mentorReview.situationNote ||
+                    mentorReview.taskNote ||
+                    mentorReview.actionNote ||
+                    mentorReview.resultNote) && (
+                    <div className="space-y-2.5">
+                      <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
+                        STAR
+                      </p>
+                      {(
+                        [
+                          {
+                            key: "S",
+                            label: t("mentorReviews.situation"),
+                            value: mentorReview.situationNote,
+                          },
+                          {
+                            key: "T",
+                            label: t("mentorReviews.tasks"),
+                            value: mentorReview.taskNote,
+                          },
+                          {
+                            key: "A",
+                            label: t("mentorReviews.action"),
+                            value: mentorReview.actionNote,
+                          },
+                          {
+                            key: "R",
+                            label: t("mentorReviews.result"),
+                            value: mentorReview.resultNote,
+                          },
+                        ] as const
+                      )
+                        .filter((row) => row.value && row.value.trim().length > 0)
+                        .map((row) => (
+                          <div key={row.key} className={cn(GLASS_SURFACE, "flex gap-3 p-4")}>
+                            <span
+                              className={cn(
+                                "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold",
+                                "bg-slate-900/[0.06] text-slate-700",
+                                "dark:bg-white/[0.06] dark:text-slate-200"
+                              )}>
+                              {row.key}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
+                                {row.label}
+                              </p>
+                              <p className="mt-1 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                                {row.value}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+
+                  {/* Strengths / Improvement / Suggestions — 3 cols */}
+                  <div className="grid gap-3 lg:grid-cols-3">
+                    <div className={GLASS_SURFACE}>
+                      <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
+                        {t("mentorSessions.strengths")}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                        {mentorReview.strength || "-"}
+                      </p>
+                    </div>
+                    <div className={GLASS_SURFACE}>
+                      <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
+                        {t("mentorSessions.pointsForImprovement")}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                        {mentorReview.weakness || "-"}
+                      </p>
+                    </div>
+                    <div className={GLASS_SURFACE}>
+                      <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
+                        {t("common.suggestedImprovements")}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                        {mentorReview.improve || "-"}
+                      </p>
                     </div>
                   </div>
-                  <div className={GLASS_SURFACE}>
-                    <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
-                      {t("mentorSessions.strengths")}
-                    </p>
-                    <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                      {mentorReview.strength || "-"}
-                    </p>
-                  </div>
-                  <div className={GLASS_SURFACE}>
-                    <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
-                      {t("mentorSessions.pointsForImprovement")}
-                    </p>
-                    <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                      {mentorReview.weakness || "-"}
-                    </p>
-                  </div>
-                  <div className={GLASS_SURFACE}>
-                    <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
-                      {t("common.suggestedImprovements")}
-                    </p>
-                    <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                      {mentorReview.improve || "-"}
-                    </p>
-                  </div>
-                </div>
+                </>
               )}
             </div>
           </PanelSurface>
