@@ -1,7 +1,7 @@
 /**
- * Mentor Review Detail Page — v2 "Assessment Dossier".
- * Compact max-w-5xl layout. Single navy/sky accent ramp with restrained
- * surface washes, glassmorphism panels, and clear hierarchy.
+ * Mentor Review Detail Page — v3 "Assessment Dossier".
+ * max-w-6xl wrapper, single dark-glass tone, bigger STAR cards, less
+ * saturated palette. No "fruit salad" 4-color blocks.
  *
  * UI-only refresh. All data + access checks preserved.
  */
@@ -44,20 +44,26 @@ const STAR_CARD_ICON: Record<"situation" | "task" | "action" | "result", typeof 
   result: CheckCircle2,
 };
 
-// One accent ramp — navy/sky/indigo/slate. No more 4 distinct color
-// families that make the page look like a fruit salad.
-const STAR_CARD_HUE: Record<"situation" | "task" | "action" | "result", string> = {
-  situation: "from-sky-500/12 to-sky-500/4 ring-sky-500/20",
-  task: "from-indigo-500/12 to-indigo-500/4 ring-indigo-500/20",
-  action: "from-blue-500/12 to-blue-500/4 ring-blue-500/20",
-  result: "from-cyan-500/12 to-cyan-500/4 ring-cyan-500/20",
+// Single dark-glass surface, reused for every inner card. No more
+// sky/indigo/emerald/amber rainbow.
+const GLASS_SURFACE = cn(
+  "rounded-2xl p-5 ring-1 ring-inset transition-all hover:-translate-y-0.5",
+  "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
+  "dark:bg-white/[0.03] dark:ring-white/5"
+);
+
+const STAR_HUE: Record<"situation" | "task" | "action" | "result", string> = {
+  situation: "from-sky-500/10 to-transparent",
+  task: "from-indigo-500/10 to-transparent",
+  action: "from-blue-500/10 to-transparent",
+  result: "from-cyan-500/10 to-transparent",
 };
 
-const STAR_CARD_INK: Record<"situation" | "task" | "action" | "result", string> = {
-  situation: "text-sky-700 dark:text-sky-300",
-  task: "text-indigo-700 dark:text-indigo-300",
-  action: "text-blue-700 dark:text-blue-300",
-  result: "text-cyan-700 dark:text-cyan-300",
+const STAR_INK: Record<"situation" | "task" | "action" | "result", string> = {
+  situation: "text-sky-600 dark:text-sky-300",
+  task: "text-indigo-600 dark:text-indigo-300",
+  action: "text-blue-600 dark:text-blue-300",
+  result: "text-cyan-600 dark:text-cyan-300",
 };
 
 const heroMotion = {
@@ -111,7 +117,7 @@ export function ReviewDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-5xl space-y-5">
+      <div className="mx-auto w-full max-w-6xl space-y-5">
         <div className="flex items-center gap-4">
           <Skeleton className="h-10 w-24" />
           <Skeleton className="h-8 w-48" />
@@ -123,7 +129,7 @@ export function ReviewDetailPage() {
   }
   if (!review) {
     return (
-      <div className="mx-auto w-full max-w-5xl space-y-6">
+      <div className="mx-auto w-full max-w-6xl space-y-6">
         <Button variant="ghost" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("general.back")}
@@ -142,7 +148,7 @@ export function ReviewDetailPage() {
   }
   if (!currentUser?.id || review.session?.userId2 !== currentUser.id) {
     return (
-      <div className="mx-auto w-full max-w-5xl space-y-6">
+      <div className="mx-auto w-full max-w-6xl space-y-6">
         <Button variant="ghost" onClick={() => navigate("/mentor?tab=reviews")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("common.backToTheList")}
@@ -198,7 +204,7 @@ export function ReviewDetailPage() {
 
   return (
     <motion.div
-      className="mx-auto flex w-full max-w-5xl flex-col gap-5"
+      className="mx-auto flex w-full max-w-6xl flex-col gap-5"
       variants={{
         hidden: { opacity: 0 },
         show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
@@ -227,27 +233,23 @@ export function ReviewDetailPage() {
         </Button>
       </motion.div>
 
-      {/* Student + rating hero — restrained navy/sky palette, glass surface */}
+      {/* Student + rating hero */}
       <motion.div variants={heroMotion}>
         <PanelSurface className="relative overflow-hidden">
           <div
             aria-hidden
-            className="pointer-events-none absolute -top-16 -right-12 h-48 w-48 rounded-full bg-sky-300/20 opacity-50 blur-3xl dark:bg-sky-500/20"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-16 -left-12 h-48 w-48 rounded-full bg-indigo-400/15 opacity-50 blur-3xl dark:bg-indigo-500/15"
+            className="pointer-events-none absolute -top-16 -right-12 h-48 w-48 rounded-full bg-sky-300/15 opacity-60 blur-3xl dark:bg-sky-500/15"
           />
           <div className="relative flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div className="flex min-w-0 items-center gap-4">
               <Avatar className="h-14 w-14 ring-2 ring-sky-400/30">
                 <AvatarImage src={studentAvatarUrl} alt={studentName} />
-                <AvatarFallback className="bg-sky-100 text-base font-semibold text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+                <AvatarFallback className="bg-slate-200/60 text-base font-semibold text-slate-700 dark:bg-slate-700/40 dark:text-slate-200">
                   {studentName.charAt(0) || "S"}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 space-y-1">
-                <p className="text-[10px] font-semibold tracking-[0.08em] text-sky-700 uppercase dark:text-sky-300">
+                <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
                   {t("mentorReviews.studentInformation")}
                 </p>
                 <h1
@@ -272,7 +274,7 @@ export function ReviewDetailPage() {
               </div>
             </div>
 
-            {/* Overall rating — calm glass block, not a loud pill */}
+            {/* Rating block — neutral dark glass, no amber accent */}
             <div
               className={cn(
                 "rounded-2xl p-4 text-center ring-1 backdrop-blur ring-inset sm:min-w-[200px]",
@@ -299,7 +301,7 @@ export function ReviewDetailPage() {
         </PanelSurface>
       </motion.div>
 
-      {/* STAR method cards — 2x2 grid, single navy/sky accent ramp */}
+      {/* STAR method — 2x2 with bigger cards, single dark glass + gradient tint */}
       <motion.section variants={childMotion} className="space-y-3">
         <div className="flex items-end justify-between gap-3">
           <div>
@@ -322,48 +324,54 @@ export function ReviewDetailPage() {
             variants={gridStagger}
             initial="hidden"
             animate="show"
-            className="grid gap-3 sm:grid-cols-2">
+            className="grid gap-4 sm:grid-cols-2">
             {starCards.map((card) => {
               if (!card.value) return null;
               const Icon = STAR_CARD_ICON[card.key];
-              const hue = STAR_CARD_HUE[card.key];
-              const ink = STAR_CARD_INK[card.key];
+              const hue = STAR_HUE[card.key];
+              const ink = STAR_INK[card.key];
               return (
                 <motion.article
                   key={card.key}
                   variants={cardMotion}
                   className={cn(
-                    "rounded-2xl p-4 ring-1 transition-all ring-inset hover:-translate-y-0.5",
-                    "bg-gradient-to-br",
-                    hue
+                    "relative overflow-hidden rounded-2xl p-5 ring-1 transition-all ring-inset hover:-translate-y-0.5",
+                    "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
+                    "dark:bg-white/[0.03] dark:ring-white/5"
                   )}>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                  {/* Per-card gradient tint — very subtle, on a neutral base */}
+                  <div
+                    aria-hidden
+                    className={cn(
+                      "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-60",
+                      hue
+                    )}
+                  />
+                  <div className="relative flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
                       <div
                         className={cn(
-                          "flex h-8 w-8 items-center justify-center rounded-lg ring-1 ring-inset",
-                          "bg-white/40 ring-white/40 dark:bg-white/5 dark:ring-white/10"
+                          "flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-inset",
+                          "bg-slate-900/[0.04] ring-slate-900/10",
+                          "dark:bg-white/[0.05] dark:ring-white/10"
                         )}>
                         <Icon className={cn("h-4 w-4", ink)} aria-hidden />
                       </div>
-                      <p
-                        className={cn(
-                          "text-[10px] font-semibold tracking-[0.08em] uppercase",
-                          ink
-                        )}>
-                        {card.label}
-                      </p>
+                      <div>
+                        <p
+                          className={cn(
+                            "text-[10px] font-semibold tracking-[0.08em] uppercase",
+                            ink
+                          )}>
+                          {card.label}
+                        </p>
+                        <p className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
+                          {String(card.key).toUpperCase()}
+                        </p>
+                      </div>
                     </div>
-                    <span
-                      className={cn(
-                        "rounded-full px-2 py-0.5 font-mono text-[10px] font-medium",
-                        "bg-white/40 text-slate-600",
-                        "dark:bg-white/5 dark:text-slate-400"
-                      )}>
-                      {String(card.key).charAt(0).toUpperCase()}
-                    </span>
                   </div>
-                  <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                  <p className="relative mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
                     {card.value}
                   </p>
                 </motion.article>
@@ -373,7 +381,7 @@ export function ReviewDetailPage() {
         )}
       </motion.section>
 
-      {/* Additional comments — 3 cols with max-w to avoid horizontal stretching */}
+      {/* Additional comments — 3 cols, balanced, single tone */}
       <motion.section variants={childMotion} className="space-y-3">
         <div>
           <h2 className="text-base font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
@@ -384,26 +392,19 @@ export function ReviewDetailPage() {
           variants={gridStagger}
           initial="hidden"
           animate="show"
-          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {additionalItems.map((item) => {
             const Icon = item.icon;
             return (
-              <motion.article
-                key={item.key}
-                variants={cardMotion}
-                className={cn(
-                  "rounded-2xl p-4 ring-1 transition-all ring-inset hover:-translate-y-0.5",
-                  "bg-white ring-slate-200/70",
-                  "dark:bg-slate-900/60 dark:ring-white/5"
-                )}>
-                <div className="flex items-center gap-2">
+              <motion.article key={item.key} variants={cardMotion} className={GLASS_SURFACE}>
+                <div className="flex items-center gap-2.5">
                   <div
                     className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-lg ring-1 ring-inset",
-                      "bg-sky-500/10 text-sky-700 ring-sky-500/20",
-                      "dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-500/20"
+                      "flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-inset",
+                      "bg-slate-900/[0.04] ring-slate-900/10",
+                      "dark:bg-white/[0.05] dark:ring-white/10"
                     )}>
-                    <Icon className="h-4 w-4" aria-hidden />
+                    <Icon className="h-4 w-4 text-slate-600 dark:text-slate-300" aria-hidden />
                   </div>
                   <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
                     {item.label}
