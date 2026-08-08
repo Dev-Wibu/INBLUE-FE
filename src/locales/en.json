@@ -6272,6 +6272,9 @@
     "needsGrading": "Needs Grading",
     "aiFeedback": "AI Feedback",
     "editScore": "Edit Score",
+    "gradingErrorEmpty": "Please enter a score",
+    "gradingErrorInvalidNumber": "Score must be a valid number",
+    "gradingErrorScoreRange": "Score must be between 0 and 100",
     "hrResult": "HR Result",
     "hrGrading": "HR Grading",
     "aiScoreReference": "AI Score Reference:",
@@ -6298,9 +6301,6 @@
     "readability": "Readability",
     "gradingInProgress": "grading in progress..."
   },
-  "gradingErrorEmpty": "Please enter a score",
-  "gradingErrorInvalidNumber": "Score must be a valid number",
-  "gradingErrorScoreRange": "Score must be between 0 and 100",
   "staffGrading": {
     "gradeNow": "Grade now",
     "alreadyGraded": "Already graded",

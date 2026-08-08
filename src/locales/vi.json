@@ -6276,6 +6276,9 @@
     "needsGrading": "Cần chấm",
     "aiFeedback": "Phản hồi AI",
     "editScore": "Sửa điểm",
+    "gradingErrorEmpty": "Vui lòng nhập điểm số",
+    "gradingErrorInvalidNumber": "Điểm số phải là số hợp lệ",
+    "gradingErrorScoreRange": "Điểm số phải nằm trong khoảng từ 0 đến 100",
     "hrResult": "Kết quả HR",
     "hrGrading": "Chấm điểm HR",
     "aiScoreReference": "Điểm AI tham khảo:",
@@ -6302,9 +6305,6 @@
     "readability": "Khả năng đọc",
     "gradingInProgress": "đang chấm..."
   },
-  "gradingErrorEmpty": "Vui lòng nhập điểm số",
-  "gradingErrorInvalidNumber": "Điểm số phải là số hợp lệ",
-  "gradingErrorScoreRange": "Điểm số phải nằm trong khoảng từ 0 đến 100",
   "staffGrading": {
     "gradeNow": "Chấm điểm ngay",
     "alreadyGraded": "Đã chấm điểm",

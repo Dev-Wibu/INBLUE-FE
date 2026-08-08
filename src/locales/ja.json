@@ -6217,6 +6217,9 @@
     "needsGrading": "採点が必要",
     "aiFeedback": "AIのフィードバック",
     "editScore": "スコアを編集",
+    "gradingErrorEmpty": "スコアを入力してください",
+    "gradingErrorInvalidNumber": "有効な数値を入力してください",
+    "gradingErrorScoreRange": "スコアは0から100の範囲で入力してください",
     "hrResult": "HRの結果",
     "hrGrading": "HRの採点",
     "aiScoreReference": "AIスコア参考：",
@@ -6243,9 +6246,6 @@
     "readability": "読みやすさ",
     "gradingInProgress": "採点中..."
   },
-  "gradingErrorEmpty": "スコアを入力してください",
-  "gradingErrorInvalidNumber": "有効な数値を入力してください",
-  "gradingErrorScoreRange": "スコアは 0 から 100 の間で入力してください",
   "staffGrading": {
     "gradeNow": "採点する",
     "alreadyGraded": "採点済み",

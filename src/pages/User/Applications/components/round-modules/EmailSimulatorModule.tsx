@@ -875,14 +875,14 @@ export function EmailSimulatorModule({
                 <p className="text-xs leading-relaxed font-bold text-slate-900 dark:text-slate-100">
                   {round.configData?.instruction ||
                     t(
-                      "userApplication.emailSimulator.defaultInstruction",
+                      "userApplication.emailSimulator.emailInstructionDefault",
                       "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng."
                     )}
                 </p>
                 <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 text-xs leading-relaxed font-medium whitespace-pre-line text-slate-900 shadow-inner dark:border-indigo-500/30 dark:bg-slate-950/90 dark:text-slate-100">
                   {round.configData?.evaluationCriteria ||
                     t(
-                      "userApplication.emailSimulator.defaultCriteria",
+                      "userApplication.emailSimulator.emailCriteriaDefault",
                       "Nội dung tình huống được giao."
                     )}
                 </div>

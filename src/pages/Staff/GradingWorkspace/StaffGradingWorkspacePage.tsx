@@ -197,16 +197,18 @@ function StaffGradingModal({
   const handleScoreChange = (val: string) => {
     setScore(val);
     if (val.trim() === "") {
-      setScoreError(t("gradingErrorEmpty", "Vui lòng nhập điểm số"));
+      setScoreError(t("grading.gradingErrorEmpty", "Vui lòng nhập điểm số"));
       return;
     }
     const num = parseFloat(val);
     if (isNaN(num)) {
-      setScoreError(t("gradingErrorInvalidNumber", "Điểm số phải là số hợp lệ"));
+      setScoreError(t("grading.gradingErrorInvalidNumber", "Điểm số phải là số hợp lệ"));
       return;
     }
     if (num < 0 || num > 100) {
-      setScoreError(t("gradingErrorScoreRange", "Điểm số phải nằm trong khoảng từ 0 đến 100"));
+      setScoreError(
+        t("grading.gradingErrorScoreRange", "Điểm số phải nằm trong khoảng từ 0 đến 100")
+      );
       return;
     }
     setScoreError(null);
@@ -220,7 +222,9 @@ function StaffGradingModal({
       return;
     }
     if (scoreNum < 0 || scoreNum > 100) {
-      setScoreError(t("gradingErrorScoreRange", "Điểm số phải nằm trong khoảng từ 0 đến 100"));
+      setScoreError(
+        t("grading.gradingErrorScoreRange", "Điểm số phải nằm trong khoảng từ 0 đến 100")
+      );
       toast.error(t("grading.invalidScore", "Điểm không hợp lệ"));
       return;
     }
@@ -422,10 +426,10 @@ function StaffGradingModal({
                 </label>
 
                 {/* Arcade Cabinet Housing */}
-                <div className="relative overflow-hidden rounded-3xl border-4 border-slate-900 bg-gradient-to-b from-slate-800 via-slate-900 to-black p-6 shadow-2xl shadow-black/40 dark:border-slate-700">
-                  {/* Scanline overlay */}
+                <div className="traffic-light-cabinet relative overflow-hidden rounded-3xl border-4 border-slate-200 bg-gradient-to-b from-slate-50 via-white to-slate-100 p-6 shadow-xl shadow-slate-300/40 dark:border-slate-900 dark:bg-gradient-to-b dark:from-slate-800 dark:via-slate-900 dark:to-black dark:shadow-2xl dark:shadow-black/40">
+                  {/* Scanline overlay (dark only) */}
                   <div
-                    className="pointer-events-none absolute inset-0 opacity-10"
+                    className="pointer-events-none absolute inset-0 opacity-0 dark:opacity-10"
                     style={{
                       backgroundImage:
                         "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 3px)",
@@ -452,7 +456,7 @@ function StaffGradingModal({
                             "h-7 w-7 transition-all",
                             isPass
                               ? "text-emerald-950 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                              : "text-slate-600 opacity-40"
+                              : "text-slate-400 opacity-50 dark:text-slate-600 dark:opacity-40"
                           )}
                           fill={isPass ? "currentColor" : "none"}
                         />
@@ -462,8 +466,8 @@ function StaffGradingModal({
                           className={cn(
                             "text-xs font-black tracking-[0.2em] uppercase transition-all",
                             isPass
-                              ? "decision-go-text text-emerald-400 drop-shadow-[0_0_12px_rgba(74,222,128,0.8)]"
-                              : "text-slate-500 opacity-50"
+                              ? "decision-go-text text-emerald-500 drop-shadow-[0_0_12px_rgba(74,222,128,0.6)] dark:text-emerald-400 dark:drop-shadow-[0_0_12px_rgba(74,222,128,0.8)]"
+                              : "text-slate-400 opacity-60 dark:text-slate-500 dark:opacity-50"
                           )}>
                           {t("userApplicationhistory.passed", "PASSED")}
                         </span>
@@ -471,25 +475,25 @@ function StaffGradingModal({
                           className={cn(
                             "rounded-full px-3 py-0.5 text-[10px] font-bold transition-all",
                             isPass
-                              ? "border border-emerald-400/50 bg-emerald-500/20 text-emerald-300"
-                              : "border border-slate-700 bg-slate-800/50 text-slate-500"
+                              ? "border border-emerald-400/60 bg-emerald-50 text-emerald-700 dark:border-emerald-400/50 dark:bg-emerald-500/20 dark:text-emerald-300"
+                              : "border border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
                           )}>
                           GO!
                         </span>
                       </div>
                       {isPass && (
-                        <div className="absolute -inset-4 -z-10 rounded-full bg-emerald-500/20 blur-2xl" />
+                        <div className="absolute -inset-4 -z-10 rounded-full bg-emerald-400/30 blur-2xl dark:bg-emerald-500/20" />
                       )}
                     </button>
 
                     {/* Divider */}
                     <div className="flex h-32 w-px flex-col items-center justify-center gap-1">
-                      <span className="text-[9px] font-bold tracking-widest text-slate-600 uppercase">
+                      <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-600">
                         OR
                       </span>
-                      <div className="h-1 w-1 rounded-full bg-slate-700" />
-                      <div className="h-1 w-1 rounded-full bg-slate-700" />
-                      <div className="h-1 w-1 rounded-full bg-slate-700" />
+                      <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                      <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                      <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                     </div>
 
                     {/* FAIL - RED LIGHT */}
@@ -508,7 +512,7 @@ function StaffGradingModal({
                             "h-7 w-7 transition-all",
                             !isPass
                               ? "text-rose-950 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                              : "text-slate-600 opacity-40"
+                              : "text-slate-400 opacity-50 dark:text-slate-600 dark:opacity-40"
                           )}
                           strokeWidth={3}
                         />
@@ -518,8 +522,8 @@ function StaffGradingModal({
                           className={cn(
                             "text-xs font-black tracking-[0.2em] uppercase transition-all",
                             !isPass
-                              ? "decision-stop-text text-rose-400 drop-shadow-[0_0_12px_rgba(248,113,113,0.8)]"
-                              : "text-slate-500 opacity-50"
+                              ? "decision-stop-text text-rose-500 drop-shadow-[0_0_12px_rgba(248,113,113,0.6)] dark:text-rose-400 dark:drop-shadow-[0_0_12px_rgba(248,113,113,0.8)]"
+                              : "text-slate-400 opacity-60 dark:text-slate-500 dark:opacity-50"
                           )}>
                           {t("userApplicationhistory.failed", "FAILED")}
                         </span>
@@ -527,30 +531,30 @@ function StaffGradingModal({
                           className={cn(
                             "rounded-full px-3 py-0.5 text-[10px] font-bold transition-all",
                             !isPass
-                              ? "border border-rose-400/50 bg-rose-500/20 text-rose-300"
-                              : "border border-slate-700 bg-slate-800/50 text-slate-500"
+                              ? "border border-rose-400/60 bg-rose-50 text-rose-700 dark:border-rose-400/50 dark:bg-rose-500/20 dark:text-rose-300"
+                              : "border border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
                           )}>
                           STOP!
                         </span>
                       </div>
                       {!isPass && (
-                        <div className="absolute -inset-4 -z-10 rounded-full bg-rose-500/20 blur-2xl" />
+                        <div className="absolute -inset-4 -z-10 rounded-full bg-rose-400/30 blur-2xl dark:bg-rose-500/20" />
                       )}
                     </button>
                   </div>
 
                   {/* Arcade decoration: status bar */}
-                  <div className="relative mt-5 flex items-center justify-between rounded-xl border border-slate-700/50 bg-slate-950/80 px-4 py-2">
+                  <div className="relative mt-5 flex items-center justify-between rounded-xl border border-slate-200 bg-white/80 px-4 py-2 dark:border-slate-700/50 dark:bg-slate-950/80">
                     <div className="flex items-center gap-2">
                       <div
                         className={cn(
                           "h-2 w-2 rounded-full transition-all",
                           isPass
-                            ? "bg-emerald-400 shadow-[0_0_8px_#22c55e]"
-                            : "bg-rose-400 shadow-[0_0_8px_#ef4444]"
+                            ? "bg-emerald-500 shadow-[0_0_8px_#22c55e] dark:bg-emerald-400"
+                            : "bg-rose-500 shadow-[0_0_8px_#ef4444] dark:bg-rose-400"
                         )}
                       />
-                      <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                      <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-slate-400">
                         {isPass
                           ? t("staffGrading.decisionPassHint", "Candidate meets requirements")
                           : t(
@@ -559,7 +563,7 @@ function StaffGradingModal({
                             )}
                       </span>
                     </div>
-                    <span className="font-mono text-[10px] font-bold text-slate-500">
+                    <span className="font-mono text-[10px] font-bold text-slate-400 dark:text-slate-500">
                       {isPass ? "► PLAY" : "■ HALT"}
                     </span>
                   </div>
@@ -603,8 +607,14 @@ function StaffGradingModal({
                       )}
                     />
                     <div className="flex flex-col items-end">
-                      <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-3xl font-black tracking-tight text-transparent">
-                        {score || "0"}
+                      <span
+                        className={cn(
+                          "bg-gradient-to-r bg-clip-text text-3xl font-black tracking-tight text-transparent",
+                          score && !scoreError
+                            ? "from-indigo-600 to-purple-600"
+                            : "from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700"
+                        )}>
+                        {score && !scoreError ? score : "—"}
                       </span>
                       <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                         {t("staffGrading.outOf", "out of 100")}
