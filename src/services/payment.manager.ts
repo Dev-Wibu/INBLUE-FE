@@ -226,8 +226,9 @@ export class PaymentManager {
   async getPaymentLinkInfo(paymentId: string): Promise<ApiResponse<NativePaymentLinkInfo>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.PAYMENTS.PAY_INFO, { paymentId });
+      // @ts-expect-error: Backend Swagger schema may not yet expose this endpoint
       const response = await fetchClient.GET(endpoint, {}).then((res) => ({
-        data: res.data,
+        data: res.data as unknown,
         status: res.response?.status,
       }));
       const data = isRecord(response.data) ? response.data : {};
