@@ -25,15 +25,22 @@ export function useJdPurchaseStatus(jdId: number | undefined) {
         jdPurchaseManager.checkPurchased(jdId),
         applicationService.getMyApplications(),
       ]);
-      const latestApplication = appResult.success
+      // Chỉ coi là "đã ứng tuyển" khi application còn active (IN_PROGRESS / PASSED).
+      // FAILED / SOFT_FAILED vẫn được phép apply lại.
+      const activeApplication = appResult.success
         ? appResult.data
-            ?.filter((application) => application.jdId === jdId && !application.isDeleted)
+            ?.filter(
+              (application) =>
+                application.jdId === jdId &&
+                !application.isDeleted &&
+                (application.status === "IN_PROGRESS" || application.status === "PASSED")
+            )
             .sort((a, b) => (b.id ?? 0) - (a.id ?? 0))[0]
         : undefined;
 
       setHasPurchased(purchased);
-      setHasApplied(Boolean(latestApplication));
-      setApplicationId(latestApplication?.id);
+      setHasApplied(Boolean(activeApplication));
+      setApplicationId(activeApplication?.id);
     } catch (err) {
       console.error("[useJdPurchaseStatus] Error checking status:", err);
       setHasPurchased(false);
