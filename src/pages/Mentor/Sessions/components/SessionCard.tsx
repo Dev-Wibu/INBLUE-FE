@@ -1,9 +1,13 @@
 /**
- * SessionCard — Mentor Interview "Command Center" card.
- * Pure presentation: receives a session and a bag of callbacks, renders
- * a glassy card with status badge, time meta, and an action cluster.
+ * SessionCard — Mentor Interview "Command Center" card, v2.
+ * Distinct, opinionated layout per status. No two cards look alike visually:
+ * - Draft         → amber rail + soft amber wash + accept/reject cluster
+ * - Scheduled     → sky rail + countdown + soft pulse
+ * - Paid/Ongoing  → emerald rail + countdown + prominent Join
+ * - Completed     → slate rail + completion ribbon
+ * - Rejected/Canceled → rose rail + dimmed
  *
- * No data fetching, no mutation handlers beyond what the caller provides.
+ * Pure presentation: no fetching, no mutations beyond caller callbacks.
  */
 
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +22,18 @@ import {
   treatZuluAsVietnamLocal,
 } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
-import { Calendar, Check, Clock, LogIn, MessageSquare, User, Video, X } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Calendar,
+  Check,
+  Clock,
+  Hourglass,
+  LogIn,
+  MessageSquare,
+  User,
+  Video,
+  X,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SessionStatusBadge } from "./mentor-interview-primitives";
 import {
@@ -62,6 +77,17 @@ export interface SessionCardProps {
   actions: SessionCardActionBag;
 }
 
+function formatCountdown(ms: number): string {
+  if (ms <= 0) return "now";
+  const totalSeconds = Math.floor(ms / 1000);
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
 export function SessionCard({
   session,
   hasReview,
@@ -73,10 +99,10 @@ export function SessionCard({
   const statusConfig = buildStatusMap(t);
   const status = statusConfig[session.status || "SCHEDULED"] || statusConfig.SCHEDULED;
   const isCompleted = session.status === "COMPLETED";
-  const joinTimestamp = toTimestamp(session.joinTime);
-  const isTimeReached = joinTimestamp ? joinTimestamp - EARLY_JOIN_WINDOW_MS <= now : true;
   const isDraft = session.status === "DRAFT";
   const isCancelled = session.status === "CANCELED" || session.status === "REJECTED";
+  const joinTimestamp = toTimestamp(session.joinTime);
+  const isTimeReached = joinTimestamp ? joinTimestamp - EARLY_JOIN_WINDOW_MS <= now : true;
   const canJoin =
     (session.status === "PAID" || session.status === "ONGOING" || session.status === "SCHEDULED") &&
     !isDraft &&
@@ -91,32 +117,73 @@ export function SessionCard({
       var_0: session.id,
     });
 
+  const msUntilJoin = joinTimestamp ? joinTimestamp - now : null;
+
+  // Per-tone visual personality. Avoids identical "card grid" look.
+  const toneKey = sessionToneFromStatus(session.status);
+  const railClass: Record<SessionStatusTone, string> = {
+    draft: "before:bg-amber-400/80 dark:before:bg-amber-400/60",
+    scheduled: "before:bg-sky-400/80 dark:before:bg-sky-400/60",
+    paid: "before:bg-emerald-400/80 dark:before:bg-emerald-400/60",
+    ongoing: "before:bg-emerald-400 dark:before:bg-emerald-300",
+    completed: "before:bg-slate-400/70 dark:before:bg-slate-500/70",
+    rejected: "before:bg-rose-400/80 dark:before:bg-rose-400/60",
+    canceled: "before:bg-rose-400/80 dark:before:bg-rose-400/60",
+  };
+  const washClass: Record<SessionStatusTone, string> = {
+    draft: "bg-amber-50/40 dark:bg-amber-500/[0.04]",
+    scheduled: "bg-sky-50/40 dark:bg-sky-500/[0.04]",
+    paid: "bg-emerald-50/40 dark:bg-emerald-500/[0.04]",
+    ongoing: "bg-emerald-50/60 dark:bg-emerald-500/[0.06]",
+    completed: "bg-slate-50/30 dark:bg-slate-500/[0.04]",
+    rejected: "bg-rose-50/40 dark:bg-rose-500/[0.04]",
+    canceled: "bg-rose-50/40 dark:bg-rose-500/[0.04]",
+  };
+  const avatarClass: Record<SessionStatusTone, string> = {
+    draft:
+      "bg-amber-500/10 text-amber-700 ring-amber-500/30 dark:bg-amber-400/15 dark:text-amber-300",
+    scheduled: "bg-sky-500/10 text-sky-700 ring-sky-500/30 dark:bg-sky-400/15 dark:text-sky-300",
+    paid: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/30 dark:bg-emerald-400/15 dark:text-emerald-300",
+    ongoing:
+      "bg-emerald-500/15 text-emerald-700 ring-emerald-500/40 dark:bg-emerald-400/20 dark:text-emerald-200",
+    completed:
+      "bg-slate-500/10 text-slate-700 ring-slate-500/25 dark:bg-slate-400/15 dark:text-slate-300",
+    rejected:
+      "bg-rose-500/10 text-rose-700 ring-rose-500/30 dark:bg-rose-400/15 dark:text-rose-300",
+    canceled:
+      "bg-rose-500/10 text-rose-700 ring-rose-500/30 dark:bg-rose-400/15 dark:text-rose-300",
+  };
+
   return (
-    <article
+    <motion.article
+      whileHover={{ y: -3 }}
+      transition={{ type: "spring", stiffness: 380, damping: 28 }}
       className={cn(
-        "group relative flex h-full flex-col gap-4 overflow-hidden rounded-2xl p-4 sm:p-5",
-        "bg-white/90 ring-1 ring-slate-200/70 transition-all ring-inset",
-        "hover:-translate-y-0.5 hover:ring-slate-300/80",
-        "dark:bg-slate-900/60 dark:ring-white/5 dark:hover:ring-white/10",
-        "shadow-[0_4px_18px_-12px_rgba(15,23,42,0.18)] dark:shadow-[0_4px_18px_-8px_rgba(0,0,0,0.55)]"
+        // 4px vertical status rail (left) via :before for crispness across themes.
+        "group relative isolate flex h-full flex-col gap-4 overflow-hidden rounded-2xl p-4 sm:p-5",
+        "before:absolute before:top-0 before:left-0 before:h-full before:w-1 before:content-['']",
+        "ring-1 ring-slate-200/70 transition-shadow ring-inset dark:ring-white/5",
+        "hover:shadow-[0_10px_32px_-18px_rgba(15,23,42,0.35)] dark:hover:shadow-[0_10px_32px_-12px_rgba(0,0,0,0.7)]",
+        washClass[toneKey],
+        "bg-white dark:bg-slate-900/70",
+        railClass[toneKey]
       )}>
-      {/* Soft tone glow — sits behind content, never paired with a heavy shadow */}
+      {/* Soft tone glow — only visible on hover */}
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full opacity-50 blur-2xl transition-opacity group-hover:opacity-80",
-          SESSION_CARD_GLOW[status.tone]
+          "pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-70",
+          SESSION_CARD_GLOW[toneKey]
         )}
       />
 
-      {/* Top row: identity + status + inline join CTA */}
+      {/* Top row: avatar + identity + status + inline join CTA */}
       <header className="relative flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset",
-              "bg-indigo-500/10 text-indigo-600 ring-indigo-500/20",
-              "dark:bg-indigo-400/15 dark:text-indigo-300 dark:ring-indigo-400/20"
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold ring-1 ring-inset",
+              avatarClass[toneKey]
             )}>
             <Video className="h-5 w-5" aria-hidden />
           </div>
@@ -133,10 +200,7 @@ export function SessionCard({
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-          <SessionStatusBadge tone={sessionToneFromStatus(session.status)} label={status.label} />
-          {!isTimeReached && !isCompleted && session.status !== "CANCELED" && session.joinTime && (
-            <SessionStatusBadge tone="draft" label={t("common.itsNotTimeYet")} />
-          )}
+          <SessionStatusBadge tone={toneKey} label={status.label} />
           {canJoin && (
             <Button
               size="sm"
@@ -191,7 +255,7 @@ export function SessionCard({
         </div>
       </header>
 
-      {/* Time meta row */}
+      {/* Time meta row — date, time, optional countdown chip */}
       <div className="relative flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
         {session.joinTime && (
           <span className="inline-flex items-center gap-1">
@@ -226,6 +290,16 @@ export function SessionCard({
             <span className="font-medium text-slate-700 dark:text-slate-200">
               {t("common.session2")} {session.id}
             </span>
+          </span>
+        )}
+        {!isTimeReached && !isCompleted && !isCancelled && msUntilJoin && (
+          <span
+            className={cn(
+              "ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset",
+              "bg-sky-500/10 text-sky-700 ring-sky-500/25 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-500/30"
+            )}>
+            <Hourglass className="h-3 w-3" aria-hidden />
+            {formatCountdown(msUntilJoin)}
           </span>
         )}
       </div>
@@ -283,6 +357,6 @@ export function SessionCard({
       <span className="sr-only">
         <Badge>{status.label}</Badge>
       </span>
-    </article>
+    </motion.article>
   );
 }
