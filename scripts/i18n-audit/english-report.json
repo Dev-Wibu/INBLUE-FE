@@ -2129,11 +2129,27 @@
   },
   {
     "file": "src/pages/Mentor/Sessions/MentorSessionDetailPage.tsx",
-    "line": 402,
-    "character": 25,
+    "line": 664,
+    "character": 53,
     "type": "JsxText",
     "category": "english",
     "text": "STAR"
+  },
+  {
+    "file": "src/pages/Mentor/Sessions/MentorSessionReviewViewPage.tsx",
+    "line": 439,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "STAR"
+  },
+  {
+    "file": "src/pages/Mentor/Sessions/MentorSessionReviewViewPage.tsx",
+    "line": 510,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Step"
   },
   {
     "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",

@@ -93,6 +93,11 @@ const T = {
     vi: "Báo cáo đánh giá của mentor",
     ja: "メンターレビューレポート",
   },
+  "userApplicationhistory.mentorScheduleDurationOptions": {
+    en: "Duration options",
+    vi: "Tùy chọn thời lượng",
+    ja: "所要時間のオプション",
+  },
   "common.timeline": {
     en: "Timeline",
     vi: "Dòng thời gian",

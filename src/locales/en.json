@@ -4506,7 +4506,7 @@
     "mentorScheduleDateLabel": "Interview date",
     "mentorScheduleDurationLabel": "Duration",
     "mentorScheduleDurationValue": "{{count}} min",
-    "mentorScheduleDurationOptions": ["30 min", "45 min", "60 min", "90 min"],
+    "mentorScheduleDurationOptions": "Duration options",
     "mentorScheduleModeLabel": "Interview mode",
     "mentorScheduleModeOnlineTitle": "Online (Daily.co)",
     "mentorScheduleModeOnlineDesc": "Video interview in your browser",
