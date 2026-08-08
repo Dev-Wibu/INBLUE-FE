@@ -3289,7 +3289,8 @@
     "startTime": "Thời gian bắt đầu",
     "endTime": "Thời gian kết thúc",
     "youHaventSubmittedAReview": "Bạn chưa gửi đánh giá cho session này.",
-    "reviewOfSession": "Đánh giá của session"
+    "reviewOfSession": "Đánh giá của session",
+    "youScoredCandidateWith": "Bạn đã chấm candidate {{var_0}} / 5"
   },
   "mentorStudents": {
     "allStudents": "Tất cả học viên",

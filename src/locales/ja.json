@@ -3278,7 +3278,8 @@
     "startTime": "開始時刻",
     "endTime": "終了時刻",
     "youHaventSubmittedAReview": "このセッションにはまだレビューを送信していません。",
-    "reviewOfSession": "セッションのレビュー"
+    "reviewOfSession": "セッションのレビュー",
+    "youScoredCandidateWith": "この候補者を {{var_0}} / 5 で評価しました"
   },
   "mentorStudents": {
     "allStudents": "すべての学生",

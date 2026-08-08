@@ -3292,7 +3292,8 @@
     "startTime": "Start time",
     "endTime": "End time",
     "youHaventSubmittedAReview": "You haven't submitted a review for this session yet.",
-    "reviewOfSession": "Review of session"
+    "reviewOfSession": "Review of session",
+    "youScoredCandidateWith": "You scored this candidate {{var_0}} / 5"
   },
   "mentorStudents": {
     "allStudents": "All students",

@@ -83,6 +83,11 @@ const T = {
     vi: "Kết quả thế nào? Student đạt được, học được, hay vướng mắc ở điểm nào?",
     ja: "結果はどうでしたか？何が達成され、何を学び、何で苦労しましたか？",
   },
+  "mentorSessions.youScoredCandidateWith": {
+    en: "You scored this candidate {{var_0}} / 5",
+    vi: "Bạn đã chấm candidate {{var_0}} / 5",
+    ja: "この候補者を {{var_0}} / 5 で評価しました",
+  },
   "common.timeline": {
     en: "Timeline",
     vi: "Dòng thời gian",
