@@ -1,6 +1,9 @@
 /**
- * Mentor Review Detail Page — student hero + 4 STAR cards + 3 columns
- * of additional comments. UI-only refresh; data + access checks preserved.
+ * Mentor Review Detail Page — v2 "Assessment Dossier".
+ * Compact max-w-5xl layout. Single navy/sky accent ramp with restrained
+ * surface washes, glassmorphism panels, and clear hierarchy.
+ *
+ * UI-only refresh. All data + access checks preserved.
  */
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,22 +35,29 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { PanelSurface, SectionHeading } from "../Sessions/components";
+import { PanelSurface } from "../Sessions/components";
 
-type StarCardTone = "sky" | "indigo" | "emerald" | "amber";
-
-const STAR_CARD_TONE: Record<"situation" | "task" | "action" | "result", StarCardTone> = {
-  situation: "sky",
-  task: "indigo",
-  action: "emerald",
-  result: "amber",
-};
-
-const STAR_CARD_ICON: Record<keyof typeof STAR_CARD_TONE, typeof Target> = {
+const STAR_CARD_ICON: Record<"situation" | "task" | "action" | "result", typeof Target> = {
   situation: Target,
   task: ClipboardList,
   action: Zap,
   result: CheckCircle2,
+};
+
+// One accent ramp — navy/sky/indigo/slate. No more 4 distinct color
+// families that make the page look like a fruit salad.
+const STAR_CARD_HUE: Record<"situation" | "task" | "action" | "result", string> = {
+  situation: "from-sky-500/12 to-sky-500/4 ring-sky-500/20",
+  task: "from-indigo-500/12 to-indigo-500/4 ring-indigo-500/20",
+  action: "from-blue-500/12 to-blue-500/4 ring-blue-500/20",
+  result: "from-cyan-500/12 to-cyan-500/4 ring-cyan-500/20",
+};
+
+const STAR_CARD_INK: Record<"situation" | "task" | "action" | "result", string> = {
+  situation: "text-sky-700 dark:text-sky-300",
+  task: "text-indigo-700 dark:text-indigo-300",
+  action: "text-blue-700 dark:text-blue-300",
+  result: "text-cyan-700 dark:text-cyan-300",
 };
 
 const heroMotion = {
@@ -68,40 +78,6 @@ const gridStagger = {
 const cardMotion = {
   hidden: { opacity: 0, y: 10 },
   show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: "easeOut" as const } },
-};
-
-const STAR_TONE_CLASS: Record<
-  StarCardTone,
-  { surface: string; ink: string; ring: string; chip: string; icon: string }
-> = {
-  sky: {
-    surface: "bg-sky-500/8 ring-sky-500/20 dark:bg-sky-500/10",
-    ink: "text-sky-700 dark:text-sky-300",
-    ring: "ring-sky-500/20",
-    chip: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
-    icon: "text-sky-600 dark:text-sky-400",
-  },
-  indigo: {
-    surface: "bg-indigo-500/8 ring-indigo-500/20 dark:bg-indigo-500/10",
-    ink: "text-indigo-700 dark:text-indigo-300",
-    ring: "ring-indigo-500/20",
-    chip: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
-    icon: "text-indigo-600 dark:text-indigo-400",
-  },
-  emerald: {
-    surface: "bg-emerald-500/8 ring-emerald-500/20 dark:bg-emerald-500/10",
-    ink: "text-emerald-700 dark:text-emerald-300",
-    ring: "ring-emerald-500/20",
-    chip: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-    icon: "text-emerald-600 dark:text-emerald-400",
-  },
-  amber: {
-    surface: "bg-amber-500/8 ring-amber-500/20 dark:bg-amber-500/10",
-    ink: "text-amber-700 dark:text-amber-300",
-    ring: "ring-amber-500/20",
-    chip: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
-    icon: "text-amber-600 dark:text-amber-400",
-  },
 };
 
 export function ReviewDetailPage() {
@@ -135,19 +111,19 @@ export function ReviewDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="mx-auto w-full max-w-5xl space-y-5">
         <div className="flex items-center gap-4">
           <Skeleton className="h-10 w-24" />
           <Skeleton className="h-8 w-48" />
         </div>
-        <Skeleton className="h-64" />
-        <Skeleton className="h-96" />
+        <Skeleton className="h-44" />
+        <Skeleton className="h-80" />
       </div>
     );
   }
   if (!review) {
     return (
-      <div className="space-y-6">
+      <div className="mx-auto w-full max-w-5xl space-y-6">
         <Button variant="ghost" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("general.back")}
@@ -166,7 +142,7 @@ export function ReviewDetailPage() {
   }
   if (!currentUser?.id || review.session?.userId2 !== currentUser.id) {
     return (
-      <div className="space-y-6">
+      <div className="mx-auto w-full max-w-5xl space-y-6">
         <Button variant="ghost" onClick={() => navigate("/mentor?tab=reviews")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("common.backToTheList")}
@@ -189,7 +165,7 @@ export function ReviewDetailPage() {
     : null;
 
   const starCards: Array<{
-    key: keyof typeof STAR_CARD_TONE;
+    key: "situation" | "task" | "action" | "result";
     label: string;
     value?: string | null;
   }> = [
@@ -199,16 +175,37 @@ export function ReviewDetailPage() {
     { key: "result", label: t("mentorReviews.result"), value: review.resultNote },
   ];
 
+  const additionalItems = [
+    {
+      key: "strength",
+      label: t("common.strengths"),
+      icon: ThumbsUp,
+      value: review.strength,
+    },
+    {
+      key: "weakness",
+      label: t("common.pointsForImprovement"),
+      icon: Wrench,
+      value: review.weakness,
+    },
+    {
+      key: "improve",
+      label: t("common.suggestedImprovements"),
+      icon: Lightbulb,
+      value: review.improve,
+    },
+  ];
+
   return (
     <motion.div
-      className="space-y-5"
+      className="mx-auto flex w-full max-w-5xl flex-col gap-5"
       variants={{
         hidden: { opacity: 0 },
         show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
       }}
       initial="hidden"
       animate="show">
-      {/* Top action bar — single source of truth, no duplicated header */}
+      {/* Top action bar */}
       <motion.div variants={childMotion} className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
@@ -230,23 +227,27 @@ export function ReviewDetailPage() {
         </Button>
       </motion.div>
 
-      {/* Student + review hero — single panel, two columns */}
+      {/* Student + rating hero — restrained navy/sky palette, glass surface */}
       <motion.div variants={heroMotion}>
         <PanelSurface className="relative overflow-hidden">
           <div
             aria-hidden
-            className="pointer-events-none absolute -top-16 -right-12 h-48 w-48 rounded-full bg-amber-300/20 opacity-60 blur-3xl dark:bg-amber-500/20"
+            className="pointer-events-none absolute -top-16 -right-12 h-48 w-48 rounded-full bg-sky-300/20 opacity-50 blur-3xl dark:bg-sky-500/20"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-16 -left-12 h-48 w-48 rounded-full bg-indigo-400/15 opacity-50 blur-3xl dark:bg-indigo-500/15"
           />
           <div className="relative flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div className="flex min-w-0 items-center gap-4">
-              <Avatar className="h-16 w-16 ring-2 ring-amber-400/40">
+              <Avatar className="h-14 w-14 ring-2 ring-sky-400/30">
                 <AvatarImage src={studentAvatarUrl} alt={studentName} />
-                <AvatarFallback className="bg-amber-100 text-base font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                  {studentName.charAt(0) || "H"}
+                <AvatarFallback className="bg-sky-100 text-base font-semibold text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+                  {studentName.charAt(0) || "S"}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 space-y-1">
-                <p className="text-[10px] font-semibold tracking-[0.08em] text-amber-700 uppercase dark:text-amber-300">
+                <p className="text-[10px] font-semibold tracking-[0.08em] text-sky-700 uppercase dark:text-sky-300">
                   {t("mentorReviews.studentInformation")}
                 </p>
                 <h1
@@ -271,17 +272,17 @@ export function ReviewDetailPage() {
               </div>
             </div>
 
-            {/* Overall rating block */}
+            {/* Overall rating — calm glass block, not a loud pill */}
             <div
               className={cn(
-                "rounded-2xl p-4 text-center ring-1 ring-inset sm:min-w-[180px]",
-                "bg-amber-500/8 ring-amber-500/25",
-                "dark:bg-amber-500/10"
+                "rounded-2xl p-4 text-center ring-1 backdrop-blur ring-inset sm:min-w-[200px]",
+                "bg-slate-900/[0.04] ring-slate-900/10",
+                "dark:bg-white/[0.05] dark:ring-white/10"
               )}>
-              <p className="text-[10px] font-semibold tracking-[0.08em] text-amber-700 uppercase dark:text-amber-300">
+              <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
                 {t("mentorReviews.overallAssessment")}
               </p>
-              <p className="mt-1 text-4xl font-bold tracking-[-0.03em] text-amber-700 dark:text-amber-300">
+              <p className="mt-1 text-4xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
                 {review.rating || 0}
                 <span className="ml-1 text-base font-medium opacity-60">/5</span>
               </p>
@@ -298,12 +299,18 @@ export function ReviewDetailPage() {
         </PanelSurface>
       </motion.div>
 
-      {/* STAR method cards — 4 distinct cards, not a vertical stack */}
+      {/* STAR method cards — 2x2 grid, single navy/sky accent ramp */}
       <motion.section variants={childMotion} className="space-y-3">
-        <SectionHeading
-          title={t("mentorReviews.detailedAssessmentStarMethod")}
-          subtitle={t("mentorReviews.starContentYouSentTo")}
-        />
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
+              {t("mentorReviews.detailedAssessmentStarMethod")}
+            </h2>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              {t("mentorReviews.starContentYouSentTo")}
+            </p>
+          </div>
+        </div>
         {starCards.every((c) => !c.value) ? (
           <PanelSurface>
             <p className="p-5 text-sm text-slate-500 italic">
@@ -318,44 +325,45 @@ export function ReviewDetailPage() {
             className="grid gap-3 sm:grid-cols-2">
             {starCards.map((card) => {
               if (!card.value) return null;
-              const tone = STAR_TONE_CLASS[STAR_CARD_TONE[card.key]];
               const Icon = STAR_CARD_ICON[card.key];
+              const hue = STAR_CARD_HUE[card.key];
+              const ink = STAR_CARD_INK[card.key];
               return (
                 <motion.article
                   key={card.key}
                   variants={cardMotion}
                   className={cn(
                     "rounded-2xl p-4 ring-1 transition-all ring-inset hover:-translate-y-0.5",
-                    tone.surface,
-                    tone.ring
+                    "bg-gradient-to-br",
+                    hue
                   )}>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <div
                         className={cn(
                           "flex h-8 w-8 items-center justify-center rounded-lg ring-1 ring-inset",
-                          tone.surface,
-                          tone.ring
+                          "bg-white/40 ring-white/40 dark:bg-white/5 dark:ring-white/10"
                         )}>
-                        <Icon className={cn("h-4 w-4", tone.icon)} aria-hidden />
+                        <Icon className={cn("h-4 w-4", ink)} aria-hidden />
                       </div>
                       <p
                         className={cn(
                           "text-[10px] font-semibold tracking-[0.08em] uppercase",
-                          tone.ink
+                          ink
                         )}>
                         {card.label}
                       </p>
                     </div>
                     <span
                       className={cn(
-                        "rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase",
-                        tone.chip
+                        "rounded-full px-2 py-0.5 font-mono text-[10px] font-medium",
+                        "bg-white/40 text-slate-600",
+                        "dark:bg-white/5 dark:text-slate-400"
                       )}>
-                      {card.key}
+                      {String(card.key).charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                  <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
                     {card.value}
                   </p>
                 </motion.article>
@@ -365,66 +373,44 @@ export function ReviewDetailPage() {
         )}
       </motion.section>
 
-      {/* Additional comments — 3 distinct cards side-by-side */}
+      {/* Additional comments — 3 cols with max-w to avoid horizontal stretching */}
       <motion.section variants={childMotion} className="space-y-3">
-        <SectionHeading title={t("mentorReviews.additionalComments")} />
+        <div>
+          <h2 className="text-base font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
+            {t("mentorReviews.additionalComments")}
+          </h2>
+        </div>
         <motion.div
           variants={gridStagger}
           initial="hidden"
           animate="show"
-          className="grid gap-3 lg:grid-cols-3">
-          {[
-            {
-              key: "strength",
-              label: t("common.strengths"),
-              icon: ThumbsUp,
-              value: review.strength,
-              toneClass: STAR_TONE_CLASS.emerald,
-            },
-            {
-              key: "weakness",
-              label: t("common.pointsForImprovement"),
-              icon: Wrench,
-              value: review.weakness,
-              toneClass: STAR_TONE_CLASS.amber,
-            },
-            {
-              key: "improve",
-              label: t("common.suggestedImprovements"),
-              icon: Lightbulb,
-              value: review.improve,
-              toneClass: STAR_TONE_CLASS.indigo,
-            },
-          ].map((item) => {
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {additionalItems.map((item) => {
             const Icon = item.icon;
             return (
               <motion.article
                 key={item.key}
                 variants={cardMotion}
                 className={cn(
-                  "rounded-2xl p-4 ring-1 ring-inset",
-                  item.toneClass.surface,
-                  item.toneClass.ring
+                  "rounded-2xl p-4 ring-1 transition-all ring-inset hover:-translate-y-0.5",
+                  "bg-white ring-slate-200/70",
+                  "dark:bg-slate-900/60 dark:ring-white/5"
                 )}>
                 <div className="flex items-center gap-2">
                   <div
                     className={cn(
                       "flex h-8 w-8 items-center justify-center rounded-lg ring-1 ring-inset",
-                      item.toneClass.surface,
-                      item.toneClass.ring
+                      "bg-sky-500/10 text-sky-700 ring-sky-500/20",
+                      "dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-500/20"
                     )}>
-                    <Icon className={cn("h-4 w-4", item.toneClass.icon)} aria-hidden />
+                    <Icon className="h-4 w-4" aria-hidden />
                   </div>
-                  <p
-                    className={cn(
-                      "text-[10px] font-semibold tracking-[0.08em] uppercase",
-                      item.toneClass.ink
-                    )}>
+                  <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
                     {item.label}
                   </p>
                 </div>
                 {item.value ? (
-                  <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                  <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
                     {item.value}
                   </p>
                 ) : (
