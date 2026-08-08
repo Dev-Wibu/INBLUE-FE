@@ -8,10 +8,7 @@ export function BlogPage() {
       <HomepageHeader />
 
       <main className="mx-auto max-w-2xl space-y-5 px-4 pt-20 pb-10">
-        <BlogFeedPage
-          title={t("general.feed")}
-          description={t("common.updateTheLatestPostsFromTheCommuni")}
-        />
+        <BlogFeedPage title={t("general.feed")} />
       </main>
 
       <HomepageFooter />

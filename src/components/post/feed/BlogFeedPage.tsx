@@ -23,12 +23,10 @@ import { PostFeedCard } from "./PostFeedCard";
 type SortBy = "newest" | "popular" | "recent_activity";
 interface BlogFeedPageProps {
   title?: string;
-  description?: string;
 }
-export function BlogFeedPage({ title, description }: BlogFeedPageProps) {
+export function BlogFeedPage({ title }: BlogFeedPageProps) {
   const { t } = useTranslation();
   const resolvedTitle = title ?? t("common.home");
-  const resolvedDescription = description ?? t("common.updateTheLatestPostsFromTheCommuni");
   const { user } = useAuthStore();
   const { posts, hasMore, isLoading, isReloading, isFetchingMore, loadMore, refresh } =
     usePublishedFeed();
@@ -98,7 +96,6 @@ export function BlogFeedPage({ title, description }: BlogFeedPageProps) {
     <div className="mx-auto max-w-2xl space-y-5">
       <div>
         <h1 className="text-xl font-bold">{resolvedTitle}</h1>
-        <p className="text-muted-foreground text-sm">{resolvedDescription}</p>
       </div>
 
       {user ? (

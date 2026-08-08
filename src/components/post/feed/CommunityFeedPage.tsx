@@ -25,10 +25,9 @@ interface CommunityFeedPageProps {
   title?: string;
   description?: string;
 }
-export function CommunityFeedPage({ title, description }: CommunityFeedPageProps) {
+export function CommunityFeedPage({ title }: CommunityFeedPageProps) {
   const { t } = useTranslation();
   const resolvedTitle = title ?? t("common.home");
-  const resolvedDescription = description ?? t("common.updateTheLatestPostsFromTheCommuni");
   const { user } = useAuthStore();
   const { posts, hasMore, isLoading, isReloading, isFetchingMore, loadMore, refresh } =
     usePostFeed();
@@ -102,7 +101,6 @@ export function CommunityFeedPage({ title, description }: CommunityFeedPageProps
     <div className="mx-auto max-w-2xl space-y-5">
       <div>
         <h1 className="text-xl font-bold">{resolvedTitle}</h1>
-        <p className="text-muted-foreground text-sm">{resolvedDescription}</p>
       </div>
 
       <Card className="overflow-hidden rounded-xl border-slate-200/70 bg-white py-0 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
