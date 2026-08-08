@@ -11,11 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import { ArrowRight, LayoutDashboard, LogIn, LogOut, Menu, UserCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 function getInitials(name?: string): string {
@@ -32,6 +33,7 @@ function getInitials(name?: string): string {
 export function HomepageHeader() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn, user, clearAuth } = useAuthStore();
   const dashboardPath = getDashboardPath(user?.role);
 
@@ -43,9 +45,28 @@ export function HomepageHeader() {
   };
 
   const navLinks = [
-    { label: t("landingNew.headerExplore"), href: "/enterprise/companies" },
-    { label: t("landingNew.headerHowItWorks"), href: "/#interview-map" },
+    {
+      label: t("landingNew.headerExplore"),
+      href: "/enterprise/companies",
+      matchPrefix: "/enterprise/companies",
+    },
+    {
+      label: t("landingNew.headerHowItWorks"),
+      href: "/#interview-map",
+      // Anchor on home page — active only when user is on `/` and hash may be empty
+      isActive: () => location.pathname === "/" && !location.hash,
+    },
   ];
+
+  const isLinkActive = (link: {
+    href: string;
+    matchPrefix?: string;
+    isActive?: () => boolean;
+  }): boolean => {
+    if (link.isActive) return link.isActive();
+    if (link.matchPrefix) return location.pathname.startsWith(link.matchPrefix);
+    return false;
+  };
 
   return (
     <header className="fixed top-0 right-0 left-0 z-50 border-b border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-950">
@@ -58,16 +79,28 @@ export function HomepageHeader() {
         </Link>
 
         <nav
-          className="hidden items-center gap-6 md:flex"
+          className="hidden items-center gap-1 md:flex"
           aria-label={t("landingNew.headerNavLabel")}>
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]">
-              {link.label}
-            </a>
-          ))}
+          {navLinks.map((link) => {
+            const active = isLinkActive(link);
+            return (
+              <a
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "relative rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200",
+                  active
+                    ? "bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#66B2FF]/15 dark:text-[#66B2FF]"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-[#66B2FF]"
+                )}>
+                {link.label}
+                {active && (
+                  <span className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-[#0047AB] to-[#66B2FF] dark:from-[#66B2FF] dark:to-[#0047AB]" />
+                )}
+              </a>
+            );
+          })}
         </nav>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -153,14 +186,23 @@ export function HomepageHeader() {
               <nav
                 className="mt-10 flex flex-col gap-2"
                 aria-label={t("landingNew.headerNavLabel")}>
-                {navLinks.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">
-                    {link.label}
-                  </a>
-                ))}
+                {navLinks.map((link) => {
+                  const active = isLinkActive(link);
+                  return (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      aria-current={active ? "page" : undefined}
+                      className={cn(
+                        "rounded-xl px-3 py-3 font-semibold transition-colors",
+                        active
+                          ? "bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#66B2FF]/15 dark:text-[#66B2FF]"
+                          : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
+                      )}>
+                      {link.label}
+                    </a>
+                  );
+                })}
                 {!isLoggedIn && (
                   <>
                     <Link

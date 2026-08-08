@@ -38,6 +38,15 @@ export interface PaymentCreateOptions {
 
 const DEFAULT_PAYMENT_PURPOSE: PaymentPurpose = "FULLY_PAID";
 
+export interface NativePaymentLinkInfo {
+  addInfo?: string;
+  quicklink?: string;
+  accountNo?: string;
+  accountName?: string;
+  bankShortName?: string;
+  amount?: string | number;
+}
+
 export class PaymentManager {
   private extractCheckoutUrl(payload: unknown): string | undefined {
     if (typeof payload === "string") {
@@ -205,6 +214,34 @@ export class PaymentManager {
       return {
         success: true,
         data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: getErrorMessage(error, t("common.paymentCannotBeCanceled")),
+      };
+    }
+  }
+
+  async getPaymentLinkInfo(paymentId: string): Promise<ApiResponse<NativePaymentLinkInfo>> {
+    try {
+      const endpoint = buildEndpoint(API_ENDPOINTS.PAYMENTS.PAY_INFO, { paymentId });
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+      }));
+      const data = isRecord(response.data) ? response.data : {};
+      const inner = isRecord(data.data) ? data.data : data;
+      return {
+        success: true,
+        data: {
+          addInfo: asNonEmptyString(inner.addInfo),
+          quicklink: asNonEmptyString(inner.quicklink),
+          accountNo: asNonEmptyString(inner.accountNo),
+          accountName: asNonEmptyString(inner.accountName),
+          bankShortName: asNonEmptyString(inner.bankShortName),
+          amount: typeof inner.amount === "number" ? inner.amount : asNonEmptyString(inner.amount),
+        },
       };
     } catch (error) {
       return {
