@@ -147,51 +147,60 @@ const ADDITIONAL_CARDS: AdditionalConfig[] = [
 
 // Tone → class map. Lives in this file (component file) so Fast Refresh
 // stays happy and the map travels with the only place that uses it.
+// Single neutral dark-glass surface for every card — replaces the
+// previous 6-color "fruit salad" of sky/indigo/emerald/amber/rose/violet
+// backgrounds that read as AI slop.
+const NEUTRAL_SURFACE = "bg-slate-500/[0.04] dark:bg-white/[0.03]";
+const NEUTRAL_RING = "ring-slate-200/70 dark:ring-white/5";
+const NEUTRAL_INK = "text-slate-700 dark:text-slate-200";
+const NEUTRAL_LETTER =
+  "bg-slate-900/[0.06] text-slate-700 dark:bg-white/[0.06] dark:text-slate-200";
+
 const TONE_CLASS: Record<
   CardTone,
   { surface: string; ring: string; ink: string; chip: string; letter: string }
 > = {
   sky: {
-    surface: "bg-sky-500/8 dark:bg-sky-500/10",
-    ring: "ring-sky-500/25",
-    ink: "text-sky-700 dark:text-sky-300",
-    chip: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
-    letter: "bg-sky-500/20 text-sky-700 dark:text-sky-300",
+    surface: NEUTRAL_SURFACE,
+    ring: NEUTRAL_RING,
+    ink: NEUTRAL_INK,
+    chip: NEUTRAL_SURFACE,
+    letter: NEUTRAL_LETTER,
   },
   indigo: {
-    surface: "bg-indigo-500/8 dark:bg-indigo-500/10",
-    ring: "ring-indigo-500/25",
-    ink: "text-indigo-700 dark:text-indigo-300",
-    chip: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300",
-    letter: "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300",
+    surface: NEUTRAL_SURFACE,
+    ring: NEUTRAL_RING,
+    ink: NEUTRAL_INK,
+    chip: NEUTRAL_SURFACE,
+    letter: NEUTRAL_LETTER,
   },
   emerald: {
-    surface: "bg-emerald-500/8 dark:bg-emerald-500/10",
-    ring: "ring-emerald-500/25",
-    ink: "text-emerald-700 dark:text-emerald-300",
-    chip: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
-    letter: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300",
+    surface: NEUTRAL_SURFACE,
+    ring: NEUTRAL_RING,
+    ink: NEUTRAL_INK,
+    chip: NEUTRAL_SURFACE,
+    letter: NEUTRAL_LETTER,
   },
   amber: {
-    surface: "bg-amber-500/8 dark:bg-amber-500/10",
-    ring: "ring-amber-500/25",
-    ink: "text-amber-700 dark:text-amber-300",
-    chip: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
-    letter: "bg-amber-500/20 text-amber-700 dark:text-amber-300",
+    surface: NEUTRAL_SURFACE,
+    ring: NEUTRAL_RING,
+    ink: NEUTRAL_INK,
+    chip: NEUTRAL_SURFACE,
+    letter: NEUTRAL_LETTER,
   },
   rose: {
-    surface: "bg-rose-500/8 dark:bg-rose-500/10",
-    ring: "ring-rose-500/25",
-    ink: "text-rose-700 dark:text-rose-300",
-    chip: "bg-rose-500/15 text-rose-700 dark:text-rose-300",
-    letter: "bg-rose-500/20 text-rose-700 dark:text-rose-300",
+    surface: NEUTRAL_SURFACE,
+    ring: NEUTRAL_RING,
+    ink: NEUTRAL_INK,
+    chip: NEUTRAL_SURFACE,
+    letter: NEUTRAL_LETTER,
   },
   violet: {
-    surface: "bg-violet-500/8 dark:bg-violet-500/10",
-    ring: "ring-violet-500/25",
-    ink: "text-violet-700 dark:text-violet-300",
-    chip: "bg-violet-500/15 text-violet-700 dark:text-violet-300",
-    letter: "bg-violet-500/20 text-violet-700 dark:text-violet-300",
+    surface: NEUTRAL_SURFACE,
+    ring: NEUTRAL_RING,
+    ink: NEUTRAL_INK,
+    chip: NEUTRAL_SURFACE,
+    letter: NEUTRAL_LETTER,
   },
 };
 
@@ -542,29 +551,30 @@ export function MentorReviewForm({
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
           {/* Main column */}
           <div className="min-w-0 space-y-6">
-            {/* Overall rating */}
+            {/* Overall rating — compact, no giant card chrome */}
             <FormField
               control={form.control}
               name="rating"
               render={({ field }) => (
-                <FormItem className="rounded-2xl bg-white p-4 ring-1 ring-slate-200/70 sm:p-5 dark:bg-slate-900/60 dark:ring-white/5">
-                  <div className="flex flex-wrap items-end justify-between gap-3">
+                <FormItem className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <FormLabel className="text-base font-semibold tracking-[-0.01em]">
+                      <FormLabel className="text-sm font-semibold tracking-[-0.01em]">
                         {t("compReview.overallRatingOptional")}
                       </FormLabel>
-                      <FormDescription className="mt-0.5">
+                      <FormDescription className="mt-0.5 text-xs">
                         {t("compReview.youCanChooseTheNumber")}
                       </FormDescription>
                     </div>
-                    <span className="text-[10px] font-semibold tracking-wide text-amber-700 uppercase dark:text-amber-300">
-                      {t("compReview.evaluate")}
+                    <span className="text-xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
+                      {field.value && field.value > 0 ? `${field.value.toFixed(1)}` : "—"}
+                      <span className="ml-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        /5
+                      </span>
                     </span>
                   </div>
                   <FormControl>
-                    <div className="mt-3">
-                      <StarRating value={field.value} onChange={field.onChange} size="lg" />
-                    </div>
+                    <StarRating value={field.value} onChange={field.onChange} size="lg" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
