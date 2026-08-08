@@ -1695,6 +1695,7 @@ function GradedResultView({
   onSelectProblem: (_idx: number) => void;
   issuesByProblem: Record<number, LocalDraftIssue[]>;
 }) {
+  const { t } = useTranslation();
   const feedback = useMemo<AiFeedback | null>(() => {
     if (!detail.aiFeedback) return null;
     if (typeof detail.aiFeedback === "object") return detail.aiFeedback as AiFeedback;

@@ -697,6 +697,7 @@ function StaffGradingWorkspaceHeaderCard({
   activeRound?: JdRound;
   onOpenGrading: () => void;
 }) {
+  const { t } = useTranslation();
   const detail = staffActiveDetail;
 
   const hrScore = detail?.hrScore;
