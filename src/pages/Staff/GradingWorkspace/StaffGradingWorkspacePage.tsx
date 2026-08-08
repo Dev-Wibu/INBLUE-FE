@@ -173,13 +173,13 @@ function StaffGradingModal({
   roundName: string;
 }) {
   const { t } = useTranslation();
-  const hasExistingGrade = detail.hrScore !== undefined;
+  const hasExistingGrade = detail.hrScore !== undefined && detail.hrScore !== null;
   const [isEditing, setIsEditing] = useState(hasExistingGrade);
   const [isPass, setIsPass] = useState(detail.finalResult === "PASSED");
   const [score, setScore] = useState(
-    detail.hrScore !== undefined
+    hasExistingGrade
       ? String(detail.hrScore)
-      : detail.aiScore !== undefined
+      : detail.aiScore !== undefined && detail.aiScore !== null
         ? String(Math.round(detail.aiScore))
         : "0"
   );
@@ -243,9 +243,9 @@ function StaffGradingModal({
   const handleClose = () => {
     setIsEditing(hasExistingGrade);
     setScore(
-      detail.hrScore !== undefined
+      hasExistingGrade
         ? String(detail.hrScore)
-        : detail.aiScore !== undefined
+        : detail.aiScore !== undefined && detail.aiScore !== null
           ? String(Math.round(detail.aiScore))
           : "0"
     );
