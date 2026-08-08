@@ -1,24 +1,14 @@
 /**
- * Mentor Sessions Page — "Interview Command Center" entry.
- * UI-only refresh: layout, bento stats, command-bar, session cards.
- * Logic (filters, sort, pagination, mutations, navigation) is preserved.
+ * Mentor Sessions Page — "Interview Command Deck" v2.
+ * UI-only refresh: compact dark hero, status track with live filter pills,
+ * command-bar, and personality-rich session cards. Logic (filters, sort,
+ * pagination, mutations, navigation) is preserved.
  */
 
 import { PaginationControl } from "@/components/shared/PaginationControl";
-import { ReloadButton } from "@/components/shared/ReloadButton";
 import { SortButton } from "@/components/shared/SortButton";
-import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
@@ -28,23 +18,20 @@ import type { Session } from "@/interfaces";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { AnimatePresence, motion } from "framer-motion";
-import { Filter, Search, Video } from "lucide-react";
+import { Calendar, Check, Clock4, MessageSquare, Video } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { SessionCard, StatsPanel, buildMentorInterviewTiles } from "./components";
+import {
+  CommandBar,
+  type CommandBarStatus,
+  HeroCommand,
+  SessionCard,
+  StatusTrack,
+  type StatusTrackItem,
+} from "./components";
 import { toTimestampSafe } from "./components/mentor-interview.constants";
 
-type SessionListTab = "draft" | "others";
-type DraftTimeFilter = "all" | "hasJoinTime" | "noJoinTime";
-type OtherStatusFilter =
-  | "all"
-  | "SCHEDULED"
-  | "PAID"
-  | "ONGOING"
-  | "COMPLETED"
-  | "REJECTED"
-  | "CANCELED";
 type SortableSession = Session & {
   sessionSortValue: number;
 };
@@ -94,15 +81,25 @@ const cardMotion = {
   },
 };
 
+function formatCountdown(ms: number): string {
+  if (ms <= 0) return "now";
+  const totalSeconds = Math.floor(ms / 1000);
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
 export function MentorSessionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
 
-  const [activeTab, setActiveTab] = useState<SessionListTab>("others");
   const [searchQuery, setSearchQuery] = useState("");
-  const [draftTimeFilter, setDraftTimeFilter] = useState<DraftTimeFilter>("all");
-  const [otherStatusFilter, setOtherStatusFilter] = useState<OtherStatusFilter>("all");
+  const [trackFilter, setTrackFilter] = useState<string>("all");
+  const [otherStatusFilter, setOtherStatusFilter] = useState<CommandBarStatus>("all");
 
   const {
     data: allSessions = [],
@@ -159,6 +156,7 @@ export function MentorSessionsPage() {
     return reviewMap;
   }, [reviews]);
   const reviewSessionIds = useMemo(() => new Set(reviewBySessionId.keys()), [reviewBySessionId]);
+
   const draftSessions = useMemo(
     () => mentorSessions.filter((session) => session.status === "DRAFT"),
     [mentorSessions]
@@ -167,43 +165,27 @@ export function MentorSessionsPage() {
     () => mentorSessions.filter((session) => session.status !== "DRAFT"),
     [mentorSessions]
   );
-  const filteredDraftSessions = useMemo(
-    () =>
-      draftSessions.filter((session) => {
-        if (!matchesSessionSearch(session, searchQuery)) {
-          return false;
-        }
-        if (draftTimeFilter === "hasJoinTime") {
-          return !!session.joinTime;
-        }
-        if (draftTimeFilter === "noJoinTime") {
-          return !session.joinTime;
-        }
-        return true;
-      }),
-    [draftSessions, draftTimeFilter, searchQuery]
-  );
-  const filteredOtherSessions = useMemo(
-    () =>
-      otherSessions.filter((session) => {
-        if (!matchesSessionSearch(session, searchQuery)) {
-          return false;
-        }
-        if (otherStatusFilter !== "all") {
-          return session.status === otherStatusFilter;
-        }
-        return true;
-      }),
-    [otherSessions, otherStatusFilter, searchQuery]
-  );
-  const sortableDraftSessions = useMemo<SortableSession[]>(
-    () =>
-      filteredDraftSessions.map((session) => ({
-        ...session,
-        sessionSortValue: getSessionSortValue(session),
-      })),
-    [filteredDraftSessions]
-  );
+
+  const filteredOtherSessions = useMemo(() => {
+    return otherSessions.filter((session) => {
+      if (!matchesSessionSearch(session, searchQuery)) {
+        return false;
+      }
+      // Status-track filter takes precedence for "waiting" because it has its own semantic.
+      if (trackFilter === "waiting") {
+        return (
+          session.status === "COMPLETED" &&
+          typeof session.id === "number" &&
+          !reviewSessionIds.has(session.id)
+        );
+      }
+      if (otherStatusFilter !== "all") {
+        return session.status === otherStatusFilter;
+      }
+      return true;
+    });
+  }, [otherSessions, searchQuery, otherStatusFilter, trackFilter, reviewSessionIds]);
+
   const sortableOtherSessions = useMemo<SortableSession[]>(
     () =>
       filteredOtherSessions.map((session) => ({
@@ -212,9 +194,8 @@ export function MentorSessionsPage() {
       })),
     [filteredOtherSessions]
   );
-  const activeSessions = activeTab === "draft" ? sortableDraftSessions : sortableOtherSessions;
 
-  const { sortedData, getSortProps } = useSortable(activeSessions);
+  const { sortedData, getSortProps } = useSortable(sortableOtherSessions);
 
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "src_pages_mentor_sessions_mentorsessionspage_tsx_pagesize",
@@ -274,60 +255,124 @@ export function MentorSessionsPage() {
       s.status === "COMPLETED" && typeof s.id === "number" && !reviewSessionIds.has(s.id)
   ).length;
 
-  const statsTiles = buildMentorInterviewTiles({
-    total: mentorSessions.length,
-    upcoming: scheduledCount,
-    completed: completedCount,
-    waitingForReview: waitingForReviewCount,
-    t,
-  });
+  // Up Next spotlight — nearest SCHEDULED/PAID/ONGOING session.
+  const upcomingSessions = useMemo(() => {
+    return mentorSessions
+      .filter((s: Session) => ["SCHEDULED", "PAID", "ONGOING"].includes(s.status ?? ""))
+      .filter((s: Session) => typeof toTimestampSafe(s.joinTime) === "number")
+      .sort(
+        (a: Session, b: Session) =>
+          (toTimestampSafe(a.joinTime) ?? 0) - (toTimestampSafe(b.joinTime) ?? 0)
+      );
+  }, [mentorSessions]);
+  const nextSession = upcomingSessions[0] ?? null;
+  const nextMs = nextSession ? toTimestampSafe(nextSession.joinTime) : null;
+  const upNextPayload =
+    nextSession && nextMs
+      ? {
+          title: nextSession.roomName || t("common.sessionVar0", { var_0: nextSession.id }),
+          whenLabel: nextSession.joinTime ? new Date(nextSession.joinTime).toLocaleString() : "",
+          countdownLabel: nextMs > now ? formatCountdown(nextMs - now) : t("common.ongoing"),
+          studentLabel: `${t("common.student")} ${nextSession.userId ?? ""}`.trim(),
+        }
+      : null;
+
+  // Status track items — 4 pills with counts and active state. Click to filter.
+  const statusItems: StatusTrackItem[] = useMemo(
+    () => [
+      {
+        id: "all",
+        label: t("common.allStatus"),
+        count: otherSessions.length,
+        icon: Video,
+        tone: "indigo",
+        active: trackFilter === "all",
+      },
+      {
+        id: "upcoming",
+        label: t("common.comingSoon"),
+        count: scheduledCount,
+        icon: Calendar,
+        tone: "sky",
+        pulse: true,
+        active: trackFilter === "upcoming",
+      },
+      {
+        id: "completed",
+        label: t("general.completed"),
+        count: completedCount,
+        icon: Check,
+        tone: "emerald",
+        active: trackFilter === "completed",
+      },
+      {
+        id: "waiting",
+        label: t("common.waitingForReview"),
+        count: waitingForReviewCount,
+        icon: MessageSquare,
+        tone: "amber",
+        active: trackFilter === "waiting",
+      },
+    ],
+    [t, otherSessions.length, scheduledCount, completedCount, waitingForReviewCount, trackFilter]
+  );
+
+  const statusOptions = useMemo(
+    () => [
+      {
+        value: "all" as CommandBarStatus,
+        label: t("common.allStatus"),
+        count: otherSessions.length,
+      },
+      {
+        value: "SCHEDULED" as CommandBarStatus,
+        label: t("common.comingSoon"),
+        count: scheduledCount,
+      },
+      { value: "PAID" as CommandBarStatus, label: t("common.paid") },
+      { value: "ONGOING" as CommandBarStatus, label: t("common.ongoing") },
+      {
+        value: "COMPLETED" as CommandBarStatus,
+        label: t("general.completed"),
+        count: completedCount,
+      },
+    ],
+    [t, otherSessions.length, scheduledCount, completedCount]
+  );
+
+  const handleTrackSelect = (id: string) => {
+    setTrackFilter(id);
+    if (id !== "all") {
+      // Reset granular status filter when switching to a track filter,
+      // because "waiting" has its own semantic that's status-track scoped.
+      setOtherStatusFilter("all");
+    }
+    pagination.goToFirstPage();
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Command Center header — compact, not a "dashboard hero". */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600/95 via-indigo-500/90 to-sky-500/85 p-5 text-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.35)] ring-1 ring-white/10 sm:p-6">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,255,255,0.18),transparent_45%)]"
-        />
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20 backdrop-blur">
-              <Video className="h-5 w-5" aria-hidden />
-            </div>
-            <div className="min-w-0 space-y-1">
-              <h1
-                className="text-2xl font-bold tracking-[-0.02em] sm:text-[1.65rem]"
-                style={{ textWrap: "balance" }}>
-                {t("mentorSessions.interviewSession")}
-              </h1>
-              <p className="max-w-xl text-sm text-white/80">
-                {t("mentorSessions.manageInterviewSessionsAndSend")}
-              </p>
-            </div>
-          </div>
-          <ReloadButton
-            onReload={async () => {
-              await Promise.all([refetchSessions(), refetchReviews()]);
-            }}
-            isLoading={sessionsRefetching || reviewsRefetching}
-            tooltip={t("mentorSessions.reloadInterviewSessionList")}
-            variant="outline"
-            className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white dark:border-white/20 dark:bg-white/10"
-          />
-        </div>
-      </div>
+    <div className="flex flex-col gap-5">
+      {/* Command Deck hero — compact, dense, dark. No oversized gradient. */}
+      <HeroCommand
+        mentorName={currentMentorProfile?.name ?? user?.name ?? undefined}
+        onReload={async () => {
+          await Promise.all([refetchSessions(), refetchReviews()]);
+        }}
+        isReloading={sessionsRefetching || reviewsRefetching}
+        reloadTooltip={t("mentorSessions.reloadInterviewSessionList")}
+        totalSessions={mentorSessions.length}
+        upNext={upNextPayload}
+      />
 
-      {/* Bento stats: asymmetric, anchor tile + 3 supporting tiles. */}
-      <StatsPanel tiles={statsTiles} />
+      {/* Status track — 4 clickable filter pills with live counts */}
+      <StatusTrack items={statusItems} onSelect={handleTrackSelect} />
 
-      {/* Session list area */}
       {isLoading ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Skeleton className="h-40" />
-          <Skeleton className="h-40" />
-          <Skeleton className="h-40" />
-          <Skeleton className="h-40" />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <Skeleton className="h-44" />
+          <Skeleton className="h-44" />
+          <Skeleton className="h-44" />
+          <Skeleton className="h-44" />
         </div>
       ) : mentorSessions.length === 0 ? (
         <div className="rounded-2xl bg-white p-2 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-white/5">
@@ -339,91 +384,78 @@ export function MentorSessionsPage() {
         </div>
       ) : (
         <>
-          {/* Command bar: tabs, search, status filter, sort. */}
-          <div className="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200/70 sm:p-5 dark:bg-slate-900/60 dark:ring-white/5">
-            <Tabs
-              value={activeTab}
-              onValueChange={(tab) => {
-                setActiveTab(tab as SessionListTab);
-                pagination.goToFirstPage();
-              }}>
-              <TabsList className="grid w-full grid-cols-1">
-                <TabsTrigger value="others">
-                  {t("mentorSessions.remainingSessions")}
-                  {otherSessions.length})
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_200px]">
-              <div className="relative">
-                <Search
-                  className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
-                  aria-hidden
-                />
-                <Input
-                  value={searchQuery}
-                  onChange={(event) => {
-                    setSearchQuery(event.target.value);
-                    pagination.goToFirstPage();
-                  }}
-                  placeholder={t("mentorSessions.searchBySessionIdStudent")}
-                  className="border-slate-200 bg-white pl-9 dark:border-slate-700 dark:bg-slate-900"
-                />
+          {/* Pending (draft) sessions — quiet, small block, never the main act */}
+          {draftSessions.length > 0 && (
+            <section
+              aria-label={t("common.waitingForApproval")}
+              className="rounded-2xl bg-white/60 p-3 ring-1 ring-amber-500/20 ring-inset dark:bg-amber-500/[0.04] dark:ring-amber-500/20">
+              <div className="mb-2 flex items-center justify-between px-1">
+                <div className="flex items-center gap-2">
+                  <Clock4 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" aria-hidden />
+                  <h2 className="text-xs font-semibold tracking-[0.06em] text-amber-700 uppercase dark:text-amber-300">
+                    {t("common.waitingForApproval")} · {draftSessions.length}
+                  </h2>
+                </div>
               </div>
-              <Select
-                value={otherStatusFilter}
-                onValueChange={(value) => {
-                  setOtherStatusFilter(value as OtherStatusFilter);
-                  pagination.goToFirstPage();
-                }}>
-                <SelectTrigger className="border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-                  <SelectValue placeholder={t("common.filterByStatus")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-                  <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
-                  <SelectItem value="PAID">{t("common.paid")}</SelectItem>
-                  <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
-                  <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
-                  <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
-                  <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {draftSessions.map((session) => (
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    hasReview={false}
+                    now={now}
+                    isUpdatingStatus={updateStatusMutation.isPending}
+                    actions={{
+                      onViewDetails: () => handleViewDetails(session),
+                      onJoinSession: () => handleJoinSession(session),
+                      onWriteReview: () => handleWriteReview(session),
+                      onViewReview: () => undefined,
+                      onEditReview: () => undefined,
+                      onAcceptSession: () => handleAcceptSession(session),
+                      onRejectSession: () => handleRejectSession(session),
+                    }}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
-            <div className="flex flex-wrap items-center gap-3 border-t border-slate-200/70 pt-3 dark:border-slate-700/70">
-              <span className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
-                <Filter className="h-3.5 w-3.5" aria-hidden />
-                {t("common.sortBy")}
-              </span>
-              <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
-              <SortButton {...getSortProps("sessionSortValue")}>{t("common.time")}</SortButton>
-              <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
-              {(searchQuery || draftTimeFilter !== "all" || otherStatusFilter !== "all") && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setDraftTimeFilter("all");
-                    setOtherStatusFilter("all");
-                    pagination.goToFirstPage();
-                  }}
-                  className="ml-auto h-7 text-xs">
-                  {t("common.clearFilter")}
-                </Button>
-              )}
-            </div>
-          </div>
+          {/* Command bar — single sticky strip. Skipped when track is "waiting" (no granular filter needed). */}
+          {trackFilter !== "waiting" && (
+            <CommandBar
+              searchValue={searchQuery}
+              onSearchChange={(value) => {
+                setSearchQuery(value);
+                pagination.goToFirstPage();
+              }}
+              status={otherStatusFilter}
+              onStatusChange={(value) => {
+                setOtherStatusFilter(value);
+                pagination.goToFirstPage();
+              }}
+              statusOptions={statusOptions}
+              sortSlot={
+                <>
+                  <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
+                  <SortButton {...getSortProps("sessionSortValue")}>{t("common.time")}</SortButton>
+                  <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
+                </>
+              }
+              onClear={() => {
+                setSearchQuery("");
+                setOtherStatusFilter("all");
+                pagination.goToFirstPage();
+              }}
+            />
+          )}
 
           {sortedData.length === 0 ? (
             <div className="rounded-2xl bg-white p-2 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-white/5">
               <EmptyState
                 icon={Video}
                 title={
-                  activeTab === "draft"
-                    ? t("mentorSessions.thereAreNoSuitablePending")
+                  trackFilter === "waiting"
+                    ? t("common.noInterviewSessionYet")
                     : t("mentorSessions.thereIsNoProperInterview")
                 }
                 description={t("mentorSessions.tryChangingYourSearchKeywords")}
@@ -432,7 +464,7 @@ export function MentorSessionsPage() {
           ) : (
             <>
               <motion.div
-                key={`${activeTab}-${otherStatusFilter}-${searchQuery}`}
+                key={`${trackFilter}-${otherStatusFilter}-${searchQuery}`}
                 variants={listMotion}
                 initial="hidden"
                 animate="show"

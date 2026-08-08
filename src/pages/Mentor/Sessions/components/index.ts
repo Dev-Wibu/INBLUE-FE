@@ -1,6 +1,10 @@
 /**
  * Barrel export for Mentor Interview Session shared components.
  */
+export { CommandBar } from "./CommandBar";
+export type { CommandBarProps, CommandBarStatus } from "./CommandBar";
+export { HeroCommand, StatusTrack } from "./HeroCommand";
+export type { HeroCommandProps, StatusTrackItem, StatusTrackProps } from "./HeroCommand";
 export {
   MetaChip,
   PanelSurface,
@@ -31,5 +35,3 @@ export type {
 } from "./mentor-interview.constants";
 export { SessionCard } from "./SessionCard";
 export type { SessionCardActionBag, SessionCardProps } from "./SessionCard";
-export { StatsPanel } from "./StatsPanel";
-export type { StatsPanelProps } from "./StatsPanel";
