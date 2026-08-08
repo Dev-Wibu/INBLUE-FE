@@ -3074,3 +3074,225 @@
     align-items: flex-start;
   }
 }
+
+/* ============================================================
+   Traffic Light Decision UI - 3D Game Style
+   ============================================================ */
+@keyframes trafficLightOn {
+  0% {
+    box-shadow:
+      0 0 0 0 currentColor,
+      0 0 20px 4px currentColor,
+      0 0 40px 8px currentColor,
+      inset 0 0 20px rgba(255, 255, 255, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px currentColor,
+      0 0 30px 10px currentColor,
+      0 0 60px 16px currentColor,
+      inset 0 0 30px rgba(255, 255, 255, 0.8);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow:
+      0 0 0 2px currentColor,
+      0 0 25px 6px currentColor,
+      0 0 50px 12px currentColor,
+      inset 0 0 25px rgba(255, 255, 255, 0.6);
+    transform: scale(1);
+  }
+}
+
+@keyframes trafficLightOff {
+  0% {
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    box-shadow:
+      inset 0 4px 12px rgba(0, 0, 0, 0.6),
+      inset 0 -2px 4px rgba(255, 255, 255, 0.1);
+    transform: scale(1);
+  }
+}
+
+@keyframes goFlash {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    opacity: 0.4;
+    transform: translateY(-4px) scale(1.1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0) scale(1.15);
+  }
+  75% {
+    opacity: 0.6;
+    transform: translateY(2px) scale(0.95);
+  }
+}
+
+@keyframes stopPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  20% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  40% {
+    opacity: 0.3;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes arcadeShine {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(300%) skewX(-15deg);
+  }
+}
+
+@keyframes neonFlicker {
+  0%,
+  100% {
+    text-shadow:
+      0 0 4px currentColor,
+      0 0 11px currentColor,
+      0 0 19px currentColor;
+  }
+  50% {
+    text-shadow:
+      0 0 4px transparent,
+      0 0 11px currentColor,
+      0 0 19px currentColor;
+  }
+}
+
+.traffic-light-bulb {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 9999px;
+  border: 3px solid rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.traffic-light-bulb--off {
+  background: radial-gradient(circle at 35% 25%, rgba(51, 65, 85, 0.4), rgba(15, 23, 42, 0.7));
+  color: rgba(100, 116, 139, 0.5);
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.6),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.05);
+}
+
+.traffic-light-bulb--green-on {
+  background: radial-gradient(circle at 35% 25%, #86efac, #22c55e 40%, #15803d 90%);
+  color: #052e16;
+  animation: trafficLightOn 0.6s ease-out;
+}
+
+.traffic-light-bulb--red-on {
+  background: radial-gradient(circle at 35% 25%, #fca5a5, #ef4444 40%, #991b1b 90%);
+  color: #450a0a;
+  animation: trafficLightOn 0.6s ease-out;
+}
+
+.traffic-light-bulb::before {
+  content: "";
+  position: absolute;
+  top: 8%;
+  left: 18%;
+  width: 28%;
+  height: 28%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.85), transparent 70%);
+  pointer-events: none;
+}
+
+.decision-go-text {
+  animation: goFlash 1.2s ease-in-out infinite;
+}
+
+.decision-stop-text {
+  animation: stopPulse 1.4s ease-in-out infinite;
+}
+
+.decision-neon-text {
+  animation: neonFlicker 2s ease-in-out infinite;
+}
+
+.arcade-button {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid rgba(15, 23, 42, 0.8);
+  box-shadow:
+    0 6px 0 rgba(15, 23, 42, 0.9),
+    0 8px 12px rgba(0, 0, 0, 0.3),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.25),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.arcade-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 rgba(15, 23, 42, 0.9),
+    0 10px 16px rgba(0, 0, 0, 0.35),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.25),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15);
+}
+
+.arcade-button:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow:
+    0 2px 0 rgba(15, 23, 42, 0.9),
+    0 3px 6px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.arcade-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  animation: arcadeShine 3s ease-in-out infinite;
+  pointer-events: none;
+}
