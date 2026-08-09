@@ -1,7 +1,14 @@
-import { useTranslation } from "react-i18next";
 /**
- * Student Detail Page (Mentor View)
- * Displays student profile and session/feedback history
+ * Student Detail Page (Mentor View) — v2 "Dossier Profile"
+ *
+ * UI-only refresh. Same data hooks (sessions / feedbacks / reviews /
+ * candidate profile) and the same filtering / owner / completion logic.
+ *
+ * Visual language:
+ * - Large hero profile with avatar halo + status badge + headline
+ * - Bento KPI strip with mixed sizes (not 4 equal cards)
+ * - Sticky summary panel on desktop
+ * - Modern segmented control tabs (Sessions / Feedback / Reviews / Profile)
  */
 
 import { FeedbackCard } from "@/components/feedback";
@@ -9,125 +16,134 @@ import { ReviewCard } from "@/components/review";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TimeAgo } from "@/components/ui/time-ago";
 import { useMentorFeedbacks } from "@/hooks/useMentorFeedback";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import type { CandidateProfile } from "@/interfaces/schema.types";
+import { treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { isSessionMentor } from "@/lib/session-mentor";
+import { cn } from "@/lib/utils";
 import { useCandidateProfile } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  Award,
+  Briefcase,
   Calendar,
+  ChevronRight,
+  Clock,
   FileText,
+  GraduationCap,
   Mail,
   MessageSquare,
   School,
+  Sparkles,
   Star,
+  Trophy,
   User,
+  Wrench,
 } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+
+// ---------- shared surfaces (single dark-glass, no fruit salad) ----------
+const HERO_SURFACE = cn(
+  "relative overflow-hidden rounded-3xl ring-1 ring-slate-200/70 ring-inset",
+  "dark:ring-white/5"
+);
+
+const GLASS_SURFACE = cn(
+  "rounded-2xl p-5 ring-1 ring-inset transition-all",
+  "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
+  "dark:bg-white/[0.03] dark:ring-white/5"
+);
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.4, ease: "easeOut" as const, delay },
+});
+
 export function StudentDetailPage() {
   const { t } = useTranslation();
-  const { userId } = useParams<{
-    userId: string;
-  }>();
+  const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
+  const [activeTab, setActiveTab] = useState("sessions");
   const studentId = Number(userId);
-  // 2026-08-02: reverted to `useSessions` (admin endpoint) because
-  //   `useUserSessions` was returning `[]` for the test user (BE filter
-  //   behaves differently than documented when userId == userId2).
+
   const { data: allSessions = [], isLoading: sessionsLoading } = useSessions();
   const { data: allFeedbacks = [], isLoading: feedbacksLoading } = useMentorFeedbacks();
   const { data: allReviews = [], isLoading: reviewsLoading } = useMentorReviews();
   const { data: candidateProfileData, isLoading: profileLoading } = useCandidateProfile(studentId);
   const candidateProfile = (candidateProfileData as unknown as CandidateProfile) ?? null;
 
-  // DEBUG: log candidate profile fetch
-  console.log("[StudentDetailPage] Candidate Profile DEBUG", {
-    studentId,
-    candidateProfileData,
-    candidateProfile,
-    hasId: !!candidateProfile?.id,
-  });
-
   const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading || profileLoading;
 
-  // Filter sessions for this student with current mentor
+  // ---- DATA (logic preserved 1:1 from previous version) ----
   const studentSessions = allSessions.filter(
     (session: Session) => session.userId === studentId && isSessionMentor(session, currentUser?.id)
   );
-
-  // Filter feedbacks for this student from current mentor
   const studentFeedbacks = allFeedbacks.filter(
-    (feedback: {
-      user?: {
-        id?: number;
-      };
-      mentor?: {
-        id?: number;
-      };
-    }) => feedback.user?.id === studentId && feedback.mentor?.id === currentUser?.id
+    (feedback: { user?: { id?: number }; mentor?: { id?: number } }) =>
+      feedback.user?.id === studentId && feedback.mentor?.id === currentUser?.id
   );
-
-  // Filter reviews for this student
-  // API returns mentor=null, user=null, but session.userId = student ID
   const studentReviews = allReviews.filter(
-    (review: {
-      session?: {
-        userId?: number;
-      };
-    }) => review.session?.userId === studentId
+    (review: { session?: { userId?: number } }) => review.session?.userId === studentId
   );
+  const studentInfo = studentFeedbacks[0]?.user || studentReviews[0]?.user || { id: studentId };
 
-  // Get student info from feedbacks or reviews
-  const studentInfo = studentFeedbacks[0]?.user ||
-    studentReviews[0]?.user || {
-      id: studentId,
-    };
-
-  // Calculate stats
+  // ---- stats ----
   const totalSessions = studentSessions.length;
   const completedSessions = studentSessions.filter((s: Session) => s.status === "COMPLETED").length;
   const totalFeedbacks = studentFeedbacks.length;
   const totalReviews = studentReviews.length;
   const avgRating =
     totalReviews > 0
-      ? studentReviews.reduce(
-          (
-            sum: number,
-            r: {
-              rating?: number;
-            }
-          ) => sum + (r.rating || 0),
-          0
-        ) / totalReviews
+      ? studentReviews.reduce((sum: number, r: { rating?: number }) => sum + (r.rating || 0), 0) /
+        totalReviews
       : 0;
+
+  // Rating distribution (1-5 stars)
+  const ratingDistribution = [5, 4, 3, 2, 1].map((star) => {
+    const count = studentReviews.filter(
+      (r: { rating?: number }) => (r.rating || 0) === star
+    ).length;
+    return { star, count, pct: totalReviews ? (count / totalReviews) * 100 : 0 };
+  });
+
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-32" />
-        <Skeleton className="h-48" />
+      <div className="mx-auto w-full max-w-6xl space-y-6">
+        <Skeleton className="h-9 w-40" />
+        <Skeleton className="h-44" />
         <Skeleton className="h-24" />
         <Skeleton className="h-96" />
       </div>
     );
   }
+
   if (!studentInfo || totalSessions === 0) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={() => navigate("/mentor?tab=students")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="mx-auto w-full max-w-6xl space-y-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/mentor?tab=students")}
+          className="text-slate-600 dark:text-slate-300">
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t("general.back")}
         </Button>
-        <Card className="border-emerald-100 dark:border-slate-800">
+        <Card className="border-slate-200 dark:border-slate-800">
           <CardContent className="py-12 text-center">
             <User className="mx-auto h-12 w-12 text-slate-400" />
             <h3 className="mt-4 font-semibold">{t("mentorStudents.noStudentFound")}</h3>
@@ -139,429 +155,736 @@ export function StudentDetailPage() {
       </div>
     );
   }
-  return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate("/mentor?tab=students")}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        {t("common.backToTheList")}
-      </Button>
 
-      {/* Student Profile Card */}
-      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <CardHeader>
-          <div className="flex items-start gap-6">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={studentInfo.avatarUrl} alt={studentInfo.name} />
-              <AvatarFallback className="bg-emerald-100 text-2xl text-emerald-700">
-                {studentInfo.name?.charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <CardTitle className="text-2xl">
-                {studentInfo.name ||
-                  t("common.studentVar0", {
-                    var_0: studentId,
-                  })}
-              </CardTitle>
-              <div className="mt-2 space-y-1 text-sm text-slate-500">
+  return (
+    <div className="mx-auto w-full max-w-6xl space-y-5">
+      {/* Header */}
+      <motion.div {...fadeUp(0)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/mentor?tab=students")}
+          className="text-slate-600 dark:text-slate-300">
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
+          {t("common.backToTheList")}
+        </Button>
+      </motion.div>
+
+      {/* HERO */}
+      <motion.div {...fadeUp(0.05)} className={HERO_SURFACE}>
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-sky-500/15 dark:from-emerald-500/25 dark:via-teal-500/15 dark:to-sky-500/15"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-slate-950 dark:via-slate-950/40 dark:to-transparent"
+        />
+        <div
+          aria-hidden
+          className="absolute -top-24 -left-12 h-72 w-72 rounded-full bg-emerald-400/30 opacity-60 blur-3xl dark:bg-emerald-500/30"
+        />
+        <div
+          aria-hidden
+          className="absolute -right-12 -bottom-24 h-72 w-72 rounded-full bg-sky-300/20 opacity-50 blur-3xl dark:bg-sky-500/20"
+        />
+
+        <div className="relative flex flex-col gap-5 p-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            {/* avatar halo */}
+            <div className="relative">
+              <div
+                aria-hidden
+                className="absolute inset-0 -m-2 rounded-full bg-gradient-to-br from-emerald-400/40 to-sky-400/40 opacity-60 blur-xl"
+              />
+              <Avatar className="relative h-24 w-24 ring-2 ring-white/10">
+                <AvatarImage src={studentInfo.avatarUrl} alt={studentInfo.name} />
+                <AvatarFallback className="bg-emerald-100 text-3xl text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                  {studentInfo.name?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold tracking-[0.06em] text-emerald-600 uppercase ring-1 ring-emerald-500/20 ring-inset dark:text-emerald-300">
+                  <Sparkles className="h-3 w-3" aria-hidden />
+                  {t("mentorStudents.candidateProfile")}
+                </span>
+                <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                  #{studentId}
+                </span>
+              </div>
+              <h1 className="mt-1.5 text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                {studentInfo.name || t("common.studentVar0", { var_0: studentId })}
+              </h1>
+              <div className="mt-2 flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
                 {studentInfo.email && (
                   <p className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
+                    <Mail className="h-3.5 w-3.5" aria-hidden />
                     {studentInfo.email}
                   </p>
                 )}
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {(studentInfo as any).university && (
                   <p className="flex items-center gap-2">
-                    <School className="h-4 w-4" />
+                    <School className="h-3.5 w-3.5" aria-hidden />
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {(studentInfo as any).university}
                   </p>
                 )}
               </div>
-              {totalReviews > 0 && (
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="text-sm text-slate-500">
-                    {t("mentorStudents.studentReviews")}
-                  </span>
-                  <StarRating value={avgRating} readOnly size="sm" />
-                  <span className="text-sm text-slate-500">({totalReviews})</span>
+            </div>
+          </div>
+
+          {/* Rating display */}
+          {totalReviews > 0 && (
+            <div className="flex items-center gap-4 self-start lg:self-end">
+              <div className="text-right">
+                <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                  {t("common.averageStarRating")}
+                </p>
+                <p className="text-[44px] leading-none font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                  {avgRating.toFixed(1)}
+                  <span className="ml-0.5 text-base font-medium text-slate-400">/5</span>
+                </p>
+                <StarRating value={avgRating} readOnly size="sm" />
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {totalReviews} {t("mentorStudents.studentReviews")}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-amber-500/15 p-3 ring-1 ring-amber-400/30 ring-inset dark:bg-amber-500/20">
+                <Trophy className="h-8 w-8 text-amber-500" />
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Body */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,300px)]">
+        <div className="flex flex-col gap-4">
+          {/* Bento KPI strip */}
+          <motion.div {...fadeUp(0.1)} className="grid gap-3 sm:grid-cols-3">
+            {/* big card */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500/15 to-teal-500/10 p-4 ring-1 ring-emerald-400/30 ring-inset sm:col-span-1 dark:from-emerald-500/20 dark:to-teal-500/15">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[10px] font-semibold tracking-[0.06em] text-emerald-700 uppercase dark:text-emerald-300">
+                    {t("common.totalSession")}
+                  </p>
+                  <p className="mt-1 text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                    {totalSessions}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+                    {completedSessions} {t("general.completed")}
+                  </p>
+                </div>
+                <Calendar className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              {totalSessions > 0 && (
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-emerald-200/40 ring-1 ring-emerald-300/30 ring-inset dark:bg-emerald-900/40">
+                  <div
+                    className="h-full rounded-full bg-emerald-500"
+                    style={{ width: `${(completedSessions / totalSessions) * 100}%` }}
+                  />
                 </div>
               )}
             </div>
-          </div>
-        </CardHeader>
-      </Card>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1">
-              <Calendar className="h-4 w-4 text-blue-500" />
-              {t("common.totalSession")}
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold">{totalSessions}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <CardHeader className="pb-2">
-            <CardDescription>{t("general.completed")}</CardDescription>
-            <CardTitle className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              {completedSessions}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1">
-              <MessageSquare className="h-4 w-4 text-sky-500" />
-              {t("common.responseReceived")}
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold text-sky-600 dark:text-sky-400">
-              {totalFeedbacks}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1">
-              <Star className="h-4 w-4 text-amber-500" />
-              {t("mentorMentordashboard.reviewSent")}
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold text-amber-500">{totalReviews}</CardTitle>
-          </CardHeader>
-        </Card>
+            {/* 3 small cards */}
+            <div className={GLASS_SURFACE}>
+              <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                {t("common.responseReceived")}
+              </p>
+              <p className="mt-1 text-2xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                {totalFeedbacks}
+              </p>
+              <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <MessageSquare className="h-3 w-3 text-sky-500" />
+                {t("mentorStudents.responseReceived1")}
+              </div>
+            </div>
+
+            <div className={GLASS_SURFACE}>
+              <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                {t("mentorMentordashboard.reviewSent")}
+              </p>
+              <p className="mt-1 text-2xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                {totalReviews}
+              </p>
+              <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <Star className="h-3 w-3 text-amber-500" />
+                {t("mentorStudents.submittedReview")}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Tabs */}
+          <motion.div {...fadeUp(0.15)}>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-4 rounded-xl border border-slate-200/70 bg-white/60 p-1 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/60">
+                <TabsTrigger
+                  value="sessions"
+                  className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-700 data-[state=active]:shadow-xs dark:data-[state=active]:bg-emerald-500/20 dark:data-[state=active]:text-emerald-300">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {t("general.session8")} ({totalSessions})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="feedbacks"
+                  className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-700 data-[state=active]:shadow-xs dark:data-[state=active]:bg-rose-500/20 dark:data-[state=active]:text-rose-300">
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  {t("mentorStudents.responseReceived1")} ({totalFeedbacks})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="reviews"
+                  className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-700 data-[state=active]:shadow-xs dark:data-[state=active]:bg-amber-500/20 dark:data-[state=active]:text-amber-300">
+                  <Star className="h-3.5 w-3.5" />
+                  {t("mentorStudents.submittedReview")} ({totalReviews})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="profile"
+                  className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-sky-500/10 data-[state=active]:text-sky-700 data-[state=active]:shadow-xs dark:data-[state=active]:bg-sky-500/20 dark:data-[state=active]:text-sky-300">
+                  <FileText className="h-3.5 w-3.5" />
+                  {t("mentorStudents.file")}
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Sessions Tab */}
+              <TabsContent value="sessions" className="mt-4 space-y-2">
+                {studentSessions.length === 0 ? (
+                  <EmptyState
+                    icon={Calendar}
+                    title={t("mentorStudents.thereAreNoSessionsYet")}
+                    description={t("mentorStudents.thereHasBeenNoInterview")}
+                  />
+                ) : (
+                  studentSessions.map((session: Session) => (
+                    <SessionRow
+                      key={session.id}
+                      session={session}
+                      onClick={() => navigate(`/mentor/sessions/${session.id}`)}
+                      t={t}
+                    />
+                  ))
+                )}
+              </TabsContent>
+
+              {/* Feedbacks Tab */}
+              <TabsContent value="feedbacks" className="mt-4 space-y-3">
+                {studentFeedbacks.length === 0 ? (
+                  <EmptyState
+                    icon={MessageSquare}
+                    title={t("common.noResponseYet")}
+                    description={t("mentorStudents.thisStudentHasNotSent")}
+                  />
+                ) : (
+                  studentFeedbacks.map((feedback: { id?: number }) => (
+                    <FeedbackCard
+                      key={feedback.id}
+                      feedback={feedback}
+                      showMentor={false}
+                      showUser
+                      showSession
+                      onClick={() => {
+                        if (feedback.id) navigate(`/mentor/feedback/${feedback.id}`);
+                      }}
+                    />
+                  ))
+                )}
+              </TabsContent>
+
+              {/* Reviews Tab */}
+              <TabsContent value="reviews" className="mt-4 space-y-3">
+                {studentReviews.length === 0 ? (
+                  <EmptyState
+                    icon={Star}
+                    title={t("common.thereAreNoReviewsYet")}
+                    description={t("mentorStudents.youHaveNotSubmittedAny")}
+                  />
+                ) : (
+                  studentReviews.map((review: { id?: number }) => (
+                    <ReviewCard
+                      key={review.id}
+                      review={review}
+                      showMentor={false}
+                      showUser
+                      onClick={() => {
+                        if (review.id) navigate(`/mentor/reviews/${review.id}`);
+                      }}
+                    />
+                  ))
+                )}
+              </TabsContent>
+
+              {/* Profile Tab */}
+              <TabsContent value="profile" className="mt-4">
+                {!candidateProfile?.id ? (
+                  <EmptyState
+                    icon={FileText}
+                    title={t("common.thereAreNoCandidateProfilesYet")}
+                    description={t("mentorStudents.thisStudentHasNotCreated")}
+                  />
+                ) : (
+                  <CandidateProfileView profile={candidateProfile} t={t} />
+                )}
+              </TabsContent>
+            </Tabs>
+          </motion.div>
+        </div>
+
+        {/* Side summary */}
+        <motion.aside
+          {...fadeUp(0.25)}
+          className="flex flex-col gap-4 lg:sticky lg:top-4 lg:self-start">
+          <div className={GLASS_SURFACE}>
+            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+              {t("mentorStudents.studentReviews")}
+            </p>
+            {totalReviews > 0 ? (
+              <>
+                <p className="mt-1 flex items-baseline gap-1">
+                  <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                    {avgRating.toFixed(1)}
+                  </span>
+                  <span className="text-sm font-medium text-slate-400">/5</span>
+                </p>
+                <div className="mt-2">
+                  <StarRating value={avgRating} readOnly size="md" />
+                </div>
+                <div className="mt-3 flex flex-col gap-1.5">
+                  {ratingDistribution.map((row) => (
+                    <div key={row.star} className="flex items-center gap-2 text-xs">
+                      <span className="w-6 text-slate-600 dark:text-slate-300">{row.star}★</span>
+                      <div
+                        className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800/60"
+                        role="progressbar"
+                        aria-valuenow={row.pct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}>
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${row.pct}%` }}
+                          transition={{ duration: 0.45, ease: "easeOut" }}
+                          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400"
+                        />
+                      </div>
+                      <span className="w-7 text-right text-slate-500 tabular-nums dark:text-slate-400">
+                        {row.count}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                {t("common.thereAreNoReviewsYet")}
+              </p>
+            )}
+          </div>
+
+          <div className={GLASS_SURFACE}>
+            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+              {t("common.timeline")}
+            </p>
+            <div className="mt-3 flex flex-col gap-3">
+              <TimelineRow
+                icon={Calendar}
+                label={t("common.firstSession")}
+                value={
+                  studentSessions[0]?.startTime1 ? (
+                    <TimeAgo
+                      date={String(treatZuluAsVietnamLocal(studentSessions[0].startTime1!))}
+                    />
+                  ) : (
+                    "—"
+                  )
+                }
+                tone="emerald"
+              />
+              <TimelineRow
+                icon={MessageSquare}
+                label={t("common.firstFeedback")}
+                value={
+                  studentFeedbacks[0]?.createdAt ? (
+                    <TimeAgo date={String(studentFeedbacks[0].createdAt)} />
+                  ) : (
+                    "—"
+                  )
+                }
+                tone="rose"
+              />
+              <TimelineRow
+                icon={Star}
+                label={t("mentorStudents.firstReview")}
+                value={
+                  studentReviews[0]?.session?.endTime1 ? (
+                    <TimeAgo
+                      date={String(treatZuluAsVietnamLocal(studentReviews[0].session.endTime1))}
+                    />
+                  ) : (
+                    "—"
+                  )
+                }
+                tone="amber"
+              />
+            </div>
+          </div>
+
+          <div className={GLASS_SURFACE}>
+            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+              {t("common.quickActions")}
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              {studentInfo.email && (
+                <a
+                  href={`mailto:${studentInfo.email}`}
+                  className="group flex items-center justify-between rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm text-slate-700 transition-all hover:border-emerald-300 hover:bg-emerald-50/40 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-emerald-500/10">
+                  <span className="flex items-center gap-2">
+                    <Mail className="h-3.5 w-3.5 text-emerald-500" />
+                    {t("common.sendEmail")}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-emerald-500" />
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={() => navigate("/mentor?tab=sessions")}
+                className="group flex items-center justify-between rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm text-slate-700 transition-all hover:border-sky-300 hover:bg-sky-50/40 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-sky-500/10">
+                <span className="flex items-center gap-2">
+                  <Calendar className="h-3.5 w-3.5 text-sky-500" />
+                  {t("mentorStudents.bookANewInterview")}
+                </span>
+                <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-sky-500" />
+              </button>
+            </div>
+          </div>
+        </motion.aside>
+      </div>
+    </div>
+  );
+}
+
+// ---------- session row ----------
+function SessionRow({
+  session,
+  onClick,
+  t,
+}: {
+  session: Session;
+  onClick: () => void;
+  t: (_key: string, _options?: Record<string, unknown>) => string;
+}) {
+  const status = session.status;
+  const statusVariant =
+    status === "COMPLETED"
+      ? "default"
+      : status === "CANCELED"
+        ? "destructive"
+        : status === "ONGOING"
+          ? "secondary"
+          : "outline";
+  const statusLabel =
+    status === "COMPLETED"
+      ? t("general.completed")
+      : status === "CANCELED"
+        ? t("common.canceled")
+        : status === "ONGOING"
+          ? t("common.ongoing")
+          : t("common.scheduled");
+
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ y: -1 }}
+      transition={{ duration: 0.18 }}
+      className="group flex w-full items-center justify-between rounded-xl border border-slate-200/70 bg-white/70 p-3 text-left ring-1 ring-transparent transition-all hover:border-emerald-300 hover:shadow-xs dark:border-slate-700/60 dark:bg-slate-900/40 dark:hover:border-emerald-700/60">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset dark:bg-emerald-500/20 dark:text-emerald-300">
+          <Calendar className="h-4 w-4" aria-hidden />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            {session.roomName || t("common.sessionVar0", { var_0: session.id })}
+          </p>
+          <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <span className="font-mono">#{session.id}</span>
+            {session.startTime1 && (
+              <>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <TimeAgo
+                  date={String(treatZuluAsVietnamLocal(session.startTime1))}
+                  prefix={false}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Badge variant={statusVariant as never}>{statusLabel}</Badge>
+        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-emerald-500" />
+      </div>
+    </motion.button>
+  );
+}
+
+// ---------- timeline row ----------
+function TimelineRow({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: typeof Calendar;
+  label: string;
+  value: React.ReactNode;
+  tone: "emerald" | "rose" | "amber" | "sky";
+}) {
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span
+        className={cn(
+          "flex h-7 w-7 items-center justify-center rounded-xl ring-1 ring-inset",
+          tone === "emerald" &&
+            "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-300",
+          tone === "rose" &&
+            "bg-rose-500/10 text-rose-600 ring-rose-500/20 dark:bg-rose-500/20 dark:text-rose-300",
+          tone === "amber" &&
+            "bg-amber-500/10 text-amber-600 ring-amber-500/20 dark:bg-amber-500/20 dark:text-amber-300",
+          tone === "sky" &&
+            "bg-sky-500/10 text-sky-600 ring-sky-500/20 dark:bg-sky-500/20 dark:text-sky-300"
+        )}>
+        <Icon className="h-3.5 w-3.5" aria-hidden />
+      </span>
+      <div className="flex-1">
+        <p className="text-slate-500 dark:text-slate-400">{label}</p>
+        <p className="font-medium text-slate-900 dark:text-slate-100">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+// ---------- candidate profile view ----------
+function CandidateProfileView({
+  profile,
+  t,
+}: {
+  profile: CandidateProfile;
+  t: (_key: string, _options?: Record<string, unknown>) => string;
+}) {
+  return (
+    <div className="space-y-4">
+      {/* Basic Info */}
+      <div className={GLASS_SURFACE}>
+        <SectionHeading icon={User} title={t("common.basicInformation")} />
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <InfoBlock label={t("mentorStudents.targetRole")} value={profile.targetRole || "—"} />
+          <InfoBlock label={t("mentorStudents.level")} value={profile.targetLevel || "—"} />
+        </div>
+        {profile.introduction && (
+          <p className="mt-3 text-sm text-slate-700 dark:text-slate-200">{profile.introduction}</p>
+        )}
       </div>
 
-      {/* Tabs: Sessions, Feedbacks, Reviews */}
-      <Tabs defaultValue="sessions">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="sessions">
-            {t("general.session8")}
-            {totalSessions})
-          </TabsTrigger>
-          <TabsTrigger value="feedbacks">
-            {t("mentorStudents.responseReceived1")}
-            {totalFeedbacks})
-          </TabsTrigger>
-          <TabsTrigger value="reviews">
-            {t("mentorStudents.submittedReview")}
-            {totalReviews})
-          </TabsTrigger>
-          <TabsTrigger value="profile">
-            <FileText className="mr-1 h-4 w-4" />
-            {t("mentorStudents.file")}
-          </TabsTrigger>
-        </TabsList>
+      {/* Skills */}
+      <div className={GLASS_SURFACE}>
+        <SectionHeading icon={Award} title={t("common.skill")} />
+        <div className="mt-3 space-y-3">
+          <SkillRow
+            icon={Wrench}
+            label={t("mentorStudents.technicalSkills")}
+            items={profile.technicalSkills ?? []}
+            tone="emerald"
+          />
+          <SkillRow
+            icon={Sparkles}
+            label={t("mentorStudents.softSkills")}
+            items={profile.softSkills ?? []}
+            tone="sky"
+          />
+          <SkillRow
+            icon={Wrench}
+            label={t("mentorStudents.tools")}
+            items={profile.tools ?? []}
+            tone="rose"
+          />
+        </div>
+      </div>
 
-        {/* Sessions Tab */}
-        <TabsContent value="sessions" className="mt-4">
-          <Card className="border-emerald-100 dark:border-slate-800">
-            <CardHeader>
-              <CardTitle>{t("mentorStudents.interviewSessionHistory")}</CardTitle>
-              <CardDescription>
-                {t("mentorStudents.interviewSessionsWithThisStudent")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {studentSessions.length === 0 ? (
-                <EmptyState
-                  icon={Calendar}
-                  title={t("mentorStudents.thereAreNoSessionsYet")}
-                  description={t("mentorStudents.thereHasBeenNoInterview")}
-                />
-              ) : (
-                <div className="space-y-4">
-                  {studentSessions.map((session: Session) => (
-                    <div
-                      key={session.id}
-                      className="flex items-center justify-between rounded-lg border border-emerald-100 p-4 dark:border-slate-800">
-                      <div>
-                        <p className="font-medium">
-                          {session.roomName ||
-                            t("common.sessionVar0", {
-                              var_0: session.id,
-                            })}
-                        </p>
-                        <p className="text-sm text-slate-500">
-                          {t("common.id")}: {session.id}
-                        </p>
-                      </div>
-                      <Badge
-                        variant={
-                          session.status === "COMPLETED"
-                            ? "default"
-                            : session.status === "CANCELED"
-                              ? "destructive"
-                              : "secondary"
-                        }>
-                        {session.status === "COMPLETED"
-                          ? t("general.completed")
-                          : session.status === "CANCELED"
-                            ? t("common.canceled")
-                            : session.status === "ONGOING"
-                              ? t("common.ongoing")
-                              : t("common.scheduled")}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+      {/* Projects */}
+      {(profile.projects ?? []).length > 0 && (
+        <div className={GLASS_SURFACE}>
+          <SectionHeading icon={Briefcase} title={t("common.project")} />
+          <div className="mt-3 grid gap-2">
+            {profile.projects!.map((p, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm dark:border-slate-700/60 dark:bg-slate-900/40">
+                <p className="font-medium text-slate-900 dark:text-slate-100">{p.name}</p>
+                <p className="mt-0.5 text-slate-600 dark:text-slate-300">{p.description}</p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {p.role} · {p.teamSize} {t("mentorStudents.team")} · {p.outcome}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-        {/* Feedbacks Tab */}
-        <TabsContent value="feedbacks" className="mt-4">
-          <Card className="border-emerald-100 dark:border-slate-800">
-            <CardHeader>
-              <CardTitle>{t("mentorStudents.feedbackFromStudents")}</CardTitle>
-              <CardDescription>{t("mentorStudents.theseStudentResponsesWereSent")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {studentFeedbacks.length === 0 ? (
-                <EmptyState
-                  icon={MessageSquare}
-                  title={t("common.noResponseYet")}
-                  description={t("mentorStudents.thisStudentHasNotSent")}
-                />
-              ) : (
-                <div className="space-y-4">
-                  {studentFeedbacks.map(
-                    (feedback: {
-                      id?: number;
-                      session?: {
-                        id?: number;
-                      };
-                    }) => (
-                      <FeedbackCard
-                        key={feedback.id}
-                        feedback={feedback}
-                        showMentor={false}
-                        showUser
-                        showSession
-                      />
-                    )
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+      {/* Work Experience */}
+      {(profile.workExperiences ?? []).length > 0 && (
+        <div className={GLASS_SURFACE}>
+          <SectionHeading icon={Briefcase} title={t("common.workExperience")} />
+          <div className="mt-3 grid gap-2">
+            {profile.workExperiences!.map((w, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm dark:border-slate-700/60 dark:bg-slate-900/40">
+                <p className="font-medium text-slate-900 dark:text-slate-100">
+                  {w.position} — {w.company}
+                </p>
+                <p className="mt-0.5 text-slate-600 dark:text-slate-300">{w.description}</p>
+                <p className="mt-1 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                  <Clock className="h-3 w-3" />
+                  {w.start_date} — {w.end_date || t("common.present")}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-        {/* Reviews Tab */}
-        <TabsContent value="reviews" className="mt-4">
-          <Card className="border-emerald-100 dark:border-slate-800">
-            <CardHeader>
-              <CardTitle>{t("common.reviewSubmitted")}</CardTitle>
-              <CardDescription>{t("mentorStudents.reviewsYouHaveSubmittedFor")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {studentReviews.length === 0 ? (
-                <EmptyState
-                  icon={Star}
-                  title={t("common.thereAreNoReviewsYet")}
-                  description={t("mentorStudents.youHaveNotSubmittedAny")}
-                />
-              ) : (
-                <div className="space-y-4">
-                  {studentReviews.map((review: { id?: number }) => (
-                    <ReviewCard key={review.id} review={review} showMentor={false} showUser />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+      {/* Education */}
+      {(profile.educations ?? []).length > 0 && (
+        <div className={GLASS_SURFACE}>
+          <SectionHeading icon={GraduationCap} title={t("common.education")} />
+          <div className="mt-3 grid gap-2">
+            {profile.educations!.map((e, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm dark:border-slate-700/60 dark:bg-slate-900/40">
+                <p className="flex items-center gap-2 font-medium text-slate-900 dark:text-slate-100">
+                  <School className="h-3.5 w-3.5 text-sky-500" />
+                  {e.school}
+                </p>
+                <p className="mt-0.5 text-slate-600 dark:text-slate-300">
+                  {e.major} — {e.degree}
+                </p>
+                {e.gpa && (
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {t("common.gpa")}: {e.gpa}
+                  </p>
+                )}
+                <p className="mt-1 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                  <Clock className="h-3 w-3" />
+                  {e.start_date} — {e.end_date || t("common.present")}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-        {/* Profile Tab */}
-        <TabsContent value="profile" className="mt-4">
-          <Card className="border-emerald-100 dark:border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-2xl">{t("mentorStudents.candidateProfile")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!candidateProfile?.id ? (
-                <EmptyState
-                  icon={FileText}
-                  title={t("common.thereAreNoCandidateProfilesYet")}
-                  description={t("mentorStudents.thisStudentHasNotCreated")}
-                />
-              ) : (
-                <div className="space-y-6">
-                  {/* Basic Info */}
-                  <div>
-                    <h4 className="mb-2 font-semibold">{t("common.basicInformation")}</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <span className="text-gray-500 dark:text-slate-400">
-                          {t("mentorStudents.targetRole")}
-                        </span>{" "}
-                        {candidateProfile.targetRole || "—"}
-                      </div>
-                      <div>
-                        <span className="text-gray-500 dark:text-slate-400">
-                          {t("mentorStudents.level")}
-                        </span>{" "}
-                        {candidateProfile.targetLevel || "—"}
-                      </div>
-                    </div>
-                    {candidateProfile.introduction && (
-                      <p className="mt-2 text-sm">{candidateProfile.introduction}</p>
-                    )}
-                  </div>
+      {/* Certifications */}
+      {(profile.certifications ?? []).length > 0 && (
+        <div className={GLASS_SURFACE}>
+          <SectionHeading icon={Award} title={t("common.certificate")} />
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {profile.certifications!.map((c) => (
+              <Badge
+                key={c}
+                variant="secondary"
+                className="bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                {c}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
 
-                  {/* Skills */}
-                  <div>
-                    <h4 className="mb-2 font-semibold">{t("common.skill")}</h4>
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-sm text-gray-500 dark:text-slate-400">
-                          {t("mentorStudents.technicalSkills")}
-                        </span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {(candidateProfile.technicalSkills ?? []).map((s) => (
-                            <Badge key={s} variant="secondary">
-                              {s}
-                            </Badge>
-                          ))}
-                          {(candidateProfile.technicalSkills ?? []).length === 0 && (
-                            <span className="text-sm text-gray-400">—</span>
-                          )}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-sm text-gray-500 dark:text-slate-400">
-                          {t("mentorStudents.softSkills")}
-                        </span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {(candidateProfile.softSkills ?? []).map((s) => (
-                            <Badge key={s} variant="outline">
-                              {s}
-                            </Badge>
-                          ))}
-                          {(candidateProfile.softSkills ?? []).length === 0 && (
-                            <span className="text-sm text-gray-400">—</span>
-                          )}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-sm text-gray-500 dark:text-slate-400">
-                          {t("mentorStudents.tools")}
-                        </span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {(candidateProfile.tools ?? []).map((t) => (
-                            <Badge key={t} variant="secondary">
-                              {t}
-                            </Badge>
-                          ))}
-                          {(candidateProfile.tools ?? []).length === 0 && (
-                            <span className="text-sm text-gray-400">—</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+      {/* Achievements */}
+      {(profile.achievements ?? []).length > 0 && (
+        <div className={GLASS_SURFACE}>
+          <SectionHeading icon={Trophy} title={t("common.achievements")} />
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {profile.achievements!.map((a) => (
+              <Badge
+                key={a}
+                variant="outline"
+                className="border-amber-500/30 text-amber-700 dark:text-amber-300">
+                {a}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
-                  {/* Projects */}
-                  {(candidateProfile.projects ?? []).length > 0 && (
-                    <div>
-                      <h4 className="mb-2 font-semibold">{t("common.project")}</h4>
-                      <div className="space-y-2">
-                        {candidateProfile.projects!.map((p, i) => (
-                          <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
-                            <p className="font-medium">{p.name}</p>
-                            <p className="text-gray-600 dark:text-slate-300">{p.description}</p>
-                            <p className="text-gray-500 dark:text-slate-400">
-                              {p.role} {t("mentorStudents.team")} {p.teamSize}{" "}
-                              {t("mentorStudents.people")} {p.outcome}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+// ---------- helpers ----------
+function SectionHeading({ icon: Icon, title }: { icon: typeof User; title: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset dark:bg-emerald-500/15 dark:text-emerald-300">
+        <Icon className="h-4 w-4" aria-hidden />
+      </div>
+      <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+        {title}
+      </p>
+    </div>
+  );
+}
 
-                  {/* Work Experience */}
-                  {(candidateProfile.workExperiences ?? []).length > 0 && (
-                    <div>
-                      <h4 className="mb-2 font-semibold">{t("common.workExperience")}</h4>
-                      <div className="space-y-2">
-                        {candidateProfile.workExperiences!.map((w, i) => (
-                          <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
-                            <p className="font-medium">
-                              {w.position} — {w.company}
-                            </p>
-                            <p className="text-gray-600 dark:text-slate-300">{w.description}</p>
-                            <p className="text-xs text-gray-400">
-                              {w.start_date} — {w.end_date || t("common.present")}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+function InfoBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+      <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{value}</p>
+    </div>
+  );
+}
 
-                  {/* Education */}
-                  {(candidateProfile.educations ?? []).length > 0 && (
-                    <div>
-                      <h4 className="mb-2 font-semibold">{t("common.education")}</h4>
-                      <div className="space-y-2">
-                        {candidateProfile.educations!.map((e, i) => (
-                          <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
-                            <p className="font-medium">{e.school}</p>
-                            <p className="text-gray-600 dark:text-slate-300">
-                              {e.major} — {e.degree}
-                            </p>
-                            {e.gpa && (
-                              <p>
-                                {t("common.gpa")}: {e.gpa}
-                              </p>
-                            )}
-                            <p className="text-xs text-gray-400">
-                              {e.start_date} — {e.end_date || t("common.present")}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Certifications */}
-                  {(candidateProfile.certifications ?? []).length > 0 && (
-                    <div>
-                      <h4 className="mb-2 font-semibold">{t("common.certificate")}</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {candidateProfile.certifications!.map((c) => (
-                          <Badge key={c} variant="secondary">
-                            {c}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Achievements */}
-                  {(candidateProfile.achievements ?? []).length > 0 && (
-                    <div>
-                      <h4 className="mb-2 font-semibold">{t("common.achievements")}</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {candidateProfile.achievements!.map((a) => (
-                          <Badge key={a} variant="outline">
-                            {a}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+function SkillRow({
+  icon: Icon,
+  label,
+  items,
+  tone,
+}: {
+  icon: typeof Wrench;
+  label: string;
+  items: string[];
+  tone: "emerald" | "sky" | "rose";
+}) {
+  return (
+    <div>
+      <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <Icon className="h-3 w-3" aria-hidden />
+        {label}
+      </p>
+      <div className="mt-1.5 flex flex-wrap gap-1">
+        {items.length === 0 ? (
+          <span className="text-xs text-slate-400">—</span>
+        ) : (
+          items.map((s) => (
+            <Badge
+              key={s}
+              variant="secondary"
+              className={cn(
+                "text-xs",
+                tone === "emerald" &&
+                  "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+                tone === "sky" && "bg-sky-500/10 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300",
+                tone === "rose" &&
+                  "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
+              )}>
+              {s}
+            </Badge>
+          ))
+        )}
+      </div>
     </div>
   );
 }
