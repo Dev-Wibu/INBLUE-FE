@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -71,7 +72,6 @@ import {
   WriteReviewPage,
 } from "@/pages/User";
 import {
-  CompetencyKioskPage,
   KioskBookingListPage,
   KioskBookingSuccessPage,
   KioskEntryPage,
@@ -79,6 +79,12 @@ import {
   KioskListPage,
   KioskSlotsPage,
 } from "@/pages/User/Kiosk";
+
+const HoloboxRobotPage = lazy(() =>
+  import("@/pages/User/Kiosk/CompetencyKioskPage").then((module) => ({
+    default: module.CompetencyKioskPage,
+  }))
+);
 
 /** Preserves the path suffix after a given prefix when redirecting /dashboard/* → /user/* */
 function DashboardSubRedirect({ prefix }: { prefix: string }) {
@@ -143,7 +149,14 @@ function App() {
             <Route path="/features/mentor-interview" element={<MentorInterviewFeaturePage />} />
 
             {/* Full-screen Holobox competency result kiosk */}
-            <Route path="/holobox/competency" element={<CompetencyKioskPage />} />
+            <Route
+              path="/holobox/competency"
+              element={
+                <Suspense fallback={null}>
+                  <HoloboxRobotPage />
+                </Suspense>
+              }
+            />
 
             {/* Resources pages (public) */}
             <Route path="/resources/faq" element={<FAQPage />} />

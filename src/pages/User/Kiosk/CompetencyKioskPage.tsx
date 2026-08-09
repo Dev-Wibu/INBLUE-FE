@@ -48,6 +48,8 @@ import {
   type JourneySummary,
 } from "@/services/competency-chart.manager";
 
+import { HoloboxThreeRobotPage } from "./HoloboxThreeRobotPage";
+
 type KioskStep = "search" | "applications" | "result";
 type HoloboxDimension = "overview" | "technical" | "behavioral" | "journey";
 
@@ -603,7 +605,7 @@ function ResultStep({
 
   return (
     <main
-      className={`holobox-result-page mx-auto w-full max-w-[3600px] px-5 py-6 sm:px-8 sm:py-8 xl:px-10 ${isFullMode ? "is-full-mode" : ""}`}>
+      className={`holobox-result-page mx-auto w-full max-w-[3600px] px-5 py-4 sm:px-8 sm:py-5 xl:px-10 ${isFullMode ? "is-full-mode" : ""}`}>
       {isFullMode ? (
         <div className="holobox-full-mode-bar">
           <div>
@@ -634,7 +636,7 @@ function ResultStep({
       <button
         type="button"
         onClick={onBack}
-        className="mb-6 flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
+        className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
         <ArrowLeft className="h-4 w-4" />
         Back to applications
       </button>
@@ -1130,6 +1132,19 @@ export function CompetencyKioskPage() {
     setJourney(null);
     setStep("applications");
   };
+
+  const directScript = new URLSearchParams(window.location.search).get("script")?.trim();
+
+  // Cho phép mở thẳng chế độ robot-only khi hệ thống đã có sẵn script trong URL.
+  if (directScript) {
+    return <HoloboxThreeRobotPage script={directScript} />;
+  }
+
+  // Khi đã có kết quả, Holobox chỉ hiển thị robot. Script vẫn ở trong bộ nhớ
+  // và chỉ được đọc khi người dùng chạm robot, không render thành chữ.
+  if (step === "result" && chart) {
+    return <HoloboxThreeRobotPage script={buildHoloboxCompetencyScript(chart, journey)} />;
+  }
 
   return (
     <div className="min-h-[100dvh] bg-[#f7fafc] text-slate-950">
