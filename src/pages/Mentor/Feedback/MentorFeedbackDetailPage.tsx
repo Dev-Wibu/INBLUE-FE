@@ -312,7 +312,7 @@ export function MentorFeedbackDetailPage() {
             <SectionHeading
               icon={CalendarClock}
               title={t("common.sessionInformation1")}
-              subtitle={t("mentorSession.sessionRoomTimeline")}
+              subtitle={t("common.sessionInformation1")}
             />
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <InfoRow
@@ -356,7 +356,7 @@ export function MentorFeedbackDetailPage() {
                   size="sm"
                   onClick={() => navigate(`/mentor/sessions/${feedback.session?.id}`)}
                   className="text-xs">
-                  {t("mentorSession.viewSessionDetail")}
+                  {t("common.viewSessionDetails")}
                   <ChevronRight className="ml-1 h-3.5 w-3.5" />
                 </Button>
               </div>
