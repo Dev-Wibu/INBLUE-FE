@@ -8,15 +8,7 @@ import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { TFunction } from "i18next";
-import {
-  Bot,
-  Briefcase,
-  LayoutDashboard,
-  MessageSquare,
-  Newspaper,
-  Search,
-  User as UserIcon,
-} from "lucide-react";
+import { Briefcase, LayoutDashboard, MessageSquare, Newspaper, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
@@ -125,23 +117,6 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
         icon: Briefcase,
         label: t("common.application"),
         color: "text-teal-600 dark:text-teal-500",
-      },
-      {
-        type: "mentors",
-        icon: UserIcon,
-        label: t("common.mentors"),
-        color: "text-indigo-600 dark:text-indigo-500",
-      },
-    ],
-  },
-  {
-    label: t("common.aiLearning"),
-    items: [
-      {
-        type: "aiInterview",
-        icon: Bot,
-        label: t("common.aiInterview1"),
-        color: "text-green-600 dark:text-green-500",
       },
     ],
   },
