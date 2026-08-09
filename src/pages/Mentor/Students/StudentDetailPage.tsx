@@ -11,8 +11,6 @@
  * - Modern segmented control tabs (Sessions / Feedback / Reviews / Profile)
  */
 
-import { FeedbackCard } from "@/components/feedback";
-import { ReviewCard } from "@/components/review";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +18,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TimeAgo } from "@/components/ui/time-ago";
 import { useMentorFeedbacks } from "@/hooks/useMentorFeedback";
 import { useMentorReviews } from "@/hooks/useMentorReview";
@@ -34,22 +31,29 @@ import { useCandidateProfile } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { motion } from "framer-motion";
 import {
+  AlertCircle,
   ArrowLeft,
   Award,
   Briefcase,
   Calendar,
+  CheckCircle2,
   ChevronRight,
+  ClipboardList,
   Clock,
   FileText,
   GraduationCap,
+  Lightbulb,
   Mail,
   MessageSquare,
   School,
   Sparkles,
   Star,
+  Target,
+  ThumbsUp,
   Trophy,
   User,
   Wrench,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -319,38 +323,90 @@ export function StudentDetailPage() {
             </div>
           </motion.div>
 
-          {/* Tabs */}
-          <motion.div {...fadeUp(0.15)}>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4 rounded-xl border border-slate-200/70 bg-white/60 p-1 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/60">
-                <TabsTrigger
-                  value="sessions"
-                  className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-700 data-[state=active]:shadow-xs dark:data-[state=active]:bg-emerald-500/20 dark:data-[state=active]:text-emerald-300">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {t("general.session8")} ({totalSessions})
-                </TabsTrigger>
-                <TabsTrigger
-                  value="feedbacks"
-                  className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-700 data-[state=active]:shadow-xs dark:data-[state=active]:bg-rose-500/20 dark:data-[state=active]:text-rose-300">
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  {t("mentorStudents.responseReceived1")} ({totalFeedbacks})
-                </TabsTrigger>
-                <TabsTrigger
-                  value="reviews"
-                  className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-700 data-[state=active]:shadow-xs dark:data-[state=active]:bg-amber-500/20 dark:data-[state=active]:text-amber-300">
-                  <Star className="h-3.5 w-3.5" />
-                  {t("mentorStudents.submittedReview")} ({totalReviews})
-                </TabsTrigger>
-                <TabsTrigger
-                  value="profile"
-                  className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-sky-500/10 data-[state=active]:text-sky-700 data-[state=active]:shadow-xs dark:data-[state=active]:bg-sky-500/20 dark:data-[state=active]:text-sky-300">
-                  <FileText className="h-3.5 w-3.5" />
-                  {t("mentorStudents.file")}
-                </TabsTrigger>
-              </TabsList>
+          {/* Sliding segmented control tabs (Framer Motion layoutId) */}
+          <motion.div {...fadeUp(0.15)} className="space-y-4">
+            <div
+              role="tablist"
+              aria-label="student-detail-tabs"
+              className="relative grid w-full grid-cols-4 gap-1 rounded-xl border border-slate-200/70 bg-slate-100/70 p-1 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-800/60">
+              {[
+                {
+                  id: "sessions",
+                  icon: Calendar,
+                  label: `${t("general.session8")} (${totalSessions})`,
+                  tone: "emerald" as const,
+                },
+                {
+                  id: "feedbacks",
+                  icon: MessageSquare,
+                  label: `${t("mentorStudents.responseReceived1")} (${totalFeedbacks})`,
+                  tone: "rose" as const,
+                },
+                {
+                  id: "reviews",
+                  icon: Star,
+                  label: `${t("mentorStudents.submittedReview")} (${totalReviews})`,
+                  tone: "amber" as const,
+                },
+                {
+                  id: "profile",
+                  icon: User,
+                  label: t("mentorStudents.profile"),
+                  tone: "sky" as const,
+                },
+              ].map((tab) => {
+                const isActive = activeTab === tab.id;
+                const Icon = tab.icon;
+                const activeTextClass =
+                  tab.tone === "emerald"
+                    ? "text-emerald-700 dark:text-emerald-300"
+                    : tab.tone === "rose"
+                      ? "text-rose-700 dark:text-rose-300"
+                      : tab.tone === "amber"
+                        ? "text-amber-700 dark:text-amber-300"
+                        : "text-sky-700 dark:text-sky-300";
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "relative flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors",
+                      isActive
+                        ? activeTextClass
+                        : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                    )}>
+                    {isActive && (
+                      <motion.span
+                        layoutId="student-detail-tab-pill"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        className={cn(
+                          "absolute inset-0 rounded-lg shadow-xs ring-1 ring-inset",
+                          tab.tone === "emerald" && "bg-emerald-500/10 ring-emerald-400/30",
+                          tab.tone === "rose" && "bg-rose-500/10 ring-rose-400/30",
+                          tab.tone === "amber" && "bg-amber-500/10 ring-amber-400/30",
+                          tab.tone === "sky" && "bg-sky-500/10 ring-sky-400/30",
+                          "dark:bg-white/[0.05]"
+                        )}
+                      />
+                    )}
+                    <Icon className="relative h-3.5 w-3.5" aria-hidden />
+                    <span className="relative truncate">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-              {/* Sessions Tab */}
-              <TabsContent value="sessions" className="mt-4 space-y-2">
+            {/* Sessions Tab */}
+            {activeTab === "sessions" && (
+              <motion.div
+                key="sessions"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="space-y-2">
                 {studentSessions.length === 0 ? (
                   <EmptyState
                     icon={Calendar}
@@ -367,10 +423,17 @@ export function StudentDetailPage() {
                     />
                   ))
                 )}
-              </TabsContent>
+              </motion.div>
+            )}
 
-              {/* Feedbacks Tab */}
-              <TabsContent value="feedbacks" className="mt-4 space-y-3">
+            {/* Feedbacks Tab */}
+            {activeTab === "feedbacks" && (
+              <motion.div
+                key="feedbacks"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="space-y-3">
                 {studentFeedbacks.length === 0 ? (
                   <EmptyState
                     icon={MessageSquare}
@@ -378,23 +441,36 @@ export function StudentDetailPage() {
                     description={t("mentorStudents.thisStudentHasNotSent")}
                   />
                 ) : (
-                  studentFeedbacks.map((feedback: { id?: number }) => (
-                    <FeedbackCard
-                      key={feedback.id}
-                      feedback={feedback}
-                      showMentor={false}
-                      showUser
-                      showSession
-                      onClick={() => {
-                        if (feedback.id) navigate(`/mentor/feedback/${feedback.id}`);
-                      }}
-                    />
-                  ))
+                  studentFeedbacks.map(
+                    (feedback: {
+                      id?: number;
+                      rating?: number;
+                      comment?: string;
+                      user?: { name?: string; avatarUrl?: string };
+                      session?: { roomName?: string; endTime1?: string };
+                    }) => (
+                      <MentorFeedbackListRow
+                        key={feedback.id}
+                        feedback={feedback}
+                        onClick={() => {
+                          if (feedback.id) navigate(`/mentor/feedback/${feedback.id}`);
+                        }}
+                        t={t}
+                      />
+                    )
+                  )
                 )}
-              </TabsContent>
+              </motion.div>
+            )}
 
-              {/* Reviews Tab */}
-              <TabsContent value="reviews" className="mt-4 space-y-3">
+            {/* Reviews Tab */}
+            {activeTab === "reviews" && (
+              <motion.div
+                key="reviews"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="space-y-3">
                 {studentReviews.length === 0 ? (
                   <EmptyState
                     icon={Star}
@@ -402,23 +478,41 @@ export function StudentDetailPage() {
                     description={t("mentorStudents.youHaveNotSubmittedAny")}
                   />
                 ) : (
-                  studentReviews.map((review: { id?: number }) => (
-                    <ReviewCard
-                      key={review.id}
-                      review={review}
-                      showMentor={false}
-                      showUser
-                      onClick={() => {
-                        if (review.id) navigate(`/mentor/reviews/${review.id}`);
-                      }}
-                    />
-                  ))
+                  studentReviews.map(
+                    (review: {
+                      id?: number;
+                      rating?: number;
+                      session?: { roomName?: string; endTime1?: string };
+                      situationNote?: string;
+                      taskNote?: string;
+                      actionNote?: string;
+                      resultNote?: string;
+                      strength?: string;
+                      weakness?: string;
+                      improve?: string;
+                    }) => (
+                      <MentorReviewListRow
+                        key={review.id}
+                        review={review}
+                        onClick={() => {
+                          if (review.id) navigate(`/mentor/reviews/${review.id}`);
+                        }}
+                        t={t}
+                      />
+                    )
+                  )
                 )}
-              </TabsContent>
+              </motion.div>
+            )}
 
-              {/* Profile Tab */}
-              <TabsContent value="profile" className="mt-4">
-                {!candidateProfile?.id ? (
+            {/* Profile Tab */}
+            {activeTab === "profile" && (
+              <motion.div
+                key="profile"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}>
+                {!candidateProfile ? (
                   <EmptyState
                     icon={FileText}
                     title={t("common.thereAreNoCandidateProfilesYet")}
@@ -427,8 +521,8 @@ export function StudentDetailPage() {
                 ) : (
                   <CandidateProfileView profile={candidateProfile} t={t} />
                 )}
-              </TabsContent>
-            </Tabs>
+              </motion.div>
+            )}
           </motion.div>
         </div>
 
@@ -672,8 +766,54 @@ function CandidateProfileView({
   profile: CandidateProfile;
   t: (_key: string, _options?: Record<string, unknown>) => string;
 }) {
+  const totalSkills =
+    (profile.technicalSkills?.length ?? 0) +
+    (profile.softSkills?.length ?? 0) +
+    (profile.tools?.length ?? 0);
+
   return (
     <div className="space-y-4">
+      {/* Profile header banner */}
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-2xl p-5 ring-1 ring-inset",
+          "bg-gradient-to-br from-sky-500/12 via-indigo-500/8 to-violet-500/12 ring-sky-400/20",
+          "dark:from-sky-500/20 dark:via-indigo-500/10 dark:to-violet-500/20"
+        )}>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-16 -right-12 h-48 w-48 rounded-full bg-sky-400/25 opacity-60 blur-3xl dark:bg-sky-500/30"
+        />
+        <div className="relative flex flex-wrap items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-600 ring-1 ring-sky-400/30 ring-inset dark:text-sky-300">
+            <FileText className="h-5 w-5" aria-hidden />
+          </div>
+          <div className="flex-1">
+            <p className="text-[10px] font-semibold tracking-[0.06em] text-sky-700 uppercase dark:text-sky-300">
+              {t("mentorStudents.profile")}
+            </p>
+            <p className="mt-0.5 text-lg font-bold tracking-[-0.02em] text-slate-900 dark:text-slate-100">
+              {profile.targetRole || t("mentorStudents.candidateProfile")}
+            </p>
+            {profile.targetLevel && (
+              <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
+                {profile.targetLevel}
+              </p>
+            )}
+          </div>
+          {totalSkills > 0 && (
+            <div className="text-right">
+              <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                {t("common.skill")}
+              </p>
+              <p className="text-2xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                {totalSkills}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Basic Info */}
       <div className={GLASS_SURFACE}>
         <SectionHeading icon={User} title={t("common.basicInformation")} />
@@ -682,7 +822,14 @@ function CandidateProfileView({
           <InfoBlock label={t("mentorStudents.level")} value={profile.targetLevel || "—"} />
         </div>
         {profile.introduction && (
-          <p className="mt-3 text-sm text-slate-700 dark:text-slate-200">{profile.introduction}</p>
+          <div className="mt-3 rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+            <p className="mb-1 text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+              {t("common.introduction")}
+            </p>
+            <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+              {profile.introduction}
+            </p>
+          </div>
         )}
       </div>
 
@@ -886,5 +1033,269 @@ function SkillRow({
         )}
       </div>
     </div>
+  );
+}
+
+// ---------- Mentor review list row (UI-only, replaces legacy ReviewCard) ----------
+function MentorReviewListRow({
+  review,
+  onClick,
+  t,
+}: {
+  review: {
+    id?: number;
+    rating?: number;
+    session?: { roomName?: string; endTime1?: string };
+    situationNote?: string;
+    taskNote?: string;
+    actionNote?: string;
+    resultNote?: string;
+    strength?: string;
+    weakness?: string;
+    improve?: string;
+  };
+  onClick?: () => void;
+  t: (_key: string, _options?: Record<string, unknown>) => string;
+}) {
+  const rating = review.rating || 0;
+  const tone =
+    rating >= 5
+      ? "emerald"
+      : rating >= 4
+        ? "teal"
+        : rating >= 3
+          ? "sky"
+          : rating >= 2
+            ? "amber"
+            : "rose";
+  const accentClass = {
+    emerald:
+      "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-300",
+    teal: "bg-teal-500/10 text-teal-600 ring-teal-500/20 dark:bg-teal-500/20 dark:text-teal-300",
+    sky: "bg-sky-500/10 text-sky-600 ring-sky-500/20 dark:bg-sky-500/20 dark:text-sky-300",
+    amber:
+      "bg-amber-500/10 text-amber-600 ring-amber-500/20 dark:bg-amber-500/20 dark:text-amber-300",
+    rose: "bg-rose-500/10 text-rose-600 ring-rose-500/20 dark:bg-rose-500/20 dark:text-rose-300",
+  }[tone];
+  const starNotes: Array<{ key: string; label: string; value?: string; icon: typeof Target }> = [
+    { key: "s", label: t("compReview.situationS"), value: review.situationNote, icon: Target },
+    { key: "t", label: t("compReview.missionT"), value: review.taskNote, icon: ClipboardList },
+    { key: "a", label: t("compReview.actionA"), value: review.actionNote, icon: Zap },
+    { key: "r", label: t("compReview.resultsR"), value: review.resultNote, icon: CheckCircle2 },
+  ].filter((n) => n.value);
+  const hasContent = starNotes.length > 0 || review.strength || review.weakness || review.improve;
+
+  return (
+    <motion.div
+      whileHover={{ y: -1 }}
+      transition={{ duration: 0.18 }}
+      className={cn(
+        "group relative overflow-hidden rounded-2xl p-5 ring-1 transition-all ring-inset hover:shadow-md",
+        "bg-slate-500/[0.04] ring-slate-200/70",
+        "dark:bg-white/[0.03] dark:ring-white/5",
+        onClick && "cursor-pointer"
+      )}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}>
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-y-0 left-0 w-1.5",
+          tone === "emerald" && "bg-gradient-to-b from-emerald-500 to-emerald-300",
+          tone === "teal" && "bg-gradient-to-b from-teal-500 to-teal-300",
+          tone === "sky" && "bg-gradient-to-b from-sky-500 to-sky-300",
+          tone === "amber" && "bg-gradient-to-b from-amber-500 to-amber-300",
+          tone === "rose" && "bg-gradient-to-b from-rose-500 to-rose-300"
+        )}
+      />
+      <div className="flex flex-col gap-3 pl-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-[0.06em] uppercase ring-1 ring-inset",
+                accentClass
+              )}>
+              <Star className="h-3 w-3 fill-current" aria-hidden />
+              {rating}/5 · {t("mentorMentordashboard.reviewSent")}
+            </span>
+            <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
+              #{review.id}
+            </span>
+          </div>
+          <p className="mt-1.5 flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <Calendar className="h-3.5 w-3.5 text-slate-400" aria-hidden />
+            {review.session?.roomName || "—"}
+          </p>
+          {review.session?.endTime1 && (
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              <TimeAgo date={String(treatZuluAsVietnamLocal(review.session.endTime1))} />
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <StarRating value={rating} readOnly size="sm" />
+        </div>
+      </div>
+
+      {hasContent ? (
+        <div className="mt-4 space-y-3 border-t border-slate-200/60 pt-3 dark:border-white/5">
+          {/* STAR notes */}
+          {starNotes.length > 0 && (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {starNotes.map((note) => {
+                const Icon = note.icon;
+                return (
+                  <div
+                    key={note.key}
+                    className="rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+                    <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                      <Icon className="h-3 w-3 text-slate-400" aria-hidden />
+                      {note.label}
+                    </p>
+                    <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                      {note.value}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Strength / Weakness / Improve */}
+          {(review.strength || review.weakness || review.improve) && (
+            <div className="grid gap-2 sm:grid-cols-3">
+              {review.strength && (
+                <div className="rounded-xl bg-emerald-500/[0.06] p-3 ring-1 ring-emerald-500/15 ring-inset">
+                  <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-emerald-700 uppercase dark:text-emerald-300">
+                    <ThumbsUp className="h-3 w-3" aria-hidden />
+                    {t("common.strengths")}
+                  </p>
+                  <p className="text-sm leading-relaxed text-emerald-900 dark:text-emerald-100">
+                    {review.strength}
+                  </p>
+                </div>
+              )}
+              {review.weakness && (
+                <div className="rounded-xl bg-amber-500/[0.06] p-3 ring-1 ring-amber-500/15 ring-inset">
+                  <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-amber-700 uppercase dark:text-amber-300">
+                    <AlertCircle className="h-3 w-3" aria-hidden />
+                    {t("common.pointsForImprovement")}
+                  </p>
+                  <p className="text-sm leading-relaxed text-amber-900 dark:text-amber-100">
+                    {review.weakness}
+                  </p>
+                </div>
+              )}
+              {review.improve && (
+                <div className="rounded-xl bg-sky-500/[0.06] p-3 ring-1 ring-sky-500/15 ring-inset">
+                  <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-sky-700 uppercase dark:text-sky-300">
+                    <Lightbulb className="h-3 w-3" aria-hidden />
+                    {t("common.suggestedImprovements1")}
+                  </p>
+                  <p className="text-sm leading-relaxed text-sky-900 dark:text-sky-100">
+                    {review.improve}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="mt-3 text-sm text-slate-500 italic dark:text-slate-400">
+          {t("compReview.thereIsNoDetailedReview")}
+        </p>
+      )}
+    </motion.div>
+  );
+}
+
+// ---------- Mentor feedback list row (UI-only, replaces legacy FeedbackCard) ----------
+function MentorFeedbackListRow({
+  feedback,
+  onClick,
+  t,
+}: {
+  feedback: {
+    id?: number;
+    rating?: number;
+    comment?: string;
+    user?: { name?: string; avatarUrl?: string };
+    session?: { roomName?: string; endTime1?: string };
+  };
+  onClick?: () => void;
+  t: (_key: string, _options?: Record<string, unknown>) => string;
+}) {
+  const rating = feedback.rating || 0;
+  return (
+    <motion.div
+      whileHover={{ y: -1 }}
+      transition={{ duration: 0.18 }}
+      className={cn(
+        "group relative overflow-hidden rounded-2xl p-5 ring-1 transition-all ring-inset hover:shadow-md",
+        "bg-slate-500/[0.04] ring-slate-200/70",
+        "dark:bg-white/[0.03] dark:ring-white/5",
+        onClick && "cursor-pointer"
+      )}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-rose-500 to-rose-300"
+      />
+      <div className="flex items-start gap-3 pl-2">
+        <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/10">
+          {feedback.user?.avatarUrl ? (
+            <AvatarImage src={feedback.user.avatarUrl} alt={feedback.user.name} />
+          ) : null}
+          <AvatarFallback className="bg-rose-100 text-xs font-semibold text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+            {feedback.user?.name?.charAt(0) || "S"}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              {feedback.user?.name || t("common.studentVar0", { var_0: feedback.id ?? "—" })}
+            </p>
+            <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
+              #{feedback.id}
+            </span>
+          </div>
+          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <Calendar className="h-3 w-3 shrink-0" aria-hidden />
+            <span className="truncate">{feedback.session?.roomName || "—"}</span>
+            {feedback.session?.endTime1 && (
+              <>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <TimeAgo
+                  date={String(treatZuluAsVietnamLocal(feedback.session.endTime1))}
+                  prefix={false}
+                />
+              </>
+            )}
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-0.5">
+          <StarRating value={rating} readOnly size="sm" />
+          <span className="text-[10px] font-bold tracking-[0.06em] text-rose-700 uppercase dark:text-rose-300">
+            {rating}/5
+          </span>
+        </div>
+      </div>
+      <div className="mt-3 rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+        {feedback.comment ? (
+          <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+            {feedback.comment}
+          </p>
+        ) : (
+          <p className="flex items-center gap-2 text-sm text-slate-500 italic dark:text-slate-400">
+            <MessageSquare className="h-3.5 w-3.5" />
+            {t("common.noComments")}
+          </p>
+        )}
+      </div>
+    </motion.div>
   );
 }

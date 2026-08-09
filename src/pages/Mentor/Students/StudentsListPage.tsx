@@ -53,6 +53,7 @@ import {
   Search,
   Sparkles,
   Star,
+  Trophy,
   Users,
   X,
   type LucideIcon,
@@ -527,10 +528,12 @@ export function StudentsListPage() {
         <SidePanel
           isLoading={isLoading}
           spotlightStudent={spotlightStudent}
+          students={students}
           studentsCount={students.length}
           reviewsCount={reviews.length}
           feedbacksCount={feedbacks.length}
           mentorSessionsCount={mentorSessions.length}
+          navigate={navigate}
           t={t}
         />
       </div>
@@ -542,30 +545,44 @@ export function StudentsListPage() {
 function SidePanel({
   isLoading,
   spotlightStudent,
+  students,
   studentsCount,
   reviewsCount,
   feedbacksCount,
   mentorSessionsCount,
+  navigate,
   t,
 }: {
   isLoading: boolean;
   spotlightStudent: StudentInfo | null;
+  students: StudentInfo[];
   studentsCount: number;
   reviewsCount: number;
   feedbacksCount: number;
   mentorSessionsCount: number;
+  navigate: ReturnType<typeof useNavigate>;
   t: (_key: string, _options?: Record<string, unknown>) => string;
 }) {
   const avgRating = useMemo(() => {
     if (reviewsCount === 0) return "—";
-    const total = spotlightStudent?.avgRating ?? 0;
     if (!spotlightStudent) return "—";
-    return total.toFixed(1);
+    return spotlightStudent.avgRating.toFixed(1);
   }, [spotlightStudent, reviewsCount]);
+
+  // Top-3 students sorted by (avg rating desc, review count desc)
+  const topStudents = useMemo(() => {
+    return [...students]
+      .sort((a, b) => {
+        if (b.avgRating !== a.avgRating) return b.avgRating - a.avgRating;
+        if (b.reviewCount !== a.reviewCount) return b.reviewCount - a.reviewCount;
+        return b.sessionCount - a.sessionCount;
+      })
+      .slice(0, 5);
+  }, [students]);
 
   return (
     <aside className="flex flex-col gap-4 xl:sticky xl:top-4 xl:self-start">
-      {/* Spotlight card */}
+      {/* Top performers card — shows ALL students (clickable mini-list) */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -580,41 +597,113 @@ function SidePanel({
           className="pointer-events-none absolute -top-16 -right-12 h-40 w-40 rounded-full bg-violet-400/15 opacity-60 blur-3xl dark:bg-violet-500/20"
         />
         <div className="relative flex flex-col gap-3">
-          <p className={MENTOR_EYEBROW}>{t("mentorStudents.totalStudents")}</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
-              {isLoading ? "—" : studentsCount}
-            </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              {t("mentorStudents.listOfStudents")}
-            </span>
-          </div>
-          <div className="mt-2 flex items-center gap-3 border-t border-slate-200/60 pt-3 dark:border-white/5">
-            <Avatar className="h-10 w-10 ring-2 ring-violet-400/30">
-              {spotlightStudent?.avatarUrl ? (
-                <AvatarImage src={spotlightStudent.avatarUrl} alt={spotlightStudent.name} />
-              ) : null}
-              <AvatarFallback className="bg-violet-100 text-sm font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                {spotlightStudent?.name?.charAt(0) || "?"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-                {spotlightStudent?.name ||
-                  t("common.studentVar0", { var_0: spotlightStudent?.id ?? "—" })}
-              </p>
-              <p className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                <StarRating value={spotlightStudent?.avgRating ?? 0} readOnly size="sm" />
-                <span>
-                  {avgRating}
-                  <span className="mx-1 text-slate-400">·</span>
-                  {spotlightStudent?.reviewCount ?? 0} {t("mentorMentordashboard.reviewSent")}
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <p className={MENTOR_EYEBROW}>{t("mentorStudents.totalStudents")}</p>
+              <p className="mt-0.5 flex items-baseline gap-2">
+                <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                  {isLoading ? "—" : studentsCount}
+                </span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {t("mentorStudents.listOfStudents")}
                 </span>
               </p>
             </div>
           </div>
+
+          {isLoading ? (
+            <div className="space-y-2 pt-2">
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+            </div>
+          ) : topStudents.length === 0 ? (
+            <p className="pt-2 text-xs text-slate-500 italic dark:text-slate-400">—</p>
+          ) : (
+            <ul className="mt-1 flex flex-col gap-1.5 border-t border-slate-200/60 pt-3 dark:border-white/5">
+              {topStudents.map((student, index) => (
+                <li key={student.id}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/mentor/students/${student.id}`)}
+                    className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-all hover:bg-violet-500/10 dark:hover:bg-violet-500/15">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-[10px] font-bold text-violet-600 ring-1 ring-violet-500/20 ring-inset dark:bg-violet-500/15 dark:text-violet-300">
+                      #{index + 1}
+                    </span>
+                    <Avatar className="h-8 w-8 shrink-0 ring-1 ring-white/10">
+                      {student.avatarUrl ? (
+                        <AvatarImage src={student.avatarUrl} alt={student.name} />
+                      ) : null}
+                      <AvatarFallback className="bg-violet-100 text-[10px] font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
+                        {student.name?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-slate-900 group-hover:text-violet-700 dark:text-slate-100 dark:group-hover:text-violet-300">
+                        {student.name || t("common.studentVar0", { var_0: student.id })}
+                      </p>
+                      <p className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                        <span className="font-medium">
+                          {student.sessionCount} {t("common.session").toLowerCase()}
+                        </span>
+                        <span className="text-slate-300 dark:text-slate-600">·</span>
+                        <span className="font-medium">
+                          {student.reviewCount} {t("common.evaluate").toLowerCase()}
+                        </span>
+                      </p>
+                    </div>
+                    {student.reviewCount > 0 && (
+                      <span className="flex items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-500/20 ring-inset dark:bg-amber-500/15 dark:text-amber-300">
+                        {student.avgRating.toFixed(1)}
+                        <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </motion.div>
+
+      {/* Top performer highlight */}
+      {spotlightStudent && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.36, ease: "easeOut", delay: 0.06 }}
+          className={cn(
+            "relative overflow-hidden rounded-2xl p-4 ring-1 ring-inset",
+            "bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-transparent ring-amber-400/20",
+            "dark:from-amber-500/15 dark:via-amber-400/10 dark:ring-amber-400/20"
+          )}>
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 ring-1 ring-amber-400/30 ring-inset dark:text-amber-300">
+              <Trophy className="h-4 w-4" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold tracking-[0.06em] text-amber-700 uppercase dark:text-amber-300">
+                {t("mentorStudents.topPerformer")}
+              </p>
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                {spotlightStudent.name || t("common.studentVar0", { var_0: spotlightStudent.id })}
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t border-amber-300/30 pt-3 dark:border-amber-400/20">
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                {t("common.averageStarRating")}
+              </p>
+              <p className="text-xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                {avgRating}
+                <span className="ml-0.5 text-xs font-medium text-slate-400">/5</span>
+              </p>
+            </div>
+            <StarRating value={spotlightStudent.avgRating} readOnly size="sm" />
+          </div>
+        </motion.div>
+      )}
 
       {/* 3 quick stats */}
       <div className="grid grid-cols-3 gap-2.5">
