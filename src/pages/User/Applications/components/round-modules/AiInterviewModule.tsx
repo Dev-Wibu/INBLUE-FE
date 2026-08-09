@@ -2,6 +2,8 @@ import { SlotCalendar, type SlotCalendarSlot } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useInterviewSession, useInterviewSessionsByUser } from "@/hooks/useInterviewSession";
 import {
   useActiveKiosks,
   useKioskBookingByApplicationDetail,
@@ -11,24 +13,48 @@ import {
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { kioskManager, type Kiosk, type KioskSchedule } from "@/services/kiosk.manager";
+import { useAuthStore } from "@/stores/authStore";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle,
+  AlertTriangle,
+  Award,
   Bot,
+  Briefcase,
+  Building2,
   CalendarClock,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Clock3,
   Copy,
   Cpu,
+  FileCode,
+  GraduationCap,
+  HelpCircle,
   KeyRound,
   Laptop,
+  Layers,
+  Lightbulb,
   Loader2,
   Mail,
   MapPin,
+  Maximize2,
+  MessageSquare,
+  Mic,
+  Minimize2,
   RadioTower,
   RefreshCw,
-  ShieldCheck,
+  Search,
+  ShieldAlert,
+  SlidersHorizontal,
   Sparkles,
+  Tag,
+  TrendingUp,
+  User,
+  UserCheck,
+  Wrench,
+  X,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -100,20 +126,125 @@ function formatHourMinute(value?: string): string {
   });
 }
 
+/** Linear/Stripe Style Modern Circular SVG Gauge Clock */
+function ModernGaugeClock({
+  score,
+  displayScoreText,
+  label,
+  color = "indigo",
+  hasData = true,
+}: {
+  score: number;
+  displayScoreText?: string;
+  label: string;
+  color?: "indigo" | "emerald";
+  hasData?: boolean;
+}) {
+  const radius = 41;
+  const circumference = 2 * Math.PI * radius;
+  const displayScore = hasData ? Math.min(100, Math.max(0, score)) : 0;
+  const strokeDashoffset = circumference - (displayScore / 100) * circumference;
+
+  const styles =
+    color === "emerald"
+      ? {
+          ring: "text-emerald-500 dark:text-emerald-400",
+          text: "text-emerald-600 dark:text-emerald-400",
+          bg: "border-emerald-200 bg-emerald-50/60 dark:border-emerald-500/20 dark:bg-emerald-950/20",
+        }
+      : {
+          ring: "text-indigo-500 dark:text-indigo-400",
+          text: "text-indigo-600 dark:text-indigo-400",
+          bg: "border-indigo-200 bg-indigo-50/60 dark:border-indigo-500/20 dark:bg-indigo-950/20",
+        };
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center rounded-2xl border p-4 text-center transition-all",
+        styles.bg
+      )}>
+      <div className="relative flex h-28 w-28 items-center justify-center sm:h-32 sm:w-32">
+        <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 transform">
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth="6"
+            className="text-slate-200 dark:text-slate-800"
+            fill="transparent"
+          />
+          {hasData && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              stroke="currentColor"
+              strokeWidth="6"
+              className={cn(styles.ring, "transition-all duration-1000 ease-out")}
+              fill="transparent"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+            />
+          )}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
+          <span
+            className={cn(
+              "text-lg font-black tracking-tight sm:text-xl",
+              hasData ? styles.text : "text-slate-400 dark:text-slate-600"
+            )}>
+            {hasData ? (displayScoreText ?? `${Math.round(displayScore)}%`) : "--"}
+          </span>
+          <span className="mt-0.5 text-[10px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            {label}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AiInterviewSubheader({
   round,
-  finalScore,
   isCompleted,
+  status,
+  finalResult,
+  sessionResult,
 }: {
   round: JdRound;
-  finalScore?: number;
+  aiScore?: number | null;
+  hrScore?: number | null;
+  finalScore?: number | null;
   isCompleted: boolean;
+  status?: string | null;
+  finalResult?: string | null;
+  sessionResult?: string | null;
 }) {
   const { t } = useTranslation();
   const roundOrder = round.roundOrder ?? 7;
 
+  // Determine effective verdict from sessionData or finalResult
+  const effectiveResult = useMemo(() => {
+    if (sessionResult) {
+      if (sessionResult === "STRONG_HIRE" || sessionResult === "HIRE" || sessionResult === "PASSED")
+        return "PASSED";
+      if (sessionResult === "REJECT" || sessionResult === "FAILED") return "REJECT";
+      if (sessionResult === "CONSIDER") return "CONSIDER";
+      return sessionResult;
+    }
+    if (finalResult) {
+      if (finalResult === "PASSED") return "PASSED";
+      if (finalResult === "FAILED" || finalResult === "REJECT") return "REJECT";
+      return finalResult;
+    }
+    return null;
+  }, [sessionResult, finalResult]);
+
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
           <Bot className="h-5 w-5" />
@@ -124,7 +255,7 @@ function AiInterviewSubheader({
               {t("userApplication.aiInterview.aiInterviewTitle", { round: roundOrder })}
             </span>
             <span className="text-slate-600">•</span>
-            <span className="text-xs font-semibold text-indigo-400">
+            <span className="text-xs font-semibold text-indigo-500 dark:text-indigo-400">
               {t("userApplication.roundNumber", { number: roundOrder })}
             </span>
           </div>
@@ -134,22 +265,45 @@ function AiInterviewSubheader({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        {isCompleted ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm shadow-emerald-100 dark:text-emerald-300 dark:shadow-emerald-950/40">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>
-              {finalScore != null
-                ? `${t("userApplication.aiInterview.aiScore")} ${finalScore}/100`
-                : t("userApplication.aiInterview.aiCompleted")}
-            </span>
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-sm shadow-indigo-100 dark:text-indigo-300 dark:shadow-indigo-950/40">
-            <CalendarClock className="h-3.5 w-3.5 text-indigo-400" />
-            <span>{t("userApplication.aiInterview.bookKiosk")}</span>
+      <div className="flex flex-wrap items-center gap-2">
+        {effectiveResult === "PASSED" && (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-2xs dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <span>KẾT QUẢ: PASSED</span>
           </span>
         )}
+
+        {effectiveResult === "REJECT" && (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-xs font-extrabold text-rose-700 shadow-2xs dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-300">
+            <X className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+            <span>KẾT QUẢ: REJECT</span>
+          </span>
+        )}
+
+        {effectiveResult === "CONSIDER" && (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-extrabold text-amber-700 shadow-2xs dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-300">
+            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <span>KẾT QUẢ: CONSIDER</span>
+          </span>
+        )}
+
+        {!effectiveResult &&
+          (isCompleted || status === "COMPLETED" || status === "AI_EVALUATED") && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-2xs dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span>KẾT QUẢ: HOÀN THÀNH</span>
+            </span>
+          )}
+
+        {!isCompleted &&
+          !effectiveResult &&
+          status !== "COMPLETED" &&
+          status !== "AI_EVALUATED" && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-2xs dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300">
+              <CalendarClock className="h-3.5 w-3.5 text-indigo-500" />
+              <span>{t("userApplication.aiInterview.bookKiosk")}</span>
+            </span>
+          )}
       </div>
     </div>
   );
@@ -392,6 +546,1453 @@ function KioskPinDialog({
   );
 }
 
+function CandidateProfileSnapshotView({
+  profile,
+}: {
+  profile?: components["schemas"]["CandidateProfile"] | null;
+}) {
+  const { t } = useTranslation();
+
+  if (!profile) {
+    return (
+      <div className="flex h-56 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900/40">
+        <User className="h-9 w-9 text-slate-400" />
+        <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+          {t("userApplication.aiInterview.noDataYet")}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Target Role & Introduction Card */}
+      <Card className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/60">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 dark:border-slate-800">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400">
+              <User className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h3 className="text-lg font-black tracking-tight text-slate-950 dark:text-white">
+                  {profile.targetRole ?? "Candidate Profile"}
+                </h3>
+                {profile.targetLevel && (
+                  <span className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-xs font-black text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300">
+                    {profile.targetLevel}
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {t("userApplication.aiInterview.targetRoleAndLevel")}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {profile.introduction && (
+          <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-sm leading-relaxed text-slate-700 sm:p-5 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
+            <p className="mb-1.5 text-xs font-black tracking-wider text-slate-400 uppercase">
+              {t("userApplication.aiInterview.introduction")}
+            </p>
+            <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+              "{profile.introduction}"
+            </p>
+          </div>
+        )}
+      </Card>
+
+      {/* Technical Skills & Tools Card */}
+      <Card className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/60">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-4 dark:border-slate-800">
+          <FileCode className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <h4 className="text-base font-extrabold text-slate-950 dark:text-white">
+            {t("userApplication.aiInterview.technicalSkills")} &{" "}
+            {t("userApplication.aiInterview.tools")}
+          </h4>
+        </div>
+
+        <div className="mt-5 space-y-6">
+          {/* Technical Skills */}
+          {profile.technicalSkills && profile.technicalSkills.length > 0 && (
+            <div>
+              <h5 className="mb-2.5 text-xs font-black tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                {t("userApplication.aiInterview.technicalSkills")}
+              </h5>
+              <div className="flex flex-wrap gap-2">
+                {profile.technicalSkills.map((skill, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center rounded-lg bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Soft Skills */}
+          {profile.softSkills && profile.softSkills.length > 0 && (
+            <div>
+              <h5 className="mb-2.5 text-xs font-black tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                {t("userApplication.aiInterview.softSkills")}
+              </h5>
+              <div className="flex flex-wrap gap-2">
+                {profile.softSkills.map((skill, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center rounded-lg bg-purple-50 px-3 py-1 text-xs font-bold text-purple-700 dark:bg-purple-500/10 dark:text-purple-400">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tools */}
+          {profile.tools && profile.tools.length > 0 && (
+            <div>
+              <h5 className="mb-2.5 flex items-center gap-1.5 text-xs font-black tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                <Wrench className="h-3.5 w-3.5 text-amber-500" />
+                {t("userApplication.aiInterview.tools")}
+              </h5>
+              <div className="flex flex-wrap gap-2">
+                {profile.tools.map((tool, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center rounded-lg bg-orange-50 px-3 py-1 text-xs font-bold text-orange-700 dark:bg-orange-500/10 dark:text-orange-400">
+                    {tool}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Projects Section */}
+      {profile.projects && profile.projects.length > 0 && (
+        <Card className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/60">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-4 dark:border-slate-800">
+            <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            <h4 className="text-base font-extrabold text-slate-950 dark:text-white">
+              {t("userApplication.aiInterview.projects")} ({profile.projects.length})
+            </h4>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {profile.projects.map((proj, idx) => (
+              <div
+                key={idx}
+                className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 transition-all hover:border-indigo-200 dark:border-slate-800 dark:bg-slate-950/30 dark:hover:border-indigo-900/60">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h5 className="text-base font-extrabold text-slate-900 dark:text-white">
+                      {proj.name ?? `Project #${idx + 1}`}
+                    </h5>
+                    <div className="flex items-center gap-2">
+                      {proj.role && (
+                        <span className="rounded-md bg-indigo-100/80 px-2 py-0.5 text-xs font-extrabold text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-300">
+                          {proj.role}
+                        </span>
+                      )}
+                      {proj.teamSize != null && (
+                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          {t("userApplication.aiInterview.teamSize", { size: proj.teamSize })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {proj.description && (
+                    <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                      {proj.description}
+                    </p>
+                  )}
+
+                  {proj.outcome && (
+                    <div className="mt-2 flex items-start gap-1.5 text-xs text-emerald-700 dark:text-emerald-300">
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        <strong className="font-semibold">
+                          {t("userApplication.aiInterview.outcome")}:
+                        </strong>{" "}
+                        {proj.outcome}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {proj.usedTools && proj.usedTools.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-200/60 pt-3 dark:border-slate-800/60">
+                    {proj.usedTools.map((tool, tIdx) => (
+                      <span
+                        key={tIdx}
+                        className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                        {tool}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Work Experience Stream (Timeline style like /user/account) */}
+      {profile.workExperiences && profile.workExperiences.length > 0 && (
+        <Card className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/60">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-4 dark:border-slate-800">
+            <Building2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            <h4 className="text-base font-extrabold text-slate-950 dark:text-white">
+              {t("userApplication.aiInterview.workExperiences")} ({profile.workExperiences.length})
+            </h4>
+          </div>
+
+          <div className="mt-6 ml-3 space-y-6 border-l-2 border-slate-200 pl-6 dark:border-slate-800">
+            {profile.workExperiences.map((exp, idx) => (
+              <div key={idx} className="relative space-y-1">
+                <div className="absolute top-1.5 -left-[31px] h-3.5 w-3.5 rounded-full border-2 border-white bg-indigo-600 shadow-2xs dark:border-slate-900" />
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h5 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    {exp.position ?? "Position"}
+                  </h5>
+                  {exp.company && (
+                    <span className="rounded-md bg-indigo-50 px-2.5 py-0.5 text-xs font-extrabold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                      {exp.company}
+                    </span>
+                  )}
+                </div>
+                {exp.description && (
+                  <p className="mt-1.5 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                    {exp.description}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Education & Certifications Side-by-Side */}
+      <div className="grid gap-6 sm:grid-cols-2">
+        {profile.educations && profile.educations.length > 0 && (
+          <Card className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/60">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3.5 dark:border-slate-800">
+              <GraduationCap className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              <h4 className="text-base font-extrabold text-slate-950 dark:text-white">
+                {t("userApplication.aiInterview.educations")}
+              </h4>
+            </div>
+            <div className="mt-4 space-y-3">
+              {profile.educations.map((edu, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 text-xs dark:border-slate-800 dark:bg-slate-950/30">
+                  <p className="text-sm font-extrabold text-slate-900 dark:text-white">
+                    {edu.school ?? "University"}
+                  </p>
+                  <p className="mt-1 text-slate-600 dark:text-slate-300">
+                    {edu.major} {edu.degree ? `• ${edu.degree}` : ""}
+                  </p>
+                  {edu.gpa && (
+                    <p className="mt-1.5 font-bold text-indigo-600 dark:text-indigo-400">
+                      GPA: {edu.gpa}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {profile.certifications && profile.certifications.length > 0 && (
+          <Card className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/60">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3.5 dark:border-slate-800">
+              <Award className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              <h4 className="text-base font-extrabold text-slate-950 dark:text-white">
+                {t("userApplication.aiInterview.certifications")}
+              </h4>
+            </div>
+            <div className="mt-4 space-y-2">
+              {profile.certifications.map((cert, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 text-xs font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-200">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  <span>{cert}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+type QuestionFilter = "ALL" | "HIGH" | "IMPROVE" | "BLUEPRINT" | "FOLLOW_UP";
+
+function parseSuggestionText(suggestionStr?: string | null) {
+  if (!suggestionStr) return null;
+
+  let keywords: string[] = [];
+  let structure: string[] = [];
+  let seniorTip: string | null = null;
+  const rawContent = suggestionStr;
+
+  // Extract Keywords: ...
+  const keywordsMatch = suggestionStr.match(/Keywords:\s*([^\n]+)/i);
+  if (keywordsMatch) {
+    keywords = keywordsMatch[1]
+      .split(/[,;\n]+/)
+      .map((k) => k.trim())
+      .filter((k) => k.length > 0);
+  }
+
+  // Extract Senior Tip: ...
+  const tipMatch = suggestionStr.match(/Senior Tip:\s*([^\n]+)/i);
+  if (tipMatch) {
+    seniorTip = tipMatch[1].trim();
+  }
+
+  // Extract Structure: ...
+  const structMatch = suggestionStr.match(/Structure:\s*([\s\S]*?)(?=Senior Tip:|$)/i);
+  if (structMatch) {
+    structure = structMatch[1]
+      .split("\n")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !s.toLowerCase().startsWith("keywords:"));
+  }
+
+  return { keywords, structureSteps: structure, seniorTip, rawContent };
+}
+
+interface QuestionCluster {
+  id: number;
+  mainQuestion: components["schemas"]["QAResult"];
+  followups: components["schemas"]["QAResult"][];
+  allQuestions: components["schemas"]["QAResult"][];
+  avgScore: number;
+}
+
+function AiInterviewQuestionsTab({
+  questions = [],
+}: {
+  questions?: components["schemas"]["QAResult"][];
+}) {
+  const { t } = useTranslation();
+  const [filter, setFilter] = useState<QuestionFilter>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedClusterIds, setExpandedClusterIds] = useState<Record<number, boolean>>({});
+  const [allExpanded, setAllExpanded] = useState(false);
+
+  // Group questions into Topic Clusters (Blueprint Question + Follow-ups)
+  const clusters = useMemo(() => {
+    const list: QuestionCluster[] = [];
+    let activeCluster: QuestionCluster | null = null;
+
+    questions.forEach((q) => {
+      const isBlueprint = !q.questionType || q.questionType.toUpperCase() === "BLUEPRINT";
+
+      if (isBlueprint || !activeCluster) {
+        if (activeCluster) {
+          const total = activeCluster.allQuestions.reduce(
+            (acc, item) => acc + (item.score ?? 0),
+            0
+          );
+          activeCluster.avgScore = total / activeCluster.allQuestions.length;
+          list.push(activeCluster);
+        }
+        activeCluster = {
+          id: list.length + 1,
+          mainQuestion: q,
+          followups: [],
+          allQuestions: [q],
+          avgScore: q.score ?? 0,
+        };
+      } else {
+        activeCluster.followups.push(q);
+        activeCluster.allQuestions.push(q);
+      }
+    });
+
+    if (activeCluster) {
+      const total = (activeCluster as QuestionCluster).allQuestions.reduce(
+        (acc, item) => acc + (item.score ?? 0),
+        0
+      );
+      (activeCluster as QuestionCluster).avgScore =
+        total / (activeCluster as QuestionCluster).allQuestions.length;
+      list.push(activeCluster);
+    }
+
+    return list;
+  }, [questions]);
+
+  const toggleExpandCluster = (clusterId: number) => {
+    setExpandedClusterIds((prev) => ({
+      ...prev,
+      [clusterId]: prev[clusterId] !== undefined ? !prev[clusterId] : true,
+    }));
+  };
+
+  const handleToggleExpandAll = () => {
+    const nextState = !allExpanded;
+    setAllExpanded(nextState);
+    const newExpanded: Record<number, boolean> = {};
+    clusters.forEach((c) => {
+      newExpanded[c.id] = nextState;
+    });
+    setExpandedClusterIds(newExpanded);
+  };
+
+  const highCount = useMemo(() => questions.filter((q) => (q.score ?? 0) >= 7).length, [questions]);
+  const improveCount = useMemo(
+    () => questions.filter((q) => (q.score ?? 0) < 7).length,
+    [questions]
+  );
+  const blueprintCount = useMemo(
+    () =>
+      questions.filter((q) => !q.questionType || q.questionType.toUpperCase() === "BLUEPRINT")
+        .length,
+    [questions]
+  );
+  const followupCount = useMemo(
+    () =>
+      questions.filter((q) => q.questionType && q.questionType.toUpperCase() === "FOLLOW_UP")
+        .length,
+    [questions]
+  );
+
+  const filteredClusters = useMemo(() => {
+    return clusters.filter((cluster) => {
+      // Category filter check against questions in cluster
+      let matchesFilter = true;
+      if (filter === "HIGH") matchesFilter = cluster.allQuestions.some((q) => (q.score ?? 0) >= 7);
+      else if (filter === "IMPROVE")
+        matchesFilter = cluster.allQuestions.some((q) => (q.score ?? 0) < 7);
+      else if (filter === "BLUEPRINT") matchesFilter = true;
+      else if (filter === "FOLLOW_UP") matchesFilter = cluster.followups.length > 0;
+
+      if (!matchesFilter) return false;
+
+      // Search query filter
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return cluster.allQuestions.some((q) => {
+        const qText = (q.questionText ?? "").toLowerCase();
+        const aText = (q.answerText ?? "").toLowerCase();
+        const fText = (q.feedback ?? "").toLowerCase();
+        const sText = (q.suggestion ?? "").toLowerCase();
+        return (
+          qText.includes(query) ||
+          aText.includes(query) ||
+          fText.includes(query) ||
+          sText.includes(query)
+        );
+      });
+    });
+  }, [clusters, filter, searchQuery]);
+
+  return (
+    <div className="space-y-5">
+      {/* Top Search & Filter Toolbar */}
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800/80 dark:bg-slate-900/60">
+        {/* Search Input & Expand All Toggle */}
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative flex-1">
+            <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Tìm kiếm theo chủ đề, câu hỏi, câu trả lời, từ khóa..."
+              value={searchQuery}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+              className="h-9 w-full rounded-xl border-slate-200 bg-slate-50/50 pr-9 pl-10 text-xs shadow-none transition-all placeholder:text-slate-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-950/50 dark:focus:bg-slate-950"
+            />
+            {searchQuery.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Xóa nội dung tìm kiếm"
+                className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={handleToggleExpandAll}
+            className="flex h-9 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-xs font-bold text-slate-700 transition-all hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800">
+            {allExpanded ? (
+              <>
+                <Minimize2 className="h-3.5 w-3.5 text-slate-500" />
+                <span>Thu gọn tất cả</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="h-3.5 w-3.5 text-indigo-500" />
+                <span>Mở tất cả ({clusters.length} chủ đề)</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Category Pills */}
+        <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800/60">
+          <button
+            type="button"
+            onClick={() => setFilter("ALL")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
+              filter === "ALL"
+                ? "bg-indigo-600 text-white shadow-xs"
+                : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
+            )}>
+            <span>Tất cả ({questions.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("HIGH")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none",
+              filter === "HIGH"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
+            )}>
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span>Điểm cao ({highCount})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("IMPROVE")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none",
+              filter === "IMPROVE"
+                ? "bg-amber-600 text-white shadow-xs"
+                : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
+            )}>
+            <span className="h-2 w-2 rounded-full bg-amber-500" />
+            <span>Cần cải thiện ({improveCount})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("BLUEPRINT")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
+              filter === "BLUEPRINT"
+                ? "bg-indigo-600 text-white shadow-xs"
+                : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
+            )}>
+            <span>Câu chính (JD) ({blueprintCount})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("FOLLOW_UP")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none",
+              filter === "FOLLOW_UP"
+                ? "bg-purple-600 text-white shadow-xs"
+                : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
+            )}>
+            <span>Câu hỏi bồi ({followupCount})</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Clustered Topic Stream (Single Surface Executive Timeline) */}
+      {filteredClusters.length === 0 ? (
+        <div className="flex h-56 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900/40">
+          <HelpCircle className="h-9 w-9 text-slate-400" />
+          <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+            {searchQuery
+              ? `Không tìm thấy chủ đề phỏng vấn nào phù hợp với từ khóa "${searchQuery}"`
+              : t("userApplication.aiInterview.noQuestionsFound")}
+          </p>
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="mt-1 rounded-xl bg-indigo-50 px-3.5 py-1.5 text-xs font-extrabold text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400">
+              Xóa từ khóa tìm kiếm
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3.5">
+          {filteredClusters.map((cluster) => {
+            const mainQ = cluster.mainQuestion;
+            const isExpanded = expandedClusterIds[cluster.id] ?? allExpanded;
+            const avgScore = cluster.avgScore;
+
+            const scoreBadgeClass =
+              avgScore >= 8
+                ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800/80 dark:bg-emerald-950/40 dark:text-emerald-300"
+                : avgScore >= 6
+                  ? "border-indigo-300 bg-indigo-50 text-indigo-800 dark:border-indigo-800/80 dark:bg-indigo-950/40 dark:text-indigo-300"
+                  : avgScore >= 4
+                    ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-300"
+                    : "border-rose-300 bg-rose-50 text-rose-800 dark:border-rose-800/80 dark:bg-rose-950/40 dark:text-rose-300";
+
+            return (
+              <Card
+                key={cluster.id}
+                className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs transition-all dark:border-slate-800/80 dark:bg-slate-900/60">
+                {/* WAI-ARIA Accessible Cluster Button Header (No nested buttons!) */}
+                <button
+                  type="button"
+                  aria-expanded={isExpanded}
+                  onClick={() => toggleExpandCluster(cluster.id)}
+                  className="flex w-full items-start justify-between gap-4 p-4 text-left transition-colors hover:bg-slate-50/80 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none sm:p-5 dark:hover:bg-slate-800/40">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 font-mono text-sm font-black text-indigo-700 shadow-2xs dark:border-indigo-900/60 dark:bg-indigo-950/50 dark:text-indigo-300">
+                      #{cluster.id}
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-md bg-indigo-100/90 px-2.5 py-0.5 text-xs font-black text-indigo-800 uppercase dark:bg-indigo-950/80 dark:text-indigo-300">
+                          Chủ đề phỏng vấn #{cluster.id}
+                        </span>
+                        {cluster.followups.length > 0 && (
+                          <span className="rounded-md bg-purple-100/90 px-2.5 py-0.5 text-xs font-bold text-purple-800 dark:bg-purple-950/80 dark:text-purple-300">
+                            +{cluster.followups.length} câu hỏi bồi
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-base leading-snug font-black text-slate-900 dark:text-white">
+                        {mainQ.questionText}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-3">
+                    <div
+                      className={cn(
+                        "flex items-center gap-1 rounded-xl border px-3.5 py-1.5 text-sm font-black shadow-2xs",
+                        scoreBadgeClass
+                      )}>
+                      <span>{avgScore.toFixed(1)}</span>
+                      <span className="text-xs opacity-75">/10</span>
+                    </div>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400">
+                      {isExpanded ? (
+                        <ChevronUp className="h-5 w-5" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5" />
+                      )}
+                    </div>
+                  </div>
+                </button>
+
+                {/* Expanded Cluster Stream: Borderless Flat Single-Surface Timeline (Zero Card-in-Card Nesting!) */}
+                {isExpanded && (
+                  <div className="border-t border-slate-100 bg-slate-50/30 p-4 sm:p-6 dark:border-slate-800/80 dark:bg-slate-950/20">
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                      {/* Left Column (60% Width): Flat Transcript Dialogue Timeline */}
+                      <div className="space-y-5 lg:col-span-7">
+                        <div className="flex items-center gap-2 border-b border-slate-200/80 pb-2.5 text-sm font-black tracking-wider text-slate-800 uppercase dark:border-slate-800 dark:text-slate-200">
+                          <MessageSquare className="h-4 w-4 text-indigo-500" />
+                          <span>Nội dung phỏng vấn</span>
+                        </div>
+
+                        {/* Main Question Candidate Answer (Main question text is already in Card Header!) */}
+                        <div className="space-y-1.5 border-l-2 border-indigo-500/80 py-0.5 pl-4">
+                          <div className="flex items-center justify-between text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                            <span className="flex items-center gap-1.5">
+                              <Mic className="h-4 w-4 text-indigo-500" /> Trả lời của ứng viên (Câu
+                              chính #{mainQ.questionOrder ?? 1}):
+                            </span>
+                            <span className="text-xs font-bold text-slate-400">Ứng viên</span>
+                          </div>
+                          <p className="text-sm leading-relaxed text-slate-800 italic dark:text-slate-200">
+                            "{mainQ.answerText || t("userApplication.aiInterview.noDataYet")}"
+                          </p>
+                        </div>
+
+                        {/* Follow-up Questions & Answers Thread (Flat Indented Stream) */}
+                        {cluster.followups.length > 0 && (
+                          <div className="space-y-5 border-t border-slate-200/60 pt-3 dark:border-slate-800/60">
+                            {cluster.followups.map((subQ, subIdx) => (
+                              <div key={subQ.questionOrder ?? subIdx} className="space-y-3">
+                                {/* Follow-up Question */}
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-1.5 text-xs font-extrabold text-purple-700 dark:text-purple-300">
+                                    <HelpCircle className="h-4 w-4 text-purple-600" />
+                                    <span>
+                                      Hỏi bồi #{subQ.questionOrder ?? subIdx + 2} (AI Interviewer):
+                                    </span>
+                                  </div>
+                                  <p className="text-sm leading-relaxed font-bold text-purple-950 dark:text-purple-100">
+                                    {subQ.questionText}
+                                  </p>
+                                </div>
+
+                                {/* Follow-up Answer */}
+                                <div className="space-y-1.5 border-l-2 border-purple-500/80 py-0.5 pl-4">
+                                  <div className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                                    Trả lời hỏi bồi:
+                                  </div>
+                                  <p className="text-sm leading-relaxed text-slate-800 italic dark:text-slate-200">
+                                    "{subQ.answerText || t("userApplication.aiInterview.noDataYet")}
+                                    "
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right Column (40% Width): Flat Executive AI Evaluation Report */}
+                      <div className="space-y-5 lg:col-span-5">
+                        <div className="flex items-center gap-2 border-b border-slate-200/80 pb-2.5 text-sm font-black tracking-wider text-slate-800 uppercase dark:border-slate-800 dark:text-slate-200">
+                          <Bot className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                          <span>Đánh giá & Gợi ý từ AI</span>
+                        </div>
+
+                        {cluster.allQuestions.map((q, qIdx) => {
+                          const parsedSuggestion = parseSuggestionText(q.suggestion);
+                          if (
+                            !q.feedback &&
+                            !parsedSuggestion &&
+                            (!q.behavioralWarnings || q.behavioralWarnings.length === 0)
+                          ) {
+                            return null;
+                          }
+
+                          return (
+                            <div key={qIdx} className="space-y-4">
+                              {/* AI Feedback */}
+                              {q.feedback && (
+                                <div className="space-y-1.5 border-l-2 border-indigo-500 py-0.5 pl-4">
+                                  <div className="flex items-center gap-1.5 text-xs font-extrabold text-indigo-900 dark:text-indigo-300">
+                                    <Bot className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                    <span>
+                                      {t("userApplication.aiInterview.aiFeedbackCritique")}{" "}
+                                      {cluster.allQuestions.length > 1
+                                        ? `(Câu #${q.questionOrder ?? qIdx + 1})`
+                                        : ""}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+                                    {q.feedback}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Suggestions & Senior Tips */}
+                              {parsedSuggestion && (
+                                <div className="space-y-3.5 pt-1">
+                                  {/* Keywords */}
+                                  {parsedSuggestion.keywords.length > 0 && (
+                                    <div className="space-y-1.5">
+                                      <span className="flex items-center gap-1 text-xs font-extrabold tracking-wider text-amber-900 uppercase dark:text-amber-300">
+                                        <Tag className="h-3.5 w-3.5 text-amber-500" /> Từ khóa trọng
+                                        tâm:
+                                      </span>
+                                      <div className="flex flex-wrap items-center gap-1.5">
+                                        {parsedSuggestion.keywords.map((kw, kwIdx) => (
+                                          <span
+                                            key={kwIdx}
+                                            className="inline-flex items-center rounded-md bg-amber-500/15 px-2.5 py-1 text-xs font-bold text-amber-900 dark:bg-amber-500/25 dark:text-amber-200">
+                                            #{kw}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Structure steps */}
+                                  {parsedSuggestion.structureSteps.length > 0 && (
+                                    <div className="space-y-1.5 border-l-2 border-slate-300 py-0.5 pl-4 dark:border-slate-700">
+                                      <span className="flex items-center gap-1 text-xs font-extrabold text-slate-900 dark:text-slate-100">
+                                        <Lightbulb className="h-4 w-4 text-amber-500" /> Dàn ý trả
+                                        lời chuẩn:
+                                      </span>
+                                      <div className="space-y-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                                        {parsedSuggestion.structureSteps.map((step, sIdx) => (
+                                          <div key={sIdx} className="leading-relaxed">
+                                            {step}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Senior Tip (Flat Highlight Bar) */}
+                                  {parsedSuggestion.seniorTip && (
+                                    <div className="flex items-start gap-2.5 rounded-r-xl border-l-2 border-amber-500 bg-amber-500/10 p-3.5 text-sm text-amber-950 dark:bg-amber-500/15 dark:text-amber-200">
+                                      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                                      <div>
+                                        <span className="font-extrabold">Senior Tip: </span>
+                                        {parsedSuggestion.seniorTip}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Behavioral warnings */}
+                              {q.behavioralWarnings && q.behavioralWarnings.length > 0 && (
+                                <div className="rounded-r-xl border-l-2 border-rose-500 bg-rose-500/10 p-3.5">
+                                  <div className="flex items-center gap-2 text-xs font-extrabold text-rose-900 dark:text-rose-300">
+                                    <ShieldAlert className="h-4 w-4 text-rose-600" />
+                                    <span>
+                                      {t("userApplication.aiInterview.behavioralWarnings")}
+                                    </span>
+                                  </div>
+                                  <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm font-medium text-rose-800 dark:text-rose-200">
+                                    {q.behavioralWarnings.map((w, wIdx) => (
+                                      <li key={wIdx}>{w}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AiInterviewResultView({
+  detail,
+}: {
+  detail?: ApplicationDetail;
+  round: JdRound;
+  jdInfo?: JdInfoPayload | null;
+  onSuccess?: () => void;
+}) {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<"OVERVIEW" | "QUESTIONS" | "PROFILE">("OVERVIEW");
+  const [showAllKeywords, setShowAllKeywords] = useState(false);
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const rawDetail = detail as any;
+  const directSessionId =
+    detail?.aiInterviewSessionId ??
+    detail?.sessionId ??
+    rawDetail?.sessionInfo?.sessionId ??
+    rawDetail?.sessionInfo?.id ??
+    rawDetail?.submissionData?.aiInterviewSessionId ??
+    rawDetail?.submissionData?.sessionId ??
+    rawDetail?.submissionData?.id ??
+    0;
+
+  const currentUserId = useAuthStore((s) => s.user?.id) ?? 0;
+  const { data: userSessionsRaw } = useInterviewSessionsByUser(
+    currentUserId,
+    directSessionId === 0 && currentUserId > 0
+  );
+
+  const matchedSessionFromUser = useMemo(() => {
+    if (directSessionId > 0) return null;
+    const userSessions = Array.isArray(userSessionsRaw)
+      ? userSessionsRaw
+      : Array.isArray((userSessionsRaw as any)?.data)
+        ? (userSessionsRaw as any).data
+        : [];
+    if (userSessions.length === 0) return null;
+    return (
+      userSessions.find(
+        (s: any) =>
+          s.applicationDetailId === detail?.id ||
+          (detail?.applicationId && s.candidateProfile?.applicationId === detail.applicationId)
+      ) ?? null
+    );
+  }, [directSessionId, userSessionsRaw, detail]);
+
+  const effectiveSessionId =
+    directSessionId > 0 ? directSessionId : (matchedSessionFromUser?.id ?? 0);
+
+  const { data: fetchedSessionData, isLoading: sessionLoading } = useInterviewSession(
+    effectiveSessionId,
+    effectiveSessionId > 0
+  );
+
+  const sessionData = fetchedSessionData ?? matchedSessionFromUser;
+
+  const rawAiScore = sessionData?.overallScore ?? detail?.aiScore ?? detail?.finalScore;
+  const aiScoreVal = rawAiScore != null ? rawAiScore : null;
+  const aiScorePercent =
+    aiScoreVal != null
+      ? aiScoreVal <= 10
+        ? Math.min(100, Math.max(0, aiScoreVal * 10))
+        : Math.min(100, Math.max(0, aiScoreVal))
+      : 0;
+  const aiScoreDisplay =
+    aiScoreVal != null
+      ? aiScoreVal <= 10
+        ? `${aiScoreVal.toFixed(1)}/10`
+        : `${Math.round(aiScoreVal)}/100`
+      : "--";
+
+  const hrScoreVal = detail?.hrScore ?? null;
+  const hasHrScore = hrScoreVal != null && hrScoreVal > 0;
+  const hrScorePercent =
+    hrScoreVal != null
+      ? hrScoreVal <= 10
+        ? Math.min(100, Math.max(0, hrScoreVal * 10))
+        : Math.min(100, Math.max(0, hrScoreVal))
+      : 0;
+  const hrScoreDisplay =
+    hrScoreVal != null
+      ? hrScoreVal <= 10
+        ? `${hrScoreVal.toFixed(1)}/10`
+        : `${Math.round(hrScoreVal)}/100`
+      : t("userApplication.aiInterview.notGraded");
+
+  const resultVerdict = sessionData?.result ?? "REJECT";
+  const verdictBadge = useMemo(() => {
+    switch (resultVerdict) {
+      case "STRONG_HIRE":
+        return {
+          label: t("userApplication.aiInterview.verdictStrongHire"),
+          desc: t("userApplication.aiInterview.verdictStrongHireDesc"),
+          style:
+            "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800/80 dark:bg-emerald-950/40 dark:text-emerald-300",
+          icon: <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />,
+        };
+      case "HIRE":
+        return {
+          label: t("userApplication.aiInterview.verdictHire"),
+          desc: t("userApplication.aiInterview.verdictHireDesc"),
+          style:
+            "border-indigo-300 bg-indigo-50 text-indigo-800 dark:border-indigo-800/80 dark:bg-indigo-950/40 dark:text-indigo-300",
+          icon: <CheckCircle2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />,
+        };
+      case "CONSIDER":
+        return {
+          label: t("userApplication.aiInterview.verdictConsider"),
+          desc: t("userApplication.aiInterview.verdictConsiderDesc"),
+          style:
+            "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-300",
+          icon: <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />,
+        };
+      case "REJECT":
+      default:
+        return {
+          label: t("userApplication.aiInterview.verdictReject"),
+          desc: t("userApplication.aiInterview.verdictRejectDesc"),
+          style:
+            "border-rose-300 bg-rose-50 text-rose-800 dark:border-rose-800/80 dark:bg-rose-950/40 dark:text-rose-300",
+          icon: <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />,
+        };
+    }
+  }, [resultVerdict, t]);
+
+  const parsedResultDetail = useMemo(() => {
+    const raw = sessionData?.resultDetail;
+    if (!raw) return null;
+    if (typeof raw === "string") {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    }
+    return raw;
+  }, [sessionData?.resultDetail]);
+
+  const questions = parsedResultDetail?.history ?? [];
+  const candidateProfile = sessionData?.candidateProfile ?? null;
+
+  const completedStart =
+    sessionData?.createdAt ?? detail?.sessionInfo?.startTime ?? detail?.startedAt;
+  const completedEnd =
+    sessionData?.completedAt ?? detail?.sessionInfo?.endTime ?? detail?.completedAt;
+
+  const sessionDurationText = useMemo(() => {
+    if (!completedStart || !completedEnd) return null;
+    const startMs = new Date(completedStart).getTime();
+    const endMs = new Date(completedEnd).getTime();
+    if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs <= startMs) return null;
+    const diffSec = Math.round((endMs - startMs) / 1000);
+    const mins = Math.floor(diffSec / 60);
+    const secs = diffSec % 60;
+    return `${mins}m ${secs}s`;
+  }, [completedStart, completedEnd]);
+
+  const allExtractedKeywords = useMemo(() => {
+    const set = new Set<string>();
+    questions.forEach((q: components["schemas"]["QAResult"]) => {
+      const parsed = parseSuggestionText(q.suggestion);
+      parsed?.keywords.forEach((k) => set.add(k));
+    });
+    return Array.from(set);
+  }, [questions]);
+
+  const competencyMetrics = useMemo(() => {
+    if (questions.length === 0) return [];
+
+    const coreQs = questions.filter(
+      (q: components["schemas"]["QAResult"]) =>
+        !q.questionType || q.questionType.toUpperCase() === "BLUEPRINT"
+    );
+    const coreAvg =
+      coreQs.length > 0
+        ? coreQs.reduce(
+            (acc: number, q: components["schemas"]["QAResult"]) => acc + (q.score ?? 0),
+            0
+          ) / coreQs.length
+        : (aiScoreVal ?? 0);
+
+    const followQs = questions.filter(
+      (q: components["schemas"]["QAResult"]) =>
+        q.questionType && q.questionType.toUpperCase() === "FOLLOW_UP"
+    );
+    const followAvg =
+      followQs.length > 0
+        ? followQs.reduce(
+            (acc: number, q: components["schemas"]["QAResult"]) => acc + (q.score ?? 0),
+            0
+          ) / followQs.length
+        : coreAvg;
+
+    const highScores = questions.filter(
+      (q: components["schemas"]["QAResult"]) => (q.score ?? 0) >= 6
+    ).length;
+    const termAccuracy = Math.round((highScores / questions.length) * 100);
+
+    const hasWarnings = questions.some(
+      (q: components["schemas"]["QAResult"]) =>
+        q.behavioralWarnings && q.behavioralWarnings.length > 0
+    );
+    const commScore = Math.min(
+      100,
+      Math.max(20, Math.round(coreAvg * 10 - (hasWarnings ? 15 : 0)))
+    );
+
+    return [
+      {
+        label: "Kỹ năng Chuyên môn cốt lõi (Technical Core)",
+        score: Math.round(coreAvg * 10),
+        color: "bg-indigo-600",
+      },
+      {
+        label: "Tư duy Phản biện & Đào sâu (Problem Solving)",
+        score: Math.round(followAvg * 10),
+        color: "bg-purple-600",
+      },
+      {
+        label: "Độ chính xác thuật ngữ (Terminology)",
+        score: termAccuracy,
+        color: "bg-emerald-600",
+      },
+      { label: "Phong thái & Giao tiếp (Communication)", score: commScore, color: "bg-amber-600" },
+    ];
+  }, [questions, aiScoreVal]);
+
+  if (sessionLoading) {
+    return (
+      <Card className="flex flex-col items-center justify-center rounded-[20px] border border-slate-200 bg-white p-12 text-center shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+        <p className="mt-4 text-sm font-bold text-slate-700 dark:text-slate-300">
+          {t("userApplication.aiInterview.loadingSessionData")}
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "grid items-start gap-6",
+        activeTab === "QUESTIONS"
+          ? "grid-cols-1"
+          : "xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.65fr)]"
+      )}>
+      {/* Main Content Area (Tabs) */}
+      <div className="space-y-5">
+        {/* Navigation Tab Bar */}
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-xs dark:border-slate-800 dark:bg-slate-900/60">
+          <button
+            type="button"
+            onClick={() => setActiveTab("OVERVIEW")}
+            className={cn(
+              "flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-extrabold transition-all",
+              activeTab === "OVERVIEW"
+                ? "bg-indigo-600 text-white shadow-xs"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            )}>
+            <Sparkles className="h-4 w-4" />
+            {t("userApplication.aiInterview.tabOverview")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("QUESTIONS")}
+            className={cn(
+              "flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-extrabold transition-all",
+              activeTab === "QUESTIONS"
+                ? "bg-indigo-600 text-white shadow-xs"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            )}>
+            <MessageSquare className="h-4 w-4" />
+            {t("userApplication.aiInterview.tabQuestions")} ({questions.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("PROFILE")}
+            className={cn(
+              "flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-extrabold transition-all",
+              activeTab === "PROFILE"
+                ? "bg-indigo-600 text-white shadow-xs"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            )}>
+            <User className="h-4 w-4" />
+            {t("userApplication.aiInterview.tabProfile")}
+          </button>
+        </div>
+
+        {/* Tab 1: OVERVIEW */}
+        {activeTab === "OVERVIEW" && (
+          <div className="space-y-5">
+            {/* Quick Session Stats Bar */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <Card className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/60">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <Clock3 className="h-4 w-4 text-indigo-500" />
+                  <span className="text-[11px] font-bold">Thời lượng</span>
+                </div>
+                <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
+                  {sessionDurationText || "15 phút"}
+                </p>
+              </Card>
+
+              <Card className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/60">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <MessageSquare className="h-4 w-4 text-purple-500" />
+                  <span className="text-[11px] font-bold">Tổng số câu</span>
+                </div>
+                <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
+                  {questions.length} câu hỏi
+                </p>
+              </Card>
+
+              <Card className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/60">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <SlidersHorizontal className="h-4 w-4 text-emerald-500" />
+                  <span className="text-[11px] font-bold">Chiến thuật</span>
+                </div>
+                <p className="mt-1 truncate text-xs font-extrabold text-slate-900 dark:text-white">
+                  {sessionData?.mode || "STANDARD_MOCK"}
+                </p>
+              </Card>
+
+              <Card className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/60">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <Tag className="h-4 w-4 text-amber-500" />
+                  <span className="text-[11px] font-bold">Từ khóa cốt lõi</span>
+                </div>
+                <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
+                  {allExtractedKeywords.length} thuật ngữ
+                </p>
+              </Card>
+            </div>
+
+            {/* Competency Progress Bars (Competency Breakdown) */}
+            {competencyMetrics.length > 0 && (
+              <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800/80 dark:bg-slate-900/60">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white">
+                      <Award className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
+                        Phân tích Chỉ số Năng lực Đa chiều
+                      </h4>
+                      <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                        Đánh giá chi tiết dựa trên nội dung & phong thái trả lời
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-3.5">
+                  {competencyMetrics.map((item, idx) => (
+                    <div key={idx} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-200">
+                        <span>{item.label}</span>
+                        <span className="font-extrabold text-slate-900 dark:text-white">
+                          {item.score}%
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all duration-500",
+                            item.color
+                          )}
+                          style={{ width: `${Math.min(100, Math.max(5, item.score))}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {/* Extracted Tech Keywords Cloud */}
+            {allExtractedKeywords.length > 0 && (
+              <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900/60">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
+                      Bộ Từ khóa Công nghệ Trích xuất ({allExtractedKeywords.length})
+                    </h4>
+                  </div>
+                  {allExtractedKeywords.length > 12 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllKeywords((prev) => !prev)}
+                      className="text-xs font-bold text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+                      {showAllKeywords ? "Thu gọn" : `Xem tất cả (${allExtractedKeywords.length})`}
+                    </button>
+                  )}
+                </div>
+                <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
+                  {(showAllKeywords ? allExtractedKeywords : allExtractedKeywords.slice(0, 12)).map(
+                    (kw, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center rounded-xl border border-slate-200/90 bg-slate-100/80 px-2.5 py-1 text-xs font-bold text-slate-800 shadow-2xs dark:border-slate-700/60 dark:bg-slate-800/60 dark:text-slate-200">
+                        #{kw}
+                      </span>
+                    )
+                  )}
+                </div>
+              </Card>
+            )}
+
+            {/* AI Executive Summary Card */}
+            <Card className="relative overflow-hidden rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 via-white to-purple-50/30 p-5 shadow-xs sm:p-6 dark:border-indigo-900/60 dark:from-indigo-950/20 dark:via-slate-900 dark:to-purple-950/10">
+              <div className="flex items-center gap-2.5 border-b border-indigo-100/80 pb-3.5 dark:border-indigo-900/50">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs shadow-indigo-200 dark:shadow-none">
+                  <Bot className="h-4 w-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
+                    {t("userApplication.aiInterview.aiOverviewReport")}
+                  </h4>
+                  <p className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+                    INBLUE AI Evaluator
+                  </p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                {parsedResultDetail?.aiOverviewFeedback ||
+                  parsedResultDetail?.ai_overview_feedback ||
+                  (typeof detail?.aiFeedback === "string"
+                    ? detail.aiFeedback
+                    : detail?.aiFeedback?.generalComment) ||
+                  t("userApplication.aiInterview.noDataYet")}
+              </p>
+            </Card>
+
+            {/* Improvement Plan Card */}
+            {(parsedResultDetail?.improvementPlan || parsedResultDetail?.improvement_plan) && (
+              <Card className="rounded-2xl border border-amber-200/80 bg-amber-50/30 p-5 shadow-xs sm:p-6 dark:border-amber-900/60 dark:bg-amber-950/15">
+                <div className="flex items-center gap-2.5 border-b border-amber-200/60 pb-3.5 dark:border-amber-900/50">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-white">
+                    <TrendingUp className="h-4 w-4" />
+                  </div>
+                  <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
+                    {t("userApplication.aiInterview.improvementPlan")}
+                  </h4>
+                </div>
+                <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                  {parsedResultDetail?.improvementPlan || parsedResultDetail?.improvement_plan}
+                </p>
+              </Card>
+            )}
+
+            {/* HR Direct Evaluation Card */}
+            <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900/90">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+                    <UserCheck className="h-4 w-4" />
+                  </div>
+                  <h4 className="text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-white">
+                    {t("userApplication.aiInterview.hrDirectComment")}
+                  </h4>
+                </div>
+              </div>
+
+              {detail?.hrNote ? (
+                <div className="rounded-xl border-l-2 border-emerald-500 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 italic dark:bg-slate-950/60 dark:text-slate-200">
+                  "{detail.hrNote}"
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">
+                  {t("userApplication.cvScreening.noHrNote", "Chưa có ghi chú đánh giá từ HR.")}
+                </p>
+              )}
+            </Card>
+
+            {/* Blueprint Strategy Analysis Card */}
+            {sessionData?.blueprint?.strategy_analysis && (
+              <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+                <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3.5 dark:border-slate-800">
+                  <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
+                    {t("userApplication.aiInterview.strategyAnalysis")}
+                  </h4>
+                </div>
+                <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                  {sessionData.blueprint.strategy_analysis}
+                </p>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Tab 2: QUESTIONS */}
+        {activeTab === "QUESTIONS" && <AiInterviewQuestionsTab questions={questions} />}
+
+        {/* Tab 3: PROFILE SNAPSHOT */}
+        {activeTab === "PROFILE" && <CandidateProfileSnapshotView profile={candidateProfile} />}
+      </div>
+
+      {/* Right Sidebar: Scores, Verdict, Metadata (Visible on OVERVIEW and PROFILE tabs) */}
+      {activeTab !== "QUESTIONS" && (
+        <aside className="space-y-4 xl:sticky xl:top-24">
+          {/* Card 1: Dual Scores */}
+          <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
+                  {t("userApplication.aiInterview.dualScoresTitle")}
+                </h4>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <ModernGaugeClock
+                score={aiScorePercent}
+                displayScoreText={aiScoreDisplay}
+                label={t("userApplication.aiInterview.aiScore")}
+                color="indigo"
+                hasData={aiScoreVal != null}
+              />
+              <ModernGaugeClock
+                score={hrScorePercent}
+                displayScoreText={hrScoreDisplay}
+                label={t("userApplication.aiInterview.hrScore")}
+                color="emerald"
+                hasData={hasHrScore}
+              />
+            </div>
+
+            {questions.length > 0 && (
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-xs dark:border-slate-800 dark:bg-slate-950/40">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                  <span>Tổng số câu hỏi:</span>
+                  <span className="font-extrabold text-slate-950 dark:text-white">
+                    {questions.length} câu
+                  </span>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {/* Card 2: AI Verdict */}
+          <Card className={cn("rounded-2xl border p-5 shadow-xs", verdictBadge.style)}>
+            <div className="flex items-center gap-2 text-sm font-black">
+              {verdictBadge.icon}
+              <span>{verdictBadge.label}</span>
+            </div>
+            <p className="mt-2 text-xs leading-relaxed opacity-90">{verdictBadge.desc}</p>
+          </Card>
+
+          {/* Card 3: Session Details */}
+          <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+            <h4 className="flex items-center gap-2 text-sm font-extrabold text-slate-950 dark:text-white">
+              <CalendarClock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              {t("userApplication.aiInterview.sessionDetails")}
+            </h4>
+
+            <div className="mt-3 divide-y divide-slate-100 text-xs dark:divide-slate-800">
+              <div className="flex items-center justify-between py-2">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t("userApplication.aiInterview.domain")}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {sessionData?.domain ?? "IT"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t("userApplication.aiInterview.interviewMode")}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {sessionData?.mode ?? "STANDARD_MOCK"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t("userApplication.aiInterview.difficulty")}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {sessionData?.sessionConfig?.difficulty ?? "FRESHER_BASIC"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t("userApplication.aiInterview.language")}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {sessionData?.sessionConfig?.language ?? "VI"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t("userApplication.aiInterview.duration")}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {sessionData?.sessionConfig?.duration_minutes
+                    ? `${sessionData.sessionConfig.duration_minutes} phút`
+                    : "30 phút"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t("userApplication.aiInterview.start")}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {completedStart ? formatDateTime(completedStart) : "--"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t("userApplication.aiInterview.end")}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {completedEnd ? formatDateTime(completedEnd) : "--"}
+                </span>
+              </div>
+            </div>
+          </Card>
+        </aside>
+      )}
+    </div>
+  );
+}
+
 export function AiInterviewModule({
   round,
   detail,
@@ -410,11 +2011,24 @@ export function AiInterviewModule({
   const [createdBooking, setCreatedBooking] = useState<KioskBooking | null>(null);
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
 
+  const statusStr = detail?.status as string | undefined;
+  const isCompletedEffective =
+    isCompleted ||
+    statusStr === "COMPLETED" ||
+    statusStr === "AI_EVALUATED" ||
+    statusStr === "PASSED" ||
+    statusStr === "FAILED";
+
+  const aiScore = detail?.aiScore;
+  const hrScore = detail?.hrScore;
   const finalScore = detail?.finalScore ?? detail?.aiScore;
   const applicationDetailId = detail?.id ?? null;
   const selectedDateString = useMemo(() => toYmd(selectedDate), [selectedDate]);
 
-  const bookingQuery = useKioskBookingByApplicationDetail(applicationDetailId, !isCompleted);
+  const bookingQuery = useKioskBookingByApplicationDetail(
+    applicationDetailId,
+    !isCompletedEffective
+  );
   const activeBooking = createdBooking ?? bookingQuery.data ?? null;
   const hasBookedSlot = Boolean(
     activeBooking?.id || activeBooking?.sessionKey || detail?.status === "SLOT_PICKED"
@@ -543,61 +2157,71 @@ export function AiInterviewModule({
     }
   };
 
-  const completedStart = detail?.sessionInfo?.startTime ?? detail?.startedAt;
-  const completedEnd = detail?.sessionInfo?.endTime ?? detail?.completedAt;
+  const rawDetail = detail as any;
+  const directSessionId =
+    detail?.aiInterviewSessionId ??
+    detail?.sessionId ??
+    rawDetail?.sessionInfo?.sessionId ??
+    rawDetail?.sessionInfo?.id ??
+    rawDetail?.submissionData?.aiInterviewSessionId ??
+    rawDetail?.submissionData?.sessionId ??
+    rawDetail?.submissionData?.id ??
+    0;
+
+  const currentUserId = useAuthStore((s) => s.user?.id) ?? 0;
+  const { data: userSessionsRaw } = useInterviewSessionsByUser(
+    currentUserId,
+    directSessionId === 0 && currentUserId > 0
+  );
+
+  const matchedSessionFromUser = useMemo(() => {
+    if (directSessionId > 0) return null;
+    const userSessions = Array.isArray(userSessionsRaw)
+      ? userSessionsRaw
+      : Array.isArray((userSessionsRaw as any)?.data)
+        ? (userSessionsRaw as any).data
+        : [];
+    if (userSessions.length === 0) return null;
+    return (
+      userSessions.find(
+        (s: any) =>
+          s.applicationDetailId === detail?.id ||
+          (detail?.applicationId && s.candidateProfile?.applicationId === detail.applicationId)
+      ) ?? null
+    );
+  }, [directSessionId, userSessionsRaw, detail]);
+
+  const effectiveSessionId =
+    directSessionId > 0 ? directSessionId : (matchedSessionFromUser?.id ?? 0);
+
+  const { data: fetchedSessionData } = useInterviewSession(
+    effectiveSessionId,
+    effectiveSessionId > 0
+  );
+
+  const sessionData = fetchedSessionData ?? matchedSessionFromUser;
+  const sessionResult = sessionData?.result ?? detail?.finalResult ?? null;
 
   return (
     <div className="space-y-6">
-      <AiInterviewSubheader round={round} finalScore={finalScore} isCompleted={isCompleted} />
+      <AiInterviewSubheader
+        round={round}
+        aiScore={aiScore}
+        hrScore={hrScore}
+        finalScore={finalScore}
+        isCompleted={isCompletedEffective}
+        status={detail?.status}
+        finalResult={detail?.finalResult}
+        sessionResult={sessionResult}
+      />
 
-      {isCompleted ? (
-        <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-          <div className="flex flex-col gap-5 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 dark:border-slate-800">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
-                <ShieldCheck className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-950 dark:text-white">
-                  Buổi phỏng vấn AI đã hoàn tất
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  Kết quả đã được ghi nhận vào hồ sơ ứng tuyển. Bạn có thể xem báo cáo chi tiết khi
-                  hệ thống tổng hợp xong dữ liệu đánh giá.
-                </p>
-              </div>
-            </div>
-            {finalScore != null && (
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-center dark:border-emerald-900/60 dark:bg-emerald-950/30">
-                <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
-                  Điểm AI
-                </p>
-                <p className="mt-1 text-2xl font-black text-emerald-700 dark:text-emerald-300">
-                  {finalScore}/100
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="grid gap-0 sm:grid-cols-2 lg:grid-cols-4">
-            <SummaryItem
-              icon={<CalendarClock className="h-4 w-4" />}
-              label="Bắt đầu"
-              value={completedStart ? formatDateTime(completedStart) : "Chưa có dữ liệu"}
-            />
-            <SummaryItem
-              icon={<Clock3 className="h-4 w-4" />}
-              label="Kết thúc"
-              value={completedEnd ? formatDateTime(completedEnd) : "Chưa có dữ liệu"}
-            />
-            <SummaryItem icon={<Cpu className="h-4 w-4" />} label="Hình thức" value="Kiosk AI" />
-            <SummaryItem
-              icon={<CheckCircle2 className="h-4 w-4" />}
-              label="Trạng thái"
-              value="Đã hoàn tất"
-            />
-          </div>
-        </Card>
+      {isCompletedEffective ? (
+        <AiInterviewResultView
+          detail={detail}
+          round={round}
+          jdInfo={jdInfo}
+          onSuccess={onSuccess}
+        />
       ) : (
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
           <div className="space-y-6">
