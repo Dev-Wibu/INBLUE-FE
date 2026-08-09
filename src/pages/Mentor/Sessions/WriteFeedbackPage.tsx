@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { MentorReviewForm } from "@/components/review";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import {
@@ -212,63 +212,40 @@ export function WriteFeedbackPage() {
     );
   }
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate("/mentor?tab=sessions")}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        {t("common.returnToTheSessionList")}
-      </Button>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
+      {/* Compact action bar — single line, no giant header card */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/mentor?tab=sessions")}
+          className="gap-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60">
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          {t("common.returnToTheSessionList")}
+        </Button>
+        <span className="ml-auto inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <Star className="h-3.5 w-3.5 text-amber-500" aria-hidden />
+          <span className="font-medium text-slate-700 dark:text-slate-200">
+            {isEdit ? t("mentorSessions.editReview1") : t("mentorSessions.writeReviews")}
+          </span>
+          <span className="text-slate-300 dark:text-slate-600">·</span>
+          <span>
+            {session.roomName ||
+              t("common.sessionVar0", {
+                var_0: session.id,
+              })}
+          </span>
+        </span>
+      </div>
 
-      {/* Session Info */}
-      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-              <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div>
-              <CardTitle className="text-base">
-                {t("common.student")}
-                {session.userId}
-              </CardTitle>
-              <CardDescription>
-                {session.roomName ||
-                  t("common.sessionVar0", {
-                    var_0: session.id,
-                  })}
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
-      {/* Feedback Form */}
-      <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-[#FFD700]" />
-            <CardTitle>
-              {isEdit ? t("mentorSessions.editReview1") : t("mentorSessions.writeReviews")}
-            </CardTitle>
-          </div>
-          <CardDescription>
-            {isEdit
-              ? t("mentorSessions.updateYourReviewOfThe")
-              : t("mentorSessions.evaluateStudentsAfterTheInterview")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <MentorReviewForm
-            sessionId={numericSessionId}
-            mentorId={submitterMentorId ?? 0}
-            userId={session.userId || 0}
-            existingReview={existingReview}
-            onSubmit={handleSubmit}
-            onCancel={() => navigate("/mentor?tab=sessions")}
-            isLoading={isSubmitting}
-          />
-        </CardContent>
-      </Card>
+      <MentorReviewForm
+        sessionId={numericSessionId}
+        mentorId={submitterMentorId ?? 0}
+        userId={session.userId || 0}
+        existingReview={existingReview}
+        onSubmit={handleSubmit}
+        onCancel={() => navigate("/mentor?tab=sessions")}
+        isLoading={isSubmitting}
+      />
     </div>
   );
 }

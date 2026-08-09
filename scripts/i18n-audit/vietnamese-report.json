@@ -489,7 +489,183 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1850,
+    "line": 1374,
+    "character": 13,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Các vòng chấm ("
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1387,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Vòng #"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1402,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Vòng #"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1415,
+    "character": 27,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "ĐÃ ĐẠT (PASSED)"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1415,
+    "character": 47,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "CHƯA ĐẠT (FAILED)"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1420,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "CHỜ STAFF ĐÁNH GIÁ & CHẤM ĐIỂM"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1431,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Tham chiếu AI:"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1440,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Kết Quả Đánh Giá Bài Chấm Staff"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1441,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Không Gian Đánh Giá & Chấm Điểm Staff"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1445,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Thông tin điểm số và nhận xét chi tiết đã được Staff thẩm định và ghi nhận trên hệ thống."
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1446,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Xem bài làm của ứng viên bên dưới và tiến hành nhập điểm số & nhận xét HR ở bảng bên phải."
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1455,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Ghi chú & Nhận xét của Staff:"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1467,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Đơn nộp #"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1471,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Chi tiết vòng #"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1476,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Thời gian nộp:"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1514,
+    "character": 33,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "KẾT QUẢ CHẤM"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1514,
+    "character": 50,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "ĐIỂM ĐÁNH GIÁ"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1533,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Tham chiếu AI"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1545,
+    "character": 76,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Chưa nhập điểm"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1554,
+    "character": 43,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "ĐẠT YÊU CẦU"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1554,
+    "character": 59,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "KHÔNG ĐẠT"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1554,
+    "character": 74,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "CHỜ CHẤM"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 2011,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -497,7 +673,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1855,
+    "line": 2016,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -505,7 +681,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1859,
+    "line": 2020,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -513,7 +689,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1868,
+    "line": 2029,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -521,23 +697,15 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1873,
+    "line": 2034,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Điểm số phải nằm trong khoảng từ 0 đến 100"
   },
   {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2040,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm HR (0 - 100)"
-  },
-  {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 1017,
+    "line": 1030,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -545,7 +713,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 1029,
+    "line": 1042,
     "character": 25,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -553,7 +721,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 1043,
+    "line": 1056,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "vietnamese",
@@ -561,7 +729,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 1043,
+    "line": 1056,
     "character": 35,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -673,111 +841,23 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 396,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm mạnh"
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 414,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm cần cải thiện"
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 460,
-    "character": 29,
+    "line": 768,
+    "character": 42,
     "type": "TemplateLiteral",
     "category": "vietnamese",
     "text": "Vòng"
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 548,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Vui lòng nhập điểm số"
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 553,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Điểm số phải là số hợp lệ"
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 557,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Điểm số phải nằm trong khoảng từ 0 đến 100"
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 566,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Vui lòng nhập điểm số hợp lệ từ 0 đến 100"
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 571,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Điểm số phải nằm trong khoảng từ 0 đến 100"
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1015,
-    "character": 49,
+    "line": 1287,
+    "character": 28,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Bài làm ứng viên"
   },
   {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1107,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Ứng viên"
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1165,
-    "character": 55,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Không có thông tin JD"
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1220,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Bạn có thể dùng điểm AI làm cơ sở hoặc điều chỉnh theo đánh giá của mình."
-  },
-  {
-    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1228,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Nhấp vào các nút số để điền nhanh điểm: 100, 90, 80, 70, 60, 50."
-  },
-  {
     "file": "src/pages/User/Account/AccountPage.tsx",
-    "line": 233,
+    "line": 235,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -785,7 +865,7 @@
   },
   {
     "file": "src/pages/User/Account/AccountPage.tsx",
-    "line": 246,
+    "line": 248,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -793,7 +873,7 @@
   },
   {
     "file": "src/pages/User/Account/AccountPage.tsx",
-    "line": 254,
+    "line": 256,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -801,7 +881,7 @@
   },
   {
     "file": "src/pages/User/Account/AccountPage.tsx",
-    "line": 269,
+    "line": 271,
     "character": 62,
     "type": "JsxText",
     "category": "vietnamese",
@@ -809,7 +889,7 @@
   },
   {
     "file": "src/pages/User/Account/AccountPage.tsx",
-    "line": 272,
+    "line": 274,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -817,7 +897,7 @@
   },
   {
     "file": "src/pages/User/Account/AccountPage.tsx",
-    "line": 349,
+    "line": 351,
     "character": 47,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1360,328 +1440,8 @@
     "text": "Không thể tải thông tin workspace ứng tuyển"
   },
   {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 605,
-    "character": 76,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Ngày nộp đơn:"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 611,
-    "character": 76,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tổng số vòng:"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 613,
-    "character": 39,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "vòng tuyển dụng"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 617,
-    "character": 76,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Trạng thái hồ sơ:"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 645,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Kỹ năng & Yêu cầu vị trí"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 667,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tiêu chuẩn đạt Vòng"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 671,
-    "character": 56,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm sàn qua vòng:"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 677,
-    "character": 56,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thời gian quy định:"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 681,
-    "character": 71,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "phút"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 682,
-    "character": 29,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Không giới hạn"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 694,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "HƯỚNG DẪN CÁC BƯỚC NỘP BÀI"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 703,
-    "character": 31,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Mở Gmail hoặc Outlook để tiến hành soạn bài."
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 710,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Gửi tới địa chỉ"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 714,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "và đặt tiêu đề chứa mã"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 726,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Sau khi gửi xong, quay lại màn hình này bấm"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 727,
-    "character": 35,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "\"Tôi đã gửi email\""
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 727,
-    "character": 63,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "để xác nhận. Server sẽ tự động quét\r\n                          email và trả kết quả."
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 737,
-    "character": 29,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Trợ giúp & Giải đáp nhanh"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 742,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "⚡ AI chấm điểm mất bao lâu?"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 745,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hệ thống tự động chấm điểm và tổng hợp kết quả chỉ trong 30-60 giây."
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 750,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "🔒 Có được thi lại không?"
-  },
-  {
-    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 753,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Mỗi vòng chỉ thực hiện 1 lần duy nhất trừ trường hợp sự cố được nhà tuyển\r\n                          dụng duyệt cấp lại."
-  },
-  {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 54,
-    "character": 11,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Thứ 2"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 55,
-    "character": 12,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Thứ 3"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 56,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Thứ 4"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 57,
-    "character": 13,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Thứ 5"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 58,
-    "character": 11,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Thứ 6"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 59,
-    "character": 13,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Thứ 7"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 60,
-    "character": 11,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chủ nhật"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 122,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vòng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 122,
-    "character": 32,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": ": Phỏng vấn AI tại Kiosk"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 125,
-    "character": 69,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vòng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 128,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chọn trạm Kiosk và khung giờ phù hợp. Sau khi đặt lịch, hệ thống sẽ cấp mã PIN 6 số để\r\n            bạn nhập tại Kiosk đúng giờ phỏng vấn."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 138,
-    "character": 41,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "ĐIỂM AI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 138,
-    "character": 71,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "ĐÃ HOÀN TẤT"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 143,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐẶT LỊCH KIOSK"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 189,
-    "character": 34,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chưa cập nhật vị trí"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 199,
-    "character": 35,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Tạm ngưng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 199,
-    "character": 49,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đang hoạt động"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 209,
-    "character": 9,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đang tải lịch hoạt động của kiosk..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 261,
+    "line": 274,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1689,55 +1449,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 311,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đặt lịch Kiosk thành công"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 314,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hãy đến đúng trạm, đúng giờ và nhập mã PIN này để bắt đầu vòng phỏng vấn AI."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 323,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Mã PIN phiên Kiosk"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 334,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Copy mã PIN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 340,
-    "character": 63,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thời gian"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 342,
-    "character": 85,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chưa có"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 345,
+    "line": 363,
     "character": 40,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -1745,39 +1457,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 345,
-    "character": 50,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Theo slot đã đặt"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 349,
-    "character": 63,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Trạm Kiosk"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 351,
-    "character": 83,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chưa có"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 354,
-    "character": 37,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Kiểm tra email để xem hướng dẫn chi tiết"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 362,
+    "line": 385,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1785,7 +1465,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 508,
+    "line": 531,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1793,7 +1473,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 517,
+    "line": 540,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1801,7 +1481,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 519,
+    "line": 542,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1809,7 +1489,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 539,
+    "line": 562,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1817,7 +1497,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 542,
+    "line": 565,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1825,7 +1505,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 550,
+    "line": 573,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1833,7 +1513,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 562,
+    "line": 585,
     "character": 15,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -1841,7 +1521,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 562,
+    "line": 585,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1849,7 +1529,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 563,
+    "line": 586,
     "character": 72,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1857,7 +1537,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 567,
+    "line": 590,
     "character": 15,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -1865,7 +1545,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 567,
+    "line": 590,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1873,7 +1553,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 568,
+    "line": 591,
     "character": 68,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1881,7 +1561,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 570,
+    "line": 593,
     "character": 61,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -1889,7 +1569,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 570,
+    "line": 593,
     "character": 67,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1897,7 +1577,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 573,
+    "line": 596,
     "character": 15,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -1905,7 +1585,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 573,
+    "line": 596,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1913,7 +1593,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 574,
+    "line": 597,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1921,7 +1601,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 587,
+    "line": 610,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1929,7 +1609,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 590,
+    "line": 613,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1937,7 +1617,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 599,
+    "line": 622,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1945,7 +1625,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 616,
+    "line": 639,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1953,7 +1633,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 622,
+    "line": 645,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1961,7 +1641,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 625,
+    "line": 648,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1969,7 +1649,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 648,
+    "line": 671,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1977,7 +1657,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 651,
+    "line": 674,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1985,7 +1665,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 681,
+    "line": 704,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1993,7 +1673,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 682,
+    "line": 705,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2001,7 +1681,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 684,
+    "line": 707,
     "character": 30,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2009,7 +1689,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 694,
+    "line": 717,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2017,7 +1697,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 697,
+    "line": 720,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2025,7 +1705,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 706,
+    "line": 729,
     "character": 51,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2033,7 +1713,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 710,
+    "line": 733,
     "character": 21,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -2041,7 +1721,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 710,
+    "line": 733,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2049,7 +1729,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 711,
+    "line": 734,
     "character": 55,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2057,7 +1737,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 715,
+    "line": 738,
     "character": 21,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -2065,7 +1745,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 715,
+    "line": 738,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2073,7 +1753,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 716,
+    "line": 739,
     "character": 84,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2081,7 +1761,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 720,
+    "line": 743,
     "character": 21,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -2089,7 +1769,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 720,
+    "line": 743,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2097,7 +1777,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 721,
+    "line": 744,
     "character": 66,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -2105,7 +1785,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 725,
+    "line": 748,
     "character": 21,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -2113,7 +1793,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 725,
+    "line": 748,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2121,7 +1801,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 734,
+    "line": 757,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2129,7 +1809,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 740,
+    "line": 763,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2137,7 +1817,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 756,
+    "line": 779,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2145,7 +1825,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 764,
+    "line": 787,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2153,7 +1833,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 781,
+    "line": 804,
     "character": 51,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2161,7 +1841,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 781,
+    "line": 804,
     "character": 72,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2169,7 +1849,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 787,
+    "line": 810,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2177,7 +1857,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 796,
+    "line": 819,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2185,7 +1865,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 799,
+    "line": 822,
     "character": 20,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2193,7 +1873,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 800,
+    "line": 823,
     "character": 20,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2201,35 +1881,11 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 801,
+    "line": 824,
     "character": 20,
     "type": "JsxText",
     "category": "vietnamese",
     "text": "Giữ môi trường yên tĩnh, trả lời rõ ràng để AI ghi nhận tốt hơn."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 88,
-    "character": 11,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Lỗi nghiêm trọng (Crash, Security, Data Loss)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 92,
-    "character": 11,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Lỗi trung bình (Performance, Memory leak, Race condition)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 96,
-    "character": 11,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Góp ý nhỏ (Code smell, Refactor, Naming, Format)"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
@@ -2241,7 +1897,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 586,
+    "line": 592,
     "character": 60,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2249,7 +1905,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 602,
+    "line": 608,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2257,79 +1913,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 677,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "BÁO CÁO ĐÁNH GIÁ CODE REVIEW AI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 678,
-    "character": 50,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": ": CODE REVIEW • TRẠM THI TRỰC TUYẾN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 682,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vòng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 688,
-    "character": 39,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "BÀI TẬP"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 695,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Hệ thống AI đã hoàn tất phân tích các lỗi (bugs, code smells, security) và đối chiếu điểm số bài review."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 697,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đọc kỹ Đề bài & Code bên dưới, phát hiện các lỗi bảo mật/hiệu năng và ghi chú trực tiếp vào các dòng code."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 716,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "KẾT QUẢ:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 721,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐÃ HOÀN THÀNH BÀI THI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 726,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐANG TRONG THỜI GIAN LÀM BÀI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 769,
+    "line": 779,
     "character": 58,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2337,7 +1921,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 789,
+    "line": 799,
     "character": 41,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -2345,7 +1929,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 901,
+    "line": 911,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2353,7 +1937,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 920,
+    "line": 930,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2361,7 +1945,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 975,
+    "line": 985,
     "character": 88,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2369,7 +1953,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 978,
+    "line": 988,
     "character": 80,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2377,7 +1961,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1009,
+    "line": 1019,
     "character": 78,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2385,7 +1969,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1014,
+    "line": 1024,
     "character": 62,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -2393,7 +1977,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1031,
+    "line": 1041,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2401,7 +1985,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1040,
+    "line": 1050,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2409,7 +1993,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1059,
+    "line": 1069,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2417,7 +2001,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1071,
+    "line": 1081,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2425,7 +2009,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1075,
+    "line": 1085,
     "character": 23,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2433,7 +2017,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1076,
+    "line": 1086,
     "character": 23,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -2441,7 +2025,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1076,
+    "line": 1086,
     "character": 76,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -2449,7 +2033,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1076,
+    "line": 1086,
     "character": 109,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -2457,7 +2041,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1116,
+    "line": 1126,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2465,7 +2049,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1125,
+    "line": 1135,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2473,7 +2057,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1130,
+    "line": 1140,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2481,7 +2065,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1387,
+    "line": 1397,
     "character": 46,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2489,7 +2073,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1403,
+    "line": 1413,
     "character": 39,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2497,7 +2081,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1415,
+    "line": 1425,
     "character": 39,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2505,7 +2089,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1445,
+    "line": 1455,
     "character": 31,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -2513,7 +2097,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1446,
+    "line": 1456,
     "character": 31,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -2521,7 +2105,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1460,
+    "line": 1470,
     "character": 78,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2529,7 +2113,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1503,
+    "line": 1513,
     "character": 25,
     "type": "JsxAttribute[placeholder]",
     "category": "vietnamese",
@@ -2537,7 +2121,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1503,
+    "line": 1513,
     "character": 37,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2545,7 +2129,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1511,
+    "line": 1521,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2553,7 +2137,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1521,
+    "line": 1531,
     "character": 27,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2561,7 +2145,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1531,
+    "line": 1541,
     "character": 67,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2569,7 +2153,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1531,
+    "line": 1541,
     "character": 84,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2577,7 +2161,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1625,
+    "line": 1635,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2585,7 +2169,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1631,
+    "line": 1641,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2593,7 +2177,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1637,
+    "line": 1647,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2601,7 +2185,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1643,
+    "line": 1653,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2609,7 +2193,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1649,
+    "line": 1659,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2617,7 +2201,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1655,
+    "line": 1665,
     "character": 12,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2625,7 +2209,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1735,
+    "line": 1746,
     "character": 29,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2633,15 +2217,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1819,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "BÁO CÁO PHÂN TÍCH TỔNG QUAN AI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1831,
+    "line": 1842,
     "character": 17,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2649,7 +2225,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1843,
+    "line": 1854,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2657,7 +2233,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1866,
+    "line": 1877,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2665,7 +2241,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1889,
+    "line": 1900,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2673,7 +2249,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1908,
+    "line": 1919,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2681,7 +2257,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1932,
+    "line": 1943,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2689,23 +2265,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1974,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "NHẬN XÉT TỪ HỘI ĐỒNG HR"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1978,
-    "character": 72,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "HR ĐÁNH GIÁ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1987,
+    "line": 2000,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2713,15 +2273,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 2008,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Mã nguồn & ghi chú bạn đã nộp"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 2025,
+    "line": 2041,
     "character": 44,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -2729,239 +2281,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 252,
-    "character": 9,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "class Solution {\n    // Viết code của bạn tại đây\n}"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 253,
-    "character": 11,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "class Solution:\n    # Viết code của bạn tại đây\n    pass"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 254,
-    "character": 8,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "class Solution {\npublic:\n    // Viết code của bạn tại đây\n};"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 255,
-    "character": 7,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "/**\n * @return {any}\n */\nfunction solution() {\n    // Viết code của bạn tại đây\n}"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 256,
-    "character": 15,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "function solution(): void {\n    // Viết code của bạn tại đây\n}"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 257,
-    "character": 11,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "public class Solution {\n    // Viết code của bạn tại đây\n}"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 258,
-    "character": 7,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "package main\n\n// Viết code của bạn tại đây"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 259,
-    "character": 6,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "// Viết code của bạn tại đây"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 260,
-    "character": 11,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "class Solution {\n    // Viết code của bạn tại đây\n}"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 261,
-    "character": 9,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "// Viết code của bạn tại đây"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 268,
-    "character": 5,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "// Viết code"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 268,
-    "character": 29,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "của bạn tại đây"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 608,
-    "character": 56,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Nộp bài giải thất bại"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 717,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "BÁO CÁO ĐÁNH GIÁ BÀI THI LẬP TRÌNH"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 718,
-    "character": 50,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": ": LẬP TRÌNH • TRẠM THI TRỰC TUYẾN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 722,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vòng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 727,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Hệ thống đã hoàn tất chấm điểm mã nguồn và kiểm thử toàn bộ test cases trên Sandbox."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 729,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đọc kỹ Đề bài & Ràng buộc bên dưới, viết giải thuật và chạy thử các test cases trước khi nộp."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 748,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "KẾT QUẢ:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 753,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐÃ HOÀN THÀNH BÀI THI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 758,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐANG TRONG THỜI GIAN LÀM BÀI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 882,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Số bài tập"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 890,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tổng số dòng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 898,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Dung lượng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 913,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Danh sách bài làm sẽ nộp"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 943,
-    "character": 67,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "dòng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 968,
-    "character": 29,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chưa test thử"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 992,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Kiểm tra kỹ trước khi bấm nộp"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1221,
-    "character": 9,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đề bài chưa được cập nhật. Vui lòng xem Ví dụ bên dưới."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1271,
+    "line": 1233,
     "character": 70,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2969,7 +2289,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1275,
+    "line": 1237,
     "character": 9,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2977,223 +2297,15 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1283,
-    "character": 19,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "Đã sao chép Ví dụ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1292,
-    "character": 11,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Ví dụ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1301,
-    "character": 50,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đã copy"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1328,
-    "character": 82,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Giải thích:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1787,
-    "character": 21,
-    "type": "JsxAttribute[title]",
-    "category": "vietnamese",
-    "text": "Bài trước"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1787,
-    "character": 27,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Bài trước"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1802,
-    "character": 21,
-    "type": "JsxAttribute[title]",
-    "category": "vietnamese",
-    "text": "Bài tiếp theo"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1802,
-    "character": 27,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Bài tiếp theo"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1857,
-    "character": 7,
-    "type": "JsxAttribute[title]",
-    "category": "vietnamese",
-    "text": "Sao chép"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1857,
-    "character": 13,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Sao chép"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1861,
-    "character": 68,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đã chép"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1916,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hệ thống đang nạp mã nguồn vào sandbox an toàn và thực thi các bộ kiểm thử mẫu."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1934,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Bấm nút"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1934,
-    "character": 76,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "\"Chạy Test Mẫu\""
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1935,
-    "character": 13,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ở thanh công cụ bên dưới để kiểm tra tính đúng đắn của giải thuật."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2031,
-    "character": 71,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Kết quả biên dịch"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2053,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chi tiết lỗi biên dịch (Compiler Error)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2055,
-    "character": 52,
-    "type": "JsxAttribute[label]",
-    "category": "vietnamese",
-    "text": "Sao chép lỗi"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2055,
-    "character": 58,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Sao chép lỗi"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2122,
+    "line": 2084,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
     "text": "Thời gian:"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2133,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Lỗi thực thi (Runtime Error của Testcase #"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2135,
-    "character": 52,
-    "type": "JsxAttribute[label]",
-    "category": "vietnamese",
-    "text": "Sao chép log"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2135,
-    "character": 58,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Sao chép log"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2155,
-    "character": 61,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "(Không có dữ liệu đầu vào)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2170,
-    "character": 61,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "(Không xác định)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2194,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "(Không có kết quả trả về do phát sinh ngoại lệ / lỗi thực thi)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2197,
-    "character": 61,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "(Trống)"
-  },
-  {
     "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 231,
+    "line": 245,
     "character": 9,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3201,7 +2313,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 232,
+    "line": 246,
     "character": 9,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3209,375 +2321,15 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 233,
+    "line": 247,
     "character": 9,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Có tư duy thiết kế hệ thống và làm việc nhóm tốt"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 285,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Có lỗi xảy ra khi nộp CV"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 303,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "BÁO CÁO ĐÁNH GIÁ CV HỒ SƠ AI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 304,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "VÒNG 1: LỌC CV • HƯỚNG DẪN LÀM BÀI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 307,
-    "character": 71,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vòng 1: Lọc CV"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 312,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Ứng viên đạt yêu cầu lọc hồ sơ và đủ điều kiện bước vào vòng đánh giá tiếp theo."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 313,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Hồ sơ đã nộp thành công, hệ thống AI đã trích xuất báo cáo phân tích."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 337,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "KẾT QUẢ:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 342,
-    "character": 32,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "ĐÃ NỘP CV"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 342,
-    "character": 46,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "SẮN SÀNG PHÂN TÍCH"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 361,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hồ sơ CV (Trang 1/1)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 363,
-    "character": 61,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tài liệu minh chứng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 375,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Mở tab mới"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 383,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tải CV"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 400,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Bản xem trước CV. Nhấn nút \"Mở tab mới\" để đọc toàn bộ tài liệu full-screen."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 428,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hỗ trợ định dạng PDF, DOCX (Tối đa 10MB)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 438,
-    "character": 33,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chọn file CV để nộp"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 443,
-    "character": 33,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đang chấm AI..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 448,
-    "character": 33,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Gửi CV & Chấm điểm AI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 454,
-    "character": 60,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chưa nộp file CV"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 471,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "BÁO CÁO TỔNG QUAN AI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 477,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐỀ XUẤT TỪ AI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 484,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Báo cáo phân tích đang được cập nhật..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 485,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Vui lòng tải lên CV ứng tuyển để hệ thống AI tự động chấm điểm và trích xuất báo cáo tổng quan."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 496,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm mạnh nổi bật"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 511,
-    "character": 30,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chưa ghi nhận điểm mạnh nổi bật."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 511,
-    "character": 67,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chưa có dữ liệu (Cần nộp CV)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 523,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm cần bổ sung & Cải thiện"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 538,
-    "character": 30,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chưa ghi nhận điểm yếu cần bổ sung."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 538,
-    "character": 70,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chưa có dữ liệu (Cần nộp CV)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 551,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Cảnh báo rủi ro tiềm ẩn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 576,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "NHẬN XÉT TRỰC TIẾP TỪ HỘI ĐỒNG HR"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 580,
-    "character": 72,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "HR ĐÁNH GIÁ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 589,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 603,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chỉ số Match Score"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 627,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Phân tích tiêu chí chi tiết"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 633,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Độ phù hợp tổng thể:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 653,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Kỹ năng chuyên môn:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 673,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Kinh nghiệm làm việc:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 693,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Trình độ học vấn:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 714,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Trình bày & Cấu trúc:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 739,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Từ khóa ATS"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 751,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chờ nộp CV"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 780,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chưa trích xuất từ khóa ATS từ CV."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 781,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Vui lòng tải lên CV để hệ thống phân tích mật độ từ khóa."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 808,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Độ khớp Yêu cầu"
-  },
-  {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 143,
+    "line": 144,
     "character": 5,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3585,223 +2337,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 187,
-    "character": 52,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Email thiếu mã subject"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 194,
-    "character": 52,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Có lỗi khi chấm email"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 219,
-    "character": 50,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Email thiếu mã subject"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 225,
-    "character": 50,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Có lỗi khi chấm email"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 318,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "BÁO CÁO ĐÁNH GIÁ MÔ PHỎNG EMAIL"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 319,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "VÒNG 2: MÔ PHỎNG EMAIL • TRẠM THI TRỰC TUYẾN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 322,
-    "character": 71,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vòng 2"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 326,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Email của bạn đã được hệ thống thu thập và AI hoàn tất chấm điểm giao tiếp công sở."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 328,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Hệ thống background scheduler trên Server đang tự động quét hộp thư IMAP để thu thập email của bạn..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 329,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đọc kỹ Đề bài & Tình huống bên dưới, sau đó gửi email trực tiếp từ Gmail/Outlook theo đúng mã định danh."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 347,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "KẾT QUẢ:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 352,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "SERVER ĐANG QUÉT BACKGROUND"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 357,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐANG CHỜ HR RÀ SOÁT & CHẤM ĐIỂM"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 362,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "SẴN SÀNG GỬI MAIL"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 386,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng theo đúng chuẩn mực giao tiếp công sở."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 394,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tình Huống & Bối Cảnh (Scenario Context)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 399,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Email từ cấp trên / khách hàng — đóng vai ứng viên phản hồi chuyên nghiệp, đề xuất giải pháp."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 418,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "KHUNG SOẠN EMAIL"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 431,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Gửi tới:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 440,
-    "character": 69,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Địa chỉ email"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 445,
-    "character": 70,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đã chép"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 450,
-    "character": 31,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Sao chép"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 468,
-    "character": 66,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Mã subject"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 473,
-    "character": 70,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đã chép mã"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 478,
-    "character": 31,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Sao chép mã"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 514,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Mở Gmail"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 526,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "VỊ TRÍ ỨNG TUYỂN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 548,
+    "line": 601,
     "character": 45,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3809,7 +2345,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 551,
+    "line": 604,
     "character": 39,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -3817,447 +2353,23 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 563,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "THÔNG TIN & QUY ĐỊNH"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 578,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Không giới hạn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 583,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "LƯỢT NỘP"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 586,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "1 lần duy nhất"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 594,
-    "character": 62,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "BƯỚC THỰC HIỆN NỘP BÀI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 603,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Soạn email từ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 603,
-    "character": 60,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "hoặc"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 603,
-    "character": 90,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "cá nhân."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 613,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Gửi tới"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 619,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tiêu đề chứa mã"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 632,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Bấm nút"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 632,
-    "character": 39,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "\"Mở Gmail\""
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 632,
-    "character": 59,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "để soạn & gửi mail. Hệ thống sẽ tự động\r\n                      chấm điểm khi nhận mail."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 655,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "BACKGROUND SCHEDULER ĐANG CHẠY QUÉT MAIL..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 658,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hệ thống Server tự động quét định kỳ hộp thư IMAP để thu thập email gửi tới có mã"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 668,
-    "character": 54,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "1. Đã xác nhận gửi"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 672,
-    "character": 68,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "2. Server đang quét IMAP"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 675,
-    "character": 48,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "3. AI Chấm điểm"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 687,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "QUÁ THỜI GIAN CHỜ BACKGROUND SCHEDULER (5 PHÚT)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 690,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hệ thống chưa tìm thấy email. Vui lòng kiểm tra xem bạn đã gửi email tới đúng địa\r\n                chỉ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 695,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "và tiêu đề có chứa mã"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 697,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "chưa."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 706,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thử lại lần nữa"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 718,
-    "character": 21,
+    "line": 967,
+    "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "EMAIL KHÔNG HỢP LỆ (THIẾU MÃ SUBJECT)"
+    "text": "Ứng viên"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 719,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "CÓ LỖI XẢY RA KHI PHÂN TÍCH EMAIL"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 731,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thử gửi lại email khác"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 744,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "BÁO CÁO PHÂN TÍCH EMAIL TỪ AI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 754,
-    "character": 48,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Email đã được thu thập và đánh giá thành công."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 763,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm mạnh trong Email"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 782,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm cần cải thiện"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 801,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "NHẬN XÉT TRỰC TIẾP TỪ HỘI ĐỒNG HR"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 804,
-    "character": 74,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "HR ĐÁNH GIÁ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 813,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay\r\n                  khi HR hoàn tất rà soát)."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 823,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐỀ BÀI & TÌNH HUỐNG BAN ĐẦU"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 829,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 832,
-    "character": 60,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Nội dung tình huống được giao."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 844,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chỉ số Match Score"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 871,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Email đã thu thập"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 886,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Xem đầy đủ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 918,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "TIÊU CHÍ CHẤM ĐIỂM CHI TIẾT"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 922,
+    "line": 1019,
     "character": 67,
     "type": "JsxText",
     "category": "vietnamese",
     "text": "Tiêu chí"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 1014,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Gmail đang mở trong cửa sổ riêng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 1017,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hãy gửi email từ Gmail. Hệ thống sẽ tự động nhận diện và cập nhật kết quả."
-  },
-  {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 112,
-    "character": 36,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chờ Admin gán mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 112,
-    "character": 67,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chờ mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 113,
-    "character": 34,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chọn mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 113,
-    "character": 56,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chọn mentor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 114,
-    "character": 29,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đặt lịch phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 114,
-    "character": 58,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đặt lịch"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 115,
-    "character": 28,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chờ đến giờ phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 115,
-    "character": 60,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chờ giờ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 116,
-    "character": 28,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đang phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 116,
-    "character": 53,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Phỏng vấn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 117,
-    "character": 27,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Kết quả đánh giá"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 117,
-    "character": 54,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Kết quả"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 342,
+    "line": 347,
     "character": 24,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -4265,7 +2377,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 429,
+    "line": 434,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4273,7 +2385,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 443,
+    "line": 448,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4281,7 +2393,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 447,
+    "line": 452,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4289,7 +2401,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 450,
+    "line": 455,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4297,7 +2409,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 463,
+    "line": 468,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4305,7 +2417,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 467,
+    "line": 472,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4313,7 +2425,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 470,
+    "line": 475,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4321,7 +2433,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 483,
+    "line": 488,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4329,7 +2441,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 487,
+    "line": 492,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4337,7 +2449,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 490,
+    "line": 495,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4345,7 +2457,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 533,
+    "line": 538,
     "character": 66,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4353,7 +2465,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 543,
+    "line": 548,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4361,7 +2473,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 546,
+    "line": 551,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4369,7 +2481,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 549,
+    "line": 554,
     "character": 11,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4377,7 +2489,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1356,
+    "line": 1361,
     "character": 60,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4385,7 +2497,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1361,
+    "line": 1366,
     "character": 64,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -4393,7 +2505,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1373,
+    "line": 1378,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4401,7 +2513,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1434,
+    "line": 1439,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4409,7 +2521,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1437,
+    "line": 1442,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4417,7 +2529,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1447,
+    "line": 1452,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4425,7 +2537,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1459,
+    "line": 1464,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4433,7 +2545,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1465,
+    "line": 1470,
     "character": 34,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4441,7 +2553,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1473,
+    "line": 1478,
     "character": 19,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -4449,7 +2561,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1473,
+    "line": 1478,
     "character": 25,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4457,7 +2569,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1474,
+    "line": 1479,
     "character": 37,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -4465,7 +2577,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1478,
+    "line": 1483,
     "character": 19,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -4473,7 +2585,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1478,
+    "line": 1483,
     "character": 25,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4481,7 +2593,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1479,
+    "line": 1484,
     "character": 36,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4489,7 +2601,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1479,
+    "line": 1484,
     "character": 54,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4497,7 +2609,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1484,
+    "line": 1489,
     "character": 21,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -4505,7 +2617,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1484,
+    "line": 1489,
     "character": 27,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4513,7 +2625,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1491,
+    "line": 1496,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4521,7 +2633,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1816,
+    "line": 1821,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4529,7 +2641,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1828,
+    "line": 1833,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4537,7 +2649,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1831,
+    "line": 1836,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4545,7 +2657,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1843,
+    "line": 1848,
     "character": 48,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -4553,7 +2665,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1871,
+    "line": 1876,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4561,7 +2673,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1874,
+    "line": 1879,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4569,7 +2681,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1885,
+    "line": 1890,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4577,7 +2689,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1888,
+    "line": 1893,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4585,7 +2697,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1980,
+    "line": 1985,
     "character": 34,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -4593,7 +2705,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2032,
+    "line": 2037,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4601,7 +2713,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2034,
+    "line": 2039,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4609,7 +2721,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2062,
+    "line": 2067,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4617,7 +2729,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2078,
+    "line": 2083,
     "character": 48,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -4625,7 +2737,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2091,
+    "line": 2096,
     "character": 17,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -4633,7 +2745,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2091,
+    "line": 2096,
     "character": 23,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4641,7 +2753,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2092,
+    "line": 2097,
     "character": 45,
     "type": "TemplateLiteral",
     "category": "vietnamese",
@@ -4649,7 +2761,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2197,
+    "line": 2202,
     "character": 27,
     "type": "JsxAttribute[title]",
     "category": "vietnamese",
@@ -4657,7 +2769,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2197,
+    "line": 2202,
     "character": 33,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4665,7 +2777,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2206,
+    "line": 2211,
     "character": 27,
     "type": "JsxAttribute[title]",
     "category": "vietnamese",
@@ -4673,7 +2785,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2206,
+    "line": 2211,
     "character": 33,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4681,7 +2793,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2215,
+    "line": 2220,
     "character": 27,
     "type": "JsxAttribute[title]",
     "category": "vietnamese",
@@ -4689,7 +2801,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2215,
+    "line": 2220,
     "character": 33,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4697,7 +2809,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2224,
+    "line": 2229,
     "character": 27,
     "type": "JsxAttribute[title]",
     "category": "vietnamese",
@@ -4705,7 +2817,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2224,
+    "line": 2229,
     "character": 33,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4713,7 +2825,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2288,
+    "line": 2293,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4721,7 +2833,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2353,
+    "line": 2358,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4729,7 +2841,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2356,
+    "line": 2361,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4737,7 +2849,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2363,
+    "line": 2368,
     "character": 13,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4745,7 +2857,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2373,
+    "line": 2378,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4753,7 +2865,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2376,
+    "line": 2381,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4761,7 +2873,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2402,
+    "line": 2407,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4769,7 +2881,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2405,
+    "line": 2410,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4777,7 +2889,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2414,
+    "line": 2419,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4785,7 +2897,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2430,
+    "line": 2435,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4793,7 +2905,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2443,
+    "line": 2448,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4801,7 +2913,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2449,
+    "line": 2454,
     "character": 19,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4809,7 +2921,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2473,
+    "line": 2478,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4817,7 +2929,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2553,
+    "line": 2558,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4825,7 +2937,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2557,
+    "line": 2562,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4833,151 +2945,15 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2584,
+    "line": 2589,
     "character": 25,
     "type": "TemplateLiteral",
     "category": "vietnamese",
     "text": "Chọn"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 57,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "BÁO CÁO KẾT QUẢ ĐÁNH GIÁ MENTOR"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 59,
-    "character": 32,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "ĐÁNH GIÁ MENTOR"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 60,
-    "character": 53,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "• TRẠM PHỎNG VẤN TRỰC TUYẾN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 65,
-    "character": 14,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Buổi phỏng vấn đã hoàn tất. Mentor và Hội đồng tuyển dụng đã ghi nhận nhận xét và điểm số đánh giá."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 69,
-    "character": 16,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Phòng phỏng vấn trực tuyến với Mentor đang diễn ra. Vui lòng giữ kết nối ổn định và bật camera/micro."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 71,
-    "character": 16,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Lịch phỏng vấn đã được xác nhận thành công. Vui lòng chuẩn bị và sẵn sàng tham gia đúng khung giờ đã hẹn."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 73,
-    "character": 16,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chọn ngày giờ và hình thức phỏng vấn phù hợp nhất với thời gian biểu của bạn."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 75,
-    "character": 16,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Chọn chuyên gia Mentor đồng hành phù hợp nhất với vị trí ứng tuyển của bạn từ danh sách đề xuất."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 80,
-    "character": 11,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Hồ sơ đang chờ Quản trị viên chỉ định Mentor chuyên môn phù hợp cho buổi phỏng vấn của bạn."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 100,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vòng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 122,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "KẾT QUẢ:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 127,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐÃ HOÀN THÀNH PHỎNG VẤN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 132,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "PHÒNG PHỎNG VẤN ĐANG MỞ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 137,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐÃ ĐẶT LỊCH • CHỜ ĐẾN GIỜ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 142,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐẶT LỊCH PHỎNG VẤN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 147,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "CHỌN MENTOR PHÙ HỢP"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/MentorReviewSubheader.tsx",
-    "line": 152,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "CHỜ ADMIN GÁN MENTOR"
-  },
-  {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 63,
+    "line": 64,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -4985,7 +2961,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 111,
+    "line": 112,
     "character": 50,
     "type": "JsxText",
     "category": "vietnamese",
@@ -4993,15 +2969,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 116,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Sao chép code"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 343,
+    "line": 344,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5009,7 +2977,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 345,
+    "line": 346,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5017,19 +2985,11 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 346,
-    "character": 7,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "B. `let` có scope phạm vi block, còn `var` có scope phạm vi function/global và bị hoisting"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
     "line": 347,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "C. `let` không thể gán lại giá trị, còn `var` thì có thể"
+    "text": "B. `let` có scope phạm vi block, còn `var` có scope phạm vi function/global và bị hoisting"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
@@ -5037,11 +2997,19 @@
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
+    "text": "C. `let` không thể gán lại giá trị, còn `var` thì có thể"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 349,
+    "character": 7,
+    "type": "StringLiteral",
+    "category": "vietnamese",
     "text": "D. Cả hai hoàn toàn giống nhau về mọi mặt"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 351,
+    "line": 352,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5049,7 +3017,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 354,
+    "line": 355,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5057,7 +3025,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 356,
+    "line": 357,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5065,19 +3033,11 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 357,
-    "character": 7,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "B. Tăng tốc độ truy vấn tìm kiếm dữ liệu (SELECT) bằng cách đánh chỉ mục"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
     "line": 358,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "C. Tự động kiểm tra cú pháp của câu lệnh SQL"
+    "text": "B. Tăng tốc độ truy vấn tìm kiếm dữ liệu (SELECT) bằng cách đánh chỉ mục"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
@@ -5085,11 +3045,19 @@
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
+    "text": "C. Tự động kiểm tra cú pháp của câu lệnh SQL"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 360,
+    "character": 7,
+    "type": "StringLiteral",
+    "category": "vietnamese",
     "text": "D. Giảm bớt dung lượng lưu trữ trên đĩa cứng"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 361,
+    "line": 362,
     "character": 20,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5097,7 +3065,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 365,
+    "line": 366,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5105,7 +3073,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 369,
+    "line": 370,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5113,7 +3081,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 370,
+    "line": 371,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5121,7 +3089,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 375,
+    "line": 376,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5129,19 +3097,11 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 377,
-    "character": 7,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "A. Là một hàm có khả năng truy cập các biến ở phạm vi bên ngoài (outer scope) ngay cả khi hàm bên ngoài đã thực thi xong"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
     "line": 378,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "B. Là kỹ thuật tự động đóng kết nối Database sau khi query"
+    "text": "A. Là một hàm có khả năng truy cập các biến ở phạm vi bên ngoài (outer scope) ngay cả khi hàm bên ngoài đã thực thi xong"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
@@ -5149,7 +3109,7 @@
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "C. Là một khối lệnh try/catch để bắt lỗi bất đồng bộ"
+    "text": "B. Là kỹ thuật tự động đóng kết nối Database sau khi query"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
@@ -5157,11 +3117,19 @@
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
+    "text": "C. Là một khối lệnh try/catch để bắt lỗi bất đồng bộ"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 381,
+    "character": 7,
+    "type": "StringLiteral",
+    "category": "vietnamese",
     "text": "D. Là một hàm không có tham số đầu vào"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 383,
+    "line": 384,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5169,7 +3137,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 386,
+    "line": 387,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5177,7 +3145,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 388,
+    "line": 389,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -5185,19 +3153,11 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 389,
-    "character": 7,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "B. Lưu trữ giá trị hàm (memoize callback) giúp tránh tạo lại instance hàm không cần thiết giữa các lần re-render khi truyền xuống component con"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
     "line": 390,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "C. Tự động chuyển đổi dữ liệu thành dạng JSON"
+    "text": "B. Lưu trữ giá trị hàm (memoize callback) giúp tránh tạo lại instance hàm không cần thiết giữa các lần re-render khi truyền xuống component con"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
@@ -5205,519 +3165,79 @@
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
+    "text": "C. Tự động chuyển đổi dữ liệu thành dạng JSON"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 392,
+    "character": 7,
+    "type": "StringLiteral",
+    "category": "vietnamese",
     "text": "D. Quản lý các sự kiện click trên thẻ HTML"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 394,
+    "line": 395,
     "character": 7,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "B. Lưu trữ giá trị hàm (memoize callback) giúp tránh tạo lại instance hàm không cần thiết giữa các lần re-render khi truyền xuống component con"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 494,
-    "character": 16,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đã hết thời gian làm bài! Hệ thống tự động nộp bài."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 517,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Bắt đầu thời gian làm bài! Chúc bạn làm bài tốt."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 559,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "BÁO CÁO KẾT QUẢ THI TRẮC NGHIỆM"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 560,
-    "character": 50,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": ": TRẮC NGHIỆM • TRẠM THI TRỰC TUYẾN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 564,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vòng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 569,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Bạn đã hoàn tất bài thi trắc nghiệm. Hệ thống đã chấm điểm và lưu trữ câu trả lời."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 571,
-    "character": 19,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đọc kỹ từng câu hỏi và chọn đáp án chính xác nhất trong thời gian quy định."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 589,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "KẾT QUẢ:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 594,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐÃ HOÀN THÀNH BÀI THI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 599,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "ĐANG TRONG THỜI GIAN LÀM BÀI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 604,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "SẴN SÀNG BẮT ĐẦU"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 621,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "DANH SÁCH CÂU HỎI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 625,
-    "character": 52,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đã chọn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 682,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đang xem"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 686,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đã chọn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 690,
-    "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Xem lại"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 702,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thời gian làm bài"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 736,
-    "character": 35,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Còn lại"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 736,
-    "character": 47,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Thời lượng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 758,
-    "character": 29,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đang nộp bài..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 763,
-    "character": 29,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Nộp bài thi trắc nghiệm"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 788,
-    "character": 29,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "BẢO MẬT & GIÁM SÁT TỰ ĐỘNG"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 791,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "XÁC NHẬN BẮT ĐẦU THI TRẮC NGHIỆM"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 795,
+    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
+    "line": 685,
     "character": 25,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Bài thi trắc nghiệm nhằm đánh giá kiến thức chuyên môn cốt lõi, tư duy kỹ thuật và khả năng xử lý tình huống thực tế của ứng viên."
+    "text": "Chuẩn bị..."
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 804,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Số lượng câu"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 807,
-    "character": 40,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Câu"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 812,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thời gian"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 815,
-    "character": 42,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Phút"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 820,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm sàn đạt"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 832,
+    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
+    "line": 689,
     "character": 27,
-    "type": "JsxText",
+    "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "LƯU Ý QUAN TRỌNG TRƯỚC KHI BẮT ĐẦU:"
+    "text": "Dừng"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 836,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đồng hồ đếm ngược sẽ bắt đầu chạy **ngay lập tức** sau khi bấm xác nhận."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 839,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Bài thi chỉ có thể thực hiện **01 lần duy nhất**, không thể tạm dừng hay làm\r\n                      lại."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 842,
+    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
+    "line": 926,
     "character": 25,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Khi hết thời gian, hệ thống sẽ tự động thu bài và chấm điểm tự động."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 853,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "BẮT ĐẦU LÀM BÀI THI NGAY"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 864,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "CÂU HỎI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 867,
-    "character": 23,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chuyên môn"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 883,
-    "character": 51,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Đã đánh dấu xem lại"
+    "text": "Giọng đọc tự nhiên"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 883,
-    "character": 75,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Đánh dấu xem lại"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 933,
-    "character": 27,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Câu trước"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 944,
+    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
+    "line": 950,
     "character": 31,
-    "type": "JsxText",
+    "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Câu tiếp theo"
+    "text": "Thu gọn script"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 954,
+    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
+    "line": 955,
     "character": 31,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hoàn tất & Nộp bài"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 974,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "KẾT QUẢ ĐÁNH GIÁ"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 986,
-    "character": 19,
-    "type": "JsxAttribute[label]",
-    "category": "vietnamese",
-    "text": "Điểm Số Trắc Nghiệm"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 986,
-    "character": 25,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Điểm Số Trắc Nghiệm"
+    "text": "Xem thêm script"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 996,
+    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
+    "line": 973,
     "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Số câu đúng"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1003,
-    "character": 84,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Số câu sai"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1017,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "MA TRẬN CÂU HỎI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1020,
-    "character": 62,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Click để xem nhanh"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1055,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "CHI TIẾT CÂU HỎI VÀ ĐÁP ÁN"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1069,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tất cả ("
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1079,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đúng ("
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1098,
-    "character": 21,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Không có câu hỏi nào thuộc bộ lọc này."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1129,
-    "character": 35,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "CÂU HỎI"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1132,
-    "character": 46,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Trả lời chính xác"
+    "text": "Đang đọc kết quả"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1132,
-    "character": 68,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Trả lời chưa chính xác"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1142,
-    "character": 44,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "ĐÚNG"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1160,
-    "character": 76,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Lựa chọn của bạn:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1162,
-    "character": 54,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "(Chưa chọn)"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1171,
-    "character": 35,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Đáp án chính xác:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1196,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Bắt đầu bài thi trắc nghiệm?"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1199,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thời gian đếm ngược sẽ bắt đầu ngay khi bạn xác nhận."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1210,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Hủy"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
-    "line": 1218,
+    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
+    "line": 976,
     "character": 21,
-    "type": "JsxText",
+    "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Bắt đầu"
+    "text": "Nghe tóm tắt"
   },
   {
     "file": "src/pages/User/Kiosk/KioskEntryPage.tsx",
@@ -5942,5 +3462,197 @@
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Cập nhật bài tập thất bại"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 169,
+    "character": 15,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Kỹ thuật viên"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 170,
+    "character": 29,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Thực hành sơ cấp"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 171,
+    "character": 17,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Thực hành"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 172,
+    "character": 21,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Trưởng nhóm kỹ thuật"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 173,
+    "character": 29,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Kỹ sư cao cấp"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 204,
+    "character": 7,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Đây là báo cáo đánh giá năng lực của ứng viên"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 204,
+    "character": 75,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": ", ứng tuyển vị trí"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 205,
+    "character": 7,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Điểm tổng thể đạt"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 205,
+    "character": 58,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "trên 100, tương ứng với cấp độ"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 210,
+    "character": 9,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Năng lực kỹ thuật mạnh nhất là"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 210,
+    "character": 71,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": ", đạt"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 210,
+    "character": 116,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "điểm."
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 216,
+    "character": 9,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Lĩnh vực cần tập trung phát triển là"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 216,
+    "character": 75,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": ", hiện ở cấp độ"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 222,
+    "character": 9,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Về kỹ năng hành vi công sở, thế mạnh nổi bật nhất là"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 231,
+    "character": 18,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Bằng chứng đánh giá ghi nhận:"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 236,
+    "character": 9,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Gợi ý phát triển tiếp theo cho"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 236,
+    "character": 73,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "là:"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 241,
+    "character": 7,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Biểu đồ thể hiện chi tiết các nhóm năng lực kỹ thuật và kỹ năng hành vi quan sát được trong quá trình đánh giá."
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 247,
+    "character": 11,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Đối với"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 247,
+    "character": 36,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": ", ứng viên đạt"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 247,
+    "character": 76,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "điểm. Minh chứng:"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 255,
+    "character": 11,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Gợi ý phát triển cho"
+  },
+  {
+    "file": "src/services/competency-chart.manager.ts",
+    "line": 255,
+    "character": 55,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "là:"
   }
 ]
