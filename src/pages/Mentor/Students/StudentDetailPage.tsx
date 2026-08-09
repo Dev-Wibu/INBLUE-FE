@@ -27,7 +27,10 @@ import type { CandidateProfile } from "@/interfaces/schema.types";
 import { treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { isSessionMentor } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
-import { useCandidateProfile } from "@/services/candidate-profile.manager";
+import {
+  getLatestCandidateProfile,
+  useCandidateProfile,
+} from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { motion } from "framer-motion";
 import {
@@ -88,8 +91,23 @@ export function StudentDetailPage() {
   const { data: allSessions = [], isLoading: sessionsLoading } = useSessions();
   const { data: allFeedbacks = [], isLoading: feedbacksLoading } = useMentorFeedbacks();
   const { data: allReviews = [], isLoading: reviewsLoading } = useMentorReviews();
-  const { data: candidateProfileData, isLoading: profileLoading } = useCandidateProfile(studentId);
-  const candidateProfile = (candidateProfileData as unknown as CandidateProfile) ?? null;
+  // 2026-08-09: BE `GET /api/candidate-profiles/{userId}` returns
+  //   `CandidateProfile[]` (1 student can have multiple profile versions
+  //   — drafts / applications). Earlier versions casted the array as a
+  //   single CandidateProfile which made every field `undefined` and
+  //   triggered the "no candidate profile" empty state. We now unwrap
+  //   the latest profile via `getLatestCandidateProfile`.
+  const { data: candidateProfileRaw, isLoading: profileLoading } = useCandidateProfile(studentId);
+  const candidateProfile = useMemo<CandidateProfile | null>(() => {
+    const raw = candidateProfileRaw as unknown;
+    if (Array.isArray(raw)) {
+      return getLatestCandidateProfile(raw);
+    }
+    if (raw && typeof raw === "object" && "id" in (raw as Record<string, unknown>)) {
+      return raw as CandidateProfile;
+    }
+    return null;
+  }, [candidateProfileRaw]);
 
   const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading || profileLoading;
 
