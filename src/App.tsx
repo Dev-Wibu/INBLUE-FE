@@ -35,6 +35,7 @@ import {
 } from "@/pages/Homepage";
 import {
   MentorDashboardPage,
+  MentorFeedbackDetailPage,
   MentorSessionDetailPage,
   MentorSessionReviewViewPage,
   MentorSessionRoomPage,
@@ -313,6 +314,7 @@ function App() {
                 <Route path="sessions/:sessionId/review" element={<WriteFeedbackPage />} />
                 <Route path="reviews/:id" element={<ReviewDetailPage />} />
                 <Route path="students/:userId" element={<StudentDetailPage />} />
+                <Route path="feedback/:id" element={<MentorFeedbackDetailPage />} />
               </Route>
             </Route>
             {/* Backward-compat redirects for /mentor-dashboard/* URLs */}
