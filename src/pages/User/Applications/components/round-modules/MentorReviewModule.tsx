@@ -1669,60 +1669,6 @@ function InfoRow({
   );
 }
 
-function SessionStatusBadge({ status }: { status: string }) {
-  const { t } = useTranslation();
-  const map: Record<string, { tone: string; labelKey: string }> = {
-    DRAFT: {
-      tone: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-      labelKey: "userApplicationhistory.mentorSessionStatusDraft",
-    },
-    SCHEDULED: {
-      tone: "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300",
-      labelKey: "userApplicationhistory.mentorSessionStatusScheduled",
-    },
-    PAID: {
-      tone: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300",
-      labelKey: "userApplicationhistory.mentorSessionStatusBooked",
-    },
-    ONGOING: {
-      tone: "bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300",
-      labelKey: "userApplicationhistory.mentorSessionStatusOngoing",
-    },
-    COMPLETED: {
-      tone: "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-      labelKey: "userApplicationhistory.mentorSessionStatusCompleted",
-    },
-    REJECTED: {
-      tone: "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300",
-      labelKey: "userApplicationhistory.mentorSessionStatusRejected",
-    },
-    CANCELED: {
-      tone: "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300",
-      labelKey: "userApplicationhistory.mentorSessionStatusCanceled",
-    },
-  };
-  const cfg = map[status] ?? map.DRAFT;
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-900/40">
-      <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-        {t("userApplicationhistory.mentorSessionStatusLabel")}
-      </span>
-      <span
-        className={cn(
-          "rounded-full px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase",
-          cfg.tone
-        )}>
-        {t(
-          cfg.labelKey,
-          status === "PAID"
-            ? "Đã đặt lịch"
-            : t("userApplicationhistory.mentorSessionStatusPaid", "Đã lên lịch")
-        )}
-      </span>
-    </div>
-  );
-}
-
 // ============================================================================
 // SUB-COMPONENT: SessionRoomStep — covers WAITING / IN_CALL / RESULT
 // ============================================================================
@@ -1821,7 +1767,6 @@ function SessionRoomStep({
               Phòng sẽ mở trước 15 phút. Bạn có thể vào từ trình duyệt khi trạng thái cho phép.
             </p>
           </div>
-          <SessionStatusBadge status={session.status ?? "SCHEDULED"} />
         </div>
       </div>
 
