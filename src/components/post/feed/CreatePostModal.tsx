@@ -11,7 +11,7 @@ import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { ImagePlus, Send, Tag, X } from "lucide-react";
+import { ImagePlus, PenLine, Send, Tag, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -112,13 +112,25 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-hidden p-0">
-        <DialogHeader className="border-b px-6 pt-5 pb-4">
-          <DialogTitle className="text-center text-lg">{t("common.createArticles")}</DialogTitle>
+      <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden border-slate-200 bg-white p-0 shadow-2xl dark:border-slate-700/80 dark:bg-slate-900">
+        <DialogHeader className="border-b border-slate-200 bg-slate-50/80 px-6 py-5 text-left dark:border-slate-800 dark:bg-slate-800/45">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm shadow-indigo-500/25">
+              <PenLine className="h-5 w-5" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-extrabold text-slate-950 dark:text-white">
+                {t("common.createArticles")}
+              </DialogTitle>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                Chia sẻ một điều hữu ích với cộng đồng Inblue.
+              </p>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="max-h-[calc(90vh-73px)] space-y-4 overflow-y-auto px-6 pt-2 pb-4">
-          <div className="flex items-center gap-3">
+        <div className="max-h-[calc(90vh-92px)] space-y-5 overflow-y-auto px-6 pt-5 pb-4">
+          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-800/45">
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
               <AvatarImage src={user?.avatarUrl ?? undefined} alt={authorName} />
               <AvatarFallback className="bg-[#0047AB]/10 text-sm font-semibold text-[#0047AB]">
@@ -127,53 +139,61 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             </Avatar>
             <div>
               <p className="text-sm font-semibold">{authorName}</p>
-              <Badge variant="secondary" className="mt-0.5 text-[10px]">
+              <Badge
+                variant="secondary"
+                className="mt-0.5 border-0 bg-indigo-500/10 text-[10px] text-indigo-600 dark:text-indigo-300">
                 {t("compPost.posted")}
               </Badge>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-500">{t("common.title1")}</Label>
+            <Label className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              {t("common.title1")}
+            </Label>
             <Input
               placeholder={t("compPost.titleYourPost")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="font-medium"
+              className="h-11 rounded-xl border-slate-200 bg-slate-50 text-base font-semibold dark:border-slate-700 dark:bg-slate-800/60"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-500">{t("common.content1")}</Label>
+            <Label className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              {t("common.content1")}
+            </Label>
             <Textarea
               placeholder={t("general.heyWhatSOnYour", {
                 var_0: user?.name?.split(" ").pop() ?? t("common.friend"),
               })}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              rows={5}
-              className="resize-none"
+              rows={7}
+              className="resize-none rounded-xl border-slate-200 bg-slate-50 leading-relaxed dark:border-slate-700 dark:bg-slate-800/60"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-500">{t("common.summary")}</Label>
+            <Label className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              {t("common.summary")}
+            </Label>
             <Textarea
               placeholder={t("compPost.writeABriefSummaryOptional")}
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              rows={2}
-              className="resize-none"
+              rows={3}
+              className="resize-none rounded-xl border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60"
             />
           </div>
 
           <div>
             {coverPreview ? (
-              <div className="relative overflow-hidden rounded-lg">
+              <div className="relative overflow-hidden rounded-xl">
                 <img
                   src={coverPreview}
                   alt={t("common.coverPhoto")}
-                  className="h-44 w-full rounded-lg object-cover"
+                  className="h-52 w-full rounded-xl object-cover"
                 />
                 <button
                   type="button"
@@ -192,7 +212,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
                 enableWebcam={true}
                 onFilesChange={handleCoverFilesChange}
                 customTrigger={
-                  <div className="border-muted hover:bg-muted/50 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed py-8 transition-colors">
+                  <div className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 py-10 transition-colors hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-indigo-500/60 dark:hover:bg-indigo-500/10">
                     <ImagePlus className="h-6 w-6 text-slate-400" />
                     <span className="text-muted-foreground text-sm">
                       {t("compPost.addCoverPhoto")}
@@ -204,7 +224,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-500">
+            <Label className="text-xs font-bold text-slate-600 dark:text-slate-300">
               <Tag className="mr-1 inline h-3 w-3" />
               {t("common.tags")}
             </Label>
@@ -219,7 +239,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
                     handleAddTag();
                   }
                 }}
-                className="flex-1"
+                className="h-10 flex-1 rounded-xl border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60"
               />
               <Button
                 type="button"
@@ -250,9 +270,19 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             )}
           </div>
 
-          <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 -mx-6 border-t px-6 pt-4 pb-2 backdrop-blur">
+          <div className="sticky bottom-0 -mx-6 flex items-center justify-end gap-2 border-t border-slate-200 bg-white/95 px-6 pt-4 pb-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
             <Button
-              className="w-full gap-2 bg-[#0047AB] hover:bg-[#003580]"
+              type="button"
+              variant="ghost"
+              className="h-10 rounded-xl px-4 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              onClick={() => {
+                resetForm();
+                onOpenChange(false);
+              }}>
+              Hủy
+            </Button>
+            <Button
+              className="h-10 gap-2 rounded-xl bg-indigo-600 px-5 font-bold text-white shadow-sm shadow-indigo-500/25 hover:bg-indigo-700"
               onClick={handleSubmit}
               disabled={!title.trim() || !content.trim() || submitting}>
               {submitting ? <Spinner size="sm" tone="white" /> : <Send className="h-4 w-4" />}

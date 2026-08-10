@@ -72,12 +72,12 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
   })();
   return (
     <>
-      <Card className="overflow-hidden rounded-xl border-slate-200/70 bg-white py-0 shadow-sm hover:shadow-md dark:border-slate-800 dark:bg-slate-900/60">
-        <CardHeader className="pt-4 pb-2">
+      <Card className="overflow-hidden rounded-2xl border-slate-200/80 bg-white py-0 shadow-sm transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-900/80">
+        <CardHeader className="px-5 pt-5 pb-3">
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
+            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-indigo-50 dark:ring-indigo-500/15">
               <AvatarImage src={post?.author?.avatar} alt={authorName} />
-              <AvatarFallback className="bg-[#0047AB]/10 text-sm font-semibold text-[#0047AB]">
+              <AvatarFallback className="bg-indigo-500/10 text-sm font-bold text-indigo-600 dark:text-indigo-300">
                 {authorInitials}
               </AvatarFallback>
             </Avatar>
@@ -90,18 +90,18 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-2 pb-2">
+        <CardContent className="space-y-3 px-5 pb-4">
           <button
             type="button"
             className="block w-full text-left"
             onClick={() => setModalOpen(true)}>
-            <h3 className="line-clamp-2 text-base leading-snug font-bold hover:text-[#0047AB] dark:hover:text-[#66B2FF]">
+            <h3 className="line-clamp-2 text-lg leading-snug font-extrabold tracking-tight text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-300">
               {post?.title}
             </h3>
           </button>
 
           {post?.summary && (
-            <div className="rounded-lg border-l-4 border-[#0047AB]/40 bg-slate-50 py-2 pr-3 pl-3 dark:border-[#66B2FF]/40 dark:bg-slate-800/50">
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 dark:border-indigo-500/15 dark:bg-indigo-500/[0.08]">
               <p className="line-clamp-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                 {post.summary}
               </p>
@@ -109,13 +109,13 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
           )}
 
           {post?.content && post.content !== post?.summary && (
-            <p className="text-muted-foreground line-clamp-4 text-sm leading-relaxed">
+            <p className="text-muted-foreground line-clamp-3 text-sm leading-relaxed">
               {post.content}
             </p>
           )}
 
           {(post?.tags?.length ?? 0) > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-1">
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
               {post!.tags!.map((tag) => (
                 <Badge
                   key={tag}
@@ -130,18 +130,18 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
 
         {post?.coverImgUrl && (
           <div
-            className="aspect-video w-full cursor-pointer overflow-hidden"
+            className="flex max-h-[480px] w-full cursor-pointer items-center justify-center overflow-hidden bg-slate-950/5 dark:bg-black/20"
             onClick={() => setModalOpen(true)}>
             <img
               src={post.coverImgUrl}
               alt={post.title ?? ""}
-              className="h-full w-full object-cover transition-transform duration-200 hover:scale-[1.02]"
+              className="max-h-[480px] w-full object-cover transition-transform duration-300 hover:scale-[1.015]"
             />
           </div>
         )}
 
         {(likeLabel || localCommentCount > 0) && (
-          <div className="flex items-center gap-1 px-4 py-0">
+          <div className="flex items-center gap-1 px-5 py-1">
             {likeLabel && (
               <TooltipProvider>
                 <Tooltip>
@@ -188,9 +188,9 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
           </div>
         )}
 
-        <Separator className="mx-4" />
+        <Separator className="mx-5" />
 
-        <CardFooter className="flex items-center pt-0 pb-2">
+        <CardFooter className="grid grid-cols-2 gap-2 px-5 py-2.5">
           {user?.id && postId > 0 ? (
             <LikeButton
               postId={postId}
@@ -207,7 +207,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="flex-1 justify-center gap-1.5"
+            className="flex-1 justify-center gap-1.5 rounded-xl text-sm font-semibold hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300"
             onClick={() => setModalOpen(true)}>
             <MessageCircle className="h-4 w-4" />
             <span>{t("common.comment1")}</span>
