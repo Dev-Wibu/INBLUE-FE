@@ -225,7 +225,7 @@ const getRoundStatusLabel = (
     case "AWAITING_MENTOR":
       return t("common.processing1");
     case "IN_PROGRESS":
-      return t("common.inProgress", "Đang diễn ra");
+      return t("common.inProgress");
     case "COMPLETED":
     case "SUCCESS":
     case "PASSED":

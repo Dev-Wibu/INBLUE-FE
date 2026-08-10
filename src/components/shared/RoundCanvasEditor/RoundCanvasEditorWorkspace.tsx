@@ -1122,9 +1122,11 @@ export function RoundCanvasEditorWorkspace({
                           (handled by the mentor system). */}
                       {staffUsers &&
                         staffUsers.length > 0 &&
-                        selectedRound.roundType !== "CODING" &&
-                        selectedRound.roundType !== "MENTOR_REVIEW" &&
-                        selectedRound.roundType !== "MENTROR_REVIEW" && (
+                        ![
+                          "CODING",
+                          "MENTOR_REVIEW",
+                          "MENTROR_REVIEW",
+                        ].includes(selectedRound.roundType as string) && (
                           <div className="space-y-1.5">
                             <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                               {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
