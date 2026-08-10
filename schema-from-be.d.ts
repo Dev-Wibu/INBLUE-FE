@@ -3140,6 +3140,18 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+            passThreshold?: number;
+            roundDescription?: string;
+            roundOrder?: number;
+            roundName?: string;
+            roundType?: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "CODING" | "CODE_REVIEW" | "MENTROR_REVIEW" | "AI_INTERVIEW";
+            appCreatedAt?: string;
+            appStatus?: string;
+            currentRoundOrder?: number;
+            jdLogoUrl?: string;
+            companyName?: string;
+            jdTitle?: string;
+            jdId?: number;
             userName?: string;
             applicationName?: string;
         };

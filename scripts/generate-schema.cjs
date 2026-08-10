@@ -27,6 +27,9 @@ if (fs.existsSync(envPath)) {
 // 2. XỬ LÝ CHO HUSKY: Nếu không có URL API, bỏ qua và KHÔNG báo lỗi
 if (!apiBaseUrl) {
   console.log("⚠️  VITE_API_BASE_URL không tồn tại. Bỏ qua bước tạo TS Schema.");
+  // Vẫn chạy patchSchema để bổ sung các field BE chưa cập nhật OpenAPI
+  // (vd applicationName/userName/jdId/roundType/roundName/...).
+  patchSchema();
   process.exit(0); // Trả về 0 để Husky hiểu là "Hợp lệ" và cho phép tiếp tục commit
 }
 
@@ -89,9 +92,27 @@ function patchSchema() {
 
   // Field cần thêm vào ApplicationDetail (dùng cho list response của /reviewer)
   // Backend đã trả về applicationName/userName ở response nhưng OpenAPI spec chưa cập nhật.
+  // Ngoài ra các field sau cũng cần để trang StaffGradingWorkspace hiển thị đầy đủ
+  // mà KHÔNG phải gọi thêm /api/applications/{id}, /api/job-descriptions/{id}, …
+  // (BE: "vô detail ko đc gọi thêm endpoint gì cả, vô trong hiển thị các dữ
+  // liệu còn lại của item đó trong lits thôi").
   const applicationDetailFieldsToAdd = [
     { name: "applicationName", line: "            applicationName?: string;" },
     { name: "userName", line: "            userName?: string;" },
+    // Application-level metadata (để dựng header mà không gọi /applications/{id})
+    { name: "jdId", line: "            jdId?: number;" },
+    { name: "jdTitle", line: "            jdTitle?: string;" },
+    { name: "companyName", line: "            companyName?: string;" },
+    { name: "jdLogoUrl", line: "            jdLogoUrl?: string;" },
+    { name: "currentRoundOrder", line: "            currentRoundOrder?: number;" },
+    { name: "appStatus", line: "            appStatus?: string;" },
+    { name: "appCreatedAt", line: "            appCreatedAt?: string;" },
+    // Round-level metadata (để hiển thị header vòng mà không cần lookup JD rounds)
+    { name: "roundType", line: '            roundType?: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "CODING" | "CODE_REVIEW" | "MENTROR_REVIEW" | "AI_INTERVIEW";' },
+    { name: "roundName", line: "            roundName?: string;" },
+    { name: "roundOrder", line: "            roundOrder?: number;" },
+    { name: "roundDescription", line: "            roundDescription?: string;" },
+    { name: "passThreshold", line: "            passThreshold?: number;" },
   ];
 
   // Find the start of ApplicationDetail schema and balance nested braces to find the end.
