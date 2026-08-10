@@ -7,6 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useHrScore } from "@/hooks/useApplicationDetails";
 import { fetchClient } from "@/lib/api";
+import { inferRoundType } from "@/lib/application-detail-utils";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import {
