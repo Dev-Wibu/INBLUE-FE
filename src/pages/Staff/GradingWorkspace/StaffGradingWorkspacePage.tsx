@@ -1128,6 +1128,8 @@ export function StaffGradingWorkspacePage() {
   // Active round driven by the resolved detail's `roundId` (the row staff
   // picked). When the detail payload embeds roundType/roundName (BE-side
   // patch), use them directly so we don't even need JD's rounds array.
+  // Falls back to inferRoundType() (heuristic on submission data) when both
+  // the BE fields and JD rounds are unavailable, so we always have a label.
   const activeRound = useMemo(() => {
     if (detailAny?.roundType || detailAny?.roundName) {
       return {
@@ -1144,7 +1146,21 @@ export function StaffGradingWorkspacePage() {
       const fromRounds = rounds.find((r) => r.id === resolvedStaffDetail.roundId);
       if (fromRounds) return fromRounds;
     }
-    return rounds[0];
+    if (rounds.length > 0) return rounds[0];
+    // Last resort: build a synthetic round from inferred type + detail.
+    if (resolvedStaffDetail) {
+      return {
+        id: resolvedStaffDetail.roundId ?? 0,
+        name: detailAny?.roundName ?? "",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        roundType: (inferRoundType(resolvedStaffDetail as any) ?? undefined) as any,
+        roundOrder: detailAny?.roundOrder ?? 1,
+        passThreshold: detailAny?.passThreshold,
+        description: detailAny?.roundDescription,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+    }
+    return undefined;
   }, [rounds, resolvedStaffDetail, detailAny]);
 
   // Active round detail (back-compat match: detail that matches activeRound)
