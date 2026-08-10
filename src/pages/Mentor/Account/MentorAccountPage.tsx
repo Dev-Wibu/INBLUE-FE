@@ -382,7 +382,7 @@ export function MentorAccountPage() {
                 <div className="mt-1 flex flex-wrap items-center justify-center gap-1.5 text-xs">
                   <span className="inline-flex items-center gap-1 font-medium text-indigo-600 dark:text-indigo-400">
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Mentor
+                    {t("common.mentor")}
                   </span>
                   {summaryExpertise && (
                     <>

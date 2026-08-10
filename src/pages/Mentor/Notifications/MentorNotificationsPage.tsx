@@ -115,16 +115,13 @@ export function MentorNotificationsPage() {
           onValueChange={(value) => setFilterStatus(value as NotificationFilter)}>
           <TabsList className="grid w-full grid-cols-3 sm:w-auto">
             <TabsTrigger value="all">
-              {t("common.all")}
-              {notifications.length})
+              {t("common.all")} ({notifications.length})
             </TabsTrigger>
             <TabsTrigger value="unread">
-              {t("general.unread")}
-              {unreadCount})
+              {t("general.unread")} ({unreadCount})
             </TabsTrigger>
             <TabsTrigger value="read">
-              {t("general.read")}
-              {readCount})
+              {t("general.read")} ({readCount})
             </TabsTrigger>
           </TabsList>
         </Tabs>
