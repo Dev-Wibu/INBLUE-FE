@@ -34,7 +34,7 @@ import {
 } from "@/hooks/useApplicationDetails";
 import { useCodeReviewProblems } from "@/hooks/useCodeReviewProblems";
 import { useEmailSubmission } from "@/hooks/useEmailSubmission";
-import { useJobDescription } from "@/hooks/useJobDescription";
+import { useJobDescription, useJobDescriptions } from "@/hooks/useJobDescription";
 import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import {
@@ -601,11 +601,13 @@ function ApplicationGradingTable({
   items,
   userMap,
   userAvatarMap,
+  jdMap,
   onOpenGrading,
 }: {
   items: GradingListItem[];
   userMap: Map<number, string>;
   userAvatarMap: Map<number, string>;
+  jdMap?: Map<number, string>;
   onOpenGrading: (_appId: number, _detailId?: number, _item?: GradingListItem) => void;
 }) {
   return (
@@ -614,13 +616,13 @@ function ApplicationGradingTable({
         <TableHeader className="border-b border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90">
           <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
             <TableHead className="h-11 pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              #ID
+              Mã đơn
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               Ứng viên
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Vị trí / JD
+              Vị trí ứng tuyển
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               Vòng chấm
@@ -643,7 +645,6 @@ function ApplicationGradingTable({
             const score = item.overallScore;
             const aiScore = item.detail?.aiScore;
             const hrScore = item.detail?.hrScore;
-            const roundId = item.detail?.roundId ?? item.currentRoundOrder;
             const jdId = item.jdId;
             const userId = item.userId;
             const userName =
@@ -655,23 +656,23 @@ function ApplicationGradingTable({
               dot: "bg-slate-400",
             };
 
+            const roundTypeInferred = item.detail ? inferRoundType(item.detail) : null;
+            const roundTypeLabel = roundTypeInferred
+              ? i18n.t(`common.roundType.${roundTypeInferred}`, roundTypeInferred)
+              : null;
+            const roundOrder = item.currentRoundOrder ?? 1;
+            const roundDisplay = roundTypeLabel
+              ? `Vòng ${roundOrder} • ${roundTypeLabel}`
+              : `Vòng ${roundOrder}`;
+
             return (
               <TableRow
                 key={item.detailId ?? item.id}
                 onClick={() => onOpenGrading(item.id, item.detailId, item)}
                 className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-indigo-50/40 dark:border-slate-800/60 dark:hover:bg-slate-800/60">
-                {/* ID Column */}
+                {/* Application ID Column */}
                 <TableCell className="pl-6 font-mono text-xs font-extrabold text-slate-800 dark:text-slate-200">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                      Đơn #{item.id}
-                    </span>
-                    {item.detailId && (
-                      <span className="text-[10px] font-normal text-slate-400">
-                        Chi tiết #{item.detailId}
-                      </span>
-                    )}
-                  </div>
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400">#{item.id}</span>
                 </TableCell>
 
                 {/* Candidate Profile */}
@@ -687,26 +688,23 @@ function ApplicationGradingTable({
                       <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
                         {userName}
                       </h4>
-                      {userId && (
-                        <p className="text-[10px] font-medium text-slate-400">ID: #{userId}</p>
-                      )}
                     </div>
                   </div>
                 </TableCell>
 
                 {/* Job Position / JD */}
                 <TableCell>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    <Briefcase className="h-3 w-3 text-indigo-500" />
-                    {jdId != null ? `JD #${jdId}` : "Chưa gắn JD"}
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    <Briefcase className="h-3 w-3 shrink-0 text-indigo-500" />
+                    {jdId != null ? (jdMap?.get(jdId) ?? `Vị trí #${jdId}`) : "Chưa gắn JD"}
                   </span>
                 </TableCell>
 
                 {/* Round */}
                 <TableCell>
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    <Clock className="h-3.5 w-3.5 text-indigo-500" />
-                    Vòng #{roundId ?? 1}
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
+                    {roundDisplay}
                   </span>
                 </TableCell>
 
@@ -847,6 +845,20 @@ export function ApplicationGradingPage({
     }
     return map;
   }, [allUsers]);
+
+  const { data: rawJds } = useJobDescriptions();
+  const jdMap = useMemo(() => {
+    const map = new Map<number, string>();
+    if (rawJds) {
+      const jdList = Array.isArray(rawJds) ? rawJds : [];
+      jdList.forEach((jd) => {
+        if (jd.id != null && jd.title) {
+          map.set(jd.id, jd.title);
+        }
+      });
+    }
+    return map;
+  }, [rawJds]);
 
   // Map of applicationId -> { userId, jdId } (dùng cho Staff để join từ
   // reviewerDetails, vì schema ApplicationDetail không chứa 2 field này).
@@ -1165,6 +1177,7 @@ export function ApplicationGradingPage({
                   items={paginatedData}
                   userMap={userMap}
                   userAvatarMap={userAvatarMap}
+                  jdMap={jdMap}
                   onOpenGrading={handleOpenGrading}
                 />
               </div>
@@ -1199,7 +1212,7 @@ export function ApplicationGradingPage({
                           <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                             <User className="h-3 w-3 text-indigo-500" />
                             Đơn #{item.id}
-                            {jdId != null ? ` · JD #${jdId}` : ""}
+                            {jdId != null ? ` · ${jdMap.get(jdId) ?? `Vị trí #${jdId}`}` : ""}
                           </span>
 
                           <span
