@@ -370,8 +370,8 @@ export function ApplicationWorkspacePage() {
   return (
     <div className={applicationTheme.page}>
       {/* Centered application header */}
-      <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1428]/95">
-        <div className="mx-auto grid w-full max-w-[1700px] grid-cols-[minmax(150px,1fr)_auto_minmax(150px,1fr)] items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1428]/95">
+        <div className="mx-auto grid min-h-[76px] w-full max-w-[1700px] grid-cols-[minmax(120px,1fr)_auto_minmax(120px,1fr)] items-center gap-4 px-4 py-3 sm:grid-cols-[minmax(180px,1fr)_auto_minmax(180px,1fr)] sm:px-6 lg:px-8">
           {/* Back navigation */}
           <div className="flex items-center">
             <Button
@@ -387,50 +387,48 @@ export function ApplicationWorkspacePage() {
           </div>
 
           {/* Centered application identity */}
-          <div className="flex min-w-0 items-center justify-center gap-3 text-center">
+          <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
             <CompanyAvatar
               logoUrl={jdInfo?.logoUrl}
               companyName={jdInfo?.companyName}
-              className="hidden h-11 w-11 rounded-xl border-indigo-500/20 bg-indigo-500/10 text-sm sm:flex"
+              className="hidden h-10 w-10 rounded-xl border-indigo-500/20 bg-indigo-500/10 text-sm sm:flex"
             />
-            <div className="max-w-[min(70vw,620px)] min-w-0">
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-[11px] font-bold tracking-[0.14em] text-slate-500 uppercase dark:text-slate-400">
-                  Quy trình ứng tuyển
+            <div className="max-w-[min(68vw,720px)] min-w-0">
+              <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
+                {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+              </h1>
+              <div className="mt-1 flex min-w-0 items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                {jdInfo?.companyName && (
+                  <span className="max-w-48 truncate font-semibold text-indigo-600 dark:text-indigo-300">
+                    {jdInfo.companyName}
+                  </span>
+                )}
+                {jdInfo?.companyName && (
+                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                )}
+                <span className="whitespace-nowrap">Hồ sơ #{applicationId}</span>
+                <span className="hidden text-slate-300 sm:inline dark:text-slate-700">•</span>
+                <span className="hidden whitespace-nowrap sm:inline">
+                  {totalRounds} vòng đánh giá
                 </span>
-                <span className="text-slate-400 dark:text-slate-600">•</span>
-                <span className="text-[11px] font-bold text-indigo-500 dark:text-indigo-400">
-                  #{applicationId}
+                <span className="hidden sm:inline">
+                  <ApplicationStatusBadge status={app.status} />
                 </span>
               </div>
-              <h1 className="mt-0.5 truncate text-base font-black tracking-tight text-slate-900 sm:text-lg dark:text-white">
-                {jdInfo?.companyName && (
-                  <span className="text-indigo-600 dark:text-indigo-300">{jdInfo.companyName}</span>
-                )}
-                {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
-                <span>
-                  {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
-                </span>
-              </h1>
-              <p className="mt-0.5 truncate text-xs font-medium text-slate-500 dark:text-slate-400">
-                {totalRounds} vòng đánh giá <span className="px-1 text-slate-400">·</span> Theo dõi
-                tiến độ tuyển dụng
-              </p>
             </div>
           </div>
 
-          {/* Status and refresh actions */}
-          <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
-            <ApplicationStatusBadge status={app.status} />
+          {/* Refresh action */}
+          <div className="flex min-w-0 items-center justify-end">
             <Button
               variant="outline"
               size="sm"
               onClick={loadData}
-              className="h-8 gap-1.5 border-slate-200 text-xs font-bold dark:border-slate-800">
-              <RotateCw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">
-                {t("userApplicationhistory.reload", "Làm mới")}
-              </span>
+              title={t("userApplicationhistory.reload", "Làm mới")}
+              aria-label={t("userApplicationhistory.reload", "Làm mới")}
+              className="h-9 w-9 rounded-lg border-slate-200 bg-transparent p-0 text-slate-500 shadow-none transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700/80 dark:bg-slate-900/50 dark:text-slate-400 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300">
+              <RotateCw className="h-4 w-4" />
+              <span className="sr-only">{t("userApplicationhistory.reload", "Làm mới")}</span>
             </Button>
           </div>
         </div>
