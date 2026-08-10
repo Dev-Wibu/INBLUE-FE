@@ -47,7 +47,12 @@ export function RoundWorkspaceDispatcher({
 
   const detailStatus = detail?.status as string | undefined;
   const isCompleted =
-    isAppCompleted || detailStatus === "COMPLETED" || roundOrder < currentRoundOrder;
+    isAppCompleted ||
+    detailStatus === "COMPLETED" ||
+    detailStatus === "AI_EVALUATED" ||
+    detailStatus === "PASSED" ||
+    detailStatus === "FAILED" ||
+    roundOrder < currentRoundOrder;
 
   const isCurrent = !isCompleted && roundOrder === currentRoundOrder;
 

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Check, Lock } from "lucide-react";
+import { AlertTriangle, Award, Check, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../../../../schema-from-be";
 
@@ -39,6 +39,18 @@ export function HorizontalPipeline({
 }: HorizontalPipelineProps) {
   const { t } = useTranslation();
   const sortedRounds = [...rounds].sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0));
+  const isReportSelected = selectedRoundOrder === 99;
+  const isAllCompleted =
+    overallStatus === "PASSED" ||
+    overallStatus === "FAILED" ||
+    (details.length > 0 &&
+      details.every(
+        (d) =>
+          d.status === "COMPLETED" ||
+          d.status === "AI_EVALUATED" ||
+          d.finalResult === "PASSED" ||
+          d.finalResult === "FAILED"
+      ));
 
   return (
     <div className="scrollbar-none w-full overflow-x-auto px-1 py-1">
@@ -159,6 +171,55 @@ export function HorizontalPipeline({
             </div>
           );
         })}
+
+        {/* Final Milestone Destination Node: Executive Competency Report (Node 99) */}
+        {sortedRounds.length > 0 && (
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
+            {/* Connector line leading to Final Node */}
+            <div
+              className={cn(
+                "h-[2px] w-6 shrink-0 rounded-full transition-all duration-300 sm:w-10",
+                isAllCompleted
+                  ? "bg-gradient-to-r from-emerald-500 via-indigo-500 to-purple-600 shadow-xs shadow-purple-500/20"
+                  : "bg-slate-200 dark:bg-slate-800/80"
+              )}
+            />
+
+            {/* Final Node Button */}
+            <button
+              type="button"
+              onClick={() => onSelectRound?.(99)}
+              className={cn(
+                "group relative flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-hidden",
+                isAllCompleted
+                  ? "border-purple-200 bg-purple-50/80 text-purple-900 shadow-xs hover:border-purple-300 hover:bg-purple-100 dark:border-purple-500/40 dark:bg-purple-950/40 dark:text-purple-200 dark:hover:bg-purple-950/70"
+                  : "border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800/60",
+                isReportSelected &&
+                  "border-indigo-500 bg-indigo-600 text-white shadow-md ring-2 shadow-indigo-500/20 ring-indigo-500/60 dark:bg-gradient-to-r dark:from-indigo-950/90 dark:to-purple-950/90 dark:ring-indigo-500/80"
+              )}>
+              <div
+                className={cn(
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-white shadow-xs transition-all",
+                  isAllCompleted
+                    ? "bg-gradient-to-br from-indigo-500 to-purple-600 shadow-purple-500/30"
+                    : "bg-slate-400 dark:bg-slate-700",
+                  isReportSelected && "bg-indigo-500 text-white"
+                )}>
+                <Award className="h-3.5 w-3.5 stroke-[3]" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="font-bold tracking-tight whitespace-nowrap">
+                  {t("userApplicationhistory.competencyReportNode", {
+                    defaultValue: "Báo cáo năng lực",
+                  })}
+                </span>
+                <span className="font-mono text-[10px] font-medium whitespace-nowrap opacity-80">
+                  {t("userApplicationhistory.finalSummary", { defaultValue: "Tổng kết AI" })}
+                </span>
+              </div>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
