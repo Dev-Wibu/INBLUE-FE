@@ -375,11 +375,11 @@ export function ApplicationWorkspacePage() {
           {/* Back navigation */}
           <div className="flex items-center">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => navigate("/user?tab=applicationHistory")}
-              className="h-9 gap-1.5 rounded-lg px-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-indigo-600 sm:pr-3 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-indigo-400">
-              <ArrowLeft className="h-3.5 w-3.5" />
+              className="group h-10 gap-1.5 rounded-xl border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:pr-3 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               <span className="hidden sm:inline">
                 {t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}
               </span>
@@ -414,8 +414,8 @@ export function ApplicationWorkspacePage() {
               onClick={loadData}
               title={t("userApplicationhistory.reload", "Làm mới")}
               aria-label={t("userApplicationhistory.reload", "Làm mới")}
-              className="h-9 w-9 rounded-lg border-slate-200 bg-transparent p-0 text-slate-500 shadow-none transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700/80 dark:bg-slate-900/50 dark:text-slate-400 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300">
-              <RotateCw className="h-4 w-4" />
+              className="group h-10 w-10 rounded-xl border-slate-300 bg-white p-0 text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              <RotateCw className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
               <span className="sr-only">{t("userApplicationhistory.reload", "Làm mới")}</span>
             </Button>
           </div>
