@@ -25,7 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorFeedbacksByMentor } from "@/hooks/useMentorFeedback";
-import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
+import { calculateAverageRating, useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
@@ -208,13 +208,9 @@ export function StudentsListPage() {
       const studentReviews = reviews.filter(
         (r: { user?: { id?: number } }) => r.user?.id === student.id
       );
-      if (studentReviews.length > 0) {
-        const total = studentReviews.reduce(
-          (sum: number, r: { rating?: number }) => sum + (r.rating || 0),
-          0
-        );
-        student.avgRating = total / studentReviews.length;
-      }
+      // Mentor review ratings are a 1–5 value. Historical malformed values
+      // (for example 35.8) must never be rendered as a star rating.
+      student.avgRating = calculateAverageRating(studentReviews);
     });
     return Array.from(map.values()).sort((a, b) => {
       const aTimestamp = toTimestamp(treatZuluAsVietnamLocal(a.lastSessionDate)) ?? 0;
@@ -459,7 +455,10 @@ export function StudentsListPage() {
               ) : (
                 <motion.div
                   variants={listMotion}
-                  initial="hidden"
+                  // Filter changes mount new rows after the parent has already
+                  // animated. Starting them as `hidden` leaves their DOM boxes
+                  // clickable but visually invisible.
+                  initial={false}
                   animate="show"
                   className="flex flex-col gap-2">
                   {pageData.map((student) => (

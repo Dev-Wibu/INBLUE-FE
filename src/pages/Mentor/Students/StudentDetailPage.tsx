@@ -19,8 +19,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
-import { useMentorFeedbacks } from "@/hooks/useMentorFeedback";
-import { useMentorReviews } from "@/hooks/useMentorReview";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
+import { useMentorFeedbacksByMentor } from "@/hooks/useMentorFeedback";
+import { calculateAverageRating, useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import type { CandidateProfile } from "@/interfaces/schema.types";
@@ -31,7 +32,6 @@ import {
   getLatestCandidateProfile,
   useCandidateProfile,
 } from "@/services/candidate-profile.manager";
-import { useAuthStore } from "@/stores/authStore";
 import { motion } from "framer-motion";
 import {
   AlertCircle,
@@ -80,17 +80,37 @@ const fadeUp = (delay: number) => ({
   transition: { duration: 0.4, ease: "easeOut" as const, delay },
 });
 
+type DatedItem = {
+  createdAt?: string;
+  session?: Pick<Session, "startTime1" | "endTime1">;
+};
+
+function activityTimestamp(item: DatedItem): number {
+  const value = item.createdAt ?? item.session?.endTime1 ?? item.session?.startTime1;
+  if (!value) return Number.POSITIVE_INFINITY;
+  const localizedValue = treatZuluAsVietnamLocal(value);
+  if (localizedValue == null) return Number.POSITIVE_INFINITY;
+  const timestamp = new Date(localizedValue).getTime();
+  return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
+}
+
+function firstActivity<T extends DatedItem>(items: T[]): T | undefined {
+  return [...items].sort((left, right) => activityTimestamp(left) - activityTimestamp(right))[0];
+}
+
 export function StudentDetailPage() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const currentUser = useAuthStore((state) => state.user);
   const [activeTab, setActiveTab] = useState("sessions");
   const studentId = Number(userId);
 
+  const { data: mentorProfile, isLoading: mentorLoading } = useCurrentMentorProfile();
+  const mentorId = (mentorProfile as { id?: number } | null)?.id ?? 0;
   const { data: allSessions = [], isLoading: sessionsLoading } = useSessions();
-  const { data: allFeedbacks = [], isLoading: feedbacksLoading } = useMentorFeedbacks();
-  const { data: allReviews = [], isLoading: reviewsLoading } = useMentorReviews();
+  const { data: allFeedbacks = [], isLoading: feedbacksLoading } =
+    useMentorFeedbacksByMentor(mentorId);
+  const { data: allReviews = [], isLoading: reviewsLoading } = useMentorReviewsByMentor(mentorId);
   // 2026-08-09: BE `GET /api/candidate-profiles/{userId}` returns
   //   `CandidateProfile[]` (1 student can have multiple profile versions
   //   — drafts / applications). Earlier versions casted the array as a
@@ -109,18 +129,20 @@ export function StudentDetailPage() {
     return null;
   }, [candidateProfileRaw]);
 
-  const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading || profileLoading;
+  const isLoading =
+    mentorLoading || sessionsLoading || feedbacksLoading || reviewsLoading || profileLoading;
 
   // ---- DATA (logic preserved 1:1 from previous version) ----
   const studentSessions = allSessions.filter(
-    (session: Session) => session.userId === studentId && isSessionMentor(session, currentUser?.id)
+    (session: Session) => session.userId === studentId && isSessionMentor(session, mentorId)
   );
   const studentFeedbacks = allFeedbacks.filter(
-    (feedback: { user?: { id?: number }; mentor?: { id?: number } }) =>
-      feedback.user?.id === studentId && feedback.mentor?.id === currentUser?.id
+    (feedback: { user?: { id?: number }; session?: { userId?: number } }) =>
+      (feedback.user?.id ?? feedback.session?.userId) === studentId
   );
   const studentReviews = allReviews.filter(
-    (review: { session?: { userId?: number } }) => review.session?.userId === studentId
+    (review: { user?: { id?: number }; session?: { userId?: number } }) =>
+      (review.user?.id ?? review.session?.userId) === studentId
   );
   const studentInfo = studentFeedbacks[0]?.user || studentReviews[0]?.user || { id: studentId };
 
@@ -129,19 +151,43 @@ export function StudentDetailPage() {
   const completedSessions = studentSessions.filter((s: Session) => s.status === "COMPLETED").length;
   const totalFeedbacks = studentFeedbacks.length;
   const totalReviews = studentReviews.length;
-  const avgRating =
-    totalReviews > 0
-      ? studentReviews.reduce((sum: number, r: { rating?: number }) => sum + (r.rating || 0), 0) /
-        totalReviews
-      : 0;
+  const avgRating = calculateAverageRating(studentReviews);
 
   // Rating distribution (1-5 stars)
   const ratingDistribution = [5, 4, 3, 2, 1].map((star) => {
     const count = studentReviews.filter(
       (r: { rating?: number }) => (r.rating || 0) === star
     ).length;
-    return { star, count, pct: totalReviews ? (count / totalReviews) * 100 : 0 };
+    const ratedReviews = studentReviews.filter(
+      (r: { rating?: number }) => typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
+    );
+    return { star, count, pct: ratedReviews.length ? (count / ratedReviews.length) * 100 : 0 };
   });
+
+  const firstSession = firstActivity(studentSessions.map((session) => ({ session })));
+  const firstFeedback = firstActivity(studentFeedbacks);
+  // The review endpoint often includes only a partial `session` object.
+  // Rehydrate it from the mentor's sessions so the review timeline has a
+  // reliable date even when `review.session.endTime1` is omitted.
+  const sessionsById = new Map(
+    studentSessions
+      .filter((session) => typeof session.id === "number")
+      .map((session) => [session.id!, session])
+  );
+  const firstReview = firstActivity(
+    studentReviews.map((review) => ({
+      ...review,
+      session:
+        (typeof review.session?.id === "number"
+          ? sessionsById.get(review.session.id)
+          : undefined) ?? review.session,
+    }))
+  );
+  const firstFeedbackDate =
+    firstFeedback?.createdAt ??
+    firstFeedback?.session?.endTime1 ??
+    firstFeedback?.session?.startTime1;
+  const firstReviewDate = firstReview?.session?.endTime1 ?? firstReview?.session?.startTime1;
 
   if (isLoading) {
     return (
@@ -603,9 +649,9 @@ export function StudentDetailPage() {
                 icon={Calendar}
                 label={t("common.firstSession")}
                 value={
-                  studentSessions[0]?.startTime1 ? (
+                  firstSession?.session?.startTime1 ? (
                     <TimeAgo
-                      date={String(treatZuluAsVietnamLocal(studentSessions[0].startTime1!))}
+                      date={String(treatZuluAsVietnamLocal(firstSession.session.startTime1))}
                     />
                   ) : (
                     "—"
@@ -617,8 +663,8 @@ export function StudentDetailPage() {
                 icon={MessageSquare}
                 label={t("common.firstFeedback")}
                 value={
-                  studentFeedbacks[0]?.createdAt ? (
-                    <TimeAgo date={String(studentFeedbacks[0].createdAt)} />
+                  firstFeedbackDate ? (
+                    <TimeAgo date={String(treatZuluAsVietnamLocal(firstFeedbackDate))} />
                   ) : (
                     "—"
                   )
@@ -629,10 +675,8 @@ export function StudentDetailPage() {
                 icon={Star}
                 label={t("mentorStudents.firstReview")}
                 value={
-                  studentReviews[0]?.session?.endTime1 ? (
-                    <TimeAgo
-                      date={String(treatZuluAsVietnamLocal(studentReviews[0].session.endTime1))}
-                    />
+                  firstReviewDate ? (
+                    <TimeAgo date={String(treatZuluAsVietnamLocal(firstReviewDate))} />
                   ) : (
                     "—"
                   )

@@ -360,7 +360,7 @@ export function MentorReviewsPage() {
               ) : (
                 <motion.div
                   variants={listMotion}
-                  initial="hidden"
+                  initial={false}
                   animate="show"
                   className="flex flex-col gap-2">
                   {pageData.map((review) => {

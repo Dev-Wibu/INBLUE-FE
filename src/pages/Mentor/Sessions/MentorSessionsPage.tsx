@@ -413,7 +413,7 @@ export function MentorSessionsPage() {
               <motion.div
                 key={`${trackFilter}-${otherStatusFilter}-${searchQuery}`}
                 variants={listMotion}
-                initial="hidden"
+                initial={false}
                 animate="show"
                 className={cn("grid gap-3 sm:grid-cols-2 xl:grid-cols-3")}>
                 <AnimatePresence initial={false}>
