@@ -6,6 +6,7 @@ export { MentorOverviewPage } from "./Overview";
 export { MentorReviewsPage, ReviewDetailPage } from "./Reviews";
 export {
   MentorSessionDetailPage,
+  MentorSessionReviewViewPage,
   MentorSessionRoomPage,
   MentorSessionsPage,
   WriteFeedbackPage,

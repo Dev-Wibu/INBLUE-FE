@@ -37,6 +37,7 @@ import {
 import {
   MentorDashboardPage,
   MentorSessionDetailPage,
+  MentorSessionReviewViewPage,
   MentorSessionRoomPage,
   ReviewDetailPage,
   StudentDetailPage,
@@ -317,6 +318,10 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={["MENTOR"]} />}>
               <Route path="/mentor" element={<MentorDashboardPage />}>
                 <Route path="sessions/:sessionId" element={<MentorSessionDetailPage />} />
+                <Route
+                  path="sessions/:sessionId/review/view"
+                  element={<MentorSessionReviewViewPage />}
+                />
                 <Route path="sessions/room/:sessionId" element={<MentorSessionRoomPage />} />
                 <Route path="sessions/:sessionId/review" element={<WriteFeedbackPage />} />
                 <Route path="reviews/:id" element={<ReviewDetailPage />} />

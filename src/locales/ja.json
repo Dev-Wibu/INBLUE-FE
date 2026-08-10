@@ -504,7 +504,8 @@
     "applicationsCount": "件",
     "unpaidText": "未払い",
     "selectCompany": "会社を選択",
-    "chooseCompany": "会社を選択してください..."
+    "chooseCompany": "会社を選択してください...",
+    "price": "[JA] adminCompanymanagement.price"
   },
   "adminDashboardoverview": {
     "companies": "企業",
@@ -537,7 +538,30 @@
     "system": "システム：",
     "systemOverview": "システム概要",
     "totalUsers": "ユーザー合計",
-    "trackRecentRevenueAndTransactions": "システム内の直近の収益と取引状況を追跡"
+    "trackRecentRevenueAndTransactions": "システム内の直近の収益と取引状況を追跡",
+    "inProgressApplications": "[JA] adminDashboardoverview.inProgressApplications",
+    "passedApplications": "[JA] adminDashboardoverview.passedApplications",
+    "failedApplications": "[JA] adminDashboardoverview.failedApplications",
+    "topAppliedJobs": "[JA] adminDashboardoverview.topAppliedJobs",
+    "topAppliedJobsDescription": "[JA] adminDashboardoverview.topAppliedJobsDescription",
+    "topAppliedPositions": "[JA] adminDashboardoverview.topAppliedPositions",
+    "topAppliedPositionsDescription": "[JA] adminDashboardoverview.topAppliedPositionsDescription",
+    "activeInterviews": "[JA] adminDashboardoverview.activeInterviews",
+    "activeInterviewsDescription": "[JA] adminDashboardoverview.activeInterviewsDescription",
+    "activeInterviewDetailsUnavailable": "[JA] adminDashboardoverview.activeInterviewDetailsUnavailable",
+    "noActiveInterviews": "[JA] adminDashboardoverview.noActiveInterviews",
+    "startedAt": "[JA] adminDashboardoverview.startedAt",
+    "updatedAt": "[JA] adminDashboardoverview.updatedAt",
+    "showingActiveInterviews": "[JA] adminDashboardoverview.showingActiveInterviews",
+    "showLess": "[JA] adminDashboardoverview.showLess",
+    "showMore": "[JA] adminDashboardoverview.showMore",
+    "applicationPipeline": "[JA] adminDashboardoverview.applicationPipeline",
+    "applicationPipelineDescription": "[JA] adminDashboardoverview.applicationPipelineDescription",
+    "averageApplicationsPerUser": "[JA] adminDashboardoverview.averageApplicationsPerUser",
+    "applicationsPerUserUnit": "[JA] adminDashboardoverview.applicationsPerUserUnit",
+    "uniqueApplicants": "[JA] adminDashboardoverview.uniqueApplicants",
+    "days": "[JA] adminDashboardoverview.days",
+    "latestTransactionsIn": "[JA] adminDashboardoverview.latestTransactionsIn"
   },
   "adminFeedbackmanagement": {
     "areYouSureYouWant": "レスポンス #",
@@ -1919,7 +1943,12 @@
     "pointsAbbr": "pt",
     "minutesShort": "分",
     "days": "日",
-    "problemNum": "問題 #{{num}}"
+    "problemNum": "問題 #{{num}}",
+    "open": "開く",
+    "timeline": "タイムライン",
+    "checkNow": "今すぐ確認",
+    "copied": "コピーしました",
+    "backToTheSession": "セッションに戻る"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -2074,7 +2103,11 @@
     "thereIsNoDetailedReview": "詳細なレビュー内容がありません",
     "updatedReview": "レビューを更新しました",
     "youCanChooseTheNumber": "星の数を選択するか詳細なメモを記入できます。少なくとも1つの情報が必要です",
-    "yourSpecificSuggestionsForStudents": "学生が改善するための具体的な提案..."
+    "yourSpecificSuggestionsForStudents": "学生が改善するための具体的な提案...",
+    "promptSituation": "状況を設定：面接のテーマ、学生の背景、より広い文脈は？",
+    "promptTask": "どんな課題やタスクを出しましたか？何を解決することが期待されましたか？",
+    "promptAction": "学生はどう反応しましたか？具体的にどんな手順・判断・工夫をしましたか？",
+    "promptResult": "結果はどうでしたか？何が達成され、何を学び、何で苦労しましたか？"
   },
   "compShared": {
     "addFiles": "ファイルを追加",
@@ -2330,7 +2363,17 @@
     "trustedPartner": "信頼できるパートナー",
     "tryAdjustingYourSearchFilters": "検索フィルターまたはキーワードを調整してみてください",
     "viewOpenPositions": "募集中の職種を見る",
-    "workCulture": "働き方の文化"
+    "workCulture": "働き方の文化",
+    "selectJobToViewDetails": "[JA] enterpriseCompanydetail.selectJobToViewDetails",
+    "featuredRoles": "[JA] enterpriseCompanydetail.featuredRoles",
+    "interviewProcess": "[JA] enterpriseCompanydetail.interviewProcess",
+    "passingScore": "[JA] enterpriseCompanydetail.passingScore",
+    "duration": "[JA] enterpriseCompanydetail.duration",
+    "currentlyRecruiting": "[JA] enterpriseCompanydetail.currentlyRecruiting",
+    "jobDescription": "[JA] enterpriseCompanydetail.jobDescription",
+    "jobRequirements": "[JA] enterpriseCompanydetail.jobRequirements",
+    "jobBenefits": "[JA] enterpriseCompanydetail.jobBenefits",
+    "postedTime": "[JA] enterpriseCompanydetail.postedTime"
   },
   "enterpriseCompanysearchpage": {
     "activeCompanies": "アクティブな会社",
@@ -2923,7 +2966,9 @@
     "second": "秒",
     "language": "言語",
     "difficulty": "難易度",
-    "jobPosition": "応募職種"
+    "jobPosition": "応募職種",
+    "optional": "[JA] general.optional",
+    "unableToGetAnalyticsData": "[JA] general.unableToGetAnalyticsData"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50人以上のプロメンター",
@@ -3122,7 +3167,9 @@
     "mentorIdNotFound": "メンターIDが見つかりません",
     "noMentorInformationFound": "メンター情報が見つかりません",
     "unitPricePerMinute": "1分あたりの単価",
-    "writeAFewLinesIntroducing": "自己紹介を数行で書いてください..."
+    "writeAFewLinesIntroducing": "自己紹介を数行で書いてください...",
+    "notUpdatedYet": "[JA] mentorAccount.notUpdatedYet",
+    "priceHint": "[JA] mentorAccount.priceHint"
   },
   "mentorFeedback": {
     "averageScoreForEvaluation": "評価の平均スコア",
@@ -3182,7 +3229,9 @@
     "theEvaluationYouSentTo": "面接セッション後に学生に送信した評価",
     "theStudentHasNotFilled": "学生はSTARメソッドの詳細を入力していません。",
     "viewTheAssessmentsYouSent": "各面接セッション後に学生に送信した評価を表示",
-    "youHaveNotSentAny": "まだ学生にレビューを送信していません。"
+    "youHaveNotSentAny": "まだ学生にレビューを送信していません。",
+    "candidate": "候補者",
+    "mentorReviewReport": "メンターレビューレポート"
   },
   "mentorSessions": {
     "acceptInterviewSession": "面接セッションを承認",
@@ -3198,7 +3247,7 @@
     "itSNotTimeTo": "まだルームに参加する時間ではありません",
     "manageInterviewSessionsAndSend": "面接セッションを管理し、学生に評価を送信",
     "missingStudentInformationInThe": "面接セッションに学生情報が不足しています。",
-    "overviewOfAssessmentContentSent": "学生に送信した評価内容の概要",
+    "overviewOfAssessmentContentSent": "候補者と共有した評価のサマリー。",
     "pleaseEnterAtLeastOne": "提出前に少なくとも1つのレビューを入力してください。",
     "pointsForImprovement": "改善ポイント:",
     "reloadInterviewSessionList": "面接セッション一覧をリロード",
@@ -3223,7 +3272,15 @@
     "youCanOnlySubmitA": "面接セッション完了後にのみレビューを提出できます。",
     "youCanOnlyWriteA": "面接セッション完了後にのみレビューを書けます",
     "youDoNotHavePermission": "この面接セッションのレビューを提出する権限がありません。",
-    "yourReview": "あなたのレビュー"
+    "yourReview": "あなたのレビュー",
+    "recording": "録画",
+    "candidateFeedback": "候補者からのフィードバック",
+    "candidateHasNotLeftFeedbackYet": "候補者からの評価はまだ届いていません",
+    "startTime": "開始時刻",
+    "endTime": "終了時刻",
+    "youHaventSubmittedAReview": "このセッションにはまだレビューを送信していません。",
+    "reviewOfSession": "セッションのレビュー",
+    "youScoredCandidateWith": "この候補者を {{var_0}} / 5 で評価しました"
   },
   "mentorStudents": {
     "allStudents": "すべての学生",
@@ -3267,7 +3324,8 @@
     "tools": "ツール:",
     "totalStudents": "学生合計",
     "tryAnotherKeywordOrChange": "別のキーワードを試すか、フィルターを変更してください。",
-    "youHaveNotSubmittedAny": "この学生にまだレビューを送信していません。"
+    "youHaveNotSubmittedAny": "この学生にまだレビューを送信していません。",
+    "reviewSubmitted": "[JA] mentorStudents.reviewSubmitted"
   },
   "paymentPaymentcancelpage": {
     "callbackHasAValidIdentifier": "コールバックには有効な識別子がありますが、コンテキストローカルが不正です。コールバック優先で処理を続行します。",
@@ -3366,7 +3424,22 @@
     "unableToReconcileReliablyEnough": "この取引を十分に信頼性を持って照合できません。もう一度確認を試してください。",
     "userSessionNotFoundWhen": "成功コールバック入力時にユーザーセッションが見つかりません。",
     "validPaymentInformationNotReceived": "有効な支払い情報が受信されませんでした。再度支払ってください。",
-    "youNeedToLogIn": "パッケージを有効化するには再ログインが必要です。"
+    "youNeedToLogIn": "パッケージを有効化するには再ログインが必要です。",
+    "yeahhPaymentSuccess": "[JA] paymentPaymentsuccesspage.yeahhPaymentSuccess",
+    "paymentPendingTitle": "[JA] paymentPaymentsuccesspage.paymentPendingTitle",
+    "confirmingJdPurchase": "[JA] paymentPaymentsuccesspage.confirmingJdPurchase",
+    "purchaseJdSuccess": "[JA] paymentPaymentsuccesspage.purchaseJdSuccess",
+    "canApplyNow": "[JA] paymentPaymentsuccesspage.canApplyNow",
+    "paymentPendingWebhook": "[JA] paymentPaymentsuccesspage.paymentPendingWebhook",
+    "congratsPaymentSuccess": "[JA] paymentPaymentsuccesspage.congratsPaymentSuccess",
+    "packageActivatedCelebrate": "[JA] paymentPaymentsuccesspage.packageActivatedCelebrate",
+    "yourPremiumFeatures": "[JA] paymentPaymentsuccesspage.yourPremiumFeatures",
+    "aiInterviewCredits": "[JA] paymentPaymentsuccesspage.aiInterviewCredits",
+    "practiceSetCredits": "[JA] paymentPaymentsuccesspage.practiceSetCredits",
+    "quizSetCredits": "[JA] paymentPaymentsuccesspage.quizSetCredits",
+    "whatNext": "[JA] paymentPaymentsuccesspage.whatNext",
+    "exploreJobsNow": "[JA] paymentPaymentsuccesspage.exploreJobsNow",
+    "backToHome": "[JA] paymentPaymentsuccesspage.backToHome"
   },
   "settings": {
     "englishEn": "英語 (EN)",
@@ -3738,7 +3811,13 @@
     "youHaveNotParticipatedIn": "まだ任何の面接に参加していません。",
     "viewYourPastInterviewSessions": "過去の面接セッションを表示する",
     "managePreferencesAndSecurity": "設定とセキュリティの管理",
-    "quickSettingsDescription": "アカウント設定のクイック設定"
+    "quickSettingsDescription": "アカウント設定のクイック設定",
+    "profileCompletion": "[JA] userAccount.profileCompletion",
+    "basicInfo": "[JA] userAccount.basicInfo",
+    "bio": "[JA] userAccount.bio",
+    "socialLinks": "[JA] userAccount.socialLinks",
+    "aiOptimizationTips": "[JA] userAccount.aiOptimizationTips",
+    "completeProfileTip": "[JA] userAccount.completeProfileTip"
   },
   "userAiinterview": {
     "14Days": "14日",
@@ -4372,7 +4451,7 @@
     "mentorScheduleDateLabel": "面接日",
     "mentorScheduleDurationLabel": "時間",
     "mentorScheduleDurationValue": "{{count}} 分",
-    "mentorScheduleDurationOptions": ["30 分", "45 分", "60 分", "90 分"],
+    "mentorScheduleDurationOptions": "所要時間のオプション",
     "mentorScheduleModeLabel": "面接形式",
     "mentorScheduleModeOnlineTitle": "オンライン (Daily.co)",
     "mentorScheduleModeOnlineDesc": "ブラウザでビデオ面接",
@@ -4465,7 +4544,26 @@
     "codeReviewAiEvaluated": "AI EVALUATED",
     "codeReviewHrCommentTitle": "HR 委員会からのコメント",
     "codeReviewHrEvaluationLabel": "HR 評価",
-    "codeReviewSubmittedSourceTitle": "提出済みのソースコードとメモ"
+    "codeReviewSubmittedSourceTitle": "提出済みのソースコードとメモ",
+    "codeReviewIssueDeleted": "[JA] userApplicationhistory.codeReviewIssueDeleted",
+    "codeReviewSubmittingTitle": "[JA] userApplicationhistory.codeReviewSubmittingTitle",
+    "codeReviewSubmittingSubtitle": "[JA] userApplicationhistory.codeReviewSubmittingSubtitle",
+    "codeReviewResult": "[JA] userApplicationhistory.codeReviewResult",
+    "inReviewTime": "[JA] userApplicationhistory.inReviewTime",
+    "gradingTitle": "[JA] userApplicationhistory.gradingTitle",
+    "submittingTitle": "[JA] userApplicationhistory.submittingTitle",
+    "gradingSubtitle": "[JA] userApplicationhistory.gradingSubtitle",
+    "submittingSubtitle": "[JA] userApplicationhistory.submittingSubtitle",
+    "cvAnalyzedSuccess": "[JA] userApplicationhistory.cvAnalyzedSuccess",
+    "cvInstructionDefault": "[JA] userApplicationhistory.cvInstructionDefault",
+    "mentorStatusMatching": "[JA] userApplicationhistory.mentorStatusMatching",
+    "mentorAwaitingTitle": "[JA] userApplicationhistory.mentorAwaitingTitle",
+    "mentorAwaitingDesc": "[JA] userApplicationhistory.mentorAwaitingDesc",
+    "mentorSelectHintShort": "[JA] userApplicationhistory.mentorSelectHintShort",
+    "mentorSelectOpenDetail": "[JA] userApplicationhistory.mentorSelectOpenDetail",
+    "mentorSelectExpertise": "[JA] userApplicationhistory.mentorSelectExpertise",
+    "mentorSelectContact": "[JA] userApplicationhistory.mentorSelectContact",
+    "mentorSession": "[JA] userApplicationhistory.mentorSession"
   },
   "userApplication": {
     "applicationWorkspacePage": {
@@ -4542,7 +4640,11 @@
       "submitCvGradeAi": "履歴書を提出＆AI採点",
       "noCvFileSubmitted": "履歴書ファイルがまだ提出されていません",
       "noDataPendingCv": "データなし（履歴書提出が必要）",
-      "hrNotePending": "人事委員会は採点完了後に更新します。"
+      "hrNotePending": "人事委員会は採点完了後に更新します。",
+      "dropCvHint": "[JA] userApplication.cvScreening.dropCvHint",
+      "noHrNote": "[JA] userApplication.cvScreening.noHrNote",
+      "aiScore": "[JA] userApplication.cvScreening.aiScore",
+      "hrScore": "[JA] userApplication.cvScreening.hrScore"
     },
     "emailSimulator": {
       "reportTitle": "メールシミュレーション評価レポート",
@@ -4618,7 +4720,10 @@
       "matchScore": "マッチスコア",
       "emailMissingSubjectCode": "メールに件名コードがありません",
       "errorGradingEmail": "メールの採点中にエラーが発生しました",
-      "confirmEmailSent": "メール送信が確認されました"
+      "confirmEmailSent": "メール送信が確認されました",
+      "aiVsHr": "[JA] userApplication.emailSimulator.aiVsHr",
+      "aiScore": "[JA] userApplication.emailSimulator.aiScore",
+      "hrScore": "[JA] userApplication.emailSimulator.hrScore"
     },
     "quiz": {
       "examResultReport": "筆記試験結果レポート",
@@ -4716,7 +4821,8 @@
       "minutes": "分",
       "seconds": "秒",
       "question": "問題",
-      "viewAllResults": "すべての結果を表示"
+      "viewAllResults": "すべての結果を表示",
+      "copyCode": "[JA] userApplication.quiz.copyCode"
     },
     "coding": {
       "codingExamReport": "コーディング試験評価レポート",
@@ -5145,7 +5251,8 @@
       "stepResult": "評価結果",
       "stepWaitingShort": "待機",
       "stepSelectShort": "選択",
-      "stepScheduleShort": "予約"
+      "stepScheduleShort": "予約",
+      "onlineInterviewStation": "[JA] userApplication.mentorReview.onlineInterviewStation"
     },
     "roundNumber": "ラウンド {{number}}"
   },
@@ -6297,7 +6404,8 @@
     "submitPass": "確認して承認",
     "submitFail": "確認して却下",
     "submitHint": "あなたの決定は記録され、候補者に表示されます。",
-    "useAi": "AI を使う"
+    "useAi": "AI を使う",
+    "useAiScore": "[JA] staffGrading.useAiScore"
   },
   "quiz": {
     "submitSuccess": "クイズの提出に成功しました！",
@@ -6310,7 +6418,8 @@
     "selectValid": "有効な応募を選択してください。",
     "detailsId": "応募の詳細 #",
     "noRounds": "この応募に利用できるラウンドはありません。",
-    "searchByUserOrJob": "ユーザーまたは仕事で検索"
+    "searchByUserOrJob": "ユーザーまたは仕事で検索",
+    "gradingDetail": "[JA] application.gradingDetail"
   },
   "status": {
     "pendingSubmit": "提出待ち",
@@ -6693,7 +6802,11 @@
         "description": "この選考が有効な職種では、テキストまたは音声で練習できます。",
         "feedback": "回答内容と伝え方の両方へのフィードバックです。"
       }
-    }
+    },
+    "jobSliceKicker": "[JA] landingNew.jobSliceKicker",
+    "topCompaniesTitle": "[JA] landingNew.topCompaniesTitle",
+    "topCompaniesDescription": "[JA] landingNew.topCompaniesDescription",
+    "noJobsAvailable": "[JA] landingNew.noJobsAvailable"
   },
   "landingRefactor": {
     "heroBadge": "AI面接練習",
@@ -6915,5 +7028,10 @@
       "junior": "ジュニア",
       "middle": "ミドル"
     }
-  }
+  },
+  "codeReviewRound": "[JA] codeReviewRound",
+  "codeReviewIssues": "[JA] codeReviewIssues",
+  "codeReviewContext": "[JA] codeReviewContext",
+  "codeReviewDefaultStatement": "[JA] codeReviewDefaultStatement",
+  "gradingErrorScoreRange": "[JA] gradingErrorScoreRange"
 }
