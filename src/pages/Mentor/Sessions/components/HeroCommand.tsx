@@ -203,10 +203,10 @@ export function HeroCommand({
       className={cn(
         "relative isolate overflow-hidden rounded-2xl",
         // Deep, quiet base — not a "hero gradient" SaaS template.
-        "bg-slate-900 text-slate-100 dark:bg-slate-950 dark:text-slate-100",
-        "ring-1 ring-slate-200/70 ring-inset dark:ring-white/10 dark:ring-inset",
+        "bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100",
+        "ring-1 ring-slate-200 ring-inset dark:ring-white/10 dark:ring-inset",
         // Crisp inner ring to add depth without harshness.
-        "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_18px_50px_-30px_rgba(0,0,0,0.15)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_18px_50px_-30px_rgba(0,0,0,0.7)]",
+        "shadow-[0_4px_20px_-8px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_18px_50px_-30px_rgba(0,0,0,0.7)]",
         className
       )}>
       {/* Subtle dotted grid + soft radial spotlight — gives "command center" depth */}
@@ -313,7 +313,7 @@ export function HeroCommand({
             disabled={isReloading}
             aria-label={reloadTooltip}
             title={reloadTooltip}
-            className="h-9 w-9 shrink-0 border-white/10 bg-white/5 text-slate-100 hover:bg-white/10 hover:text-white dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10 dark:hover:text-white">
+            className="h-9 w-9 shrink-0 border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10 dark:hover:text-white">
             <RefreshCw className={cn("h-4 w-4", isReloading && "animate-spin")} aria-hidden />
           </Button>
         </div>

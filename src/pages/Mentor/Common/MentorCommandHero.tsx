@@ -38,21 +38,25 @@ export interface MentorCommandHeroProps {
 }
 
 const TONE_RING: Record<NonNullable<MentorCommandHeroProps["tone"]>, string> = {
-  sky: "ring-sky-400/30 text-sky-300 bg-sky-500/10",
-  emerald: "ring-emerald-400/30 text-emerald-300 bg-emerald-500/10",
-  amber: "ring-amber-400/30 text-amber-300 bg-amber-500/10",
-  indigo: "ring-indigo-400/30 text-indigo-300 bg-indigo-500/10",
-  violet: "ring-violet-400/30 text-violet-300 bg-violet-500/10",
-  rose: "ring-rose-400/30 text-rose-300 bg-rose-500/10",
+  sky: "ring-sky-400/30 text-sky-600 bg-sky-500/10 dark:text-sky-300 dark:bg-sky-500/10",
+  emerald:
+    "ring-emerald-400/30 text-emerald-600 bg-emerald-500/10 dark:text-emerald-300 dark:bg-emerald-500/10",
+  amber:
+    "ring-amber-400/30 text-amber-600 bg-amber-500/10 dark:text-amber-300 dark:bg-amber-500/10",
+  indigo:
+    "ring-indigo-400/30 text-indigo-600 bg-indigo-500/10 dark:text-indigo-300 dark:bg-indigo-500/10",
+  violet:
+    "ring-violet-400/30 text-violet-600 bg-violet-500/10 dark:text-violet-300 dark:bg-violet-500/10",
+  rose: "ring-rose-400/30 text-rose-600 bg-rose-500/10 dark:text-rose-300 dark:bg-rose-500/10",
 };
 
 const TONE_GLOW: Record<NonNullable<MentorCommandHeroProps["tone"]>, string> = {
-  sky: "bg-sky-400/25",
-  emerald: "bg-emerald-400/25",
-  amber: "bg-amber-400/25",
-  indigo: "bg-indigo-400/25",
-  violet: "bg-violet-400/25",
-  rose: "bg-rose-400/25",
+  sky: "bg-sky-400/10 dark:bg-sky-400/25",
+  emerald: "bg-emerald-400/10 dark:bg-emerald-400/25",
+  amber: "bg-amber-400/10 dark:bg-amber-400/25",
+  indigo: "bg-indigo-400/10 dark:bg-indigo-400/25",
+  violet: "bg-violet-400/10 dark:bg-violet-400/25",
+  rose: "bg-rose-400/10 dark:bg-rose-400/25",
 };
 
 export function MentorCommandHero({
@@ -73,9 +77,9 @@ export function MentorCommandHero({
     <section
       className={cn(
         "relative isolate overflow-hidden rounded-2xl",
-        "bg-slate-900 text-slate-100 dark:bg-slate-950 dark:text-slate-100",
-        "ring-1 ring-slate-200/70 ring-inset dark:ring-white/10 dark:ring-inset",
-        "shadow-[inset_0_1px_0_0_rgba(0,0,0,0.05),0_18px_50px_-30px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_18px_50px_-30px_rgba(0,0,0,0.7)]",
+        "bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100",
+        "ring-1 ring-slate-200 ring-inset dark:ring-white/10 dark:ring-inset",
+        "shadow-[0_4px_20px_-8px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_18px_50px_-30px_rgba(0,0,0,0.7)]",
         className
       )}>
       {/* Subtle dotted grid + soft radial spotlight */}
