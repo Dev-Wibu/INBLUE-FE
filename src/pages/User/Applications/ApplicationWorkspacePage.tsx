@@ -15,7 +15,6 @@ import {
   BadgeCheck,
   Bot,
   Briefcase,
-  ChevronRight,
   Clock,
   Code2,
   FileCheck2,
@@ -370,42 +369,52 @@ export function ApplicationWorkspacePage() {
 
   return (
     <div className={applicationTheme.page}>
-      {/* Top Header Navigation (Single Sleek 1-Line Breadcrumb Standard) */}
+      {/* Centered application header */}
       <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="mx-auto flex w-full max-w-[1700px] items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
-          {/* Sleek 1-Line Inline Breadcrumb & Title */}
-          <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+        <div className="mx-auto grid w-full max-w-[1700px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:gap-5 sm:px-6 lg:px-8">
+          {/* Back navigation */}
+          <div className="flex items-center">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate("/user?tab=applicationHistory")}
-              className="h-8 gap-1.5 px-2 text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+              className="h-8 gap-1.5 px-2 text-xs font-semibold text-slate-500 hover:text-indigo-600 sm:pr-3 dark:text-slate-400 dark:hover:text-indigo-400">
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>{t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}</span>
-            </Button>
-
-            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-
-            <div className="flex min-w-0 items-center gap-2">
-              <CompanyAvatar
-                logoUrl={jdInfo?.logoUrl}
-                companyName={jdInfo?.companyName}
-                className="h-7 w-7 rounded-[8px]"
-              />
-              <span className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {jdInfo?.companyName}
+              <span className="hidden sm:inline">
+                {t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}
               </span>
-            </div>
-
-            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-
-            <h1 className="truncate text-sm font-extrabold text-slate-900 dark:text-white">
-              {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
-            </h1>
+            </Button>
           </div>
 
-          {/* Right Header Actions */}
-          <div className="flex items-center gap-3">
+          {/* Centered application identity */}
+          <div className="flex min-w-0 items-center justify-center gap-2.5 text-center">
+            <CompanyAvatar
+              logoUrl={jdInfo?.logoUrl}
+              companyName={jdInfo?.companyName}
+              className="hidden h-9 w-9 rounded-[10px] sm:flex"
+            />
+            <div className="min-w-0">
+              <div className="flex items-center justify-center gap-1.5">
+                <span className="text-[10px] font-bold tracking-[0.16em] text-slate-500 uppercase dark:text-slate-400">
+                  Quy trình ứng tuyển
+                </span>
+                <span className="text-slate-400">•</span>
+                <span className="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400">
+                  #{applicationId}
+                </span>
+              </div>
+              <h1 className="truncate text-sm font-extrabold text-slate-900 sm:text-base dark:text-white">
+                {jdInfo?.companyName ? `${jdInfo.companyName} · ` : ""}
+                {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+              </h1>
+              <p className="truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                Theo dõi tiến độ đánh giá · {totalRounds} vòng tuyển dụng
+              </p>
+            </div>
+          </div>
+
+          {/* Status and refresh actions */}
+          <div className="flex items-center justify-end gap-2 sm:gap-3">
             <ApplicationStatusBadge status={app.status} />
             <Button
               variant="outline"
