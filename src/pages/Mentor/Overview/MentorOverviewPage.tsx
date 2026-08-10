@@ -40,7 +40,7 @@ const MOBILE_VIEW_AGENDA = "agenda";
 const MOBILE_VIEW_CALENDAR = "calendar";
 const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 const getStatusConfig = (
-  t: (key: string) => string
+  t: (_key: string) => string
 ): Record<string, { label: string; dot: string; badgeClass: string }> => ({
   SCHEDULED: {
     label: t("common.comingSoon"),
