@@ -794,7 +794,7 @@ export function ApplicationGradingPage({
 }: {
   onOpenGradingDetail?: (
     _appId: number,
-    _extra?: { candidateName?: string; jdId?: string }
+    _extra?: { candidateName?: string; jdId?: string; detailId?: number }
   ) => void;
   basePath?: string;
 }) {
@@ -1061,14 +1061,19 @@ export function ApplicationGradingPage({
   const handleOpenGrading = useCallback(
     (_appId: number, detailId?: number, item?: GradingListItem) => {
       if (onOpenGradingDetail) {
-        // Pass candidate info for tab label and detail page header
-        const extra: { candidateName?: string; jdId?: string } = {};
+        // Pass candidate info + detailId for tab label and detail page header.
+        // The first arg MUST be the application id (not the detail id) — the
+        // tabs store uses appId as the per-tab key. detailId is forwarded via
+        // extra so the URL gets ?detailId=X and the workspace opens straight
+        // to that row.
+        const extra: { candidateName?: string; jdId?: string; detailId?: number } = {};
         if (item) {
           const name = item.userName ?? (item.userId ? userMap.get(item.userId) : undefined);
           if (name) extra.candidateName = name;
           if (item.jdId !== undefined) extra.jdId = String(item.jdId);
         }
-        onOpenGradingDetail(detailId ?? _appId, extra);
+        if (detailId !== undefined) extra.detailId = detailId;
+        onOpenGradingDetail(_appId, extra);
       } else {
         const params = new URLSearchParams({ tab: "grading-detail" });
         if (detailId !== undefined) {
