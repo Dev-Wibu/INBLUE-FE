@@ -2457,6 +2457,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/analytics/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy dữ liệu tổng quan cho Admin Dashboard
+         * @description Trả về thống kê lượt ứng tuyển, top job/vị trí được quan tâm, interview đang diễn ra và tiến độ theo từng vòng. Tham số limit mặc định là 10, tối đa 50. days là số ngày lấy giao dịch gần đây, mặc định 7 ngày.
+         */
+        get: operations["getDashboardOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/applications-per-user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy số lượt apply trung bình trên mỗi user
+         * @description Thống kê trên các application chưa bị xoá, bao gồm tổng lượt apply, số user đã apply và trung bình lượt apply/user.
+         */
+        get: operations["getApplicationsPerUser"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/posts/likes/{postId}/{userId}": {
         parameters: {
             query?: never;
@@ -3927,38 +3967,38 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
-            numberOfElements?: number;
+            totalPages?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            first?: boolean;
+            last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         PageableObject: {
-            /** Format: int32 */
-            pageNumber?: number;
-            paged?: boolean;
-            /** Format: int32 */
-            pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
+            paged?: boolean;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int32 */
+            pageNumber?: number;
+            unpaged?: boolean;
         };
         SortObject: {
+            empty?: boolean;
             sorted?: boolean;
             unsorted?: boolean;
-            empty?: boolean;
         };
         Payment: {
             /** Format: int32 */
@@ -4183,17 +4223,17 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            applicationName?: string;
-            /** Format: int64 */
-            startupDate?: number;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
+            /** Format: int64 */
+            startupDate?: number;
+            applicationName?: string;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             environment?: components["schemas"]["Environment"];
+            beanDefinitionNames?: string[];
             /** Format: int32 */
             beanDefinitionCount?: number;
-            beanDefinitionNames?: string[];
             parentBeanFactory?: components["schemas"]["BeanFactory"];
             classLoader?: {
                 name?: string;
@@ -4264,42 +4304,42 @@ export interface components {
             defaultProfiles?: string[];
         };
         FilterRegistration: {
-            servletNameMappings?: string[];
             urlPatternMappings?: string[];
+            servletNameMappings?: string[];
+            name?: string;
+            className?: string;
             initParameters?: {
                 [key: string]: string;
             };
-            name?: string;
-            className?: string;
         };
         /** @enum {unknown} */
         HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 CONTENT_TOO_LARGE" | "413 PAYLOAD_TOO_LARGE" | "414 URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "421 MISDIRECTED_REQUEST" | "422 UNPROCESSABLE_CONTENT" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
         HttpStatusCode: {
+            error?: boolean;
             is4xxClientError?: boolean;
             is5xxServerError?: boolean;
             is1xxInformational?: boolean;
-            is2xxSuccessful?: boolean;
             is3xxRedirection?: boolean;
-            error?: boolean;
+            is2xxSuccessful?: boolean;
         };
         JspConfigDescriptor: {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
-            isXml?: string;
+            buffer?: string;
+            errorOnUndeclaredNamespace?: string;
+            defaultContentType?: string;
             trimDirectiveWhitespaces?: string;
             deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
-            scriptingInvalid?: string;
-            includePreludes?: string[];
-            includeCodas?: string[];
             urlPatterns?: string[];
-            defaultContentType?: string;
-            buffer?: string;
+            errorOnELNotFound?: string;
+            scriptingInvalid?: string;
+            elIgnored?: string;
+            pageEncoding?: string;
+            includeCodas?: string[];
+            includePreludes?: string[];
+            isXml?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -4322,42 +4362,17 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
-            attributesMap?: {
-                [key: string]: unknown;
-            };
+            propagateQueryProperties?: boolean;
             attributes?: {
                 [key: string]: string;
             };
+            attributesMap?: {
+                [key: string]: unknown;
+            };
+            attributesCSV?: string;
         };
         ServletContext: {
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            requestCharacterEncoding?: string;
-            responseCharacterEncoding?: string;
-            /** Format: int32 */
-            effectiveMajorVersion?: number;
-            /** Format: int32 */
-            effectiveMinorVersion?: number;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            servletContextName?: string;
-            servletRegistrations?: {
-                [key: string]: components["schemas"]["ServletRegistration"];
-            };
-            filterRegistrations?: {
-                [key: string]: components["schemas"]["FilterRegistration"];
-            };
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
-            initParameterNames?: unknown;
-            contextPath?: string;
-            attributeNames?: unknown;
             classLoader?: {
                 name?: string;
                 registeredAsParallelCapable?: boolean;
@@ -4422,32 +4437,57 @@ export interface components {
             majorVersion?: number;
             /** Format: int32 */
             minorVersion?: number;
+            attributeNames?: unknown;
+            contextPath?: string;
+            initParameterNames?: unknown;
+            virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
+            responseCharacterEncoding?: string;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            servletRegistrations?: {
+                [key: string]: components["schemas"]["ServletRegistration"];
+            };
+            /** Format: int32 */
+            effectiveMinorVersion?: number;
+            /** Format: int32 */
+            effectiveMajorVersion?: number;
+            filterRegistrations?: {
+                [key: string]: components["schemas"]["FilterRegistration"];
+            };
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            servletContextName?: string;
         };
         ServletRegistration: {
-            runAsRole?: string;
             mappings?: string[];
+            runAsRole?: string;
+            name?: string;
+            className?: string;
             initParameters?: {
                 [key: string]: string;
             };
-            name?: string;
-            className?: string;
         };
         SessionCookieConfig: {
-            /** Format: int32 */
-            maxAge?: number;
-            httpOnly?: boolean;
-            secure?: boolean;
             domain?: string;
             path?: string;
+            /** Format: int32 */
+            maxAge?: number;
             name?: string;
             attributes?: {
                 [key: string]: string;
             };
             comment?: string;
+            secure?: boolean;
+            httpOnly?: boolean;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */
@@ -4671,6 +4711,105 @@ export interface components {
             candidateName?: string;
             candidateEmail?: string;
             candidateAvatarUrl?: string;
+        };
+        ActiveInterviewItem: {
+            /** Format: int64 */
+            applicationDetailId?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: int32 */
+            userId?: number;
+            userName?: string;
+            userEmail?: string;
+            /** Format: int64 */
+            jobId?: number;
+            jobTitle?: string;
+            /** Format: int64 */
+            roundId?: number;
+            /** Format: int32 */
+            roundOrder?: number;
+            roundName?: string;
+            /** @enum {string} */
+            roundType?: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "CODING" | "CODE_REVIEW" | "MENTROR_REVIEW" | "AI_INTERVIEW";
+            /** @enum {string} */
+            roundStatus?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            /** Format: date-time */
+            startedAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        AdminDashboardOverviewResponse: {
+            /** Format: date-time */
+            generatedAt?: string;
+            summary?: components["schemas"]["DashboardSummary"];
+            jobTrends?: components["schemas"]["JobTrendItem"][];
+            positionTrends?: components["schemas"]["PositionTrendItem"][];
+            activeInterviews?: components["schemas"]["ActiveInterviewItem"][];
+            /** Format: int32 */
+            recentTransactionDays?: number;
+            recentTransactions?: components["schemas"]["RecentTransactionItem"][];
+        };
+        DashboardSummary: {
+            /** Format: int64 */
+            totalApplications?: number;
+            /** Format: int64 */
+            inProgressApplications?: number;
+            /** Format: int64 */
+            passedApplications?: number;
+            /** Format: int64 */
+            failedApplications?: number;
+            /** Format: int64 */
+            activeInterviewCount?: number;
+        };
+        JobTrendItem: {
+            /** Format: int32 */
+            rank?: number;
+            /** Format: int64 */
+            jobId?: number;
+            jobTitle?: string;
+            /** Format: int64 */
+            applicationCount?: number;
+            /** Format: double */
+            percentage?: number;
+        };
+        PositionTrendItem: {
+            /** Format: int32 */
+            rank?: number;
+            position?: string;
+            /** Format: int64 */
+            applicationCount?: number;
+            /** Format: double */
+            percentage?: number;
+        };
+        RecentTransactionItem: {
+            /** Format: int32 */
+            transactionId?: number;
+            transactionCode?: string;
+            /** Format: int64 */
+            amount?: number;
+            description?: string;
+            /** @enum {string} */
+            status?: "PENDING" | "COMPLETED" | "FAILED";
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: int32 */
+            userId?: number;
+            userName?: string;
+            userEmail?: string;
+            avatarUrl?: string;
+            /** Format: int64 */
+            jobId?: number;
+            jobTitle?: string;
+        };
+        AdminApplicationsPerUserResponse: {
+            /** Format: date-time */
+            generatedAt?: string;
+            /** Format: int64 */
+            totalApplications?: number;
+            /** Format: int64 */
+            uniqueApplicants?: number;
+            /** Format: double */
+            averageApplicationsPerUser?: number;
         };
     };
     responses: never;
@@ -8609,6 +8748,49 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminApplicationDetailResponse"][];
+                };
+            };
+        };
+    };
+    getDashboardOverview: {
+        parameters: {
+            query?: {
+                limit?: number;
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminDashboardOverviewResponse"];
+                };
+            };
+        };
+    };
+    getApplicationsPerUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminApplicationsPerUserResponse"];
                 };
             };
         };
