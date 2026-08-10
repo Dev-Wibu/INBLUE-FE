@@ -656,14 +656,17 @@ function ApplicationGradingTable({
               dot: "bg-slate-400",
             };
 
-            const roundTypeInferred = item.detail ? inferRoundType(item.detail) : null;
+            let roundTypeInferred = item.detail ? inferRoundType(item.detail) : null;
+            const roundOrder = item.currentRoundOrder ?? 1;
+            if (!roundTypeInferred) {
+              if (roundOrder === 1) roundTypeInferred = "CV_SCREENING";
+              else if (roundOrder === 2) roundTypeInferred = "CODING";
+              else if (roundOrder === 3) roundTypeInferred = "MENTOR_REVIEW";
+            }
             const roundTypeLabel = roundTypeInferred
               ? i18n.t(`common.roundType.${roundTypeInferred}`, roundTypeInferred)
-              : null;
-            const roundOrder = item.currentRoundOrder ?? 1;
-            const roundDisplay = roundTypeLabel
-              ? `Vòng ${roundOrder} • ${roundTypeLabel}`
               : `Vòng ${roundOrder}`;
+            const roundDisplay = `Vòng ${roundOrder}: ${roundTypeLabel}`;
 
             return (
               <TableRow
@@ -1397,7 +1400,17 @@ function StaffGradingHeaderCard({
                     ? "bg-indigo-600 text-white shadow-xs"
                     : "bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300"
                 )}>
-                Vòng #{d.roundId ?? idx + 1}
+                {(() => {
+                  let dType = inferRoundType(d);
+                  const order = d.roundId ?? idx + 1;
+                  if (!dType) {
+                    if (order === 1) dType = "CV_SCREENING";
+                    else if (order === 2) dType = "CODING";
+                    else if (order === 3) dType = "MENTOR_REVIEW";
+                  }
+                  const name = dType ? i18n.t(`common.roundType.${dType}`, dType) : `Vòng ${order}`;
+                  return `Vòng ${order}: ${name}`;
+                })()}
               </button>
             ))}
           </div>
@@ -1412,7 +1425,17 @@ function StaffGradingHeaderCard({
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-extrabold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
               <Clock className="h-3.5 w-3.5 text-indigo-500" />
-              Vòng #{detail.roundId ?? 1} — {roundTypeStr}
+              {(() => {
+                let dType = inferRoundType(detail);
+                const order = detail.roundId ?? 1;
+                if (!dType) {
+                  if (order === 1) dType = "CV_SCREENING";
+                  else if (order === 2) dType = "CODING";
+                  else if (order === 3) dType = "MENTOR_REVIEW";
+                }
+                const name = dType ? i18n.t(`common.roundType.${dType}`, dType) : roundTypeStr;
+                return `Vòng ${order}: ${name}`;
+              })()}
             </span>
 
             {/* Status & Decision Badge */}
