@@ -52,7 +52,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
     {
       role: "MENTOR",
       email: "b@fpt.com",
-      password: "12345",
+      password: "12345678",
       description: t("compDemologinbutton.mentorAccountToManageInterview"),
     },
     {
