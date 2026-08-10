@@ -125,7 +125,7 @@ export function JobDescriptionFormDialog({
                   <Label
                     htmlFor="jd-requirements"
                     className="text-xs font-bold text-slate-900 dark:text-white">
-                    {t("adminCompanymanagement.request", "Yêu cầu ứng viên")}
+                    {t("adminCompanymanagement.requirements", "Yêu cầu ứng viên")}
                   </Label>
                 </div>
                 <Textarea

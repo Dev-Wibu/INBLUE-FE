@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+
 import {
   Area,
   AreaChart,
@@ -211,7 +211,31 @@ const getPaymentStatusLabel = (
     case "CANCELLED":
       return t("general.failed1");
     default:
-      return status || "Unknown";
+      return status || t("common.unknown");
+  }
+};
+const getRoundStatusLabel = (
+  status?: string | null,
+  t: (_key: string) => string = (_key) => _key
+) => {
+  if (!status) return "";
+  switch (status.toUpperCase()) {
+    case "PENDING":
+    case "PROCESSING":
+    case "AWAITING_MENTOR":
+      return t("common.processing1");
+    case "IN_PROGRESS":
+      return t("common.inProgress", "Đang diễn ra");
+    case "COMPLETED":
+    case "SUCCESS":
+    case "PASSED":
+      return t("general.success");
+    case "FAILED":
+    case "SOFT_FAILED":
+    case "REJECTED":
+      return t("general.failed1");
+    default:
+      return status;
   }
 };
 const formatTransactionTime = (value?: string, t: (_key: string) => string = (_key) => _key) => {
@@ -268,6 +292,7 @@ function TrendList({
   loading: boolean;
   barColor: string;
 }) {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <div className="space-y-4" aria-label="Loading trends">
@@ -285,7 +310,11 @@ function TrendList({
   }
 
   if (items.length === 0) {
-    return <div className="py-8 text-center text-sm text-slate-400">No trend data available</div>;
+    return (
+      <div className="py-8 text-center text-sm text-slate-400">
+        {t("adminDashboardoverview.noTrendDataAvailable")}
+      </div>
+    );
   }
 
   return (
@@ -466,11 +495,11 @@ function AnalyticsOverviewSection({
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
-                            {interview.userName || interview.userEmail || "Candidate"}
+                            {interview.userName || interview.userEmail || t("common.candidate")}
                           </p>
                           {interview.roundStatus && (
                             <Badge variant="outline" className="h-5 text-[9px] uppercase">
-                              {interview.roundStatus}
+                              {getRoundStatusLabel(interview.roundStatus, t)}
                             </Badge>
                           )}
                         </div>
@@ -632,7 +661,7 @@ function AnalyticsOverviewSection({
 
 export function DashboardOverviewPage() {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+
   const RANGE_OPTIONS: Array<{
     label: string;
     value: Exclude<RangeMode, "custom">;
@@ -950,30 +979,9 @@ export function DashboardOverviewPage() {
     transactionRange.toKey,
   ]);
 
-  const handleTransactionNavigate = (record: AdminRecentTransaction) => {
-    const target =
-      record.url ||
-      (record.transactionId ? `/admin/transactions/${record.transactionId}` : undefined);
-    if (!target) return;
-
-    if (/^https?:\/\//i.test(target)) {
-      window.location.assign(target);
-      return;
-    }
-
-    navigate(target);
-  };
   return (
     <div className="min-h-screen bg-gray-50 p-6 dark:bg-slate-950">
-      <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {t("common.dashboard") || "Dashboard"}
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400">
-            {t("adminDashboardoverview.trackRecentRevenueAndTransactions")}
-          </p>
-        </div>
+      <div className="mb-6 flex items-center justify-end">
         <div className="flex items-center gap-2 rounded-lg bg-white p-2 shadow-sm dark:bg-slate-900">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500/10">
             <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -1188,7 +1196,9 @@ export function DashboardOverviewPage() {
                             {appsItem && (
                               <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                <span className="text-xs text-slate-500">Applications:</span>
+                                <span className="text-xs text-slate-500">
+                                  {t("adminDashboardoverview.applications")}:
+                                </span>
                                 <span className="text-xs font-black text-emerald-600">
                                   {appsItem.value || 0}
                                 </span>
@@ -1224,19 +1234,19 @@ export function DashboardOverviewPage() {
         </Card>
       </div>
 
-      <div className="mt-8 grid gap-6 xl:grid-cols-2">
-        <Card className="flex h-full flex-col border-0 shadow-sm dark:bg-slate-900">
-          <CardHeader className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <CardTitle className="text-lg">
+      <div className="mt-8 grid min-w-0 gap-6 xl:grid-cols-2">
+        <Card className="flex h-full min-w-0 flex-col overflow-hidden border-0 shadow-sm dark:bg-slate-900">
+          <CardHeader className="flex min-w-0 flex-col gap-4 pb-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="truncate text-lg">
                 {t("adminDashboardoverview.recentTransactions")}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="truncate">
                 {t("adminDashboardoverview.latestTransactionsIn", "Latest transactions in")}{" "}
                 {transactionRangeLabel}
               </CardDescription>
             </div>
-            <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+            <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
               <div className="inline-flex shrink-0 items-center rounded-lg border border-slate-200 p-1 dark:border-slate-700">
                 {TRANSACTION_RANGE_OPTIONS.map((option) => (
                   <Button
@@ -1304,13 +1314,13 @@ export function DashboardOverviewPage() {
               </Popover>
             </div>
           </CardHeader>
-          <CardContent className="flex-1">
-            <div className="grid gap-3">
+          <CardContent className="min-w-0 flex-1 overflow-hidden">
+            <div className="grid w-full min-w-0 gap-3 overflow-hidden">
               {(loadingAnalytics || loadingIncome) && recentTransactions.length === 0 ? (
                 [0, 1, 2].map((item) => (
                   <div
                     key={item}
-                    className="flex items-center justify-between rounded-xl border border-slate-100 p-4 dark:border-slate-800">
+                    className="flex min-w-0 items-center justify-between rounded-xl border border-slate-100 p-4 dark:border-slate-800">
                     <div className="flex min-w-0 items-center gap-3">
                       <Skeleton className="h-11 w-11 rounded-lg" />
                       <div className="min-w-0 space-y-2">
@@ -1330,27 +1340,35 @@ export function DashboardOverviewPage() {
                 </div>
               ) : (
                 recentTransactions.map((record, index) => {
-                  const statusLabel = getPaymentStatusLabel(record.status, t);
                   const statusTone = getTransactionStatusTone(record.status);
-                  const transactionTarget =
-                    record.url ||
-                    (record.transactionId ? `/admin/transactions/${record.transactionId}` : "");
+                  const statusLabel = getPaymentStatusLabel(record.status, t);
                   const transactionTitle =
                     record.description ||
+                    record.jobTitle ||
+                    record.paymentPurpose ||
                     record.transactionCode ||
                     t("adminDashboardoverview.noDescriptionAvailable");
                   const personLine = [record.userName, record.userEmail]
                     .filter(Boolean)
                     .join(" · ");
-                  const metaLine = [record.jobTitle, personLine].filter(Boolean).join(" · ");
-                  return (
-                    <button
-                      key={`${record.transactionId || record.id || record.transactionCode || index}`}
-                      type="button"
-                      disabled={!transactionTarget}
-                      onClick={() => handleTransactionNavigate(record)}
-                      className="flex w-full flex-col gap-3 rounded-xl border border-slate-100 p-4 text-left transition-colors hover:border-indigo-100 hover:bg-slate-50 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none disabled:cursor-default disabled:hover:border-slate-100 disabled:hover:bg-transparent sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:hover:border-indigo-900/40 dark:hover:bg-slate-800/50 dark:disabled:hover:border-slate-800 dark:disabled:hover:bg-transparent">
-                      <div className="flex min-w-0 items-center gap-3">
+                  const showJobInMeta = Boolean(
+                    record.jobTitle && record.jobTitle !== transactionTitle
+                  );
+                  const metaLine = [showJobInMeta ? record.jobTitle : null, personLine]
+                    .filter(Boolean)
+                    .join(" · ");
+                  const transactionTarget =
+                    record.url && /^https?:\/\//i.test(record.url) ? record.url : undefined;
+
+                  const cardContent = (
+                    <div
+                      className={cn(
+                        "flex w-full min-w-0 flex-col gap-3 overflow-hidden rounded-xl border border-slate-100 p-4 text-left transition-colors sm:flex-row sm:items-center sm:justify-between dark:border-slate-800",
+                        transactionTarget
+                          ? "cursor-pointer hover:border-indigo-100 hover:bg-slate-50 dark:hover:border-indigo-900/40 dark:hover:bg-slate-800/50"
+                          : "bg-white dark:bg-slate-900"
+                      )}>
+                      <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
                         <Avatar className="h-11 w-11 shrink-0 rounded-lg border border-slate-100 dark:border-slate-800">
                           <AvatarImage
                             src={record.avatarUrl ?? undefined}
@@ -1369,26 +1387,26 @@ export function DashboardOverviewPage() {
                           </AvatarFallback>
                         </Avatar>
 
-                        <div className="min-w-0">
-                          <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <p className="max-w-[240px] truncate text-sm font-bold text-slate-900 dark:text-white">
+                        <div className="min-w-0 flex-1 overflow-hidden">
+                          <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+                            <p className="min-w-0 flex-1 truncate text-sm font-bold text-slate-900 dark:text-white">
                               {transactionTitle}
                             </p>
                             <Badge
                               variant="outline"
                               className={cn(
-                                "h-5 text-[9px] font-bold uppercase",
+                                "h-5 shrink-0 text-[9px] font-bold uppercase",
                                 statusTone.badge
                               )}>
                               {statusLabel}
                             </Badge>
                           </div>
                           {metaLine && (
-                            <p className="mt-1 max-w-[420px] truncate text-xs font-medium text-slate-600 dark:text-slate-300">
+                            <p className="mt-1 min-w-0 truncate text-xs font-medium text-slate-600 dark:text-slate-300">
                               {metaLine}
                             </p>
                           )}
-                          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                          <p className="mt-0.5 min-w-0 truncate text-xs text-slate-500 dark:text-slate-400">
                             {formatTransactionTime(record.createdAt ?? undefined, t)}
                           </p>
                         </div>
@@ -1399,7 +1417,28 @@ export function DashboardOverviewPage() {
                           {formatCurrency(record.amount || 0)}
                         </p>
                       </div>
-                    </button>
+                    </div>
+                  );
+
+                  if (transactionTarget) {
+                    return (
+                      <a
+                        key={`${record.transactionId || record.id || record.transactionCode || index}`}
+                        href={transactionTarget}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block w-full min-w-0 overflow-hidden no-underline">
+                        {cardContent}
+                      </a>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={`${record.transactionId || record.id || record.transactionCode || index}`}
+                      className="w-full min-w-0 overflow-hidden">
+                      {cardContent}
+                    </div>
                   );
                 })
               )}
