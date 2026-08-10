@@ -1195,6 +1195,8 @@
     "mentorInformation": "Mentor Information",
     "negotiate": "Negotiable",
     "roomName1": "Room name",
+    "startTime": "Start time",
+    "endTime": "End time",
     "idMentor": "Mentor ID",
     "transactionCode": "Transaction code",
     "details": "Details",

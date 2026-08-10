@@ -1642,6 +1642,8 @@
     "room": "ルーム:",
     "roomName": "ルーム名:",
     "roomName1": "ルーム名",
+    "startTime": "開始時刻",
+    "endTime": "終了時刻",
     "roundVar0": "ラウンド {{var_0}}",
     "route": "ルート",
     "salary": "給与",
