@@ -68,12 +68,13 @@ export function UserEditForm({
   };
 
   const displayAvatarUrl = avatarPreview || selectedUser?.avatarUrl;
+  const isCreating = !selectedUser;
 
   const innerForm = (
-    <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex flex-col gap-6">
+    <div className="w-full">
+      <div className="grid gap-8 xl:grid-cols-[minmax(250px,0.6fr)_minmax(0,1.4fr)] xl:gap-12">
         {/* Avatar Section */}
-        <div className="flex flex-col items-center space-y-4">
+        <div className="flex flex-col items-center self-start border-b border-slate-200 pb-8 xl:border-r xl:border-b-0 xl:pr-12 dark:border-slate-800">
           <UniversalMediaUploader
             preset="single-image"
             hideFileList={true}
@@ -126,7 +127,7 @@ export function UserEditForm({
         </div>
 
         {/* Form Fields Section */}
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="name">{t("common.fullName1")}</Label>
@@ -170,7 +171,9 @@ export function UserEditForm({
                   role: value as "STAFF" | "MENTOR" | "ADMIN" | "USER",
                 })
               }
-              className="grid grid-cols-2 gap-3">
+              className={
+                isCreating ? "grid grid-cols-1 gap-3 sm:grid-cols-3" : "grid grid-cols-2 gap-3"
+              }>
               <div>
                 <RadioGroupItem value="USER" id="role-user" className="peer sr-only" />
                 <Label
@@ -180,15 +183,17 @@ export function UserEditForm({
                   <span className="text-sm font-semibold">{t("common.user")}</span>
                 </Label>
               </div>
-              <div>
-                <RadioGroupItem value="MENTOR" id="role-mentor" className="peer sr-only" />
-                <Label
-                  htmlFor="role-mentor"
-                  className="flex cursor-pointer flex-col items-center justify-between rounded-xl border-2 border-slate-200 bg-transparent p-4 transition-all peer-data-[state=checked]:border-green-500 peer-data-[state=checked]:bg-green-50 peer-data-[state=checked]:text-green-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:peer-data-[state=checked]:border-green-600 dark:peer-data-[state=checked]:bg-green-900/20 dark:peer-data-[state=checked]:text-green-400 dark:hover:bg-slate-800 dark:hover:text-slate-50">
-                  <Shield className="mb-2 h-6 w-6" />
-                  <span className="text-sm font-semibold">{t("common.mentor")}</span>
-                </Label>
-              </div>
+              {!isCreating && (
+                <div>
+                  <RadioGroupItem value="MENTOR" id="role-mentor" className="peer sr-only" />
+                  <Label
+                    htmlFor="role-mentor"
+                    className="flex cursor-pointer flex-col items-center justify-between rounded-xl border-2 border-slate-200 bg-transparent p-4 transition-all peer-data-[state=checked]:border-green-500 peer-data-[state=checked]:bg-green-50 peer-data-[state=checked]:text-green-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:peer-data-[state=checked]:border-green-600 dark:peer-data-[state=checked]:bg-green-900/20 dark:peer-data-[state=checked]:text-green-400 dark:hover:bg-slate-800 dark:hover:text-slate-50">
+                    <Shield className="mb-2 h-6 w-6" />
+                    <span className="text-sm font-semibold">{t("common.mentor")}</span>
+                  </Label>
+                </div>
+              )}
               <div>
                 <RadioGroupItem value="STAFF" id="role-staff" className="peer sr-only" />
                 <Label

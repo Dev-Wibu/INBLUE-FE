@@ -374,18 +374,16 @@ export function UserManagementPage() {
             }}
           />
         ) : viewMode === "create" ? (
-          <div className="flex-1 overflow-auto p-4 lg:p-6">
-            <div className="mx-auto max-w-4xl">
-              <UserEditForm
-                formData={formData}
-                onFormChange={setFormData}
-                onSubmit={handleSubmitCreate}
-                onCancel={() => setViewMode("list")}
-                title={t("adminUsermanagement.addNewUser")}
-                description={t("adminUsermanagement.fillInTheInformationTo")}
-                submitLabel={t("adminUsermanagement.createUsers")}
-              />
-            </div>
+          <div className="flex-1 overflow-auto px-4 py-6 md:px-6 lg:px-8 lg:py-8">
+            <UserEditForm
+              formData={formData}
+              onFormChange={setFormData}
+              onSubmit={handleSubmitCreate}
+              onCancel={() => setViewMode("list")}
+              title={t("adminUsermanagement.addNewUser")}
+              description={t("adminUsermanagement.fillInTheInformationTo")}
+              submitLabel={t("adminUsermanagement.createUsers")}
+            />
           </div>
         ) : isInitialLoading ? (
           <div className="flex h-64 items-center justify-center">

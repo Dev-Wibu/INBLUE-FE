@@ -847,11 +847,15 @@ export function RoundCanvasEditorWorkspace({
                                 {Math.round((round.passThreshold ?? 0.8) * 100)}%
                               </span>
                             </div>
-                            {/* Reviewer row — hidden for QUIZ since Quiz rounds are
-                                auto-graded; no human reviewer is required. */}
+                            {/* Reviewer row — hidden for QUIZ (auto-graded),
+                                CODING (system-graded), and MENTOR_REVIEW
+                                (handled by the mentor system). */}
                             {staffUsers &&
                               round.reviewerId != null &&
-                              round.roundType !== "QUIZ" && (
+                              round.roundType !== "QUIZ" &&
+                              round.roundType !== "CODING" &&
+                              round.roundType !== "MENTOR_REVIEW" &&
+                              round.roundType !== "MENTROR_REVIEW" && (
                                 <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
                                   <Users className="h-3 w-3" />
                                   <span className="truncate">
@@ -863,7 +867,10 @@ export function RoundCanvasEditorWorkspace({
                               )}
                             {staffUsers &&
                               round.reviewerId == null &&
-                              round.roundType !== "QUIZ" && (
+                              round.roundType !== "QUIZ" &&
+                              round.roundType !== "CODING" &&
+                              round.roundType !== "MENTOR_REVIEW" &&
+                              round.roundType !== "MENTROR_REVIEW" && (
                                 <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
                                   <AlertTriangle className="h-3 w-3" />
                                   <span className="truncate">
@@ -950,13 +957,14 @@ export function RoundCanvasEditorWorkspace({
               <div className="flex shrink-0 items-center gap-2">
                 {/* Reviewer (Staff) — surfaced inside the round detail dialog for
                     round types whose body is taken over by a specialized editor
-                    (CODE_REVIEW, CODING) so admins can still pick a mentor here
+                    (CODE_REVIEW) so admins can still pick a reviewer here
                     without leaving the round configuration. Hidden for QUIZ
-                    (auto-graded) and when no staff users are available. */}
+                    (auto-graded), CODING (system-graded), MENTOR_REVIEW
+                    (handled by the mentor system), and when no staff users
+                    are available. */}
                 {staffUsers &&
                   staffUsers.length > 0 &&
-                  (selectedRound.roundType === "CODE_REVIEW" ||
-                    selectedRound.roundType === "CODING") && (
+                  selectedRound.roundType === "CODE_REVIEW" && (
                     <div className="flex items-center gap-1.5">
                       <Label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                         {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
@@ -1109,58 +1117,64 @@ export function RoundCanvasEditorWorkspace({
                     </div>
                     <div className="space-y-3">
                       {/* Reviewer (STAFF) — required for non-auto rounds so the
-                          application detail lands in some staff's grading queue. */}
-                      {staffUsers && staffUsers.length > 0 && (
-                        <div className="space-y-1.5">
-                          <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                            {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
-                          </Label>
-                          <Select
-                            value={
-                              selectedRound.reviewerId != null
-                                ? String(selectedRound.reviewerId)
-                                : "__none__"
-                            }
-                            onValueChange={(val) =>
-                              updateRoundField(
-                                selectedRoundIndex,
-                                "reviewerId",
-                                val === "__none__" ? null : Number(val)
-                              )
-                            }>
-                            <SelectTrigger className="h-9 border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-                              <SelectValue
-                                placeholder={t(
-                                  "adminCompanymanagement.reviewerStaffPlaceholder",
-                                  "— Chưa gán người chấm —"
-                                )}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                              <SelectItem value="__none__">
-                                {t(
-                                  "adminCompanymanagement.reviewerStaffUnassigned",
-                                  "Chưa gán người chấm"
-                                )}
-                              </SelectItem>
-                              {staffUsers.map((s) => (
-                                <SelectItem key={s.id} value={String(s.id)}>
-                                  {s.name ?? `User #${s.id}`}
-                                  {s.email ? ` (${s.email})` : ""}
+                          application detail lands in some staff's grading queue.
+                          Hidden for CODING (system-graded) and MENTOR_REVIEW
+                          (handled by the mentor system). */}
+                      {staffUsers &&
+                        staffUsers.length > 0 &&
+                        selectedRound.roundType !== "CODING" &&
+                        selectedRound.roundType !== "MENTOR_REVIEW" &&
+                        selectedRound.roundType !== "MENTROR_REVIEW" && (
+                          <div className="space-y-1.5">
+                            <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                              {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
+                            </Label>
+                            <Select
+                              value={
+                                selectedRound.reviewerId != null
+                                  ? String(selectedRound.reviewerId)
+                                  : "__none__"
+                              }
+                              onValueChange={(val) =>
+                                updateRoundField(
+                                  selectedRoundIndex,
+                                  "reviewerId",
+                                  val === "__none__" ? null : Number(val)
+                                )
+                              }>
+                              <SelectTrigger className="h-9 border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                                <SelectValue
+                                  placeholder={t(
+                                    "adminCompanymanagement.reviewerStaffPlaceholder",
+                                    "— Chưa gán người chấm —"
+                                  )}
+                                />
+                              </SelectTrigger>
+                              <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                                <SelectItem value="__none__">
+                                  {t(
+                                    "adminCompanymanagement.reviewerStaffUnassigned",
+                                    "Chưa gán người chấm"
+                                  )}
                                 </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {selectedRound.reviewerId == null && (
-                            <p className="text-[10px] text-amber-600 dark:text-amber-400">
-                              {t(
-                                "adminCompanymanagement.reviewerStaffWarning",
-                                "Cảnh báo: bài sẽ không xuất hiện trong queue chấm của Staff nào."
-                              )}
-                            </p>
-                          )}
-                        </div>
-                      )}
+                                {staffUsers.map((s) => (
+                                  <SelectItem key={s.id} value={String(s.id)}>
+                                    {s.name ?? `User #${s.id}`}
+                                    {s.email ? ` (${s.email})` : ""}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {selectedRound.reviewerId == null && (
+                              <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                                {t(
+                                  "adminCompanymanagement.reviewerStaffWarning",
+                                  "Cảnh báo: bài sẽ không xuất hiện trong queue chấm của Staff nào."
+                                )}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       <div className="flex items-start gap-4">
                         <div
                           className={cn(
