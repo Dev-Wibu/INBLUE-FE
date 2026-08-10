@@ -291,12 +291,12 @@ export function MentorReviewsPage() {
             />
           ) : (
             <>
-              {/* Sticky command bar */}
+              {/* Command bar */}
               <div
                 className={
-                  "sticky top-2 z-10 flex flex-col gap-3 rounded-xl p-3 backdrop-blur-md sm:flex-row sm:items-center " +
-                  "bg-white/85 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.25)] ring-1 ring-slate-200/70 ring-inset " +
-                  "dark:bg-slate-950/60 dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] dark:ring-white/5"
+                  "flex flex-col gap-3 rounded-xl p-3 ring-1 ring-slate-200/70 ring-inset sm:flex-row sm:items-center " +
+                  "bg-white shadow-[0_8px_24px_-18px_rgba(15,23,42,0.25)] " +
+                  "dark:bg-slate-900 dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] dark:ring-white/5"
                 }>
                 <div className="relative min-w-0 flex-1">
                   <Search

@@ -204,6 +204,11 @@ export function HeroCommand({
         "relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950",
         className
       )}>
+      {/* Subtle dotted grid */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(148,163,184,0.4)_1px,transparent_1px)] [background-size:14px_14px] opacity-[0.2] dark:opacity-[0.12]"
+      />
       <div className="relative grid gap-4 p-5 sm:grid-cols-[1fr_auto] sm:items-start sm:gap-6 sm:p-6">
         {/* LEFT — identity + anchor metric */}
         <div className="flex flex-col gap-4">
