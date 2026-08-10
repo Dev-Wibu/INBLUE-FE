@@ -15,10 +15,12 @@ export function SpotlightBlock({
 }) {
   return (
     <>
-      <p className="relative truncate text-sm font-semibold tracking-[-0.01em] text-white">
+      <p className="relative truncate text-sm font-semibold tracking-[-0.01em] text-slate-900 dark:text-white">
         {primary}
       </p>
-      {secondary && <p className="relative truncate text-xs text-slate-400">{secondary}</p>}
+      {secondary && (
+        <p className="relative truncate text-xs text-slate-500 dark:text-slate-400">{secondary}</p>
+      )}
     </>
   );
 }

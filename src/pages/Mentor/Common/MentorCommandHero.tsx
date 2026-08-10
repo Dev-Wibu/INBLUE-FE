@@ -73,15 +73,15 @@ export function MentorCommandHero({
     <section
       className={cn(
         "relative isolate overflow-hidden rounded-2xl",
-        "bg-slate-950 text-slate-100",
-        "ring-1 ring-white/10 ring-inset",
-        "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_18px_50px_-30px_rgba(0,0,0,0.7)]",
+        "bg-slate-900 text-slate-100 dark:bg-slate-950 dark:text-slate-100",
+        "ring-1 ring-slate-200/70 ring-inset dark:ring-white/10 dark:ring-inset",
+        "shadow-[inset_0_1px_0_0_rgba(0,0,0,0.05),0_18px_50px_-30px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_18px_50px_-30px_rgba(0,0,0,0.7)]",
         className
       )}>
       {/* Subtle dotted grid + soft radial spotlight */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(148,163,184,0.35)_1px,transparent_1px)] [background-size:14px_14px] opacity-[0.18]"
+        className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(148,163,184,0.5)_1px,transparent_1px)] [background-size:14px_14px] opacity-[0.25] dark:[background-image:radial-gradient(rgba(148,163,184,0.35)_1px,transparent_1px)] dark:opacity-[0.18]"
       />
       <div
         aria-hidden
@@ -116,11 +116,11 @@ export function MentorCommandHero({
               <IconBadge className="h-4 w-4" aria-hidden />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
                 {eyebrow}
               </p>
               <h1
-                className="truncate text-lg font-semibold tracking-[-0.02em] text-pretty text-white sm:text-xl"
+                className="truncate text-lg font-semibold tracking-[-0.02em] text-pretty text-slate-900 sm:text-xl dark:text-white"
                 style={{ textWrap: "balance" }}>
                 {title}
               </h1>
@@ -129,15 +129,19 @@ export function MentorCommandHero({
 
           <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
             <div>
-              <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-400 uppercase">
+              <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-500 uppercase dark:text-slate-400">
                 {anchor.label}
               </p>
-              <p className="text-3xl font-bold tracking-[-0.04em] text-white sm:text-4xl">
+              <p className="text-3xl font-bold tracking-[-0.04em] text-slate-900 sm:text-4xl dark:text-white">
                 {anchor.value}
               </p>
             </div>
-            <div className="hidden h-10 w-px bg-white/10 sm:block" />
-            {subtitle && <p className="max-w-md text-xs text-slate-400 sm:text-sm">{subtitle}</p>}
+            <div className="hidden h-10 w-px bg-slate-200 sm:block dark:bg-white/10" />
+            {subtitle && (
+              <p className="max-w-md text-xs text-slate-500 sm:text-sm dark:text-slate-400">
+                {subtitle}
+              </p>
+            )}
           </div>
         </div>
 
@@ -147,11 +151,12 @@ export function MentorCommandHero({
             <div
               className={cn(
                 "group relative flex min-w-[220px] flex-col gap-2 overflow-hidden rounded-xl p-3",
-                "bg-white/[0.04] ring-1 ring-white/10 backdrop-blur ring-inset"
+                "bg-white/60 ring-1 ring-slate-200/70 backdrop-blur ring-inset",
+                "dark:bg-white/[0.04] dark:ring-white/10"
               )}>
               <div className="relative flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3 text-slate-300" aria-hidden />
-                <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-300 uppercase">
+                <Sparkles className="h-3 w-3 text-slate-400 dark:text-slate-300" aria-hidden />
+                <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-600 uppercase dark:text-slate-300">
                   {t("mentorSessions.interviewSession")}
                 </p>
               </div>
@@ -161,15 +166,17 @@ export function MentorCommandHero({
             <div
               className={cn(
                 "flex min-w-[220px] flex-col gap-2 rounded-xl p-3",
-                "bg-white/[0.03] ring-1 ring-white/10 ring-inset"
+                "bg-white/[0.03] ring-1 ring-white/10 ring-inset dark:bg-white/[0.03] dark:ring-white/10"
               )}>
               <div className="flex items-center gap-1.5">
-                <Radio className="h-3 w-3 text-slate-400" aria-hidden />
-                <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-400 uppercase">
+                <Radio className="h-3 w-3 text-slate-500 dark:text-slate-400" aria-hidden />
+                <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-500 uppercase dark:text-slate-400">
                   {t("mentorSessions.interviewSession")}
                 </p>
               </div>
-              <p className="text-xs text-slate-500">{t("mentorSessions.interviewSession")}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-500">
+                {t("mentorSessions.interviewSession")}
+              </p>
             </div>
           )}
           <Button
@@ -180,7 +187,7 @@ export function MentorCommandHero({
             disabled={isReloading}
             aria-label={reloadTooltip}
             title={reloadTooltip}
-            className="h-9 w-9 shrink-0 border-white/10 bg-white/5 text-slate-100 hover:bg-white/10 hover:text-white">
+            className="h-9 w-9 shrink-0 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10 dark:hover:text-white">
             <RefreshCw className={cn("h-4 w-4", isReloading && "animate-spin")} aria-hidden />
           </Button>
         </div>
