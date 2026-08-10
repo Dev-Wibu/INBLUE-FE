@@ -664,18 +664,18 @@ function ParticipantRow({
       <p className="text-xs tracking-wide text-slate-500 uppercase dark:text-slate-400">{role}</p>
       <dl className="mt-3 space-y-1.5 text-xs">
         <div className="flex items-center justify-between">
-          <dt className="text-slate-500 dark:text-slate-400">{t("common.inLabel")}</dt>
+          <dt className="text-slate-500 dark:text-slate-400">In</dt>
           <dd className="font-mono">{joinedAt}</dd>
         </div>
         {leftAt !== "—" && (
           <div className="flex items-center justify-between">
-            <dt className="text-slate-500 dark:text-slate-400">{t("common.outLabel")}</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Out</dt>
             <dd className="font-mono">{leftAt}</dd>
           </div>
         )}
         {durationSeconds !== null && durationSeconds > 0 && (
           <div className="flex items-center justify-between">
-            <dt className="text-slate-500 dark:text-slate-400">{t("common.duration")}</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Duration</dt>
             <dd className="font-mono">
               {Math.floor(durationSeconds / 60)}m {durationSeconds % 60}s
             </dd>
