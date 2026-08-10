@@ -590,7 +590,48 @@ export function FinalCompetencyReportNodeView({
           {radarData.length > 0 ? (
             <div className="grid items-center gap-3 px-4 pt-3 pb-5 md:grid-cols-[minmax(0,1fr)_150px]">
               <div className="relative min-w-0">
-                <div className="pointer-events-none absolute inset-10 rounded-full bg-indigo-500/[0.08] blur-2xl" />
+                <style>{`
+                  @keyframes radar-glow-float {
+                    0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .35; }
+                    50% { transform: translate3d(8px, -10px, 0) scale(1.35); opacity: .9; }
+                  }
+                  @keyframes radar-glow-pulse {
+                    0%, 100% { transform: scale(.92); opacity: .28; }
+                    50% { transform: scale(1.08); opacity: .5; }
+                  }
+                `}</style>
+                <div
+                  className="pointer-events-none absolute inset-10 rounded-full bg-indigo-500/[0.08] blur-2xl"
+                  style={{
+                    animation: prefersReducedMotion
+                      ? "none"
+                      : "radar-glow-pulse 5s ease-in-out infinite",
+                  }}
+                />
+                <div
+                  className="pointer-events-none absolute inset-0 overflow-hidden"
+                  aria-hidden="true">
+                  {[
+                    ["left-[12%] top-[22%]", "bg-cyan-300", "0s"],
+                    ["left-[24%] top-[72%]", "bg-violet-300", "1.2s"],
+                    ["left-[58%] top-[12%]", "bg-fuchsia-300", "2.1s"],
+                    ["left-[78%] top-[30%]", "bg-cyan-200", "3.3s"],
+                    ["left-[84%] top-[76%]", "bg-indigo-300", "4.2s"],
+                    ["left-[42%] top-[88%]", "bg-purple-300", "2.8s"],
+                  ].map(([position, color, delay], index) => (
+                    <span
+                      key={index}
+                      className={`absolute h-1.5 w-1.5 rounded-full ${position} ${color}`}
+                      style={{
+                        boxShadow: "0 0 14px 3px rgba(103, 232, 249, .5)",
+                        animation: prefersReducedMotion
+                          ? "none"
+                          : "radar-glow-float 5s ease-in-out infinite",
+                        animationDelay: delay,
+                      }}
+                    />
+                  ))}
+                </div>
                 <ResponsiveContainer width="100%" height={400}>
                   <RadarChart data={radarData} outerRadius="72%">
                     <PolarGrid
