@@ -87,6 +87,42 @@ function patchSchema() {
     return match.replace(/(codingProblemsId\?:\s*number\[\];)/, `$1\n${fieldToAdd}`);
   });
 
+  // Field cần thêm vào ApplicationDetail (dùng cho list response của /reviewer)
+  // Backend đã trả về applicationName/userName ở response nhưng OpenAPI spec chưa cập nhật.
+  const applicationDetailFieldsToAdd = [
+    { name: "applicationName", line: "            applicationName?: string;" },
+    { name: "userName", line: "            userName?: string;" },
+  ];
+
+  // Find the start of ApplicationDetail schema and balance nested braces to find the end.
+  const adStartPattern = /ApplicationDetail:\s*\{/g;
+  let adMatch;
+  while ((adMatch = adStartPattern.exec(content)) !== null) {
+    const openBraceIdx = adMatch.index + adMatch[0].length - 1; // index of `{`
+    let depth = 1;
+    let i = openBraceIdx + 1;
+    while (i < content.length && depth > 0) {
+      const ch = content[i];
+      if (ch === "{") depth++;
+      else if (ch === "}") depth--;
+      i++;
+    }
+    const closeBraceIdx = i - 1; // index of closing `}`
+    const body = content.slice(openBraceIdx, closeBraceIdx + 1);
+    let updatedBody = body;
+    for (const field of applicationDetailFieldsToAdd) {
+      if (!updatedBody.includes(field.name)) {
+        updatedBody = updatedBody.replace(
+          /(updatedAt\?:\s*string;)/,
+          `$1\n${field.line}`
+        );
+      }
+    }
+    content =
+      content.slice(0, openBraceIdx) + updatedBody + content.slice(closeBraceIdx + 1);
+    break; // only patch first occurrence
+  }
+
   fs.writeFileSync(schemaPath, content);
   console.log("✅ Schema patched with FE-required fields!");
 }

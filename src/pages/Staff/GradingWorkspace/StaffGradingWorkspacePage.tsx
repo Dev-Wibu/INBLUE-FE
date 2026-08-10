@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useHrScore } from "@/hooks/useApplicationDetails";
+import { useApplicationDetailsForReviewer, useHrScore } from "@/hooks/useApplicationDetails";
 import { fetchClient } from "@/lib/api";
 import { inferRoundType } from "@/lib/application-detail-utils";
 import { formatDateTime } from "@/lib/formatting";
@@ -750,6 +750,8 @@ function StaffGradingWorkspaceHeaderCard({
   activeRound,
   candidateName,
   jdTitle,
+  applicationName,
+  candidateUserName,
   onOpenGrading,
 }: {
   selectedRoundOrder: number;
@@ -757,10 +759,16 @@ function StaffGradingWorkspaceHeaderCard({
   activeRound?: JdRound;
   candidateName?: string;
   jdTitle?: string;
+  applicationName?: string;
+  candidateUserName?: string;
   onOpenGrading: () => void;
 }) {
   const { t } = useTranslation();
   const detail = staffActiveDetail;
+
+  // Use the BE-provided userName (from the list-item payload) when available,
+  // otherwise fall back to whatever the parent already fetched.
+  const resolvedUserName = candidateUserName ?? candidateName;
 
   const hrScore = detail?.hrScore;
   const aiScore = detail?.aiScore;
@@ -882,8 +890,8 @@ function StaffGradingWorkspaceHeaderCard({
 
             <span className="text-xs font-medium text-slate-400">|</span>
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-              {candidateName ? `${candidateName} • ` : ""}
-              {jdTitle ? `${jdTitle} • ` : ""}
+              {resolvedUserName ? `${resolvedUserName} • ` : ""}
+              {(applicationName ?? jdTitle) ? `${applicationName ?? jdTitle} • ` : ""}
               {roundName}
             </span>
           </div>
@@ -1009,6 +1017,12 @@ export function StaffGradingWorkspacePage() {
   // Use detailId if provided, otherwise use appId
   const primaryId = detailIdFromUrl || appIdFromUrl;
 
+  // Pull the staff reviewer's assignment list (cache) — this is the SOURCE OF TRUTH
+  // for detail rows the staff is allowed to grade. When the URL carries a
+  // detailId, we prefer the detail from this list to avoid re-fetching the same
+  // row via `/api/application-details/{id}` (as confirmed with backend).
+  const { data: reviewerDetails = [] } = useApplicationDetailsForReviewer(true);
+
   // Core Data States
   const [app, setApp] = useState<components["schemas"]["Application"] | null>(null);
   const [jdInfo, setJdInfo] = useState<{
@@ -1100,53 +1114,68 @@ export function StaffGradingWorkspacePage() {
           }
         }
       } else {
-        // primaryId might be a detailId - try fetching as ApplicationDetail
-        const detailRes = await fetchClient.GET("/api/application-details/{id}", {
-          params: { path: { id: primaryId } },
-        });
-        if (detailRes.response?.ok && detailRes.data) {
-          fetchedDetail = detailRes.data as ApplicationDetail;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const d = fetchedDetail as any;
-          // Extract applicationId from the detail
-          fetchedApplicationId = d.applicationId || d.application?.id;
+        // primaryId might be a detailId. Prefer the detail from the cached
+        // /reviewer list to avoid an extra roundtrip to /application-details/{id}.
 
-          if (fetchedApplicationId) {
-            // Now fetch the actual application
-            const realAppRes = await applicationService.getById(fetchedApplicationId);
-            if (realAppRes.success && realAppRes.data) {
-              setApp(realAppRes.data);
-              const currentOrder = realAppRes.data.currentRoundOrder ?? 1;
-              const detailRoundOrder = d.roundOrder ?? d.round?.roundOrder;
-              setSelectedRoundOrder((prev) =>
-                prev === 0 ? detailRoundOrder || currentOrder : prev
-              );
+        const cachedDetail = detailIdFromUrl
+          ? reviewerDetails.find((d) => d.id === detailIdFromUrl)
+          : undefined;
 
-              // Fetch JD Info
-              if (realAppRes.data.jdId) {
-                const jdRes = await fetchClient.GET("/api/job-descriptions/{id}", {
-                  params: { path: { id: realAppRes.data.jdId } },
+        if (cachedDetail) {
+          fetchedDetail = cachedDetail;
+          fetchedApplicationId = cachedDetail.applicationId ?? null;
+        } else {
+          // Fallback: fetch the detail directly (e.g. when list cache is cold).
+          const detailRes = await fetchClient.GET("/api/application-details/{id}", {
+            params: { path: { id: primaryId } },
+          });
+          if (detailRes.response?.ok && detailRes.data) {
+            fetchedDetail = detailRes.data as ApplicationDetail;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const d = fetchedDetail as any;
+            // Extract applicationId from the detail
+            fetchedApplicationId = d.applicationId || d.application?.id;
+          }
+        }
+
+        if (fetchedDetail && fetchedApplicationId) {
+          // Now fetch the actual application
+          const realAppRes = await applicationService.getById(fetchedApplicationId);
+          if (realAppRes.success && realAppRes.data) {
+            setApp(realAppRes.data);
+            const currentOrder = realAppRes.data.currentRoundOrder ?? 1;
+
+            // Do NOT derive `selectedRoundOrder` from `currentOrder` here — the
+            // round logic is driven by the matched detail's `roundId` (see the
+            // `activeRound` memo). Setting it from currentOrder would mis-route
+            // the header when the staff opens a completed round that is not
+            // the candidate's current one.
+            setSelectedRoundOrder((prev) => (prev === 0 ? currentOrder : prev));
+
+            // Fetch JD Info
+            if (realAppRes.data.jdId) {
+              const jdRes = await fetchClient.GET("/api/job-descriptions/{id}", {
+                params: { path: { id: realAppRes.data.jdId } },
+              });
+              if (jdRes.response?.ok && jdRes.data) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const jd = jdRes.data as any;
+                const logoUrl =
+                  jd.companyLogo ||
+                  jd.companyLogoUrl ||
+                  jd.thumbnailUrl ||
+                  jd.company?.logoUrl ||
+                  jd.company?.avatarUrl ||
+                  null;
+                setJdInfo({
+                  title: jd.title,
+                  companyName: jd.companyName,
+                  logoUrl,
+                  level: jd.level,
+                  description: jd.description,
+                  requirements: jd.requirements,
+                  rounds: jd.rounds ?? [],
                 });
-                if (jdRes.response?.ok && jdRes.data) {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const jd = jdRes.data as any;
-                  const logoUrl =
-                    jd.companyLogo ||
-                    jd.companyLogoUrl ||
-                    jd.thumbnailUrl ||
-                    jd.company?.logoUrl ||
-                    jd.company?.avatarUrl ||
-                    null;
-                  setJdInfo({
-                    title: jd.title,
-                    companyName: jd.companyName,
-                    logoUrl,
-                    level: jd.level,
-                    description: jd.description,
-                    requirements: jd.requirements,
-                    rounds: jd.rounds ?? [],
-                  });
-                }
               }
             }
           }
@@ -1170,7 +1199,7 @@ export function StaffGradingWorkspacePage() {
     } finally {
       setLoading(false);
     }
-  }, [primaryId]);
+  }, [primaryId, detailIdFromUrl, reviewerDetails]);
 
   // Derive applicationId and current round from app state
   const applicationId = app?.id ?? appIdFromUrl ?? 0;
@@ -1185,25 +1214,44 @@ export function StaffGradingWorkspacePage() {
     return [...(jdInfo?.rounds ?? [])].sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0));
   }, [jdInfo?.rounds]);
 
-  // Selected round object
-  const activeRound = useMemo(() => {
-    return rounds.find((r) => r.roundOrder === selectedRoundOrder) ?? rounds[0];
-  }, [rounds, selectedRoundOrder]);
+  // For staff grading, if detailIdFromUrl is provided, find that specific detail
+  // (PRIORITIZE the list cache from /reviewer — matches "BE: chỉ dùng API đó
+  // thôi", tránh gọi /api/application-details/{id} riêng).
+  // Resolved = the detail the staff is actually viewing. For detailId mode it's
+  // looked up directly from the list cache or the per-application array; for
+  // appId mode (no detailId) it's the detail that matches the active round.
+  const resolvedStaffDetail = useMemo(() => {
+    if (detailIdFromUrl > 0) {
+      const fromList = reviewerDetails.find((d) => d.id === detailIdFromUrl);
+      if (fromList) return fromList;
+      const fromDetails = detailsData.find((d) => d.id === detailIdFromUrl);
+      if (fromDetails) return fromDetails;
+    }
+    // appId mode: pick the detail that matches the active round below.
+    return undefined;
+  }, [detailIdFromUrl, reviewerDetails, detailsData]);
 
-  // Active round detail
+  // Active round driven by the SELECTED detail (not by the application's current
+  // round order). When staff opens a detail from the list, the round name/order
+  // must match the detail's `roundId` — otherwise the UI shows the candidate's
+  // current round while the payload belongs to a different (older) round.
+  const activeRound = useMemo(() => {
+    if (detailIdFromUrl > 0 && resolvedStaffDetail?.roundId) {
+      const fromDetail = rounds.find((r) => r.id === resolvedStaffDetail.roundId);
+      if (fromDetail) return fromDetail;
+    }
+    return rounds.find((r) => r.roundOrder === selectedRoundOrder) ?? rounds[0];
+  }, [rounds, selectedRoundOrder, resolvedStaffDetail, detailIdFromUrl]);
+
+  // Active round detail (back-compat: detail that matches `activeRound`)
   const activeDetail = useMemo(() => {
     if (!activeRound) return undefined;
     return detailsData.find((d) => d.roundId === activeRound.id);
   }, [detailsData, activeRound]);
 
-  // For staff grading, if detailIdFromUrl is provided, find that specific detail
-  const staffActiveDetail = useMemo(() => {
-    if (detailIdFromUrl > 0) {
-      const found = detailsData.find((d) => d.id === detailIdFromUrl);
-      if (found) return found;
-    }
-    return activeDetail;
-  }, [detailIdFromUrl, detailsData, activeDetail]);
+  // The detail the workspace actually renders. = resolvedStaffDetail when
+  // staff explicitly picked a row, otherwise the round-driven match.
+  const staffActiveDetail = resolvedStaffDetail ?? activeDetail;
 
   // Round type detection
   const isCvScreeningRound = activeRound?.roundType?.toUpperCase() === "CV_SCREENING";
@@ -1373,6 +1421,13 @@ export function StaffGradingWorkspacePage() {
           activeRound={activeRound}
           candidateName={candidateName}
           jdTitle={jdInfo?.title}
+          applicationName={
+            (staffActiveDetail as unknown as { applicationName?: string } | undefined)
+              ?.applicationName
+          }
+          candidateUserName={
+            (staffActiveDetail as unknown as { userName?: string } | undefined)?.userName
+          }
           onOpenGrading={handleOpenGrading}
         />
 

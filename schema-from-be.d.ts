@@ -3140,6 +3140,8 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+            userName?: string;
+            applicationName?: string;
         };
         CodeReviewSubmission: {
             filename?: string;

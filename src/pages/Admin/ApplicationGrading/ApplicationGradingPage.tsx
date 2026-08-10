@@ -90,6 +90,7 @@ interface GradingListItem {
   userId?: number;
   userName?: string;
   userAvatar?: string;
+  applicationName?: string;
   createdAt?: string;
   // Staff-only fields
   detailId?: number;
@@ -702,11 +703,12 @@ function ApplicationGradingTable({
                   </div>
                 </TableCell>
 
-                {/* Job Position / JD */}
+                {/* Job Position / Application name */}
                 <TableCell>
                   <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     <Briefcase className="h-3 w-3 shrink-0 text-indigo-500" />
-                    {jdId != null ? (jdMap?.get(jdId) ?? `Vị trí #${jdId}`) : "Chưa gắn JD"}
+                    {item.applicationName ??
+                      (jdId != null ? (jdMap?.get(jdId) ?? `Vị trí #${jdId}`) : "Chưa gắn JD")}
                   </span>
                 </TableCell>
 
@@ -914,20 +916,30 @@ export function ApplicationGradingPage({
       const appMeta =
         detail.applicationId != null ? applicationMap.get(detail.applicationId) : undefined;
       const userId = appMeta?.userId;
+      const jdId = appMeta?.jdId;
+      // Prefer applicationName / userName returned by the BE on the list item
+      // (newly-added fields). Fall back to the lookups if the BE hasn't
+      // returned them yet (e.g. older deployment).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const d = detail as any;
+      const applicationName = d.applicationName ?? (jdId != null ? jdMap.get(jdId) : undefined);
+      const userName =
+        d.userName ?? (userId != null ? (userMap.get(userId) ?? `User #${userId}`) : undefined);
       return {
         id: detail.applicationId!,
         status: detail.status ?? "PENDING",
         overallScore: detail.finalScore ?? undefined,
         userId,
-        userName: userId != null ? (userMap.get(userId) ?? `User #${userId}`) : undefined,
+        userName,
         userAvatar: userId != null ? userAvatarMap.get(userId) : undefined,
-        jdId: appMeta?.jdId,
+        applicationName,
+        jdId,
         detailId: detail.id,
         detailStatus: detail.status,
         detail,
       };
     });
-  }, [isStaff, reviewerDetails, applicationMap, userMap, userAvatarMap]);
+  }, [isStaff, reviewerDetails, applicationMap, userMap, userAvatarMap, jdMap]);
 
   const filteredApplications = useMemo((): GradingListItem[] => {
     if (isStaff) {
