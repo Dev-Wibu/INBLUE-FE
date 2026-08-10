@@ -395,26 +395,14 @@ export function ApplicationWorkspacePage() {
             />
             <div className="max-w-[min(68vw,720px)] min-w-0">
               <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
-                {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+                {jdInfo?.companyName && (
+                  <span className="text-indigo-600 dark:text-indigo-300">{jdInfo.companyName}</span>
+                )}
+                {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
+                <span>
+                  {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+                </span>
               </h1>
-              <div className="mt-1 flex min-w-0 items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                {jdInfo?.companyName && (
-                  <span className="max-w-48 truncate font-semibold text-indigo-600 dark:text-indigo-300">
-                    {jdInfo.companyName}
-                  </span>
-                )}
-                {jdInfo?.companyName && (
-                  <span className="text-slate-300 dark:text-slate-700">•</span>
-                )}
-                <span className="whitespace-nowrap">Hồ sơ #{applicationId}</span>
-                <span className="hidden text-slate-300 sm:inline dark:text-slate-700">•</span>
-                <span className="hidden whitespace-nowrap sm:inline">
-                  {totalRounds} vòng đánh giá
-                </span>
-                <span className="hidden sm:inline">
-                  <ApplicationStatusBadge status={app.status} />
-                </span>
-              </div>
             </div>
           </div>
 
