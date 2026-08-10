@@ -488,12 +488,12 @@ export function ReviewDetailPage() {
               />
               <InfoRow
                 icon={Clock}
-                label={t("common.startTime1")}
+                label={t("common.startTime")}
                 value={reviewStartedAt ? <TimeAgo date={String(reviewStartedAt)} /> : "—"}
               />
               <InfoRow
                 icon={Clock}
-                label={t("common.endTime1")}
+                label={t("common.endTime")}
                 value={reviewEndedAt ? <TimeAgo date={String(reviewEndedAt)} /> : "—"}
               />
             </div>
@@ -551,7 +551,7 @@ export function ReviewDetailPage() {
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   <span className="text-slate-500 dark:text-slate-400">
-                    {t("common.startTime1")}:
+                    {t("common.startTime")}:
                   </span>
                   <TimeAgo date={String(reviewStartedAt)} />
                 </div>
@@ -559,9 +559,7 @@ export function ReviewDetailPage() {
               {reviewEndedAt && (
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-                  <span className="text-slate-500 dark:text-slate-400">
-                    {t("common.endTime1")}:
-                  </span>
+                  <span className="text-slate-500 dark:text-slate-400">{t("common.endTime")}:</span>
                   <TimeAgo date={String(reviewEndedAt)} />
                 </div>
               )}

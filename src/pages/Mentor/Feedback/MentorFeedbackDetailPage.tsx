@@ -329,12 +329,12 @@ export function MentorFeedbackDetailPage() {
               />
               <InfoRow
                 icon={Clock}
-                label={t("common.startTime1")}
+                label={t("common.startTime")}
                 value={sessionStartTime ? <TimeAgo date={String(sessionStartTime)} /> : "—"}
               />
               <InfoRow
                 icon={Clock}
-                label={t("common.endTime1")}
+                label={t("common.endTime")}
                 value={sessionEndTime ? <TimeAgo date={String(sessionEndTime)} /> : "—"}
               />
               {sessionStatus && (
@@ -429,7 +429,7 @@ export function MentorFeedbackDetailPage() {
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   <span className="text-slate-500 dark:text-slate-400">
-                    {t("common.startTime1")}:
+                    {t("common.startTime")}:
                   </span>
                   <TimeAgo date={String(sessionStartTime)} />
                 </div>
@@ -437,9 +437,7 @@ export function MentorFeedbackDetailPage() {
               {sessionEndTime && (
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-                  <span className="text-slate-500 dark:text-slate-400">
-                    {t("common.endTime1")}:
-                  </span>
+                  <span className="text-slate-500 dark:text-slate-400">{t("common.endTime")}:</span>
                   <TimeAgo date={String(sessionEndTime)} />
                 </div>
               )}
