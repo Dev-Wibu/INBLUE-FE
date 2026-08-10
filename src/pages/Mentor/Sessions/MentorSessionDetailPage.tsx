@@ -661,7 +661,7 @@ export function MentorSessionDetailPage() {
                       <Target className="h-4 w-4 text-sky-500" aria-hidden />
                     </div>
                     <div>
-                      <p className={CHIP_LABEL_CLS}>STAR</p>
+                      <p className={CHIP_LABEL_CLS}>{t("common.star")}</p>
                       <p className="text-sm font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
                         {t("mentorReviews.detailedAssessmentStarMethod")}
                       </p>

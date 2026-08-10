@@ -18,7 +18,7 @@ import type { Session } from "@/interfaces";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { AnimatePresence, motion } from "framer-motion";
-import { Calendar, Check, Clock4, MessageSquare, Video } from "lucide-react";
+import { Calendar, Check, Video } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -157,10 +157,6 @@ export function MentorSessionsPage() {
   }, [reviews]);
   const reviewSessionIds = useMemo(() => new Set(reviewBySessionId.keys()), [reviewBySessionId]);
 
-  const draftSessions = useMemo(
-    () => mentorSessions.filter((session) => session.status === "DRAFT"),
-    [mentorSessions]
-  );
   const otherSessions = useMemo(
     () => mentorSessions.filter((session) => session.status !== "DRAFT"),
     [mentorSessions]
@@ -247,10 +243,6 @@ export function MentorSessionsPage() {
     (s: Session) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
   ).length;
   const completedCount = mentorSessions.filter((s: Session) => s.status === "COMPLETED").length;
-  const waitingForReviewCount = mentorSessions.filter(
-    (s: Session) =>
-      s.status === "COMPLETED" && typeof s.id === "number" && !reviewSessionIds.has(s.id)
-  ).length;
 
   // Up Next spotlight — nearest SCHEDULED/PAID/ONGOING session.
   const upcomingSessions = useMemo(() => {
@@ -302,16 +294,8 @@ export function MentorSessionsPage() {
         tone: "emerald",
         active: trackFilter === "completed",
       },
-      {
-        id: "waiting",
-        label: t("common.waitingForReview"),
-        count: waitingForReviewCount,
-        icon: MessageSquare,
-        tone: "amber",
-        active: trackFilter === "waiting",
-      },
     ],
-    [t, otherSessions.length, scheduledCount, completedCount, waitingForReviewCount, trackFilter]
+    [t, otherSessions.length, scheduledCount, completedCount, trackFilter]
   );
 
   const statusOptions = useMemo(
@@ -381,41 +365,7 @@ export function MentorSessionsPage() {
         </div>
       ) : (
         <>
-          {/* Pending (draft) sessions — quiet, small block, never the main act */}
-          {draftSessions.length > 0 && (
-            <section
-              aria-label={t("common.waitingForApproval")}
-              className="rounded-2xl bg-white/60 p-3 ring-1 ring-amber-500/20 ring-inset dark:bg-amber-500/[0.04] dark:ring-amber-500/20">
-              <div className="mb-2 flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <Clock4 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" aria-hidden />
-                  <h2 className="text-xs font-semibold tracking-[0.06em] text-amber-700 uppercase dark:text-amber-300">
-                    {t("common.waitingForApproval")} · {draftSessions.length}
-                  </h2>
-                </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {draftSessions.map((session) => (
-                  <SessionCard
-                    key={session.id}
-                    session={session}
-                    hasReview={false}
-                    now={now}
-                    isUpdatingStatus={updateStatusMutation.isPending}
-                    actions={{
-                      onViewDetails: () => handleViewDetails(session),
-                      onJoinSession: () => handleJoinSession(session),
-                      onWriteReview: () => handleWriteReview(session),
-                      onViewReview: () => undefined,
-                      onEditReview: () => undefined,
-                      onAcceptSession: () => handleAcceptSession(session),
-                      onRejectSession: () => handleRejectSession(session),
-                    }}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+          {/* Pending (draft) sessions — hidden in current end-to-end flow (no approval step). */}
 
           {/* Command bar — single sticky strip. Skipped when track is "waiting" (no granular filter needed). */}
           {trackFilter !== "waiting" && (
@@ -463,7 +413,7 @@ export function MentorSessionsPage() {
               <motion.div
                 key={`${trackFilter}-${otherStatusFilter}-${searchQuery}`}
                 variants={listMotion}
-                initial="hidden"
+                initial={false}
                 animate="show"
                 className={cn("grid gap-3 sm:grid-cols-2 xl:grid-cols-3")}>
                 <AnimatePresence initial={false}>

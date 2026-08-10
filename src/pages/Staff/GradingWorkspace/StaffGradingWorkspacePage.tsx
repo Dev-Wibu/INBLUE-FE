@@ -7,6 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useHrScore } from "@/hooks/useApplicationDetails";
 import { fetchClient } from "@/lib/api";
+import { inferRoundType } from "@/lib/application-detail-utils";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import {
@@ -744,16 +745,18 @@ function StaffGradingModal({
 // ============================================================
 
 function StaffGradingWorkspaceHeaderCard({
-  app,
   selectedRoundOrder,
   staffActiveDetail,
   activeRound,
+  candidateName,
+  jdTitle,
   onOpenGrading,
 }: {
-  app: components["schemas"]["Application"];
   selectedRoundOrder: number;
   staffActiveDetail?: ApplicationDetail;
   activeRound?: JdRound;
+  candidateName?: string;
+  jdTitle?: string;
   onOpenGrading: () => void;
 }) {
   const { t } = useTranslation();
@@ -765,7 +768,10 @@ function StaffGradingWorkspaceHeaderCard({
   const isPass = detail?.finalResult === "PASSED";
   const needsGrading = !hasHrScore;
 
-  const roundName = activeRound?.name || `Vòng ${selectedRoundOrder}`;
+  const inferredType = detail ? inferRoundType(detail) : null;
+  const typeKey = activeRound?.roundType || inferredType;
+  const translatedType = typeKey ? t(`common.roundType.${typeKey}`, typeKey) : null;
+  const roundName = activeRound?.name || translatedType || `Vòng ${selectedRoundOrder}`;
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
@@ -781,7 +787,14 @@ function StaffGradingWorkspaceHeaderCard({
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-extrabold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
               <Clock className="h-3.5 w-3.5 text-indigo-500" />
-              {t("staffGrading.roundLabelShort", "Vòng")} #{selectedRoundOrder} — {roundName}
+              {(() => {
+                const inferredType = detail ? inferRoundType(detail) : null;
+                const typeKey = activeRound?.roundType || inferredType;
+                const translatedType = typeKey ? t(`common.roundType.${typeKey}`, typeKey) : null;
+                const displayType =
+                  activeRound?.name || translatedType || `Vòng ${selectedRoundOrder}`;
+                return `Vòng ${selectedRoundOrder}: ${displayType}`;
+              })()}
             </span>
 
             {/* Status & Decision Badge */}
@@ -868,10 +881,10 @@ function StaffGradingWorkspaceHeaderCard({
             </Button>
 
             <span className="text-xs font-medium text-slate-400">|</span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              {t("common.application", "Đơn nộp")} #{app.id} •{" "}
-              {t("staffGrading.roundLabelShort", "Chi tiết vòng")} #
-              {detail?.id ?? activeRound?.id ?? "-"}
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+              {candidateName ? `${candidateName} • ` : ""}
+              {jdTitle ? `${jdTitle} • ` : ""}
+              {roundName}
             </span>
           </div>
         </div>
@@ -1007,6 +1020,7 @@ export function StaffGradingWorkspacePage() {
     requirements?: string;
     rounds?: JdRound[];
   } | null>(null);
+  const [candidateName, setCandidateName] = useState<string>("");
   const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -1045,6 +1059,19 @@ export function StaffGradingWorkspacePage() {
         const currentOrder = appRes.data.currentRoundOrder ?? 1;
         setSelectedRoundOrder((prev) => (prev === 0 ? currentOrder : prev));
         fetchedApplicationId = appRes.data.id!;
+
+        if (appRes.data.userId) {
+          try {
+            const userRes = await fetchClient.GET("/api/users/{id}", {
+              params: { path: { id: appRes.data.userId } },
+            });
+            if (userRes.response?.ok && userRes.data?.name) {
+              setCandidateName(userRes.data.name);
+            }
+          } catch (err) {
+            console.error("Failed to fetch candidate name:", err);
+          }
+        }
 
         // 3. Fetch JD Info
         if (appRes.data.jdId) {
@@ -1341,10 +1368,11 @@ export function StaffGradingWorkspacePage() {
       <div className="mx-auto w-full max-w-[1700px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         {/* Staff Assessment Summary Header Card & Score Sticker Badge */}
         <StaffGradingWorkspaceHeaderCard
-          app={app}
           selectedRoundOrder={selectedRoundOrder}
           staffActiveDetail={staffActiveDetail}
           activeRound={activeRound}
+          candidateName={candidateName}
+          jdTitle={jdInfo?.title}
           onOpenGrading={handleOpenGrading}
         />
 

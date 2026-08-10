@@ -1,5 +1,5 @@
 export { MentorAccountPage } from "./Account";
-export { GivenFeedbackListPage } from "./Feedback";
+export { GivenFeedbackListPage, MentorFeedbackDetailPage } from "./Feedback";
 export { MentorHomeFeedPage } from "./HomeFeed";
 export { MentorNotificationsPage } from "./Notifications";
 export { MentorOverviewPage } from "./Overview";

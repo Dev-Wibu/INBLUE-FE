@@ -25,9 +25,26 @@ export const HR_SCORING_REQUIRED_ROUND_TYPES = ["CODING", "MENTOR_REVIEW", "CV_S
  * This is a heuristic since ApplicationDetail doesn't contain roundType directly.
  */
 export function inferRoundType(detail: ApplicationDetail): string | null {
+  if (!detail) return null;
+
+  if (detail.aiInterviewSessionId != null || detail.sessionId != null) {
+    return "AI_INTERVIEW";
+  }
+  if (
+    detail.mentorReview != null ||
+    detail.mentorId != null ||
+    (detail.assignedMentorIds && detail.assignedMentorIds.length > 0)
+  ) {
+    return "MENTOR_REVIEW";
+  }
+
   const data = detail.submissionData as SubmissionData | undefined;
   if (!data) return null;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((data as any).emailSubmissionId != null) {
+    return "EMAIL_SIMULATOR";
+  }
   if (data.quizAnswers && data.quizAnswers.length > 0) {
     return "QUIZ";
   }
@@ -36,6 +53,9 @@ export function inferRoundType(detail: ApplicationDetail): string | null {
   }
   if (data.codeReviewSubmissions && data.codeReviewSubmissions.length > 0) {
     return "CODE_REVIEW";
+  }
+  if (data.fileUrl) {
+    return "CV_SCREENING";
   }
   if (data.textContent) {
     if (
