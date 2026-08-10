@@ -4716,8 +4716,10 @@
       "noCvFileSubmitted": "Chưa nộp file CV",
       "noDataPendingCv": "Chưa có dữ liệu (Cần nộp CV)",
       "hrNotePending": "Hội đồng HR sẽ cập nhật sau khi chấm điểm xong.",
-      "dropCvHint": "[VI] userApplication.cvScreening.dropCvHint",
-      "noHrNote": "[VI] userApplication.cvScreening.noHrNote"
+      "dropCvHint": "Kéo thả file CV vào đây hoặc nhấp để chọn",
+      "noHrNote": "Chưa có ghi chú trực tiếp từ hội đồng tuyển dụng HR.",
+      "aiScore": "Điểm AI",
+      "hrScore": "Điểm HR"
     },
     "emailSimulator": {
       "reportTitle": "BÁO CÁO ĐÁNH GIÁ MÔ PHỎNG EMAIL",
@@ -6474,7 +6476,7 @@
     "submitFail": "Xác nhận & Từ chối",
     "submitHint": "Quyết định của bạn sẽ được ghi nhận và hiển thị cho ứng viên.",
     "useAi": "Dùng AI",
-    "useAiScore": "[VI] staffGrading.useAiScore"
+    "useAiScore": "Dùng điểm AI"
   },
   "quiz": {
     "submitSuccess": "Nộp bài quiz thành công!",

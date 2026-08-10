@@ -545,7 +545,7 @@
     "unpaidText": "Unpaid",
     "selectCompany": "Select company",
     "chooseCompany": "Choose company...",
-    "price": "[EN] adminCompanymanagement.price"
+    "price": "Price"
   },
   "adminDashboardoverview": {
     "companies": "Companies",
@@ -2429,10 +2429,10 @@
     "jobDescription": "Job Description",
     "featuredRoles": "Open Roles",
     "viewAllJobs": "View all jobs",
-    "interviewProcess": "[EN] enterpriseCompanydetail.interviewProcess",
-    "passingScore": "[EN] enterpriseCompanydetail.passingScore",
-    "duration": "[EN] enterpriseCompanydetail.duration",
-    "currentlyRecruiting": "[EN] enterpriseCompanydetail.currentlyRecruiting"
+    "interviewProcess": "Interview Process",
+    "passingScore": "Passing Score",
+    "duration": "Duration",
+    "currentlyRecruiting": "Currently Recruiting"
   },
   "enterpriseCompanysearchpage": {
     "activeCompanies": "Active companies",
@@ -3461,21 +3461,21 @@
     "userSessionNotFoundWhen": "User session not found when entering success callback.",
     "validPaymentInformationNotReceived": "Valid payment information not received. Please pay again.",
     "youNeedToLogIn": "You need to log in again before activating the package.",
-    "yeahhPaymentSuccess": "[EN] paymentPaymentsuccesspage.yeahhPaymentSuccess",
-    "paymentPendingTitle": "[EN] paymentPaymentsuccesspage.paymentPendingTitle",
-    "confirmingJdPurchase": "[EN] paymentPaymentsuccesspage.confirmingJdPurchase",
-    "purchaseJdSuccess": "[EN] paymentPaymentsuccesspage.purchaseJdSuccess",
-    "canApplyNow": "[EN] paymentPaymentsuccesspage.canApplyNow",
-    "paymentPendingWebhook": "[EN] paymentPaymentsuccesspage.paymentPendingWebhook",
-    "congratsPaymentSuccess": "[EN] paymentPaymentsuccesspage.congratsPaymentSuccess",
-    "packageActivatedCelebrate": "[EN] paymentPaymentsuccesspage.packageActivatedCelebrate",
-    "yourPremiumFeatures": "[EN] paymentPaymentsuccesspage.yourPremiumFeatures",
-    "aiInterviewCredits": "[EN] paymentPaymentsuccesspage.aiInterviewCredits",
-    "practiceSetCredits": "[EN] paymentPaymentsuccesspage.practiceSetCredits",
-    "quizSetCredits": "[EN] paymentPaymentsuccesspage.quizSetCredits",
-    "whatNext": "[EN] paymentPaymentsuccesspage.whatNext",
-    "exploreJobsNow": "[EN] paymentPaymentsuccesspage.exploreJobsNow",
-    "backToHome": "[EN] paymentPaymentsuccesspage.backToHome"
+    "yeahhPaymentSuccess": "Payment Successful!",
+    "paymentPendingTitle": "Processing Payment...",
+    "confirmingJdPurchase": "Confirming JD Purchase...",
+    "purchaseJdSuccess": "Job Description Purchased!",
+    "canApplyNow": "You can now apply for this position.",
+    "paymentPendingWebhook": "Waiting for payment confirmation from bank...",
+    "congratsPaymentSuccess": "Congratulations on your successful purchase!",
+    "packageActivatedCelebrate": "Your features are now activated!",
+    "yourPremiumFeatures": "Your Premium Features",
+    "aiInterviewCredits": "AI Interview Credits",
+    "practiceSetCredits": "Practice Set Credits",
+    "quizSetCredits": "Quiz Set Credits",
+    "whatNext": "What's Next?",
+    "exploreJobsNow": "Explore Jobs Now",
+    "backToHome": "Back to Home"
   },
   "settings": {
     "englishEn": "English (EN)",
@@ -4622,24 +4622,24 @@
     "codeReviewHrCommentTitle": "DIRECT COMMENT FROM HR COMMITTEE",
     "codeReviewHrEvaluationLabel": "HR EVALUATION",
     "codeReviewSubmittedSourceTitle": "Your submitted source code & notes",
-    "codeReviewIssueDeleted": "[EN] userApplicationhistory.codeReviewIssueDeleted",
-    "codeReviewSubmittingTitle": "[EN] userApplicationhistory.codeReviewSubmittingTitle",
-    "codeReviewSubmittingSubtitle": "[EN] userApplicationhistory.codeReviewSubmittingSubtitle",
-    "codeReviewResult": "[EN] userApplicationhistory.codeReviewResult",
-    "inReviewTime": "[EN] userApplicationhistory.inReviewTime",
-    "gradingTitle": "[EN] userApplicationhistory.gradingTitle",
-    "submittingTitle": "[EN] userApplicationhistory.submittingTitle",
-    "gradingSubtitle": "[EN] userApplicationhistory.gradingSubtitle",
-    "submittingSubtitle": "[EN] userApplicationhistory.submittingSubtitle",
-    "cvAnalyzedSuccess": "[EN] userApplicationhistory.cvAnalyzedSuccess",
-    "cvInstructionDefault": "[EN] userApplicationhistory.cvInstructionDefault",
-    "mentorStatusMatching": "[EN] userApplicationhistory.mentorStatusMatching",
-    "mentorAwaitingDesc": "[EN] userApplicationhistory.mentorAwaitingDesc",
-    "mentorSelectHintShort": "[EN] userApplicationhistory.mentorSelectHintShort",
-    "mentorSelectOpenDetail": "[EN] userApplicationhistory.mentorSelectOpenDetail",
-    "mentorSelectExpertise": "[EN] userApplicationhistory.mentorSelectExpertise",
-    "mentorSelectContact": "[EN] userApplicationhistory.mentorSelectContact",
-    "mentorSession": "[EN] userApplicationhistory.mentorSession"
+    "codeReviewIssueDeleted": "Issue deleted",
+    "codeReviewSubmittingTitle": "Submitting Code Review",
+    "codeReviewSubmittingSubtitle": "Please wait while your submission is processed",
+    "codeReviewResult": "Code Review Result",
+    "inReviewTime": "Under Review",
+    "gradingTitle": "Assessment Workspace",
+    "submittingTitle": "Submitting...",
+    "gradingSubtitle": "Review candidate submission and enter scores",
+    "submittingSubtitle": "Sending evaluation results",
+    "cvAnalyzedSuccess": "CV analyzed successfully!",
+    "cvInstructionDefault": "Please upload your CV in PDF format for AI evaluation.",
+    "mentorStatusMatching": "Matching with Mentor",
+    "mentorAwaitingDesc": "Waiting for mentor to accept application",
+    "mentorSelectHintShort": "Select a mentor for review",
+    "mentorSelectOpenDetail": "View mentor detail",
+    "mentorSelectExpertise": "Expertise",
+    "mentorSelectContact": "Contact",
+    "mentorSession": "Mentor Session"
   },
   "userApplication": {
     "applicationWorkspacePage": {
@@ -4718,9 +4718,10 @@
       "noHrNotePending": "No direct notes from the HR recruitment committee.",
       "noDataPendingCv": "No data (CV submission required)",
       "hrNotePending": "HR committee will update after grading is complete.",
-      "dropCvHint": "[EN] userApplication.cvScreening.dropCvHint",
-      "aiScore": "[EN] userApplication.cvScreening.aiScore",
-      "hrScore": "[EN] userApplication.cvScreening.hrScore"
+      "dropCvHint": "Drop CV file here or click to select",
+      "aiScore": "AI Score",
+      "hrScore": "HR Score",
+      "noHrNote": "No direct notes from the HR recruitment committee yet."
     },
     "emailSimulator": {
       "reportTitle": "EMAIL SIMULATION EVALUATION REPORT",
@@ -4898,7 +4899,7 @@
       "seconds": "Seconds",
       "question": "Question",
       "viewAllResults": "View All Results",
-      "copyCode": "[EN] userApplication.quiz.copyCode"
+      "copyCode": "Copy Code"
     },
     "coding": {
       "codingExamReport": "CODING EXAM EVALUATION REPORT",
@@ -5328,7 +5329,7 @@
       "stepWaitingShort": "Waiting",
       "stepSelectShort": "Select",
       "stepScheduleShort": "Schedule",
-      "onlineInterviewStation": "[EN] userApplication.mentorReview.onlineInterviewStation"
+      "onlineInterviewStation": "Online Interview Station"
     },
     "roundNumber": "Round {{number}}"
   },
@@ -6471,7 +6472,7 @@
     "submitFail": "Confirm & Reject",
     "submitHint": "Your decision will be recorded and visible to the candidate.",
     "useAi": "Use AI",
-    "useAiScore": "[EN] staffGrading.useAiScore"
+    "useAiScore": "Use AI Score"
   },
   "quiz": {
     "submitSuccess": "Quiz submitted successfully!",
@@ -6485,7 +6486,7 @@
     "detailsId": "Application Details #",
     "noRounds": "No rounds available for this application.",
     "searchByUserOrJob": "Search by user or job",
-    "gradingDetail": "[EN] application.gradingDetail"
+    "gradingDetail": "Grading Detail"
   },
   "status": {
     "pendingSubmit": "Pending Submission",
@@ -7103,9 +7104,9 @@
       "middle": "Middle"
     }
   },
-  "codeReviewRound": "[EN] codeReviewRound",
-  "codeReviewIssues": "[EN] codeReviewIssues",
-  "codeReviewContext": "[EN] codeReviewContext",
-  "codeReviewDefaultStatement": "[EN] codeReviewDefaultStatement",
-  "gradingErrorScoreRange": "[EN] gradingErrorScoreRange"
+  "codeReviewRound": "Code Review Round",
+  "codeReviewIssues": "Code Review Issues",
+  "codeReviewContext": "Code Review Context",
+  "codeReviewDefaultStatement": "Analyze the provided codebase and report security or performance issues.",
+  "gradingErrorScoreRange": "Score must be between 0 and 100"
 }

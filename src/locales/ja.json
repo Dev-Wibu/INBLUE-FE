@@ -4649,10 +4649,10 @@
       "noCvFileSubmitted": "履歴書ファイルがまだ提出されていません",
       "noDataPendingCv": "データなし（履歴書提出が必要）",
       "hrNotePending": "人事委員会は採点完了後に更新します。",
-      "dropCvHint": "[JA] userApplication.cvScreening.dropCvHint",
-      "noHrNote": "[JA] userApplication.cvScreening.noHrNote",
-      "aiScore": "[JA] userApplication.cvScreening.aiScore",
-      "hrScore": "[JA] userApplication.cvScreening.hrScore"
+      "dropCvHint": "CVファイルをここにドラッグ＆ドロップするか、クリックして選択してください",
+      "noHrNote": "HR採用委員会からの直接のメモはまだありません。",
+      "aiScore": "AIスコア",
+      "hrScore": "HRスコア"
     },
     "emailSimulator": {
       "reportTitle": "メールシミュレーション評価レポート",
@@ -6413,7 +6413,7 @@
     "submitFail": "確認して却下",
     "submitHint": "あなたの決定は記録され、候補者に表示されます。",
     "useAi": "AI を使う",
-    "useAiScore": "[JA] staffGrading.useAiScore"
+    "useAiScore": "AIスコアを使用"
   },
   "quiz": {
     "submitSuccess": "クイズの提出に成功しました！",
