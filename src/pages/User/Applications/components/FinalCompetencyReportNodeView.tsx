@@ -10,7 +10,6 @@ import {
 } from "@/services/competency-chart.manager";
 import {
   Activity,
-  ArrowUpRight,
   CheckCircle,
   Code2,
   FileCheck2,
@@ -25,7 +24,6 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -37,7 +35,6 @@ import {
 } from "recharts";
 import type { components } from "../../../../../schema-from-be";
 import type { JdRound } from "./HorizontalPipeline";
-import type { JdInfoPayload } from "./RoundWorkspaceDispatcher";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -227,7 +224,6 @@ interface FinalCompetencyReportNodeViewProps {
   applicationId: number;
   rounds?: JdRound[];
   details?: ApplicationDetail[];
-  jdInfo?: JdInfoPayload | null;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -236,10 +232,8 @@ export function FinalCompetencyReportNodeView({
   applicationId,
   rounds = [],
   details = [],
-  jdInfo,
 }: FinalCompetencyReportNodeViewProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const [result, setResult] = useState<{
@@ -395,24 +389,26 @@ export function FinalCompetencyReportNodeView({
       {/* ═══════════════════════════════════════════════════════
           ROW 1 — Page header: title + action
           ═══════════════════════════════════════════════════════ */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Báo cáo Năng lực Phỏng vấn
-          </h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {jdInfo?.title ?? "Vị trí ứng tuyển"} — {sortedRounds.length} vòng đánh giá
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <Activity className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                BÁO CÁO NĂNG LỰC TỔNG KẾT AI
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-xs font-semibold text-indigo-400">
+                Vòng {sortedRounds.length || 7}: Báo cáo năng lực
+              </span>
+            </div>
+            <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
+              Đánh giá tổng hợp năng lực ứng viên sau toàn bộ quá trình tuyển dụng.
+            </p>
+          </div>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => navigate(`/user/application/${applicationId}/report`)}
-          className="h-9 shrink-0 gap-1.5 px-3 text-xs">
-          In PDF
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </Button>
       </div>
 
       {/* ═══════════════════════════════════════════════════════

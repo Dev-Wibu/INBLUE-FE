@@ -30,9 +30,10 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
+import { FinalCompetencyReportNodeView } from "./components/FinalCompetencyReportNodeView";
 import { HorizontalPipeline, type JdRound } from "./components/HorizontalPipeline";
 import { RoundWorkspaceDispatcher } from "./components/RoundWorkspaceDispatcher";
 import { applicationTheme } from "./components/applicationTheme";
@@ -178,6 +179,8 @@ export function ApplicationWorkspacePage() {
   const { applicationId: appIdParam } = useParams<{ applicationId: string }>();
   const applicationId = Number(appIdParam);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const shouldOpenCompetencyReport = searchParams.get("round") === "99";
 
   // Core Data States
   const [app, setApp] = useState<components["schemas"]["Application"] | null>(null);
@@ -221,7 +224,7 @@ export function ApplicationWorkspacePage() {
       if (appRes.success && appRes.data) {
         setApp(appRes.data);
         const currentOrder = appRes.data.currentRoundOrder ?? 1;
-        setSelectedRoundOrder(currentOrder);
+        setSelectedRoundOrder(shouldOpenCompetencyReport ? 99 : currentOrder);
 
         // 2. Fetch JD Info
         if (appRes.data.jdId) {
@@ -260,8 +263,14 @@ export function ApplicationWorkspacePage() {
           params: { path: { applicationId } },
         }
       );
-      if (detailsRes.response?.ok && Array.isArray(detailsRes.data)) {
-        setDetailsData(detailsRes.data as ApplicationDetail[]);
+      if (detailsRes.response?.ok && detailsRes.data) {
+        const raw = detailsRes.data as unknown;
+        const list = Array.isArray(raw)
+          ? (raw as ApplicationDetail[])
+          : Array.isArray((raw as { data?: unknown })?.data)
+            ? (raw as { data: ApplicationDetail[] }).data
+            : [];
+        setDetailsData(list);
       }
     } catch (err) {
       console.error("[Workspace] Failed to load data:", err);
@@ -282,6 +291,7 @@ export function ApplicationWorkspacePage() {
 
   // Selected round object
   const activeRound = useMemo(() => {
+    if (selectedRoundOrder === 99) return undefined;
     return rounds.find((r) => r.roundOrder === selectedRoundOrder) ?? rounds[0];
   }, [rounds, selectedRoundOrder]);
 
@@ -322,6 +332,9 @@ export function ApplicationWorkspacePage() {
     app.status === "FAILED" ||
     app.status === "SOFT_FAILED" ||
     (activeDetail?.status as string) === "COMPLETED" ||
+    (activeDetail?.status as string) === "AI_EVALUATED" ||
+    (activeDetail?.status as string) === "PASSED" ||
+    (activeDetail?.status as string) === "FAILED" ||
     (activeRound?.roundOrder ?? 0) < apiCurrentRoundOrder;
   const isRoundCurrent = !isRoundCompleted && activeRound?.roundOrder === apiCurrentRoundOrder;
   const isRoundLocked = !isRoundCompleted && (activeRound?.roundOrder ?? 0) > apiCurrentRoundOrder;
@@ -438,7 +451,13 @@ export function ApplicationWorkspacePage() {
         </Card>
 
         {/* Workspace Main Grid */}
-        {activeRound ? (
+        {selectedRoundOrder === 99 ? (
+          <FinalCompetencyReportNodeView
+            applicationId={Number(applicationId)}
+            rounds={rounds}
+            details={detailsData}
+          />
+        ) : activeRound ? (
           isStandaloneLayout ? (
             /* Standalone Rounds (CV Screening, Email Simulation): Render 3 Standalone Column Containers directly without outer Card wrapper */
             <RoundWorkspaceDispatcher
