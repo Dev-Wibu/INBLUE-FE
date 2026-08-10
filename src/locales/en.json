@@ -2999,8 +2999,8 @@
     "language": "Language",
     "difficulty": "Difficulty",
     "jobPosition": "Job Position",
-    "optional": "[EN] general.optional",
-    "unableToGetAnalyticsData": "[EN] general.unableToGetAnalyticsData"
+    "optional": "Optional",
+    "unableToGetAnalyticsData": "Unable to get analytics data"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50+ professional Mentors",
@@ -3194,8 +3194,8 @@
     "noMentorInformationFound": "No mentor information found",
     "unitPricePerMinute": "Unit price per minute",
     "writeAFewLinesIntroducing": "Write a few lines introducing yourself...",
-    "notUpdatedYet": "[EN] mentorAccount.notUpdatedYet",
-    "priceHint": "[EN] mentorAccount.priceHint"
+    "notUpdatedYet": "Not updated yet",
+    "priceHint": "Students pay per session. Update your rate in Settings."
   },
   "mentorFeedback": {
     "averageScoreForEvaluation": "Average score for evaluation",
@@ -3356,7 +3356,7 @@
     "totalStudents": "Total students",
     "tryAnotherKeywordOrChange": "Try another keyword or change the filter.",
     "youHaveNotSubmittedAny": "You have not submitted any reviews for this student yet.",
-    "reviewSubmitted": "[EN] mentorStudents.reviewSubmitted"
+    "reviewSubmitted": "Review submitted"
   },
   "paymentPaymentcancelpage": {
     "callbackHasAValidIdentifier": "Callback has a valid identifier but the context local is wrong, continue processing according to callback-first.",
@@ -3840,12 +3840,12 @@
     "viewYourPastInterviewSessions": "View your past interview sessions",
     "managePreferencesAndSecurity": "Manage preferences and security",
     "quickSettingsDescription": "Quick settings for account options",
-    "profileCompletion": "[EN] userAccount.profileCompletion",
-    "basicInfo": "[EN] userAccount.basicInfo",
-    "bio": "[EN] userAccount.bio",
-    "socialLinks": "[EN] userAccount.socialLinks",
-    "aiOptimizationTips": "[EN] userAccount.aiOptimizationTips",
-    "completeProfileTip": "[EN] userAccount.completeProfileTip"
+    "profileCompletion": "Profile completion",
+    "basicInfo": "Basic information",
+    "bio": "Bio",
+    "socialLinks": "Social links",
+    "aiOptimizationTips": "AI optimization tips",
+    "completeProfileTip": "Complete your profile to attract more students."
   },
   "userAiinterview": {
     "14Days": "14 Days",

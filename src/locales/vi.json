@@ -3191,8 +3191,8 @@
     "noMentorInformationFound": "Không tìm thấy thông tin mentor",
     "unitPricePerMinute": "Đơn giá mỗi phút",
     "writeAFewLinesIntroducing": "Viết vài dòng giới thiệu về bản thân...",
-    "notUpdatedYet": "[VI] mentorAccount.notUpdatedYet",
-    "priceHint": "[VI] mentorAccount.priceHint"
+    "notUpdatedYet": "Chưa cập nhật",
+    "priceHint": "Học viên sẽ thanh toán theo phiên. Cập nhật mức giá trong Cài đặt."
   },
   "mentorFeedback": {
     "averageScoreForEvaluation": "Điểm TB đánh giá",
@@ -3353,7 +3353,7 @@
     "totalStudents": "Tổng học viên",
     "tryAnotherKeywordOrChange": "Hãy thử từ khóa khác hoặc đổi bộ lọc.",
     "youHaveNotSubmittedAny": "Bạn chưa gửi đánh giá nào cho học viên này.",
-    "reviewSubmitted": "[VI] mentorStudents.reviewSubmitted"
+    "reviewSubmitted": "Đánh giá đã gửi"
   },
   "paymentPaymentcancelpage": {
     "callbackHasAValidIdentifier": "Callback có định danh hợp lệ nhưng context local lệch, tiếp tục xử lý theo callback-first.",
@@ -3837,12 +3837,12 @@
     "viewYourPastInterviewSessions": "Xem lại các phiên phỏng vấn đã qua của bạn",
     "managePreferencesAndSecurity": "Quản lý tùy chọn và bảo mật",
     "quickSettingsDescription": "Cài đặt nhanh các tùy chọn tài khoản",
-    "profileCompletion": "[VI] userAccount.profileCompletion",
-    "basicInfo": "[VI] userAccount.basicInfo",
-    "bio": "[VI] userAccount.bio",
-    "socialLinks": "[VI] userAccount.socialLinks",
-    "aiOptimizationTips": "[VI] userAccount.aiOptimizationTips",
-    "completeProfileTip": "[VI] userAccount.completeProfileTip"
+    "profileCompletion": "Độ hoàn thiện hồ sơ",
+    "basicInfo": "Thông tin cơ bản",
+    "bio": "Tiểu sử",
+    "socialLinks": "Liên kết mạng xã hội",
+    "aiOptimizationTips": "Mẹo tối ưu từ AI",
+    "completeProfileTip": "Hoàn thiện hồ sơ để thu hút nhiều học viên hơn."
   },
   "userAiinterview": {
     "14Days": "14 Ngày",

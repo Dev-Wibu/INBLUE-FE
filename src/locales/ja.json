@@ -2969,7 +2969,7 @@
     "language": "言語",
     "difficulty": "難易度",
     "jobPosition": "応募職種",
-    "optional": "[JA] general.optional",
+    "optional": "任意",
     "unableToGetAnalyticsData": "[JA] general.unableToGetAnalyticsData"
   },
   "homepageFeatures": {
@@ -3170,8 +3170,8 @@
     "noMentorInformationFound": "メンター情報が見つかりません",
     "unitPricePerMinute": "1分あたりの単価",
     "writeAFewLinesIntroducing": "自己紹介を数行で書いてください...",
-    "notUpdatedYet": "[JA] mentorAccount.notUpdatedYet",
-    "priceHint": "[JA] mentorAccount.priceHint"
+    "notUpdatedYet": "未更新",
+    "priceHint": "学生はセッションごとに支払います。設定で料金を更新してください。"
   },
   "mentorFeedback": {
     "averageScoreForEvaluation": "評価の平均スコア",
@@ -3328,7 +3328,7 @@
     "totalStudents": "学生合計",
     "tryAnotherKeywordOrChange": "別のキーワードを試すか、フィルターを変更してください。",
     "youHaveNotSubmittedAny": "この学生にまだレビューを送信していません。",
-    "reviewSubmitted": "[JA] mentorStudents.reviewSubmitted"
+    "reviewSubmitted": "レビューを送信済み"
   },
   "paymentPaymentcancelpage": {
     "callbackHasAValidIdentifier": "コールバックには有効な識別子がありますが、コンテキストローカルが不正です。コールバック優先で処理を続行します。",
@@ -3815,12 +3815,12 @@
     "viewYourPastInterviewSessions": "過去の面接セッションを表示する",
     "managePreferencesAndSecurity": "設定とセキュリティの管理",
     "quickSettingsDescription": "アカウント設定のクイック設定",
-    "profileCompletion": "[JA] userAccount.profileCompletion",
-    "basicInfo": "[JA] userAccount.basicInfo",
-    "bio": "[JA] userAccount.bio",
-    "socialLinks": "[JA] userAccount.socialLinks",
-    "aiOptimizationTips": "[JA] userAccount.aiOptimizationTips",
-    "completeProfileTip": "[JA] userAccount.completeProfileTip"
+    "profileCompletion": "プロフィール完成度",
+    "basicInfo": "基本情報",
+    "bio": "自己紹介",
+    "socialLinks": "SNSリンク",
+    "aiOptimizationTips": "AI最適化ヒント",
+    "completeProfileTip": "プロフィールを完成させて、より多くの学生を引きつけましょう。"
   },
   "userAiinterview": {
     "14Days": "14日",
