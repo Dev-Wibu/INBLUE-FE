@@ -38,25 +38,12 @@ export interface MentorCommandHeroProps {
 }
 
 const TONE_RING: Record<NonNullable<MentorCommandHeroProps["tone"]>, string> = {
-  sky: "ring-sky-400/30 text-sky-600 bg-sky-500/10 dark:text-sky-300 dark:bg-sky-500/10",
-  emerald:
-    "ring-emerald-400/30 text-emerald-600 bg-emerald-500/10 dark:text-emerald-300 dark:bg-emerald-500/10",
-  amber:
-    "ring-amber-400/30 text-amber-600 bg-amber-500/10 dark:text-amber-300 dark:bg-amber-500/10",
-  indigo:
-    "ring-indigo-400/30 text-indigo-600 bg-indigo-500/10 dark:text-indigo-300 dark:bg-indigo-500/10",
-  violet:
-    "ring-violet-400/30 text-violet-600 bg-violet-500/10 dark:text-violet-300 dark:bg-violet-500/10",
-  rose: "ring-rose-400/30 text-rose-600 bg-rose-500/10 dark:text-rose-300 dark:bg-rose-500/10",
-};
-
-const TONE_GLOW: Record<NonNullable<MentorCommandHeroProps["tone"]>, string> = {
-  sky: "bg-sky-400/10 dark:bg-sky-400/25",
-  emerald: "bg-emerald-400/10 dark:bg-emerald-400/25",
-  amber: "bg-amber-400/10 dark:bg-amber-400/25",
-  indigo: "bg-indigo-400/10 dark:bg-indigo-400/25",
-  violet: "bg-violet-400/10 dark:bg-violet-400/25",
-  rose: "bg-rose-400/10 dark:bg-rose-400/25",
+  sky: "ring-sky-300 text-sky-600 dark:text-sky-400",
+  emerald: "ring-emerald-300 text-emerald-600 dark:text-emerald-400",
+  amber: "ring-amber-300 text-amber-600 dark:text-amber-400",
+  indigo: "ring-indigo-300 text-indigo-600 dark:text-indigo-400",
+  violet: "ring-violet-300 text-violet-600 dark:text-violet-400",
+  rose: "ring-rose-300 text-rose-600 dark:text-rose-400",
 };
 
 export function MentorCommandHero({
@@ -76,36 +63,13 @@ export function MentorCommandHero({
   return (
     <section
       className={cn(
-        "relative isolate overflow-hidden rounded-2xl",
-        "bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100",
-        "ring-1 ring-slate-200 ring-inset dark:ring-white/10 dark:ring-inset",
-        "shadow-[0_4px_20px_-8px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_18px_50px_-30px_rgba(0,0,0,0.7)]",
+        "relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950",
         className
       )}>
-      {/* Subtle dotted grid + soft radial spotlight */}
+      {/* Subtle dotted grid */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(148,163,184,0.5)_1px,transparent_1px)] [background-size:14px_14px] opacity-[0.25] dark:[background-image:radial-gradient(rgba(148,163,184,0.35)_1px,transparent_1px)] dark:opacity-[0.18]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 left-1/3 h-72 w-72 rounded-full opacity-60 blur-3xl"
-        style={{ backgroundColor: "transparent" }}
-      />
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute -right-16 -bottom-24 h-56 w-56 rounded-full opacity-60 blur-3xl",
-          TONE_GLOW[tone]
-        )}
-      />
-      {/* Tone corner accent */}
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute -top-16 left-6 h-32 w-32 rounded-full opacity-50 blur-3xl",
-          TONE_GLOW[tone]
-        )}
+        className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(148,163,184,0.4)_1px,transparent_1px)] [background-size:14px_14px] opacity-[0.2] dark:opacity-[0.12]"
       />
 
       <div className="relative grid gap-4 p-5 sm:grid-cols-[1fr_auto] sm:items-start sm:gap-6 sm:p-6">
@@ -124,7 +88,7 @@ export function MentorCommandHero({
                 {eyebrow}
               </p>
               <h1
-                className="truncate text-lg font-semibold tracking-[-0.02em] text-pretty text-slate-900 sm:text-xl dark:text-white"
+                className="truncate text-lg font-semibold tracking-[-0.02em] text-slate-900 sm:text-xl dark:text-white"
                 style={{ textWrap: "balance" }}>
                 {title}
               </h1>
@@ -152,33 +116,24 @@ export function MentorCommandHero({
         {/* RIGHT — Spotlight + reload */}
         <div className="flex items-start justify-end gap-3">
           {spotlight ? (
-            <div
-              className={cn(
-                "group relative flex min-w-[220px] flex-col gap-2 overflow-hidden rounded-xl p-3",
-                "bg-white/60 ring-1 ring-slate-200/70 backdrop-blur ring-inset",
-                "dark:bg-white/[0.04] dark:ring-white/10"
-              )}>
-              <div className="relative flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3 text-slate-400 dark:text-slate-300" aria-hidden />
-                <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-600 uppercase dark:text-slate-300">
+            <div className="flex min-w-[220px] flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-amber-500" aria-hidden />
+                <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-500 uppercase">
                   {t("mentorSessions.interviewSession")}
                 </p>
               </div>
               {spotlight}
             </div>
           ) : (
-            <div
-              className={cn(
-                "flex min-w-[220px] flex-col gap-2 rounded-xl p-3",
-                "bg-white/[0.03] ring-1 ring-white/10 ring-inset dark:bg-white/[0.03] dark:ring-white/10"
-              )}>
+            <div className="flex min-w-[220px] flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
               <div className="flex items-center gap-1.5">
-                <Radio className="h-3 w-3 text-slate-500 dark:text-slate-400" aria-hidden />
-                <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-500 uppercase dark:text-slate-400">
+                <Radio className="h-3 w-3 text-slate-400" aria-hidden />
+                <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-400 uppercase">
                   {t("mentorSessions.interviewSession")}
                 </p>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {t("mentorSessions.interviewSession")}
               </p>
             </div>
@@ -191,7 +146,7 @@ export function MentorCommandHero({
             disabled={isReloading}
             aria-label={reloadTooltip}
             title={reloadTooltip}
-            className="h-9 w-9 shrink-0 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10 dark:hover:text-white">
+            className="h-9 w-9 shrink-0 border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100">
             <RefreshCw className={cn("h-4 w-4", isReloading && "animate-spin")} aria-hidden />
           </Button>
         </div>
