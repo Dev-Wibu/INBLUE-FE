@@ -278,7 +278,7 @@ export function GivenFeedbackListPage() {
       />
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
-        <div className="flex flex-col gap-4">
+        <div className="relative z-10 flex flex-col gap-4">
           {isLoading ? (
             <div className="space-y-2">
               <Skeleton className="h-24" />
