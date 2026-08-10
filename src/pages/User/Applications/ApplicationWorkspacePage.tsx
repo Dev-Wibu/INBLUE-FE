@@ -35,6 +35,7 @@ import type { components } from "../../../../schema-from-be";
 import { FinalCompetencyReportNodeView } from "./components/FinalCompetencyReportNodeView";
 import { HorizontalPipeline, type JdRound } from "./components/HorizontalPipeline";
 import { RoundWorkspaceDispatcher } from "./components/RoundWorkspaceDispatcher";
+import { areAllRoundsCompleted } from "./components/applicationProgress";
 import { applicationTheme } from "./components/applicationTheme";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
@@ -288,6 +289,17 @@ export function ApplicationWorkspacePage() {
     return [...(jdInfo?.rounds ?? [])].sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0));
   }, [jdInfo?.rounds]);
 
+  const canOpenCompetencyReport = useMemo(
+    () => areAllRoundsCompleted(rounds, detailsData, apiCurrentRoundOrder),
+    [rounds, detailsData, apiCurrentRoundOrder]
+  );
+
+  useEffect(() => {
+    if (!loading && selectedRoundOrder === 99 && !canOpenCompetencyReport) {
+      setSelectedRoundOrder(apiCurrentRoundOrder);
+    }
+  }, [apiCurrentRoundOrder, canOpenCompetencyReport, loading, selectedRoundOrder]);
+
   // Selected round object
   const activeRound = useMemo(() => {
     if (selectedRoundOrder === 99) return undefined;
@@ -447,7 +459,10 @@ export function ApplicationWorkspacePage() {
             currentRoundOrder={apiCurrentRoundOrder}
             overallStatus={app.status}
             selectedRoundOrder={selectedRoundOrder}
-            onSelectRound={(order) => setSelectedRoundOrder(order)}
+            onSelectRound={(order) => {
+              if (order === 99 && !canOpenCompetencyReport) return;
+              setSelectedRoundOrder(order);
+            }}
           />
         </Card>
 
