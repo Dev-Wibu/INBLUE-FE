@@ -767,7 +767,10 @@ function StaffGradingWorkspaceHeaderCard({
   const isPass = detail?.finalResult === "PASSED";
   const needsGrading = !hasHrScore;
 
-  const roundName = activeRound?.name || `Vòng ${selectedRoundOrder}`;
+  const inferredType = detail ? inferRoundType(detail) : null;
+  const typeKey = activeRound?.roundType || inferredType;
+  const translatedType = typeKey ? t(`common.roundType.${typeKey}`, typeKey) : null;
+  const roundName = activeRound?.name || translatedType || `Vòng ${selectedRoundOrder}`;
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
@@ -784,12 +787,11 @@ function StaffGradingWorkspaceHeaderCard({
             <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-extrabold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
               <Clock className="h-3.5 w-3.5 text-indigo-500" />
               {(() => {
-                const typeKey = activeRound?.roundType;
+                const inferredType = detail ? inferRoundType(detail) : null;
+                const typeKey = activeRound?.roundType || inferredType;
                 const translatedType = typeKey ? t(`common.roundType.${typeKey}`, typeKey) : null;
                 const displayType =
-                  activeRound?.name ||
-                  translatedType ||
-                  (selectedRoundOrder === 1 ? "Sàng lọc CV" : `Vòng ${selectedRoundOrder}`);
+                  activeRound?.name || translatedType || `Vòng ${selectedRoundOrder}`;
                 return `Vòng ${selectedRoundOrder}: ${displayType}`;
               })()}
             </span>
