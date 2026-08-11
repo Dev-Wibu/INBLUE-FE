@@ -85,7 +85,7 @@ export function CommunityFeedPage() {
   }, [hasMore, isFetchingMore, loadMore]);
   return (
     <div className="-m-4 min-h-full bg-slate-50/70 px-4 py-5 sm:-m-6 sm:px-6 lg:-m-8 lg:px-8 dark:bg-slate-950">
-      <div className="mx-auto grid w-full max-w-[1380px] gap-5 xl:grid-cols-[minmax(0,1040px)_300px]">
+      <div className="mx-auto grid w-full max-w-[1140px] justify-center gap-6 xl:grid-cols-[minmax(0,740px)_320px]">
         <main className="min-w-0 space-y-5">
           <Card className="overflow-hidden rounded-2xl border-slate-200/80 bg-white py-0 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
             <div className="flex flex-wrap items-center gap-3 px-4 py-3.5 sm:px-5">
