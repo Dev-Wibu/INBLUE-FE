@@ -419,7 +419,7 @@ export function FinalCompetencyReportNodeView({
         {(() => {
           const { text, badge } = scoreColor(chart.overallScore);
           return (
-            <div className="flex min-h-[200px] items-center rounded-xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/40 p-5 shadow-xs dark:border-indigo-500/20 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/40 dark:shadow-none">
+            <div className="flex min-h-[200px] items-center rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
               <div className="flex w-full items-center justify-center gap-4">
                 <Gauge score={chart.overallScore} size={88} />
                 <div className="min-w-0">
