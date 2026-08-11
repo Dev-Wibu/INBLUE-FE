@@ -374,7 +374,6 @@ function AnalyticsOverviewSection({
   const averageApplicationsPerUser = applicationsPerUser?.averageApplicationsPerUser;
   const uniqueApplicants = applicationsPerUser?.uniqueApplicants ?? 0;
   const applicationsPerUserGeneratedAt = applicationsPerUser?.generatedAt;
-  const applicationsPerUserTraceId = applicationsPerUser?.traceId;
   const activeInterviews = analytics?.activeInterviews ?? [];
   const visibleActiveInterviews = showAllActiveInterviews
     ? activeInterviews
@@ -654,14 +653,6 @@ function AnalyticsOverviewSection({
                         {applicationsPerUserGeneratedAt
                           ? formatTransactionTime(applicationsPerUserGeneratedAt, t)
                           : "—"}
-                      </dd>
-                    </div>
-                    <div className="rounded-lg bg-white/70 px-3 py-2 dark:bg-slate-900/50">
-                      <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                        {t("adminDashboardoverview.traceId", "Trace ID")}
-                      </dt>
-                      <dd className="mt-1 text-[11px] leading-relaxed font-semibold break-all text-slate-700 dark:text-slate-200">
-                        {applicationsPerUserTraceId || "—"}
                       </dd>
                     </div>
                   </dl>
@@ -997,20 +988,6 @@ export function DashboardOverviewPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 dark:bg-slate-950">
-      <div className="mb-6 flex items-center justify-end">
-        <div className="flex items-center gap-2 rounded-lg bg-white p-2 shadow-sm dark:bg-slate-900">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500/10">
-            <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <span className="text-sm font-medium dark:text-slate-300">
-            {t("adminDashboardoverview.system")}{" "}
-            <span className="font-bold text-emerald-600 dark:text-emerald-400">
-              {t("adminDashboardoverview.stableOperation")}
-            </span>
-          </span>
-        </div>
-      </div>
-
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-5">
         {overviewStats.map((stat) => (
           <Card
