@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+
+# Strip AI co-author trailers from commit messages so future commits are
+# attributed only to the human author (TuanNguyen212204).
+#
+# Cursor's agent appends trailers like
+#   Co-Authored-By: Claude <noreply@anthropic.com>
+# to commit messages it writes. We delete any Co-Authored-By line whose
+# value matches a known AI agent. Leaves normal trailers (e.g. Signed-off-by)
+# and the commit body untouched.
+MSG_FILE="$1"
+
+if [ -f "$MSG_FILE" ]; then
+  sed -i -E '/^Co-Authored-By:[[:space:]]*((Claude|ChatGPT|GPT-?|Copilot|Gemini|Cursor)[[:space:]]*<[^>]+>|[[:space:]]*<noreply@(anthropic|openai|github)\.com[[:space:]]*>)/Id' "$MSG_FILE"
+fi
