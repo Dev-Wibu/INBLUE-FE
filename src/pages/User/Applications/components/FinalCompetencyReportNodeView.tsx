@@ -51,28 +51,28 @@ function scoreColor(score: number) {
   if (score >= 70)
     return {
       bar: "bg-emerald-500",
-      text: "text-emerald-700 dark:text-emerald-400",
+      text: "text-emerald-600 dark:text-emerald-400",
       badge:
-        "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800",
+        "bg-emerald-50 text-emerald-800 ring-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800",
       stroke: "#10b981",
       fill: "bg-emerald-500",
     };
   if (score >= 40)
     return {
       bar: "bg-amber-400",
-      text: "text-amber-700 dark:text-amber-400",
+      text: "text-amber-600 dark:text-amber-400",
       badge:
-        "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-800",
+        "bg-amber-50 text-amber-800 ring-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-800",
       stroke: "#f59e0b",
       fill: "bg-amber-400",
     };
   return {
-    bar: "bg-rose-400",
-    text: "text-rose-700 dark:text-rose-400",
+    bar: "bg-rose-500",
+    text: "text-rose-600 dark:text-rose-400",
     badge:
-      "bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:ring-rose-800",
+      "bg-rose-50 text-rose-800 ring-rose-300 dark:bg-rose-950/40 dark:text-rose-300 dark:ring-rose-800",
     stroke: "#f87171",
-    fill: "bg-rose-400",
+    fill: "bg-rose-500",
   };
 }
 
@@ -106,7 +106,7 @@ function getRoundIcon(roundType?: string) {
 function ScoreBar({ score }: { score: number }) {
   const { bar } = scoreColor(score);
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
       <div
         className={`h-full rounded-full transition-all duration-500 ${bar}`}
         style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
@@ -152,7 +152,7 @@ function Gauge({ score, size = 96 }: { score: number; size?: number }) {
         <span className={`text-xl leading-none font-bold tabular-nums ${text}`}>
           {Math.round(score)}
         </span>
-        <span className="mt-0.5 text-[10px] text-slate-400">/100</span>
+        <span className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">/100</span>
       </div>
     </div>
   );
@@ -201,18 +201,18 @@ function CircleScore({ score, size = 48 }: { score: number; size?: number }) {
 function ResultPill({ result }: { result?: string | null }) {
   if (result === "PASSED")
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200 ring-inset dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800">
+      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-300 ring-inset dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800">
         <CheckCircle className="h-3 w-3" /> Đạt
       </span>
     );
   if (result === "FAILED" || result === "REJECT")
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 ring-1 ring-rose-200 ring-inset dark:bg-rose-950/40 dark:text-rose-300 dark:ring-rose-800">
+      <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 ring-1 ring-rose-300 ring-inset dark:bg-rose-950/40 dark:text-rose-300 dark:ring-rose-800">
         <XCircle className="h-3 w-3" /> Không đạt
       </span>
     );
   return (
-    <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 ring-1 ring-slate-200 ring-inset dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">
+    <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 ring-inset dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">
       Chưa có kết quả
     </span>
   );
@@ -389,7 +389,7 @@ export function FinalCompetencyReportNodeView({
       {/* ═══════════════════════════════════════════════════════
           ROW 1 — Page header: title + action
           ═══════════════════════════════════════════════════════ */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-indigo-100 bg-white p-4 shadow-xs dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
             <Activity className="h-5 w-5" />
@@ -399,12 +399,12 @@ export function FinalCompetencyReportNodeView({
               <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 BÁO CÁO NĂNG LỰC TỔNG KẾT AI
               </span>
-              <span className="text-slate-600">•</span>
-              <span className="text-xs font-semibold text-indigo-400">
+              <span className="text-slate-400">•</span>
+              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                 Vòng {sortedRounds.length || 7}: Báo cáo năng lực
               </span>
             </div>
-            <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
+            <p className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-200">
               Đánh giá tổng hợp năng lực ứng viên sau toàn bộ quá trình tuyển dụng.
             </p>
           </div>
@@ -419,24 +419,24 @@ export function FinalCompetencyReportNodeView({
         {(() => {
           const { text, badge } = scoreColor(chart.overallScore);
           return (
-            <div className="flex min-h-[200px] items-center rounded-xl border border-indigo-200/70 bg-indigo-50/70 p-5 dark:border-indigo-500/20 dark:bg-indigo-500/[0.08]">
+            <div className="flex min-h-[200px] items-center rounded-xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/40 p-5 shadow-xs dark:border-indigo-500/20 dark:bg-indigo-500/[0.08] dark:shadow-none">
               <div className="flex w-full items-center justify-center gap-4">
                 <Gauge score={chart.overallScore} size={88} />
                 <div className="min-w-0">
-                  <p className="max-w-[230px] text-lg leading-tight font-black tracking-tight text-slate-900 uppercase dark:text-white">
+                  <p className="max-w-[230px] text-base leading-snug font-bold tracking-tight text-slate-900 uppercase dark:text-white">
                     Đánh giá trình độ hiện tại đang ở cấp độ nào?
                   </p>
                   <span
-                    className={`mt-3 inline-flex rounded-md px-3 py-1 text-sm font-bold ring-1 ring-inset ${badge}`}>
+                    className={`mt-2.5 inline-flex rounded-md px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset ${badge}`}>
                     {competencyLevelLabelVi[chart.overallLevel] ||
                       competencyLevelLabel[chart.overallLevel] ||
                       chart.overallLevel}
                   </span>
-                  <div className="mt-3 flex items-baseline gap-2">
-                    <span className={`text-xl font-bold tabular-nums ${text}`}>
+                  <div className="mt-2.5 flex items-baseline gap-2">
+                    <span className={`text-xl font-black tabular-nums ${text}`}>
                       {chart.overallScore.toFixed(1)}
                     </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-slate-600 dark:text-slate-400">
                       Điểm tổng thể /100
                     </span>
                   </div>
@@ -450,15 +450,17 @@ export function FinalCompetencyReportNodeView({
         {(() => {
           const { text, bar } = scoreColor(technicalAvg);
           return (
-            <div className="min-h-[200px] rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Kỹ năng chuyên môn</p>
+            <div className="min-h-[200px] rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                Kỹ năng chuyên môn
+              </p>
               <p className={`mt-2 text-3xl leading-none font-bold tabular-nums ${text}`}>
                 {technicalAvg}
               </p>
               <div className="mt-6 space-y-3">
                 {chart.technicalSkillAreas.slice(0, 3).map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="w-24 shrink-0 truncate text-xs text-slate-500 dark:text-slate-400">
+                    <span className="w-24 shrink-0 truncate text-xs text-slate-700 dark:text-slate-300">
                       {compactSkillName(item.skillArea)}
                     </span>
                     <div className="flex-1">
@@ -475,7 +477,7 @@ export function FinalCompetencyReportNodeView({
                   </div>
                 ))}
                 {chart.technicalSkillAreas.length > 3 && (
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     +{chart.technicalSkillAreas.length - 3} kỹ năng khác
                   </p>
                 )}
@@ -488,15 +490,17 @@ export function FinalCompetencyReportNodeView({
         {(() => {
           const { text, bar } = scoreColor(behavioralAvg);
           return (
-            <div className="min-h-[200px] rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Kỹ năng mềm & thái độ</p>
+            <div className="min-h-[200px] rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                Kỹ năng mềm & thái độ
+              </p>
               <p className={`mt-2 text-3xl leading-none font-bold tabular-nums ${text}`}>
                 {behavioralAvg}
               </p>
               <div className="mt-6 space-y-3">
                 {chart.behavioralSkills.slice(0, 3).map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="w-24 shrink-0 truncate text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="w-24 shrink-0 truncate text-xs text-slate-700 dark:text-slate-300">
                       {compactSkillName(item.skillName)}
                     </span>
                     <div className="flex-1">
@@ -507,13 +511,13 @@ export function FinalCompetencyReportNodeView({
                         />
                       </div>
                     </div>
-                    <span className={`w-6 text-right text-[11px] font-medium tabular-nums ${text}`}>
+                    <span className={`w-6 text-right text-xs font-semibold tabular-nums ${text}`}>
                       {item.score}
                     </span>
                   </div>
                 ))}
                 {chart.behavioralSkills.length > 3 && (
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     +{chart.behavioralSkills.length - 3} kỹ năng khác
                   </p>
                 )}
@@ -524,53 +528,56 @@ export function FinalCompetencyReportNodeView({
       </div>
 
       {/* ═══════════════════════════════════════════════════════
-          ROW 3 — Radar (left) + Full skill breakdown (right)
+          ROW 3 — Highlight cards (Strongest & Focus skills)
           ═══════════════════════════════════════════════════════ */}
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="relative overflow-hidden rounded-xl border border-emerald-500/30 bg-slate-900/40 px-5 py-4 dark:border-emerald-500/30">
+        <div className="relative overflow-hidden rounded-xl border border-emerald-300/80 bg-emerald-50/50 px-5 py-4 shadow-xs dark:border-emerald-500/30 dark:bg-slate-900/40 dark:shadow-none">
           <div
-            className="absolute inset-y-0 left-0 bg-emerald-500/[0.14] transition-[width] duration-500"
+            className="absolute inset-y-0 left-0 bg-emerald-500/15 transition-[width] duration-500 dark:bg-emerald-500/[0.14]"
             style={{ width: `${strongestSkill?.score ?? 0}%` }}
           />
           <div className="relative z-10 flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-[11px] font-medium text-emerald-700/80 dark:text-emerald-300/80">
+              <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300/90">
                 Điểm nổi bật
               </p>
-              <p className="mt-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+              <p className="mt-1 truncate text-sm font-bold text-slate-900 dark:text-slate-100">
                 {strongestSkill?.name ?? "Chưa có dữ liệu"}
               </p>
             </div>
-            <span className="shrink-0 text-xl font-bold text-emerald-600 tabular-nums dark:text-emerald-400">
+            <span className="shrink-0 text-2xl font-black text-emerald-600 tabular-nums dark:text-emerald-400">
               {strongestSkill?.score ?? "—"}
             </span>
           </div>
         </div>
-        <div className="relative overflow-hidden rounded-xl border border-amber-500/30 bg-slate-900/40 px-5 py-4 dark:border-amber-500/30">
+        <div className="relative overflow-hidden rounded-xl border border-amber-300/80 bg-amber-50/50 px-5 py-4 shadow-xs dark:border-amber-500/30 dark:bg-slate-900/40 dark:shadow-none">
           <div
-            className="absolute inset-y-0 left-0 bg-amber-400/[0.14] transition-[width] duration-500"
+            className="absolute inset-y-0 left-0 bg-amber-500/15 transition-[width] duration-500 dark:bg-amber-400/[0.14]"
             style={{ width: `${focusSkill?.score ?? 0}%` }}
           />
           <div className="relative z-10 flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-[11px] font-medium text-amber-700/80 dark:text-amber-300/80">
+              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300/90">
                 Ưu tiên phát triển
               </p>
-              <p className="mt-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+              <p className="mt-1 truncate text-sm font-bold text-slate-900 dark:text-slate-100">
                 {focusSkill?.name ?? "Chưa có dữ liệu"}
               </p>
             </div>
-            <span className="shrink-0 text-xl font-bold text-amber-600 tabular-nums dark:text-amber-400">
+            <span className="shrink-0 text-2xl font-black text-amber-600 tabular-nums dark:text-amber-400">
               {focusSkill?.score ?? "—"}
             </span>
           </div>
         </div>
       </div>
 
+      {/* ═══════════════════════════════════════════════════════
+          ROW 4 — Radar (left) + Full skill breakdown (right)
+          ═══════════════════════════════════════════════════════ */}
       <div className="grid gap-4 lg:grid-cols-5 lg:items-start">
         {/* Radar panel */}
-        <div className="overflow-hidden rounded-xl border border-indigo-200/70 bg-indigo-50/30 lg:col-span-3 dark:border-indigo-500/20 dark:bg-[#0b1225]">
-          <div className="flex items-start justify-between gap-4 border-b border-indigo-100 px-5 py-4 dark:border-indigo-500/15">
+        <div className="overflow-hidden rounded-xl border border-indigo-200/80 bg-white shadow-xs lg:col-span-3 dark:border-indigo-500/20 dark:bg-[#0b1225] dark:shadow-none">
+          <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-indigo-500/15">
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Biểu đồ năng lực
@@ -579,7 +586,7 @@ export function FinalCompetencyReportNodeView({
                 Tương quan giữa các nhóm kỹ năng
               </p>
             </div>
-            <span className="rounded-md bg-indigo-100 px-2 py-1 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+            <span className="rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
               0—100
             </span>
           </div>
@@ -604,35 +611,11 @@ export function FinalCompetencyReportNodeView({
                       : "radar-glow-pulse 5s ease-in-out infinite",
                   }}
                 />
-                <div
-                  className="pointer-events-none absolute inset-0 overflow-hidden"
-                  aria-hidden="true">
-                  {[
-                    ["left-[12%] top-[22%]", "bg-cyan-300", "0s"],
-                    ["left-[24%] top-[72%]", "bg-violet-300", "1.2s"],
-                    ["left-[58%] top-[12%]", "bg-fuchsia-300", "2.1s"],
-                    ["left-[78%] top-[30%]", "bg-cyan-200", "3.3s"],
-                    ["left-[84%] top-[76%]", "bg-indigo-300", "4.2s"],
-                    ["left-[42%] top-[88%]", "bg-purple-300", "2.8s"],
-                  ].map(([position, color, delay], index) => (
-                    <span
-                      key={index}
-                      className={`absolute h-1.5 w-1.5 rounded-full ${position} ${color}`}
-                      style={{
-                        boxShadow: "0 0 14px 3px rgba(103, 232, 249, .5)",
-                        animation: prefersReducedMotion
-                          ? "none"
-                          : "radar-glow-float 5s ease-in-out infinite",
-                        animationDelay: delay,
-                      }}
-                    />
-                  ))}
-                </div>
                 <ResponsiveContainer width="100%" height={400}>
                   <RadarChart data={radarData} outerRadius="72%">
                     <PolarGrid
-                      stroke="#c7d2fe"
-                      strokeOpacity={0.65}
+                      stroke="#cbd5e1"
+                      strokeOpacity={0.7}
                       className="dark:[stroke:#334155]"
                     />
                     <PolarRadiusAxis
@@ -644,16 +627,16 @@ export function FinalCompetencyReportNodeView({
                     />
                     <PolarAngleAxis
                       dataKey="label"
-                      tick={{ fill: "#f8fafc", fontSize: 13, fontWeight: 800 }}
+                      tick={{ className: "fill-slate-700 dark:fill-slate-200 text-xs font-bold" }}
                       tickLine={false}
                     />
                     <Radar
                       dataKey="score"
-                      stroke="#22d3ee"
+                      stroke="#6366f1"
                       fill="#6366f1"
-                      fillOpacity={0.38}
+                      fillOpacity={0.3}
                       strokeWidth={2.5}
-                      dot={{ r: 5, fill: "#f0abfc", stroke: "#22d3ee", strokeWidth: 2 }}
+                      dot={{ r: 5, fill: "#818cf8", stroke: "#4f46e5", strokeWidth: 2 }}
                       isAnimationActive={!prefersReducedMotion}
                       animationBegin={150}
                       animationDuration={prefersReducedMotion ? 0 : 1200}
@@ -673,8 +656,10 @@ export function FinalCompetencyReportNodeView({
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex flex-col items-center justify-center rounded-xl border border-indigo-400/25 bg-indigo-500/[0.08] p-4 text-center">
-                <p className="text-[11px] font-bold tracking-[0.18em] text-indigo-300">TỔNG QUAN</p>
+              <div className="flex flex-col items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 text-center dark:border-indigo-400/25 dark:bg-indigo-500/[0.08]">
+                <p className="text-[11px] font-bold tracking-[0.18em] text-indigo-700 dark:text-indigo-300">
+                  TỔNG QUAN
+                </p>
                 <p
                   className={`mt-3 text-4xl leading-none font-black tabular-nums ${scoreColor(radarOverallScore).text}`}>
                   {radarOverallScore.toFixed(1)}
@@ -695,9 +680,9 @@ export function FinalCompetencyReportNodeView({
         </div>
 
         {/* Full skill list panel */}
-        <div className="rounded-lg border border-slate-200 bg-white lg:col-span-2 dark:border-slate-800 dark:bg-slate-900">
-          <div className="border-b border-slate-100 px-5 py-3 dark:border-slate-800">
-            <h3 className="text-sm font-semibold text-slate-800 dark:text-white">
+        <div className="rounded-xl border border-slate-200 bg-white shadow-xs lg:col-span-2 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+          <div className="border-b border-slate-100 px-5 py-3.5 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Chi tiết tất cả kỹ năng
             </h3>
           </div>
@@ -706,8 +691,8 @@ export function FinalCompetencyReportNodeView({
             {/* Technical */}
             {chart.technicalSkillAreas.length > 0 && (
               <>
-                <div className="bg-slate-50/60 px-5 py-2 dark:bg-slate-800/40">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <div className="bg-slate-50 px-5 py-2 dark:bg-slate-800/40">
+                  <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
                     Chuyên môn
                   </span>
                 </div>
@@ -715,13 +700,13 @@ export function FinalCompetencyReportNodeView({
                   const { text, bar } = scoreColor(item.score);
                   return (
                     <div key={i} className="flex items-center gap-3 px-5 py-2.5">
-                      <span className="w-40 shrink-0 truncate text-sm text-slate-700 dark:text-slate-300">
+                      <span className="w-40 shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-300">
                         {item.skillArea}
                       </span>
                       <div className="flex-1">
                         <ScoreBar score={item.score} />
                       </div>
-                      <span className={`w-8 text-right text-sm font-semibold tabular-nums ${text}`}>
+                      <span className={`w-8 text-right text-sm font-bold tabular-nums ${text}`}>
                         {item.score}
                       </span>
                       <div className={`h-2 w-2 rounded-full ${bar}`} />
@@ -734,8 +719,8 @@ export function FinalCompetencyReportNodeView({
             {/* Behavioral */}
             {chart.behavioralSkills.length > 0 && (
               <>
-                <div className="bg-slate-50/60 px-5 py-2 dark:bg-slate-800/40">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <div className="bg-slate-50 px-5 py-2 dark:bg-slate-800/40">
+                  <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
                     Kỹ năng mềm & thái độ
                   </span>
                 </div>
@@ -743,13 +728,13 @@ export function FinalCompetencyReportNodeView({
                   const { text, bar } = scoreColor(item.score);
                   return (
                     <div key={i} className="flex items-center gap-3 px-5 py-2.5">
-                      <span className="w-40 shrink-0 truncate text-sm text-slate-700 dark:text-slate-300">
+                      <span className="w-40 shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-300">
                         {item.skillName}
                       </span>
                       <div className="flex-1">
                         <ScoreBar score={item.score} />
                       </div>
-                      <span className={`w-8 text-right text-sm font-semibold tabular-nums ${text}`}>
+                      <span className={`w-8 text-right text-sm font-bold tabular-nums ${text}`}>
                         {item.score}
                       </span>
                       <div className={`h-2 w-2 rounded-full ${bar}`} />
@@ -772,13 +757,13 @@ export function FinalCompetencyReportNodeView({
           {/* LEFT (3/5): Narrative + Định hướng phát triển stacked */}
           <div className="space-y-4 lg:col-span-3">
             {journey?.narrative && (
-              <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div className="border-b border-slate-100 px-5 py-3 dark:border-slate-800">
-                  <h3 className="text-sm font-semibold text-slate-800 dark:text-white">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                <div className="border-b border-slate-100 pb-3 dark:border-slate-800">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     Nhận xét tổng thể
                   </h3>
                 </div>
-                <p className="px-5 py-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                   {journey.narrative}
                 </p>
               </div>
@@ -786,24 +771,24 @@ export function FinalCompetencyReportNodeView({
 
             {journey?.developmentRecommendations &&
               journey.developmentRecommendations.length > 0 && (
-                <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
                   <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3 dark:border-slate-800">
                     <Lightbulb className="h-4 w-4 text-amber-500" />
-                    <h3 className="text-sm font-semibold text-slate-800 dark:text-white">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                       Định hướng phát triển
                     </h3>
                   </div>
                   <div className="divide-y divide-slate-100 dark:divide-slate-800">
                     {journey.developmentRecommendations.slice(0, 5).map((item, i) => (
                       <div key={i} className="flex gap-3 px-5 py-3">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[10px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[10px] font-bold text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
                           {i + 1}
                         </span>
                         <div>
-                          <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">
                             {item.targetSkillArea}
                           </p>
-                          <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                          <p className="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                             {item.recommendation}
                           </p>
                         </div>
@@ -815,21 +800,21 @@ export function FinalCompetencyReportNodeView({
           </div>
 
           {/* RIGHT (2/5): CircleScore cards + Round list below */}
-          <div className="space-y-3 lg:col-span-2 lg:-mt-40">
+          <div className="space-y-4 lg:col-span-2">
             {/* CircleScore evidence cards */}
             {journey?.swecomAssessments && journey.swecomAssessments.length > 0 && (
               <>
                 {journey.swecomAssessments.slice(0, 5).map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                    className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
                     <CircleScore score={item.score} size={52} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">
                         {item.skillArea}
                       </p>
                       {item.evidenceSummary && (
-                        <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                        <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                           {item.evidenceSummary}
                         </p>
                       )}
@@ -841,12 +826,12 @@ export function FinalCompetencyReportNodeView({
 
             {/* Round list below circles */}
             {sortedRounds.length > 0 && (
-              <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
                 <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-                  <h3 className="text-sm font-semibold text-slate-800 dark:text-white">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     Chi tiết từng vòng
                   </h3>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                     {sortedRounds.length} vòng
                   </span>
                 </div>
@@ -858,21 +843,21 @@ export function FinalCompetencyReportNodeView({
                     const score = detail?.finalScore ?? detail?.aiScore ?? detail?.hrScore;
                     return (
                       <div key={round.id ?? idx} className="flex items-center gap-2.5 px-4 py-2.5">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                           {roundOrder}
                         </span>
                         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
                           <RoundIcon className="h-3.5 w-3.5" />
                         </div>
-                        <span className="flex-1 truncate text-xs text-slate-700 dark:text-slate-300">
+                        <span className="flex-1 truncate text-xs font-medium text-slate-800 dark:text-slate-300">
                           {round.name || `Vòng ${roundOrder}`}
                         </span>
                         <ResultPill result={detail?.finalResult} />
                         {score !== undefined && score !== null && (
                           <span
-                            className={`shrink-0 text-xs font-semibold tabular-nums ${scoreColor(score).text}`}>
+                            className={`shrink-0 text-xs font-bold tabular-nums ${scoreColor(score).text}`}>
                             {score}
-                            <span className="font-normal text-slate-400">/100</span>
+                            <span className="font-normal text-slate-500">/100</span>
                           </span>
                         )}
                       </div>

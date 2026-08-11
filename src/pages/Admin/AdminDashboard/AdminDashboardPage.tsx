@@ -20,7 +20,6 @@ import {
   UserCheck,
   UserCog,
   Users,
-  Video,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,6 +27,7 @@ import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { MentorReviewAssignmentPage } from "@/pages/Admin/MentorReviewAssignment";
 import { AdminAccountPage } from "../Account/AdminAccountPage";
+import { AdminApplicationDetailPage } from "../ApplicationManagement/AdminApplicationDetailPage";
 import { AdminApplicationManagementPage } from "../ApplicationManagement/AdminApplicationManagementPage";
 import { CodeReviewProblemManagementPage } from "../CodeReviewProblemManagement";
 import { CodingProblemManagementPage } from "../CodingProblemManagement";
@@ -103,12 +103,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         icon: FileCheck2,
         label: t("adminApplicationManagement.title"),
         color: "text-indigo-600 dark:text-indigo-500",
-      },
-      {
-        type: "sessions",
-        icon: Video,
-        label: t("common.interviewSession"),
-        color: "text-rose-600 dark:text-rose-500",
       },
       {
         type: "interviewTemplates",
@@ -314,6 +308,10 @@ export function AdminDashboardPage() {
             <Route path="companies" element={<CompanyManagementPage />} />
             <Route path="companies/:companyId" element={<CompanyManagementPage />} />
             <Route path="applications" element={<AdminApplicationManagementPage />} />
+            <Route
+              path="applications/:applicationId/details"
+              element={<AdminApplicationDetailPage />}
+            />
             <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
             <Route path="interviewTemplates/:id" element={<InterviewTemplateDetailPage />} />
             <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />

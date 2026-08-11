@@ -48,7 +48,6 @@ const STATIC_NAVIGATION: Array<{ labelKey: string; to: string }> = [
   { labelKey: "common.user", to: "/admin/users" },
   { labelKey: "adminAdmindashboard.instructor", to: "/admin/mentors" },
   { labelKey: "common.company", to: "/admin/companies" },
-  { labelKey: "common.interviewSession", to: "/admin/sessions" },
   { labelKey: "common.feedbackFromCandidates", to: "/admin/feedback" },
   { labelKey: "common.reviewFromMentor", to: "/admin/reviews" },
 ];
