@@ -150,7 +150,7 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
   const initials = getCompanyInitials(company.name);
 
   return (
-    <div className="h-full overflow-y-auto px-5 py-6 [-ms-overflow-style:none] [scrollbar-width:none] md:px-8 [&::-webkit-scrollbar]:hidden">
+    <div className="scrollbar-hide h-full overflow-y-auto px-5 py-6 md:px-8">
       {/* Single Unified Header Container */}
       <div className="mb-6 w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {/* Back Button Link */}
@@ -290,7 +290,7 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
               </p>
             </div>
           ) : (
-            <div className="max-h-[calc(100vh-280px)] space-y-3 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="scrollbar-hide max-h-[calc(100vh-280px)] space-y-3 overflow-y-auto">
               {filteredJobs.map((job) => (
                 <MasterJobCard
                   key={job.id}
