@@ -70,14 +70,58 @@ export function StarRating({
     }
   };
 
+  const readOnlyAriaLabel = value != null ? `${value} out of 5 stars` : "Rating";
+  if (readOnly) {
+    return (
+      <span
+        className={cn("inline-flex items-center", gapClasses[size], className)}
+        role="img"
+        aria-label={readOnlyAriaLabel}>
+        {[1, 2, 3, 4, 5].map((star) => {
+          const isFilled = star <= displayValue;
+          const isHalf = !isFilled && star - 0.5 <= displayValue;
+          return (
+            <span key={star} aria-hidden className="inline-flex items-center">
+              <Star
+                className={cn(
+                  sizeClasses[size],
+                  "transition-colors duration-200",
+                  isFilled || isHalf
+                    ? "fill-amber-400 text-amber-500 drop-shadow-[0_2px_6px_rgba(245,158,11,0.35)]"
+                    : "fill-transparent text-slate-300 dark:text-slate-600"
+                )}
+              />
+            </span>
+          );
+        })}
+        {showValue && (
+          <span className="ml-1 text-sm font-medium text-slate-600 dark:text-slate-400">
+            {(value || 0).toFixed(1)}
+          </span>
+        )}
+      </span>
+    );
+  }
+
   return (
     <div
       className={cn("inline-flex items-center", gapClasses[size], className)}
-      role={readOnly ? undefined : "radiogroup"}
-      aria-label={readOnly ? "Rating" : "Set your rating"}>
+      role="radiogroup"
+      aria-label="Set your rating">
       {[1, 2, 3, 4, 5].map((star) => {
         const isFilled = star <= displayValue;
         const isHalf = !isFilled && star - 0.5 <= displayValue;
+        const icon = (
+          <Star
+            className={cn(
+              sizeClasses[size],
+              "transition-colors duration-200",
+              isFilled || isHalf
+                ? "fill-amber-400 text-amber-500 drop-shadow-[0_2px_6px_rgba(245,158,11,0.35)]"
+                : "fill-transparent text-slate-300 dark:text-slate-600"
+            )}
+          />
+        );
         return (
           <motion.button
             key={star}
@@ -87,27 +131,17 @@ export function StarRating({
             onMouseLeave={handleMouseLeave}
             onFocus={() => handleMouseEnter(star)}
             onBlur={handleMouseLeave}
-            disabled={readOnly}
-            whileHover={reduce || readOnly ? undefined : { scale: 1.12 }}
-            whileTap={reduce || readOnly ? undefined : { scale: 0.92 }}
+            whileHover={reduce ? undefined : { scale: 1.12 }}
+            whileTap={reduce ? undefined : { scale: 0.92 }}
             transition={{ type: "spring", stiffness: 380, damping: 22 }}
             aria-label={`${star} star${star > 1 ? "s" : ""}`}
             aria-checked={value === star}
-            role={readOnly ? undefined : "radio"}
+            role="radio"
             className={cn(
               "rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900",
-              !readOnly && "cursor-pointer",
-              readOnly && "cursor-default"
+              "cursor-pointer"
             )}>
-            <Star
-              className={cn(
-                sizeClasses[size],
-                "transition-colors duration-200",
-                isFilled || isHalf
-                  ? "fill-amber-400 text-amber-500 drop-shadow-[0_2px_6px_rgba(245,158,11,0.35)]"
-                  : "fill-transparent text-slate-300 dark:text-slate-600"
-              )}
-            />
+            {icon}
           </motion.button>
         );
       })}
