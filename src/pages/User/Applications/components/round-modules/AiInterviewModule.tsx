@@ -1044,7 +1044,11 @@ function AiInterviewQuestionsTab({
             ) : (
               <>
                 <Maximize2 className="h-3.5 w-3.5 text-indigo-500" />
-                <span>Mở tất cả ({clusters.length} chủ đề)</span>
+                <span>
+                  {t("userApplication.aiInterview.expandAll", "Mở tất cả ({{count}} chủ đề)", {
+                    count: clusters.length,
+                  })}
+                </span>
               </>
             )}
           </button>
@@ -1238,7 +1242,12 @@ function AiInterviewQuestionsTab({
                       <div className="space-y-5 lg:col-span-7">
                         <div className="flex items-center gap-2 border-b border-slate-200/80 pb-2.5 text-sm font-black tracking-wider text-slate-800 uppercase dark:border-slate-800 dark:text-slate-200">
                           <MessageSquare className="h-4 w-4 text-indigo-500" />
-                          <span>Nội dung phỏng vấn</span>
+                          <span>
+                            {t(
+                              "userApplication.aiInterview.interviewContent",
+                              "Nội dung phỏng vấn"
+                            )}
+                          </span>
                         </div>
 
                         {/* Main Question Candidate Answer (Main question text is already in Card Header!) */}
@@ -1252,7 +1261,9 @@ function AiInterviewQuestionsTab({
                               )}{" "}
                               (Câu chính #{mainQ.questionOrder ?? 1}):
                             </span>
-                            <span className="text-xs font-bold text-slate-400">Ứng viên</span>
+                            <span className="text-xs font-bold text-slate-400">
+                              {t("userApplication.aiInterview.candidate", "Ứng viên")}
+                            </span>
                           </div>
                           <p className="text-sm leading-relaxed text-slate-800 italic dark:text-slate-200">
                             "{mainQ.answerText || t("userApplication.aiInterview.noDataYet")}"
@@ -1269,7 +1280,11 @@ function AiInterviewQuestionsTab({
                                   <div className="flex items-center gap-1.5 text-xs font-extrabold text-purple-700 dark:text-purple-300">
                                     <HelpCircle className="h-4 w-4 text-purple-600" />
                                     <span>
-                                      Hỏi bồi #{subQ.questionOrder ?? subIdx + 2} (AI Interviewer):
+                                      {t(
+                                        "userApplication.aiInterview.followUpHeader",
+                                        "Hỏi bồi #{{order}} (AI Interviewer):",
+                                        { order: subQ.questionOrder ?? subIdx + 2 }
+                                      )}
                                     </span>
                                   </div>
                                   <p className="text-sm leading-relaxed font-bold text-purple-950 dark:text-purple-100">
@@ -1297,7 +1312,12 @@ function AiInterviewQuestionsTab({
                       <div className="space-y-5 lg:col-span-5">
                         <div className="flex items-center gap-2 border-b border-slate-200/80 pb-2.5 text-sm font-black tracking-wider text-slate-800 uppercase dark:border-slate-800 dark:text-slate-200">
                           <Bot className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                          <span>Đánh giá & Gợi ý từ AI</span>
+                          <span>
+                            {t(
+                              "userApplication.aiInterview.aiEvaluationAndSuggestion",
+                              "Đánh giá & Gợi ý từ AI"
+                            )}
+                          </span>
                         </div>
 
                         {cluster.allQuestions.map((q, qIdx) => {
