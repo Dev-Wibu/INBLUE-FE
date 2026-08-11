@@ -85,7 +85,7 @@ export function CommunityFeedPage() {
   }, [hasMore, isFetchingMore, loadMore]);
   return (
     <div className="-m-4 min-h-full bg-slate-50/70 px-4 py-5 sm:-m-6 sm:px-6 lg:-m-8 lg:px-8 dark:bg-slate-950">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-5 xl:grid-cols-[minmax(0,940px)_260px]">
+      <div className="mx-auto grid w-full max-w-[1380px] gap-5 xl:grid-cols-[minmax(0,1040px)_300px]">
         <main className="min-w-0 space-y-5">
           <Card className="overflow-hidden rounded-2xl border-slate-200/80 bg-white py-0 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
             <div className="flex flex-wrap items-center gap-3 px-4 py-3.5 sm:px-5">
@@ -245,7 +245,7 @@ function CommunityChatRail() {
 
   return (
     <aside className="hidden xl:block">
-      <Card className="sticky top-5 h-fit rounded-2xl border-slate-200/80 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+      <Card className="sticky top-5 h-fit rounded-2xl border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
             <MessageCircle className="h-4 w-4 text-indigo-500" />
@@ -260,14 +260,14 @@ function CommunityChatRail() {
           </button>
         </div>
 
-        <div className="mt-3 space-y-0.5">
+        <div className="mt-3 space-y-1">
           {contacts.length > 0 ? (
             contacts.map((contact) => (
               <button
                 key={contact.id}
                 type="button"
                 onClick={() => setSelectedContact(contact)}
-                className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
+                className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
                 <span className="relative shrink-0">
                   <Avatar className="h-9 w-9">
                     <AvatarImage src={contact.avatarUrl ?? undefined} alt={contact.name} />
@@ -368,33 +368,31 @@ function CommunityChatWindow({
   };
 
   return (
-    <div className="fixed right-5 bottom-5 z-50 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.25)] dark:border-slate-700 dark:bg-slate-900">
-      <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+    <div className="fixed right-6 bottom-6 z-50 w-[min(390px,calc(100vw-2rem))] overflow-hidden rounded-[22px] border border-indigo-300/20 bg-slate-950 shadow-[0_24px_70px_rgba(2,6,23,0.42)] ring-1 ring-white/10">
+      <div className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 px-4 py-3.5 text-white">
         <span className="relative shrink-0">
-          <Avatar className="h-9 w-9 ring-2 ring-indigo-500/15">
+          <Avatar className="h-10 w-10 ring-2 ring-white/30">
             <AvatarImage src={contact.avatarUrl ?? undefined} alt={contact.name} />
-            <AvatarFallback className="bg-indigo-500/10 text-xs font-bold text-indigo-600 dark:text-indigo-300">
+            <AvatarFallback className="bg-white/15 text-xs font-bold text-white">
               {contact.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <span className="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500 dark:border-slate-900" />
         </span>
         <button type="button" onClick={onOpenMessenger} className="min-w-0 flex-1 text-left">
-          <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
-            {contact.name}
-          </p>
-          <p className="text-[11px] text-emerald-600 dark:text-emerald-400">Đang hoạt động</p>
+          <p className="truncate text-sm font-bold text-white">{contact.name}</p>
+          <p className="text-[11px] text-indigo-100">Đang hoạt động</p>
         </button>
         <button
           type="button"
           aria-label="Đóng cuộc trò chuyện"
           onClick={onClose}
-          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white">
+          className="rounded-lg p-1.5 text-indigo-100 transition-colors hover:bg-white/15 hover:text-white">
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="flex h-56 flex-col gap-2 overflow-y-auto bg-slate-50/70 px-3 py-3 dark:bg-slate-950/60">
+      <div className="flex h-72 flex-col gap-2 overflow-y-auto bg-slate-900 px-4 py-4">
         {messages.length > 0 ? (
           messages.map((message) => (
             <div
@@ -408,13 +406,13 @@ function CommunityChatWindow({
             </div>
           ))
         ) : (
-          <div className="m-auto text-center text-xs text-slate-400">
+          <div className="m-auto max-w-[220px] text-center text-xs leading-relaxed text-slate-400">
             Bắt đầu cuộc trò chuyện với {contact.name}
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex items-center gap-2 border-t border-white/10 bg-slate-950 p-3">
         <input
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
@@ -422,13 +420,13 @@ function CommunityChatWindow({
             if (event.key === "Enter") handleSend();
           }}
           placeholder="Nhập tin nhắn..."
-          className="h-9 min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs transition-colors outline-none placeholder:text-slate-400 focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          className="h-10 min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.07] px-3 text-xs text-white transition-colors outline-none placeholder:text-slate-500 focus:border-indigo-400"
         />
         <button
           type="button"
           aria-label="Gửi tin nhắn"
           onClick={handleSend}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white transition-colors hover:bg-indigo-500">
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-500 text-white transition-colors hover:bg-indigo-400">
           <Send className="h-3.5 w-3.5" />
         </button>
       </div>
