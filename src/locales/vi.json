@@ -5056,6 +5056,7 @@
       "timeLabel": "Thời gian",
       "durationLabel": "Thời lượng",
       "minutes": "{{minutes}} phút",
+      "durationValue": "{{minutes}} phút",
       "perSlot": "Theo slot",
       "positionLabel": "Vị trí",
       "aiInterview": "AI Interview",

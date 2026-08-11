@@ -5059,6 +5059,7 @@
       "timeLabel": "Time",
       "durationLabel": "Duration",
       "minutes": "{{minutes}} minutes",
+      "durationValue": "{{minutes}} minutes",
       "perSlot": "per slot",
       "positionLabel": "Position",
       "aiInterview": "AI Interview",

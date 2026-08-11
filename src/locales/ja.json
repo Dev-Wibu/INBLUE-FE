@@ -4992,6 +4992,7 @@
       "timeLabel": "時間",
       "durationLabel": "所要時間",
       "minutes": "{{minutes}}分",
+      "durationValue": "{{minutes}}分",
       "perSlot": "スロットごと",
       "positionLabel": "ポジション",
       "aiInterview": "AI面接",

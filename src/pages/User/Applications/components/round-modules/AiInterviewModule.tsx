@@ -2057,8 +2057,12 @@ function AiInterviewResultView({
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white">
                   {sessionData?.sessionConfig?.duration_minutes
-                    ? `${sessionData.sessionConfig.duration_minutes} ${t("userApplication.aiInterview.minutes", "minutes")}`
-                    : `30 ${t("userApplication.aiInterview.minutes", "minutes")}`}
+                    ? t("userApplication.aiInterview.durationValue", "{{minutes}} minutes", {
+                        minutes: sessionData.sessionConfig.duration_minutes,
+                      })
+                    : t("userApplication.aiInterview.durationValue", "{{minutes}} minutes", {
+                        minutes: 30,
+                      })}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
