@@ -183,7 +183,7 @@ export function JdPurchaseHistoryTab() {
                     <div className="flex flex-col gap-1">
                       {purchase.jobDescription?.id ? (
                         <Link
-                          to={`/enterprise/job/${purchase.jobDescription.id}`}
+                          to={`/user?tab=jobSearch&jobId=${purchase.jobDescription.id}`}
                           className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
                           <span className="line-clamp-2 max-w-[200px]">
                             {purchase.jobDescription?.title || "Untitled"}
