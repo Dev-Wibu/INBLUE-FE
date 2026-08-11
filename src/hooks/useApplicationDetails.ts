@@ -134,6 +134,22 @@ export const useHrScore = (options?: {
             };
           });
         }
+
+        // 2b. Patch the reviewer list cache so the Staff Grading Workspace
+        //     (which fetches from /api/application-details/reviewer) reflects the
+        //     newly-graded detail immediately without a page refresh.
+        queryClient.setQueryData<{ data?: ApplicationDetail[] }>(
+          ["get", "/api/application-details/reviewer"],
+          (prev) => {
+            if (!prev || !Array.isArray(prev?.data)) return prev;
+            return {
+              ...prev,
+              data: prev.data.map((d) =>
+                d.id === updatedDetail.id ? { ...d, ...updatedDetail } : d
+              ),
+            };
+          }
+        );
       }
 
       // 3. Refetch ONLY the listing queries that need to reflect the change.

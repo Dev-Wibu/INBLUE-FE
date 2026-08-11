@@ -1,299 +1,637 @@
-import { useTranslation } from "react-i18next";
 /**
- * User Feedback Detail Page
- * Displays detailed mentor review received by user
+ * User Feedback Detail Page — "Assessment Dossier" v2
+ *
+ * Displays detailed mentor review received by the user after an interview session.
+ * Visual language matches the Mentor portal Review Detail page:
+ * single dark-glass surface, hero block with ambient glow, STAR method bento grid,
+ * and sticky side summary.
  */
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
 import { useMentorById } from "@/hooks/useMentor";
 import { useMentorReviewById } from "@/hooks/useMentorReview";
 import { treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
+import { motion } from "framer-motion";
 import {
-  AlertTriangle,
   ArrowLeft,
-  Calendar,
+  Briefcase,
+  Building2,
+  CalendarClock,
   CheckCircle2,
+  ChevronRight,
   ClipboardList,
+  Clock,
+  Hash,
   Lightbulb,
+  Sparkles,
   Star,
   Target,
   ThumbsUp,
+  Trophy,
   User,
+  Wrench,
   Zap,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+
+const GLASS_SURFACE = cn(
+  "rounded-2xl p-5 ring-1 ring-inset transition-all",
+  "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
+  "dark:bg-white/[0.03] dark:ring-white/5"
+);
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.4, ease: "easeOut" as const, delay },
+});
+
+const gridStagger = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } },
+};
+
+const cardMotion = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: "easeOut" as const } },
+};
+
+const STAR_CARD_ICON = {
+  situation: Target,
+  task: ClipboardList,
+  action: Zap,
+  result: CheckCircle2,
+};
+
+const STAR_HUE = {
+  situation: "from-sky-500/10 to-transparent",
+  task: "from-indigo-500/10 to-transparent",
+  action: "from-purple-500/10 to-transparent",
+  result: "from-amber-500/10 to-transparent",
+};
+
+const STAR_INK = {
+  situation: "text-sky-600 dark:text-sky-300",
+  task: "text-indigo-600 dark:text-indigo-300",
+  action: "text-purple-600 dark:text-purple-300",
+  result: "text-amber-600 dark:text-amber-300",
+};
+
 export function FeedbackDetailPage() {
   const { t } = useTranslation();
-  const { id } = useParams<{
-    id: string;
-  }>();
+  const { id } = useParams<{ id: string }>();
   const reviewId = Number(id);
   const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
+
   const { data: review, isLoading } = useMentorReviewById(reviewId);
   const mentorId = review?.mentor?.id || review?.session?.userId2 || 0;
   const { data: mentorInfo } = useMentorById(mentorId);
-  const hasStarNotes =
-    review?.situationNote || review?.taskNote || review?.actionNote || review?.resultNote;
-  const hasAdditionalNotes = review?.strength || review?.weakness || review?.improve;
-  const mentorName =
-    review?.mentor?.name ||
-    mentorInfo?.name ||
-    (mentorId ? t("common.mentorWithId", { id: mentorId }) : t("common.mentor"));
-  const mentorAvatarUrl = review?.mentor?.avatarUrl || mentorInfo?.avatarUrl;
-  const mentorExpertise = review?.mentor?.expertise || mentorInfo?.expertise;
-  const mentorCompany = review?.mentor?.currentCompany || mentorInfo?.currentCompany;
+
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-24" />
-          <Skeleton className="h-8 w-48" />
-        </div>
-        <Skeleton className="h-64" />
-        <Skeleton className="h-48" />
+      <div className="mx-auto w-full max-w-6xl space-y-5">
+        <Skeleton className="h-9 w-40" />
+        <Skeleton className="h-44" />
+        <Skeleton className="h-80" />
       </div>
     );
   }
+
   if (!review) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="mx-auto w-full max-w-6xl space-y-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="text-slate-600 dark:text-slate-300">
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t("general.back")}
         </Button>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Star className="mx-auto h-12 w-12 text-slate-400" />
-            <h3 className="mt-4 font-semibold">{t("common.noReviewsFound")}</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              {t("common.thisReviewDoesNotExistOrHasBeenR")}
-            </p>
-          </CardContent>
-        </Card>
+        <div className={cn(GLASS_SURFACE, "flex flex-col items-center gap-3 py-16 text-center")}>
+          <Star className="h-12 w-12 text-slate-400" />
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            {t("common.noReviewsFound")}
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t("common.thisReviewDoesNotExistOrHasBeenR")}
+          </p>
+        </div>
       </div>
     );
   }
-  if (!currentUser?.id || review.session?.userId !== currentUser.id) {
+
+  // Access guard: review must belong to current candidate
+  if (!currentUser?.id || (review.session?.userId && review.session.userId !== currentUser.id)) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={() => navigate("/user?tab=feedback")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="mx-auto w-full max-w-6xl space-y-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/user?tab=overview")}
+          className="text-slate-600 dark:text-slate-300">
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t("common.backToTheList")}
         </Button>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <User className="mx-auto h-12 w-12 text-slate-400" />
-            <h3 className="mt-4 font-semibold">{t("common.noAccess")}</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              {t("common.youCantSeeReviewsThatDontBelong")}
-            </p>
-          </CardContent>
-        </Card>
+        <div className={cn(GLASS_SURFACE, "flex flex-col items-center gap-3 py-16 text-center")}>
+          <User className="h-12 w-12 text-slate-400" />
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            {t("common.noAccess")}
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t("common.youCantSeeReviewsThatDontBelong")}
+          </p>
+        </div>
       </div>
     );
   }
+
+  const mentorName =
+    review.mentor?.name ||
+    mentorInfo?.name ||
+    (mentorId ? t("common.mentorWithId", { id: mentorId }) : t("common.mentor"));
+  const mentorAvatarUrl = review.mentor?.avatarUrl || mentorInfo?.avatarUrl;
+  const mentorExpertise = review.mentor?.expertise || mentorInfo?.expertise;
+  const mentorCompany = review.mentor?.currentCompany || mentorInfo?.currentCompany;
+
   const reviewEndedAt = review.session?.endTime1
     ? treatZuluAsVietnamLocal(review.session.endTime1)
     : null;
+  const reviewStartedAt = review.session?.startTime1
+    ? treatZuluAsVietnamLocal(review.session.startTime1)
+    : null;
+
+  const rating = review.rating || 0;
+  const ratingTone =
+    rating >= 5
+      ? "emerald"
+      : rating >= 4
+        ? "teal"
+        : rating >= 3
+          ? "sky"
+          : rating >= 2
+            ? "amber"
+            : "rose";
+
+  const starCards: Array<{
+    key: "situation" | "task" | "action" | "result";
+    label: string;
+    value?: string | null;
+  }> = [
+    { key: "situation", label: t("common.situation"), value: review.situationNote },
+    { key: "task", label: t("common.mission"), value: review.taskNote },
+    { key: "action", label: t("common.act"), value: review.actionNote },
+    { key: "result", label: t("common.result"), value: review.resultNote },
+  ];
+
+  const additionalItems = [
+    {
+      key: "strength",
+      label: t("common.strengths"),
+      icon: ThumbsUp,
+      value: review.strength,
+      tone: "text-emerald-600 dark:text-emerald-400",
+    },
+    {
+      key: "weakness",
+      label: t("common.pointsForImprovement"),
+      icon: Wrench,
+      value: review.weakness,
+      tone: "text-rose-600 dark:text-rose-400",
+    },
+    {
+      key: "improve",
+      label: t("common.suggestedImprovements1"),
+      icon: Lightbulb,
+      value: review.improve,
+      tone: "text-indigo-600 dark:text-indigo-400",
+    },
+  ];
+
+  const sessionRoomName = review.session?.roomName;
+  const sessionId = review.session?.id;
+
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate("/user?tab=feedback")}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        {t("common.backToTheList")}
-      </Button>
+    <div className="mx-auto w-full max-w-6xl space-y-5">
+      {/* Top action bar */}
+      <motion.div {...fadeUp(0)} className="flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="gap-1.5 text-slate-600 dark:text-slate-300">
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          {t("general.back")}
+        </Button>
+        {sessionId && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/user/mock-interview/history/${sessionId}`)}
+            className="gap-1.5 text-xs">
+            {t("common.viewSessionDetails")}
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </motion.div>
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-          {t("common.reviewDetails1")}
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          {t("userFeedback.evaluationFromMentorAfterInterview")}
-        </p>
-      </div>
+      {/* Hero Banner */}
+      <motion.div
+        {...fadeUp(0.05)}
+        className="relative overflow-hidden rounded-2xl ring-1 ring-slate-200/70 ring-inset dark:ring-white/5">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-sky-500/15 dark:from-emerald-500/25 dark:via-teal-500/15 dark:to-sky-500/15"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-slate-950 dark:via-slate-950/40 dark:to-transparent"
+        />
+        <div
+          aria-hidden
+          className="absolute -top-24 -left-12 h-72 w-72 rounded-full bg-emerald-400/30 opacity-60 blur-3xl dark:bg-emerald-500/30"
+        />
+        <div
+          aria-hidden
+          className="absolute -right-12 -bottom-24 h-72 w-72 rounded-full bg-sky-300/20 opacity-50 blur-3xl dark:bg-sky-500/20"
+        />
 
-      {/* Mentor Info Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5 text-emerald-600" />
-            {t("common.mentorInformation")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={mentorAvatarUrl} alt={mentorName} />
-              <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                {mentorName.charAt(0) || "M"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="text-lg font-semibold">{mentorName}</h3>
-              <p className="text-sm text-slate-500">
-                {mentorExpertise || t("common.interviewExpert")}
-              </p>
-              {mentorCompany && <p className="text-sm text-slate-500">{mentorCompany}</p>}
+        <div className="relative grid gap-4 p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            {/* Avatar Halo */}
+            <div className="relative">
+              <div
+                aria-hidden
+                className="absolute inset-0 -m-2 rounded-full bg-gradient-to-br from-emerald-400/40 to-sky-400/40 opacity-60 blur-xl"
+              />
+              <Avatar className="relative h-20 w-20 ring-2 ring-white/10">
+                <AvatarImage src={mentorAvatarUrl} alt={mentorName} />
+                <AvatarFallback className="bg-emerald-100 text-2xl font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                  {mentorName?.charAt(0) || "M"}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold tracking-[0.06em] text-emerald-600 uppercase ring-1 ring-emerald-500/20 ring-inset dark:text-emerald-300">
+                  <Sparkles className="h-3 w-3" aria-hidden />
+                  {t("userFeedback.evaluationContent")}
+                </span>
+                <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                  #{review.id}
+                </span>
+              </div>
+              <h1 className="mt-1.5 text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                {t("common.reviewDetails1")} #{review.id}
+              </h1>
+              <div className="mt-2 flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
+                <p className="flex items-center gap-2 font-medium text-slate-800 dark:text-slate-200">
+                  <User className="h-3.5 w-3.5 text-emerald-500" aria-hidden />
+                  {mentorName}
+                </p>
+                {mentorExpertise && (
+                  <p className="flex items-center gap-2 text-xs">
+                    <Briefcase className="h-3.5 w-3.5 text-slate-400" aria-hidden />
+                    {mentorExpertise}
+                  </p>
+                )}
+                {mentorCompany && (
+                  <p className="flex items-center gap-2 text-xs">
+                    <Building2 className="h-3.5 w-3.5 text-slate-400" aria-hidden />
+                    {mentorCompany}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Session Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-emerald-600" />
-            {t("common.sessionInformation1")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <p className="text-sm text-slate-500">{t("common.sessionCode1")}</p>
-              <p className="font-medium">#{review.session?.id}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-500">{t("common.roomName1")}</p>
-              <p className="font-medium">
-                {review.session?.roomName ||
-                  t("common.sessionVar0", {
-                    var_0: review.session?.id,
-                  })}
+          {/* Rating Trophy Block */}
+          <div className="flex items-center gap-4 self-start lg:self-end">
+            <div className="text-right">
+              <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                {t("common.overallRating")}
               </p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-500">{t("common.status")}</p>
-              <p className="font-medium">{review.session?.status || t("common.noDataAvailable")}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Review Content */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-emerald-600" />
-                {t("userFeedback.evaluationContent")}
-              </CardTitle>
-              {reviewEndedAt ? (
-                <CardDescription>
+              <p className="text-[44px] leading-none font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                {rating}
+                <span className="ml-0.5 text-base font-medium text-slate-400">/5</span>
+              </p>
+              <StarRating value={rating} readOnly size="sm" />
+              {reviewEndedAt && (
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   <TimeAgo date={String(reviewEndedAt)} />
-                </CardDescription>
-              ) : null}
+                </p>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-[#FFD700]" />
-              <span className="text-lg font-bold">{review.rating || 0}/5</span>
+            <div
+              className={cn(
+                "rounded-2xl p-3 ring-1 backdrop-blur-md ring-inset",
+                ratingTone === "emerald" &&
+                  "bg-emerald-500/15 ring-emerald-400/30 dark:bg-emerald-500/20",
+                ratingTone === "teal" && "bg-teal-500/15 ring-teal-400/30 dark:bg-teal-500/20",
+                ratingTone === "sky" && "bg-sky-500/15 ring-sky-400/30 dark:bg-sky-500/20",
+                ratingTone === "amber" && "bg-amber-500/15 ring-amber-400/30 dark:bg-amber-500/20",
+                ratingTone === "rose" && "bg-rose-500/15 ring-rose-400/30 dark:bg-rose-500/20"
+              )}>
+              <Trophy
+                className={cn(
+                  "h-8 w-8",
+                  ratingTone === "emerald" && "fill-emerald-400 text-emerald-400",
+                  ratingTone === "teal" && "fill-teal-400 text-teal-400",
+                  ratingTone === "sky" && "fill-sky-400 text-sky-400",
+                  ratingTone === "amber" && "fill-amber-400 text-amber-400",
+                  ratingTone === "rose" && "fill-rose-400 text-rose-400"
+                )}
+              />
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Rating Display */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-500">{t("general.rating")}</span>
-            <StarRating value={review.rating || 0} readOnly size="md" />
-          </div>
+        </div>
+      </motion.div>
 
-          {/* STAR Notes */}
-          {hasStarNotes && (
-            <div className="space-y-4">
-              {review.situationNote && (
-                <div>
-                  <h4 className="mb-1 flex items-center gap-1.5 font-medium text-emerald-600">
-                    <Target className="h-4 w-4" /> {t("common.situation")}
-                  </h4>
-                  <p className="rounded bg-emerald-50 p-3 text-sm dark:bg-emerald-900/20">
-                    {review.situationNote}
-                  </p>
-                </div>
-              )}
-
-              {review.taskNote && (
-                <div>
-                  <h4 className="mb-1 flex items-center gap-1.5 font-medium text-blue-600">
-                    <ClipboardList className="h-4 w-4" /> {t("common.mission")}
-                  </h4>
-                  <p className="rounded bg-blue-50 p-3 text-sm dark:bg-blue-900/20">
-                    {review.taskNote}
-                  </p>
-                </div>
-              )}
-
-              {review.actionNote && (
-                <div>
-                  <h4 className="mb-1 flex items-center gap-1.5 font-medium text-purple-600">
-                    <Zap className="h-4 w-4" /> {t("common.act")}
-                  </h4>
-                  <p className="rounded bg-purple-50 p-3 text-sm dark:bg-purple-900/20">
-                    {review.actionNote}
-                  </p>
-                </div>
-              )}
-
-              {review.resultNote && (
-                <div>
-                  <h4 className="mb-1 flex items-center gap-1.5 font-medium text-amber-600">
-                    <CheckCircle2 className="h-4 w-4" /> {t("common.result")}
-                  </h4>
-                  <p className="rounded bg-amber-50 p-3 text-sm dark:bg-amber-900/20">
-                    {review.resultNote}
-                  </p>
-                </div>
-              )}
+      {/* Body Grid Layout */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,300px)]">
+        <div className="flex flex-col gap-4">
+          {/* STAR Method Section */}
+          <motion.section {...fadeUp(0.1)} className="space-y-3">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
+                  {t("userFeedback.evaluationContent")} (STAR)
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  {t("userFeedback.evaluationFromMentorAfterInterview")}
+                </p>
+              </div>
             </div>
-          )}
 
-          {/* Additional Notes */}
-          {hasAdditionalNotes && (
-            <div className="grid gap-3 sm:grid-cols-3">
-              {review.strength && (
-                <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-                  <h4 className="mb-1 flex items-center gap-1 text-sm font-medium text-green-700 dark:text-green-400">
-                    <ThumbsUp className="h-4 w-4" /> {t("common.strengths")}
-                  </h4>
-                  <p className="text-sm text-green-800 dark:text-green-300">{review.strength}</p>
-                </div>
-              )}
+            {starCards.every((c) => !c.value) ? (
+              <div className={GLASS_SURFACE}>
+                <p className="text-sm text-slate-500 italic">
+                  {t("userFeedback.thereIsNoDetailedReview")}
+                </p>
+              </div>
+            ) : (
+              <motion.div
+                variants={gridStagger}
+                initial="hidden"
+                animate="show"
+                className="grid gap-4 sm:grid-cols-2">
+                {starCards.map((card) => {
+                  if (!card.value) return null;
+                  const Icon = STAR_CARD_ICON[card.key];
+                  const hue = STAR_HUE[card.key];
+                  const ink = STAR_INK[card.key];
+                  return (
+                    <motion.article
+                      key={card.key}
+                      variants={cardMotion}
+                      className={cn(
+                        "relative overflow-hidden rounded-2xl p-5 ring-1 transition-all ring-inset hover:-translate-y-0.5",
+                        "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
+                        "dark:bg-white/[0.03] dark:ring-white/5"
+                      )}>
+                      <div
+                        aria-hidden
+                        className={cn(
+                          "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-60",
+                          hue
+                        )}
+                      />
+                      <div className="relative flex items-center gap-2.5">
+                        <div
+                          className={cn(
+                            "flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-inset",
+                            "bg-slate-900/[0.04] ring-slate-900/10",
+                            "dark:bg-white/[0.05] dark:ring-white/10"
+                          )}>
+                          <Icon className={cn("h-4 w-4", ink)} aria-hidden />
+                        </div>
+                        <div>
+                          <p
+                            className={cn(
+                              "text-[10px] font-semibold tracking-[0.08em] uppercase",
+                              ink
+                            )}>
+                            {card.label}
+                          </p>
+                          <p className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
+                            {String(card.key).toUpperCase()}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="relative mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                        {card.value}
+                      </p>
+                    </motion.article>
+                  );
+                })}
+              </motion.div>
+            )}
+          </motion.section>
 
-              {review.weakness && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
-                  <h4 className="mb-1 flex items-center gap-1 text-sm font-medium text-red-700 dark:text-red-400">
-                    <AlertTriangle className="h-4 w-4" /> {t("common.pointsForImprovement")}
-                  </h4>
-                  <p className="text-sm text-red-800 dark:text-red-300">{review.weakness}</p>
-                </div>
-              )}
+          {/* Additional Comments Section */}
+          <motion.section {...fadeUp(0.15)} className="space-y-3">
+            <h2 className="text-base font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
+              {t("common.strengths")} & {t("common.suggestedImprovements1")}
+            </h2>
+            <motion.div
+              variants={gridStagger}
+              initial="hidden"
+              animate="show"
+              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {additionalItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <motion.article key={item.key} variants={cardMotion} className={GLASS_SURFACE}>
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={cn(
+                          "flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-inset",
+                          "bg-slate-900/[0.04] ring-slate-900/10",
+                          "dark:bg-white/[0.05] dark:ring-white/10"
+                        )}>
+                        <Icon className={cn("h-4 w-4", item.tone)} aria-hidden />
+                      </div>
+                      <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
+                        {item.label}
+                      </p>
+                    </div>
+                    {item.value ? (
+                      <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                        {item.value}
+                      </p>
+                    ) : (
+                      <p className="mt-3 text-sm text-slate-500 italic">—</p>
+                    )}
+                  </motion.article>
+                );
+              })}
+            </motion.div>
+          </motion.section>
 
-              {review.improve && (
-                <div className="rounded-lg bg-indigo-50 p-3 dark:bg-indigo-900/20">
-                  <h4 className="mb-1 flex items-center gap-1 text-sm font-medium text-indigo-700 dark:text-indigo-400">
-                    <Lightbulb className="h-4 w-4" /> {t("common.suggestedImprovements1")}
-                  </h4>
-                  <p className="text-sm text-indigo-800 dark:text-indigo-300">{review.improve}</p>
-                </div>
-              )}
+          {/* Session Context Section */}
+          <motion.section {...fadeUp(0.2)} className={GLASS_SURFACE}>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset dark:bg-emerald-500/15 dark:text-emerald-300">
+                <CalendarClock className="h-4 w-4" aria-hidden />
+              </div>
+              <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
+                {t("common.sessionInformation1")}
+              </p>
             </div>
-          )}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <InfoRow
+                icon={Hash}
+                label={t("common.sessionCode1")}
+                value={sessionId ? `#${sessionId}` : "—"}
+              />
+              <InfoRow
+                icon={Building2}
+                label={t("common.roomName1")}
+                value={sessionRoomName || (sessionId ? `Session ${sessionId}` : "—")}
+              />
+              <InfoRow
+                icon={Clock}
+                label={t("common.startTime")}
+                value={reviewStartedAt ? <TimeAgo date={String(reviewStartedAt)} /> : "—"}
+              />
+              <InfoRow
+                icon={Clock}
+                label={t("common.endTime")}
+                value={reviewEndedAt ? <TimeAgo date={String(reviewEndedAt)} /> : "—"}
+              />
+            </div>
+            {sessionId && (
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/user/mock-interview/history/${sessionId}`)}
+                  className="text-xs">
+                  {t("common.viewSessionDetails")}
+                  <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+          </motion.section>
+        </div>
 
-          {!hasStarNotes && !hasAdditionalNotes && (
-            <p className="text-sm text-slate-500 italic">
-              {t("userFeedback.thereIsNoDetailedReview")}
+        {/* Side Summary */}
+        <motion.aside
+          {...fadeUp(0.25)}
+          className="flex flex-col gap-4 lg:sticky lg:top-4 lg:self-start">
+          {/* Overall Rating Breakdown */}
+          <div className={GLASS_SURFACE}>
+            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+              {t("common.overallRating")}
             </p>
-          )}
-        </CardContent>
-      </Card>
+            <p className="mt-1 flex items-baseline gap-1">
+              <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                {rating}
+              </span>
+              <span className="text-sm font-medium text-slate-400">/5</span>
+            </p>
+            <div className="mt-2">
+              <StarRating value={rating} readOnly size="md" />
+            </div>
+            {[5, 4, 3, 2, 1].map((star) => (
+              <div key={star} className="mt-1.5 flex items-center gap-2 text-xs" aria-hidden>
+                <span className="w-5 text-slate-500 dark:text-slate-400">{star}★</span>
+                <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800/60">
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                    style={{ width: `${rating === star ? 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Timeline Card */}
+          <div className={GLASS_SURFACE}>
+            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+              {t("common.timeline")}
+            </p>
+            <div className="mt-3 flex flex-col gap-2 text-xs text-slate-600 dark:text-slate-400">
+              {reviewStartedAt && (
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-slate-500 dark:text-slate-400">
+                    {t("common.startTime")}:
+                  </span>
+                  <TimeAgo date={String(reviewStartedAt)} />
+                </div>
+              )}
+              {reviewEndedAt && (
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                  <span className="text-slate-500 dark:text-slate-400">{t("common.endTime")}:</span>
+                  <TimeAgo date={String(reviewEndedAt)} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Quick Actions Card */}
+          <div className={GLASS_SURFACE}>
+            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+              {t("common.quickActions")}
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              {sessionId && (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/user/mock-interview/history/${sessionId}`)}
+                  className="group flex items-center justify-between rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm text-slate-700 transition-all hover:border-emerald-300 hover:bg-emerald-50/40 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-emerald-500/10">
+                  <span className="flex items-center gap-2">
+                    <CalendarClock className="h-3.5 w-3.5 text-emerald-500" />
+                    {t("common.viewSessionDetails")}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-emerald-500" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="group flex items-center justify-between rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm text-slate-700 transition-all hover:border-sky-300 hover:bg-sky-50/40 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-sky-500/10">
+                <span className="flex items-center gap-2">
+                  <ArrowLeft className="h-3.5 w-3.5 text-sky-500" />
+                  {t("general.back")}
+                </span>
+                <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-sky-500" />
+              </button>
+            </div>
+          </div>
+        </motion.aside>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Helper Component ----------
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Star;
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <Icon className="h-3 w-3" aria-hidden />
+        <span>{label}</span>
+      </div>
+      <div className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{value}</div>
     </div>
   );
 }

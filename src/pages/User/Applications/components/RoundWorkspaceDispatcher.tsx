@@ -1,3 +1,4 @@
+import { inferRoundType } from "@/lib/application-detail-utils";
 import type { components } from "../../../../../schema-from-be";
 import type { JdRound } from "./HorizontalPipeline";
 import { AiInterviewModule } from "./round-modules/AiInterviewModule";
@@ -56,7 +57,12 @@ export function RoundWorkspaceDispatcher({
 
   const isCurrent = !isCompleted && roundOrder === currentRoundOrder;
 
-  const type = (round.roundType || "QUIZ").toUpperCase().replace("MENTROR", "MENTOR");
+  // Prefer BE-provided roundType, fall back to inferRoundType when BE sends
+  // incorrect data (e.g., roundType="QUIZ" on an Email Simulator detail).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const type = (inferRoundType(detail as any) ?? round.roundType ?? "QUIZ")
+    .toUpperCase()
+    .replace("MENTROR", "MENTOR");
 
   switch (type) {
     case "CV_SCREENING":

@@ -714,7 +714,7 @@ export function MentorSessionDetailPage() {
             />
             <div className="relative flex flex-col gap-4 p-5 sm:p-6">
               <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 ring-2 ring-emerald-400/30">
+                <Avatar className="h-10 w-10 shrink-0 ring-2 ring-emerald-400/30">
                   <AvatarImage
                     src={studentInfo?.avatarUrl}
                     alt={studentInfo?.name ?? t("common.students")}
@@ -969,7 +969,7 @@ function StudentAvatarHalo({ src, name, status }: { src?: string; name: string; 
               : "ring-slate-300/60 dark:ring-slate-600/60"
         )}
       />
-      <Avatar className="relative h-16 w-16 sm:h-20 sm:w-20">
+      <Avatar className="relative h-16 w-16 shrink-0 sm:h-20 sm:w-20">
         <AvatarImage src={src} alt={name} />
         <AvatarFallback
           className={cn(

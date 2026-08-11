@@ -1997,10 +1997,12 @@
     "days": "ngày",
     "problemNum": "Bài #{{num}}",
     "open": "Mở",
-    "timeline": "Dòng thời gian",
     "checkNow": "Kiểm tra ngay",
     "copied": "Đã sao chép",
-    "backToTheSession": "Về session"
+    "backToTheSession": "Về session",
+    "star": "Phương pháp STAR",
+    "studentInformation": "Thông tin học viên / ứng viên",
+    "tryAgain": "Thử lại"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -4690,8 +4692,8 @@
       "noHrNotePending": "Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR.",
       "matchScore": "Chỉ số Match Score",
       "aiVsHr": "AI vs HR",
-      "aiScore": "AI Score",
-      "hrScore": "HR Score",
+      "aiScore": "Điểm AI",
+      "hrScore": "Điểm HR",
       "detailedCriteriaAnalysis": "Phân tích tiêu chí chi tiết",
       "overallMatch": "Độ phù hợp tổng thể:",
       "skillsMatch": "Kỹ năng chuyên môn:",
@@ -4717,9 +4719,7 @@
       "noDataPendingCv": "Chưa có dữ liệu (Cần nộp CV)",
       "hrNotePending": "Hội đồng HR sẽ cập nhật sau khi chấm điểm xong.",
       "dropCvHint": "Kéo thả file CV vào đây hoặc nhấp để chọn",
-      "noHrNote": "Chưa có ghi chú trực tiếp từ hội đồng tuyển dụng HR.",
-      "aiScore": "Điểm AI",
-      "hrScore": "Điểm HR"
+      "noHrNote": "Chưa có ghi chú trực tiếp từ hội đồng tuyển dụng HR."
     },
     "emailSimulator": {
       "reportTitle": "BÁO CÁO ĐÁNH GIÁ MÔ PHỎNG EMAIL",
@@ -5097,7 +5097,7 @@
       "pinCopyFailed": "Không thể copy mã PIN. Bạn hãy copy thủ công nhé.",
       "aiInterviewTitle": "Vòng {{round}}: Phỏng vấn AI tại Kiosk",
       "aiInterviewDescription": "Chọn trạm Kiosk và khung giờ phù hợp. Sau khi đặt lịch, hệ thống sẽ cấp mã PIN 6 số để bạn nhập tại Kiosk đúng giờ phỏng vấn.",
-      "aiScore": "ĐIỂM AI",
+      "aiScore": "Điểm AI",
       "aiCompleted": "ĐÃ HOÀN TẤT",
       "bookKiosk": "ĐẶT LỊCH KIOSK",
       "aiInterviewCompleted": "Buổi phỏng vấn AI đã hoàn tất",
@@ -5153,7 +5153,6 @@
       "kioskStation": "Trạm Kiosk",
       "checkEmailForDetails": "Kiểm tra email để xem hướng dẫn chi tiết",
       "dualScoresTitle": "Đánh giá & Điểm số",
-      "aiScore": "Điểm AI",
       "hrScore": "Điểm HR",
       "notGraded": "Chưa chấm",
       "finalScore": "Điểm tổng kết",
@@ -5177,6 +5176,12 @@
       "filterNeedsImprovement": "Cần cải thiện < 7 ({{count}})",
       "filterBlueprint": "Câu hỏi chính ({{count}})",
       "filterFollowup": "Câu hỏi nối tiếp ({{count}})",
+      "interviewTopic": "Chủ đề phỏng vấn #{{id}}",
+      "followUpQuestions": "câu hỏi nối tiếp",
+      "searchPlaceholder": "Tìm kiếm theo chủ đề, câu hỏi, câu trả lời, từ khóa...",
+      "clearSearch": "Xóa tìm kiếm",
+      "noTopicsFound": "Không tìm thấy chủ đề phỏng vấn nào phù hợp với \"{{query}}\"",
+      "clearSearchKeyword": "Xóa từ khóa tìm kiếm",
       "questionOrder": "Câu hỏi #{{order}}",
       "candidateAnswer": "Câu trả lời của ứng viên",
       "aiFeedbackCritique": "Nhận xét của AI",
@@ -5203,10 +5208,21 @@
       "domain": "Lĩnh vực",
       "difficulty": "Độ khó",
       "language": "Ngôn ngữ",
-      "duration": "Thời lượng",
       "sessionKey": "Mã phiên",
       "loadingSessionData": "Đang tải dữ liệu kết quả phỏng vấn AI...",
-      "noSessionDataFound": "Chưa có dữ liệu chi tiết cho phiên phỏng vấn này."
+      "noSessionDataFound": "Chưa có dữ liệu chi tiết cho phiên phỏng vấn này.",
+      "multidimensionalCompetencyAnalysis": "Phân tích Chỉ số Năng lực Đa chiều",
+      "detailedEvaluationBasedOnContentAndResponseStyle": "Đánh giá chi tiết dựa trên nội dung & phong thái trả lời",
+      "technicalCore": "Kỹ năng Chuyên môn cốt lõi",
+      "problemSolving": "Tư duy Phản biện & Đào sâu",
+      "terminologyAccuracy": "Độ chính xác thuật ngữ",
+      "communication": "Phong thái & Giao tiếp",
+      "extractedTechKeywords": "Bộ Từ khóa Công nghệ Trích xuất ({{count}})",
+      "viewAll": "Xem tất cả ({{count}})",
+      "collapse": "Thu gọn",
+      "totalQuestions": "Tổng số câu hỏi",
+      "questionsCount": "{{count}} câu hỏi",
+      "termsCount": "{{count}} thuật ngữ"
     },
     "codeReview": {
       "roundHeader": "VÒNG {{round}}: CODE REVIEW • HƯỚNG DẪN LÀM BÀI",
@@ -6477,7 +6493,11 @@
     "experience": "Kinh nghiệm",
     "education": "Học vấn",
     "readability": "Khả năng đọc",
-    "gradingInProgress": "đang chấm..."
+    "gradingInProgress": "đang chấm...",
+    "editNote": "Chỉnh sửa ghi chú",
+    "readonly": "Chỉ xem",
+    "scoreCannotChange": "Điểm số không thể thay đổi sau khi khóa",
+    "saveNote": "Lưu ghi chú"
   },
   "staffGrading": {
     "gradeNow": "Chấm điểm ngay",
