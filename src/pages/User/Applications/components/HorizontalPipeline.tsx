@@ -86,24 +86,35 @@ export function HorizontalPipeline({
   };
 
   return (
-    <div className="group relative flex w-full items-center">
-      {/* Left Scroll Button */}
-      {canScrollLeft && (
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={() => handleScroll("left")}
-          className="absolute left-1 z-20 h-8 w-8 rounded-full border-slate-200 bg-white/95 shadow-md backdrop-blur-xs hover:bg-white dark:border-slate-800 dark:bg-slate-900/95 dark:hover:bg-slate-900"
-          title="Cuộn sang trái">
-          <ChevronLeft className="h-4 w-4 text-slate-700 dark:text-slate-200" />
-        </Button>
-      )}
+    <div className="flex w-full items-center gap-2">
+      <style>{`
+        .pipeline-no-scrollbar::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        .pipeline-no-scrollbar {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
+      `}</style>
 
-      {/* Hidden Scrollbar Container */}
+      {/* Left Scroll Button - Always visible, side-by-side */}
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={() => handleScroll("left")}
+        disabled={!canScrollLeft}
+        className="h-8 w-8 shrink-0 rounded-full border-slate-200 bg-white text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        title={t("common.previous", "Trước")}>
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+
+      {/* Hidden Scrollbar Container - Flex 1 */}
       <div
         ref={scrollContainerRef}
-        className="flex w-full items-center justify-start gap-2.5 overflow-x-auto px-1 py-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-3.5 [&::-webkit-scrollbar]:hidden">
+        className="pipeline-no-scrollbar flex flex-1 items-center justify-start gap-2.5 overflow-x-auto py-1 sm:gap-3.5">
         {sortedRounds.map((round, idx) => {
           const roundOrder = round.roundOrder ?? idx + 1;
           const detail = details.find((d) => d.roundId === round.id);
@@ -288,18 +299,17 @@ export function HorizontalPipeline({
         )}
       </div>
 
-      {/* Right Scroll Button */}
-      {canScrollRight && (
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={() => handleScroll("right")}
-          className="absolute right-1 z-20 h-8 w-8 rounded-full border-slate-200 bg-white/95 shadow-md backdrop-blur-xs hover:bg-white dark:border-slate-800 dark:bg-slate-900/95 dark:hover:bg-slate-900"
-          title="Cuộn sang phải">
-          <ChevronRight className="h-4 w-4 text-slate-700 dark:text-slate-200" />
-        </Button>
-      )}
+      {/* Right Scroll Button - Always visible, side-by-side */}
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={() => handleScroll("right")}
+        disabled={!canScrollRight}
+        className="h-8 w-8 shrink-0 rounded-full border-slate-200 bg-white text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        title={t("common.next", "Tiếp")}>
+        <ChevronRight className="h-4 w-4" />
+      </Button>
     </div>
   );
 }
