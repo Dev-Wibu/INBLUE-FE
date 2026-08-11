@@ -106,9 +106,9 @@ export function HorizontalPipeline({
         size="icon"
         onClick={() => handleScroll("left")}
         disabled={!canScrollLeft}
-        className="h-8 w-8 shrink-0 rounded-full border-slate-200 bg-white text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        className="h-9 w-9 shrink-0 rounded-full border border-indigo-200/90 bg-white text-indigo-700 shadow-sm transition-all hover:border-indigo-300 hover:bg-indigo-50/90 disabled:border-slate-200 disabled:bg-slate-100/50 disabled:text-slate-400 disabled:opacity-30 dark:border-indigo-500/40 dark:bg-slate-900 dark:text-indigo-300 dark:hover:border-indigo-500/60 dark:hover:bg-indigo-950/60 dark:disabled:border-slate-800 dark:disabled:bg-slate-950/50 dark:disabled:text-slate-600"
         title={t("common.previous", "Trước")}>
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4.5 w-4.5 stroke-[2.5]" />
       </Button>
 
       {/* Hidden Scrollbar Container - Flex 1 */}
@@ -306,9 +306,9 @@ export function HorizontalPipeline({
         size="icon"
         onClick={() => handleScroll("right")}
         disabled={!canScrollRight}
-        className="h-8 w-8 shrink-0 rounded-full border-slate-200 bg-white text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        className="h-9 w-9 shrink-0 rounded-full border border-indigo-200/90 bg-white text-indigo-700 shadow-sm transition-all hover:border-indigo-300 hover:bg-indigo-50/90 disabled:border-slate-200 disabled:bg-slate-100/50 disabled:text-slate-400 disabled:opacity-30 dark:border-indigo-500/40 dark:bg-slate-900 dark:text-indigo-300 dark:hover:border-indigo-500/60 dark:hover:bg-indigo-950/60 dark:disabled:border-slate-800 dark:disabled:bg-slate-950/50 dark:disabled:text-slate-600"
         title={t("common.next", "Tiếp")}>
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-4.5 w-4.5 stroke-[2.5]" />
       </Button>
     </div>
   );
