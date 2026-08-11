@@ -2012,9 +2012,11 @@ function CompletedResultView({
 
               <div className="min-w-0 flex-1 space-y-3">
                 <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
-                  <span>Thông tin phiên</span>
+                  <span>
+                    {t("userApplication.mentorReview.sessionInfoTitle", "Thông tin phiên")}
+                  </span>
                   <span className="h-1 w-1 rounded-full bg-slate-400/70" />
-                  <span>Đã hoàn tất</span>
+                  <span>{t("userApplication.mentorReview.completedBadge", "Đã hoàn tất")}</span>
                 </div>
                 <div className="space-y-1.5">
                   <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
@@ -2033,7 +2035,7 @@ function CompletedResultView({
                       {mentorAverageRating ? `${mentorAverageRating.toFixed(1)}/5` : "—"}
                     </span>
                     <span className="text-xs font-semibold text-amber-700/70 dark:text-amber-300/70">
-                      Mentor ratio
+                      {t("userApplication.mentorReview.mentorRatingLabel", "Mentor ratio")}
                     </span>
                   </div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 dark:border-indigo-900/50 dark:bg-indigo-950/25">
@@ -2042,7 +2044,7 @@ function CompletedResultView({
                       {mentorExperienceLabel}
                     </span>
                     <span className="text-xs font-semibold text-indigo-600/70 dark:text-indigo-300/70">
-                      kinh nghiệm
+                      {t("userApplication.mentorReview.experienceLabel", "kinh nghiệm")}
                     </span>
                   </div>
                 </div>
@@ -2058,7 +2060,9 @@ function CompletedResultView({
               <InfoTile
                 icon={<Clock className="h-4 w-4" />}
                 label={t("userApplicationhistory.mentorSessionFieldDuration")}
-                value={`${session.duration ?? 0} phút`}
+                value={t("userApplication.mentorReview.minutesValue", "{{minutes}} phút", {
+                  minutes: session.duration ?? 0,
+                })}
               />
               <InfoTile
                 icon={<PlayCircle className="h-4 w-4" />}
@@ -2071,8 +2075,10 @@ function CompletedResultView({
               />
               <InfoTile
                 icon={<Users className="h-4 w-4" />}
-                label="Phiên mentor"
-                value={`${mentorSessionCount} phiên`}
+                label={t("userApplication.mentorReview.mentorSessionTileLabel", "Phiên mentor")}
+                value={t("userApplication.mentorReview.mentorSessionTileValue", "{{count}} phiên", {
+                  count: mentorSessionCount,
+                })}
               />
             </div>
           </Card>
@@ -2176,8 +2182,8 @@ function CompletedResultView({
                       {review.situationNote && (
                         <StarNoteBlock
                           tone="indigo"
-                          label="Situation"
-                          title="Bối cảnh"
+                          label={t("userApplication.mentorReview.starSituationShort", "Situation")}
+                          title={t("userApplication.mentorReview.starSituationTitle", "Bối cảnh")}
                           icon={<CalendarCheck className="h-4 w-4" />}
                           content={review.situationNote}
                         />
@@ -2185,8 +2191,8 @@ function CompletedResultView({
                       {review.taskNote && (
                         <StarNoteBlock
                           tone="sky"
-                          label="Task"
-                          title="Mục tiêu"
+                          label={t("userApplication.mentorReview.starTaskShort", "Task")}
+                          title={t("userApplication.mentorReview.starTaskTitle", "Mục tiêu")}
                           icon={<Target className="h-4 w-4" />}
                           content={review.taskNote}
                         />
@@ -2194,8 +2200,8 @@ function CompletedResultView({
                       {review.actionNote && (
                         <StarNoteBlock
                           tone="emerald"
-                          label="Action"
-                          title="Cách xử lý"
+                          label={t("userApplication.mentorReview.starActionShort", "Action")}
+                          title={t("userApplication.mentorReview.starActionTitle", "Cách xử lý")}
                           icon={<Sparkles className="h-4 w-4" />}
                           content={review.actionNote}
                         />
@@ -2203,8 +2209,8 @@ function CompletedResultView({
                       {review.resultNote && (
                         <StarNoteBlock
                           tone="amber"
-                          label="Result"
-                          title="Kết quả"
+                          label={t("userApplication.mentorReview.starResultShort", "Result")}
+                          title={t("userApplication.mentorReview.starResultTitle", "Kết quả")}
                           icon={<BadgeCheck className="h-4 w-4" />}
                           content={review.resultNote}
                         />
@@ -2333,17 +2339,20 @@ function CandidateMentorFeedbackBlock({
           </div>
           <div className="min-w-0">
             <h3 className="text-base font-bold text-slate-950 dark:text-white">
-              Phản hồi của bạn cho mentor
+              {t("userApplication.mentorReview.feedbackTitle", "Phản hồi của bạn cho mentor")}
             </h3>
             <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Chấm sao và ghi nhận trải nghiệm sau buổi phỏng vấn.
+              {t(
+                "userApplication.mentorReview.feedbackSubtitle",
+                "Chấm sao và ghi nhận trải nghiệm sau buổi phỏng vấn."
+              )}
             </p>
           </div>
         </div>
 
         {hasFeedback && !editing && (
           <span className="inline-flex h-7 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
-            Đã gửi
+            {t("userApplication.mentorReview.feedbackSubmittedBadge", "Đã gửi")}
           </span>
         )}
       </div>
@@ -2353,10 +2362,13 @@ function CandidateMentorFeedbackBlock({
           <div className="grid gap-4 border-b border-slate-200 pb-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
             <div>
               <div className="text-sm font-bold text-slate-950 dark:text-white">
-                Điểm bạn đã gửi
+                {t("userApplication.mentorReview.feedbackScoreTitle", "Điểm bạn đã gửi")}
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Điểm này phản ánh trải nghiệm thực tế của bạn với mentor.
+                {t(
+                  "userApplication.mentorReview.feedbackScoreDesc",
+                  "Điểm này phản ánh trải nghiệm thực tế của bạn với mentor."
+                )}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -2382,19 +2394,25 @@ function CandidateMentorFeedbackBlock({
           <div className="grid gap-4 border-b border-slate-200 py-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
             <div>
               <div className="text-sm font-bold text-slate-950 dark:text-white">
-                Nhận xét của bạn
+                {t("userApplication.mentorReview.feedbackCommentTitle", "Nhận xét của bạn")}
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Nội dung này giúp hệ thống cải thiện chất lượng mentor.
+                {t(
+                  "userApplication.mentorReview.feedbackCommentDesc",
+                  "Nội dung này giúp hệ thống cải thiện chất lượng mentor."
+                )}
               </p>
             </div>
             {feedback?.comment ? (
               <p className="text-sm leading-relaxed text-slate-700 italic dark:text-slate-200">
-                “{feedback.comment}”
+                &ldquo;{feedback.comment}&rdquo;
               </p>
             ) : (
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Chưa có nhận xét chi tiết.
+                {t(
+                  "userApplication.mentorReview.feedbackCommentEmpty",
+                  "Chưa có nhận xét chi tiết."
+                )}
               </p>
             )}
           </div>
@@ -2410,7 +2428,10 @@ function CandidateMentorFeedbackBlock({
               {t("userApplicationhistory.mentorSessionEditFeedback")}
             </Button>
             <p className="ml-auto text-xs text-slate-500 dark:text-slate-400">
-              Bước cuối của vòng Mentor Interview
+              {t(
+                "userApplication.mentorReview.finalStepHint",
+                "Bước cuối của vòng Mentor Interview"
+              )}
             </p>
           </div>
         </div>
