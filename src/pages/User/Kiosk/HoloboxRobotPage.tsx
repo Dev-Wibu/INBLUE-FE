@@ -25,8 +25,8 @@ function createGradientTexture(
     direction === "horizontal"
       ? context.createLinearGradient(0, 0, canvas.width, 0)
       : context.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, reverse ? "rgba(15, 23, 42, 0)" : "rgba(15, 23, 42, 0.18)");
-  gradient.addColorStop(1, reverse ? "rgba(15, 23, 42, 0.18)" : "rgba(15, 23, 42, 0)");
+  gradient.addColorStop(0, reverse ? "rgba(124, 45, 18, 0)" : "rgba(124, 45, 18, 0.14)");
+  gradient.addColorStop(1, reverse ? "rgba(124, 45, 18, 0.14)" : "rgba(124, 45, 18, 0)");
   context.fillStyle = gradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -44,9 +44,9 @@ function createContactShadowTexture() {
   if (!context) return new THREE.Texture();
 
   const gradient = context.createRadialGradient(128, 128, 0, 128, 128, 128);
-  gradient.addColorStop(0, "rgba(22, 32, 82, 0.68)");
-  gradient.addColorStop(0.48, "rgba(20, 31, 75, 0.24)");
-  gradient.addColorStop(1, "rgba(10, 20, 50, 0)");
+  gradient.addColorStop(0, "rgba(124, 45, 18, 0.48)");
+  gradient.addColorStop(0.48, "rgba(154, 52, 18, 0.18)");
+  gradient.addColorStop(1, "rgba(124, 45, 18, 0)");
   context.fillStyle = gradient;
   context.fillRect(0, 0, 256, 256);
 
@@ -62,7 +62,7 @@ export function HoloboxRobotPage() {
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x07090d);
+    scene.background = new THREE.Color(0xffffff);
 
     const camera = new THREE.PerspectiveCamera(38, 9 / 16, 0.1, 100);
     camera.position.set(0, 0.25, 17);
@@ -83,19 +83,19 @@ export function HoloboxRobotPage() {
     // PHẦN 1 — PHÒNG 3D HOLOBOX: 3 TƯỜNG, SÀN, AO GÓC VÀ SHADOW MAP
     // =====================================================================
     const roomMaterial = new THREE.MeshStandardMaterial({
-      color: 0xf5fdff,
+      color: 0xfffbf7,
       roughness: 0.86,
       metalness: 0,
       side: THREE.DoubleSide,
     });
     const sideWallMaterial = new THREE.MeshStandardMaterial({
-      color: 0xddeef2,
+      color: 0xffefe3,
       roughness: 0.9,
       metalness: 0,
       side: THREE.DoubleSide,
     });
     const floorMaterial = new THREE.MeshStandardMaterial({
-      color: 0xe8f2f4,
+      color: 0xfff4ea,
       roughness: 0.92,
       metalness: 0,
       side: THREE.DoubleSide,
@@ -216,7 +216,7 @@ export function HoloboxRobotPage() {
     );
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.82));
-    scene.add(new THREE.HemisphereLight(0xe6fbff, 0x253849, 0.72));
+    scene.add(new THREE.HemisphereLight(0xfff4e6, 0x5b2b12, 0.72));
 
     const keyLight = new THREE.DirectionalLight(0xffffff, 4.8);
     keyLight.position.set(1.4, 8.8, 5.5);
@@ -235,13 +235,13 @@ export function HoloboxRobotPage() {
     keyLight.shadow.blurSamples = 16;
     scene.add(keyLight, keyLight.target);
 
-    const cyanRim = new THREE.PointLight(0x22d3ee, 22, 22, 2);
-    cyanRim.position.set(-3.8, 2.8, 3.8);
-    scene.add(cyanRim);
+    const orangeRim = new THREE.PointLight(0xfb923c, 22, 22, 2);
+    orangeRim.position.set(-3.8, 2.8, 3.8);
+    scene.add(orangeRim);
 
-    const blueFill = new THREE.PointLight(0x2563eb, 10, 18, 2);
-    blueFill.position.set(3.4, -1.2, 3.2);
-    scene.add(blueFill);
+    const warmFill = new THREE.PointLight(0xf97316, 10, 18, 2);
+    warmFill.position.set(3.4, -1.2, 3.2);
+    scene.add(warmFill);
 
     const ceilingLight = new THREE.PointLight(0xffffff, 28, 13, 2);
     ceilingLight.position.set(0, 4.7, 0.8);
@@ -258,22 +258,22 @@ export function HoloboxRobotPage() {
     scene.add(robotGroup);
 
     const shellMaterial = new THREE.MeshStandardMaterial({
-      color: 0xbcefff,
-      roughness: 0.24,
-      metalness: 0.45,
-      emissive: 0x063b52,
-      emissiveIntensity: 0.18,
+      color: 0xfffbf2,
+      roughness: 0.3,
+      metalness: 0.36,
+      emissive: 0x5f2306,
+      emissiveIntensity: 0.08,
     });
     const darkMaterial = new THREE.MeshStandardMaterial({
-      color: 0x082f49,
+      color: 0x111111,
       roughness: 0.22,
       metalness: 0.25,
-      emissive: 0x001b2c,
-      emissiveIntensity: 0.45,
+      emissive: 0x2a0f03,
+      emissiveIntensity: 0.28,
     });
-    const cyanMaterial = new THREE.MeshStandardMaterial({
-      color: 0x67e8f9,
-      emissive: 0x06b6d4,
+    const orangeMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffb86b,
+      emissive: 0xf97316,
       emissiveIntensity: 2.6,
       roughness: 0.12,
       metalness: 0.05,
@@ -309,7 +309,7 @@ export function HoloboxRobotPage() {
     );
     const leftEye = addMesh(
       new THREE.SphereGeometry(0.18, 20, 12),
-      cyanMaterial,
+      orangeMaterial,
       face,
       new THREE.Vector3(-0.48, 0.1, 0.12)
     );
@@ -320,7 +320,7 @@ export function HoloboxRobotPage() {
 
     const mouth = addMesh(
       new RoundedBoxGeometry(0.66, 0.1, 0.08, 3, 0.035),
-      cyanMaterial,
+      orangeMaterial,
       face,
       new THREE.Vector3(0, -0.3, 0.13)
     );
@@ -345,13 +345,13 @@ export function HoloboxRobotPage() {
     );
     const core = addMesh(
       new THREE.SphereGeometry(0.26, 24, 18),
-      cyanMaterial,
+      orangeMaterial,
       chest,
       new THREE.Vector3(0, -0.28, 0.16)
     );
     const coreHalo = addMesh(
       new THREE.TorusGeometry(0.43, 0.03, 10, 60),
-      cyanMaterial,
+      orangeMaterial,
       chest,
       new THREE.Vector3(0, -0.28, 0.17)
     );
@@ -419,13 +419,13 @@ export function HoloboxRobotPage() {
 
     const antenna = addMesh(
       new THREE.CylinderGeometry(0.035, 0.035, 0.7, 10),
-      cyanMaterial,
+      orangeMaterial,
       robotGroup,
       new THREE.Vector3(0, 3.3, 0)
     );
     addMesh(
       new THREE.SphereGeometry(0.11, 16, 12),
-      cyanMaterial,
+      orangeMaterial,
       antenna,
       new THREE.Vector3(0, 0.4, 0)
     );

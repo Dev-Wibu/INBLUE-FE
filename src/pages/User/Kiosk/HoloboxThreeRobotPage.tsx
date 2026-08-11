@@ -39,10 +39,10 @@ function createSoftShadowTexture(coreOpacity = 0.5, midOpacity = 0.22) {
   if (!context) return new THREE.Texture();
 
   const gradient = context.createRadialGradient(256, 128, 0, 256, 128, 230);
-  gradient.addColorStop(0, `rgba(20, 31, 70, ${coreOpacity})`);
-  gradient.addColorStop(0.34, `rgba(43, 60, 114, ${midOpacity})`);
-  gradient.addColorStop(0.66, "rgba(78, 104, 165, 0.08)");
-  gradient.addColorStop(1, "rgba(78, 104, 165, 0)");
+  gradient.addColorStop(0, `rgba(124, 45, 18, ${coreOpacity})`);
+  gradient.addColorStop(0.34, `rgba(194, 65, 12, ${midOpacity})`);
+  gradient.addColorStop(0.66, "rgba(249, 115, 22, 0.08)");
+  gradient.addColorStop(1, "rgba(249, 115, 22, 0)");
   context.fillStyle = gradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
   return new THREE.CanvasTexture(canvas);
@@ -139,7 +139,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
     addSurface([8, 15], [4.5, 0.3, -0.2], [0, -Math.PI / 2, 0], wallMaterial);
     addSurface([9, 8], [0, -4.45, -0.2], [-Math.PI / 2, 0, 0], floorMaterial);
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xc7e9f5, 2.2));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xffdfc2, 2.2));
     const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
     keyLight.position.set(-3.8, 6.2, 7.5);
     keyLight.castShadow = true;
@@ -151,12 +151,12 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
     keyLight.shadow.bias = -0.00025;
     keyLight.shadow.normalBias = 0.012;
     scene.add(keyLight);
-    const fillLight = new THREE.DirectionalLight(0x90eaff, 1.1);
+    const fillLight = new THREE.DirectionalLight(0xffc08a, 1.1);
     fillLight.position.set(4, 1.5, 4);
     scene.add(fillLight);
-    const cyanRim = new THREE.PointLight(0x23d9f4, 13, 9, 2);
-    cyanRim.position.set(0, 1, -1.8);
-    scene.add(cyanRim);
+    const orangeRim = new THREE.PointLight(0xfb923c, 13, 9, 2);
+    orangeRim.position.set(0, 1, -1.8);
+    scene.add(orangeRim);
 
     // -------------------------------------------------------------------
     // ROBOT 3D: mỗi bộ phận là mesh thật, không còn dùng PNG billboard.
@@ -169,7 +169,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       clearcoatRoughness: 0.08,
     });
     const shellShadowMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xdce7ee,
+      color: 0xf1ebe4,
       roughness: 0.2,
       metalness: 0.3,
       clearcoat: 0.82,
@@ -194,16 +194,16 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       clearcoat: 1,
       clearcoatRoughness: 0.025,
     });
-    const cyanMaterial = new THREE.MeshStandardMaterial({
-      color: 0x14c9e4,
-      emissive: 0x079ab8,
+    const orangeMaterial = new THREE.MeshStandardMaterial({
+      color: 0xff9f3f,
+      emissive: 0xf97316,
       emissiveIntensity: 1.55,
       roughness: 0.11,
       metalness: 0.24,
     });
     const eyeMaterial = new THREE.MeshStandardMaterial({
-      color: 0x3ee6f5,
-      emissive: 0x0ac8e5,
+      color: 0xffc27a,
+      emissive: 0xfb923c,
       emissiveIntensity: 2.45,
       roughness: 0.045,
       metalness: 0.04,
@@ -353,7 +353,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       );
       addRobotMesh(
         new THREE.TorusGeometry(0.16, 0.025, 10, 42),
-        cyanMaterial,
+        orangeMaterial,
         eyeGroup,
         new THREE.Vector3(0, 0, 0.29)
       );
@@ -373,7 +373,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
     const mouthBars = [-2, -1, 0, 1, 2].map((offset) => {
       const bar = addRobotMesh(
         new RoundedBoxGeometry(0.075, 0.12, 0.045, 3, 0.02),
-        cyanMaterial,
+        orangeMaterial,
         mouthGroup,
         new THREE.Vector3(offset * 0.075, 0, 0)
       );
@@ -394,7 +394,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       );
       addRobotMesh(
         new THREE.CylinderGeometry(0.37, 0.37, 0.34, 40),
-        cyanMaterial,
+        orangeMaterial,
         ear,
         new THREE.Vector3(),
         new THREE.Euler(0, 0, Math.PI / 2)
@@ -418,13 +418,13 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
     createEar(1.78);
     addRobotMesh(
       new RoundedBoxGeometry(0.94, 0.14, 0.72, 6, 0.065),
-      cyanMaterial,
+      orangeMaterial,
       headGroup,
       new THREE.Vector3(0, 1.38, 0.02)
     );
     addRobotMesh(
       new THREE.CylinderGeometry(0.1, 0.1, 0.055, 24),
-      cyanMaterial,
+      orangeMaterial,
       headGroup,
       new THREE.Vector3(0, -1.08, 1.15),
       new THREE.Euler(Math.PI / 2, 0, 0)
@@ -449,7 +449,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
     [-0.07, 0.06, 0.19].forEach((y, index) => {
       addRobotMesh(
         new THREE.TorusGeometry(0.31 - index * 0.018, 0.045, 10, 42),
-        index === 1 ? cyanMaterial : steelMaterial,
+        index === 1 ? orangeMaterial : steelMaterial,
         neckGroup,
         new THREE.Vector3(0, y, 0),
         new THREE.Euler(Math.PI / 2, 0, 0)
@@ -516,7 +516,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       );
       addRobotMesh(
         new THREE.TorusGeometry(0.22, 0.045, 10, 36),
-        cyanMaterial,
+        orangeMaterial,
         robotRoot,
         new THREE.Vector3(x, -1.78, 0.18)
       );
@@ -549,10 +549,10 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
         new THREE.Vector3(),
         new THREE.Euler(0, 0, Math.PI / 2)
       );
-      // Bearing mặt ngoài: đĩa cyan lớn + lõi đen + tâm thép, giống khớp robot mẫu.
+      // Bearing mặt ngoài: đĩa cam lớn + lõi đen + tâm thép, giống khớp robot mẫu.
       addLegJointMesh(
         new THREE.CylinderGeometry(0.29, 0.29, 0.075, 32),
-        cyanMaterial,
+        orangeMaterial,
         hipRig,
         new THREE.Vector3(side * 0.17, 0, 0),
         new THREE.Euler(0, 0, Math.PI / 2)
@@ -589,15 +589,15 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       addRobotMesh(new THREE.SphereGeometry(0.22, 28, 20), graphiteMaterial, hipRig, knee);
       addLegJointMesh(
         new THREE.TorusGeometry(0.18, 0.04, 10, 32),
-        cyanMaterial,
+        orangeMaterial,
         hipRig,
         knee.clone().add(new THREE.Vector3(side * 0.19, 0, 0)),
         new THREE.Euler(0, Math.PI / 2, 0)
       );
-      // Viền cyan phía trước giúp khớp gối vẫn đọc rõ khi robot nhìn thẳng vào màn Holobox.
+      // Viền cam phía trước giúp khớp gối vẫn đọc rõ khi robot nhìn thẳng vào màn Holobox.
       addLegJointMesh(
         new THREE.TorusGeometry(0.205, 0.033, 9, 32),
-        cyanMaterial,
+        orangeMaterial,
         hipRig,
         knee.clone().add(new THREE.Vector3(0, 0, 0.205))
       );
@@ -626,7 +626,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       );
       addRobotMesh(
         new RoundedBoxGeometry(0.25, 0.08, 0.055, 3, 0.025),
-        cyanMaterial,
+        orangeMaterial,
         shinRig,
         new THREE.Vector3(0, -0.33, 0.27)
       );
@@ -641,7 +641,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       );
       addLegJointMesh(
         new THREE.TorusGeometry(0.155, 0.032, 9, 30),
-        cyanMaterial,
+        orangeMaterial,
         shinRig,
         ankle.clone().add(new THREE.Vector3(0, 0.065, 0)),
         new THREE.Euler(Math.PI / 2, 0, 0)
@@ -656,7 +656,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       // Mặt vòng phía trước tách rõ cổ chân khỏi cẳng chân và bàn chân.
       addLegJointMesh(
         new THREE.TorusGeometry(0.14, 0.025, 9, 28),
-        cyanMaterial,
+        orangeMaterial,
         shinRig,
         ankle.clone().add(new THREE.Vector3(0, 0, 0.17))
       );
@@ -677,7 +677,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       );
       addRobotMesh(
         new RoundedBoxGeometry(0.38, 0.09, 0.2, 4, 0.035),
-        cyanMaterial,
+        orangeMaterial,
         footRig,
         new THREE.Vector3(0, -0.23, 0.53)
       );
@@ -707,7 +707,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
     );
     const coreRing = addRobotMesh(
       new THREE.TorusGeometry(0.48, 0.075, 14, 64),
-      cyanMaterial,
+      orangeMaterial,
       coreGroup,
       new THREE.Vector3(0, 0, 0.12)
     );
@@ -722,7 +722,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       parent: THREE.Object3D,
       position: THREE.Vector3,
       radius: number,
-      cyanShell: boolean
+      orangeShell: boolean
     ) => {
       const jointBase = addRobotMesh(
         new THREE.SphereGeometry(radius, 28, 20),
@@ -732,13 +732,13 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       );
       const jointShell = addRobotMesh(
         new THREE.SphereGeometry(radius * 0.88, 28, 20),
-        cyanShell ? cyanMaterial : shellShadowMaterial,
+        orangeShell ? orangeMaterial : shellShadowMaterial,
         jointBase
       );
       jointShell.scale.set(1, 0.82, 0.88);
       addRobotMesh(
         new THREE.TorusGeometry(radius * 0.66, radius * 0.085, 10, 40),
-        cyanMaterial,
+        orangeMaterial,
         jointBase,
         new THREE.Vector3(0, 0, radius * 0.84)
       );
@@ -806,7 +806,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       );
       addRobotMesh(
         new THREE.TorusGeometry(0.23, 0.04, 10, 36),
-        cyanMaterial,
+        orangeMaterial,
         hand,
         new THREE.Vector3(-side * 0.25, 0, 0),
         new THREE.Euler(0, Math.PI / 2, 0)
@@ -876,7 +876,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
     const { armRig: rightArmRig, forearmRig: rightForearmRig, hand: rightHand } = createArm(1);
 
     const orbitMaterial = new THREE.MeshBasicMaterial({
-      color: 0x22b8d6,
+      color: 0xf97316,
       transparent: true,
       opacity: 0.32,
       depthWrite: false,
@@ -888,7 +888,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
     robotRoot.add(orbit);
 
     const beamMaterial = new THREE.MeshBasicMaterial({
-      color: 0x67e8f9,
+      color: 0xffb86b,
       transparent: true,
       opacity: 0.08,
       blending: THREE.AdditiveBlending,
@@ -913,7 +913,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
     const particleGeometry = new THREE.BufferGeometry();
     particleGeometry.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
     const particleMaterial = new THREE.PointsMaterial({
-      color: 0x38bdf8,
+      color: 0xfb923c,
       size: 0.045,
       transparent: true,
       opacity: 0.38,
@@ -1582,7 +1582,7 @@ export function HoloboxThreeRobotPage({ script }: HoloboxThreeRobotPageProps) {
       coreRotation += delta * (0.4 + smoothedAudio * 0.85) * motion;
       coreRing.rotation.z = coreRotation;
       coreRing.scale.setScalar(1 + smoothedAudio * 0.12);
-      cyanMaterial.emissiveIntensity = 1.5 + smoothedAudio * 1.8;
+      orangeMaterial.emissiveIntensity = 1.5 + smoothedAudio * 1.8;
       orbitRotation += delta * (0.13 + smoothedAudio * 0.3) * motion;
       orbit.rotation.z = orbitRotation;
       orbitMaterial.opacity = 0.22 + smoothedAudio * 0.34;

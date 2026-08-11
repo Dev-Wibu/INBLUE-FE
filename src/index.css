@@ -3435,12 +3435,12 @@
   border: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
-  color: #075985;
+  color: #9a3412;
   font-size: 0.78rem;
   font-weight: 800;
   line-height: 1;
   box-shadow:
-    0 0 0 1px rgba(14, 165, 233, 0.24),
+    0 0 0 1px rgba(249, 115, 22, 0.24),
     0 6px 8px rgba(15, 23, 42, 0.1);
   backdrop-filter: blur(10px);
   cursor: pointer;
@@ -3453,22 +3453,22 @@
 
 .holobox-dance-button:hover,
 .holobox-dance-button:focus-visible {
-  background: #e6fbff;
-  color: #03637a;
+  background: #fff4e6;
+  color: #7c2d12;
   transform: translateY(-1px);
   outline: none;
   box-shadow:
-    0 0 0 1px rgba(8, 145, 178, 0.38),
-    0 8px 10px rgba(8, 145, 178, 0.15);
+    0 0 0 1px rgba(249, 115, 22, 0.38),
+    0 8px 10px rgba(249, 115, 22, 0.15);
 }
 
 .holobox-dance-button.is-active {
-  background: #06b6d4;
+  background: #f97316;
   color: #ffffff;
   box-shadow:
-    0 0 0 1px rgba(6, 182, 212, 0.45),
-    0 8px 10px rgba(8, 145, 178, 0.22),
-    0 0 18px rgba(34, 211, 238, 0.38);
+    0 0 0 1px rgba(249, 115, 22, 0.45),
+    0 8px 10px rgba(194, 65, 12, 0.22),
+    0 0 18px rgba(251, 146, 60, 0.38);
 }
 
 @media (max-width: 560px) {
