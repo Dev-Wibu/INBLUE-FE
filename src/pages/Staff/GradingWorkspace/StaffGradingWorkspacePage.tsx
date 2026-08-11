@@ -1131,9 +1131,12 @@ export function StaffGradingWorkspacePage() {
   // Falls back to inferRoundType() (heuristic on submission data) when both
   // the BE fields and JD rounds are unavailable, so we always have a label.
   const activeRound = useMemo(() => {
+    const detailRoundId = resolvedStaffDetail?.roundId;
+
+    // 1. BE-embedded roundType/roundName on detail row (BE patch) — use them directly
     if (detailAny?.roundType || detailAny?.roundName) {
       return {
-        id: resolvedStaffDetail?.roundId ?? 0,
+        id: detailRoundId ?? 0,
         name: detailAny.roundName ?? "",
         roundType: detailAny.roundType,
         roundOrder: detailAny.roundOrder ?? 1,
@@ -1142,24 +1145,33 @@ export function StaffGradingWorkspacePage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
     }
-    if (resolvedStaffDetail?.roundId && rounds.length > 0) {
-      const fromRounds = rounds.find((r) => r.id === resolvedStaffDetail.roundId);
+
+    // 2. Match detail's roundId against the JD rounds array
+    if (detailRoundId && rounds.length > 0) {
+      const fromRounds = rounds.find((r) => r.id === detailRoundId);
       if (fromRounds) return fromRounds;
     }
-    if (rounds.length > 0) return rounds[0];
-    // Last resort: build a synthetic round from inferred type + detail.
+
+    // 3. If no JD cache or roundId not found in JD rounds, fall back to
+    //    inferRoundType + construct a synthetic round so staff can still grade.
+    //    Do NOT default to rounds[0] — that picks the wrong round (often quiz).
     if (resolvedStaffDetail) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const inferredType = inferRoundType(resolvedStaffDetail as any);
       return {
-        id: resolvedStaffDetail.roundId ?? 0,
-        name: detailAny?.roundName ?? "",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        roundType: (inferRoundType(resolvedStaffDetail as any) ?? undefined) as any,
+        id: detailRoundId ?? 0,
+        name: inferredType ?? "",
+        roundType: inferredType,
         roundOrder: detailAny?.roundOrder ?? 1,
         passThreshold: detailAny?.passThreshold,
         description: detailAny?.roundDescription,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
     }
+
+    // 4. Last resort: use first JD round only when there is no detail row at all
+    if (rounds.length > 0) return rounds[0];
+
     return undefined;
   }, [rounds, resolvedStaffDetail, detailAny]);
 
