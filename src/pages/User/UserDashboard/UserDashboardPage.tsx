@@ -194,51 +194,64 @@ export function UserDashboardPage() {
       ? activeTab
       : DEFAULT_TAB;
 
-  // Find current title and category for header (Admin style with dynamic subtabs & drill-down details)
-  const { currentTitle, currentCategory } = useMemo(() => {
+  // Find current title, parent title, and category for header (Admin style with dynamic subtabs & drill-down details)
+  const { currentTitle, parentTitle, currentCategory } = useMemo(() => {
     const searchParams = new URLSearchParams(location.search);
 
     // 1. Account Subtabs & Change Password
     if (location.pathname.startsWith("/user/account/change-password")) {
-      return { currentTitle: t("common.changePassword"), currentCategory: t("common.account") };
+      return {
+        currentTitle: t("common.changePassword", "Đổi mật khẩu"),
+        parentTitle: t("common.account", "Tài khoản"),
+        currentCategory: t("common.user", "User"),
+      };
     }
 
     if (location.pathname.startsWith("/user/account")) {
       const subtab = searchParams.get("subtab");
+      const accountParent = t("common.account", "Tài khoản");
+      const userCategory = t("common.user", "User");
+
       if (subtab === "notifications") {
         return {
           currentTitle: t("common.notification", "Thông báo"),
-          currentCategory: t("common.account", "Tài khoản"),
+          parentTitle: accountParent,
+          currentCategory: userCategory,
         };
       }
       if (subtab === "jdPurchases") {
         return {
           currentTitle: t("payment.jdPurchaseHistory", "Lịch sử mua gói JD"),
-          currentCategory: t("common.account", "Tài khoản"),
+          parentTitle: accountParent,
+          currentCategory: userCategory,
         };
       }
       if (subtab === "editProfile") {
         return {
           currentTitle: t("userAccount.editProfile", "Chỉnh sửa hồ sơ"),
-          currentCategory: t("common.account", "Tài khoản"),
+          parentTitle: accountParent,
+          currentCategory: userCategory,
         };
       }
       if (subtab === "settings") {
         return {
           currentTitle: t("userAccount.quickSettings", "Cài đặt"),
-          currentCategory: t("common.account", "Tài khoản"),
+          parentTitle: accountParent,
+          currentCategory: userCategory,
         };
       }
       return {
         currentTitle: t("common.candidateProfile", "Hồ sơ ứng viên"),
-        currentCategory: t("common.account", "Tài khoản"),
+        parentTitle: accountParent,
+        currentCategory: userCategory,
       };
     }
 
     if (location.pathname.startsWith("/user/settings")) {
       return {
         currentTitle: t("common.settings", "Cài đặt"),
-        currentCategory: t("common.account", "Tài khoản"),
+        parentTitle: t("common.account", "Tài khoản"),
+        currentCategory: t("common.user", "User"),
       };
     }
 
@@ -249,7 +262,8 @@ export function UserDashboardPage() {
     ) {
       return {
         currentTitle: t("aiInterview.sessionDetails", "Chi tiết phiên phỏng vấn"),
-        currentCategory: t("common.aiInterview1", "Phỏng vấn AI"),
+        parentTitle: t("common.aiInterview1", "Phỏng vấn AI"),
+        currentCategory: t("common.user", "User"),
       };
     }
 
@@ -257,14 +271,16 @@ export function UserDashboardPage() {
     if (typedActiveTab === "companies" && searchParams.get("companyId")) {
       return {
         currentTitle: t("common.companyDetails", "Chi tiết công ty"),
-        currentCategory: t("common.companies", "Công ty"),
+        parentTitle: t("common.companies", "Công ty"),
+        currentCategory: t("common.user", "User"),
       };
     }
 
     if (typedActiveTab === "jobSearch" && searchParams.get("jobId")) {
       return {
         currentTitle: t("common.jobDetails", "Chi tiết việc làm"),
-        currentCategory: t("userDashboard.jobSearch", "Việc làm"),
+        parentTitle: t("userDashboard.jobSearch", "Việc làm"),
+        currentCategory: t("common.user", "User"),
       };
     }
 
@@ -272,11 +288,19 @@ export function UserDashboardPage() {
     for (const group of sidebarMenuGroups) {
       for (const item of group.items) {
         if (item.type === typedActiveTab) {
-          return { currentTitle: item.label, currentCategory: group.label };
+          return {
+            currentTitle: item.label,
+            parentTitle: undefined,
+            currentCategory: group.label || t("common.user", "User"),
+          };
         }
       }
     }
-    return { currentTitle: t("common.overview"), currentCategory: undefined };
+    return {
+      currentTitle: t("common.overview", "Tổng quan"),
+      parentTitle: undefined,
+      currentCategory: t("common.user", "User"),
+    };
   }, [typedActiveTab, sidebarMenuGroups, t, location.pathname, location.search]);
 
   const USER_SIDEBAR_LOGO = useMemo(
