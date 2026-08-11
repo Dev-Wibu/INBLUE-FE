@@ -26,6 +26,8 @@ import {
   Layers,
   Lock,
   MessageSquare,
+  OctagonX,
+  Play,
   RefreshCw,
   Save,
   Send,
@@ -464,43 +466,155 @@ function StaffGradingModal({
             </div>
           ) : (
             <div className="space-y-5">
-              {/* Decision Toggle */}
+              {/* Decision: Traffic Light / Arcade Game Style */}
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-slate-700 uppercase dark:text-slate-300">
                   <Zap className="h-3.5 w-3.5 text-indigo-500" />
                   {t("grading.decision", "Decision")}
                 </label>
 
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsPass(true)}
-                    className={cn(
-                      "flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 p-4 transition-all",
-                      isPass
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-emerald-300 hover:bg-emerald-50/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
-                    )}>
-                    <CheckCircle2 className={cn("h-5 w-5", isPass ? "text-emerald-500" : "")} />
-                    <span className="font-bold">
-                      {t("userApplicationhistory.passed", "PASSED")}
-                    </span>
-                  </button>
+                {/* Arcade Cabinet Housing */}
+                <div className="traffic-light-cabinet relative overflow-hidden rounded-3xl border-4 border-slate-200 bg-gradient-to-b from-slate-50 via-white to-slate-100 p-6 shadow-xl shadow-slate-300/40 dark:border-slate-900 dark:bg-gradient-to-b dark:from-slate-800 dark:via-slate-900 dark:to-black dark:shadow-2xl dark:shadow-black/40">
+                  {/* Scanline overlay (dark only) */}
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-0 dark:opacity-10"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 3px)",
+                    }}
+                  />
 
-                  <button
-                    type="button"
-                    onClick={() => setIsPass(false)}
-                    className={cn(
-                      "flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 p-4 transition-all",
-                      !isPass
-                        ? "border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-rose-300 hover:bg-rose-50/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
-                    )}>
-                    <XCircle className={cn("h-5 w-5", !isPass ? "text-rose-500" : "")} />
-                    <span className="font-bold">
-                      {t("userApplicationhistory.failed", "FAILED")}
+                  {/* Inner glow */}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
+
+                  <div className="relative flex items-center justify-around gap-6">
+                    {/* PASS - GREEN LIGHT */}
+                    <button
+                      type="button"
+                      onClick={() => setIsPass(true)}
+                      className="group relative flex flex-col items-center gap-3 transition-transform hover:scale-105 active:scale-95">
+                      <div
+                        className={cn(
+                          "traffic-light-bulb",
+                          isPass ? "traffic-light-bulb--green-on" : "traffic-light-bulb--off"
+                        )}
+                        style={{ color: "#22c55e" }}>
+                        <Play
+                          className={cn(
+                            "h-7 w-7 transition-all",
+                            isPass
+                              ? "text-emerald-950 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                              : "text-slate-400 opacity-50 dark:text-slate-600 dark:opacity-40"
+                          )}
+                          fill={isPass ? "currentColor" : "none"}
+                        />
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <span
+                          className={cn(
+                            "text-xs font-black tracking-[0.2em] uppercase transition-all",
+                            isPass
+                              ? "decision-go-text text-emerald-500 drop-shadow-[0_0_12px_rgba(74,222,128,0.6)] dark:text-emerald-400 dark:drop-shadow-[0_0_12px_rgba(74,222,128,0.8)]"
+                              : "text-slate-400 opacity-60 dark:text-slate-500 dark:opacity-50"
+                          )}>
+                          {t("userApplicationhistory.passed", "PASSED")}
+                        </span>
+                        <span
+                          className={cn(
+                            "rounded-full px-3 py-0.5 text-[10px] font-bold transition-all",
+                            isPass
+                              ? "border border-emerald-400/60 bg-emerald-50 text-emerald-700 dark:border-emerald-400/50 dark:bg-emerald-500/20 dark:text-emerald-300"
+                              : "border border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
+                          )}>
+                          GO!
+                        </span>
+                      </div>
+                      {isPass && (
+                        <div className="absolute -inset-4 -z-10 rounded-full bg-emerald-400/30 blur-2xl dark:bg-emerald-500/20" />
+                      )}
+                    </button>
+
+                    {/* Divider */}
+                    <div className="flex h-32 w-px flex-col items-center justify-center gap-1">
+                      <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-600">
+                        OR
+                      </span>
+                      <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                      <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                      <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                    </div>
+
+                    {/* FAIL - RED LIGHT */}
+                    <button
+                      type="button"
+                      onClick={() => setIsPass(false)}
+                      className="group relative flex flex-col items-center gap-3 transition-transform hover:scale-105 active:scale-95">
+                      <div
+                        className={cn(
+                          "traffic-light-bulb",
+                          !isPass ? "traffic-light-bulb--red-on" : "traffic-light-bulb--off"
+                        )}
+                        style={{ color: "#ef4444" }}>
+                        <OctagonX
+                          className={cn(
+                            "h-7 w-7 transition-all",
+                            !isPass
+                              ? "text-rose-950 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                              : "text-slate-400 opacity-50 dark:text-slate-600 dark:opacity-40"
+                          )}
+                          strokeWidth={3}
+                        />
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <span
+                          className={cn(
+                            "text-xs font-black tracking-[0.2em] uppercase transition-all",
+                            !isPass
+                              ? "decision-stop-text text-rose-500 drop-shadow-[0_0_12px_rgba(248,113,113,0.6)] dark:text-rose-400 dark:drop-shadow-[0_0_12px_rgba(248,113,113,0.8)]"
+                              : "text-slate-400 opacity-60 dark:text-slate-500 dark:opacity-50"
+                          )}>
+                          {t("userApplicationhistory.failed", "FAILED")}
+                        </span>
+                        <span
+                          className={cn(
+                            "rounded-full px-3 py-0.5 text-[10px] font-bold transition-all",
+                            !isPass
+                              ? "border border-rose-400/60 bg-rose-50 text-rose-700 dark:border-rose-400/50 dark:bg-rose-500/20 dark:text-rose-300"
+                              : "border border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
+                          )}>
+                          STOP!
+                        </span>
+                      </div>
+                      {!isPass && (
+                        <div className="absolute -inset-4 -z-10 rounded-full bg-rose-400/30 blur-2xl dark:bg-rose-500/20" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Arcade decoration: status bar */}
+                  <div className="relative mt-5 flex items-center justify-between rounded-xl border border-slate-200 bg-white/80 px-4 py-2 dark:border-slate-700/50 dark:bg-slate-950/80">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={cn(
+                          "h-2 w-2 rounded-full transition-all",
+                          isPass
+                            ? "bg-emerald-500 shadow-[0_0_8px_#22c55e] dark:bg-emerald-400"
+                            : "bg-rose-500 shadow-[0_0_8px_#ef4444] dark:bg-rose-400"
+                        )}
+                      />
+                      <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-slate-400">
+                        {isPass
+                          ? t("staffGrading.decisionPassHint", "Candidate meets requirements")
+                          : t(
+                              "staffGrading.decisionFailHint",
+                              "Candidate does not meet requirements"
+                            )}
+                      </span>
+                    </div>
+                    <span className="font-mono text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                      {isPass ? "► PLAY" : "■ HALT"}
                     </span>
-                  </button>
+                  </div>
                 </div>
               </div>
 
