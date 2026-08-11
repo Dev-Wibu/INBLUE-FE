@@ -403,6 +403,7 @@ export function UserDashboardPage() {
       <div className="relative z-0 flex flex-1 flex-col overflow-x-hidden">
         <UserHeader
           title={currentTitle}
+          parentTitle={parentTitle}
           category={currentCategory}
           onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           isSidebarCollapsed={isSidebarCollapsed}

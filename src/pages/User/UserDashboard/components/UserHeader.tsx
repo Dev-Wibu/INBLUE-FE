@@ -37,6 +37,7 @@ import { useNavigate } from "react-router-dom";
 
 interface UserHeaderProps {
   title: string;
+  parentTitle?: string;
   category?: string;
   onToggleSidebar: () => void;
   isSidebarCollapsed: boolean;
@@ -97,7 +98,7 @@ const STATIC_NAVIGATION: Array<{
   { labelKey: "common.account", defaultLabel: "Tài khoản", to: "/user/account", icon: UserCircle },
 ];
 
-export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps) {
+export function UserHeader({ title, parentTitle, category, onToggleSidebar }: UserHeaderProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -243,6 +244,18 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
                   {category || t("common.user", "User")}
                 </span>
               </li>
+              {parentTitle && (
+                <>
+                  <li>
+                    <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600" />
+                  </li>
+                  <li>
+                    <span className="text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
+                      {parentTitle}
+                    </span>
+                  </li>
+                </>
+              )}
               <li>
                 <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600" />
               </li>
