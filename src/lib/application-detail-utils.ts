@@ -27,15 +27,15 @@ export const HR_SCORING_REQUIRED_ROUND_TYPES = ["CODING", "MENTOR_REVIEW", "CV_S
 export function inferRoundType(detail: ApplicationDetail): string | null {
   if (!detail) return null;
 
-  if (detail.aiInterviewSessionId != null || detail.sessionId != null) {
-    return "AI_INTERVIEW";
-  }
   if (
     detail.mentorReview != null ||
     detail.mentorId != null ||
     (detail.assignedMentorIds && detail.assignedMentorIds.length > 0)
   ) {
     return "MENTOR_REVIEW";
+  }
+  if (detail.aiInterviewSessionId != null || detail.sessionId != null) {
+    return "AI_INTERVIEW";
   }
 
   const data = detail.submissionData as SubmissionData | undefined;

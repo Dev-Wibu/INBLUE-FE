@@ -57,10 +57,11 @@ export function RoundWorkspaceDispatcher({
 
   const isCurrent = !isCompleted && roundOrder === currentRoundOrder;
 
-  // Prefer BE-provided roundType, fall back to inferRoundType when BE sends
-  // incorrect data (e.g., roundType="QUIZ" on an Email Simulator detail).
+  // The JD round is the source of truth for the workspace component. A Mentor
+  // interview also has a sessionId, so inferring from ApplicationDetail first
+  // would incorrectly route it to AiInterviewModule.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const type = (inferRoundType(detail as any) ?? round.roundType ?? "QUIZ")
+  const type = (round.roundType ?? inferRoundType(detail as any) ?? "QUIZ")
     .toUpperCase()
     .replace("MENTROR", "MENTOR");
 
