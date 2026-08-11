@@ -269,21 +269,21 @@ function AiInterviewSubheader({
         {effectiveResult === "PASSED" && (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-2xs dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <span>KẾT QUẢ: PASSED</span>
+            <span>{t("userApplication.aiInterview.resultPassed", "KẾT QUẢ: PASSED")}</span>
           </span>
         )}
 
         {effectiveResult === "REJECT" && (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-xs font-extrabold text-rose-700 shadow-2xs dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-300">
             <X className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-            <span>KẾT QUẢ: REJECT</span>
+            <span>{t("userApplication.aiInterview.resultReject", "KẾT QUẢ: REJECT")}</span>
           </span>
         )}
 
         {effectiveResult === "CONSIDER" && (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-extrabold text-amber-700 shadow-2xs dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-300">
             <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <span>KẾT QUẢ: CONSIDER</span>
+            <span>{t("userApplication.aiInterview.resultConsider", "KẾT QUẢ: CONSIDER")}</span>
           </span>
         )}
 
@@ -291,7 +291,7 @@ function AiInterviewSubheader({
           (isCompleted || status === "COMPLETED" || status === "AI_EVALUATED") && (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-2xs dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300">
               <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <span>KẾT QUẢ: HOÀN THÀNH</span>
+              <span>{t("userApplication.aiInterview.resultCompleted", "KẾT QUẢ: HOÀN THÀNH")}</span>
             </span>
           )}
 
@@ -367,7 +367,7 @@ function KioskCard({
   );
 }
 
-function ScheduleList({ schedules, loading }: { schedules: KioskSchedule[]; loading: boolean }) {
+function ScheduleList({ schedules, loading }: { schedules: KioskSchedule[]; loading?: boolean }) {
   const { t } = useTranslation();
 
   if (loading) {
@@ -418,14 +418,17 @@ function ScheduleList({ schedules, loading }: { schedules: KioskSchedule[]; load
                   ? "text-indigo-700 dark:text-indigo-200"
                   : "text-slate-400 dark:text-slate-500"
               )}>
-              {hasSchedule
-                ? activeSchedules
+              {(() => {
+                if (hasSchedule) {
+                  return activeSchedules
                     .map(
                       (schedule) =>
                         `${formatHourMinute(schedule.openTime)} - ${formatHourMinute(schedule.closeTime)}`
                     )
-                    .join(", ")
-                : "Không mở"}
+                    .join(", ");
+                }
+                return t("userApplication.aiInterview.closed", "Không mở");
+              })()}
             </p>
           </div>
         );
@@ -536,8 +539,10 @@ function KioskPinDialog({
           <div className="mt-4 flex items-start gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm leading-6 text-indigo-800 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-100">
             <Mail className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-300" />
             <p>
-              Thông tin chi tiết cũng sẽ được gửi qua email hoặc hộp thư thông báo. Chúc bạn làm bài
-              thật tốt, bình tĩnh trả lời rõ ràng và đến sớm trước giờ hẹn 10-15 phút nhé.
+              {t(
+                "userApplication.aiInterview.pinDialogNote",
+                "Thông tin chi tiết cũng sẽ được gửi qua email hoặc hộp thư thông báo. Chúc bạn làm bài thật tốt, bình tĩnh trả lời rõ ràng và đến sớm trước giờ hẹn 10-15 phút nhé."
+              )}
             </p>
           </div>
         </div>
@@ -1007,7 +1012,10 @@ function AiInterviewQuestionsTab({
             <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo chủ đề, câu hỏi, câu trả lời, từ khóa..."
+              placeholder={t(
+                "userApplication.aiInterview.searchPlaceholder",
+                "Tìm kiếm theo chủ đề, câu hỏi, câu trả lời, từ khóa..."
+              )}
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               className="h-9 w-full rounded-xl border-slate-200 bg-slate-50/50 pr-9 pl-10 text-xs shadow-none transition-all placeholder:text-slate-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-950/50 dark:focus:bg-slate-950"
@@ -1016,7 +1024,7 @@ function AiInterviewQuestionsTab({
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                aria-label="Xóa nội dung tìm kiếm"
+                aria-label={t("userApplication.aiInterview.clearSearch", "Xóa nội dung tìm kiếm")}
                 className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:hover:bg-slate-800 dark:hover:text-slate-200">
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -1201,8 +1209,12 @@ function AiInterviewQuestionsTab({
                         <div className="space-y-1.5 border-l-2 border-indigo-500/80 py-0.5 pl-4">
                           <div className="flex items-center justify-between text-xs font-extrabold text-slate-800 dark:text-slate-200">
                             <span className="flex items-center gap-1.5">
-                              <Mic className="h-4 w-4 text-indigo-500" /> Trả lời của ứng viên (Câu
-                              chính #{mainQ.questionOrder ?? 1}):
+                              <Mic className="h-4 w-4 text-indigo-500" />{" "}
+                              {t(
+                                "userApplication.aiInterview.candidateAnswer",
+                                "Trả lời của ứng viên"
+                              )}{" "}
+                              (Câu chính #{mainQ.questionOrder ?? 1}):
                             </span>
                             <span className="text-xs font-bold text-slate-400">Ứng viên</span>
                           </div>
@@ -1289,8 +1301,12 @@ function AiInterviewQuestionsTab({
                                   {parsedSuggestion.keywords.length > 0 && (
                                     <div className="space-y-1.5">
                                       <span className="flex items-center gap-1 text-xs font-extrabold tracking-wider text-amber-900 uppercase dark:text-amber-300">
-                                        <Tag className="h-3.5 w-3.5 text-amber-500" /> Từ khóa trọng
-                                        tâm:
+                                        <Tag className="h-3.5 w-3.5 text-amber-500" />{" "}
+                                        {t(
+                                          "userApplication.aiInterview.importantKeywords",
+                                          "Từ khóa trọng tâm"
+                                        )}
+                                        :
                                       </span>
                                       <div className="flex flex-wrap items-center gap-1.5">
                                         {parsedSuggestion.keywords.map((kw, kwIdx) => (
@@ -1308,8 +1324,12 @@ function AiInterviewQuestionsTab({
                                   {parsedSuggestion.structureSteps.length > 0 && (
                                     <div className="space-y-1.5 border-l-2 border-slate-300 py-0.5 pl-4 dark:border-slate-700">
                                       <span className="flex items-center gap-1 text-xs font-extrabold text-slate-900 dark:text-slate-100">
-                                        <Lightbulb className="h-4 w-4 text-amber-500" /> Dàn ý trả
-                                        lời chuẩn:
+                                        <Lightbulb className="h-4 w-4 text-amber-500" />{" "}
+                                        {t(
+                                          "userApplication.aiInterview.standardAnswerOutline",
+                                          "Dàn ý trả lời chuẩn"
+                                        )}
+                                        :
                                       </span>
                                       <div className="space-y-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                                         {parsedSuggestion.structureSteps.map((step, sIdx) => (
@@ -1576,21 +1596,37 @@ function AiInterviewResultView({
 
     return [
       {
-        label: "Kỹ năng Chuyên môn cốt lõi (Technical Core)",
+        label: t(
+          "userApplication.aiInterview.technicalCore",
+          "Kỹ năng Chuyên môn cốt lõi (Technical Core)"
+        ),
         score: Math.round(coreAvg * 10),
         color: "bg-indigo-600",
       },
       {
-        label: "Tư duy Phản biện & Đào sâu (Problem Solving)",
+        label: t(
+          "userApplication.aiInterview.problemSolving",
+          "Tư duy Phản biện & Đào sâu (Problem Solving)"
+        ),
         score: Math.round(followAvg * 10),
         color: "bg-purple-600",
       },
       {
-        label: "Độ chính xác thuật ngữ (Terminology)",
+        label: t(
+          "userApplication.aiInterview.terminologyAccuracy",
+          "Độ chính xác thuật ngữ (Terminology)"
+        ),
         score: termAccuracy,
         color: "bg-emerald-600",
       },
-      { label: "Phong thái & Giao tiếp (Communication)", score: commScore, color: "bg-amber-600" },
+      {
+        label: t(
+          "userApplication.aiInterview.communication",
+          "Phong thái & Giao tiếp (Communication)"
+        ),
+        score: commScore,
+        color: "bg-amber-600",
+      },
     ];
   }, [questions, aiScoreVal]);
 
@@ -1663,7 +1699,9 @@ function AiInterviewResultView({
               <Card className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/60">
                 <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                   <Clock3 className="h-4 w-4 text-indigo-500" />
-                  <span className="text-[11px] font-bold">Thời lượng</span>
+                  <span className="text-[11px] font-bold">
+                    {t("userApplication.aiInterview.duration", "Thời lượng")}
+                  </span>
                 </div>
                 <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
                   {sessionDurationText || "15 phút"}
@@ -1673,7 +1711,9 @@ function AiInterviewResultView({
               <Card className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/60">
                 <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                   <MessageSquare className="h-4 w-4 text-purple-500" />
-                  <span className="text-[11px] font-bold">Tổng số câu</span>
+                  <span className="text-[11px] font-bold">
+                    {t("userApplication.aiInterview.totalQuestions", "Tổng số câu")}
+                  </span>
                 </div>
                 <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
                   {questions.length} câu hỏi
@@ -1683,7 +1723,9 @@ function AiInterviewResultView({
               <Card className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/60">
                 <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                   <SlidersHorizontal className="h-4 w-4 text-emerald-500" />
-                  <span className="text-[11px] font-bold">Chiến thuật</span>
+                  <span className="text-[11px] font-bold">
+                    {t("userApplication.aiInterview.strategy", "Chiến thuật")}
+                  </span>
                 </div>
                 <p className="mt-1 truncate text-xs font-extrabold text-slate-900 dark:text-white">
                   {sessionData?.mode || "STANDARD_MOCK"}
@@ -1693,7 +1735,9 @@ function AiInterviewResultView({
               <Card className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/60">
                 <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                   <Tag className="h-4 w-4 text-amber-500" />
-                  <span className="text-[11px] font-bold">Từ khóa cốt lõi</span>
+                  <span className="text-[11px] font-bold">
+                    {t("userApplication.aiInterview.coreKeywords", "Từ khóa cốt lõi")}
+                  </span>
                 </div>
                 <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
                   {allExtractedKeywords.length} thuật ngữ
@@ -1711,10 +1755,16 @@ function AiInterviewResultView({
                     </div>
                     <div>
                       <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
-                        Phân tích Chỉ số Năng lực Đa chiều
+                        {t(
+                          "userApplication.aiInterview.multidimensionalCompetencyAnalysis",
+                          "Phân tích Chỉ số Năng lực Đa chiều"
+                        )}
                       </h4>
                       <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                        Đánh giá chi tiết dựa trên nội dung & phong thái trả lời
+                        {t(
+                          "userApplication.aiInterview.detailedEvaluationBasedOnContentAndResponseStyle",
+                          "Đánh giá chi tiết dựa trên nội dung & phong thái trả lời"
+                        )}
                       </p>
                     </div>
                   </div>
@@ -1901,9 +1951,11 @@ function AiInterviewResultView({
             {questions.length > 0 && (
               <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-xs dark:border-slate-800 dark:bg-slate-950/40">
                 <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                  <span>Tổng số câu hỏi:</span>
+                  <span>
+                    {t("userApplication.aiInterview.totalQuestionsLabel", "Tổng số câu hỏi:")}
+                  </span>
                   <span className="font-extrabold text-slate-950 dark:text-white">
-                    {questions.length} câu
+                    {questions.length} {t("userApplication.aiInterview.questions", "câu")}
                   </span>
                 </div>
               </div>
@@ -2001,6 +2053,7 @@ export function AiInterviewModule({
   isCurrent,
   onSuccess,
 }: AiInterviewModuleProps) {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -2142,7 +2195,12 @@ export function AiInterviewModule({
     if (booking?.sessionKey) {
       setPinDialogOpen(true);
     }
-    toast.success("Đã đặt lịch Kiosk. Mã PIN đã được gửi qua thông báo.");
+    toast.success(
+      t(
+        "userApplication.aiInterview.bookingConfirmed",
+        "Đã đặt lịch Kiosk. Mã PIN đã được gửi qua thông báo."
+      )
+    );
     onSuccess?.();
   };
 
@@ -2151,9 +2209,14 @@ export function AiInterviewModule({
     if (!sessionKey) return;
     try {
       await navigator.clipboard.writeText(sessionKey);
-      toast.success("Đã copy mã PIN Kiosk.");
+      toast.success(t("userApplication.aiInterview.pinCopied", "Đã copy mã PIN Kiosk."));
     } catch {
-      toast.error("Không thể copy mã PIN. Bạn hãy copy thủ công nhé.");
+      toast.error(
+        t(
+          "userApplication.aiInterview.copyFailed",
+          "Không thể copy mã PIN. Bạn hãy copy thủ công nhé."
+        )
+      );
     }
   };
 
@@ -2231,10 +2294,13 @@ export function AiInterviewModule({
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-black text-slate-950 dark:text-white">
                       <MapPin className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
-                      Chọn trạm Kiosk
+                      {t("userApplication.aiInterview.selectKiosk", "Chọn trạm Kiosk")}
                     </h3>
                     <p className="mt-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                      Ưu tiên trạm gần bạn và có lịch hoạt động khớp với thời gian phỏng vấn.
+                      {t(
+                        "userApplication.aiInterview.selectKioskHint",
+                        "Ưu tiên trạm gần bạn và có lịch hoạt động khớp với thời gian phỏng vấn."
+                      )}
                     </p>
                   </div>
                   <Button
@@ -2243,7 +2309,7 @@ export function AiInterviewModule({
                     onClick={() => void refetchKiosks()}
                     className="h-8 gap-1.5 px-3 text-[11px] font-extrabold">
                     <RefreshCw className="h-3.5 w-3.5" />
-                    Làm mới Kiosk
+                    {t("userApplication.aiInterview.refreshKiosk", "Làm mới Kiosk")}
                   </Button>
                 </div>
               </div>
@@ -2260,16 +2326,22 @@ export function AiInterviewModule({
                   </div>
                 ) : kiosksError ? (
                   <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300">
-                    Không thể tải danh sách Kiosk. Vui lòng làm mới lại.
+                    {t(
+                      "userApplication.aiInterview.cannotLoadKiosks",
+                      "Không thể tải danh sách Kiosk. Vui lòng làm mới lại."
+                    )}
                   </div>
                 ) : kiosks.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center dark:border-slate-800">
                     <Laptop className="mx-auto h-10 w-10 text-slate-400" />
                     <h4 className="mt-3 text-sm font-extrabold text-slate-900 dark:text-white">
-                      Chưa có Kiosk khả dụng
+                      {t("userApplication.aiInterview.noKiosksAvailable", "Chưa có Kiosk khả dụng")}
                     </h4>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      Hệ thống chưa mở trạm Kiosk để đặt lịch cho vòng này.
+                      {t(
+                        "userApplication.aiInterview.kiosksNotConfigured",
+                        "Hệ thống chưa mở trạm Kiosk để đặt lịch cho vòng này."
+                      )}
                     </p>
                   </div>
                 ) : (
@@ -2292,10 +2364,13 @@ export function AiInterviewModule({
               <div className="border-b border-slate-200 px-4 pt-3 pb-3.5 sm:px-5 sm:pt-3 sm:pb-4 dark:border-slate-800">
                 <h3 className="flex items-center gap-2 text-sm font-black text-slate-950 dark:text-white">
                   <Clock3 className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
-                  Lịch hoạt động của trạm
+                  {t("userApplication.aiInterview.kioskSchedule", "Lịch hoạt động của trạm")}
                 </h3>
                 <p className="mt-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  Các khung hoạt động dùng để sinh slot trống theo từng ngày.
+                  {t(
+                    "userApplication.aiInterview.scheduleHint",
+                    "Các khung hoạt động dùng để sinh slot trống theo từng ngày."
+                  )}
                 </p>
               </div>
               <div className="p-4 sm:p-5">
@@ -2325,10 +2400,19 @@ export function AiInterviewModule({
               disabled={!selectedKioskId || !isCurrent || hasBookedSlot}
               emptyMessage={
                 slotsError
-                  ? "Không thể tải slot trống của Kiosk."
-                  : "Hãy chọn một trạm Kiosk để xem slot."
+                  ? t(
+                      "userApplication.aiInterview.cannotLoadSlots",
+                      "Không thể tải slot trống của Kiosk."
+                    )
+                  : t(
+                      "userApplication.aiInterview.selectKioskFirst",
+                      "Hãy chọn một trạm Kiosk để xem slot."
+                    )
               }
-              noSlotsMessage="Ngày này chưa có slot trống. Bạn thử chọn ngày khác nhé."
+              noSlotsMessage={t(
+                "userApplication.aiInterview.noSlotsForDay",
+                "Ngày này chưa có slot trống. Bạn thử chọn ngày khác nhé."
+              )}
               className="border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40"
             />
           </div>
@@ -2338,10 +2422,13 @@ export function AiInterviewModule({
               <div className="border-b border-slate-200 p-5 dark:border-slate-800">
                 <h3 className="flex items-center gap-2 text-base font-extrabold text-slate-950 dark:text-white">
                   <CalendarClock className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
-                  Tóm tắt đặt lịch
+                  {t("userApplication.aiInterview.bookingSummary", "Tóm tắt đặt lịch")}
                 </h3>
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                  Kiểm tra lại thông tin trước khi xác nhận slot Kiosk.
+                  {t(
+                    "userApplication.aiInterview.bookingSummaryHint",
+                    "Kiểm tra lại thông tin trước khi xác nhận slot Kiosk."
+                  )}
                 </p>
               </div>
 
@@ -2349,27 +2436,37 @@ export function AiInterviewModule({
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/40">
                   <SummaryItem
                     icon={<MapPin className="h-4 w-4" />}
-                    label="Kiosk"
-                    value={selectedKiosk?.name ?? "Chưa chọn"}
+                    label={t("userApplication.aiInterview.kiosk", "Kiosk")}
+                    value={
+                      selectedKiosk?.name ??
+                      t("userApplication.aiInterview.notSelected", "Chưa chọn")
+                    }
                   />
                   <SummaryItem
                     icon={<MapPin className="h-4 w-4" />}
-                    label="Địa điểm"
-                    value={selectedKiosk?.location ?? "Chưa cập nhật"}
+                    label={t("userApplication.aiInterview.location", "Địa điểm")}
+                    value={
+                      selectedKiosk?.location ??
+                      t("userApplication.aiInterview.locationNotUpdated", "Chưa cập nhật")
+                    }
                   />
                   <SummaryItem
                     icon={<CalendarClock className="h-4 w-4" />}
-                    label="Thời gian"
+                    label={t("userApplication.aiInterview.time", "Thời gian")}
                     value={selectedSlot ? formatDateTime(selectedSlot.startTime) : "Chưa chọn"}
                   />
                   <SummaryItem
                     icon={<Clock3 className="h-4 w-4" />}
-                    label="Thời lượng"
-                    value={selectedDuration ? `${selectedDuration} phút` : "Theo slot"}
+                    label={t("userApplication.aiInterview.duration", "Thời lượng")}
+                    value={
+                      selectedDuration
+                        ? `${selectedDuration} ${t("userApplication.aiInterview.minutes", "phút")}`
+                        : t("userApplication.aiInterview.perSlot", "Theo slot")
+                    }
                   />
                   <SummaryItem
                     icon={<Cpu className="h-4 w-4" />}
-                    label="Vị trí"
+                    label={t("userApplication.aiInterview.position", "Vị trí")}
                     value={jdInfo?.title ?? "AI Interview"}
                   />
                 </div>
@@ -2378,13 +2475,16 @@ export function AiInterviewModule({
                   <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center dark:border-emerald-900/60 dark:bg-emerald-950/30">
                     <KeyRound className="mx-auto h-5 w-5 text-emerald-700 dark:text-emerald-300" />
                     <p className="mt-2 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                      Mã PIN vào Kiosk
+                      {t("userApplication.aiInterview.kioskPinCode", "Mã PIN vào Kiosk")}
                     </p>
                     <p className="mt-1 font-mono text-3xl font-black tracking-[0.24em] text-emerald-800 dark:text-emerald-200">
                       {activeBooking.sessionKey}
                     </p>
                     <p className="mt-2 text-xs leading-5 text-emerald-700/80 dark:text-emerald-300/80">
-                      Giữ mã này để nhập tại trạm Kiosk. Mã cũng được gửi qua thông báo.
+                      {t(
+                        "userApplication.aiInterview.keepPinHint",
+                        "Giữ mã này để nhập tại trạm Kiosk. Mã cũng được gửi qua thông báo."
+                      )}
                     </p>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       <Button
@@ -2393,14 +2493,14 @@ export function AiInterviewModule({
                         onClick={handleCopySessionKey}
                         className="h-9 gap-2 border-emerald-300 bg-white/70 text-xs font-extrabold text-emerald-800 hover:bg-white dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
                         <Copy className="h-3.5 w-3.5" />
-                        Copy PIN
+                        {t("userApplication.aiInterview.copyPin", "Copy PIN")}
                       </Button>
                       <Button
                         type="button"
                         onClick={() => setPinDialogOpen(true)}
                         className="h-9 gap-2 bg-emerald-600 text-xs font-extrabold text-white hover:bg-emerald-700">
                         <KeyRound className="h-3.5 w-3.5" />
-                        Xem hướng dẫn
+                        {t("userApplication.aiInterview.viewInstructions", "Xem hướng dẫn")}
                       </Button>
                     </div>
                   </div>
@@ -2408,8 +2508,10 @@ export function AiInterviewModule({
                   <div className="mt-4 flex items-start gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-800 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-200">
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                     <p className="leading-6">
-                      Phòng AI chỉ mở tại Kiosk. Bạn cần đến đúng trạm, đúng giờ và nhập mã PIN để
-                      bắt đầu.
+                      {t(
+                        "userApplication.aiInterview.kioskOnlyNote",
+                        "Phòng AI chỉ mở tại Kiosk. Bạn cần đến đúng trạm, đúng giờ và nhập mã PIN để bắt đầu."
+                      )}
                     </p>
                   </div>
                 )}
@@ -2425,7 +2527,9 @@ export function AiInterviewModule({
                     ) : (
                       <KeyRound className="h-4 w-4" />
                     )}
-                    {pickSlotMutation.isPending ? "Đang đặt slot..." : "Xác nhận đặt slot Kiosk"}
+                    {pickSlotMutation.isPending
+                      ? t("userApplication.aiInterview.booking", "Đang đặt slot...")
+                      : t("userApplication.aiInterview.confirmBooking", "Xác nhận đặt slot Kiosk")}
                   </Button>
                 )}
 
