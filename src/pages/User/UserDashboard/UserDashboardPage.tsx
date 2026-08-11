@@ -480,7 +480,7 @@ export function UserDashboardPage() {
           ref={handleContentRef}
           className={cn(
             "flex-1 overflow-hidden",
-              typedActiveTab === "messenger" ||
+            typedActiveTab === "messenger" ||
               typedActiveTab === "mentors" ||
               typedActiveTab === "overview" ||
               typedActiveTab === "jobSearch" ||

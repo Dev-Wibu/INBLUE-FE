@@ -14,24 +14,12 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
-import {
-  Calendar,
-  ChevronRight,
-  LayoutDashboard,
-  Menu,
-  MessageSquare,
-  Newspaper,
-  Search,
-  Settings,
-  Star,
-  UserCircle,
-  Users,
-} from "lucide-react";
+import { ClipboardCheck, Home, LayoutDashboard, Menu, Search, Settings, User } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-interface MentorHeaderProps {
+interface StaffHeaderProps {
   title: string;
   parentTitle?: string;
   category?: string;
@@ -53,57 +41,23 @@ const STATIC_NAVIGATION: Array<{
   to: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
+  { labelKey: "common.home", defaultLabel: "Trang chủ", to: "/staff?tab=home", icon: Home },
   {
-    labelKey: "common.home",
-    defaultLabel: "Trang chủ",
-    to: "/mentor?tab=homeFeed",
-    icon: Newspaper,
-  },
-  {
-    labelKey: "common.overview",
+    labelKey: "common.dashboard",
     defaultLabel: "Tổng quan",
-    to: "/mentor?tab=overview",
+    to: "/staff?tab=dashboard",
     icon: LayoutDashboard,
   },
   {
-    labelKey: "common.interviewSession",
-    defaultLabel: "Buổi phỏng vấn",
-    to: "/mentor?tab=sessions",
-    icon: Calendar,
+    labelKey: "adminApplicationGrading.applicationGrading",
+    defaultLabel: "Chấm bài ứng tuyển",
+    to: "/staff?tab=applicationGrading",
+    icon: ClipboardCheck,
   },
-  {
-    labelKey: "common.students",
-    defaultLabel: "Sinh viên",
-    to: "/mentor?tab=students",
-    icon: Users,
-  },
-  {
-    labelKey: "mentorMentordashboard.reviewSent",
-    defaultLabel: "Đánh giá đã gửi",
-    to: "/mentor?tab=reviews",
-    icon: Star,
-  },
-  {
-    labelKey: "common.responseReceived",
-    defaultLabel: "Phản hồi nhận được",
-    to: "/mentor?tab=feedback",
-    icon: MessageSquare,
-  },
-  {
-    labelKey: "common.messages",
-    defaultLabel: "Tin nhắn",
-    to: "/mentor?tab=messenger",
-    icon: MessageSquare,
-  },
-  {
-    labelKey: "common.account",
-    defaultLabel: "Tài khoản",
-    to: "/mentor?tab=account",
-    icon: UserCircle,
-  },
+  { labelKey: "common.account", defaultLabel: "Tài khoản", to: "/staff/account", icon: User },
 ];
 
-export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: MentorHeaderProps) {
+export function StaffHeader({ title, parentTitle, category, onToggleSidebar }: StaffHeaderProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -111,7 +65,6 @@ export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: 
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 200);
 
-  // Keyboard shortcut Cmd+K or Ctrl+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -124,14 +77,7 @@ export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: 
   }, []);
 
   const navigationMatches = useMemo(() => {
-    if (!debouncedSearch.trim())
-      return STATIC_NAVIGATION.map<QuickSearchResult>((n) => ({
-        id: n.to,
-        label: t(n.labelKey, n.defaultLabel),
-        type: "navigation",
-        to: n.to,
-      }));
-
+    if (!debouncedSearch.trim()) return [];
     const q = debouncedSearch.toLowerCase();
     return STATIC_NAVIGATION.filter((n) => {
       const label = t(n.labelKey, n.defaultLabel);
@@ -143,6 +89,8 @@ export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: 
       to: n.to,
     }));
   }, [debouncedSearch, t]);
+
+  const totalResults = navigationMatches.length;
 
   const handleSelect = (to: string) => {
     setIsSearchOpen(false);
@@ -167,13 +115,23 @@ export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: 
             <ol role="list" className="flex items-center space-x-2 text-xs font-semibold">
               <li>
                 <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 dark:bg-slate-800/80 dark:text-slate-300">
-                  {category || t("common.mentor", "Mentor")}
+                  {category || t("common.staff", "Staff")}
                 </span>
               </li>
               {parentTitle && (
                 <>
                   <li>
-                    <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
                   </li>
                   <li>
                     <span className="text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
@@ -183,7 +141,17 @@ export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: 
                 </>
               )}
               <li>
-                <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
               </li>
               <li className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
@@ -241,14 +209,15 @@ export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: 
                   placeholder={t("common.quickSearch", "Tìm kiếm nhanh...")}
                 />
                 <CommandList className="max-h-[320px] p-1.5">
-                  {navigationMatches.length === 0 && (
+                  {!isSearchOpen && totalResults === 0 && null}
+                  {totalResults === 0 && debouncedSearch.length > 0 && (
                     <CommandEmpty>{t("common.noResults", "Không tìm thấy kết quả.")}</CommandEmpty>
                   )}
 
-                  {navigationMatches.length > 0 && (
+                  {totalResults > 0 && (
                     <>
                       <CommandSeparator className="my-1" />
-                      <CommandGroup heading={t("common.pages", "Trang Mentor")}>
+                      <CommandGroup heading={t("common.pages", "Trang")}>
                         {navigationMatches.map((n) => {
                           const navItem = STATIC_NAVIGATION.find((i) => i.to === n.to);
                           const IconComp = navItem?.icon || LayoutDashboard;
@@ -258,7 +227,7 @@ export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: 
                               value={`nav-${n.id}`}
                               onSelect={() => handleSelect(n.to)}
                               className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
-                              <IconComp className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                              <IconComp className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
                               <span className="ml-2 font-semibold text-slate-900 dark:text-slate-100">
                                 {n.label}
                               </span>
@@ -281,7 +250,7 @@ export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: 
           {/* Synchronized Action Controls Cluster */}
           <div className="flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-50/70 p-1 shadow-2xs transition-all dark:border-slate-800/80 dark:bg-slate-900/60">
             <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:transition-all [&_button]:hover:bg-white [&_button]:hover:shadow-2xs dark:[&_button]:hover:bg-slate-800">
-              <NotificationBell notificationsPath="/mentor?tab=notifications" />
+              <NotificationBell notificationsPath="/staff/account?subtab=notifications" />
             </div>
 
             <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:transition-all [&_button]:hover:bg-white [&_button]:hover:shadow-2xs dark:[&_button]:hover:bg-slate-800">

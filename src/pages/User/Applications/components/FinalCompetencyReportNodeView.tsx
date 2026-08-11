@@ -47,6 +47,14 @@ function compactSkillName(v: string) {
     .trim();
 }
 
+// Normalize raw skillArea/skillName from backend into a snake-cased key
+// suitable for use as a translation key suffix. Spaces are converted to
+// underscores and "Software" prefix is preserved so we can map values like
+// "Software Construction" -> "skill_Software_Construction".
+function skillAreaKey(v: string): string {
+  return v.replace(/\s+/g, "_").replace(/[^A-Za-z0-9_]/g, "");
+}
+
 function scoreColor(score: number) {
   if (score >= 70)
     return {
@@ -118,6 +126,7 @@ function ScoreBar({ score }: { score: number }) {
 // ─── Compact donut gauge ──────────────────────────────────────────────────────
 
 function Gauge({ score, size = 96 }: { score: number; size?: number }) {
+  const { t } = useTranslation();
   const r = 38;
   const circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
@@ -152,7 +161,9 @@ function Gauge({ score, size = 96 }: { score: number; size?: number }) {
         <span className={`text-xl leading-none font-bold tabular-nums ${text}`}>
           {Math.round(score)}
         </span>
-        <span className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">/100</span>
+        <span className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
+          {t("competencyReport.scoreOutOfHundred", "/100")}
+        </span>
       </div>
     </div>
   );
@@ -199,21 +210,22 @@ function CircleScore({ score, size = 48 }: { score: number; size?: number }) {
 // ─── Result pill ──────────────────────────────────────────────────────────────
 
 function ResultPill({ result }: { result?: string | null }) {
+  const { t } = useTranslation();
   if (result === "PASSED")
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-300 ring-inset dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800">
-        <CheckCircle className="h-3 w-3" /> Đạt
+        <CheckCircle className="h-3 w-3" /> {t("competencyReport.passedBadge", "Đạt")}
       </span>
     );
   if (result === "FAILED" || result === "REJECT")
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 ring-1 ring-rose-300 ring-inset dark:bg-rose-950/40 dark:text-rose-300 dark:ring-rose-800">
-        <XCircle className="h-3 w-3" /> Không đạt
+        <XCircle className="h-3 w-3" /> {t("competencyReport.failedBadge", "Không đạt")}
       </span>
     );
   return (
     <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 ring-inset dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">
-      Chưa có kết quả
+      {t("competencyReport.noResultBadge", "Chưa có kết quả")}
     </span>
   );
 }
@@ -245,7 +257,7 @@ export function FinalCompetencyReportNodeView({
 
   const loadReport = useCallback(async () => {
     if (!applicationId || applicationId <= 0) {
-      setError("Mã hồ sơ không hợp lệ.");
+      setError(t("competencyReport.invalidApplicationIdError", "Mã hồ sơ không hợp lệ."));
       setIsLoading(false);
       return;
     }
@@ -397,15 +409,21 @@ export function FinalCompetencyReportNodeView({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                BÁO CÁO NĂNG LỰC TỔNG KẾT AI
+                {t("competencyReport.reportTitle", "BÁO CÁO NĂNG LỰC TỔNG KẾT AI")}
               </span>
               <span className="text-slate-400">•</span>
               <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                Vòng {sortedRounds.length || 7}: Báo cáo năng lực
+                {t("competencyReport.roundLabel", {
+                  count: sortedRounds.length || 7,
+                  defaultValue: "Vòng {{count}}: Báo cáo năng lực",
+                })}
               </span>
             </div>
             <p className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-200">
-              Đánh giá tổng hợp năng lực ứng viên sau toàn bộ quá trình tuyển dụng.
+              {t(
+                "competencyReport.subtitle",
+                "Đánh giá tổng hợp năng lực ứng viên sau toàn bộ quá trình tuyển dụng."
+              )}
             </p>
           </div>
         </div>
@@ -424,20 +442,26 @@ export function FinalCompetencyReportNodeView({
                 <Gauge score={chart.overallScore} size={88} />
                 <div className="min-w-0">
                   <p className="max-w-[230px] text-base leading-snug font-bold tracking-tight text-slate-900 uppercase dark:text-white">
-                    Đánh giá trình độ hiện tại đang ở cấp độ nào?
+                    {t(
+                      "competencyReport.levelQuestionPrompt",
+                      "Đánh giá trình độ hiện tại đang ở cấp độ nào?"
+                    )}
                   </p>
                   <span
                     className={`mt-2.5 inline-flex rounded-md px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset ${badge}`}>
-                    {competencyLevelLabelVi[chart.overallLevel] ||
-                      competencyLevelLabel[chart.overallLevel] ||
-                      chart.overallLevel}
+                    {t(
+                      `competencyReport.level_${chart.overallLevel}`,
+                      competencyLevelLabelVi[chart.overallLevel] ||
+                        competencyLevelLabel[chart.overallLevel] ||
+                        chart.overallLevel
+                    )}
                   </span>
                   <div className="mt-2.5 flex items-baseline gap-2">
                     <span className={`text-xl font-black tabular-nums ${text}`}>
                       {chart.overallScore.toFixed(1)}
                     </span>
                     <span className="text-xs text-slate-600 dark:text-slate-400">
-                      Điểm tổng thể /100
+                      {t("competencyReport.overallScoreLabel", "Điểm tổng thể /100")}
                     </span>
                   </div>
                 </div>
@@ -452,7 +476,7 @@ export function FinalCompetencyReportNodeView({
           return (
             <div className="min-h-[200px] rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
               <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                Kỹ năng chuyên môn
+                {t("competencyReport.hardSkills", "Kỹ năng chuyên môn")}
               </p>
               <p className={`mt-2 text-3xl leading-none font-bold tabular-nums ${text}`}>
                 {technicalAvg}
@@ -461,7 +485,10 @@ export function FinalCompetencyReportNodeView({
                 {chart.technicalSkillAreas.slice(0, 3).map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <span className="w-24 shrink-0 truncate text-xs text-slate-700 dark:text-slate-300">
-                      {compactSkillName(item.skillArea)}
+                      {t(
+                        `competencyReport.skill_${skillAreaKey(item.skillArea)}`,
+                        compactSkillName(item.skillArea)
+                      )}
                     </span>
                     <div className="flex-1">
                       <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
@@ -478,7 +505,10 @@ export function FinalCompetencyReportNodeView({
                 ))}
                 {chart.technicalSkillAreas.length > 3 && (
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    +{chart.technicalSkillAreas.length - 3} kỹ năng khác
+                    {t("competencyReport.moreSkillsLabel", {
+                      count: chart.technicalSkillAreas.length - 3,
+                      defaultValue: "+{{count}} kỹ năng khác",
+                    })}
                   </p>
                 )}
               </div>
@@ -492,7 +522,7 @@ export function FinalCompetencyReportNodeView({
           return (
             <div className="min-h-[200px] rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
               <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                Kỹ năng mềm & thái độ
+                {t("competencyReport.softSkills", "Kỹ năng mềm & thái độ")}
               </p>
               <p className={`mt-2 text-3xl leading-none font-bold tabular-nums ${text}`}>
                 {behavioralAvg}
@@ -501,7 +531,10 @@ export function FinalCompetencyReportNodeView({
                 {chart.behavioralSkills.slice(0, 3).map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <span className="w-24 shrink-0 truncate text-xs text-slate-700 dark:text-slate-300">
-                      {compactSkillName(item.skillName)}
+                      {t(
+                        `competencyReport.skill_${skillAreaKey(item.skillName)}`,
+                        compactSkillName(item.skillName)
+                      )}
                     </span>
                     <div className="flex-1">
                       <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
@@ -518,7 +551,10 @@ export function FinalCompetencyReportNodeView({
                 ))}
                 {chart.behavioralSkills.length > 3 && (
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    +{chart.behavioralSkills.length - 3} kỹ năng khác
+                    {t("competencyReport.moreSkillsLabel", {
+                      count: chart.behavioralSkills.length - 3,
+                      defaultValue: "+{{count}} kỹ năng khác",
+                    })}
                   </p>
                 )}
               </div>
@@ -539,10 +575,10 @@ export function FinalCompetencyReportNodeView({
           <div className="relative z-10 flex items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300/90">
-                Điểm nổi bật
+                {t("competencyReport.topStrength", "Điểm nổi bật")}
               </p>
               <p className="mt-1 truncate text-sm font-bold text-slate-900 dark:text-slate-100">
-                {strongestSkill?.name ?? "Chưa có dữ liệu"}
+                {strongestSkill?.name ?? t("competencyReport.noData", "Chưa có dữ liệu")}
               </p>
             </div>
             <span className="shrink-0 text-2xl font-black text-emerald-600 tabular-nums dark:text-emerald-400">
@@ -558,10 +594,10 @@ export function FinalCompetencyReportNodeView({
           <div className="relative z-10 flex items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-semibold text-amber-800 dark:text-amber-300/90">
-                Ưu tiên phát triển
+                {t("competencyReport.topPriority", "Ưu tiên phát triển")}
               </p>
               <p className="mt-1 truncate text-sm font-bold text-slate-900 dark:text-slate-100">
-                {focusSkill?.name ?? "Chưa có dữ liệu"}
+                {focusSkill?.name ?? t("competencyReport.noData", "Chưa có dữ liệu")}
               </p>
             </div>
             <span className="shrink-0 text-2xl font-black text-amber-600 tabular-nums dark:text-amber-400">
@@ -585,14 +621,14 @@ export function FinalCompetencyReportNodeView({
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-indigo-500/15">
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Biểu đồ năng lực
+                  {t("competencyReport.chartTitle", "Biểu đồ năng lực")}
                 </h3>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  Tương quan giữa các nhóm kỹ năng
+                  {t("competencyReport.chartSubtitle", "Tương quan giữa các nhóm kỹ năng")}
                 </p>
               </div>
               <span className="rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
-                0—100
+                {t("competencyReport.scoreRangeBadge", "0—100")}
               </span>
             </div>
             {radarData.length > 0 ? (
@@ -656,14 +692,17 @@ export function FinalCompetencyReportNodeView({
                           color: "#e2e8f0",
                           fontSize: 12,
                         }}
-                        formatter={(v) => [`${Number(v).toFixed(0)}/100`, "Điểm"]}
+                        formatter={(v) => [
+                          `${Number(v).toFixed(0)}/100`,
+                          t("competencyReport.tooltipScoreLabel", "Điểm"),
+                        ]}
                       />
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 text-center dark:border-indigo-400/25 dark:bg-indigo-500/[0.08]">
                   <p className="text-[11px] font-bold tracking-[0.18em] text-indigo-700 dark:text-indigo-300">
-                    TỔNG QUAN
+                    {t("competencyReport.overviewLabel", "TỔNG QUAN")}
                   </p>
                   <p
                     className={`mt-3 text-4xl leading-none font-black tabular-nums ${scoreColor(radarOverallScore).text}`}>
@@ -671,15 +710,18 @@ export function FinalCompetencyReportNodeView({
                   </p>
                   <span
                     className={`mt-4 inline-flex rounded-md px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${scoreColor(radarOverallScore).badge}`}>
-                    {competencyLevelLabelVi[chart.overallLevel] ||
-                      competencyLevelLabel[chart.overallLevel] ||
-                      chart.overallLevel}
+                    {t(
+                      `competencyReport.level_${chart.overallLevel}`,
+                      competencyLevelLabelVi[chart.overallLevel] ||
+                        competencyLevelLabel[chart.overallLevel] ||
+                        chart.overallLevel
+                    )}
                   </span>
                 </div>
               </div>
             ) : (
               <div className="flex h-48 items-center justify-center text-sm text-slate-400">
-                Chưa có dữ liệu
+                {t("competencyReport.noData", "Chưa có dữ liệu")}
               </div>
             )}
           </div>
@@ -689,7 +731,7 @@ export function FinalCompetencyReportNodeView({
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
               <div className="border-b border-slate-100 pb-3 dark:border-slate-800">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Nhận xét tổng thể
+                  {t("competencyReport.overallComment", "Nhận xét tổng thể")}
                 </h3>
               </div>
               <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
@@ -704,7 +746,7 @@ export function FinalCompetencyReportNodeView({
               <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3 dark:border-slate-800">
                 <Lightbulb className="h-4 w-4 text-amber-500" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Định hướng phát triển
+                  {t("competencyReport.developmentDirection", "Định hướng phát triển")}
                 </h3>
               </div>
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -734,7 +776,7 @@ export function FinalCompetencyReportNodeView({
           <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
             <div className="border-b border-slate-100 px-5 py-3.5 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Chi tiết tất cả kỹ năng
+                {t("competencyReport.allSkillsDetail", "Chi tiết tất cả kỹ năng")}
               </h3>
             </div>
 
@@ -744,7 +786,7 @@ export function FinalCompetencyReportNodeView({
                 <>
                   <div className="bg-slate-50 px-5 py-2 dark:bg-slate-800/40">
                     <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
-                      Chuyên môn
+                      {t("competencyReport.technicalLabel", "Chuyên môn")}
                     </span>
                   </div>
                   {chart.technicalSkillAreas.map((item, i) => {
@@ -752,7 +794,10 @@ export function FinalCompetencyReportNodeView({
                     return (
                       <div key={i} className="flex items-center gap-3 px-5 py-2.5">
                         <span className="w-40 shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-300">
-                          {item.skillArea}
+                          {t(
+                            `competencyReport.skill_${skillAreaKey(item.skillArea)}`,
+                            item.skillArea
+                          )}
                         </span>
                         <div className="flex-1">
                           <ScoreBar score={item.score} />
@@ -772,7 +817,7 @@ export function FinalCompetencyReportNodeView({
                 <>
                   <div className="bg-slate-50 px-5 py-2 dark:bg-slate-800/40">
                     <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
-                      Kỹ năng mềm & thái độ
+                      {t("competencyReport.softSkills", "Kỹ năng mềm & thái độ")}
                     </span>
                   </div>
                   {chart.behavioralSkills.map((item, i) => {
@@ -780,7 +825,10 @@ export function FinalCompetencyReportNodeView({
                     return (
                       <div key={i} className="flex items-center gap-3 px-5 py-2.5">
                         <span className="w-40 shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-300">
-                          {item.skillName}
+                          {t(
+                            `competencyReport.skill_${skillAreaKey(item.skillName)}`,
+                            item.skillName
+                          )}
                         </span>
                         <div className="flex-1">
                           <ScoreBar score={item.score} />
@@ -807,7 +855,7 @@ export function FinalCompetencyReportNodeView({
                   <CircleScore score={item.score} size={52} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      {item.skillArea}
+                      {t(`competencyReport.skill_${skillAreaKey(item.skillArea)}`, item.skillArea)}
                     </p>
                     {item.evidenceSummary && (
                       <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
@@ -825,10 +873,13 @@ export function FinalCompetencyReportNodeView({
             <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Chi tiết từng vòng
+                  {t("competencyReport.perRoundDetail", "Chi tiết từng vòng")}
                 </h3>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                  {sortedRounds.length} vòng
+                  {t("competencyReport.roundsCountBadge", {
+                    count: sortedRounds.length,
+                    defaultValue: "{{count}} vòng",
+                  })}
                 </span>
               </div>
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -846,14 +897,20 @@ export function FinalCompetencyReportNodeView({
                         <RoundIcon className="h-3.5 w-3.5" />
                       </div>
                       <span className="flex-1 truncate text-xs font-medium text-slate-800 dark:text-slate-300">
-                        {round.name || `Vòng ${roundOrder}`}
+                        {round.name ||
+                          t("competencyReport.defaultRoundName", {
+                            order: roundOrder,
+                            defaultValue: "Vòng {{order}}",
+                          })}
                       </span>
                       <ResultPill result={detail?.finalResult} />
                       {score !== undefined && score !== null && (
                         <span
                           className={`shrink-0 text-xs font-bold tabular-nums ${scoreColor(score).text}`}>
                           {score}
-                          <span className="font-normal text-slate-500">/100</span>
+                          <span className="font-normal text-slate-500">
+                            {t("competencyReport.scoreOutOfHundred", "/100")}
+                          </span>
                         </span>
                       )}
                     </div>

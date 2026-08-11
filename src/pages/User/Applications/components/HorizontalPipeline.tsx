@@ -284,14 +284,12 @@ export function HorizontalPipeline({
               </div>
               <div className="flex flex-col text-left">
                 <span className="font-bold tracking-tight whitespace-nowrap">
-                  {t("userApplicationhistory.competencyReportNode", {
-                    defaultValue: "Báo cáo năng lực",
-                  })}
+                  {t("userApplicationhistory.competencyReportNode")}
                 </span>
                 <span className="font-mono text-[10px] font-medium whitespace-nowrap opacity-80">
                   {isAllCompleted
-                    ? t("userApplicationhistory.finalSummary", { defaultValue: "Tổng kết AI" })
-                    : "Hoàn tất tất cả vòng để mở"}
+                    ? t("userApplicationhistory.finalSummary")
+                    : t("userApplicationhistory.completeAllRoundsToUnlock")}
                 </span>
               </div>
             </button>

@@ -1,22 +1,10 @@
 import icon2 from "@/assets/icon2.svg";
-import { LanguageToggle } from "@/components/LanguageToggle";
-import type {
-  ChromeTabMenuAction,
-  ChromeTabMenuGroup,
-  SidebarMenuGroup,
-} from "@/components/shared";
-import {
-  DashboardChromeTabs,
-  DashboardSidebar,
-  DashboardSidebarToggle,
-  getInitialSidebarCollapsed,
-  SettingsModal,
-  TabContentWrapper,
-} from "@/components/shared";
+import type { SidebarMenuGroup } from "@/components/shared";
+import { DashboardSidebar, getInitialSidebarCollapsed } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
-import { useTabsState, type Tab } from "@/hooks/useTabsState";
+import { useTabsState } from "@/hooks/useTabsState";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { ClipboardCheck, FileText, Home, LayoutDashboard, Trash2, User } from "lucide-react";
+import { ClipboardCheck, Home, LayoutDashboard } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -26,6 +14,7 @@ import { StaffAccountPage } from "../Account/StaffAccountPage";
 import { staffGradingWorkspacePage as StaffGradingWorkspacePage } from "../GradingWorkspace";
 import { StaffHomeFeedPage } from "../HomeFeed/StaffHomeFeedPage";
 import { StaffOverviewPage } from "./StaffOverviewPage";
+import { StaffHeader } from "./components/StaffHeader";
 
 type TabType = "home" | "dashboard" | "applicationGrading" | "grading-detail" | "account";
 
@@ -57,51 +46,6 @@ const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; la
   {
     type: "account",
     label: t("common.account"),
-  },
-];
-
-const TAB_ICONS: Record<TabType, React.ElementType> = {
-  home: Home,
-  dashboard: LayoutDashboard,
-  applicationGrading: ClipboardCheck,
-  "grading-detail": FileText,
-  account: User,
-};
-
-const TAB_COLORS: Record<TabType, string> = {
-  home: "text-indigo-600 dark:text-indigo-400",
-  dashboard: "text-indigo-600 dark:text-indigo-400",
-  applicationGrading: "text-indigo-600 dark:text-indigo-400",
-  "grading-detail": "text-indigo-600 dark:text-indigo-400",
-  account: "text-indigo-600 dark:text-indigo-400",
-};
-
-const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup[] => [
-  {
-    items: [
-      {
-        type: "home",
-        label: t("common.home"),
-        icon: Home,
-        iconColor: "text-indigo-600 dark:text-indigo-400",
-      },
-      {
-        type: "dashboard",
-        label: t("common.dashboard"),
-        icon: LayoutDashboard,
-        iconColor: "text-indigo-600 dark:text-indigo-400",
-      },
-    ],
-  },
-  {
-    items: [
-      {
-        type: "applicationGrading",
-        label: t("adminApplicationGrading.applicationGrading"),
-        icon: ClipboardCheck,
-        iconColor: "text-indigo-600 dark:text-indigo-400",
-      },
-    ],
   },
 ];
 
@@ -142,24 +86,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
   },
 ];
 
-const validateChromeTabsMenuConfiguration = (
-  availableTabs: Array<{ type: TabType; label: string }>,
-  chromeTabsMenuGroups: ChromeTabMenuGroup[]
-) => {
-  const availableTabTypes = new Set(availableTabs.map((tab) => tab.type));
-  const menuTabTypes = new Set(
-    chromeTabsMenuGroups.flatMap((group) => group.items.map((item) => item.type as TabType))
-  );
-  const missingInMenu = availableTabs
-    .filter((tab) => !menuTabTypes.has(tab.type))
-    .map((tab) => tab.type);
-  const invalidInMenu = Array.from(menuTabTypes).filter((type) => !availableTabTypes.has(type));
-  return {
-    missingInMenu,
-    invalidInMenu,
-  };
-};
-
 export function StaffDashboardPage() {
   const { t } = useTranslation();
   const STAFF_SIDEBAR_LOGO = useMemo(
@@ -184,26 +110,15 @@ export function StaffDashboardPage() {
   const sidebarBehavior = useSettingsStore((state) => state.sidebarBehavior);
   const availableTabs = useMemo(() => getAvailableTabs(t), [t]);
   const sidebarMenuGroups = useMemo(() => getSidebarMenuGroups(t), [t]);
-  const chromeTabsMenuGroups = useMemo(() => getChromeTabsMenuGroups(t), [t]);
-  const {
-    activeTab,
-    openTabs,
-    setActiveTab,
-    closeTab,
-    resetTabsTo,
-    closeOtherTabs,
-    openGradingTab,
-  } = useTabsState({
+  const { activeTab, setActiveTab, openGradingTab } = useTabsState({
     storageKey: "staff",
     defaultTab: "home",
     availableTabs: availableTabs,
   });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const searchEntries = Object.fromEntries(searchParams.entries());
-  const { appId: gradingAppId } = searchEntries;
   const contentRef = useRef<HTMLDivElement>(null);
-  const [scrollTarget, setScrollTarget] = useState<HTMLDivElement | null>(null);
+  const [scrollTarget] = useState<HTMLDivElement | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() =>
     getInitialSidebarCollapsed(
       "staff_sidebar_collapsed",
@@ -211,51 +126,42 @@ export function StaffDashboardPage() {
       sidebarBehavior === "auto-collapse"
     )
   );
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const typedActiveTab = activeTab as TabType;
+  const typedActiveTab: TabType = isValidTabType(activeTab) ? activeTab : "home";
 
-  useEffect(() => {
-    if (!import.meta.env.DEV) {
-      return;
-    }
-    const { missingInMenu, invalidInMenu } = validateChromeTabsMenuConfiguration(
-      availableTabs,
-      chromeTabsMenuGroups
-    );
-    if (missingInMenu.length === 0 && invalidInMenu.length === 0) {
-      return;
-    }
-    console.warn(t("staffStaffdashboard.admindashboardpageThePlusTabMenu"), {
-      missingInMenu,
-      invalidInMenu,
-    });
-  }, [t, availableTabs, chromeTabsMenuGroups]);
-
+  // ── Reset to home when sidebar collapses (mirrors Candidate behavior) ──
   useEffect(() => {
     setIsSidebarCollapsed(sidebarBehavior === "auto-collapse");
   }, [sidebarBehavior]);
 
-  const chromeTabsData = useMemo(() => {
-    const result = openTabs
-      .filter((tab) => tab.type === "grading-detail" || isValidTabType(tab.type))
-      .map((tab) => ({
-        id: tab.id,
-        type: tab.type,
-        title: tab.label,
-        appId: (tab as Tab).appId,
-      }));
-    return result;
-  }, [openTabs]);
-
-  const activeTabId = useMemo(() => {
-    // For grading-detail tabs, match by type AND appId from URL
-    if (activeTab === "grading-detail") {
-      const tab = openTabs.find((t) => t.type === "grading-detail" && t.appId === gradingAppId);
-      return tab?.id || "";
+  // ── Find current title / category / parent for header (Candidate style) ──
+  const { currentTitle, currentCategory, parentTitle } = useMemo(() => {
+    for (const group of sidebarMenuGroups) {
+      for (const item of group.items) {
+        if (item.type === typedActiveTab) {
+          return {
+            currentTitle: item.label,
+            currentCategory: group.label,
+            parentTitle: undefined as string | undefined,
+          };
+        }
+        if (item.children) {
+          const child = item.children.find((c) => c.type === typedActiveTab);
+          if (child) {
+            return {
+              currentTitle: child.label,
+              currentCategory: group.label,
+              parentTitle: item.label,
+            };
+          }
+        }
+      }
     }
-    const activeTabData = openTabs.find((tab) => tab.type === activeTab);
-    return activeTabData?.id || "";
-  }, [openTabs, activeTab, gradingAppId]);
+    return {
+      currentTitle: t("common.home"),
+      currentCategory: undefined as string | undefined,
+      parentTitle: undefined as string | undefined,
+    };
+  }, [typedActiveTab, sidebarMenuGroups, t]);
 
   const navigateToTab = useCallback(
     (tabType: string) => {
@@ -272,37 +178,7 @@ export function StaffDashboardPage() {
       setActiveTab(tabType, true);
       navigate(`/staff?tab=${tabType}`, { replace: true });
     },
-    [navigate, setActiveTab, searchParams]
-  );
-
-  const handleTabSelect = useCallback(
-    (tabId: string) => {
-      const selectedTab = openTabs.find((tab) => tab.id === tabId);
-      if (!selectedTab) return;
-      // For grading-detail tabs, navigate with detailId or appId
-      if (selectedTab.type === "grading-detail") {
-        const detailId = (selectedTab as Tab).detailId;
-        const appId = (selectedTab as Tab).appId;
-        const params = new URLSearchParams({ tab: "grading-detail" });
-        if (detailId) {
-          params.set("detailId", String(detailId));
-        } else if (appId) {
-          params.set("appId", String(appId));
-        }
-        navigate(`/staff?${params.toString()}`, { replace: true });
-        setActiveTab("grading-detail", true);
-        return;
-      }
-      navigateToTab(selectedTab.type);
-    },
-    [navigateToTab, openTabs, navigate, setActiveTab]
-  );
-
-  const handleNewTab = useCallback(
-    (type: string) => {
-      navigateToTab(type);
-    },
-    [navigateToTab]
+    [navigate, setActiveTab, searchParams, t]
   );
 
   const handleSidebarNavigate = useCallback(
@@ -310,37 +186,6 @@ export function StaffDashboardPage() {
       navigateToTab(type);
     },
     [navigateToTab]
-  );
-
-  const handleCloseAllTabs = useCallback(() => {
-    resetTabsTo("dashboard", true);
-  }, [resetTabsTo]);
-
-  const handleCloseOtherTabs = useCallback(
-    (tabId: string) => {
-      const targetTab = openTabs.find((t) => t.id === tabId);
-      if (!targetTab) return;
-      if (targetTab.type !== activeTab) {
-        navigateToTab(targetTab.type);
-      }
-      closeOtherTabs(tabId);
-    },
-    [openTabs, navigateToTab, activeTab, closeOtherTabs]
-  );
-
-  const closeAllDisabled = openTabs.length === 1 && openTabs[0]?.type === "home";
-  const chromeMenuActions = useMemo<ChromeTabMenuAction[]>(
-    () => [
-      {
-        id: "close-all-tabs",
-        label: t("common.closeAllTabs"),
-        icon: Trash2,
-        destructive: true,
-        disabled: closeAllDisabled,
-        onSelect: handleCloseAllTabs,
-      },
-    ],
-    [closeAllDisabled, handleCloseAllTabs, t]
   );
 
   const renderTabContent = (tabType: string) => {
@@ -378,94 +223,53 @@ export function StaffDashboardPage() {
         showDesktopToggle={false}
         logo={STAFF_SIDEBAR_LOGO}
         collapsedLogo={STAFF_SIDEBAR_LOGO_COLLAPSED}
-        showSettings
-        settingsLabel={t("common.setting")}
-        onSettingsClick={() => setIsSettingsOpen(true)}
+        showSettings={false}
         theme={{
           wrapper:
-            "h-full flex-shrink-0 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900",
+            "h-full flex-shrink-0 border-r border-slate-200/80 bg-white/95 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/95",
           expandedWidth: "w-64",
           collapsedWidth: "w-[72px]",
-          logoBorder: "border-b border-slate-200 dark:border-slate-800",
-          logoExpandedPadding: "h-16 gap-3 px-8",
+          logoBorder: "border-b border-slate-200/80 dark:border-slate-800/80",
+          logoExpandedPadding: "h-16 gap-3 px-6",
           logoCollapsedPadding: "h-16 justify-center px-2",
           navWrapper: "flex flex-1 flex-col gap-1 py-4",
-          navExpandedPadding: "px-5 py-4",
+          navExpandedPadding: "px-4 py-4",
           navCollapsedPadding: "px-2 py-4",
           sectionLabel:
-            "text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-3 mt-2 px-3 dark:text-slate-400",
-          divider: "border-slate-200 dark:border-slate-800",
+            "text-[11px] font-bold tracking-widest text-slate-400 uppercase mb-2.5 mt-5 px-3 dark:text-slate-500",
+          divider: "border-slate-200/80 dark:border-slate-800/80",
           itemPy: "py-2.5",
           activeItem:
-            "bg-indigo-50 text-indigo-700 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20",
+            "border border-indigo-200/80 bg-indigo-50/80 font-semibold text-indigo-700 shadow-2xs dark:border-indigo-500/30 dark:bg-indigo-950/60 dark:text-indigo-300",
           inactiveItem:
-            "text-slate-600 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
+            "border border-transparent text-slate-600 rounded-xl hover:bg-slate-100/80 hover:text-slate-900 transition-all dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
           activeIconOverride: "text-indigo-600 dark:text-indigo-400",
-          footerBorder: "border-t border-slate-200 dark:border-slate-800",
+          footerBorder: "border-t border-slate-200/80 dark:border-slate-800/80",
           footerExpandedPadding: "p-4",
           footerCollapsedPadding: "p-3",
           logoutExpandedBtn:
-            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
+            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-600 transition-all hover:bg-rose-50/80 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400",
           logoutCollapsedBtn:
-            "flex items-center justify-center rounded-xl p-2.5 text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
+            "flex items-center justify-center rounded-xl p-2.5 text-slate-600 transition-all hover:bg-rose-50/80 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400",
           logoutIcon: "",
           logoutLabel: t("common.logout"),
         }}
       />
 
-      <div className="relative z-0 flex flex-1 flex-col overflow-hidden">
-        <DashboardChromeTabs
-          tabs={chromeTabsData}
-          activeTabId={activeTabId}
-          onTabSelect={handleTabSelect}
-          onTabClose={closeTab}
-          onCloseOtherTabs={handleCloseOtherTabs}
-          onCloseAllTabs={handleCloseAllTabs}
-          onNewTab={handleNewTab}
-          leftSlot={
-            <DashboardSidebarToggle
-              isCollapsed={isSidebarCollapsed}
-              onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
-              className="hidden h-7 w-7 rounded-xl border border-slate-300/85 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 md:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-            />
-          }
-          tabIcons={TAB_ICONS}
-          tabColors={TAB_COLORS}
-          menuGroups={chromeTabsMenuGroups}
-          menuActions={chromeMenuActions}
-          rightSlot={<LanguageToggle />}
-          theme={{
-            bg: "bg-slate-50 dark:bg-slate-800",
-            tabActiveBorder: "border-slate-300 dark:border-slate-600",
-            tabActiveBg: "bg-white dark:bg-slate-900",
-            tabInactiveBg: "bg-slate-200 dark:bg-slate-700",
-            tabInactiveHover: "hover:bg-slate-100 dark:hover:bg-slate-600",
-            closeHover: "hover:bg-slate-300 dark:hover:bg-slate-500",
-            addBtnBg: "bg-slate-200 dark:bg-slate-700",
-            addBtnHover: "hover:bg-slate-300 dark:hover:bg-slate-500",
-            menuHover: "hover:bg-slate-100 dark:hover:bg-slate-600",
-          }}
+      <div className="relative z-0 flex flex-1 flex-col overflow-x-hidden">
+        <StaffHeader
+          title={currentTitle}
+          parentTitle={parentTitle}
+          category={currentCategory}
+          onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          isSidebarCollapsed={isSidebarCollapsed}
         />
 
-        <div ref={handleContentRef} className="relative flex-1 overflow-hidden">
-          {chromeTabsData.map((tab) => {
-            const isTabActive = tab.id === activeTabId;
-            return (
-              <TabContentWrapper
-                key={tab.id}
-                tabId={tab.id}
-                tabType={tab.type}
-                isActive={isTabActive}
-                onScrollTargetActive={setScrollTarget}>
-                {renderTabContent(tab.type)}
-              </TabContentWrapper>
-            );
-          })}
+        <div ref={handleContentRef} className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+          {renderTabContent(typedActiveTab)}
         </div>
         <ScrollToTopButton target={scrollTarget} threshold={600} />
       </div>
-
-      <SettingsModal open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }

@@ -431,7 +431,7 @@ function AwaitingMentorStep() {
       <div className="bg-white p-6 sm:p-7 dark:bg-slate-950/40">
         <div className="mb-4 flex items-center justify-between">
           <h4 className="text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-            Quy trình các bước tiếp theo
+            {t("userApplication.mentorReview.nextStepsTitle", "Quy trình các bước tiếp theo")}
           </h4>
         </div>
 
@@ -445,14 +445,17 @@ function AwaitingMentorStep() {
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
-                  Đang xử lý
+                  {t("userApplication.mentorReview.nextStepInProgress", "Đang xử lý")}
                 </span>
               </div>
               <h5 className="mt-3 text-xs font-bold text-slate-950 dark:text-white">
-                1. Admin đề xuất Mentor
+                {t("userApplication.mentorReview.nextStep1Title", "1. Admin đề xuất Mentor")}
               </h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
-                Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí.
+                {t(
+                  "userApplication.mentorReview.nextStep1Desc",
+                  "Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí."
+                )}
               </p>
             </div>
           </div>
@@ -465,14 +468,17 @@ function AwaitingMentorStep() {
                   <UserCheck className="h-4 w-4" />
                 </div>
                 <span className="inline-flex items-center rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400">
-                  Bước tiếp theo
+                  {t("userApplication.mentorReview.nextStepUpcoming", "Bước tiếp theo")}
                 </span>
               </div>
               <h5 className="mt-3 text-xs font-bold text-slate-800 dark:text-slate-200">
-                2. Bạn chọn Mentor
+                {t("userApplication.mentorReview.nextStep2Title", "2. Bạn chọn Mentor")}
               </h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn.
+                {t(
+                  "userApplication.mentorReview.nextStep2Desc",
+                  "Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn."
+                )}
               </p>
             </div>
           </div>
@@ -485,14 +491,17 @@ function AwaitingMentorStep() {
                   <CalendarCheck className="h-4 w-4" />
                 </div>
                 <span className="inline-flex items-center rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400">
-                  Bước 3
+                  {t("userApplication.mentorReview.nextStep3Badge", "Bước 3")}
                 </span>
               </div>
               <h5 className="mt-3 text-xs font-bold text-slate-800 dark:text-slate-200">
-                3. Đặt lịch & Phỏng vấn
+                {t("userApplication.mentorReview.nextStep3Title", "3. Đặt lịch & Phỏng vấn")}
               </h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến.
+                {t(
+                  "userApplication.mentorReview.nextStep3Desc",
+                  "Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến."
+                )}
               </p>
             </div>
           </div>
@@ -1375,7 +1384,7 @@ function ScheduleStep({
                   <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-800">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
                       <Sparkles className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
-                      Chuyên môn
+                      {t("userApplicationhistory.mentorSelectExpertise", "Chuyên môn")}
                     </div>
                     <p className="mt-1.5 text-sm leading-5 font-semibold text-slate-900 dark:text-slate-100">
                       {selectedMentor.expertise}
@@ -1436,10 +1445,10 @@ function ScheduleStep({
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
                   <BadgeCheck className="h-4 w-4" />
                 </span>
-                Tóm tắt buổi phỏng vấn
+                {t("userApplication.mentorReview.summaryTitle", "Tóm tắt buổi phỏng vấn")}
               </h3>
               <span className="rounded-full border border-emerald-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
-                Cập nhật trực tiếp
+                {t("userApplication.mentorReview.summaryLiveBadge", "Cập nhật trực tiếp")}
               </span>
             </div>
           </div>
@@ -1449,7 +1458,7 @@ function ScheduleStep({
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                    Bắt đầu
+                    {t("userApplication.mentorReview.summaryStartLabel", "Bắt đầu")}
                   </div>
                   <div className="mt-1 text-3xl font-black tracking-tight text-slate-950 tabular-nums dark:text-white">
                     {summaryTime}
@@ -1461,13 +1470,15 @@ function ScheduleStep({
                 <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                 <div className="min-w-0 text-right">
                   <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                    Kết thúc
+                    {t("userApplication.mentorReview.summaryEndLabel", "Kết thúc")}
                   </div>
                   <div className="mt-1 text-3xl font-black tracking-tight text-indigo-700 tabular-nums dark:text-indigo-200">
                     {formattedEndTime}
                   </div>
                   <div className="mt-1 text-xs font-bold text-indigo-600 dark:text-indigo-300">
-                    + {duration} phút
+                    {t("userApplication.mentorReview.summaryDurationSuffix", "+ {{minutes}} phút", {
+                      minutes: duration,
+                    })}
                   </div>
                 </div>
               </div>
@@ -1475,26 +1486,38 @@ function ScheduleStep({
               <div className="grid gap-2.5 border-t border-slate-200 pt-3 dark:border-slate-800">
                 <SummaryLine
                   icon={<Hourglass className="h-4 w-4" />}
-                  label="Thời lượng"
-                  value={`${duration} phút`}
+                  label={t("userApplication.mentorReview.summaryDurationLabel", "Thời lượng")}
+                  value={t(
+                    "userApplication.mentorReview.summaryDurationValue",
+                    "{{minutes}} phút",
+                    {
+                      minutes: duration,
+                    }
+                  )}
                 />
                 <SummaryLine
                   icon={offline ? <MapPin className="h-4 w-4" /> : <Video className="h-4 w-4" />}
-                  label="Hình thức"
-                  value={offline ? "Gặp trực tiếp" : "Trực tuyến"}
+                  label={t("userApplication.mentorReview.summaryFormatLabel", "Hình thức")}
+                  value={
+                    offline
+                      ? t("userApplication.mentorReview.summaryFormatOffline", "Gặp trực tiếp")
+                      : t("userApplication.mentorReview.summaryFormatOnline", "Trực tuyến")
+                  }
                 />
                 {selectedMentor?.rate != null && (
                   <SummaryLine
                     icon={<CircleDollarSign className="h-4 w-4" />}
-                    label="Ước tính"
+                    label={t("userApplication.mentorReview.summaryEstimateLabel", "Ước tính")}
                     value={formatRate(selectedMentor.rate, duration)}
                   />
                 )}
               </div>
 
               <p className="border-t border-slate-200 pt-3 text-xs leading-5 text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ trước
-                khi phiên bắt đầu.
+                {t(
+                  "userApplication.mentorReview.summaryHint",
+                  "Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ trước khi phiên bắt đầu."
+                )}
               </p>
             </div>
           </div>
@@ -1764,7 +1787,10 @@ function SessionRoomStep({
               {t("userApplicationhistory.mentorSessionHint")}
             </h3>
             <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
-              Phòng sẽ mở trước 15 phút. Bạn có thể vào từ trình duyệt khi trạng thái cho phép.
+              {t(
+                "userApplication.mentorReview.roomOpensHint",
+                "Phòng sẽ mở trước 15 phút. Bạn có thể vào từ trình duyệt khi trạng thái cho phép."
+              )}
             </p>
           </div>
         </div>
@@ -1775,10 +1801,10 @@ function SessionRoomStep({
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/30">
             <div className="mb-3 flex items-center justify-between">
               <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
-                Thông tin phiên
+                {t("userApplication.mentorReview.sessionInfoTitle", "Thông tin phiên")}
               </h4>
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                Cập nhật mỗi 30 giây
+                {t("userApplication.mentorReview.sessionInfoRefreshHint", "Cập nhật mỗi 30 giây")}
               </span>
             </div>
             <div className="grid gap-0 sm:grid-cols-2">
@@ -1790,7 +1816,9 @@ function SessionRoomStep({
               <InfoRow
                 icon={<Clock className="h-3.5 w-3.5" />}
                 label={t("userApplicationhistory.mentorSessionFieldDuration")}
-                value={`${session.duration ?? 0} phút`}
+                value={t("userApplication.mentorReview.minutesValue", "{{minutes}} phút", {
+                  minutes: session.duration ?? 0,
+                })}
               />
               <InfoRow
                 icon={<Video className="h-3.5 w-3.5" />}
@@ -1818,11 +1846,13 @@ function SessionRoomStep({
           <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/40">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
               <Phone className="h-3.5 w-3.5 text-indigo-500" />
-              <span>Mẹo</span>
+              <span>{t("userApplication.mentorReview.techTipTitle", "Mẹo")}</span>
             </div>
             <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-              Nếu gặp sự cố kỹ thuật, refresh trang và thử lại. Trang sẽ tự động cập nhật trạng thái
-              phiên mỗi 30 giây.
+              {t(
+                "userApplication.mentorReview.techTipBody",
+                "Nếu gặp sự cố kỹ thuật, refresh trang và thử lại. Trang sẽ tự động cập nhật trạng thái phiên mỗi 30 giây."
+              )}
             </p>
           </div>
         </section>
@@ -1832,10 +1862,13 @@ function SessionRoomStep({
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                  Sẵn sàng vào phòng
+                  {t("userApplication.mentorReview.readyToJoinLabel", "Sẵn sàng vào phòng")}
                 </div>
                 <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
-                  Theo dõi thời gian và vào phòng đúng lúc
+                  {t(
+                    "userApplication.mentorReview.readyToJoinHint",
+                    "Theo dõi thời gian và vào phòng đúng lúc"
+                  )}
                 </div>
               </div>
             </div>
@@ -1979,9 +2012,11 @@ function CompletedResultView({
 
               <div className="min-w-0 flex-1 space-y-3">
                 <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
-                  <span>Thông tin phiên</span>
+                  <span>
+                    {t("userApplication.mentorReview.sessionInfoTitle", "Thông tin phiên")}
+                  </span>
                   <span className="h-1 w-1 rounded-full bg-slate-400/70" />
-                  <span>Đã hoàn tất</span>
+                  <span>{t("userApplication.mentorReview.completedBadge", "Đã hoàn tất")}</span>
                 </div>
                 <div className="space-y-1.5">
                   <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
@@ -2000,7 +2035,7 @@ function CompletedResultView({
                       {mentorAverageRating ? `${mentorAverageRating.toFixed(1)}/5` : "—"}
                     </span>
                     <span className="text-xs font-semibold text-amber-700/70 dark:text-amber-300/70">
-                      Mentor ratio
+                      {t("userApplication.mentorReview.mentorRatingLabel", "Mentor ratio")}
                     </span>
                   </div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 dark:border-indigo-900/50 dark:bg-indigo-950/25">
@@ -2009,7 +2044,7 @@ function CompletedResultView({
                       {mentorExperienceLabel}
                     </span>
                     <span className="text-xs font-semibold text-indigo-600/70 dark:text-indigo-300/70">
-                      kinh nghiệm
+                      {t("userApplication.mentorReview.experienceLabel", "kinh nghiệm")}
                     </span>
                   </div>
                 </div>
@@ -2025,7 +2060,9 @@ function CompletedResultView({
               <InfoTile
                 icon={<Clock className="h-4 w-4" />}
                 label={t("userApplicationhistory.mentorSessionFieldDuration")}
-                value={`${session.duration ?? 0} phút`}
+                value={t("userApplication.mentorReview.minutesValue", "{{minutes}} phút", {
+                  minutes: session.duration ?? 0,
+                })}
               />
               <InfoTile
                 icon={<PlayCircle className="h-4 w-4" />}
@@ -2038,8 +2075,10 @@ function CompletedResultView({
               />
               <InfoTile
                 icon={<Users className="h-4 w-4" />}
-                label="Phiên mentor"
-                value={`${mentorSessionCount} phiên`}
+                label={t("userApplication.mentorReview.mentorSessionTileLabel", "Phiên mentor")}
+                value={t("userApplication.mentorReview.mentorSessionTileValue", "{{count}} phiên", {
+                  count: mentorSessionCount,
+                })}
               />
             </div>
           </Card>
@@ -2143,8 +2182,8 @@ function CompletedResultView({
                       {review.situationNote && (
                         <StarNoteBlock
                           tone="indigo"
-                          label="Situation"
-                          title="Bối cảnh"
+                          label={t("userApplication.mentorReview.starSituationShort", "Situation")}
+                          title={t("userApplication.mentorReview.starSituationTitle", "Bối cảnh")}
                           icon={<CalendarCheck className="h-4 w-4" />}
                           content={review.situationNote}
                         />
@@ -2152,8 +2191,8 @@ function CompletedResultView({
                       {review.taskNote && (
                         <StarNoteBlock
                           tone="sky"
-                          label="Task"
-                          title="Mục tiêu"
+                          label={t("userApplication.mentorReview.starTaskShort", "Task")}
+                          title={t("userApplication.mentorReview.starTaskTitle", "Mục tiêu")}
                           icon={<Target className="h-4 w-4" />}
                           content={review.taskNote}
                         />
@@ -2161,8 +2200,8 @@ function CompletedResultView({
                       {review.actionNote && (
                         <StarNoteBlock
                           tone="emerald"
-                          label="Action"
-                          title="Cách xử lý"
+                          label={t("userApplication.mentorReview.starActionShort", "Action")}
+                          title={t("userApplication.mentorReview.starActionTitle", "Cách xử lý")}
                           icon={<Sparkles className="h-4 w-4" />}
                           content={review.actionNote}
                         />
@@ -2170,8 +2209,8 @@ function CompletedResultView({
                       {review.resultNote && (
                         <StarNoteBlock
                           tone="amber"
-                          label="Result"
-                          title="Kết quả"
+                          label={t("userApplication.mentorReview.starResultShort", "Result")}
+                          title={t("userApplication.mentorReview.starResultTitle", "Kết quả")}
                           icon={<BadgeCheck className="h-4 w-4" />}
                           content={review.resultNote}
                         />
@@ -2300,17 +2339,20 @@ function CandidateMentorFeedbackBlock({
           </div>
           <div className="min-w-0">
             <h3 className="text-base font-bold text-slate-950 dark:text-white">
-              Phản hồi của bạn cho mentor
+              {t("userApplication.mentorReview.feedbackTitle", "Phản hồi của bạn cho mentor")}
             </h3>
             <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Chấm sao và ghi nhận trải nghiệm sau buổi phỏng vấn.
+              {t(
+                "userApplication.mentorReview.feedbackSubtitle",
+                "Chấm sao và ghi nhận trải nghiệm sau buổi phỏng vấn."
+              )}
             </p>
           </div>
         </div>
 
         {hasFeedback && !editing && (
           <span className="inline-flex h-7 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
-            Đã gửi
+            {t("userApplication.mentorReview.feedbackSubmittedBadge", "Đã gửi")}
           </span>
         )}
       </div>
@@ -2320,10 +2362,13 @@ function CandidateMentorFeedbackBlock({
           <div className="grid gap-4 border-b border-slate-200 pb-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
             <div>
               <div className="text-sm font-bold text-slate-950 dark:text-white">
-                Điểm bạn đã gửi
+                {t("userApplication.mentorReview.feedbackScoreTitle", "Điểm bạn đã gửi")}
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Điểm này phản ánh trải nghiệm thực tế của bạn với mentor.
+                {t(
+                  "userApplication.mentorReview.feedbackScoreDesc",
+                  "Điểm này phản ánh trải nghiệm thực tế của bạn với mentor."
+                )}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -2349,19 +2394,25 @@ function CandidateMentorFeedbackBlock({
           <div className="grid gap-4 border-b border-slate-200 py-5 md:grid-cols-[12rem_1fr] dark:border-slate-800">
             <div>
               <div className="text-sm font-bold text-slate-950 dark:text-white">
-                Nhận xét của bạn
+                {t("userApplication.mentorReview.feedbackCommentTitle", "Nhận xét của bạn")}
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Nội dung này giúp hệ thống cải thiện chất lượng mentor.
+                {t(
+                  "userApplication.mentorReview.feedbackCommentDesc",
+                  "Nội dung này giúp hệ thống cải thiện chất lượng mentor."
+                )}
               </p>
             </div>
             {feedback?.comment ? (
               <p className="text-sm leading-relaxed text-slate-700 italic dark:text-slate-200">
-                “{feedback.comment}”
+                &ldquo;{feedback.comment}&rdquo;
               </p>
             ) : (
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Chưa có nhận xét chi tiết.
+                {t(
+                  "userApplication.mentorReview.feedbackCommentEmpty",
+                  "Chưa có nhận xét chi tiết."
+                )}
               </p>
             )}
           </div>
@@ -2377,7 +2428,10 @@ function CandidateMentorFeedbackBlock({
               {t("userApplicationhistory.mentorSessionEditFeedback")}
             </Button>
             <p className="ml-auto text-xs text-slate-500 dark:text-slate-400">
-              Bước cuối của vòng Mentor Interview
+              {t(
+                "userApplication.mentorReview.finalStepHint",
+                "Bước cuối của vòng Mentor Interview"
+              )}
             </p>
           </div>
         </div>
