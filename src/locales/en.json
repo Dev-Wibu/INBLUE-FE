@@ -2000,10 +2000,12 @@
     "days": "days",
     "problemNum": "Problem #{{num}}",
     "open": "Open",
-    "timeline": "Timeline",
     "checkNow": "Check now",
     "copied": "Copied",
-    "backToTheSession": "Back to the session"
+    "backToTheSession": "Back to the session",
+    "star": "STAR Method",
+    "studentInformation": "Student / Candidate Information",
+    "tryAgain": "Try Again"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -4720,8 +4722,7 @@
       "hrNotePending": "HR committee will update after grading is complete.",
       "dropCvHint": "Drop CV file here or click to select",
       "aiScore": "AI Score",
-      "hrScore": "HR Score",
-      "noHrNote": "No direct notes from the HR recruitment committee yet."
+      "hrScore": "HR Score"
     },
     "emailSimulator": {
       "reportTitle": "EMAIL SIMULATION EVALUATION REPORT",
@@ -5099,7 +5100,7 @@
       "pinCopyFailed": "Cannot copy PIN code. Please copy manually.",
       "aiInterviewTitle": "Round {{round}}: AI Interview at Kiosk",
       "aiInterviewDescription": "Select a Kiosk station and time slot. After booking, the system will provide a 6-digit PIN code for you to enter at the Kiosk on time.",
-      "aiScore": "AI SCORE",
+      "aiScore": "AI Score",
       "aiCompleted": "COMPLETED",
       "bookKiosk": "BOOK KIOSK",
       "aiInterviewCompleted": "AI Interview completed",
@@ -5155,7 +5156,6 @@
       "kioskStation": "Kiosk Station",
       "checkEmailForDetails": "Check email for detailed instructions",
       "dualScoresTitle": "Evaluation & Scores",
-      "aiScore": "AI Score",
       "hrScore": "HR Score",
       "notGraded": "Not graded",
       "finalScore": "Final Score",
@@ -5211,7 +5211,6 @@
       "domain": "Domain",
       "difficulty": "Difficulty",
       "language": "Language",
-      "duration": "Duration",
       "sessionKey": "Session Key",
       "loadingSessionData": "Loading AI interview results...",
       "noSessionDataFound": "No session details found for this interview.",
@@ -6494,7 +6493,11 @@
     "experience": "Experience",
     "education": "Education",
     "readability": "Readability",
-    "gradingInProgress": "grading in progress..."
+    "gradingInProgress": "grading in progress...",
+    "editNote": "Edit note",
+    "readonly": "Read-only",
+    "scoreCannotChange": "Score cannot be changed once locked",
+    "saveNote": "Save note"
   },
   "staffGrading": {
     "gradeNow": "Grade now",
