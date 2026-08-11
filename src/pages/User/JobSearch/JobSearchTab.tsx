@@ -392,7 +392,7 @@ export function JobSearchTab() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t("jobSearch.searchPlaceholder", "Tìm theo chức danh hoặc công ty...")}
-                className="h-[46px] w-full rounded-[10px] border border-slate-200 bg-slate-50 px-4 text-[15px] text-slate-900 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-indigo-500/50 dark:border-slate-800/60 dark:bg-[#0B0F19] dark:text-white dark:placeholder:text-slate-500"
+                className="h-[46px] w-full rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 text-[14.5px] text-slate-900 shadow-2xs transition-all placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800/80 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-500"
               />
               {searchQuery && (
                 <button
@@ -408,7 +408,7 @@ export function JobSearchTab() {
             </div>
             <Button
               type="submit"
-              className="h-[46px] shrink-0 rounded-[10px] border border-slate-300 bg-transparent px-6 font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs transition-all hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800/80 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
               <Search className="mr-2 h-[18px] w-[18px]" />
               {t("jobSearch.searchButton", "Tìm việc")}
             </Button>
