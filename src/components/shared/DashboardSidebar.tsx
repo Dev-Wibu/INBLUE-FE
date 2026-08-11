@@ -432,17 +432,17 @@ export function DashboardSidebar({
           {user && (
             <div
               className={cn(
-                "flex-shrink-0 border-b border-slate-200/60 dark:border-slate-800",
-                isCollapsed ? "flex justify-center px-2 py-4" : "px-8 py-4"
+                "flex-shrink-0 border-b border-slate-200/80 dark:border-slate-800/80",
+                isCollapsed ? "flex justify-center px-2 py-4" : "px-6 py-4"
               )}>
               <div
                 className={cn(
                   "flex items-center gap-3",
                   isCollapsed && "justify-center",
-                  onProfileClick && "cursor-pointer transition-opacity hover:opacity-80"
+                  onProfileClick && "cursor-pointer transition-opacity hover:opacity-85"
                 )}
                 onClick={onProfileClick}>
-                <Avatar className="h-8 w-8 shrink-0 border border-slate-200 shadow-sm dark:border-slate-700">
+                <Avatar className="h-8.5 w-8.5 shrink-0 border border-slate-200/90 shadow-2xs dark:border-slate-700/80">
                   <AvatarImage
                     src={resolvedAvatarUrl || ""}
                     alt={user.name || ""}
