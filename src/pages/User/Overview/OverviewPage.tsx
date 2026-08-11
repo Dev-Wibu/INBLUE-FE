@@ -357,7 +357,7 @@ export function OverviewPage() {
                   return (
                     <div
                       key={`empty-${weekIndex}-${dayIndex}`}
-                      className="min-h-32 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 opacity-50 dark:border-slate-800 dark:bg-slate-900/40"
+                      className="min-h-32 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 opacity-50 dark:border-slate-700 dark:bg-slate-800"
                     />
                   );
                 }
@@ -376,8 +376,8 @@ export function OverviewPage() {
                       isSelected
                         ? "border-blue-500 ring-1 ring-blue-500/30"
                         : isToday
-                          ? "border-indigo-400/70 bg-indigo-50/50 dark:border-indigo-700 dark:bg-indigo-950/30"
-                          : "border-slate-200/80 dark:border-slate-800 dark:bg-slate-900/50",
+                          ? "border-indigo-400/70 bg-indigo-50/50 dark:border-indigo-600 dark:bg-indigo-900/40"
+                          : "border-slate-200/80 dark:border-slate-700 dark:bg-slate-800",
                       !isSelected &&
                         dayItems.length > 0 &&
                         "hover:border-slate-300 dark:hover:border-slate-700"
@@ -478,7 +478,7 @@ export function OverviewPage() {
           <CardDescription className="capitalize">{selectedDateDisplay}</CardDescription>
         </div>
 
-        <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
             <Filter className="h-4 w-4" />
             {t("common.filter")}
@@ -557,7 +557,7 @@ export function OverviewPage() {
           ))
         )}
 
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
               {t("userOverview.upcomingSession")}
@@ -600,7 +600,7 @@ export function OverviewPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800">
           <p className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
             {t("common.actFast")}
           </p>
