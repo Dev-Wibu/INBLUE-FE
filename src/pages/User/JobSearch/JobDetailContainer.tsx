@@ -297,7 +297,7 @@ export function JobDetailContainer({
       if (result.success) {
         toast.success(t("enterpriseJobdescriptiondetailpage.successfulApplicationGoodLuck"));
         await refetchStatus();
-        onRefresh();
+        onRefresh?.();
         const createdAppId = result.data?.id;
         if (createdAppId) {
           navigate(`/user?tab=applicationHistory&appId=${createdAppId}`);

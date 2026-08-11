@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { companyManager, type Company } from "@/services/company.manager";
 import { BriefcaseBusiness, Building2, MapPin, Search, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { CompanyDetailContainer } from "./CompanyDetailContainer";
@@ -45,7 +45,7 @@ export function CompanyCard({
   company: Company;
   onClick: () => void;
   onExplore: (_e: React.MouseEvent) => void;
-  t: (key: string, defaultValue?: string | Record<string, unknown>) => string;
+  t: (_key: string, _defaultValue?: string) => string;
 }) {
   const openRoles = getOpenRoleCount(company);
   const logoUrl = company.logoUrl || null;
@@ -170,7 +170,11 @@ export function CompanyCard({
 }
 
 export function UserCompaniesTab() {
-  const { t } = useTranslation();
+  const { t: i18nT } = useTranslation();
+  const t: (key: string, defaultValue?: string) => string = useCallback(
+    (key, defaultValue) => (defaultValue ? i18nT(key, defaultValue) : i18nT(key)),
+    [i18nT]
+  );
   const [searchParams, setSearchParams] = useSearchParams();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -226,7 +230,8 @@ export function UserCompaniesTab() {
     return companies.reduce((acc, c) => acc + getOpenRoleCount(c), 0);
   }, [companies]);
 
-  const handleCompanyClick = (id: string | number) => {
+  const handleCompanyClick = (id: number | undefined) => {
+    if (id == null) return;
     const newParams = new URLSearchParams(searchParams);
     newParams.set("companyId", String(id));
     setSearchParams(newParams);
