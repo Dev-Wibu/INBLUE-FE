@@ -423,7 +423,7 @@ export function AccountPage() {
                         className={cn(
                           "flex w-full items-center justify-between rounded-xl p-3 text-left transition-all",
                           isActive
-                            ? "border border-indigo-600 bg-indigo-600 font-semibold text-white shadow-sm dark:border-indigo-600 dark:bg-indigo-600 dark:text-white"
+                            ? "border border-indigo-200/80 bg-indigo-50/80 font-medium text-indigo-700 shadow-2xs dark:border-indigo-500/30 dark:bg-indigo-950/60 dark:text-indigo-300"
                             : "border border-transparent text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
                         )}>
                         <div className="flex items-center gap-3">
@@ -431,20 +431,14 @@ export function AccountPage() {
                             className={cn(
                               "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
                               isActive
-                                ? "bg-white/20 text-white dark:bg-white/20"
+                                ? "bg-indigo-600 text-white shadow-xs dark:bg-indigo-500"
                                 : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                             )}>
                             <TabIcon className="h-4 w-4" />
                           </div>
                           <div>
                             <p className="text-sm font-semibold">{tab.label}</p>
-                            <p
-                              className={cn(
-                                "text-xs transition-colors",
-                                isActive
-                                  ? "text-indigo-100 dark:text-indigo-100"
-                                  : "text-slate-500 dark:text-slate-400"
-                              )}>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {tab.description}
                             </p>
                           </div>
@@ -452,9 +446,7 @@ export function AccountPage() {
                         <ChevronRight
                           className={cn(
                             "h-4 w-4 shrink-0 transition-transform",
-                            isActive
-                              ? "translate-x-0.5 text-white dark:text-white"
-                              : "text-slate-400"
+                            isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"
                           )}
                         />
                       </button>
@@ -489,8 +481,8 @@ export function AccountPage() {
           {/* Right Column: Table of Contents / Dynamic Widget */}
           <div className="z-10 hidden lg:sticky lg:top-6 lg:col-span-2 lg:block lg:self-start">
             {activeTab === "candidateProfile" && (
-              <div className="rounded-2xl border border-slate-200/90 bg-white p-4.5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900">
-                <div className="mb-3.5 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+              <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800/80 dark:bg-slate-900">
+                <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2.5 dark:border-slate-800/80">
                   <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
                     <ListOrdered className="h-3.5 w-3.5" />
                   </div>
@@ -499,57 +491,30 @@ export function AccountPage() {
                   </h4>
                 </div>
                 <nav className="space-y-1">
-                  {candidateProfile?.introduction && (
-                    <a
-                      href="#intro"
-                      onClick={(e) => scrollToSection(e, "intro")}
-                      className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
-                      <span>{t("common.introduce")}</span>
-                      <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-                    </a>
-                  )}
-                  <a
-                    href="#skills"
-                    onClick={(e) => scrollToSection(e, "skills")}
-                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
-                    <span>{t("common.technicalSkills")}</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-                  </a>
-                  <a
-                    href="#experience"
-                    onClick={(e) => scrollToSection(e, "experience")}
-                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
-                    <span>{t("common.workExperience")}</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-                  </a>
-                  <a
-                    href="#projects"
-                    onClick={(e) => scrollToSection(e, "projects")}
-                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
-                    <span>{t("common.project")}</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-                  </a>
-                  <a
-                    href="#education"
-                    onClick={(e) => scrollToSection(e, "education")}
-                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
-                    <span>{t("common.education")}</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-                  </a>
-                  <a
-                    href="#certifications"
-                    onClick={(e) => scrollToSection(e, "certifications")}
-                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
-                    <span>{t("common.certifications")}</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-                  </a>
-                  <a
-                    href="#achievements"
-                    onClick={(e) => scrollToSection(e, "achievements")}
-                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
-                    <span>{t("common.achievements")}</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-                  </a>
+                  {[
+                    {
+                      id: "intro",
+                      label: t("common.introduce"),
+                      show: !!candidateProfile?.introduction,
+                    },
+                    { id: "skills", label: t("common.technicalSkills"), show: true },
+                    { id: "experience", label: t("common.workExperience"), show: true },
+                    { id: "projects", label: t("common.project"), show: true },
+                    { id: "education", label: t("common.education"), show: true },
+                    { id: "certifications", label: t("common.certifications"), show: true },
+                    { id: "achievements", label: t("common.achievements"), show: true },
+                  ]
+                    .filter((item) => item.show)
+                    .map((item) => (
+                      <a
+                        key={item.id}
+                        href={`#${item.id}`}
+                        onClick={(e) => scrollToSection(e, item.id)}
+                        className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-700 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-300">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300 transition-colors group-hover:bg-indigo-600 dark:bg-slate-700 dark:group-hover:bg-indigo-400" />
+                        <span className="flex-1 truncate">{item.label}</span>
+                      </a>
+                    ))}
                 </nav>
               </div>
             )}
