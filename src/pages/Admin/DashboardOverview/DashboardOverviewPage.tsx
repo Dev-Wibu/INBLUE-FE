@@ -373,6 +373,8 @@ function AnalyticsOverviewSection({
   const applicationsPerUserTotalApplications = applicationsPerUser?.totalApplications ?? 0;
   const averageApplicationsPerUser = applicationsPerUser?.averageApplicationsPerUser;
   const uniqueApplicants = applicationsPerUser?.uniqueApplicants ?? 0;
+  const applicationsPerUserGeneratedAt = applicationsPerUser?.generatedAt;
+  const applicationsPerUserTraceId = applicationsPerUser?.traceId;
   const activeInterviews = analytics?.activeInterviews ?? [];
   const visibleActiveInterviews = showAllActiveInterviews
     ? activeInterviews
@@ -627,28 +629,42 @@ function AnalyticsOverviewSection({
                       {t("adminDashboardoverview.applicationsPerUserUnit", "applications per user")}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-sky-700 dark:text-sky-300">
-                    {uniqueApplicants.toLocaleString()}{" "}
-                    {t("adminDashboardoverview.uniqueApplicants", "unique applicants")}
-                  </p>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-lg bg-white/70 p-3 dark:bg-slate-900/50">
-                      <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  <dl className="mt-4 space-y-2">
+                    <div className="flex items-center justify-between gap-3 rounded-lg bg-white/70 px-3 py-2 dark:bg-slate-900/50">
+                      <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
                         {t("adminDashboardoverview.totalApplications", "Total applications")}
-                      </p>
-                      <p className="mt-1 text-lg font-black text-slate-900 dark:text-white">
+                      </dt>
+                      <dd className="text-sm font-black text-slate-900 dark:text-white">
                         {applicationsPerUserTotalApplications.toLocaleString()}
-                      </p>
+                      </dd>
                     </div>
-                    <div className="rounded-lg bg-white/70 p-3 dark:bg-slate-900/50">
-                      <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center justify-between gap-3 rounded-lg bg-white/70 px-3 py-2 dark:bg-slate-900/50">
+                      <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
                         {t("adminDashboardoverview.uniqueApplicants", "Unique applicants")}
-                      </p>
-                      <p className="mt-1 text-lg font-black text-slate-900 dark:text-white">
+                      </dt>
+                      <dd className="text-sm font-black text-slate-900 dark:text-white">
                         {uniqueApplicants.toLocaleString()}
-                      </p>
+                      </dd>
                     </div>
-                  </div>
+                    <div className="flex items-center justify-between gap-3 rounded-lg bg-white/70 px-3 py-2 dark:bg-slate-900/50">
+                      <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {t("adminDashboardoverview.generatedAt", "Generated at")}
+                      </dt>
+                      <dd className="text-right text-xs font-semibold text-slate-700 dark:text-slate-200">
+                        {applicationsPerUserGeneratedAt
+                          ? formatTransactionTime(applicationsPerUserGeneratedAt, t)
+                          : "—"}
+                      </dd>
+                    </div>
+                    <div className="rounded-lg bg-white/70 px-3 py-2 dark:bg-slate-900/50">
+                      <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {t("adminDashboardoverview.traceId", "Trace ID")}
+                      </dt>
+                      <dd className="mt-1 text-[11px] leading-relaxed font-semibold break-all text-slate-700 dark:text-slate-200">
+                        {applicationsPerUserTraceId || "—"}
+                      </dd>
+                    </div>
+                  </dl>
                 </div>
               )}
             </div>

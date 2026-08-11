@@ -15,7 +15,6 @@ import {
   BadgeCheck,
   Bot,
   Briefcase,
-  ChevronRight,
   Clock,
   Code2,
   FileCheck2,
@@ -30,11 +29,13 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
+import { FinalCompetencyReportNodeView } from "./components/FinalCompetencyReportNodeView";
 import { HorizontalPipeline, type JdRound } from "./components/HorizontalPipeline";
 import { RoundWorkspaceDispatcher } from "./components/RoundWorkspaceDispatcher";
+import { areAllRoundsCompleted } from "./components/applicationProgress";
 import { applicationTheme } from "./components/applicationTheme";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
@@ -178,6 +179,8 @@ export function ApplicationWorkspacePage() {
   const { applicationId: appIdParam } = useParams<{ applicationId: string }>();
   const applicationId = Number(appIdParam);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const shouldOpenCompetencyReport = searchParams.get("round") === "99";
 
   // Core Data States
   const [app, setApp] = useState<components["schemas"]["Application"] | null>(null);
@@ -221,7 +224,7 @@ export function ApplicationWorkspacePage() {
       if (appRes.success && appRes.data) {
         setApp(appRes.data);
         const currentOrder = appRes.data.currentRoundOrder ?? 1;
-        setSelectedRoundOrder(currentOrder);
+        setSelectedRoundOrder(shouldOpenCompetencyReport ? 99 : currentOrder);
 
         // 2. Fetch JD Info
         if (appRes.data.jdId) {
@@ -260,8 +263,14 @@ export function ApplicationWorkspacePage() {
           params: { path: { applicationId } },
         }
       );
-      if (detailsRes.response?.ok && Array.isArray(detailsRes.data)) {
-        setDetailsData(detailsRes.data as ApplicationDetail[]);
+      if (detailsRes.response?.ok && detailsRes.data) {
+        const raw = detailsRes.data as unknown;
+        const list = Array.isArray(raw)
+          ? (raw as ApplicationDetail[])
+          : Array.isArray((raw as { data?: unknown })?.data)
+            ? (raw as { data: ApplicationDetail[] }).data
+            : [];
+        setDetailsData(list);
       }
     } catch (err) {
       console.error("[Workspace] Failed to load data:", err);
@@ -280,8 +289,20 @@ export function ApplicationWorkspacePage() {
     return [...(jdInfo?.rounds ?? [])].sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0));
   }, [jdInfo?.rounds]);
 
+  const canOpenCompetencyReport = useMemo(
+    () => areAllRoundsCompleted(rounds, detailsData, apiCurrentRoundOrder),
+    [rounds, detailsData, apiCurrentRoundOrder]
+  );
+
+  useEffect(() => {
+    if (!loading && selectedRoundOrder === 99 && !canOpenCompetencyReport) {
+      setSelectedRoundOrder(apiCurrentRoundOrder);
+    }
+  }, [apiCurrentRoundOrder, canOpenCompetencyReport, loading, selectedRoundOrder]);
+
   // Selected round object
   const activeRound = useMemo(() => {
+    if (selectedRoundOrder === 99) return undefined;
     return rounds.find((r) => r.roundOrder === selectedRoundOrder) ?? rounds[0];
   }, [rounds, selectedRoundOrder]);
 
@@ -322,6 +343,9 @@ export function ApplicationWorkspacePage() {
     app.status === "FAILED" ||
     app.status === "SOFT_FAILED" ||
     (activeDetail?.status as string) === "COMPLETED" ||
+    (activeDetail?.status as string) === "AI_EVALUATED" ||
+    (activeDetail?.status as string) === "PASSED" ||
+    (activeDetail?.status as string) === "FAILED" ||
     (activeRound?.roundOrder ?? 0) < apiCurrentRoundOrder;
   const isRoundCurrent = !isRoundCompleted && activeRound?.roundOrder === apiCurrentRoundOrder;
   const isRoundLocked = !isRoundCompleted && (activeRound?.roundOrder ?? 0) > apiCurrentRoundOrder;
@@ -357,52 +381,54 @@ export function ApplicationWorkspacePage() {
 
   return (
     <div className={applicationTheme.page}>
-      {/* Top Header Navigation (Single Sleek 1-Line Breadcrumb Standard) */}
-      <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="mx-auto flex w-full max-w-[1700px] items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
-          {/* Sleek 1-Line Inline Breadcrumb & Title */}
-          <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+      {/* Centered application header */}
+      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1428]/95">
+        <div className="mx-auto grid min-h-[76px] w-full max-w-[1700px] grid-cols-[minmax(120px,1fr)_auto_minmax(120px,1fr)] items-center gap-4 px-4 py-3 sm:grid-cols-[minmax(180px,1fr)_auto_minmax(180px,1fr)] sm:px-6 lg:px-8">
+          {/* Back navigation */}
+          <div className="flex items-center">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => navigate("/user?tab=applicationHistory")}
-              className="h-8 gap-1.5 px-2 text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span>{t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}</span>
-            </Button>
-
-            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-
-            <div className="flex min-w-0 items-center gap-2">
-              <CompanyAvatar
-                logoUrl={jdInfo?.logoUrl}
-                companyName={jdInfo?.companyName}
-                className="h-7 w-7 rounded-[8px]"
-              />
-              <span className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {jdInfo?.companyName}
+              className="group h-10 gap-1.5 rounded-xl border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:pr-3 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
+              <span className="hidden sm:inline">
+                {t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}
               </span>
-            </div>
-
-            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-
-            <h1 className="truncate text-sm font-extrabold text-slate-900 dark:text-white">
-              {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
-            </h1>
+            </Button>
           </div>
 
-          {/* Right Header Actions */}
-          <div className="flex items-center gap-3">
-            <ApplicationStatusBadge status={app.status} />
+          {/* Centered application identity */}
+          <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
+            <CompanyAvatar
+              logoUrl={jdInfo?.logoUrl}
+              companyName={jdInfo?.companyName}
+              className="hidden h-10 w-10 rounded-xl border-indigo-500/20 bg-indigo-500/10 text-sm sm:flex"
+            />
+            <div className="max-w-[min(68vw,720px)] min-w-0">
+              <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
+                {jdInfo?.companyName && (
+                  <span className="text-indigo-600 dark:text-indigo-300">{jdInfo.companyName}</span>
+                )}
+                {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
+                <span>
+                  {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+                </span>
+              </h1>
+            </div>
+          </div>
+
+          {/* Refresh action */}
+          <div className="flex min-w-0 items-center justify-end">
             <Button
               variant="outline"
               size="sm"
               onClick={loadData}
-              className="h-8 gap-1.5 border-slate-200 text-xs font-bold dark:border-slate-800">
-              <RotateCw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">
-                {t("userApplicationhistory.reload", "Làm mới")}
-              </span>
+              title={t("userApplicationhistory.reload", "Làm mới")}
+              aria-label={t("userApplicationhistory.reload", "Làm mới")}
+              className="group h-10 w-10 rounded-xl border-slate-300 bg-white p-0 text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              <RotateCw className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
+              <span className="sr-only">{t("userApplicationhistory.reload", "Làm mới")}</span>
             </Button>
           </div>
         </div>
@@ -433,12 +459,21 @@ export function ApplicationWorkspacePage() {
             currentRoundOrder={apiCurrentRoundOrder}
             overallStatus={app.status}
             selectedRoundOrder={selectedRoundOrder}
-            onSelectRound={(order) => setSelectedRoundOrder(order)}
+            onSelectRound={(order) => {
+              if (order === 99 && !canOpenCompetencyReport) return;
+              setSelectedRoundOrder(order);
+            }}
           />
         </Card>
 
         {/* Workspace Main Grid */}
-        {activeRound ? (
+        {selectedRoundOrder === 99 ? (
+          <FinalCompetencyReportNodeView
+            applicationId={Number(applicationId)}
+            rounds={rounds}
+            details={detailsData}
+          />
+        ) : activeRound ? (
           isStandaloneLayout ? (
             /* Standalone Rounds (CV Screening, Email Simulation): Render 3 Standalone Column Containers directly without outer Card wrapper */
             <RoundWorkspaceDispatcher
