@@ -1,5 +1,7 @@
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Award, Check, Lock } from "lucide-react";
+import { AlertTriangle, Award, Check, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../../../../schema-from-be";
 import { areAllRoundsCompleted } from "./applicationProgress";
@@ -43,9 +45,65 @@ export function HorizontalPipeline({
   const isReportSelected = selectedRoundOrder === 99;
   const isAllCompleted = areAllRoundsCompleted(sortedRounds, details, currentRoundOrder);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setCanScrollLeft(scrollLeft > 2);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll, rounds]);
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const selectedEl = el.querySelector("[data-selected='true']");
+    if (selectedEl) {
+      selectedEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+  }, [selectedRoundOrder]);
+
+  const handleScroll = (direction: "left" | "right") => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const scrollAmount = direction === "left" ? -280 : 280;
+    el.scrollBy({ left: scrollAmount, behavior: "smooth" });
+  };
+
   return (
-    <div className="scrollbar-none w-full overflow-x-auto px-1 py-1">
-      <div className="flex min-w-max items-center justify-start gap-2.5 sm:gap-3.5">
+    <div className="group relative flex w-full items-center">
+      {/* Left Scroll Button */}
+      {canScrollLeft && (
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => handleScroll("left")}
+          className="absolute left-1 z-20 h-8 w-8 rounded-full border-slate-200 bg-white/95 shadow-md backdrop-blur-xs hover:bg-white dark:border-slate-800 dark:bg-slate-900/95 dark:hover:bg-slate-900"
+          title="Cuộn sang trái">
+          <ChevronLeft className="h-4 w-4 text-slate-700 dark:text-slate-200" />
+        </Button>
+      )}
+
+      {/* Hidden Scrollbar Container */}
+      <div
+        ref={scrollContainerRef}
+        className="flex w-full items-center justify-start gap-2.5 overflow-x-auto px-1 py-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-3.5 [&::-webkit-scrollbar]:hidden">
         {sortedRounds.map((round, idx) => {
           const roundOrder = round.roundOrder ?? idx + 1;
           const detail = details.find((d) => d.roundId === round.id);
@@ -93,6 +151,7 @@ export function HorizontalPipeline({
               {/* Stage Pill Node Button */}
               <button
                 type="button"
+                data-selected={isSelected ? "true" : "false"}
                 onClick={() => onSelectRound?.(roundOrder)}
                 disabled={isLocked}
                 className={cn(
@@ -179,6 +238,7 @@ export function HorizontalPipeline({
             {/* Final Node Button */}
             <button
               type="button"
+              data-selected={isReportSelected ? "true" : "false"}
               onClick={() => {
                 if (isAllCompleted) onSelectRound?.(99);
               }}
@@ -227,6 +287,19 @@ export function HorizontalPipeline({
           </div>
         )}
       </div>
+
+      {/* Right Scroll Button */}
+      {canScrollRight && (
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => handleScroll("right")}
+          className="absolute right-1 z-20 h-8 w-8 rounded-full border-slate-200 bg-white/95 shadow-md backdrop-blur-xs hover:bg-white dark:border-slate-800 dark:bg-slate-900/95 dark:hover:bg-slate-900"
+          title="Cuộn sang phải">
+          <ChevronRight className="h-4 w-4 text-slate-700 dark:text-slate-200" />
+        </Button>
+      )}
     </div>
   );
 }
