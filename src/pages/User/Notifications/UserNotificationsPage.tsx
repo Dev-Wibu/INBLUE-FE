@@ -185,12 +185,15 @@ export function UserNotificationsPage() {
           ) : (
             <div className="space-y-6">
               {groupedNotifications.map((group) => (
-                <section key={group.type} className="space-y-2.5">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-slate-800/80">
-                    <h3 className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
-                      {group.label}
-                    </h3>
-                    <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                <section key={group.type} className="space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800/80">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-1 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                      <h3 className="text-xs font-bold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+                        {group.label}
+                      </h3>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                       {group.notifications.length} {t("common.notification1", "thông báo")}
                     </span>
                   </div>
