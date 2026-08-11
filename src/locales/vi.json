@@ -5422,7 +5422,15 @@
       "summaryFormatOnline": "Trực tuyến",
       "summaryFormatOffline": "Gặp trực tiếp",
       "summaryEstimateLabel": "Ước tính",
-      "summaryHint": "Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ trước khi phiên bắt đầu."
+      "summaryHint": "Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ trước khi phiên bắt đầu.",
+      "roomOpensHint": "Phòng sẽ mở trước 15 phút. Bạn có thể vào từ trình duyệt khi trạng thái cho phép.",
+      "sessionInfoTitle": "Thông tin phiên",
+      "sessionInfoRefreshHint": "Cập nhật mỗi 30 giây",
+      "techTipTitle": "Mẹo",
+      "techTipBody": "Nếu gặp sự cố kỹ thuật, refresh trang và thử lại. Trang sẽ tự động cập nhật trạng thái phiên mỗi 30 giây.",
+      "readyToJoinLabel": "Sẵn sàng vào phòng",
+      "readyToJoinHint": "Theo dõi thời gian và vào phòng đúng lúc",
+      "minutesValue": "{{minutes}} phút"
     },
     "roundNumber": "Vòng {{number}}"
   },

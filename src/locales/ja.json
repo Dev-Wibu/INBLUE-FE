@@ -5356,7 +5356,15 @@
       "summaryFormatOnline": "オンライン",
       "summaryFormatOffline": "対面",
       "summaryEstimateLabel": "目安",
-      "summaryHint": "面接スケジュールはセッション作成後すぐに確定します。開始前であれば時間の変更も可能です。"
+      "summaryHint": "面接スケジュールはセッション作成後すぐに確定します。開始前であれば時間の変更も可能です。",
+      "roomOpensHint": "面接ルームは開始 15 分前に開きます。ステータスが許可したらブラウザから入室できます。",
+      "sessionInfoTitle": "セッション情報",
+      "sessionInfoRefreshHint": "30 秒ごとに自動更新",
+      "techTipTitle": "ヒント",
+      "techTipBody": "技術的な問題が発生した場合は、ページを再読み込みしてもう一度お試しください。セッションのステータスは 30 秒ごとに自動更新されます。",
+      "readyToJoinLabel": "入室準備完了",
+      "readyToJoinHint": "時間を確認し、予定どおりにルームに入りましょう。",
+      "minutesValue": "{{minutes}} 分"
     },
     "roundNumber": "ラウンド {{number}}"
   },

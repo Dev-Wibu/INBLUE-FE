@@ -5426,7 +5426,15 @@
       "summaryFormatOnline": "Online",
       "summaryFormatOffline": "In person",
       "summaryEstimateLabel": "Estimate",
-      "summaryHint": "Your interview schedule will be confirmed right after the session is created. You can still change the time before it starts."
+      "summaryHint": "Your interview schedule will be confirmed right after the session is created. You can still change the time before it starts.",
+      "roomOpensHint": "The room opens 15 minutes before start. You can join from the browser when the status allows.",
+      "sessionInfoTitle": "Session Info",
+      "sessionInfoRefreshHint": "Auto-refresh every 30 seconds",
+      "techTipTitle": "Tip",
+      "techTipBody": "If you hit any technical issue, refresh the page and try again. The page will auto-update session status every 30 seconds.",
+      "readyToJoinLabel": "Ready to join",
+      "readyToJoinHint": "Track the time and enter the room on schedule.",
+      "minutesValue": "{{minutes}} min"
     },
     "roundNumber": "Round {{number}}"
   },
