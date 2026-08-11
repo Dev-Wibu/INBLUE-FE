@@ -290,7 +290,7 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
               </p>
             </div>
           ) : (
-            <div className="custom-scrollbar max-h-[calc(100vh-280px)] space-y-3 overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 [&::-webkit-scrollbar-track]:bg-transparent">
+            <div className="max-h-[calc(100vh-280px)] space-y-3 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {filteredJobs.map((job) => (
                 <MasterJobCard
                   key={job.id}
