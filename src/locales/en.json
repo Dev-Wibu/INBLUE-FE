@@ -5414,7 +5414,19 @@
       "nextStep2Desc": "Browse expertise profiles, ratings and choose the mentor you want to interview with.",
       "nextStep3Badge": "Step 3",
       "nextStep3Title": "3. Schedule & Interview",
-      "nextStep3Desc": "Pick a convenient time slot and enter the 1-1 online video interview room."
+      "nextStep3Desc": "Pick a convenient time slot and enter the 1-1 online video interview room.",
+      "summaryTitle": "Interview Summary",
+      "summaryLiveBadge": "Live",
+      "summaryStartLabel": "Start",
+      "summaryEndLabel": "End",
+      "summaryDurationSuffix": "+ {{minutes}} min",
+      "summaryDurationLabel": "Duration",
+      "summaryDurationValue": "{{minutes}} min",
+      "summaryFormatLabel": "Format",
+      "summaryFormatOnline": "Online",
+      "summaryFormatOffline": "In person",
+      "summaryEstimateLabel": "Estimate",
+      "summaryHint": "Your interview schedule will be confirmed right after the session is created. You can still change the time before it starts."
     },
     "roundNumber": "Round {{number}}"
   },

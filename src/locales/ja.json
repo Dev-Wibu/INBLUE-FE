@@ -5344,7 +5344,19 @@
       "nextStep2Desc": "スキルプロフィールと評価を確認し、面接したいメンターを選びます。",
       "nextStep3Badge": "ステップ 3",
       "nextStep3Title": "3. 予約と面接",
-      "nextStep3Desc": "都合の良い時間を選び、1対1のオンライン ビデオ面接ルームに入ります。"
+      "nextStep3Desc": "都合の良い時間を選び、1対1のオンライン ビデオ面接ルームに入ります。",
+      "summaryTitle": "面接の概要",
+      "summaryLiveBadge": "ライブ更新",
+      "summaryStartLabel": "開始",
+      "summaryEndLabel": "終了",
+      "summaryDurationSuffix": "+ {{minutes}} 分",
+      "summaryDurationLabel": "所要時間",
+      "summaryDurationValue": "{{minutes}} 分",
+      "summaryFormatLabel": "形式",
+      "summaryFormatOnline": "オンライン",
+      "summaryFormatOffline": "対面",
+      "summaryEstimateLabel": "目安",
+      "summaryHint": "面接スケジュールはセッション作成後すぐに確定します。開始前であれば時間の変更も可能です。"
     },
     "roundNumber": "ラウンド {{number}}"
   },

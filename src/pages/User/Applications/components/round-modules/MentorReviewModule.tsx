@@ -1384,7 +1384,7 @@ function ScheduleStep({
                   <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-800">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
                       <Sparkles className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
-                      Chuyên môn
+                      {t("userApplicationhistory.mentorSelectExpertise", "Chuyên môn")}
                     </div>
                     <p className="mt-1.5 text-sm leading-5 font-semibold text-slate-900 dark:text-slate-100">
                       {selectedMentor.expertise}
@@ -1445,10 +1445,10 @@ function ScheduleStep({
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
                   <BadgeCheck className="h-4 w-4" />
                 </span>
-                Tóm tắt buổi phỏng vấn
+                {t("userApplication.mentorReview.summaryTitle", "Tóm tắt buổi phỏng vấn")}
               </h3>
               <span className="rounded-full border border-emerald-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
-                Cập nhật trực tiếp
+                {t("userApplication.mentorReview.summaryLiveBadge", "Cập nhật trực tiếp")}
               </span>
             </div>
           </div>
@@ -1458,7 +1458,7 @@ function ScheduleStep({
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                    Bắt đầu
+                    {t("userApplication.mentorReview.summaryStartLabel", "Bắt đầu")}
                   </div>
                   <div className="mt-1 text-3xl font-black tracking-tight text-slate-950 tabular-nums dark:text-white">
                     {summaryTime}
@@ -1470,13 +1470,15 @@ function ScheduleStep({
                 <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                 <div className="min-w-0 text-right">
                   <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                    Kết thúc
+                    {t("userApplication.mentorReview.summaryEndLabel", "Kết thúc")}
                   </div>
                   <div className="mt-1 text-3xl font-black tracking-tight text-indigo-700 tabular-nums dark:text-indigo-200">
                     {formattedEndTime}
                   </div>
                   <div className="mt-1 text-xs font-bold text-indigo-600 dark:text-indigo-300">
-                    + {duration} phút
+                    {t("userApplication.mentorReview.summaryDurationSuffix", "+ {{minutes}} phút", {
+                      minutes: duration,
+                    })}
                   </div>
                 </div>
               </div>
@@ -1484,26 +1486,38 @@ function ScheduleStep({
               <div className="grid gap-2.5 border-t border-slate-200 pt-3 dark:border-slate-800">
                 <SummaryLine
                   icon={<Hourglass className="h-4 w-4" />}
-                  label="Thời lượng"
-                  value={`${duration} phút`}
+                  label={t("userApplication.mentorReview.summaryDurationLabel", "Thời lượng")}
+                  value={t(
+                    "userApplication.mentorReview.summaryDurationValue",
+                    "{{minutes}} phút",
+                    {
+                      minutes: duration,
+                    }
+                  )}
                 />
                 <SummaryLine
                   icon={offline ? <MapPin className="h-4 w-4" /> : <Video className="h-4 w-4" />}
-                  label="Hình thức"
-                  value={offline ? "Gặp trực tiếp" : "Trực tuyến"}
+                  label={t("userApplication.mentorReview.summaryFormatLabel", "Hình thức")}
+                  value={
+                    offline
+                      ? t("userApplication.mentorReview.summaryFormatOffline", "Gặp trực tiếp")
+                      : t("userApplication.mentorReview.summaryFormatOnline", "Trực tuyến")
+                  }
                 />
                 {selectedMentor?.rate != null && (
                   <SummaryLine
                     icon={<CircleDollarSign className="h-4 w-4" />}
-                    label="Ước tính"
+                    label={t("userApplication.mentorReview.summaryEstimateLabel", "Ước tính")}
                     value={formatRate(selectedMentor.rate, duration)}
                   />
                 )}
               </div>
 
               <p className="border-t border-slate-200 pt-3 text-xs leading-5 text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ trước
-                khi phiên bắt đầu.
+                {t(
+                  "userApplication.mentorReview.summaryHint",
+                  "Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ trước khi phiên bắt đầu."
+                )}
               </p>
             </div>
           </div>

@@ -5410,7 +5410,19 @@
       "nextStep2Desc": "Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn.",
       "nextStep3Badge": "Bước 3",
       "nextStep3Title": "3. Đặt lịch & Phỏng vấn",
-      "nextStep3Desc": "Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến."
+      "nextStep3Desc": "Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến.",
+      "summaryTitle": "Tóm tắt buổi phỏng vấn",
+      "summaryLiveBadge": "Cập nhật trực tiếp",
+      "summaryStartLabel": "Bắt đầu",
+      "summaryEndLabel": "Kết thúc",
+      "summaryDurationSuffix": "+ {{minutes}} phút",
+      "summaryDurationLabel": "Thời lượng",
+      "summaryDurationValue": "{{minutes}} phút",
+      "summaryFormatLabel": "Hình thức",
+      "summaryFormatOnline": "Trực tuyến",
+      "summaryFormatOffline": "Gặp trực tiếp",
+      "summaryEstimateLabel": "Ước tính",
+      "summaryHint": "Lịch phỏng vấn sẽ được xác nhận ngay sau khi tạo phiên. Bạn vẫn có thể đổi giờ trước khi phiên bắt đầu."
     },
     "roundNumber": "Vòng {{number}}"
   },
