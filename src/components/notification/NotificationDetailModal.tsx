@@ -28,10 +28,14 @@ export function NotificationDetailModal({
   const isRead = Boolean(notification.isRead);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="rounded-2xl border-slate-200/90 sm:max-w-lg dark:border-slate-800/80 dark:bg-slate-950">
         <DialogHeader>
-          <DialogTitle>{notification.title || t("common.notification")}</DialogTitle>
-          <DialogDescription>{t("compNotification.viewYourNotificationDetails")}</DialogDescription>
+          <DialogTitle className="text-base font-bold text-slate-900 dark:text-white">
+            {notification.title || t("common.notification")}
+          </DialogTitle>
+          <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+            {t("compNotification.viewYourNotificationDetails")}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -40,8 +44,8 @@ export function NotificationDetailModal({
               variant="outline"
               className={
                 isRead
-                  ? "border-emerald-200 text-emerald-700"
-                  : "border-[#0047AB]/40 text-[#0047AB]"
+                  ? "border-emerald-200 bg-emerald-50/80 text-emerald-700 dark:border-emerald-800/80 dark:bg-emerald-950/40 dark:text-emerald-400"
+                  : "border-indigo-200 bg-indigo-50/80 text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/40 dark:text-indigo-300"
               }>
               {isRead ? (
                 <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
@@ -52,14 +56,14 @@ export function NotificationDetailModal({
             </Badge>
 
             {parsedCreatedAt && (
-              <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                <CalendarClock className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                <CalendarClock className="h-3.5 w-3.5 text-slate-400" />
                 {formatDateTime(parsedCreatedAt)}
               </span>
             )}
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+          <div className="rounded-xl border border-slate-200/90 bg-slate-50/70 p-4 text-xs leading-relaxed font-medium text-slate-700 dark:border-slate-800/80 dark:bg-slate-900/60 dark:text-slate-200">
             {notification.message || t("compNotification.thisAnnouncementDoesNotHave")}
           </div>
         </div>

@@ -59,19 +59,26 @@ export function NotificationDropdown({
     <>
       <DropdownMenuContent
         align="end"
-        className="flex max-h-[calc(100vh-2rem)] w-80 max-w-[calc(100vw-1rem)] flex-col overflow-hidden p-0 sm:w-96">
+        className="flex max-h-[calc(100vh-2rem)] w-80 max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-0 shadow-xl sm:w-96 dark:border-slate-800/80 dark:bg-slate-950">
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-            {t("common.notification")}
-          </h3>
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100/90 px-4 py-3.5 dark:border-slate-800/80">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              {t("common.notification")}
+            </h3>
+            {unreadCount > 0 && (
+              <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
+                {unreadCount}
+              </span>
+            )}
+          </div>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleMarkAllRead}
               disabled={isMarkingAllAsRead}
-              className="h-auto px-2 py-1 text-xs text-[#0047AB] hover:text-[#0047AB] dark:text-[#66B2FF]">
+              className="h-auto px-2 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950/50">
               {isMarkingAllAsRead ? (
                 <Spinner
                   size="sm"
@@ -79,7 +86,7 @@ export function NotificationDropdown({
                   aria-label={t("compNotification.markingNotification")}
                 />
               ) : (
-                <CheckCheck className="mr-1 h-3 w-3" />
+                <CheckCheck className="mr-1 h-3.5 w-3.5" />
               )}
               {t("compNotification.markAsRead")}
             </Button>
@@ -87,7 +94,7 @@ export function NotificationDropdown({
         </div>
 
         {/* Notification list */}
-        <ScrollArea className="min-h-0 flex-1">
+        <ScrollArea className="min-h-0 flex-1 p-1.5">
           <NotificationList
             notifications={recentNotifications}
             isLoading={isLoading}
@@ -99,12 +106,12 @@ export function NotificationDropdown({
         </ScrollArea>
 
         {/* Footer */}
-        <DropdownMenuSeparator className="shrink-0" />
-        <div className="hrink-0 p-2">
+        <DropdownMenuSeparator className="shrink-0 border-slate-100 dark:border-slate-800/80" />
+        <div className="shrink-0 p-2">
           <Link
             to={notificationsPath}
             onClick={closeDropdown}
-            className="flex w-full items-center justify-center rounded-md py-2 text-sm font-medium text-[#0047AB] transition-colors hover:bg-[#0047AB]/5 dark:text-[#66B2FF] dark:hover:bg-[#0047AB]/10">
+            className="flex w-full items-center justify-center rounded-xl py-2.5 text-xs font-semibold text-indigo-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950/50">
             {t("compNotification.seeAllAnnouncements")}
           </Link>
         </div>

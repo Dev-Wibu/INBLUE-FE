@@ -50,21 +50,23 @@ export function NotificationItem({
         var_0: notificationTitle,
       })}
       className={cn(
-        "flex w-full cursor-pointer items-start gap-3 rounded-lg p-3 text-left transition-colors",
+        "group flex w-full cursor-pointer items-start gap-3 rounded-xl p-3 text-left transition-all",
         isUnread
-          ? "bg-[#0047AB]/5 hover:bg-[#0047AB]/10 dark:bg-[#0047AB]/10 dark:hover:bg-[#0047AB]/20"
-          : "hover:bg-slate-50 dark:hover:bg-slate-800",
-        compact && "p-2"
+          ? "border border-indigo-100/80 bg-indigo-50/60 hover:bg-indigo-50 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/50"
+          : "border border-transparent hover:bg-slate-50 dark:hover:bg-slate-900/60",
+        compact && "p-2.5"
       )}>
       {/* Icon */}
       <div
         className={cn(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-          isUnread ? "bg-[#0047AB]/10 dark:bg-[#0047AB]/20" : "bg-slate-100 dark:bg-slate-800",
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors",
+          isUnread
+            ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400"
+            : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
           compact && "h-8 w-8"
         )}>
         <IconComponent
-          className={cn("h-5 w-5", notificationType.iconColorClassName, compact && "h-4 w-4")}
+          className={cn("h-4.5 w-4.5", notificationType.iconColorClassName, compact && "h-4 w-4")}
         />
       </div>
 
@@ -73,23 +75,27 @@ export function NotificationItem({
         <div className="flex items-start justify-between gap-2">
           <p
             className={cn(
-              "text-sm font-medium text-slate-900 dark:text-slate-100",
-              isUnread && "font-semibold"
+              "text-xs font-semibold text-slate-900 dark:text-slate-100",
+              isUnread && "font-bold text-indigo-950 dark:text-indigo-100"
             )}>
             {notificationTitle}
           </p>
-          {/* Unread indicator */}
-          {isUnread && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#0047AB]" />}
+          {/* Unread indicator dot */}
+          {isUnread && (
+            <span className="mt-1 flex h-2 w-2 shrink-0 rounded-full bg-indigo-600 shadow-2xs dark:bg-indigo-400" />
+          )}
         </div>
         <p
           className={cn(
-            "mt-1 line-clamp-2 text-sm text-slate-600 dark:text-slate-400",
+            "mt-0.5 line-clamp-2 text-xs text-slate-600 dark:text-slate-300",
             compact && "line-clamp-1"
           )}>
           {notification.message}
         </p>
         {timeAgo && (
-          <p title={absoluteTime} className="mt-1 text-xs text-slate-500 dark:text-slate-500">
+          <p
+            title={absoluteTime}
+            className="mt-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
             {timeAgo}
           </p>
         )}
