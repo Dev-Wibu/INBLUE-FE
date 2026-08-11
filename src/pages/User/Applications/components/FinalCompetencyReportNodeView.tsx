@@ -419,7 +419,7 @@ export function FinalCompetencyReportNodeView({
         {(() => {
           const { text, badge } = scoreColor(chart.overallScore);
           return (
-            <div className="flex min-h-[200px] items-center rounded-xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/40 p-5 shadow-xs dark:border-indigo-500/20 dark:bg-indigo-500/[0.08] dark:shadow-none">
+            <div className="flex min-h-[200px] items-center rounded-xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/40 p-5 shadow-xs dark:border-indigo-500/20 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/40 dark:shadow-none">
               <div className="flex w-full items-center justify-center gap-4">
                 <Gauge score={chart.overallScore} size={88} />
                 <div className="min-w-0">
@@ -574,301 +574,296 @@ export function FinalCompetencyReportNodeView({
       {/* ═══════════════════════════════════════════════════════
           ROW 4 — Radar (left) + Full skill breakdown (right)
           ═══════════════════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════════════
+          ROW 4 — Unified 2-Column Grid (Left: Radar + Narrative + Recommendations | Right: Full Skills + Circle Scores + Rounds)
+          ═══════════════════════════════════════════════════════ */}
       <div className="grid gap-4 lg:grid-cols-5 lg:items-start">
-        {/* Radar panel */}
-        <div className="overflow-hidden rounded-xl border border-indigo-200/80 bg-white shadow-xs lg:col-span-3 dark:border-indigo-500/20 dark:bg-[#0b1225] dark:shadow-none">
-          <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-indigo-500/15">
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Biểu đồ năng lực
-              </h3>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Tương quan giữa các nhóm kỹ năng
+        {/* LEFT COLUMN (3/5): Radar chart + Narrative + Recommendations */}
+        <div className="space-y-4 lg:col-span-3">
+          {/* Radar panel */}
+          <div className="overflow-hidden rounded-xl border border-indigo-200/80 bg-white shadow-xs dark:border-indigo-500/20 dark:bg-[#0b1225] dark:shadow-none">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-indigo-500/15">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Biểu đồ năng lực
+                </h3>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Tương quan giữa các nhóm kỹ năng
+                </p>
+              </div>
+              <span className="rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+                0—100
+              </span>
+            </div>
+            {radarData.length > 0 ? (
+              <div className="grid items-center gap-3 px-4 pt-3 pb-5 md:grid-cols-[minmax(0,1fr)_150px]">
+                <div className="relative min-w-0">
+                  <style>{`
+                    @keyframes radar-glow-float {
+                      0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .35; }
+                      50% { transform: translate3d(8px, -10px, 0) scale(1.35); opacity: .9; }
+                    }
+                    @keyframes radar-glow-pulse {
+                      0%, 100% { transform: scale(.92); opacity: .28; }
+                      50% { transform: scale(1.08); opacity: .5; }
+                    }
+                  `}</style>
+                  <div
+                    className="pointer-events-none absolute inset-10 rounded-full bg-indigo-500/[0.08] blur-2xl"
+                    style={{
+                      animation: prefersReducedMotion
+                        ? "none"
+                        : "radar-glow-pulse 5s ease-in-out infinite",
+                    }}
+                  />
+                  <ResponsiveContainer width="100%" height={400}>
+                    <RadarChart data={radarData} outerRadius="72%">
+                      <PolarGrid
+                        stroke="#cbd5e1"
+                        strokeOpacity={0.7}
+                        className="dark:[stroke:#334155]"
+                      />
+                      <PolarRadiusAxis
+                        angle={90}
+                        domain={[0, 100]}
+                        tickCount={5}
+                        tick={{ fill: "#64748b", fontSize: 9 }}
+                        axisLine={false}
+                      />
+                      <PolarAngleAxis
+                        dataKey="label"
+                        tick={{ className: "fill-slate-700 dark:fill-slate-200 text-xs font-bold" }}
+                        tickLine={false}
+                      />
+                      <Radar
+                        dataKey="score"
+                        stroke="#6366f1"
+                        fill="#6366f1"
+                        fillOpacity={0.3}
+                        strokeWidth={2.5}
+                        dot={{ r: 5, fill: "#818cf8", stroke: "#4f46e5", strokeWidth: 2 }}
+                        isAnimationActive={!prefersReducedMotion}
+                        animationBegin={150}
+                        animationDuration={prefersReducedMotion ? 0 : 1200}
+                        animationEasing="ease-out"
+                      />
+                      <Tooltip
+                        cursor={false}
+                        contentStyle={{
+                          backgroundColor: "#0f172a",
+                          border: "1px solid #334155",
+                          borderRadius: 10,
+                          color: "#e2e8f0",
+                          fontSize: 12,
+                        }}
+                        formatter={(v) => [`${Number(v).toFixed(0)}/100`, "Điểm"]}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex flex-col items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 text-center dark:border-indigo-400/25 dark:bg-indigo-500/[0.08]">
+                  <p className="text-[11px] font-bold tracking-[0.18em] text-indigo-700 dark:text-indigo-300">
+                    TỔNG QUAN
+                  </p>
+                  <p
+                    className={`mt-3 text-4xl leading-none font-black tabular-nums ${scoreColor(radarOverallScore).text}`}>
+                    {radarOverallScore.toFixed(1)}
+                  </p>
+                  <span
+                    className={`mt-4 inline-flex rounded-md px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${scoreColor(radarOverallScore).badge}`}>
+                    {competencyLevelLabelVi[chart.overallLevel] ||
+                      competencyLevelLabel[chart.overallLevel] ||
+                      chart.overallLevel}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex h-48 items-center justify-center text-sm text-slate-400">
+                Chưa có dữ liệu
+              </div>
+            )}
+          </div>
+
+          {/* Narrative */}
+          {journey?.narrative && (
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+              <div className="border-b border-slate-100 pb-3 dark:border-slate-800">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Nhận xét tổng thể
+                </h3>
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                {journey.narrative}
               </p>
             </div>
-            <span className="rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
-              0—100
-            </span>
-          </div>
-          {radarData.length > 0 ? (
-            <div className="grid items-center gap-3 px-4 pt-3 pb-5 md:grid-cols-[minmax(0,1fr)_150px]">
-              <div className="relative min-w-0">
-                <style>{`
-                  @keyframes radar-glow-float {
-                    0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .35; }
-                    50% { transform: translate3d(8px, -10px, 0) scale(1.35); opacity: .9; }
-                  }
-                  @keyframes radar-glow-pulse {
-                    0%, 100% { transform: scale(.92); opacity: .28; }
-                    50% { transform: scale(1.08); opacity: .5; }
-                  }
-                `}</style>
-                <div
-                  className="pointer-events-none absolute inset-10 rounded-full bg-indigo-500/[0.08] blur-2xl"
-                  style={{
-                    animation: prefersReducedMotion
-                      ? "none"
-                      : "radar-glow-pulse 5s ease-in-out infinite",
-                  }}
-                />
-                <ResponsiveContainer width="100%" height={400}>
-                  <RadarChart data={radarData} outerRadius="72%">
-                    <PolarGrid
-                      stroke="#cbd5e1"
-                      strokeOpacity={0.7}
-                      className="dark:[stroke:#334155]"
-                    />
-                    <PolarRadiusAxis
-                      angle={90}
-                      domain={[0, 100]}
-                      tickCount={5}
-                      tick={{ fill: "#64748b", fontSize: 9 }}
-                      axisLine={false}
-                    />
-                    <PolarAngleAxis
-                      dataKey="label"
-                      tick={{ className: "fill-slate-700 dark:fill-slate-200 text-xs font-bold" }}
-                      tickLine={false}
-                    />
-                    <Radar
-                      dataKey="score"
-                      stroke="#6366f1"
-                      fill="#6366f1"
-                      fillOpacity={0.3}
-                      strokeWidth={2.5}
-                      dot={{ r: 5, fill: "#818cf8", stroke: "#4f46e5", strokeWidth: 2 }}
-                      isAnimationActive={!prefersReducedMotion}
-                      animationBegin={150}
-                      animationDuration={prefersReducedMotion ? 0 : 1200}
-                      animationEasing="ease-out"
-                    />
-                    <Tooltip
-                      cursor={false}
-                      contentStyle={{
-                        backgroundColor: "#0f172a",
-                        border: "1px solid #334155",
-                        borderRadius: 10,
-                        color: "#e2e8f0",
-                        fontSize: 12,
-                      }}
-                      formatter={(v) => [`${Number(v).toFixed(0)}/100`, "Điểm"]}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+          )}
+
+          {/* Development Recommendations */}
+          {journey?.developmentRecommendations && journey.developmentRecommendations.length > 0 && (
+            <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+              <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3 dark:border-slate-800">
+                <Lightbulb className="h-4 w-4 text-amber-500" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Định hướng phát triển
+                </h3>
               </div>
-              <div className="flex flex-col items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 text-center dark:border-indigo-400/25 dark:bg-indigo-500/[0.08]">
-                <p className="text-[11px] font-bold tracking-[0.18em] text-indigo-700 dark:text-indigo-300">
-                  TỔNG QUAN
-                </p>
-                <p
-                  className={`mt-3 text-4xl leading-none font-black tabular-nums ${scoreColor(radarOverallScore).text}`}>
-                  {radarOverallScore.toFixed(1)}
-                </p>
-                <span
-                  className={`mt-4 inline-flex rounded-md px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${scoreColor(radarOverallScore).badge}`}>
-                  {competencyLevelLabelVi[chart.overallLevel] ||
-                    competencyLevelLabel[chart.overallLevel] ||
-                    chart.overallLevel}
-                </span>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {journey.developmentRecommendations.slice(0, 5).map((item, i) => (
+                  <div key={i} className="flex gap-3 px-5 py-3">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[10px] font-bold text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
+                      {i + 1}
+                    </span>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">
+                        {item.targetSkillArea}
+                      </p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                        {item.recommendation}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          ) : (
-            <div className="flex h-48 items-center justify-center text-sm text-slate-400">
-              Chưa có dữ liệu
             </div>
           )}
         </div>
 
-        {/* Full skill list panel */}
-        <div className="rounded-xl border border-slate-200 bg-white shadow-xs lg:col-span-2 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-          <div className="border-b border-slate-100 px-5 py-3.5 dark:border-slate-800">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              Chi tiết tất cả kỹ năng
-            </h3>
-          </div>
+        {/* RIGHT COLUMN (2/5): Full skill list + CircleScore cards + Round list */}
+        <div className="space-y-4 lg:col-span-2">
+          {/* Full skill list panel */}
+          <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+            <div className="border-b border-slate-100 px-5 py-3.5 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Chi tiết tất cả kỹ năng
+              </h3>
+            </div>
 
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {/* Technical */}
-            {chart.technicalSkillAreas.length > 0 && (
-              <>
-                <div className="bg-slate-50 px-5 py-2 dark:bg-slate-800/40">
-                  <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
-                    Chuyên môn
-                  </span>
-                </div>
-                {chart.technicalSkillAreas.map((item, i) => {
-                  const { text, bar } = scoreColor(item.score);
-                  return (
-                    <div key={i} className="flex items-center gap-3 px-5 py-2.5">
-                      <span className="w-40 shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-300">
-                        {item.skillArea}
-                      </span>
-                      <div className="flex-1">
-                        <ScoreBar score={item.score} />
-                      </div>
-                      <span className={`w-8 text-right text-sm font-bold tabular-nums ${text}`}>
-                        {item.score}
-                      </span>
-                      <div className={`h-2 w-2 rounded-full ${bar}`} />
-                    </div>
-                  );
-                })}
-              </>
-            )}
-
-            {/* Behavioral */}
-            {chart.behavioralSkills.length > 0 && (
-              <>
-                <div className="bg-slate-50 px-5 py-2 dark:bg-slate-800/40">
-                  <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
-                    Kỹ năng mềm & thái độ
-                  </span>
-                </div>
-                {chart.behavioralSkills.map((item, i) => {
-                  const { text, bar } = scoreColor(item.score);
-                  return (
-                    <div key={i} className="flex items-center gap-3 px-5 py-2.5">
-                      <span className="w-40 shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-300">
-                        {item.skillName}
-                      </span>
-                      <div className="flex-1">
-                        <ScoreBar score={item.score} />
-                      </div>
-                      <span className={`w-8 text-right text-sm font-bold tabular-nums ${text}`}>
-                        {item.score}
-                      </span>
-                      <div className={`h-2 w-2 rounded-full ${bar}`} />
-                    </div>
-                  );
-                })}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════
-          ROW 4 — Left: Narrative + Recommendations | Right: CircleScore cards
-          ═══════════════════════════════════════════════════════ */}
-      {(journey?.narrative ||
-        (journey?.swecomAssessments?.length ?? 0) > 0 ||
-        (journey?.developmentRecommendations?.length ?? 0) > 0) && (
-        <div className="grid gap-4 lg:grid-cols-5">
-          {/* LEFT (3/5): Narrative + Định hướng phát triển stacked */}
-          <div className="space-y-4 lg:col-span-3">
-            {journey?.narrative && (
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                <div className="border-b border-slate-100 pb-3 dark:border-slate-800">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Nhận xét tổng thể
-                  </h3>
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                  {journey.narrative}
-                </p>
-              </div>
-            )}
-
-            {journey?.developmentRecommendations &&
-              journey.developmentRecommendations.length > 0 && (
-                <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                  <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3 dark:border-slate-800">
-                    <Lightbulb className="h-4 w-4 text-amber-500" />
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Định hướng phát triển
-                    </h3>
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {/* Technical */}
+              {chart.technicalSkillAreas.length > 0 && (
+                <>
+                  <div className="bg-slate-50 px-5 py-2 dark:bg-slate-800/40">
+                    <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
+                      Chuyên môn
+                    </span>
                   </div>
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {journey.developmentRecommendations.slice(0, 5).map((item, i) => (
-                      <div key={i} className="flex gap-3 px-5 py-3">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[10px] font-bold text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
-                          {i + 1}
-                        </span>
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">
-                            {item.targetSkillArea}
-                          </p>
-                          <p className="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                            {item.recommendation}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-          </div>
-
-          {/* RIGHT (2/5): CircleScore cards + Round list below */}
-          <div className="space-y-4 lg:col-span-2">
-            {/* CircleScore evidence cards */}
-            {journey?.swecomAssessments && journey.swecomAssessments.length > 0 && (
-              <>
-                {journey.swecomAssessments.slice(0, 5).map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                    <CircleScore score={item.score} size={52} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
-                        {item.skillArea}
-                      </p>
-                      {item.evidenceSummary && (
-                        <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                          {item.evidenceSummary}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* Round list below circles */}
-            {sortedRounds.length > 0 && (
-              <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Chi tiết từng vòng
-                  </h3>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                    {sortedRounds.length} vòng
-                  </span>
-                </div>
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {sortedRounds.map((round, idx) => {
-                    const roundOrder = round.roundOrder ?? idx + 1;
-                    const detail = details.find((d) => d.roundId === round.id);
-                    const RoundIcon = getRoundIcon(round.roundType);
-                    const score = detail?.finalScore ?? detail?.aiScore ?? detail?.hrScore;
+                  {chart.technicalSkillAreas.map((item, i) => {
+                    const { text, bar } = scoreColor(item.score);
                     return (
-                      <div key={round.id ?? idx} className="flex items-center gap-2.5 px-4 py-2.5">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                          {roundOrder}
+                      <div key={i} className="flex items-center gap-3 px-5 py-2.5">
+                        <span className="w-40 shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-300">
+                          {item.skillArea}
                         </span>
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-                          <RoundIcon className="h-3.5 w-3.5" />
+                        <div className="flex-1">
+                          <ScoreBar score={item.score} />
                         </div>
-                        <span className="flex-1 truncate text-xs font-medium text-slate-800 dark:text-slate-300">
-                          {round.name || `Vòng ${roundOrder}`}
+                        <span className={`w-8 text-right text-sm font-bold tabular-nums ${text}`}>
+                          {item.score}
                         </span>
-                        <ResultPill result={detail?.finalResult} />
-                        {score !== undefined && score !== null && (
-                          <span
-                            className={`shrink-0 text-xs font-bold tabular-nums ${scoreColor(score).text}`}>
-                            {score}
-                            <span className="font-normal text-slate-500">/100</span>
-                          </span>
-                        )}
+                        <div className={`h-2 w-2 rounded-full ${bar}`} />
                       </div>
                     );
                   })}
-                </div>
-              </div>
-            )}
+                </>
+              )}
+
+              {/* Behavioral */}
+              {chart.behavioralSkills.length > 0 && (
+                <>
+                  <div className="bg-slate-50 px-5 py-2 dark:bg-slate-800/40">
+                    <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
+                      Kỹ năng mềm & thái độ
+                    </span>
+                  </div>
+                  {chart.behavioralSkills.map((item, i) => {
+                    const { text, bar } = scoreColor(item.score);
+                    return (
+                      <div key={i} className="flex items-center gap-3 px-5 py-2.5">
+                        <span className="w-40 shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-300">
+                          {item.skillName}
+                        </span>
+                        <div className="flex-1">
+                          <ScoreBar score={item.score} />
+                        </div>
+                        <span className={`w-8 text-right text-sm font-bold tabular-nums ${text}`}>
+                          {item.score}
+                        </span>
+                        <div className={`h-2 w-2 rounded-full ${bar}`} />
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+            </div>
           </div>
+
+          {/* CircleScore evidence cards (sit right below Chi tiết tất cả kỹ năng!) */}
+          {journey?.swecomAssessments && journey.swecomAssessments.length > 0 && (
+            <div className="space-y-3">
+              {journey.swecomAssessments.slice(0, 5).map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                  <CircleScore score={item.score} size={52} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {item.skillArea}
+                    </p>
+                    {item.evidenceSummary && (
+                      <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                        {item.evidenceSummary}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Round list below circles */}
+          {sortedRounds.length > 0 && (
+            <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Chi tiết từng vòng
+                </h3>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                  {sortedRounds.length} vòng
+                </span>
+              </div>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {sortedRounds.map((round, idx) => {
+                  const roundOrder = round.roundOrder ?? idx + 1;
+                  const detail = details.find((d) => d.roundId === round.id);
+                  const RoundIcon = getRoundIcon(round.roundType);
+                  const score = detail?.finalScore ?? detail?.aiScore ?? detail?.hrScore;
+                  return (
+                    <div key={round.id ?? idx} className="flex items-center gap-2.5 px-4 py-2.5">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                        {roundOrder}
+                      </span>
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+                        <RoundIcon className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="flex-1 truncate text-xs font-medium text-slate-800 dark:text-slate-300">
+                        {round.name || `Vòng ${roundOrder}`}
+                      </span>
+                      <ResultPill result={detail?.finalResult} />
+                      {score !== undefined && score !== null && (
+                        <span
+                          className={`shrink-0 text-xs font-bold tabular-nums ${scoreColor(score).text}`}>
+                          {score}
+                          <span className="font-normal text-slate-500">/100</span>
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
