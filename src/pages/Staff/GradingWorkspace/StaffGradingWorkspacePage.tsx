@@ -24,10 +24,10 @@ import {
   Edit3,
   FileText,
   Layers,
+  Lock,
   MessageSquare,
-  OctagonX,
-  Play,
   RefreshCw,
+  Save,
   Send,
   Sparkles,
   Star,
@@ -35,7 +35,6 @@ import {
   Trophy,
   User,
   XCircle,
-  Zap,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -176,7 +175,7 @@ function StaffGradingModal({
 }) {
   const { t } = useTranslation();
   const hasExistingGrade = detail.hrScore !== undefined && detail.hrScore !== null;
-  const [isEditing, setIsEditing] = useState(hasExistingGrade);
+  const [isEditing, setIsEditing] = useState(!hasExistingGrade); // Start editing if first time grading
   const [isPass, setIsPass] = useState(detail.finalResult === "PASSED");
   const [score, setScore] = useState(
     hasExistingGrade
@@ -190,7 +189,7 @@ function StaffGradingModal({
 
   const { mutate: submitScore, isPending: isSubmitting } = useHrScore({
     onSuccess: () => {
-      toast.success(t("grading.gradeSuccess", "Chấm điểm thành công!"));
+      toast.success(t("grading.gradeSuccess", "Grading successful!"));
       onSuccess();
       onClose();
     },
@@ -199,18 +198,16 @@ function StaffGradingModal({
   const handleScoreChange = (val: string) => {
     setScore(val);
     if (val.trim() === "") {
-      setScoreError(t("grading.gradingErrorEmpty", "Vui lòng nhập điểm số"));
+      setScoreError(t("grading.gradingErrorEmpty", "Please enter a score"));
       return;
     }
     const num = parseFloat(val);
     if (isNaN(num)) {
-      setScoreError(t("grading.gradingErrorInvalidNumber", "Điểm số phải là số hợp lệ"));
+      setScoreError(t("grading.gradingErrorInvalidNumber", "Score must be a valid number"));
       return;
     }
     if (num < 0 || num > 100) {
-      setScoreError(
-        t("grading.gradingErrorScoreRange", "Điểm số phải nằm trong khoảng từ 0 đến 100")
-      );
+      setScoreError(t("grading.gradingErrorScoreRange", "Score must be between 0 and 100"));
       return;
     }
     setScoreError(null);
@@ -218,16 +215,8 @@ function StaffGradingModal({
 
   const handleSubmit = () => {
     const scoreNum = parseFloat(score);
-    if (isNaN(scoreNum) || score.trim() === "") {
-      setScoreError(t("gradingErrorScoreRange", "Vui lòng nhập điểm số hợp lệ từ 0 đến 100"));
-      toast.error(t("grading.invalidScore", "Điểm không hợp lệ"));
-      return;
-    }
-    if (scoreNum < 0 || scoreNum > 100) {
-      setScoreError(
-        t("grading.gradingErrorScoreRange", "Điểm số phải nằm trong khoảng từ 0 đến 100")
-      );
-      toast.error(t("grading.invalidScore", "Điểm không hợp lệ"));
+    if (isNaN(scoreNum) || score.trim() === "" || scoreNum < 0 || scoreNum > 100) {
+      toast.error(t("grading.invalidScore", "Invalid score"));
       return;
     }
     const clampedScore = Math.min(100, Math.max(0, scoreNum));
@@ -243,7 +232,7 @@ function StaffGradingModal({
   };
 
   const handleClose = () => {
-    setIsEditing(hasExistingGrade);
+    setIsEditing(!hasExistingGrade); // Reset: editing if first time, view mode if has existing
     setScore(
       hasExistingGrade
         ? String(detail.hrScore)
@@ -258,52 +247,41 @@ function StaffGradingModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[90vh] max-w-2xl gap-0 overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-slate-50 via-white to-indigo-50/40 p-0 shadow-2xl dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/40">
-        {/* Animated gradient header bar */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-        <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-indigo-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-purple-500/10 blur-3xl" />
-
+      <DialogContent className="max-h-[90vh] max-w-2xl gap-0 overflow-hidden rounded-3xl border border-slate-200 bg-white p-0 shadow-xl dark:border-slate-800 dark:bg-slate-900">
         {/* Header */}
-        <DialogHeader className="relative space-y-3 px-7 pt-7 pb-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 opacity-30 blur-md" />
-                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30">
-                  <ClipboardCheck className="h-6 w-6" />
-                </div>
+        <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white">
+              <ClipboardCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-indigo-700 uppercase dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300">
+                  {t("common.staff", "STAFF")}
+                </span>
+                <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  {roundName}
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-indigo-700 uppercase dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300">
-                    {t("common.staff", "STAFF")}
-                  </span>
-                  <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                    {roundName}
-                  </span>
-                </div>
-                <DialogTitle className="mt-1 bg-gradient-to-r from-slate-900 to-indigo-700 bg-clip-text text-xl font-black text-transparent dark:from-white dark:to-indigo-300">
-                  {hasExistingGrade && !isEditing
-                    ? t("grading.hrResult", "Kết quả chấm điểm")
-                    : isEditing
-                      ? t("grading.editScore", "Sửa điểm")
-                      : t("grading.hrGrading", "Chấm điểm HR")}
-                </DialogTitle>
-              </div>
+              <DialogTitle className="mt-0.5 text-lg font-bold text-slate-900 dark:text-white">
+                {hasExistingGrade && !isEditing
+                  ? t("grading.hrResult", "Grading Result")
+                  : isEditing && hasExistingGrade
+                    ? t("grading.editNote", "Edit Note")
+                    : t("grading.hrGrading", "HR Grading")}
+              </DialogTitle>
             </div>
           </div>
         </DialogHeader>
 
         {/* Body */}
-        <div className="relative max-h-[calc(90vh-100px)] space-y-5 overflow-y-auto px-7 pb-7">
+        <div className="max-h-[calc(90vh-100px)] space-y-5 overflow-y-auto px-6 py-5">
           {/* AI Reference Card */}
           {detail.aiScore !== undefined && (
-            <div className="group relative overflow-hidden rounded-2xl border border-purple-200/60 bg-gradient-to-br from-purple-50 via-indigo-50/40 to-white p-4 shadow-sm dark:border-purple-500/20 dark:from-purple-950/30 dark:via-indigo-950/20 dark:to-slate-900">
-              <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
-              <div className="relative flex items-center justify-between gap-3">
+            <div className="overflow-hidden rounded-2xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-500/30 dark:bg-purple-950/20">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md shadow-purple-500/30">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600 text-white">
                     <Sparkles className="h-4 w-4" />
                   </div>
                   <div>
@@ -316,7 +294,7 @@ function StaffGradingModal({
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-2xl font-black tracking-tight text-transparent">
+                  <span className="text-2xl font-black text-purple-600 dark:text-purple-300">
                     {Math.round(detail.aiScore)}
                   </span>
                   <span className="ml-0.5 text-xs font-bold text-slate-400">/100</span>
@@ -330,41 +308,32 @@ function StaffGradingModal({
             <div className="space-y-4">
               <div
                 className={cn(
-                  "group relative overflow-hidden rounded-3xl border-2 p-5 shadow-xl transition-all",
+                  "overflow-hidden rounded-3xl border-2 p-5",
                   detail.finalResult === "PASSED"
-                    ? "border-emerald-300/60 bg-gradient-to-br from-emerald-50 via-teal-50/50 to-white dark:border-emerald-500/30 dark:from-emerald-950/40 dark:via-teal-950/20 dark:to-slate-900"
-                    : "border-rose-300/60 bg-gradient-to-br from-rose-50 via-orange-50/50 to-white dark:border-rose-500/30 dark:from-rose-950/40 dark:via-orange-950/20 dark:to-slate-900"
+                    ? "border-emerald-300 bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-950/40"
+                    : "border-rose-300 bg-rose-50 dark:border-rose-500/30 dark:bg-rose-950/40"
                 )}>
-                <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br from-amber-300/30 to-transparent blur-2xl" />
-                <div className="relative flex items-center justify-between">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <div
-                        className={cn(
-                          "absolute inset-0 rounded-2xl opacity-40 blur-md",
-                          detail.finalResult === "PASSED" ? "bg-emerald-400" : "bg-rose-400"
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "relative flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg",
-                          detail.finalResult === "PASSED"
-                            ? "bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-emerald-500/30"
-                            : "bg-gradient-to-br from-rose-500 to-orange-500 text-white shadow-rose-500/30"
-                        )}>
-                        {detail.finalResult === "PASSED" ? (
-                          <Trophy className="h-7 w-7" />
-                        ) : (
-                          <AlertCircle className="h-7 w-7" />
-                        )}
-                      </div>
+                    <div
+                      className={cn(
+                        "flex h-14 w-14 items-center justify-center rounded-2xl",
+                        detail.finalResult === "PASSED"
+                          ? "bg-emerald-600 text-white"
+                          : "bg-rose-600 text-white"
+                      )}>
+                      {detail.finalResult === "PASSED" ? (
+                        <Trophy className="h-7 w-7" />
+                      ) : (
+                        <AlertCircle className="h-7 w-7" />
+                      )}
                     </div>
                     <div>
                       <p className="text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
                         {t("grading.hrScore", "HR Score")}
                       </p>
                       <div className="mt-1 flex items-baseline gap-1">
-                        <span className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black tracking-tight text-transparent dark:from-white dark:to-slate-200">
+                        <span className="text-4xl font-black text-slate-900 dark:text-white">
                           {detail.hrScore}
                         </span>
                         <span className="text-sm font-bold text-slate-400">/100</span>
@@ -374,10 +343,10 @@ function StaffGradingModal({
                   <div className="text-right">
                     <div
                       className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full border-2 px-4 py-1.5 text-xs font-black tracking-wide shadow-md",
+                        "inline-flex items-center gap-1.5 rounded-full border-2 px-4 py-1.5 text-xs font-black",
                         detail.finalResult === "PASSED"
-                          ? "border-emerald-400 bg-emerald-500 text-white shadow-emerald-500/30"
-                          : "border-rose-400 bg-rose-500 text-white shadow-rose-500/30"
+                          ? "border-emerald-400 bg-emerald-500 text-white"
+                          : "border-rose-400 bg-rose-500 text-white"
                       )}>
                       {detail.finalResult === "PASSED" ? (
                         <CheckCircle2 className="h-3.5 w-3.5" />
@@ -393,9 +362,9 @@ function StaffGradingModal({
               </div>
 
               {detail.hrNote && (
-                <div className="rounded-2xl border border-indigo-200/60 bg-gradient-to-br from-indigo-50/60 to-white p-4 shadow-sm dark:border-indigo-500/20 dark:from-indigo-950/30 dark:to-slate-900">
+                <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-500/30 dark:bg-indigo-950/20">
                   <div className="mb-2 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300">
                       <FileText className="h-4 w-4" />
                     </div>
                     <h5 className="text-xs font-extrabold tracking-wide text-indigo-700 uppercase dark:text-indigo-300">
@@ -413,166 +382,128 @@ function StaffGradingModal({
               <Button
                 variant="outline"
                 onClick={() => setIsEditing(true)}
-                className="h-11 w-full gap-2 rounded-2xl border-2 border-indigo-200 bg-white font-bold text-indigo-600 shadow-sm transition-all hover:border-indigo-400 hover:bg-indigo-50 dark:border-indigo-500/30 dark:bg-slate-900 dark:text-indigo-300 dark:hover:bg-indigo-950/40">
+                className="h-11 w-full gap-2 rounded-2xl border-2 border-indigo-200 bg-white font-bold text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 dark:border-indigo-500/30 dark:bg-slate-900 dark:text-indigo-300 dark:hover:bg-indigo-950/40">
                 <Edit3 className="h-4 w-4" />
-                {t("grading.editScore", "Edit Score")}
+                {t("grading.editNote", "Edit Note")}
+              </Button>
+            </div>
+          ) : isEditing && hasExistingGrade ? (
+            // Edit Mode: Only allow editing note, score is readonly
+            <div className="space-y-5">
+              {/* Readonly Score Display */}
+              <div className="overflow-hidden rounded-2xl border-2 border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                      <Lock className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-extrabold tracking-widest text-slate-500 uppercase dark:text-slate-400">
+                        {t("grading.hrScore", "HR Score")} ({t("grading.readonly", "Read-only")})
+                      </p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                        {t("grading.scoreCannotChange", "Score cannot be changed after grading")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-slate-700 dark:text-white">
+                      {detail.hrScore}
+                    </span>
+                    <span className="text-sm font-bold text-slate-400">/100</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* HR Note */}
+              <div className="space-y-2.5">
+                <label className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-slate-700 uppercase dark:text-slate-300">
+                  <MessageSquare className="h-3.5 w-3.5 text-indigo-500" />
+                  {t("general.notes", "Notes")}
+                  <span className="text-[10px] font-medium text-slate-400 normal-case">
+                    ({t("general.optional", "optional")})
+                  </span>
+                </label>
+                <div className="overflow-hidden rounded-2xl border-2 border-slate-200 bg-white transition-colors focus-within:border-indigo-400 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:border-indigo-500/60">
+                  <Textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder={t(
+                      "grading.enterHrNotes",
+                      "Share feedback, observations, or reasons for your decision..."
+                    )}
+                    rows={4}
+                    className="resize-none rounded-2xl border-0 bg-transparent p-3.5 text-sm leading-relaxed focus-visible:ring-0"
+                  />
+                  <div className="flex items-center justify-end gap-1 px-3 pb-2 text-[10px] font-bold text-slate-400">
+                    <span>{note.length}</span>
+                    <span>/</span>
+                    <span>500</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="h-12 w-full gap-2 rounded-2xl bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
+                {isSubmitting ? (
+                  <>
+                    <Spinner className="h-4 w-4 text-white" />
+                    {t("common.saving", "Saving...")}
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    {t("grading.saveNote", "Save Note")}
+                  </>
+                )}
               </Button>
             </div>
           ) : (
             <div className="space-y-5">
-              {/* Decision: Traffic Light / Arcade Game Style */}
+              {/* Decision Toggle */}
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-slate-700 uppercase dark:text-slate-300">
                   <Zap className="h-3.5 w-3.5 text-indigo-500" />
                   {t("grading.decision", "Decision")}
                 </label>
 
-                {/* Arcade Cabinet Housing */}
-                <div className="traffic-light-cabinet relative overflow-hidden rounded-3xl border-4 border-slate-200 bg-gradient-to-b from-slate-50 via-white to-slate-100 p-6 shadow-xl shadow-slate-300/40 dark:border-slate-900 dark:bg-gradient-to-b dark:from-slate-800 dark:via-slate-900 dark:to-black dark:shadow-2xl dark:shadow-black/40">
-                  {/* Scanline overlay (dark only) */}
-                  <div
-                    className="pointer-events-none absolute inset-0 opacity-0 dark:opacity-10"
-                    style={{
-                      backgroundImage:
-                        "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 3px)",
-                    }}
-                  />
-
-                  {/* Inner glow */}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
-
-                  <div className="relative flex items-center justify-around gap-6">
-                    {/* PASS - GREEN LIGHT */}
-                    <button
-                      type="button"
-                      onClick={() => setIsPass(true)}
-                      className="group relative flex flex-col items-center gap-3 transition-transform hover:scale-105 active:scale-95">
-                      <div
-                        className={cn(
-                          "traffic-light-bulb",
-                          isPass ? "traffic-light-bulb--green-on" : "traffic-light-bulb--off"
-                        )}
-                        style={{ color: "#22c55e" }}>
-                        <Play
-                          className={cn(
-                            "h-7 w-7 transition-all",
-                            isPass
-                              ? "text-emerald-950 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                              : "text-slate-400 opacity-50 dark:text-slate-600 dark:opacity-40"
-                          )}
-                          fill={isPass ? "currentColor" : "none"}
-                        />
-                      </div>
-                      <div className="flex flex-col items-center gap-1">
-                        <span
-                          className={cn(
-                            "text-xs font-black tracking-[0.2em] uppercase transition-all",
-                            isPass
-                              ? "decision-go-text text-emerald-500 drop-shadow-[0_0_12px_rgba(74,222,128,0.6)] dark:text-emerald-400 dark:drop-shadow-[0_0_12px_rgba(74,222,128,0.8)]"
-                              : "text-slate-400 opacity-60 dark:text-slate-500 dark:opacity-50"
-                          )}>
-                          {t("userApplicationhistory.passed", "PASSED")}
-                        </span>
-                        <span
-                          className={cn(
-                            "rounded-full px-3 py-0.5 text-[10px] font-bold transition-all",
-                            isPass
-                              ? "border border-emerald-400/60 bg-emerald-50 text-emerald-700 dark:border-emerald-400/50 dark:bg-emerald-500/20 dark:text-emerald-300"
-                              : "border border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
-                          )}>
-                          GO!
-                        </span>
-                      </div>
-                      {isPass && (
-                        <div className="absolute -inset-4 -z-10 rounded-full bg-emerald-400/30 blur-2xl dark:bg-emerald-500/20" />
-                      )}
-                    </button>
-
-                    {/* Divider */}
-                    <div className="flex h-32 w-px flex-col items-center justify-center gap-1">
-                      <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-600">
-                        OR
-                      </span>
-                      <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                      <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                      <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                    </div>
-
-                    {/* FAIL - RED LIGHT */}
-                    <button
-                      type="button"
-                      onClick={() => setIsPass(false)}
-                      className="group relative flex flex-col items-center gap-3 transition-transform hover:scale-105 active:scale-95">
-                      <div
-                        className={cn(
-                          "traffic-light-bulb",
-                          !isPass ? "traffic-light-bulb--red-on" : "traffic-light-bulb--off"
-                        )}
-                        style={{ color: "#ef4444" }}>
-                        <OctagonX
-                          className={cn(
-                            "h-7 w-7 transition-all",
-                            !isPass
-                              ? "text-rose-950 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                              : "text-slate-400 opacity-50 dark:text-slate-600 dark:opacity-40"
-                          )}
-                          strokeWidth={3}
-                        />
-                      </div>
-                      <div className="flex flex-col items-center gap-1">
-                        <span
-                          className={cn(
-                            "text-xs font-black tracking-[0.2em] uppercase transition-all",
-                            !isPass
-                              ? "decision-stop-text text-rose-500 drop-shadow-[0_0_12px_rgba(248,113,113,0.6)] dark:text-rose-400 dark:drop-shadow-[0_0_12px_rgba(248,113,113,0.8)]"
-                              : "text-slate-400 opacity-60 dark:text-slate-500 dark:opacity-50"
-                          )}>
-                          {t("userApplicationhistory.failed", "FAILED")}
-                        </span>
-                        <span
-                          className={cn(
-                            "rounded-full px-3 py-0.5 text-[10px] font-bold transition-all",
-                            !isPass
-                              ? "border border-rose-400/60 bg-rose-50 text-rose-700 dark:border-rose-400/50 dark:bg-rose-500/20 dark:text-rose-300"
-                              : "border border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
-                          )}>
-                          STOP!
-                        </span>
-                      </div>
-                      {!isPass && (
-                        <div className="absolute -inset-4 -z-10 rounded-full bg-rose-400/30 blur-2xl dark:bg-rose-500/20" />
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Arcade decoration: status bar */}
-                  <div className="relative mt-5 flex items-center justify-between rounded-xl border border-slate-200 bg-white/80 px-4 py-2 dark:border-slate-700/50 dark:bg-slate-950/80">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={cn(
-                          "h-2 w-2 rounded-full transition-all",
-                          isPass
-                            ? "bg-emerald-500 shadow-[0_0_8px_#22c55e] dark:bg-emerald-400"
-                            : "bg-rose-500 shadow-[0_0_8px_#ef4444] dark:bg-rose-400"
-                        )}
-                      />
-                      <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-slate-400">
-                        {isPass
-                          ? t("staffGrading.decisionPassHint", "Candidate meets requirements")
-                          : t(
-                              "staffGrading.decisionFailHint",
-                              "Candidate does not meet requirements"
-                            )}
-                      </span>
-                    </div>
-                    <span className="font-mono text-[10px] font-bold text-slate-400 dark:text-slate-500">
-                      {isPass ? "► PLAY" : "■ HALT"}
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsPass(true)}
+                    className={cn(
+                      "flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 p-4 transition-all",
+                      isPass
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                        : "border-slate-200 bg-white text-slate-500 hover:border-emerald-300 hover:bg-emerald-50/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+                    )}>
+                    <CheckCircle2 className={cn("h-5 w-5", isPass ? "text-emerald-500" : "")} />
+                    <span className="font-bold">
+                      {t("userApplicationhistory.passed", "PASSED")}
                     </span>
-                  </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsPass(false)}
+                    className={cn(
+                      "flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 p-4 transition-all",
+                      !isPass
+                        ? "border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300"
+                        : "border-slate-200 bg-white text-slate-500 hover:border-rose-300 hover:bg-rose-50/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+                    )}>
+                    <XCircle className={cn("h-5 w-5", !isPass ? "text-rose-500" : "")} />
+                    <span className="font-bold">
+                      {t("userApplicationhistory.failed", "FAILED")}
+                    </span>
+                  </button>
                 </div>
               </div>
 
-              {/* Score Input with Visual Feedback */}
+              {/* Score Input */}
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-slate-700 uppercase dark:text-slate-300">
@@ -590,55 +521,20 @@ function StaffGradingModal({
                   )}
                 </div>
 
-                {/* Visual Score Bar */}
-                <div className="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-5 shadow-inner dark:border-slate-700 dark:bg-slate-900">
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
-                  <div className="relative flex items-center justify-between gap-4">
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={score}
-                      onChange={(e) => handleScoreChange(e.target.value)}
-                      placeholder={t("grading.enterScore", "Enter score...")}
-                      className={cn(
-                        "h-16 rounded-xl border-2 bg-white/80 text-center text-3xl font-black tracking-tight shadow-sm backdrop-blur-sm transition-all dark:bg-slate-950/60",
-                        scoreError
-                          ? "border-rose-400 focus-visible:ring-rose-500"
-                          : "border-indigo-200 focus-visible:border-indigo-500 focus-visible:ring-indigo-500 dark:border-indigo-500/30"
-                      )}
-                    />
-                    <div className="flex flex-col items-end">
-                      <span
-                        className={cn(
-                          "bg-gradient-to-r bg-clip-text text-3xl font-black tracking-tight text-transparent",
-                          score && !scoreError
-                            ? "from-indigo-600 to-purple-600"
-                            : "from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700"
-                        )}>
-                        {score && !scoreError ? score : "0"}
-                      </span>
-                      <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                        {t("staffGrading.outOf", "out of 100")}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="relative mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                    <div
-                      className={cn(
-                        "absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out",
-                        scoreError
-                          ? "bg-gradient-to-r from-rose-500 to-orange-500"
-                          : isPass
-                            ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"
-                            : "bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500"
-                      )}
-                      style={{ width: `${Math.min(100, Math.max(0, parseFloat(score) || 0))}%` }}
-                    />
-                  </div>
-                </div>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={score}
+                  onChange={(e) => handleScoreChange(e.target.value)}
+                  placeholder={t("grading.enterScore", "Enter score...")}
+                  className={cn(
+                    "h-14 rounded-xl border-2 text-center text-2xl font-bold",
+                    scoreError
+                      ? "border-rose-400 focus-visible:ring-rose-500"
+                      : "border-slate-200 focus-visible:border-indigo-500 focus-visible:ring-indigo-500 dark:border-slate-700"
+                  )}
+                />
 
                 {scoreError && (
                   <p className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-700 dark:border-rose-500/30 dark:bg-rose-950/30 dark:text-rose-300">
@@ -648,26 +544,21 @@ function StaffGradingModal({
                 )}
 
                 {/* Quick presets */}
-                <div className="space-y-1.5">
-                  <p className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
-                    {t("staffGrading.quickPicks", "Quick picks")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[100, 90, 80, 70, 60, 50].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => handleScoreChange(String(preset))}
-                        className={cn(
-                          "rounded-lg border-2 px-3 py-1.5 text-xs font-bold transition-all",
-                          score === String(preset)
-                            ? "border-indigo-500 bg-indigo-500 text-white shadow-md shadow-indigo-500/30"
-                            : "border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-300"
-                        )}>
-                        {preset}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {[100, 90, 80, 70, 60, 50].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => handleScoreChange(String(preset))}
+                      className={cn(
+                        "rounded-lg border-2 px-3 py-1.5 text-xs font-bold transition-all",
+                        score === String(preset)
+                          ? "border-indigo-500 bg-indigo-500 text-white"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                      )}>
+                      {preset}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -705,13 +596,9 @@ function StaffGradingModal({
                   onClick={handleSubmit}
                   disabled={isSubmitting || scoreError !== null || score.trim() === ""}
                   className={cn(
-                    "group relative h-12 w-full gap-2 overflow-hidden rounded-2xl text-sm font-black tracking-wide shadow-lg transition-all",
-                    "text-white disabled:cursor-not-allowed disabled:opacity-50",
-                    isPass
-                      ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40"
-                      : "bg-gradient-to-r from-rose-600 via-orange-600 to-amber-600 shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/40"
+                    "h-12 w-full gap-2 rounded-2xl text-sm font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50",
+                    isPass ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
                   )}>
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                   {isSubmitting ? (
                     <>
                       <Spinner className="h-4 w-4 text-white" />
