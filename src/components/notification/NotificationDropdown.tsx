@@ -20,7 +20,7 @@ interface NotificationDropdownProps {
   notificationsPath?: string;
 }
 export function NotificationDropdown({
-  notificationsPath = "/dashboard/notifications",
+  notificationsPath = "/user/account?subtab=notifications",
 }: NotificationDropdownProps) {
   const { t } = useTranslation();
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);

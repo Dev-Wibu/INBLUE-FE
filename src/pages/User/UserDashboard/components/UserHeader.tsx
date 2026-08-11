@@ -419,7 +419,7 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
           {/* Synchronized Action Controls Cluster */}
           <div className="flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-50/70 p-1 shadow-2xs transition-all dark:border-slate-800/80 dark:bg-slate-900/60">
             <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:transition-all [&_button]:hover:bg-white [&_button]:hover:shadow-2xs dark:[&_button]:hover:bg-slate-800">
-              <NotificationBell notificationsPath="/user?tab=notifications" />
+              <NotificationBell notificationsPath="/user/account?subtab=notifications" />
             </div>
 
             <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:transition-all [&_button]:hover:bg-white [&_button]:hover:shadow-2xs dark:[&_button]:hover:bg-slate-800">

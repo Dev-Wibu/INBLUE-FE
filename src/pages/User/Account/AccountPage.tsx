@@ -14,6 +14,7 @@ import {
 } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
+  Bell,
   Calendar,
   CheckCircle2,
   ChevronRight,
@@ -31,15 +32,22 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { UserNotificationsPage } from "../Notifications";
 import { JdPurchaseHistoryTab, ProfileEditTab, SettingsTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
-type AccountSubTab = "candidateProfile" | "jdPurchases" | "editProfile" | "settings";
+type AccountSubTab =
+  | "candidateProfile"
+  | "notifications"
+  | "jdPurchases"
+  | "editProfile"
+  | "settings";
 
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
   if (
     value === "candidateProfile" ||
+    value === "notifications" ||
     value === "jdPurchases" ||
     value === "editProfile" ||
     value === "settings"
@@ -203,6 +211,12 @@ export function AccountPage() {
             userProfile={userProfile!}
           />
         );
+      case "notifications":
+        return (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <UserNotificationsPage />
+          </div>
+        );
       case "jdPurchases":
         return (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -321,6 +335,12 @@ export function AccountPage() {
       icon: FileText,
     },
     {
+      id: "notifications",
+      label: t("common.notification", "Thông báo"),
+      description: t("common.manageAllYourNotifications", "Xem và quản lý tất cả thông báo"),
+      icon: Bell,
+    },
+    {
       id: "jdPurchases",
       label: t("payment.jdPurchaseHistory"),
       description: t("payment.jdPurchaseNoPurchases"),
@@ -330,7 +350,7 @@ export function AccountPage() {
       id: "settings",
       label: t("userAccount.quickSettings", { defaultValue: "Cài đặt" }),
       description: t("userAccount.quickSettingsDescription", {
-        defaultValue: "Giao diện, ngôn ngữ, thông báo",
+        defaultValue: "Giao diện, ngôn ngữ, cài đặt hệ thống",
       }),
       icon: Settings,
     },
