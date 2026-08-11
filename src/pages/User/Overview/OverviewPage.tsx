@@ -357,7 +357,7 @@ export function OverviewPage() {
                   return (
                     <div
                       key={`empty-${weekIndex}-${dayIndex}`}
-                      className="min-h-32 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 opacity-50 dark:border-slate-700 dark:bg-slate-800"
+                      className="bg-background/50 min-h-32 rounded-xl border border-slate-200/80 p-3 opacity-50 dark:border-slate-700 dark:bg-slate-800"
                     />
                   );
                 }
@@ -478,7 +478,7 @@ export function OverviewPage() {
           <CardDescription className="capitalize">{selectedDateDisplay}</CardDescription>
         </div>
 
-        <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800">
+        <div className="bg-background/70 space-y-3 rounded-xl border border-slate-200/80 p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
             <Filter className="h-4 w-4" />
             {t("common.filter")}
@@ -557,7 +557,7 @@ export function OverviewPage() {
           ))
         )}
 
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800">
+        <div className="bg-background/70 rounded-xl border border-slate-200/80 p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
               {t("userOverview.upcomingSession")}
@@ -600,7 +600,7 @@ export function OverviewPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800">
+        <div className="bg-background/70 rounded-xl border border-slate-200/80 p-3 dark:border-slate-700 dark:bg-slate-800">
           <p className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
             {t("common.actFast")}
           </p>

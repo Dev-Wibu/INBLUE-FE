@@ -1280,6 +1280,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users/{userId}/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy lịch của User theo ID chỉ định
+         * @description Dành cho Admin/Staff/Reviewer lấy danh sách sự kiện lịch của một User cụ thể. Hỗ trợ truyền startDate và endDate để lọc.
+         */
+        get: operations["getUserScheduleById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users/{id}": {
         parameters: {
             query?: never;
@@ -1288,6 +1308,26 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getUserById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy lịch cá nhân của User hiện tại đang đăng nhập
+         * @description Trả về danh sách sự kiện lịch (Application detail round, Kiosk booking, Mentor 1:1 session) của user đăng nhập hiện tại, chuẩn hóa để render trên giao diện Calendar. Hỗ trợ truyền tham số startDate và endDate để lọc khoảng thời gian.
+         */
+        get: operations["getCurrentUserSchedule"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3943,6 +3983,32 @@ export interface components {
             description?: string;
             previewUrl?: string;
         };
+        UserScheduleEventDto: {
+            id?: string;
+            title?: string;
+            description?: string;
+            eventType?: string;
+            /** Format: date-time */
+            start?: string;
+            /** Format: date-time */
+            end?: string;
+            status?: string;
+            location?: string;
+            meetingType?: string;
+            roomUrl?: string;
+            color?: string;
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: int64 */
+            applicationDetailId?: number;
+            /** Format: int64 */
+            kioskId?: number;
+            /** Format: int32 */
+            sessionId?: number;
+            sessionKey?: string;
+            jobTitle?: string;
+            roundName?: string;
+        };
         SummaryResponse: {
             /** Format: int64 */
             id?: number;
@@ -4014,10 +4080,10 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
@@ -4270,10 +4336,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -4347,8 +4413,8 @@ export interface components {
         BeanFactory: unknown;
         DefaultHttpStatusCode: components["schemas"]["HttpStatusCode"];
         Environment: {
-            defaultProfiles?: string[];
             activeProfiles?: string[];
+            defaultProfiles?: string[];
         };
         FilterRegistration: {
             servletNameMappings?: string[];
@@ -4370,22 +4436,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            isXml?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
             trimDirectiveWhitespaces?: string;
-            errorOnUndeclaredNamespace?: string;
             elIgnored?: string;
             deferredSyntaxAllowedAsLiteral?: string;
-            isXml?: string;
-            defaultContentType?: string;
+            errorOnUndeclaredNamespace?: string;
             urlPatterns?: string[];
+            defaultContentType?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -4409,28 +4475,29 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
+            propagateQueryProperties?: boolean;
             attributesMap?: {
                 [key: string]: unknown;
             };
+            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
         };
         ServletContext: {
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             servletContextName?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
@@ -4439,9 +4506,8 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            serverInfo?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -4511,8 +4577,8 @@ export interface components {
             minorVersion?: number;
         };
         ServletRegistration: {
-            runAsRole?: string;
             mappings?: string[];
+            runAsRole?: string;
             initParameters?: {
                 [key: string]: string;
             };
@@ -4533,8 +4599,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */
@@ -7248,6 +7314,33 @@ export interface operations {
             };
         };
     };
+    getUserScheduleById: {
+        parameters: {
+            query?: {
+                /** @description Thời gian bắt đầu (dạng ISO, ví dụ: 2026-08-01T00:00:00) */
+                startDate?: string;
+                /** @description Thời gian kết thúc (dạng ISO, ví dụ: 2026-08-31T23:59:59) */
+                endDate?: string;
+            };
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserScheduleEventDto"][];
+                };
+            };
+        };
+    };
     getUserById: {
         parameters: {
             query?: never;
@@ -7266,6 +7359,31 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["User"];
+                };
+            };
+        };
+    };
+    getCurrentUserSchedule: {
+        parameters: {
+            query?: {
+                /** @description Thời gian bắt đầu (dạng ISO, ví dụ: 2026-08-01T00:00:00) */
+                startDate?: string;
+                /** @description Thời gian kết thúc (dạng ISO, ví dụ: 2026-08-31T23:59:59) */
+                endDate?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserScheduleEventDto"][];
                 };
             };
         };
