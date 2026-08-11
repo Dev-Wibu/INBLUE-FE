@@ -18,6 +18,7 @@ import {
   Calendar,
   ChevronRight,
   LayoutDashboard,
+  Menu,
   MessageSquare,
   Newspaper,
   Search,
