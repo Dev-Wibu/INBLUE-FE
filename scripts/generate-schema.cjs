@@ -27,6 +27,9 @@ if (fs.existsSync(envPath)) {
 // 2. XỬ LÝ CHO HUSKY: Nếu không có URL API, bỏ qua và KHÔNG báo lỗi
 if (!apiBaseUrl) {
   console.log("⚠️  VITE_API_BASE_URL không tồn tại. Bỏ qua bước tạo TS Schema.");
+  // Vẫn chạy patchSchema để bổ sung các field BE chưa cập nhật OpenAPI
+  // (vd applicationName/userName/jdId/roundType/roundName/...).
+  patchSchema();
   process.exit(0); // Trả về 0 để Husky hiểu là "Hợp lệ" và cho phép tiếp tục commit
 }
 
@@ -86,6 +89,60 @@ function patchSchema() {
     // Thêm vào sau codingProblemsId
     return match.replace(/(codingProblemsId\?:\s*number\[\];)/, `$1\n${fieldToAdd}`);
   });
+
+  // Field cần thêm vào ApplicationDetail (dùng cho list response của /reviewer)
+  // Backend đã trả về applicationName/userName ở response nhưng OpenAPI spec chưa cập nhật.
+  // Ngoài ra các field sau cũng cần để trang StaffGradingWorkspace hiển thị đầy đủ
+  // mà KHÔNG phải gọi thêm /api/applications/{id}, /api/job-descriptions/{id}, …
+  // (BE: "vô detail ko đc gọi thêm endpoint gì cả, vô trong hiển thị các dữ
+  // liệu còn lại của item đó trong lits thôi").
+  const applicationDetailFieldsToAdd = [
+    { name: "applicationName", line: "            applicationName?: string;" },
+    { name: "userName", line: "            userName?: string;" },
+    // Application-level metadata (để dựng header mà không gọi /applications/{id})
+    { name: "jdId", line: "            jdId?: number;" },
+    { name: "jdTitle", line: "            jdTitle?: string;" },
+    { name: "companyName", line: "            companyName?: string;" },
+    { name: "jdLogoUrl", line: "            jdLogoUrl?: string;" },
+    { name: "currentRoundOrder", line: "            currentRoundOrder?: number;" },
+    { name: "appStatus", line: "            appStatus?: string;" },
+    { name: "appCreatedAt", line: "            appCreatedAt?: string;" },
+    // Round-level metadata (để hiển thị header vòng mà không cần lookup JD rounds)
+    { name: "roundType", line: '            roundType?: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "CODING" | "CODE_REVIEW" | "MENTROR_REVIEW" | "AI_INTERVIEW";' },
+    { name: "roundName", line: "            roundName?: string;" },
+    { name: "roundOrder", line: "            roundOrder?: number;" },
+    { name: "roundDescription", line: "            roundDescription?: string;" },
+    { name: "passThreshold", line: "            passThreshold?: number;" },
+  ];
+
+  // Find the start of ApplicationDetail schema and balance nested braces to find the end.
+  const adStartPattern = /ApplicationDetail:\s*\{/g;
+  let adMatch;
+  while ((adMatch = adStartPattern.exec(content)) !== null) {
+    const openBraceIdx = adMatch.index + adMatch[0].length - 1; // index of `{`
+    let depth = 1;
+    let i = openBraceIdx + 1;
+    while (i < content.length && depth > 0) {
+      const ch = content[i];
+      if (ch === "{") depth++;
+      else if (ch === "}") depth--;
+      i++;
+    }
+    const closeBraceIdx = i - 1; // index of closing `}`
+    const body = content.slice(openBraceIdx, closeBraceIdx + 1);
+    let updatedBody = body;
+    for (const field of applicationDetailFieldsToAdd) {
+      if (!updatedBody.includes(field.name)) {
+        updatedBody = updatedBody.replace(
+          /(updatedAt\?:\s*string;)/,
+          `$1\n${field.line}`
+        );
+      }
+    }
+    content =
+      content.slice(0, openBraceIdx) + updatedBody + content.slice(closeBraceIdx + 1);
+    break; // only patch first occurrence
+  }
 
   fs.writeFileSync(schemaPath, content);
   console.log("✅ Schema patched with FE-required fields!");

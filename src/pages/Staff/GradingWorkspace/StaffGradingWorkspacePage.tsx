@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useHrScore } from "@/hooks/useApplicationDetails";
-import { fetchClient } from "@/lib/api";
+import { useUsers } from "@/hooks/useApplication";
+import { useApplicationDetailsForReviewer, useHrScore } from "@/hooks/useApplicationDetails";
+import { useJobDescriptions } from "@/hooks/useJobDescription";
 import { inferRoundType } from "@/lib/application-detail-utils";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,7 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -750,6 +751,8 @@ function StaffGradingWorkspaceHeaderCard({
   activeRound,
   candidateName,
   jdTitle,
+  applicationName,
+  candidateUserName,
   onOpenGrading,
 }: {
   selectedRoundOrder: number;
@@ -757,10 +760,16 @@ function StaffGradingWorkspaceHeaderCard({
   activeRound?: JdRound;
   candidateName?: string;
   jdTitle?: string;
+  applicationName?: string;
+  candidateUserName?: string;
   onOpenGrading: () => void;
 }) {
   const { t } = useTranslation();
   const detail = staffActiveDetail;
+
+  // Use the BE-provided userName (from the list-item payload) when available,
+  // otherwise fall back to whatever the parent already fetched.
+  const resolvedUserName = candidateUserName ?? candidateName;
 
   const hrScore = detail?.hrScore;
   const aiScore = detail?.aiScore;
@@ -882,8 +891,8 @@ function StaffGradingWorkspaceHeaderCard({
 
             <span className="text-xs font-medium text-slate-400">|</span>
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-              {candidateName ? `${candidateName} • ` : ""}
-              {jdTitle ? `${jdTitle} • ` : ""}
+              {resolvedUserName ? `${resolvedUserName} • ` : ""}
+              {(applicationName ?? jdTitle) ? `${applicationName ?? jdTitle} • ` : ""}
               {roundName}
             </span>
           </div>
@@ -1006,204 +1015,173 @@ export function StaffGradingWorkspacePage() {
   const appIdParam = searchParams.get("appId");
   const detailIdFromUrl = detailIdParam ? Number(detailIdParam) : 0;
   const appIdFromUrl = appIdParam ? Number(appIdParam) : 0;
-  // Use detailId if provided, otherwise use appId
-  const primaryId = detailIdFromUrl || appIdFromUrl;
 
-  // Core Data States
-  const [app, setApp] = useState<components["schemas"]["Application"] | null>(null);
-  const [jdInfo, setJdInfo] = useState<{
-    title?: string;
-    companyName?: string;
-    logoUrl?: string | null;
-    level?: string;
-    description?: string;
-    requirements?: string;
-    rounds?: JdRound[];
-  } | null>(null);
-  const [candidateName, setCandidateName] = useState<string>("");
-  const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
-  const [loading, setLoading] = useState(true);
+  // ============================================================
+  // DATA SOURCE: strictly the LIST endpoints — NO per-id calls.
+  // BE confirmed: "vô detail ko đc gọi thêm endpoint gì cả, vô trong
+  // hiển thị các dữ liệu còn lại của item đó trong list thôi".
+  //
+  // Anchor: the detail row from /api/application-details/reviewer. Everything
+  // else (application name, user name, round info) is OPTIONAL enrichment —
+  // it comes from BE if BE embeds those fields in the detail row, otherwise
+  // falls back to LIST caches (job-descriptions, users) that are already
+  // populated by the grading list page when staff navigated from there.
+  // ============================================================
+  const {
+    data: reviewerDetails = [],
+    isLoading: isLoadingReviewer,
+    refetch: refetchReviewer,
+  } = useApplicationDetailsForReviewer(true);
+  const { data: allJds = [] } = useJobDescriptions();
+  const { data: allUsers = [] } = useUsers();
 
-  // Selected Round View in Workspace
-  const [selectedRoundOrder, setSelectedRoundOrder] = useState<number>(0);
+  // List → maps for O(1) lookup (best-effort enrichment; empty if BE
+  // forbids staff from listing these resources)
+  const jdMap = useMemo(() => {
+    const map = new Map<number, (typeof allJds)[number]>();
+    allJds.forEach((jd) => {
+      if (jd.id != null) map.set(jd.id, jd);
+    });
+    return map;
+  }, [allJds]);
 
-  // Reset selectedRoundOrder when switching applications
-  useEffect(() => {
-    setSelectedRoundOrder(0);
-  }, [primaryId]);
+  const userMap = useMemo(() => {
+    const map = new Map<number, string>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const list = (allUsers as any[]) ?? [];
+    list.forEach((u) => {
+      if (u.id != null && u.name) map.set(u.id, u.name);
+    });
+    return map;
+  }, [allUsers]);
 
-  // Modal State
-  const [isGradingModalOpen, setIsGradingModalOpen] = useState(false);
-  const [activeDetailForGrading, setActiveDetailForGrading] = useState<ApplicationDetail | null>(
-    null
+  // Resolve the detail the staff is grading — purely from the /reviewer list.
+  // For detailId mode: pick the row with `id === detailIdFromUrl`.
+  // For appId mode (no detailId): pick the first row tied to that application.
+  const resolvedStaffDetail = useMemo(() => {
+    if (detailIdFromUrl > 0) {
+      return reviewerDetails.find((d) => d.id === detailIdFromUrl);
+    }
+    if (appIdFromUrl > 0) {
+      return reviewerDetails.find((d) => d.applicationId === appIdFromUrl);
+    }
+    return undefined;
+  }, [detailIdFromUrl, appIdFromUrl, reviewerDetails]);
+
+  // applicationId derived from the chosen detail (or appId fallback)
+  const applicationId = resolvedStaffDetail?.applicationId ?? appIdFromUrl ?? 0;
+
+  // Sibling details of the same application — already in /reviewer list
+  const detailsData = useMemo(
+    () =>
+      applicationId > 0 ? reviewerDetails.filter((d) => d.applicationId === applicationId) : [],
+    [applicationId, reviewerDetails]
   );
 
-  // Load Main Data
-  const loadData = useCallback(async () => {
-    if (!primaryId || isNaN(primaryId)) {
-      console.log("[StaffGrading] No primaryId, skipping load");
-      return;
-    }
-    setLoading(true);
-    try {
-      let fetchedApplicationId: number | null = null;
-      let fetchedDetail: ApplicationDetail | null = null;
+  // Enrichment derived from the detail row itself (preferred), then from
+  // global list caches (fallback). BE schema patch adds applicationName /
+  // userName / jdId / roundType / roundName on ApplicationDetail so the page
+  // can stay strictly on /reviewer data.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detailAny = resolvedStaffDetail as any;
 
-      // 1. Try to fetch as Application first
-      const { applicationService } = await import("@/services/application.manager");
-      const appRes = await applicationService.getById(primaryId);
+  // Try to find the JD via the detail's jdId (when BE provides it) — fallback
+  // to scanning all JDs by job-title match is not safe; use jdId only.
+  const detailJdId = detailAny?.jdId;
+  const jdRaw = detailJdId != null ? jdMap.get(detailJdId) : undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const jdAny = jdRaw as any;
+  // Prefer BE-embedded fields on the detail row, fall back to JD list cache.
+  const jdInfo = {
+    title: detailAny?.jdTitle ?? jdRaw?.title,
+    companyName: detailAny?.companyName ?? jdAny?.companyName,
+    logoUrl:
+      detailAny?.jdLogoUrl ??
+      jdAny?.companyLogo ??
+      jdAny?.companyLogoUrl ??
+      jdAny?.thumbnailUrl ??
+      jdAny?.company?.logoUrl ??
+      jdAny?.company?.avatarUrl ??
+      null,
+    level: jdRaw?.level,
+    description: jdRaw?.description,
+    requirements: jdRaw?.requirements,
+    rounds: jdRaw?.rounds ?? [],
+  };
 
-      if (appRes.success && appRes.data) {
-        // primaryId is an Application ID
-        setApp(appRes.data);
-        const currentOrder = appRes.data.currentRoundOrder ?? 1;
-        setSelectedRoundOrder((prev) => (prev === 0 ? currentOrder : prev));
-        fetchedApplicationId = appRes.data.id!;
+  // Candidate name: prefer detail.userName (BE-embedded), fall back to global users list.
+  const candidateName =
+    detailAny?.userName ?? (detailAny?.userId != null ? (userMap.get(detailAny.userId) ?? "") : "");
 
-        if (appRes.data.userId) {
-          try {
-            const userRes = await fetchClient.GET("/api/users/{id}", {
-              params: { path: { id: appRes.data.userId } },
-            });
-            if (userRes.response?.ok && userRes.data?.name) {
-              setCandidateName(userRes.data.name);
-            }
-          } catch (err) {
-            console.error("Failed to fetch candidate name:", err);
-          }
-        }
-
-        // 3. Fetch JD Info
-        if (appRes.data.jdId) {
-          const jdRes = await fetchClient.GET("/api/job-descriptions/{id}", {
-            params: { path: { id: appRes.data.jdId } },
-          });
-          if (jdRes.response?.ok && jdRes.data) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const jd = jdRes.data as any;
-            const logoUrl =
-              jd.companyLogo ||
-              jd.companyLogoUrl ||
-              jd.thumbnailUrl ||
-              jd.company?.logoUrl ||
-              jd.company?.avatarUrl ||
-              null;
-            setJdInfo({
-              title: jd.title,
-              companyName: jd.companyName,
-              logoUrl,
-              level: jd.level,
-              description: jd.description,
-              requirements: jd.requirements,
-              rounds: jd.rounds ?? [],
-            });
-          }
-        }
-      } else {
-        // primaryId might be a detailId - try fetching as ApplicationDetail
-        const detailRes = await fetchClient.GET("/api/application-details/{id}", {
-          params: { path: { id: primaryId } },
-        });
-        if (detailRes.response?.ok && detailRes.data) {
-          fetchedDetail = detailRes.data as ApplicationDetail;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const d = fetchedDetail as any;
-          // Extract applicationId from the detail
-          fetchedApplicationId = d.applicationId || d.application?.id;
-
-          if (fetchedApplicationId) {
-            // Now fetch the actual application
-            const realAppRes = await applicationService.getById(fetchedApplicationId);
-            if (realAppRes.success && realAppRes.data) {
-              setApp(realAppRes.data);
-              const currentOrder = realAppRes.data.currentRoundOrder ?? 1;
-              const detailRoundOrder = d.roundOrder ?? d.round?.roundOrder;
-              setSelectedRoundOrder((prev) =>
-                prev === 0 ? detailRoundOrder || currentOrder : prev
-              );
-
-              // Fetch JD Info
-              if (realAppRes.data.jdId) {
-                const jdRes = await fetchClient.GET("/api/job-descriptions/{id}", {
-                  params: { path: { id: realAppRes.data.jdId } },
-                });
-                if (jdRes.response?.ok && jdRes.data) {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const jd = jdRes.data as any;
-                  const logoUrl =
-                    jd.companyLogo ||
-                    jd.companyLogoUrl ||
-                    jd.thumbnailUrl ||
-                    jd.company?.logoUrl ||
-                    jd.company?.avatarUrl ||
-                    null;
-                  setJdInfo({
-                    title: jd.title,
-                    companyName: jd.companyName,
-                    logoUrl,
-                    level: jd.level,
-                    description: jd.description,
-                    requirements: jd.requirements,
-                    rounds: jd.rounds ?? [],
-                  });
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // 4. Fetch all Details for this application
-      if (fetchedApplicationId) {
-        const detailsRes = await fetchClient.GET(
-          "/api/application-details/application/{applicationId}",
-          {
-            params: { path: { applicationId: fetchedApplicationId } },
-          }
-        );
-        if (detailsRes.response?.ok && Array.isArray(detailsRes.data)) {
-          setDetailsData(detailsRes.data as ApplicationDetail[]);
-        }
-      }
-    } catch (err) {
-      console.error("[StaffGrading] Failed to load data:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [primaryId]);
-
-  // Derive applicationId and current round from app state
-  const applicationId = app?.id ?? appIdFromUrl ?? 0;
-  const apiCurrentRoundOrder = app?.currentRoundOrder ?? 1;
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  // Application-level state: currentRoundOrder / status / createdAt may come
+  // from the detail (when BE embeds them) or be undefined. We don't fall back
+  // to /api/applications/{id} — strictly list-only.
+  const apiCurrentRoundOrder = detailAny?.currentRoundOrder ?? undefined;
+  const apiAppStatus = detailAny?.appStatus;
+  const appCreatedAt = detailAny?.appCreatedAt;
 
   // Round list sorted
   const rounds = useMemo(() => {
     return [...(jdInfo?.rounds ?? [])].sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0));
   }, [jdInfo?.rounds]);
 
-  // Selected round object
+  // Active round driven by the resolved detail's `roundId` (the row staff
+  // picked). When the detail payload embeds roundType/roundName (BE-side
+  // patch), use them directly so we don't even need JD's rounds array.
+  // Falls back to inferRoundType() (heuristic on submission data) when both
+  // the BE fields and JD rounds are unavailable, so we always have a label.
   const activeRound = useMemo(() => {
-    return rounds.find((r) => r.roundOrder === selectedRoundOrder) ?? rounds[0];
-  }, [rounds, selectedRoundOrder]);
+    if (detailAny?.roundType || detailAny?.roundName) {
+      return {
+        id: resolvedStaffDetail?.roundId ?? 0,
+        name: detailAny.roundName ?? "",
+        roundType: detailAny.roundType,
+        roundOrder: detailAny.roundOrder ?? 1,
+        passThreshold: detailAny.passThreshold,
+        description: detailAny.roundDescription,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+    }
+    if (resolvedStaffDetail?.roundId && rounds.length > 0) {
+      const fromRounds = rounds.find((r) => r.id === resolvedStaffDetail.roundId);
+      if (fromRounds) return fromRounds;
+    }
+    if (rounds.length > 0) return rounds[0];
+    // Last resort: build a synthetic round from inferred type + detail.
+    if (resolvedStaffDetail) {
+      return {
+        id: resolvedStaffDetail.roundId ?? 0,
+        name: detailAny?.roundName ?? "",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        roundType: (inferRoundType(resolvedStaffDetail as any) ?? undefined) as any,
+        roundOrder: detailAny?.roundOrder ?? 1,
+        passThreshold: detailAny?.passThreshold,
+        description: detailAny?.roundDescription,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+    }
+    return undefined;
+  }, [rounds, resolvedStaffDetail, detailAny]);
 
-  // Active round detail
+  // Active round detail (back-compat match: detail that matches activeRound)
   const activeDetail = useMemo(() => {
     if (!activeRound) return undefined;
     return detailsData.find((d) => d.roundId === activeRound.id);
   }, [detailsData, activeRound]);
 
-  // For staff grading, if detailIdFromUrl is provided, find that specific detail
-  const staffActiveDetail = useMemo(() => {
-    if (detailIdFromUrl > 0) {
-      const found = detailsData.find((d) => d.id === detailIdFromUrl);
-      if (found) return found;
-    }
-    return activeDetail;
-  }, [detailIdFromUrl, detailsData, activeDetail]);
+  // The detail the workspace actually renders. = resolvedStaffDetail when
+  // staff explicitly picked a row, otherwise the round-driven match.
+  const staffActiveDetail = resolvedStaffDetail ?? activeDetail;
+
+  // Loading state — only the mandatory /reviewer call gates the screen.
+  // JD/user list queries may be empty for staff and should NOT block render.
+  const loading = isLoadingReviewer;
+
+  // Modal State
+  const [isGradingModalOpen, setIsGradingModalOpen] = useState(false);
+  const [activeDetailForGrading, setActiveDetailForGrading] = useState<ApplicationDetail | null>(
+    null
+  );
 
   // Round type detection
   const isCvScreeningRound = activeRound?.roundType?.toUpperCase() === "CV_SCREENING";
@@ -1238,11 +1216,11 @@ export function StaffGradingWorkspacePage() {
   // Status calculations
   const totalRounds = rounds.length;
   const isRoundCompleted =
-    app?.status === "PASSED" ||
-    app?.status === "FAILED" ||
-    app?.status === "SOFT_FAILED" ||
+    apiAppStatus === "PASSED" ||
+    apiAppStatus === "FAILED" ||
+    apiAppStatus === "SOFT_FAILED" ||
     (staffActiveDetail?.status as string) === "COMPLETED" ||
-    (activeRound?.roundOrder ?? 0) < apiCurrentRoundOrder;
+    (activeRound?.roundOrder ?? 0) < (apiCurrentRoundOrder ?? Infinity);
   const isRoundCurrent = !isRoundCompleted && activeRound?.roundOrder === apiCurrentRoundOrder;
   const hasHrScore = staffActiveDetail?.hrScore !== undefined;
 
@@ -1274,11 +1252,13 @@ export function StaffGradingWorkspacePage() {
       setActiveDetailForGrading(staffActiveDetail);
       setIsGradingModalOpen(true);
     }
-  }, [staffActiveDetail]);
+  }, [staffActiveDetail, setActiveDetailForGrading, setIsGradingModalOpen]);
 
   const handleGradingSuccess = useCallback(() => {
-    void loadData();
-  }, [loadData]);
+    // useHrScore already invalidates the /reviewer cache. Pinging it here
+    // makes the workspace pull the freshly-graded detail immediately.
+    void refetchReviewer();
+  }, [refetchReviewer]);
 
   if (loading) {
     return (
@@ -1292,7 +1272,7 @@ export function StaffGradingWorkspacePage() {
     );
   }
 
-  if (!app) {
+  if (!staffActiveDetail) {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-4 text-center">
         <FileText className="h-12 w-12 text-slate-400" />
@@ -1349,11 +1329,13 @@ export function StaffGradingWorkspacePage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <ApplicationStatusBadge status={app.status} />
+            <ApplicationStatusBadge status={apiAppStatus} />
             <Button
               variant="outline"
               size="sm"
-              onClick={loadData}
+              onClick={() => {
+                void refetchReviewer();
+              }}
               className="h-8 gap-1.5 border-slate-200 text-xs font-bold dark:border-slate-800">
               <RefreshCw className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">
@@ -1368,11 +1350,18 @@ export function StaffGradingWorkspacePage() {
       <div className="mx-auto w-full max-w-[1700px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         {/* Staff Assessment Summary Header Card & Score Sticker Badge */}
         <StaffGradingWorkspaceHeaderCard
-          selectedRoundOrder={selectedRoundOrder}
+          selectedRoundOrder={activeRound?.roundOrder ?? 0}
           staffActiveDetail={staffActiveDetail}
           activeRound={activeRound}
           candidateName={candidateName}
           jdTitle={jdInfo?.title}
+          applicationName={
+            (staffActiveDetail as unknown as { applicationName?: string } | undefined)
+              ?.applicationName
+          }
+          candidateUserName={
+            (staffActiveDetail as unknown as { userName?: string } | undefined)?.userName
+          }
           onOpenGrading={handleOpenGrading}
         />
 
@@ -1384,11 +1373,13 @@ export function StaffGradingWorkspacePage() {
               round={activeRound}
               detail={staffActiveDetail}
               applicationId={applicationId}
-              jdId={app.jdId}
+              jdId={detailJdId}
               jdInfo={jdInfo}
-              currentRoundOrder={apiCurrentRoundOrder}
-              appStatus={app.status}
-              onRefresh={loadData}
+              currentRoundOrder={apiCurrentRoundOrder ?? 1}
+              appStatus={apiAppStatus}
+              onRefresh={() => {
+                void refetchReviewer();
+              }}
             />
           ) : (
             /* Other Rounds: Standard 8:4 Grid */
@@ -1400,11 +1391,13 @@ export function StaffGradingWorkspacePage() {
                     round={activeRound}
                     detail={staffActiveDetail}
                     applicationId={applicationId}
-                    jdId={app.jdId}
+                    jdId={detailJdId}
                     jdInfo={jdInfo}
-                    currentRoundOrder={apiCurrentRoundOrder}
-                    appStatus={app.status}
-                    onRefresh={loadData}
+                    currentRoundOrder={apiCurrentRoundOrder ?? 1}
+                    appStatus={apiAppStatus}
+                    onRefresh={() => {
+                      void refetchReviewer();
+                    }}
                   />
                 </div>
               ) : (
@@ -1414,6 +1407,7 @@ export function StaffGradingWorkspacePage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-3.5">
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white shadow-sm">
+                          {/* eslint-disable-next-line react-hooks/static-components */}
                           <RoundIcon className="h-6 w-6" />
                         </div>
                         <div>
@@ -1459,11 +1453,13 @@ export function StaffGradingWorkspacePage() {
                       round={activeRound}
                       detail={staffActiveDetail}
                       applicationId={applicationId}
-                      jdId={app.jdId}
+                      jdId={detailJdId}
                       jdInfo={jdInfo}
-                      currentRoundOrder={apiCurrentRoundOrder}
-                      appStatus={app.status}
-                      onRefresh={loadData}
+                      currentRoundOrder={apiCurrentRoundOrder ?? 1}
+                      appStatus={apiAppStatus}
+                      onRefresh={() => {
+                        void refetchReviewer();
+                      }}
                     />
                   </div>
                 </Card>
@@ -1498,7 +1494,7 @@ export function StaffGradingWorkspacePage() {
                         {t("staffGrading.applicationDateLabel", "Ngày nộp đơn:")}
                       </span>
                       <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
-                        {app.createdAt ? formatDateTime(app.createdAt) : ""}
+                        {appCreatedAt ? formatDateTime(appCreatedAt) : ""}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -1513,11 +1509,11 @@ export function StaffGradingWorkspacePage() {
                       <span className="text-slate-500 dark:text-slate-400">
                         {t("staffGrading.applicationStatusLabel", "Trạng thái hồ sơ:")}
                       </span>
-                      <ApplicationStatusBadge status={app.status} />
+                      <ApplicationStatusBadge status={apiAppStatus} />
                     </div>
                   </div>
 
-                  {app.status === "PASSED" && (
+                  {apiAppStatus === "PASSED" && (
                     <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-center dark:border-emerald-900/50 dark:bg-emerald-950/40">
                       <Award className="mx-auto mb-1.5 h-7 w-7 text-emerald-600" />
                       <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-200">

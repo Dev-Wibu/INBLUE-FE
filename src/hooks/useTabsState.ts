@@ -50,8 +50,13 @@ interface UseTabsStateReturn {
   setActiveTab: (_tabType: string, _preventUrlUpdate?: boolean) => void;
   /** Open a tab from sidebar/menu */
   openTab: (_tabType: string) => void;
-  /** Open a grading-detail tab for a specific appId (or switch if already open) */
-  openGradingTab: (_appId: number, _extra?: { candidateName?: string; jdId?: string }) => void;
+  /** Open a grading-detail tab for a specific appId (or switch if already open).
+   *  detailId is optional — when provided, the workspace will open straight to
+   *  that detail row instead of falling back to the first round of the app. */
+  openGradingTab: (
+    _appId: number,
+    extra?: { candidateName?: string; jdId?: string; detailId?: number }
+  ) => void;
   /** Close a tab by ID */
   closeTab: (_tabId: string) => void;
   /** Reset open tabs to only one tab */
@@ -269,7 +274,7 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
 
   // Open a grading-detail tab for a specific appId (or switch if already open)
   const openGradingTab = useCallback(
-    (appId: number, extra?: { candidateName?: string; jdId?: string }) => {
+    (appId: number, extra?: { candidateName?: string; jdId?: string; detailId?: number }) => {
       const gradingType = "grading-detail";
       const extraData = extra ?? {};
 
@@ -277,14 +282,16 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
         const existingTab = prev.find((t) => t.type === gradingType && t.appId === String(appId));
 
         if (existingTab) {
-          // Already open — merge candidate info if newly provided
-          if (extraData.candidateName || extraData.jdId) {
+          // Already open — merge candidate info + detailId if newly provided
+          if (extraData.candidateName || extraData.jdId || extraData.detailId !== undefined) {
             return prev.map((t) =>
               t.id === existingTab.id
                 ? {
                     ...t,
                     candidateName: extraData.candidateName ?? t.candidateName,
                     jdId: extraData.jdId ?? t.jdId,
+                    detailId:
+                      extraData.detailId !== undefined ? String(extraData.detailId) : t.detailId,
                   }
                 : t
             );
@@ -304,14 +311,21 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
             appId: String(appId),
             candidateName: extraData.candidateName,
             jdId: extraData.jdId,
+            detailId: extraData.detailId !== undefined ? String(extraData.detailId) : undefined,
           },
         ];
 
         return newTabs;
       });
 
-      // URL update runs in the same batch
-      setSearchParams({ tab: gradingType, appId: String(appId) }, { replace: true });
+      // URL update runs in the same batch. detailId wins when provided so the
+      // workspace opens directly to that detail row (not the first row of the
+      // application).
+      const params: Record<string, string> = { tab: gradingType, appId: String(appId) };
+      if (extraData.detailId !== undefined) {
+        params.detailId = String(extraData.detailId);
+      }
+      setSearchParams(params, { replace: true });
     },
     [setSearchParams]
   );
