@@ -1175,6 +1175,11 @@ export function StaffGradingWorkspacePage() {
     return undefined;
   }, [rounds, resolvedStaffDetail, detailAny]);
 
+  // Infer round type directly from detail data (robust — works even when
+  // activeRound.roundType is null/undefined, which is common for staff workspace).
+  const inferredRoundType = resolvedStaffDetail ? inferRoundType(resolvedStaffDetail) : null;
+  const effectiveRoundType = activeRound?.roundType ?? inferredRoundType ?? null;
+
   // Active round detail (back-compat match: detail that matches activeRound)
   const activeDetail = useMemo(() => {
     if (!activeRound) return undefined;
@@ -1195,27 +1200,21 @@ export function StaffGradingWorkspacePage() {
     null
   );
 
-  // Round type detection
-  const isCvScreeningRound = activeRound?.roundType?.toUpperCase() === "CV_SCREENING";
+  // Round type detection using effectiveRoundType (inferRoundType fallback for robustness)
+  const upperType = effectiveRoundType?.toUpperCase() ?? "";
+  const upperName = activeRound?.name?.toUpperCase() ?? "";
+  const isCvScreeningRound = upperType === "CV_SCREENING";
   const isEmailSimulatorRound =
-    activeRound?.roundType?.toUpperCase() === "EMAIL_SIMULATION" ||
-    activeRound?.roundType?.toUpperCase() === "EMAIL_SIMULATOR" ||
-    activeRound?.roundType?.toUpperCase() === "EMAIL";
-  const isQuizRound = activeRound?.roundType?.toUpperCase() === "QUIZ";
-  const isCodingRound =
-    activeRound?.roundType?.toUpperCase() === "CODING" ||
-    activeRound?.roundType?.toUpperCase() === "CODE";
-  const isCodeReviewRound =
-    activeRound?.roundType?.toUpperCase() === "CODE_REVIEW" ||
-    activeRound?.roundType?.toUpperCase() === "CODEREVIEW";
-  const activeRoundType = activeRound?.roundType?.toUpperCase() ?? "";
-  const activeRoundName = activeRound?.name?.toUpperCase() ?? "";
+    upperType === "EMAIL_SIMULATION" || upperType === "EMAIL_SIMULATOR" || upperType === "EMAIL";
+  const isQuizRound = upperType === "QUIZ";
+  const isCodingRound = upperType === "CODING" || upperType === "CODE";
+  const isCodeReviewRound = upperType === "CODE_REVIEW" || upperType === "CODEREVIEW";
   const isMentorReviewRound =
-    activeRoundType === "MENTOR_REVIEW" ||
-    activeRoundType === "MENTOR" ||
-    activeRoundType === "MENTROR_REVIEW" ||
-    activeRoundName.includes("MENTOR");
-  const isAiInterviewRound = activeRoundType === "AI_INTERVIEW" || activeRoundName.includes("AI");
+    upperType === "MENTOR_REVIEW" ||
+    upperType === "MENTOR" ||
+    upperType === "MENTROR_REVIEW" ||
+    upperName.includes("MENTOR");
+  const isAiInterviewRound = upperType === "AI_INTERVIEW" || upperName.includes("AI");
   const isStandaloneLayout =
     isCvScreeningRound ||
     isEmailSimulatorRound ||
