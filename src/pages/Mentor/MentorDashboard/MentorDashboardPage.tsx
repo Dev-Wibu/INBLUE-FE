@@ -11,6 +11,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Calendar, LayoutDashboard, MessageSquare, Newspaper, Star, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { MentorAccountPage } from "../Account";
 import { GivenFeedbackListPage } from "../Feedback";
