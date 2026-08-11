@@ -242,7 +242,7 @@ export function ChatComposer({
           placeholder={placeholder}
           disabled={disabled}
           className={cn(
-            "max-h-[132px] min-h-11 w-full resize-none rounded-xl border bg-slate-50 px-3 py-2.5 text-sm leading-6 text-slate-900 transition outline-none dark:bg-slate-800 dark:text-slate-100",
+            "max-h-[132px] min-h-11 w-full resize-none rounded-xl border bg-slate-50 px-3 py-2.5 text-sm leading-6 text-slate-900 transition outline-none dark:bg-[#17233b] dark:text-slate-100 dark:placeholder:text-slate-400",
             "focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:border-blue-700 dark:focus:ring-blue-900/40",
             "border-slate-200 dark:border-slate-700",
             disabled && "cursor-not-allowed opacity-60"

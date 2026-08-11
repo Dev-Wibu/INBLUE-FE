@@ -124,7 +124,7 @@ export function MessageBubble({
               sender !== "user" && isGroupedWithNext && "rounded-bl-md",
               sender === "user"
                 ? "bg-linear-to-br from-blue-600 via-indigo-600 to-violet-600 text-white shadow-blue-500/20"
-                : "border border-slate-200 bg-linear-to-br from-white via-slate-50 to-slate-100/70 text-slate-700 dark:border-slate-700 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 dark:text-slate-100"
+                : "border border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-[#1e293b] dark:text-slate-100"
             )}>
             {highlightContent(content, searchQuery)}
           </div>
