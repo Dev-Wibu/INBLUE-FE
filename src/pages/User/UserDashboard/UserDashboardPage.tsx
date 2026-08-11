@@ -198,52 +198,55 @@ export function UserDashboardPage() {
   const { currentTitle, parentTitle, currentCategory } = useMemo(() => {
     const searchParams = new URLSearchParams(location.search);
 
-    // 1. Account Subtabs & Change Password
+    const homeGroupLabel = t("common.home", "Trang chủ");
+    const interviewGroupLabel = t("common.interview", "Phỏng vấn");
+    const individualGroupLabel = t("common.individual", "Cá nhân");
+
+    // 1. Account Subtabs & Change Password (under "Cá nhân")
     if (location.pathname.startsWith("/user/account/change-password")) {
       return {
         currentTitle: t("common.changePassword", "Đổi mật khẩu"),
         parentTitle: t("common.account", "Tài khoản"),
-        currentCategory: t("common.user", "User"),
+        currentCategory: individualGroupLabel,
       };
     }
 
     if (location.pathname.startsWith("/user/account")) {
       const subtab = searchParams.get("subtab");
       const accountParent = t("common.account", "Tài khoản");
-      const userCategory = t("common.user", "User");
 
       if (subtab === "notifications") {
         return {
           currentTitle: t("common.notification", "Thông báo"),
           parentTitle: accountParent,
-          currentCategory: userCategory,
+          currentCategory: individualGroupLabel,
         };
       }
       if (subtab === "jdPurchases") {
         return {
           currentTitle: t("payment.jdPurchaseHistory", "Lịch sử mua gói JD"),
           parentTitle: accountParent,
-          currentCategory: userCategory,
+          currentCategory: individualGroupLabel,
         };
       }
       if (subtab === "editProfile") {
         return {
           currentTitle: t("userAccount.editProfile", "Chỉnh sửa hồ sơ"),
           parentTitle: accountParent,
-          currentCategory: userCategory,
+          currentCategory: individualGroupLabel,
         };
       }
       if (subtab === "settings") {
         return {
           currentTitle: t("userAccount.quickSettings", "Cài đặt"),
           parentTitle: accountParent,
-          currentCategory: userCategory,
+          currentCategory: individualGroupLabel,
         };
       }
       return {
         currentTitle: t("common.candidateProfile", "Hồ sơ ứng viên"),
         parentTitle: accountParent,
-        currentCategory: userCategory,
+        currentCategory: individualGroupLabel,
       };
     }
 
@@ -251,11 +254,11 @@ export function UserDashboardPage() {
       return {
         currentTitle: t("common.settings", "Cài đặt"),
         parentTitle: t("common.account", "Tài khoản"),
-        currentCategory: t("common.user", "User"),
+        currentCategory: individualGroupLabel,
       };
     }
 
-    // 2. AI Mock Interview Session History & Session Routes
+    // 2. AI Mock Interview Session History & Session Routes (under "Phỏng vấn")
     if (
       location.pathname.startsWith("/user/mock-interview/history") ||
       location.pathname.startsWith("/user/ai-interview/session")
@@ -263,16 +266,16 @@ export function UserDashboardPage() {
       return {
         currentTitle: t("aiInterview.sessionDetails", "Chi tiết phiên phỏng vấn"),
         parentTitle: t("common.aiInterview1", "Phỏng vấn AI"),
-        currentCategory: t("common.user", "User"),
+        currentCategory: interviewGroupLabel,
       };
     }
 
-    // 3. Tab-based Drill Down Details (Company Detail & Job Detail)
+    // 3. Tab-based Drill Down Details (Company Detail & Job Detail under "Trang chủ")
     if (typedActiveTab === "companies" && searchParams.get("companyId")) {
       return {
         currentTitle: t("common.companyDetails", "Chi tiết công ty"),
         parentTitle: t("common.companies", "Công ty"),
-        currentCategory: t("common.user", "User"),
+        currentCategory: homeGroupLabel,
       };
     }
 
@@ -280,7 +283,7 @@ export function UserDashboardPage() {
       return {
         currentTitle: t("common.jobDetails", "Chi tiết việc làm"),
         parentTitle: t("userDashboard.jobSearch", "Việc làm"),
-        currentCategory: t("common.user", "User"),
+        currentCategory: homeGroupLabel,
       };
     }
 
@@ -291,7 +294,7 @@ export function UserDashboardPage() {
           return {
             currentTitle: item.label,
             parentTitle: undefined,
-            currentCategory: group.label || t("common.user", "User"),
+            currentCategory: group.label,
           };
         }
       }
@@ -299,7 +302,7 @@ export function UserDashboardPage() {
     return {
       currentTitle: t("common.overview", "Tổng quan"),
       parentTitle: undefined,
-      currentCategory: t("common.user", "User"),
+      currentCategory: homeGroupLabel,
     };
   }, [typedActiveTab, sidebarMenuGroups, t, location.pathname, location.search]);
 
