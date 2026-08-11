@@ -9,12 +9,15 @@ import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { TFunction } from "i18next";
 import {
+  Bell,
   Briefcase,
   Building2,
   LayoutDashboard,
   MessageSquare,
   Newspaper,
+  ReceiptText,
   Search,
+  UserRound,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -148,6 +151,24 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
         icon: MessageSquare,
         label: t("common.messages"),
         color: "text-cyan-600 dark:text-cyan-500",
+      },
+      {
+        type: "accountCandidateProfile",
+        icon: UserRound,
+        label: t("common.candidateProfile", "Hồ sơ ứng viên"),
+        color: "text-indigo-600 dark:text-indigo-400",
+      },
+      {
+        type: "accountTransactions",
+        icon: ReceiptText,
+        label: t("userAccount.transactionHistory", "Lịch sử giao dịch"),
+        color: "text-amber-600 dark:text-amber-400",
+      },
+      {
+        type: "accountNotifications",
+        icon: Bell,
+        label: t("common.notification", "Thông báo"),
+        color: "text-violet-600 dark:text-violet-400",
       },
     ],
   },
@@ -347,6 +368,16 @@ export function UserDashboardPage() {
   // When on a nested route (outlet), navigate back to the dashboard base with the tab param
   const handleNavigate = useCallback(
     (type: string) => {
+      const accountSubtabs: Record<string, string> = {
+        accountCandidateProfile: "candidateProfile",
+        accountTransactions: "jdPurchases",
+        accountNotifications: "notifications",
+      };
+      const accountSubtab = accountSubtabs[type];
+      if (accountSubtab) {
+        navigate(`/user/account?subtab=${accountSubtab}`);
+        return;
+      }
       if (outlet) {
         navigate(`/user?tab=${type}`);
       } else {
@@ -355,6 +386,15 @@ export function UserDashboardPage() {
     },
     [outlet, openTab, navigate]
   );
+
+  const sidebarActiveTab = location.pathname.startsWith("/user/account")
+    ? {
+        candidateProfile: "accountCandidateProfile",
+        notifications: "accountNotifications",
+        jdPurchases: "accountTransactions",
+      }[new URLSearchParams(location.search).get("subtab") || "candidateProfile"] ||
+      "accountCandidateProfile"
+    : typedActiveTab;
 
   const renderContent = () => {
     switch (typedActiveTab) {
@@ -385,7 +425,7 @@ export function UserDashboardPage() {
     <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
       <DashboardSidebar
         menuGroups={sidebarMenuGroups}
-        activeTab={typedActiveTab}
+        activeTab={sidebarActiveTab}
         onNavigate={handleNavigate}
         onProfileClick={() => navigate("/user/account")}
         storageKey="user_dashboard_sidebar_collapsed"
