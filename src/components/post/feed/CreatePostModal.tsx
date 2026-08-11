@@ -1,5 +1,4 @@
 import { UniversalMediaUploader } from "@/components/shared/media/UniversalMediaUploader";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,19 +10,22 @@ import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { ImagePlus, PenLine, Send, Tag, X } from "lucide-react";
+import { FileText, ImagePlus, Info, PenLine, Send, Tag, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+
 interface CreatePostModalProps {
   open: boolean;
   onOpenChange: (_open: boolean) => void;
   onCreated?: () => void;
 }
+
 export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostModalProps) {
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const { data: currentMentorProfile } = useCurrentMentorProfile();
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
@@ -32,13 +34,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const authorName = user?.name ?? t("common.friend");
-  const authorInitials = authorName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+
   const resetForm = () => {
     setTitle("");
     setContent("");
@@ -49,6 +45,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
     if (coverPreview) URL.revokeObjectURL(coverPreview);
     setCoverPreview(null);
   };
+
   const handleCoverFilesChange = (files: File[]) => {
     const file = files[0];
     if (!file) return;
@@ -56,6 +53,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
     setCoverFile(file);
     setCoverPreview(URL.createObjectURL(file));
   };
+
   const handleAddTag = () => {
     const tag = tagInput.trim();
     if (tag && !tags.includes(tag)) {
@@ -63,14 +61,14 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
       setTagInput("");
     }
   };
+
   const handleRemoveTag = (tag: string) => {
     setTags((prev) => prev.filter((t) => t !== tag));
   };
 
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) return;
-    // User.id from JWT (sub) is NOT the same as Mentor.id. For MENTOR role,
-    // BE stores posts against Mentor.id.
+
     const authorId =
       user?.role === "MENTOR" && currentMentorProfile?.id != null
         ? typeof currentMentorProfile.id === "string"
@@ -81,7 +79,9 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
           : user?.id != null
             ? parseInt(String(user.id), 10)
             : undefined;
+
     if (!authorId) return;
+
     setSubmitting(true);
     try {
       const response = await postManager.createPost({
@@ -93,6 +93,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
         coverImg: coverFile ?? undefined,
         status: "DRAFT",
       });
+
       if (response.success) {
         toast.success(
           t("compPost.draftSubmittedNotice", "Bài viết của bạn đã được gửi và đang chờ phê duyệt")
@@ -102,191 +103,231 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
         onOpenChange(false);
         onCreated?.();
       } else {
-        toast.error(response.error ?? t("compPost.cannotPost"));
+        toast.error(response.error ?? t("compPost.cannotPost", "Không thể đăng bài"));
       }
     } catch {
-      toast.error(t("compPost.cannotPost"));
+      toast.error(t("compPost.cannotPost", "Không thể đăng bài"));
     } finally {
       setSubmitting(false);
     }
   };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden border-slate-200 bg-white p-0 shadow-2xl dark:border-slate-700/80 dark:bg-slate-900">
-        <DialogHeader className="border-b border-slate-200 bg-slate-50/80 px-6 py-5 text-left dark:border-slate-800 dark:bg-slate-800/45">
+      <DialogContent className="flex h-[90vh] max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+        {/* Header - Fixed Top */}
+        <DialogHeader className="shrink-0 border-b border-slate-100 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm shadow-indigo-500/25">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300">
               <PenLine className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-extrabold text-slate-950 dark:text-white">
-                {t("common.createArticles")}
+              <DialogTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                {t("compPost.createNewPost", "Tạo bài viết mới")}
               </DialogTitle>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                Chia sẻ một điều hữu ích với cộng đồng Inblue.
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {t(
+                  "compPost.shareKnowledgeNotice",
+                  "Chia sẻ câu chuyện, kiến thức hoặc kinh nghiệm với cộng đồng"
+                )}
               </p>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="max-h-[calc(90vh-92px)] space-y-5 overflow-y-auto px-6 pt-5 pb-4">
-          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-800/45">
-            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
-              <AvatarImage src={user?.avatarUrl ?? undefined} alt={authorName} />
-              <AvatarFallback className="bg-[#0047AB]/10 text-sm font-semibold text-[#0047AB]">
-                {authorInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-semibold">{authorName}</p>
-              <Badge
-                variant="secondary"
-                className="mt-0.5 border-0 bg-indigo-500/10 text-[10px] text-indigo-600 dark:text-indigo-300">
-                {t("compPost.posted")}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-slate-600 dark:text-slate-300">
-              {t("common.title1")}
-            </Label>
-            <Input
-              placeholder={t("compPost.titleYourPost")}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="h-11 rounded-xl border-slate-200 bg-slate-50 text-base font-semibold dark:border-slate-700 dark:bg-slate-800/60"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-slate-600 dark:text-slate-300">
-              {t("common.content1")}
-            </Label>
-            <Textarea
-              placeholder={t("general.heyWhatSOnYour", {
-                var_0: user?.name?.split(" ").pop() ?? t("common.friend"),
-              })}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={7}
-              className="resize-none rounded-xl border-slate-200 bg-slate-50 leading-relaxed dark:border-slate-700 dark:bg-slate-800/60"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-slate-600 dark:text-slate-300">
-              {t("common.summary")}
-            </Label>
-            <Textarea
-              placeholder={t("compPost.writeABriefSummaryOptional")}
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              rows={3}
-              className="resize-none rounded-xl border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60"
-            />
-          </div>
-
-          <div>
-            {coverPreview ? (
-              <div className="relative overflow-hidden rounded-xl">
+        {/* Form Body - Scrollable Canvas */}
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-6 sm:p-8">
+          {/* Cover Photo Area */}
+          {coverPreview ? (
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {t("common.coverPhoto", "Ảnh bìa")}
+                </span>
+                <div className="flex items-center gap-2">
+                  <UniversalMediaUploader
+                    preset="single-image"
+                    enableWebcam={true}
+                    onFilesChange={handleCoverFilesChange}
+                    customTrigger={
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 rounded-lg text-xs font-medium dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                        <ImagePlus className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                        {t("common.change", "Thay đổi ảnh")}
+                      </Button>
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCoverFile(null);
+                      if (coverPreview) URL.revokeObjectURL(coverPreview);
+                      setCoverPreview(null);
+                    }}
+                    className="h-8 gap-1.5 rounded-lg border-rose-200 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:border-rose-900/50 dark:text-rose-400 dark:hover:bg-rose-950/40">
+                    <X className="h-3.5 w-3.5" />
+                    {t("common.delete", "Xóa ảnh")}
+                  </Button>
+                </div>
+              </div>
+              <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-900 dark:border-slate-800">
                 <img
                   src={coverPreview}
-                  alt={t("common.coverPhoto")}
-                  className="h-52 w-full rounded-xl object-cover"
+                  alt={t("common.coverPhoto", "Ảnh bìa")}
+                  className="max-h-60 w-full object-cover"
                 />
-                <button
-                  type="button"
-                  className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
-                  onClick={() => {
-                    setCoverFile(null);
-                    if (coverPreview) URL.revokeObjectURL(coverPreview);
-                    setCoverPreview(null);
-                  }}>
-                  <X className="h-4 w-4" />
-                </button>
               </div>
-            ) : (
+            </div>
+          ) : (
+            <div className="flex items-center justify-start">
               <UniversalMediaUploader
                 preset="single-image"
                 enableWebcam={true}
                 onFilesChange={handleCoverFilesChange}
                 customTrigger={
-                  <div className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 py-10 transition-colors hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-indigo-500/60 dark:hover:bg-indigo-500/10">
-                    <ImagePlus className="h-6 w-6 text-slate-400" />
-                    <span className="text-muted-foreground text-sm">
-                      {t("compPost.addCoverPhoto")}
-                    </span>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9 gap-2 rounded-xl border-dashed border-slate-300 bg-slate-50/50 px-3 text-xs font-medium text-slate-600 hover:border-indigo-500 hover:bg-indigo-50/50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
+                    <ImagePlus className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+                    {t("compPost.addCoverPhoto", "Thêm ảnh bìa")}
+                  </Button>
                 }
               />
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-slate-600 dark:text-slate-300">
-              <Tag className="mr-1 inline h-3 w-3" />
-              {t("common.tags")}
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder={t("compPost.enterTagThenPressEnter")}
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddTag();
-                  }
-                }}
-                className="h-10 flex-1 rounded-xl border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddTag}
-                disabled={!tagInput.trim()}>
-                {t("common.more")}
-              </Button>
             </div>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="gap-1 pr-1 text-[#0047AB] dark:text-[#66B2FF]">
-                    #{tag}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="hover:bg-muted rounded-full p-0.5">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
+          )}
+
+          {/* Frameless Title Input */}
+          <div className="space-y-1">
+            <Input
+              placeholder={t("compPost.titleYourPost", "Tiêu đề bài viết...")}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="h-auto rounded-none border-0 bg-transparent px-0 py-1 text-2xl font-extrabold tracking-tight text-slate-900 placeholder:text-slate-300 focus-visible:ring-0 dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
           </div>
 
-          <div className="sticky bottom-0 -mx-6 flex items-center justify-end gap-2 border-t border-slate-200 bg-white/95 px-6 pt-4 pb-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+          <div className="border-b border-slate-100 dark:border-slate-800" />
+
+          {/* Main Content Area */}
+          <div className="space-y-1">
+            <Textarea
+              placeholder={t(
+                "compPost.contentPlaceholder",
+                "Viết nội dung bài viết của bạn tại đây... Chia sẻ thông tin chi tiết, kiến thức hoặc câu hỏi của bạn."
+              )}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={8}
+              className="min-h-[220px] resize-y rounded-xl border-slate-200/80 bg-slate-50/40 p-4 text-base leading-relaxed text-slate-800 shadow-none placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700/70 dark:bg-slate-800/40 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-indigo-500 dark:focus:bg-slate-800/80"
+            />
+          </div>
+
+          {/* Metadata Cards: Summary & Tags */}
+          <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
+            {/* Summary Section */}
+            <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4 dark:border-slate-700/70 dark:bg-slate-800/40">
+              <Label className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <FileText className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                {t("common.summary", "Tóm tắt ngắn (Không bắt buộc)")}
+              </Label>
+              <Textarea
+                placeholder={t(
+                  "compPost.writeABriefSummaryOptional",
+                  "Nhập mô tả ngắn hiển thị trên thẻ bài viết..."
+                )}
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                rows={2}
+                className="resize-none rounded-lg border-slate-200/80 bg-white px-3 py-2 text-xs text-slate-800 shadow-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-indigo-500"
+              />
+            </div>
+
+            {/* Tags Section */}
+            <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4 dark:border-slate-700/70 dark:bg-slate-800/40">
+              <Label className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <Tag className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                {t("common.tags", "Thẻ chủ đề")}
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder={t(
+                    "compPost.enterTagThenPressEnter",
+                    "Nhập thẻ (ví dụ: React, Career)..."
+                  )}
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                  className="h-9 flex-1 rounded-lg border-slate-200/80 bg-white text-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddTag}
+                  disabled={!tagInput.trim()}
+                  className="h-9 rounded-lg px-3 text-xs font-medium dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                  {t("common.more", "Thêm")}
+                </Button>
+              </div>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-3">
+                  {tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="gap-1.5 rounded-md border-0 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600 dark:border dark:border-indigo-800/50 dark:bg-indigo-950/80 dark:text-indigo-300">
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="rounded p-0.5 hover:bg-indigo-100 dark:hover:bg-indigo-900">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer - Always Fixed Bottom */}
+        <div className="flex shrink-0 items-center justify-between border-t border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <Info className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+            <span>
+              {t("compPost.approvalNotice", "Bài viết sẽ được duyệt trước khi xuất bản.")}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="ghost"
-              className="h-10 rounded-xl px-4 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="h-9 rounded-xl px-4 text-xs font-semibold text-slate-600 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800"
               onClick={() => {
                 resetForm();
                 onOpenChange(false);
               }}>
-              Hủy
+              {t("common.cancel", "Hủy")}
             </Button>
             <Button
-              className="h-10 gap-2 rounded-xl bg-indigo-600 px-5 font-bold text-white shadow-sm shadow-indigo-500/25 hover:bg-indigo-700"
+              className="h-9 gap-2 rounded-xl bg-indigo-600 px-5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
               onClick={handleSubmit}
               disabled={!title.trim() || !content.trim() || submitting}>
-              {submitting ? <Spinner size="sm" tone="white" /> : <Send className="h-4 w-4" />}
-              {t("compPost.post")}
+              {submitting ? <Spinner size="sm" tone="white" /> : <Send className="h-3.5 w-3.5" />}
+              {t("compPost.post", "Đăng bài")}
             </Button>
           </div>
         </div>

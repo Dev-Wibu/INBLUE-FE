@@ -1,4 +1,3 @@
-import { DateTimePicker } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,15 +8,13 @@ import { useUserSessions } from "@/hooks/useSession";
 import { formatDateTime, toVietnamDateKey } from "@/lib/formatting";
 import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
-import { Calendar, ChevronLeft, ChevronRight, Clock, Filter, Target, Video } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Clock, Target, Video } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
-  USER_CALENDAR_STATUSES,
   type UserCalendarSession,
   buildUserCalendarSessions,
   formatCalendarTime,
@@ -41,17 +38,6 @@ const getFirstDayOfMonth = (year: number, month: number): number => {
   return new Date(Date.UTC(year, month, 1)).getUTCDay();
 };
 
-const toFilterDateKey = (value?: Date): string | undefined => {
-  if (!value) return undefined;
-  return toVietnamDateKey(value) || undefined;
-};
-
-const isDateKeyInRange = (dateKey: string, fromKey?: string, toKey?: string) => {
-  if (fromKey && dateKey < fromKey) return false;
-  if (toKey && dateKey > toKey) return false;
-  return true;
-};
-
 const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
 function AgendaSessionItem({
@@ -72,47 +58,49 @@ function AgendaSessionItem({
   const canWriteReview = item.session.status === "COMPLETED";
 
   return (
-    <div className="space-y-3 rounded-xl border border-slate-200/80 bg-white p-3.5 transition-colors hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-950/60 dark:hover:border-slate-700">
+    <div className="space-y-3 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-2xs transition-colors hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+          <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
             {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             {t("common.mentorWithId", { id: getSessionMentorId(item.session) ?? "-" })}
           </p>
         </div>
-        <Badge className={cn("shrink-0 border-0", status.badgeClass)}>{status.label}</Badge>
+        <Badge className={cn("shrink-0 border-0 text-[10px] font-semibold", status.badgeClass)}>
+          {status.label}
+        </Badge>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+      <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
         <Clock className="h-3.5 w-3.5 text-indigo-500" />
-        <span>{formatDateTime(item.session.joinTime)}</span>
+        <span className="font-medium">{formatDateTime(item.session.joinTime)}</span>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 pt-1">
         <Button
           size="sm"
           variant="outline"
-          className="h-8 text-xs"
+          className="h-7 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           onClick={() => onOpenDetail(item.session.id)}>
-          {t("common.seeDetails")}
+          {t("common.seeDetails", "Xem chi tiết")}
         </Button>
         {canJoinRoom && (
           <Button
             size="sm"
-            className="h-8 bg-emerald-600 text-xs hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+            className="h-7 bg-emerald-600 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             onClick={() => onOpenRoom(item.session.id)}>
-            {t("common.enterTheRoom")}
+            {t("common.enterTheRoom", "Vào phòng")}
           </Button>
         )}
         {canWriteReview && (
           <Button
             size="sm"
             variant="secondary"
-            className="h-8 text-xs"
+            className="h-7 bg-indigo-50 text-xs font-medium text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-300"
             onClick={() => onWriteReview(item.session.id)}>
-            {t("common.writeAReview")}
+            {t("common.writeAReview", "Đánh giá")}
           </Button>
         )}
       </div>
@@ -133,12 +121,12 @@ function CalendarSessionEntry({
   return (
     <button
       onClick={() => onOpen(item.session.id)}
-      className="hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors">
+      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-indigo-50/60 dark:hover:bg-slate-800">
       <span className={cn("h-2 w-2 shrink-0 rounded-full", status.dot)} />
-      <span className="text-muted-foreground shrink-0">
+      <span className="shrink-0 font-medium text-slate-500 dark:text-slate-400">
         {formatCalendarTime(item.session.joinTime)}
       </span>
-      <span className="text-foreground flex-1 truncate font-medium">
+      <span className="flex-1 truncate font-semibold text-slate-900 dark:text-slate-100">
         {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
       </span>
       <Badge className={cn("border-0 px-1.5 py-0 text-[10px]", status.badgeClass)}>
@@ -151,7 +139,6 @@ function CalendarSessionEntry({
 export function OverviewPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
   const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions();
 
   const MONTH_NAMES = [
@@ -184,24 +171,10 @@ export function OverviewPage() {
     Number.isFinite(initialMonth) ? initialMonth : now.getMonth()
   );
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([...USER_CALENDAR_STATUSES]);
-  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
-  const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const [mobileView, setMobileView] = useState<string>(MOBILE_VIEW_AGENDA);
 
   const calendarItems = useMemo(() => buildUserCalendarSessions(sessions), [sessions]);
-  const fromKey = useMemo(() => toFilterDateKey(fromDate), [fromDate]);
-  const toKey = useMemo(() => toFilterDateKey(toDate), [toDate]);
-  const filteredCalendarItems = useMemo(() => {
-    return calendarItems.filter((item) => {
-      const status = item.session.status || "";
-      return selectedStatuses.includes(status) && isDateKeyInRange(item.dateKey, fromKey, toKey);
-    });
-  }, [calendarItems, selectedStatuses, fromKey, toKey]);
-  const sessionsByDate = useMemo(
-    () => groupUserCalendarByDate(filteredCalendarItems),
-    [filteredCalendarItems]
-  );
+  const sessionsByDate = useMemo(() => groupUserCalendarByDate(calendarItems), [calendarItems]);
 
   const totalInterviews = sessions.length;
   const completedInterviews = sessions.filter((s) => s.status === "COMPLETED").length;
@@ -209,7 +182,8 @@ export function OverviewPage() {
     (s) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
   ).length;
   const pendingInterviews = sessions.filter((s) => s.status === "DRAFT").length;
-  const upcomingScheduleItems = filteredCalendarItems
+
+  const upcomingScheduleItems = calendarItems
     .filter(
       (item) =>
         item.timestamp >= nowTimestamp &&
@@ -218,7 +192,9 @@ export function OverviewPage() {
         item.session.status !== "CANCELED"
     )
     .slice(0, 4);
+
   const selectedDayItems = sessionsByDate.get(selectedDateKey) || [];
+
   const selectedDateDisplay = useMemo(() => {
     const [year, month, day] = selectedDateKey.split("-").map(Number);
     if (!year || !month || !day) return t("common.selectedDate");
@@ -282,18 +258,6 @@ export function OverviewPage() {
     }
   };
 
-  const toggleStatus = (status: string) => {
-    setSelectedStatuses((current) =>
-      current.includes(status) ? current.filter((s) => s !== status) : [...current, status]
-    );
-  };
-
-  const resetFilters = () => {
-    setSelectedStatuses([...USER_CALENDAR_STATUSES]);
-    setFromDate(undefined);
-    setToDate(undefined);
-  };
-
   const jumpToToday = () => {
     setCurrentYear(Number.isFinite(initialYear) ? initialYear : now.getFullYear());
     setCurrentMonth(Number.isFinite(initialMonth) ? initialMonth : now.getMonth());
@@ -301,119 +265,116 @@ export function OverviewPage() {
   };
 
   const renderCalendarContent = () => (
-    <Card className="border-slate-200/80 bg-white shadow-xs dark:border-slate-800/80 dark:bg-slate-900/60">
-      <CardHeader className="gap-4 pb-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {MONTH_NAMES[currentMonth]} {currentYear}
-            </CardTitle>
-            <CardDescription className="text-slate-500 dark:text-slate-400">
-              {t("userOverview.yourMonthlyActivityCalendar")}
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handlePrevMonth}
-              aria-label={t("common.lastMonth")}>
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleNextMonth}
-              aria-label={t("common.nextMonth")}>
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={jumpToToday}>
-              {t("common.today")}
-            </Button>
-          </div>
+    <Card className="border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <CardHeader className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+        <div>
+          <CardTitle className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+            {MONTH_NAMES[currentMonth]} {currentYear}
+          </CardTitle>
+          <CardDescription className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {t("common.clickOnTheDateToSeeDetails", "Nhấp vào ngày để xem chi tiết lịch phỏng vấn")}
+          </CardDescription>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          {USER_CALENDAR_STATUSES.map((status) => {
-            const cfg = getSessionStatusConfig(status);
-            return (
-              <span
-                key={status}
-                className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-400">
-                <span className={cn("h-2.5 w-2.5 rounded-full", cfg.dot)} />
-                {cfg.label}
-              </span>
-            );
-          })}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={jumpToToday}
+            className="h-8 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+            {t("common.today", "Hôm nay")}
+          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 dark:border-slate-700 dark:bg-slate-800"
+              onClick={handlePrevMonth}
+              aria-label={t("common.previousMonth")}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 dark:border-slate-700 dark:bg-slate-800"
+              onClick={handleNextMonth}
+              aria-label={t("common.nextMonth")}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent>
-        <div className="grid grid-cols-7 gap-1 border-b border-slate-200/80 pb-2 dark:border-slate-800/80">
+      <CardContent className="pt-4">
+        <div className="grid grid-cols-7 border-b border-slate-200 pb-2.5 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {WEEK_DAYS.map((day) => (
-            <div
-              key={day}
-              className="text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {day}
-            </div>
+            <div key={day}>{day}</div>
           ))}
         </div>
 
-        <div className="mt-2 space-y-1">
-          {weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="grid grid-cols-7 gap-1">
-              {week.map((day, dayIndex) => {
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          {weeks.map((week, weekIdx) => (
+            <div
+              key={weekIdx}
+              className="grid grid-cols-7 divide-x divide-slate-100 dark:divide-slate-800">
+              {week.map((day, dayIdx) => {
                 if (day === null) {
                   return (
                     <div
-                      key={`empty-${weekIndex}-${dayIndex}`}
-                      className="min-h-32 rounded-xl border border-slate-200/60 bg-slate-50/40 p-3 opacity-40 dark:border-slate-800/60 dark:bg-slate-950/30"
+                      key={`empty-${weekIdx}-${dayIdx}`}
+                      className="min-h-[105px] bg-slate-50/40 p-1.5 dark:bg-slate-950/30"
                     />
                   );
                 }
+
                 const dateKey = toDateKeyFromParts(currentYear, currentMonth, day);
                 const dayItems = sessionsByDate.get(dateKey) || [];
-                const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
-                const overflowCount = dayItems.length - MAX_VISIBLE_SESSIONS;
-                const isToday = dateKey === todayKey;
                 const isSelected = dateKey === selectedDateKey;
+                const isToday = dateKey === todayKey;
+                const hasEvents = dayItems.length > 0;
+                const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
+                const overflowCount = Math.max(0, dayItems.length - MAX_VISIBLE_SESSIONS);
 
                 return (
                   <div
-                    key={`${weekIndex}-${dayIndex}`}
+                    key={dateKey}
+                    onClick={() => setSelectedDateKey(dateKey)}
                     className={cn(
-                      "min-h-32 rounded-xl border p-2.5 transition-colors",
+                      "group relative flex min-h-[105px] cursor-pointer flex-col gap-1.5 p-2 transition-all",
                       isSelected
-                        ? "border-blue-500 bg-blue-50/30 ring-1 ring-blue-500/30 dark:border-blue-500 dark:bg-blue-950/40"
-                        : isToday
-                          ? "border-indigo-400/70 bg-indigo-50/50 dark:border-indigo-600/80 dark:bg-indigo-950/40"
-                          : "border-slate-200/80 bg-slate-50/60 dark:border-slate-800/80 dark:bg-slate-950/50",
-                      !isSelected &&
-                        dayItems.length > 0 &&
-                        "hover:border-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900/80"
+                        ? "bg-indigo-500/10 ring-2 ring-indigo-500/50 dark:bg-indigo-950/60 dark:ring-indigo-500/60"
+                        : hasEvents
+                          ? "border border-indigo-200/80 bg-indigo-50/90 shadow-2xs dark:border-indigo-900/60 dark:bg-indigo-950/40"
+                          : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
                     )}>
-                    <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center justify-between">
                       <button
-                        onClick={() => setSelectedDateKey(dateKey)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDateKey(dateKey);
+                        }}
                         className={cn(
-                          "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-semibold transition-colors",
+                          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors",
                           isSelected
-                            ? "bg-blue-600 text-white"
+                            ? "bg-indigo-600 text-white shadow-xs"
                             : isToday
-                              ? "bg-indigo-600 text-white"
-                              : "text-slate-600 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800"
+                              ? "bg-indigo-600 font-extrabold text-white shadow-xs"
+                              : hasEvents
+                                ? "bg-indigo-600/15 font-extrabold text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-300"
+                                : "text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800"
                         )}
                         aria-label={t("general.selectDate", { var_0: day })}>
                         {String(day).padStart(2, "0")}
                       </button>
-                      {dayItems.length > 0 && (
-                        <Badge className="border-0 bg-slate-200/80 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      {hasEvents && (
+                        <Badge className="border-0 bg-indigo-600 px-1.5 py-0 text-[10px] font-bold text-white shadow-2xs dark:bg-indigo-500">
                           {dayItems.length}
                         </Badge>
                       )}
                     </div>
 
-                    {dayItems.length > 0 && (
+                    {hasEvents && (
                       <div className="space-y-1">
                         {visibleItems.map((item) => {
                           const cfg = getSessionStatusConfig(item.session.status);
@@ -422,14 +383,14 @@ export function OverviewPage() {
                               key={item.session.id}
                               onClick={() => handleOpenSessionDetail(item.session.id)}
                               className={cn(
-                                "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] transition-colors hover:opacity-90",
+                                "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] font-medium shadow-2xs transition-colors hover:opacity-90",
                                 cfg.badgeClass
                               )}>
                               <Clock className="h-3 w-3 shrink-0" />
-                              <span className="shrink-0 font-medium">
+                              <span className="shrink-0 font-semibold">
                                 {formatCalendarTime(item.session.joinTime)}
                               </span>
-                              <span className="truncate">
+                              <span className="truncate font-semibold">
                                 {item.session.roomName || `#${item.session.id}`}
                               </span>
                             </button>
@@ -439,8 +400,8 @@ export function OverviewPage() {
                         {overflowCount > 0 && (
                           <Popover>
                             <PopoverTrigger asChild>
-                              <button className="w-full rounded-md border border-dashed border-slate-300 px-2 py-1 text-center text-[11px] font-medium text-slate-600 transition-colors hover:border-slate-400 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600">
-                                +{overflowCount} {t("common.anotherSession")}
+                              <button className="w-full rounded-md border border-dashed border-indigo-300 bg-white/80 px-2 py-0.5 text-center text-[10px] font-bold text-indigo-600 transition-colors hover:border-indigo-400 dark:border-indigo-700 dark:bg-slate-900 dark:text-indigo-300">
+                                +{overflowCount} {t("common.anotherSession", "bài nữa")}
                               </button>
                             </PopoverTrigger>
                             <PopoverContent
@@ -448,7 +409,7 @@ export function OverviewPage() {
                               side="bottom"
                               align="start"
                               sideOffset={8}>
-                              <p className="mb-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
                                 {t("general.session5", {
                                   var_0: String(day).padStart(2, "0"),
                                   var_1: String(currentMonth + 1).padStart(2, "0"),
@@ -481,121 +442,73 @@ export function OverviewPage() {
   );
 
   const renderAgendaContent = () => (
-    <Card className="border-slate-200/80 bg-white shadow-xs dark:border-slate-800/80 dark:bg-slate-900/60">
-      <CardHeader className="space-y-4 pb-4">
-        <div className="space-y-1">
-          <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
-            {t("common.appointmentScheduleByDay")}
-          </CardTitle>
-          <CardDescription className="text-slate-500 capitalize dark:text-slate-400">
-            {selectedDateDisplay}
-          </CardDescription>
-        </div>
-
-        <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3.5 dark:border-slate-800/80 dark:bg-slate-950/60">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-            <Filter className="h-4 w-4 text-indigo-500" />
-            {t("common.filter")}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {USER_CALENDAR_STATUSES.map((status) => {
-              const cfg = getSessionStatusConfig(status);
-              const active = selectedStatuses.includes(status);
-              return (
-                <Button
-                  key={status}
-                  size="sm"
-                  variant={active ? "default" : "outline"}
-                  onClick={() => toggleStatus(status)}
-                  className={cn(
-                    "h-8 text-xs font-semibold",
-                    active &&
-                      "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
-                  )}>
-                  <span className={cn("mr-1.5 h-2 w-2 rounded-full", cfg.dot)} />
-                  {cfg.label}
-                </Button>
-              );
-            })}
-          </div>
-
-          <div className="grid gap-2 sm:grid-cols-2">
-            <DateTimePicker
-              value={fromDate}
-              onChange={(value) => {
-                setFromDate(value || undefined);
-                if (value && toDate && value > toDate) setToDate(undefined);
-              }}
-              showTime={false}
-              themeVariant="user"
-              placeholder={t("common.fromDate")}
-            />
-            <DateTimePicker
-              value={toDate}
-              onChange={(value) => setToDate(value || undefined)}
-              showTime={false}
-              minDate={fromDate}
-              themeVariant="user"
-              placeholder={t("common.comeDay")}
-            />
-          </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-fit text-xs text-slate-600 dark:text-slate-400"
-            onClick={resetFilters}>
-            {t("common.resetTheFilter")}
-          </Button>
-        </div>
+    <Card className="border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <CardHeader className="border-b border-slate-100 pb-3 dark:border-slate-800">
+        <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+          {t("common.appointmentScheduleByDay", "Lịch hẹn theo ngày")}
+        </CardTitle>
+        <CardDescription className="text-xs font-semibold text-indigo-600 capitalize dark:text-indigo-400">
+          {selectedDateDisplay}
+        </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4 pt-4">
+        {/* Selected Day Agenda Items */}
         {sessionsLoading ? (
           <div className="space-y-3">
-            <Skeleton className="h-24 rounded-xl" />
-            <Skeleton className="h-24 rounded-xl" />
-            <Skeleton className="h-24 rounded-xl" />
+            <Skeleton className="h-20 rounded-xl" />
+            <Skeleton className="h-20 rounded-xl" />
           </div>
         ) : selectedDayItems.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center dark:border-slate-800">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              {t("common.thereAreNoAppointmentsAvailableFor")}
+          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center dark:border-slate-800 dark:bg-slate-950/40">
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {t(
+                "common.thereAreNoAppointmentsAvailableFor",
+                "Không có lịch hẹn trong ngày đã chọn"
+              )}
             </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("common.tryChangingTheDateOrAdjustingTheF")}
+            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              {t(
+                "common.selectAnotherDateOnCalendar",
+                "Nhấp vào ngày khác trên lịch để xem thông tin."
+              )}
             </p>
           </div>
         ) : (
-          selectedDayItems.map((item) => (
-            <AgendaSessionItem
-              key={item.session.id}
-              item={item}
-              onOpenDetail={handleOpenSessionDetail}
-              onOpenRoom={handleOpenSessionRoom}
-              onWriteReview={handleWriteReview}
-            />
-          ))
+          <div className="space-y-3">
+            {selectedDayItems.map((item) => (
+              <AgendaSessionItem
+                key={item.session.id}
+                item={item}
+                onOpenDetail={handleOpenSessionDetail}
+                onOpenRoom={handleOpenSessionRoom}
+                onWriteReview={handleWriteReview}
+              />
+            ))}
+          </div>
         )}
 
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3.5 dark:border-slate-800/80 dark:bg-slate-950/60">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {t("userOverview.upcomingSession")}
+        {/* Upcoming Sessions Box */}
+        <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/30">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+              {t("userOverview.upcomingSession", "Phiên sắp tới")}
             </p>
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-xs"
+              className="h-6 px-2 text-[11px] font-semibold dark:border-slate-700 dark:bg-slate-800"
               onClick={() => navigate("/user?tab=interviewHistory")}>
-              {t("common.viewHistory")}
+              {t("common.viewHistory", "Xem lịch sử")}
             </Button>
           </div>
 
           {upcomingScheduleItems.length === 0 ? (
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {t("userOverview.thereAreCurrentlyNoSessions")}
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              {t(
+                "userOverview.thereAreCurrentlyNoSessions",
+                "Hiện chưa có phiên nào cần theo dõi."
+              )}
             </p>
           ) : (
             <div className="space-y-2">
@@ -605,171 +518,115 @@ export function OverviewPage() {
                   <button
                     key={item.session.id}
                     onClick={() => handleOpenSessionDetail(item.session.id)}
-                    className="flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:bg-slate-900">
+                    className="flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
                     <div className="min-w-0">
-                      <p className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
                         {item.session.roomName ||
                           t("common.sessionVar0", { var_0: item.session.id })}
                       </p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
                         {formatDateTime(item.session.joinTime)}
                       </p>
                     </div>
-                    <Badge className={cn("shrink-0 border-0", cfg.badgeClass)}>{cfg.label}</Badge>
+                    <Badge
+                      className={cn(
+                        "shrink-0 border-0 px-1.5 py-0.5 text-[10px] font-semibold",
+                        cfg.badgeClass
+                      )}>
+                      {cfg.label}
+                    </Badge>
                   </button>
                 );
               })}
             </div>
           )}
         </div>
-
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3.5 dark:border-slate-800/80 dark:bg-slate-950/60">
-          <p className="mb-2 text-sm font-bold text-slate-800 dark:text-slate-200">
-            {t("common.actFast")}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              size="sm"
-              className="h-8 text-xs font-semibold"
-              onClick={() => navigate("/user/mock-interview/select-mentor")}>
-              {t("common.scheduleAMentoringAppointment")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => navigate("/user?tab=mockInterview")}>
-              {t("userOverview.sessionList")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => navigate("/user?tab=interviewHistory")}>
-              {t("common.interviewHistory")}
-            </Button>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
 
-  const userName = user?.name?.split(" ").pop() || t("general.you");
-  const greetingTime = now.getHours();
-  const greetingLabel =
-    greetingTime < 12
-      ? t("common.goodMorning")
-      : greetingTime < 18
-        ? t("common.goodAfternoon")
-        : t("common.goodEvening");
-
   return (
-    <div className="flex flex-col gap-6">
-      {/* Greeting Card */}
-      <Card className="border-blue-200/70 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-xs dark:border-slate-800/80 dark:bg-slate-900/60 dark:from-slate-900/90 dark:to-indigo-950/40">
-        <CardContent className="flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-semibold text-blue-700 dark:text-blue-400">
-              {greetingLabel}, {userName} 👋
-            </p>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              {t("userOverview.interviewOverview")}
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              {t("userOverview.keepTrackOfAppointmentSchedules")}
-            </p>
-          </div>
-          <Button onClick={() => navigate("/user/mock-interview/select-mentor")}>
-            {t("userOverview.setANewSchedule")}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="border-slate-200/80 bg-white shadow-xs transition-all hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-slate-700">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-              {t("common.totalInterviewSession")}
-            </CardTitle>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">
-              <Video className="h-5 w-5" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-              {totalInterviews}
-            </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("userOverview.allSessionsYouHaveBooked")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200/80 bg-white shadow-xs transition-all hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-slate-700">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-              {t("common.sessionIsComingSoon")}
-            </CardTitle>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400">
-              <Clock className="h-5 w-5" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-              {upcomingInterviews}
-            </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("common.scheduled")}, {t("common.paid")}, {t("common.ongoing")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200/80 bg-white shadow-xs transition-all hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-slate-700">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-              {t("userOverview.sessionCompleted")}
-            </CardTitle>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
-              <Calendar className="h-5 w-5" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-              {completedInterviews}
-            </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("userOverview.reviewsCanBeSubmittedOr")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200/80 bg-white shadow-xs transition-all hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-slate-700">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-              {t("userOverview.requestPendingApproval")}
-            </CardTitle>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
-              <Target className="h-5 w-5" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-              {pendingInterviews}
-            </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("userOverview.draftStatusSessions")}
-            </p>
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      {/* Clean Minimalist Header */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          {t("userOverview.interviewOverview", "Tổng quan phỏng vấn")}
+        </h1>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          {t(
+            "userOverview.keepTrackOfAppointmentSchedules",
+            "Theo dõi lịch hẹn và các chỉ số tổng quan."
+          )}
+        </p>
       </div>
 
-      {/* Calendar + Agenda */}
+      {/* High-Contrast Bright Stats Cards Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              {t("common.totalInterviewSession", "Tổng lượt phỏng vấn")}
+            </p>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
+              {totalInterviews}
+            </p>
+          </div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400">
+            <Video className="h-5 w-5" />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              {t("common.sessionIsComingSoon", "Sắp diễn ra")}
+            </p>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
+              {upcomingInterviews}
+            </p>
+          </div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400">
+            <Clock className="h-5 w-5" />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              {t("userOverview.sessionCompleted", "Đã hoàn thành")}
+            </p>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
+              {completedInterviews}
+            </p>
+          </div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400">
+            <Calendar className="h-5 w-5" />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              {t("userOverview.requestPendingApproval", "Chờ duyệt")}
+            </p>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
+              {pendingInterviews}
+            </p>
+          </div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/80 dark:text-amber-400">
+            <Target className="h-5 w-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* Calendar + Agenda Grid Section */}
       <div className="xl:hidden">
         <Tabs value={mobileView} onValueChange={setMobileView}>
           <TabsList className="mb-3 grid w-full grid-cols-2">
-            <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list")}</TabsTrigger>
-            <TabsTrigger value={MOBILE_VIEW_CALENDAR}>{t("common.monthlyCalendar")}</TabsTrigger>
+            <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
+            <TabsTrigger value={MOBILE_VIEW_CALENDAR}>
+              {t("common.monthlyCalendar", "Lịch tháng")}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value={MOBILE_VIEW_AGENDA}>{renderAgendaContent()}</TabsContent>
           <TabsContent value={MOBILE_VIEW_CALENDAR}>{renderCalendarContent()}</TabsContent>

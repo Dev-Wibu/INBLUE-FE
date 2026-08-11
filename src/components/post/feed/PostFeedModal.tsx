@@ -3,7 +3,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDateTime } from "@/lib/formatting";
@@ -18,16 +17,18 @@ import type { components } from "../../../../schema-from-be";
 import { CommentSection } from "../CommentSection";
 import { LikeButton } from "../LikeButton";
 import { LikeListModal } from "../LikeListModal";
-import { ExpandableText } from "./ExpandableText";
+
 type PostResponse = components["schemas"]["PostResponse"];
 type PostLikeResponse = components["schemas"]["PostLikeResponse"];
 type PostCommentResponse = components["schemas"]["PostCommentResponse"];
+
 interface PostFeedModalProps {
   item: PostResponse;
   open: boolean;
   onOpenChange: (_open: boolean) => void;
   onCommentCountChange?: (_count: number) => void;
 }
+
 export function PostFeedModal({
   item,
   open,
@@ -43,26 +44,30 @@ export function PostFeedModal({
   const [newComment, setNewComment] = useState("");
   const createComment = useCreateComment();
 
-  // Only fetch live data when user is logged in (API requires auth)
+  // Only fetch live data when user is logged in
   const shouldFetchLive = !!user?.id;
   const { data: liveRaw } = usePostById(postId, shouldFetchLive);
   const live = liveRaw as unknown as PostResponse | undefined;
 
   // Only check liked status when user is logged in
   const { data: likedData } = useCheckLiked(postId, user?.id ?? 0, !!user?.id);
+
   const handlePostModalOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && imageViewerOpen) {
       return;
     }
     onOpenChange(nextOpen);
   };
+
   const invalidateLivePost = () => {
     invalidatePostFeedQueries(postId);
   };
+
   const handleCommentSubmit = () => {
     const content = newComment.trim();
     const numericUserId = typeof user?.id === "string" ? parseInt(user.id, 10) : user?.id;
     if (!content || !numericUserId) return;
+
     createComment.mutate(
       {
         body: {
@@ -77,15 +82,16 @@ export function PostFeedModal({
           invalidateLivePost();
           onCommentCountChange?.((liveCommentCount ?? 0) + 1);
         },
-        onError: () => toast.error(t("compPost.cannotPostComments")),
+        onError: () => toast.error(t("compPost.cannotPostComments", "Không thể gửi bình luận")),
       }
     );
   };
+
   const rawLiked = Object.values(likedData ?? {})[0] as string | boolean | undefined;
   const isLiked = rawLiked === true || rawLiked === "true";
   const likeCount = live?.likeCount ?? item.likeCount ?? 0;
 
-  // Synchronized list of users who liked the post (excluding empty/null userNames)
+  // Synchronized list of users who liked the post
   const rawLikers = ((live?.postLikes ?? item.postLikes ?? []) as PostLikeResponse[]).filter(
     (l): l is PostLikeResponse & { userName: string } => !!l.userName
   );
@@ -109,39 +115,43 @@ export function PostFeedModal({
   const extraCount = Math.max(0, likeCount - displayLikers.length);
   const liveCommentCount = live?.commentCount ?? item.commentCount ?? 0;
   const postComments = (live?.postComments ?? item.postComments ?? []) as PostCommentResponse[];
-  const authorName = post?.author?.name ?? t("common.anonymous");
+
+  const authorName = post?.author?.name ?? t("common.anonymous", "Vô danh");
   const authorInitials = authorName
     .split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
   const likeLabel = (() => {
     if (likeCount === 0) return null;
-    if (isLiked && likeCount === 1) return t("common.friend");
+    if (isLiked && likeCount === 1) return t("common.friend", "Bạn");
     if (isLiked)
       return t("general.youAndOthers", {
         var_0: likeCount - 1,
       });
     return `${likeCount}`;
   })();
+
   const coverMediaItems = post?.coverImgUrl
     ? [
         {
           id: `post-cover-${postId}`,
-          name: post.title ?? t("compPost.articlePhoto"),
+          name: post.title ?? t("compPost.articlePhoto", "Ảnh bài viết"),
           src: post.coverImgUrl,
-          alt: post.title ?? t("compPost.articlePhoto"),
+          alt: post.title ?? t("compPost.articlePhoto", "Ảnh bài viết"),
           kind: "image" as const,
           requireAuth: false,
         },
       ]
     : [];
+
   return (
     <>
       <Dialog open={open} onOpenChange={handlePostModalOpenChange}>
         <DialogContent
-          className="flex max-h-[90vh] w-full max-w-3xl flex-col gap-0 overflow-hidden p-0"
+          className="flex h-[90vh] max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
           onEscapeKeyDown={(event) => {
             if (imageViewerOpen) {
               event.preventDefault();
@@ -152,104 +162,116 @@ export function PostFeedModal({
               event.preventDefault();
             }
           }}>
-          <DialogHeader className="border-b px-6 py-4">
-            <DialogTitle className="text-center">
-              {t("compPost.articleBy")} {authorName}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-x-hidden overflow-y-auto">
-            <div className="flex items-center gap-3 px-6 pt-4">
+          {/* Header - Author Info Header */}
+          <DialogHeader className="shrink-0 border-b border-slate-100 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center gap-3.5">
               <Avatar className="h-10 w-10 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
                 <AvatarImage src={post?.author?.avatar} alt={authorName} />
-                <AvatarFallback className="bg-[#0047AB]/10 text-sm font-semibold text-[#0047AB]">
+                <AvatarFallback className="bg-indigo-600/10 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
                   {authorInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-semibold">{authorName}</span>
+                  <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    {authorName}
+                  </DialogTitle>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {(post as any)?.majorName && (
                     <Badge
                       variant="secondary"
-                      className="bg-[#DCEEFF] text-xs text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]">
+                      className="border-0 bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-300">
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {(post as any).majorName}
                     </Badge>
                   )}
                 </div>
-                <p className="text-muted-foreground text-xs">
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   {formatDateTime(post?.creationDate)}
                 </p>
               </div>
             </div>
+          </DialogHeader>
 
-            <h2 className="px-6 pt-3 text-lg leading-snug font-bold">{post?.title}</h2>
+          {/* Article Canvas - Scrollable Body */}
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-6 sm:p-8">
+            {/* Article Main Title */}
+            <h1 className="text-2xl leading-snug font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+              {post?.title}
+            </h1>
 
+            {/* Article Summary Callout */}
             {post?.summary && (
-              <div className="mx-6 mt-3 rounded-lg border-l-4 border-[#0047AB]/40 bg-slate-50 py-2.5 pr-4 pl-3 dark:border-[#66B2FF]/40 dark:bg-slate-800/50">
-                <ExpandableText
-                  text={post.summary}
-                  clampClass="line-clamp-4"
-                  className="text-sm leading-relaxed text-slate-700 dark:text-slate-300"
-                />
+              <div className="rounded-xl border-l-4 border-indigo-500 bg-indigo-50/50 p-4 dark:border-indigo-500 dark:bg-indigo-950/30">
+                <p className="text-sm leading-relaxed font-medium text-slate-700 dark:text-slate-300">
+                  {post.summary}
+                </p>
               </div>
             )}
 
+            {/* Article Full Content */}
             {post?.content && (
-              <div className="px-6 pt-3">
-                <ExpandableText
-                  text={post.content}
-                  clampClass="line-clamp-8"
-                  className="text-sm leading-relaxed wrap-break-word"
-                />
+              <div className="space-y-4 pt-1">
+                <p className="text-base leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200">
+                  {post.content}
+                </p>
               </div>
             )}
 
+            {/* Cover Image - Placed Below Text Content */}
             {post?.coverImgUrl && (
               <div
-                className="mt-3 w-full cursor-pointer overflow-hidden"
+                className="group relative cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-slate-900 dark:border-slate-800"
                 onClick={() => setImageViewerOpen(true)}>
                 <img
                   src={post.coverImgUrl}
                   alt={post.title ?? ""}
-                  className="h-auto w-full object-contain transition-opacity hover:opacity-90"
+                  className="max-h-[420px] w-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
                 />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+                  <span className="rounded-full bg-slate-950/70 px-3.5 py-1.5 text-xs font-medium text-white backdrop-blur">
+                    {t("common.clickToEnlarge", "Bấm để phóng to")}
+                  </span>
+                </div>
               </div>
             )}
 
+            {/* Tags */}
             {(post?.tags?.length ?? 0) > 0 && (
-              <div className="flex flex-wrap gap-1.5 px-6 pt-3">
+              <div className="flex flex-wrap gap-1.5 pt-2">
                 {post!.tags!.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs text-slate-500">
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="rounded-md border-0 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     #{tag}
                   </Badge>
                 ))}
               </div>
             )}
 
+            {/* Like and Comment Counts */}
             {(likeLabel || liveCommentCount > 0) && (
-              <div className="flex items-center gap-1 px-6 pt-3 pb-1">
-                {likeLabel && (
+              <div className="flex items-center justify-between border-t border-b border-slate-100 py-3 dark:border-slate-800">
+                {likeLabel ? (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button
-                          className="flex cursor-pointer items-center gap-1 text-left hover:underline"
+                          className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:underline dark:text-slate-400 dark:hover:text-slate-200"
                           type="button"
                           onClick={() => setLikeModalOpen(true)}>
-                          <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
-                          <span className="text-muted-foreground text-xs">{likeLabel}</span>
+                          <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
+                          <span>{likeLabel}</span>
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent className="z-50 max-w-xs rounded-lg border-slate-800 bg-slate-900 p-2 text-slate-50 shadow-xl">
+                      <TooltipContent className="z-50 max-w-xs rounded-lg border-slate-800 bg-slate-900 p-2.5 text-slate-50 shadow-xl">
                         <div className="space-y-1.5">
                           {displayLikers.map((liker) => (
                             <div key={liker.userName} className="flex items-center gap-2">
                               <Avatar className="h-5 w-5 ring-1 ring-slate-700/50">
                                 <AvatarImage src={liker.userAvatar} alt={liker.userName} />
-                                <AvatarFallback className="bg-[#0047AB]/20 text-[10px] font-bold text-[#66B2FF]">
+                                <AvatarFallback className="bg-indigo-600/20 text-[10px] font-bold text-indigo-400">
                                   {(liker.userName ?? "").slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
@@ -265,18 +287,20 @@ export function PostFeedModal({
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+                ) : (
+                  <div />
                 )}
+
                 {liveCommentCount > 0 && (
-                  <span className="text-muted-foreground ml-auto text-xs">
-                    {liveCommentCount} {t("general.comments")}
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {liveCommentCount} {t("general.comments", "bình luận")}
                   </span>
                 )}
               </div>
             )}
 
-            <Separator className="mx-6" />
-
-            <div className="flex items-center gap-1 px-4 py-1">
+            {/* Action Bar (Like / Comment buttons) */}
+            <div className="flex items-center gap-2 pt-1 pb-2">
               {user?.id && postId > 0 ? (
                 <LikeButton
                   postId={postId}
@@ -286,24 +310,23 @@ export function PostFeedModal({
                   onLikeChange={invalidateLivePost}
                 />
               ) : (
-                <span className="text-muted-foreground flex-1 text-center text-sm">
-                  {t("compPost.prefer")}
+                <span className="flex-1 text-center text-xs text-slate-500">
+                  {t("compPost.prefer", "Đăng nhập để tương tác")}
                 </span>
               )}
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex-1 justify-center gap-1.5"
+                className="flex-1 justify-center gap-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                 onClick={() => document.getElementById(`comment-input-${postId}`)?.focus()}>
-                <MessageCircle className="h-4 w-4" />
-                <span>{t("common.comment1")}</span>
+                <MessageCircle className="h-4 w-4 text-slate-500" />
+                <span>{t("common.comment1", "Bình luận")}</span>
               </Button>
             </div>
 
-            <Separator className="mx-6" />
-
+            {/* Comment Section */}
             {postId > 0 && (
-              <div className="px-6 py-4">
+              <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
                 <CommentSection
                   key={postId}
                   postId={postId}
@@ -315,20 +338,24 @@ export function PostFeedModal({
             )}
           </div>
 
+          {/* Sticky Bottom Comment Composer */}
           {postId > 0 && user?.id && (
-            <div className="flex shrink-0 items-end gap-2 border-t px-4 py-3">
-              <Avatar className="h-8 w-8 shrink-0">
+            <div className="flex shrink-0 items-center gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+              <Avatar className="h-9 w-9 shrink-0">
                 <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? ""} />
-                <AvatarFallback className="bg-[#0047AB]/10 text-xs font-semibold text-[#0047AB]">
+                <AvatarFallback className="bg-indigo-600/10 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                   {(user.name ?? "?").slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <Textarea
                 id={`comment-input-${postId}`}
-                placeholder={t("compPost.writeACommentCtrlEnter")}
+                placeholder={t(
+                  "compPost.writeACommentCtrlEnter",
+                  "Viết bình luận... (Ctrl + Enter để gửi)"
+                )}
                 value={newComment}
                 rows={1}
-                className="max-h-28 flex-1 resize-none overflow-auto"
+                className="max-h-24 flex-1 resize-none rounded-xl border-slate-200/80 bg-white px-3.5 py-2.5 text-xs text-slate-800 shadow-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.ctrlKey) handleCommentSubmit();
@@ -336,7 +363,7 @@ export function PostFeedModal({
               />
               <Button
                 size="sm"
-                className="shrink-0"
+                className="h-9 w-9 shrink-0 rounded-xl bg-indigo-600 p-0 text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
                 onClick={handleCommentSubmit}
                 disabled={!newComment.trim() || createComment.isPending}>
                 <Send className="h-4 w-4" />

@@ -4107,15 +4107,15 @@ export interface components {
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
-            unpaged?: boolean;
         };
         SortObject: {
             sorted?: boolean;
-            empty?: boolean;
             unsorted?: boolean;
+            empty?: boolean;
         };
         Payment: {
             /** Format: int32 */
@@ -4421,8 +4421,8 @@ export interface components {
             defaultProfiles?: string[];
         };
         FilterRegistration: {
-            servletNameMappings?: string[];
             urlPatternMappings?: string[];
+            servletNameMappings?: string[];
             initParameters?: {
                 [key: string]: string;
             };
@@ -4444,19 +4444,19 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            trimDirectiveWhitespaces?: string;
-            elIgnored?: string;
-            defaultContentType?: string;
-            errorOnUndeclaredNamespace?: string;
-            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
-            includeCodas?: string[];
             deferredSyntaxAllowedAsLiteral?: string;
-            isXml?: string;
+            errorOnUndeclaredNamespace?: string;
+            includeCodas?: string[];
+            errorOnELNotFound?: string;
+            trimDirectiveWhitespaces?: string;
             urlPatterns?: string[];
+            defaultContentType?: string;
             buffer?: string;
+            elIgnored?: string;
+            isXml?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -4490,15 +4490,15 @@ export interface components {
             };
         };
         ServletContext: {
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
             servletContextName?: string;
@@ -4509,10 +4509,10 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            serverInfo?: string;
-            initParameterNames?: unknown;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -4590,11 +4590,11 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
+            httpOnly?: boolean;
             /** Format: int32 */
             maxAge?: number;
             secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -4603,8 +4603,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */

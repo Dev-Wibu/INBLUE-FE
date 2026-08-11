@@ -118,7 +118,7 @@ export function JdPurchaseHistoryTab() {
       {/* Table Container chuẩn hệ thống */}
       {loadState === "ready" && purchases.length > 0 && (
         <>
-          <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">

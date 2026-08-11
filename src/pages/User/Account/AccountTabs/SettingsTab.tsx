@@ -59,7 +59,7 @@ export function SettingsTab() {
     <div className="grid grid-cols-12 items-start gap-6">
       {/* Middle Column: Compact Settings */}
       <div className="col-span-12 space-y-6 lg:col-span-8">
-        <Card className="space-y-6 border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        <Card className="space-y-6 border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="mb-6 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
             <Eye className="h-4 w-4 text-[#6366f1]" /> Giao diện & Hiển thị
           </h3>
@@ -158,7 +158,7 @@ export function SettingsTab() {
         </Card>
 
         <div className="grid grid-cols-2 gap-4">
-          <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          <Card className="border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
               <Zap className="h-4 w-4 text-[#6366f1]" /> Năng suất
             </h3>
@@ -186,7 +186,7 @@ export function SettingsTab() {
             </RadioGroup>
           </Card>
 
-          <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          <Card className="border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
               <Bell className="h-4 w-4 text-[#6366f1]" /> Thông báo
             </h3>
@@ -214,7 +214,7 @@ export function SettingsTab() {
 
       {/* Right Column: Policies & Support */}
       <aside className="hidden lg:col-span-4 lg:block">
-        <Card className="space-y-6 rounded-xl border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        <Card className="space-y-6 rounded-xl border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="space-y-2">
             <h4 className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-slate-400">
               <Shield className="h-3 w-3" /> BẢO MẬT DỮ LIỆU

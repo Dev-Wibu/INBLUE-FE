@@ -8,12 +8,20 @@ import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { TFunction } from "i18next";
-import { Briefcase, LayoutDashboard, MessageSquare, Newspaper, Search } from "lucide-react";
+import {
+  Briefcase,
+  Building2,
+  LayoutDashboard,
+  MessageSquare,
+  Newspaper,
+  Search,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { AIInterviewListPage } from "../AIInterview";
 import { ApplicationHistoryPage } from "../ApplicationHistory";
+import { UserCompaniesTab } from "../Companies/UserCompaniesTab";
 import { HomeFeedPage } from "../HomeFeed";
 import { JobSearchTab } from "../JobSearch";
 import { MentorListPage } from "../MentorList/MentorListPage";
@@ -25,6 +33,7 @@ import { UserHeader } from "./components/UserHeader";
 type TabType =
   | "homeFeed"
   | "jobSearch"
+  | "companies"
   | "overview"
   | "mentors"
   | "applicationHistory"
@@ -36,6 +45,7 @@ const isValidTabType = (value: string): value is TabType => {
   return [
     "homeFeed",
     "jobSearch",
+    "companies",
     "overview",
     "mentors",
     "applicationHistory",
@@ -58,6 +68,10 @@ const getAvailableTabs = (
   {
     type: "jobSearch",
     label: t("userDashboard.jobSearch", { defaultValue: "Việc làm" }),
+  },
+  {
+    type: "companies",
+    label: t("common.companies", { defaultValue: "Công ty" }),
   },
   {
     type: "overview",
@@ -100,6 +114,12 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
         icon: Search,
         label: t("userDashboard.jobSearch", { defaultValue: "Việc làm" }),
         color: "text-[#0047AB] dark:text-[#66B2FF]",
+      },
+      {
+        type: "companies",
+        icon: Building2,
+        label: t("common.companies", { defaultValue: "Công ty" }),
+        color: "text-indigo-600 dark:text-indigo-400",
       },
     ],
   },
@@ -252,6 +272,8 @@ export function UserDashboardPage() {
         return <HomeFeedPage />;
       case "jobSearch":
         return <JobSearchTab />;
+      case "companies":
+        return <UserCompaniesTab />;
       case "overview":
         return <OverviewPage />;
       case "mentors":

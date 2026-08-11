@@ -33,7 +33,7 @@ function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }
   return (
     <div
       id={id}
-      className="scroll-mt-24 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm transition-all dark:border-slate-800/60 dark:bg-slate-900/40">
+      className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all dark:border-slate-800 dark:bg-slate-900">
       <div
         className="flex cursor-pointer items-center justify-between"
         onClick={() => setIsOpen(!isOpen)}>

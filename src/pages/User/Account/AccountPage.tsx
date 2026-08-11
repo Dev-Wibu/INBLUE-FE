@@ -230,7 +230,7 @@ export function AccountPage() {
 
     return (
       <div className="hidden space-y-6 lg:sticky lg:top-4 lg:col-span-3 lg:block">
-        <Card className="border-slate-200/60 p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        <Card className="border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h4 className="mb-4 text-xs font-bold tracking-wider text-slate-500 uppercase">
             ĐỘ HOÀN THIỆN HỒ SƠ
           </h4>
@@ -266,7 +266,7 @@ export function AccountPage() {
           </ul>
         </Card>
 
-        <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+        <div className="rounded-xl border border-indigo-100 bg-indigo-50/80 p-5 dark:border-indigo-900/50 dark:bg-indigo-950/40">
           <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-indigo-900 dark:text-indigo-300">
             <Lightbulb className="h-4 w-4 text-amber-500" /> Mẹo tối ưu từ AI
           </h4>
@@ -341,7 +341,7 @@ export function AccountPage() {
       <div className="w-full px-4 pt-4 pb-8 md:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
           <aside className="flex flex-col gap-6 lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
-            <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
                 <Button
                   variant="ghost"
@@ -405,7 +405,7 @@ export function AccountPage() {
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-white">
                 {t("userAccount.quickSettings")}
               </h3>
@@ -420,7 +420,7 @@ export function AccountPage() {
                         className={cn(
                           "flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors",
                           isActive
-                            ? "bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"
+                            ? "bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
                             : "text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
                         )}>
                         <div className="flex items-center gap-3">
@@ -454,7 +454,7 @@ export function AccountPage() {
             </div>
             <button
               onClick={() => setIsCvModalOpen(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200/60 bg-white p-3.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-800/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-slate-800/60">
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-3.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60">
               <FileText className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               <span>{userProfile?.cvUrl ? t("common.updateCv") : t("common.uploadCv")}</span>
             </button>

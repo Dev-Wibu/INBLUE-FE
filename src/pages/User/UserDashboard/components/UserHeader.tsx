@@ -63,6 +63,12 @@ const STATIC_NAVIGATION: Array<{
     icon: Search,
   },
   {
+    labelKey: "common.companies",
+    defaultLabel: "Công ty",
+    to: "/user?tab=companies",
+    icon: Building2,
+  },
+  {
     labelKey: "common.overview",
     defaultLabel: "Tổng quan",
     to: "/user?tab=overview",
@@ -191,7 +197,7 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
   useEffect(() => {
     if (!isSearchOpen) return;
     setIsLoading(true);
-    void loadSuggestions(searchQuery);
+    void loadSuggestions(debouncedSearch);
   }, [debouncedSearch, isSearchOpen]);
 
   const navigationMatches = useMemo(() => {

@@ -84,7 +84,7 @@ export function JobCard({
   return (
     <div
       onClick={onClick}
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 transition-all hover:border-indigo-400 hover:shadow-lg dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-500/50">
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 transition-all hover:border-indigo-400 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-500/50">
       {/* Header section */}
       <div className="flex items-start gap-4">
         {/* Avatar */}
@@ -334,7 +334,7 @@ export function JobSearchTab() {
     <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
       {/* Top Action Bar (Hero Style) */}
       <div className="shrink-0 px-5 py-6 md:px-8">
-        <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
             {/* Title & Subtitle */}
             <div>

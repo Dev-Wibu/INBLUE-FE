@@ -124,7 +124,7 @@ export function CompanyDetailPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="mx-auto max-w-7xl px-4 pt-24 pb-12 sm:px-6 lg:px-8">
+        className="mx-auto max-w-[1600px] px-4 pt-20 pb-16 sm:px-6 lg:px-10">
         {/* Top Company Spotlight Header */}
         <CompanySpotlightHeader
           company={company}
@@ -136,11 +136,11 @@ export function CompanyDetailPage() {
         <section id="open-positions" className="w-full scroll-mt-24">
           <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold tracking-wider text-[#0047AB] uppercase dark:text-[#66B2FF]">
+              <div className="mb-1.5 inline-flex items-center gap-2 text-xs font-bold tracking-wider text-[#0047AB] uppercase dark:text-[#66B2FF]">
                 <BriefcaseBusiness className="h-4 w-4" />
                 <span>{t("enterpriseCompanydetail.openPositions")}</span>
               </div>
-              <h2 className="text-2xl font-bold text-slate-950 sm:text-3xl dark:text-white">
+              <h2 className="text-2xl font-extrabold text-slate-950 sm:text-3xl dark:text-white">
                 {t("enterpriseCompanydetail.jobOpportunitiesAt")} {company.name}
               </h2>
             </div>
@@ -155,12 +155,12 @@ export function CompanyDetailPage() {
           {/* Clean Filter Controls */}
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
             <div className="relative min-w-[260px] flex-1">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 placeholder={t("enterpriseCompanydetail.searchOpenPositions")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-9 pl-9"
+                className="h-10 pr-9 pl-10 text-xs font-medium dark:bg-slate-950"
               />
               {searchQuery && (
                 <button
@@ -174,13 +174,13 @@ export function CompanyDetailPage() {
 
             {/* Level Filter Chips */}
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-xs font-semibold text-slate-400 dark:text-slate-500">
+              <span className="mr-1 text-xs font-bold text-slate-400 dark:text-slate-500">
                 Level:
               </span>
               <Button
                 variant={selectedLevel === null ? "default" : "outline"}
                 size="sm"
-                className="h-8 rounded-full text-xs"
+                className="h-8 rounded-full text-xs font-bold"
                 onClick={() => setSelectedLevel(null)}>
                 All
               </Button>
@@ -189,7 +189,7 @@ export function CompanyDetailPage() {
                   key={lvl}
                   variant={selectedLevel === lvl ? "default" : "outline"}
                   size="sm"
-                  className="h-8 rounded-full text-xs"
+                  className="h-8 rounded-full text-xs font-bold"
                   onClick={() => setSelectedLevel(selectedLevel === lvl ? null : lvl)}>
                   {lvl}
                 </Button>
@@ -209,9 +209,9 @@ export function CompanyDetailPage() {
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-6 lg:flex-row">
-              {/* Master Column (Left - Compact Content-fit Width 280px-300px) */}
-              <div className="w-full shrink-0 space-y-3 lg:w-[280px] xl:w-[300px]">
+            <div className="grid gap-6 lg:grid-cols-12">
+              {/* Master Column (Left - 4 cols / ~33.3% width) */}
+              <div className="space-y-3 lg:col-span-4 xl:col-span-4">
                 {filteredJobs.map((job) => (
                   <MasterJobCard
                     key={job.id}
@@ -224,8 +224,8 @@ export function CompanyDetailPage() {
                 ))}
               </div>
 
-              {/* Detail Column (Right - Flexible Expanded Area) */}
-              <div className="w-full min-w-0 flex-1">
+              {/* Detail Column (Right - 8 cols / ~66.7% width) */}
+              <div className="min-w-0 lg:col-span-8 xl:col-span-8">
                 {activeSelectedJob ? (
                   <JobDetailPane job={activeSelectedJob} company={company} />
                 ) : (

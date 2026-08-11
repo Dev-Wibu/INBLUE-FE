@@ -118,7 +118,7 @@ export function CommunityFeedPage() {
             </div>
           </Card>
 
-          <div className="flex items-center justify-between px-1">
+          <div className="flex hidden items-center justify-between px-1">
             <div>
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                 Bài viết cộng đồng

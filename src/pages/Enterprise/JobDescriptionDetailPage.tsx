@@ -142,7 +142,7 @@ export function JobDescriptionDetailPage() {
         <HomepageHeader />
 
         {/* Sleek Breadcrumb Header even on error */}
-        <div className="border-b border-slate-200 bg-white py-4 dark:border-slate-800/60 dark:bg-slate-900/40">
+        <div className="border-b border-slate-200 bg-white py-4 dark:border-slate-800 dark:bg-slate-900">
           <div className="mx-auto max-w-7xl px-6">
             <button
               onClick={() => navigate(-1)}

@@ -1,88 +1,87 @@
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { $api } from "@/lib/api";
 import { formatUtcNaiveDateTime, toUtcNaiveTimestamp } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
-import {
-  AlertTriangle,
-  Briefcase,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Globe,
-  Play,
-  Plus,
-  Search,
-  Sparkles,
-  Star,
-  TrendingUp,
-  User,
-  Zap,
-} from "lucide-react";
+import { Bot, Eye, Globe, Play, Plus, RadioTower, Search, Star, User, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-// SessionKey hết hạn sau 1 giờ kể từ lúc tạo (backend chỉ cập nhật status CANCELLED lazily)
+
 const SESSION_EXPIRY_MS = 60 * 60 * 1000;
 const isSessionExpired = (createdAt?: string) => {
   const createdTimestamp = toUtcNaiveTimestamp(createdAt);
   if (!createdTimestamp) return true;
   return Date.now() - createdTimestamp >= SESSION_EXPIRY_MS;
 };
+
 export function AIInterviewListPage() {
   const { t } = useTranslation();
 
-  // Translated constants — inside component for language reactivity
   const MODE_LABELS = useMemo<Record<string, string>>(
     () => ({
-      STANDARD_MOCK: t("common.trialInterview"),
-      THEORY_CHECK: t("common.testTheTheory"),
-      PROJECT_DEFENSE: t("common.projectProtection"),
+      STANDARD_MOCK: t("common.trialInterview", "Phỏng vấn thử"),
+      THEORY_CHECK: t("common.testTheTheory", "Kiểm tra lý thuyết"),
+      PROJECT_DEFENSE: t("common.projectProtection", "Bảo vệ dự án"),
     }),
     [t]
   );
+
   const STATUS_CONFIG = useMemo<Record<string, { label: string; className: string }>>(
     () => ({
-      CREATED: { label: t("common.created"), className: "bg-blue-100 text-blue-700" },
-      IN_PROGRESS: { label: t("common.ongoing"), className: "bg-amber-100 text-amber-700" },
-      COMPLETED: { label: t("general.completed"), className: "bg-emerald-100 text-emerald-700" },
-      CANCELLED: { label: t("common.canceled"), className: "bg-red-100 text-red-700" },
+      CREATED: {
+        label: t("common.created", "Mới tạo"),
+        className: "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300",
+      },
+      IN_PROGRESS: {
+        label: t("common.ongoing", "Đang diễn ra"),
+        className: "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300",
+      },
+      COMPLETED: {
+        label: t("general.completed", "Hoàn thành"),
+        className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300",
+      },
+      CANCELLED: {
+        label: t("common.canceled", "Đã hủy"),
+        className: "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300",
+      },
     }),
     [t]
   );
+
   const DIFFICULTY_LABELS = useMemo<Record<string, string>>(
     () => ({
-      FRESHER_BASIC: t("userAiinterview.basic"),
-      FRESHER_ADVANCED: t("userAiinterview.advanced"),
+      FRESHER_BASIC: t("userAiinterview.basic", "Cơ bản"),
+      FRESHER_ADVANCED: t("userAiinterview.advanced", "Nâng cao"),
     }),
     [t]
   );
+
   const LANGUAGE_LABELS = useMemo<Record<string, string>>(
     () => ({
-      VI: t("common.vietnamese"),
-      EN: t("common.english"),
+      VI: t("common.vietnamese", "Tiếng Việt"),
+      EN: t("common.english", "Tiếng Anh"),
     }),
     [t]
   );
+
   const DOMAIN_LABELS = useMemo<Record<string, string>>(
     () => ({
       IT: "IT",
-      NON_IT: t("common.outsideOfIt"),
-    }),
-    [t]
-  );
-  const RESULT_LABELS = useMemo<Record<string, string>>(
-    () => ({
-      STRONG_HIRE: t("common.excellent"),
-      HIRE: t("common.obtain"),
-      CONSIDER: t("common.needToConsider"),
-      REJECT: t("common.failed"),
+      NON_IT: t("common.outsideOfIt", "Ngoài IT"),
     }),
     [t]
   );
@@ -94,6 +93,7 @@ export function AIInterviewListPage() {
     defaultPageSize: 10,
   });
   const userId = useAuthStore((s) => s.user?.id);
+
   const {
     data: sessions,
     isLoading,
@@ -114,6 +114,7 @@ export function AIInterviewListPage() {
       enabled: !!userId,
     }
   );
+
   const allSessions = useMemo(
     () =>
       [...(Array.isArray(sessions) ? sessions : [])].sort(
@@ -121,6 +122,7 @@ export function AIInterviewListPage() {
       ),
     [sessions]
   );
+
   const activeSessions = useMemo(
     () =>
       allSessions.filter(
@@ -128,8 +130,8 @@ export function AIInterviewListPage() {
       ),
     [allSessions]
   );
+
   const historySessions = useMemo(() => {
-    // Session bị loại khỏi activeSessions (không phải IN_PROGRESS, không có sessionKey, hoặc đã hết hạn) → vào lịch sử
     const list = allSessions.filter(
       (s) => s.status !== "IN_PROGRESS" || s.sessionKey == null || isSessionExpired(s.createdAt)
     );
@@ -141,6 +143,7 @@ export function AIInterviewListPage() {
       return modeLabel.toLowerCase().includes(q) || domain.toLowerCase().includes(q);
     });
   }, [allSessions, searchQuery, MODE_LABELS]);
+
   const sortableHistorySessions = useMemo(() => {
     return historySessions.map((session) => ({
       ...session,
@@ -152,6 +155,7 @@ export function AIInterviewListPage() {
       statusSortValue: (session.status ?? "").toUpperCase(),
     }));
   }, [historySessions, MODE_LABELS]);
+
   const { sortedData: sortedHistorySessions, getSortProps: getHistorySortProps } = useSortable(
     sortableHistorySessions,
     {
@@ -166,219 +170,235 @@ export function AIInterviewListPage() {
       },
     }
   );
+
   const historyPagination = usePagination({
     totalCount: sortedHistorySessions.length,
     pageSize: historyPageSize,
   });
+
   const historyPageData = useMemo(
     () => sortedHistorySessions.slice(historyPagination.startIndex, historyPagination.endIndex + 1),
     [historyPagination.endIndex, historyPagination.startIndex, sortedHistorySessions]
   );
+
+  const highestScore = useMemo(() => {
+    const scores = allSessions
+      .map((s) => s.overallScore)
+      .filter((s): s is number => typeof s === "number" && !Number.isNaN(s));
+    return scores.length > 0 ? Math.max(...scores) : 0;
+  }, [allSessions]);
+
   const handleResume = (key: string) => {
     navigate(`/user/ai-interview/session?sessionKey=${key}`);
   };
+
   const handleViewResult = (sessionId: number | undefined) => {
     navigate(`/user/ai-interview/result/${sessionId}`);
   };
-  return (
-    <div className="bg-background min-h-screen p-8">
-      {/* Top Banner */}
-      <Card className="mb-8 overflow-hidden border-0 bg-linear-to-r from-[#0047AB] via-[#005B9A] to-[#007BFF] py-0">
-        <CardContent className="flex items-center justify-between p-8">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-white" />
-              <h1 className="text-3xl font-bold text-white">{t("common.interviewWithAi")}</h1>
-            </div>
-            <p className="max-w-lg text-lg text-white/90">{t("general.practiceWithAiToImprove")}</p>
-            <Button
-              variant="secondary"
-              size="lg"
-              className="mt-2 w-fit"
-              onClick={() => navigate("/user/ai-interview/setup")}>
-              <Plus className="mr-2 h-5 w-5" />
-              {t("userAiinterview.startNewInterview")}
-            </Button>
-          </div>
-          <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-            <TrendingUp className="h-16 w-16 text-white" />
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Loading */}
+  return (
+    <div className="space-y-6">
+      {/* Top Header Bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {t("userAiinterview.aiInterviewHeading", "Phỏng vấn AI")}
+          </h1>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {t(
+              "general.practiceWithAiToImprove",
+              "Luyện tập phỏng vấn tự động với AI để nâng cao kỹ năng và nhận phản hồi chi tiết"
+            )}
+          </p>
+        </div>
+        <Button
+          className="h-9 gap-2 rounded-xl bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+          onClick={() => navigate("/user/ai-interview/setup")}>
+          <Plus className="h-4 w-4" />
+          {t("userAiinterview.startNewInterview", "Tạo lượt phỏng vấn mới")}
+        </Button>
+      </div>
+
+      {/* Kiosk Overview Stats Grid */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {/* Card 1: Total Practice Sessions */}
+        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+            <Bot className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {t("userAiinterview.totalSessions", "Tổng lượt phỏng vấn")}
+            </p>
+            <p className="text-xl font-bold text-slate-900 dark:text-white">{allSessions.length}</p>
+          </div>
+        </div>
+
+        {/* Card 2: Highest Score */}
+        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+            <Star className="h-5 w-5 fill-emerald-500 text-emerald-500" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {t("userAiinterview.highestScore", "Điểm cao nhất")}
+            </p>
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+              {highestScore > 0 ? `${highestScore.toFixed(1)}/10` : "--"}
+            </p>
+          </div>
+        </div>
+
+        {/* Card 3: Active Kiosk Station Status */}
+        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
+            <RadioTower className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {t("userAiinterview.activeSessionsCount", "Đang diễn ra")}
+            </p>
+            <p className="text-xl font-bold text-slate-900 dark:text-white">
+              {activeSessions.length} {t("common.session", "phiên")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Loading Skeletons */}
       {isLoading && (
         <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardContent className="flex items-center gap-6 p-6">
-                <Skeleton className="h-14 w-14 rounded-xl" />
-                <div className="flex-1 space-y-3">
-                  <Skeleton className="h-5 w-64" />
-                  <Skeleton className="h-4 w-48" />
-                  <Skeleton className="h-4 w-32" />
-                </div>
-                <Skeleton className="h-10 w-20 rounded-full" />
-              </CardContent>
-            </Card>
-          ))}
+          <Skeleton className="h-20 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
         </div>
       )}
 
-      {/* Error */}
+      {/* Error state */}
       {isError && (
-        <Card className="flex h-64 flex-col items-center justify-center gap-4">
-          <p className="text-destructive font-medium">
-            {t("common.unableToDownloadInterviewHistory")}
+        <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
+          <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+            {t("common.unableToDownloadInterviewHistory", "Không thể tải lịch sử phỏng vấn")}
           </p>
-          <p className="text-muted-foreground text-sm">
-            {t("userAiinterview.pleaseTryAgainLater")}
-          </p>
-        </Card>
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="h-8 text-xs">
+            {t("common.tryAgain", "Thử lại")}
+          </Button>
+        </div>
       )}
 
       {!isLoading && !isError && (
-        <div className="space-y-8">
-          {/* Active Sessions Section */}
+        <div className="space-y-6">
+          {/* Active Sessions - Kiosk Station Card */}
           {activeSessions.length > 0 && (
-            <section>
-              <div className="mb-4">
-                <h2 className="text-foreground text-2xl font-bold">
-                  {t("userAiinterview.sessionInProgress")}
-                </h2>
-                <p className="text-muted-foreground text-sm">
-                  {t("userAiinterview.incompleteInterviewsValidFor1")}
-                </p>
-              </div>
-              <div className="space-y-4">
-                {activeSessions.map((session, index) => {
+            <div className="space-y-3">
+              <h2 className="flex items-center gap-2 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+                </span>
+                {t("userAiinterview.sessionInProgress", "Phiên phỏng vấn đang diễn ra")}
+              </h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {activeSessions.map((session) => {
                   const activeKey = session.sessionKey!;
                   const modeLabel =
-                    MODE_LABELS[session.mode ?? ""] ?? session.mode ?? t("common.aiInterview");
+                    MODE_LABELS[session.mode ?? ""] ??
+                    session.mode ??
+                    t("common.aiInterview", "Phỏng vấn AI");
                   const targetRole = session.candidateProfile?.targetRole;
                   const targetLevel = session.candidateProfile?.targetLevel;
                   const difficulty = session.sessionConfig?.difficulty;
                   const language = session.sessionConfig?.language;
+
                   return (
-                    <Card
+                    <div
                       key={session.id}
-                      className="cursor-pointer border-amber-300 bg-amber-50 transition-all hover:shadow-md dark:border-amber-700 dark:bg-amber-950/20">
-                      <CardContent className="flex items-center gap-6 p-6">
-                        {/* Number Badge */}
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/40">
-                          <span className="text-xl font-bold text-amber-700 dark:text-amber-300">
-                            {index + 1}
+                      className="flex flex-col justify-between gap-4 rounded-xl border border-indigo-200 bg-indigo-50/50 p-5 dark:border-indigo-900/60 dark:bg-indigo-950/30">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Badge className="border-0 bg-amber-500 text-[10px] font-semibold text-white">
+                            {t("common.ongoing", "Đang diễn ra")}
+                          </Badge>
+                          <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-300">
+                            SESSION #{session.id}
                           </span>
                         </div>
-
-                        {/* Info */}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            {/* Pulsing active indicator */}
-                            <span className="relative flex h-3 w-3">
-                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
-                              <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-500"></span>
-                            </span>
-                            <h3 className="text-foreground text-lg font-semibold">{modeLabel}</h3>
-                          </div>
-
-                          {/* Role / level row */}
-                          {(targetRole || targetLevel) && (
-                            <div className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm">
-                              <User className="h-3.5 w-3.5 shrink-0" />
-                              <span className="font-medium text-amber-700 dark:text-amber-400">
-                                {[targetRole, targetLevel].filter(Boolean).join(" · ")}
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              <span>
-                                {t("common.create")} {formatUtcNaiveDateTime(session.createdAt)}
-                              </span>
-                            </div>
-                            {session.updatedAt && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
-                                <span>
-                                  {t("common.update")} {formatUtcNaiveDateTime(session.updatedAt)}
-                                </span>
-                              </div>
-                            )}
-                            {session.sessionConfig?.duration_minutes && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
-                                <span>
-                                  {session.sessionConfig.duration_minutes} {t("common.minute")}
-                                </span>
-                              </div>
-                            )}
-                            {language && (
-                              <div className="flex items-center gap-1">
-                                <Globe className="h-4 w-4" />
-                                <span>{LANGUAGE_LABELS[language] ?? language}</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <Badge className="bg-amber-100 text-amber-700">
-                              {t("common.ongoing")}
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                          {modeLabel}
+                        </h3>
+                        {(targetRole || targetLevel) && (
+                          <p className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+                            <User className="h-3.5 w-3.5 text-indigo-500" />
+                            {[targetRole, targetLevel].filter(Boolean).join(" · ")}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {session.domain && (
+                            <Badge variant="secondary" className="rounded-md text-[10px]">
+                              {DOMAIN_LABELS[session.domain] ?? session.domain}
                             </Badge>
-                            {session.domain && (
-                              <Badge variant="secondary">
-                                {DOMAIN_LABELS[session.domain] ?? session.domain}
-                              </Badge>
-                            )}
-                            {difficulty && (
-                              <Badge variant="outline" className="text-xs">
-                                <Zap className="mr-1 h-3 w-3" />
-                                {DIFFICULTY_LABELS[difficulty] ?? difficulty}
-                              </Badge>
-                            )}
-                          </div>
+                          )}
+                          {difficulty && (
+                            <Badge variant="outline" className="rounded-md text-[10px]">
+                              <Zap className="mr-1 h-3 w-3 text-amber-500" />
+                              {DIFFICULTY_LABELS[difficulty] ?? difficulty}
+                            </Badge>
+                          )}
+                          {language && (
+                            <Badge variant="outline" className="rounded-md text-[10px]">
+                              <Globe className="mr-1 h-3 w-3 text-indigo-500" />
+                              {LANGUAGE_LABELS[language] ?? language}
+                            </Badge>
+                          )}
                         </div>
+                      </div>
 
-                        {/* Resume Button */}
+                      <div className="flex items-center justify-between border-t border-indigo-100 pt-3 dark:border-indigo-900/40">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {t("common.create", "Tạo lúc")}:{" "}
+                          {formatUtcNaiveDateTime(session.createdAt)}
+                        </span>
                         <Button
                           size="sm"
-                          className="bg-amber-500 text-white hover:bg-amber-600"
+                          className="h-8 gap-1.5 rounded-lg bg-indigo-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
                           onClick={() => handleResume(activeKey)}>
-                          <Play className="mr-1 h-3.5 w-3.5" />
-                          {t("userAiinterview.continueInterview")}
+                          <Play className="h-3.5 w-3.5" />
+                          {t("userAiinterview.continueInterview", "Tiếp tục phỏng vấn")}
                         </Button>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
-            </section>
+            </div>
           )}
 
           {/* History Section */}
-          <section>
-            <div className="mb-4 flex items-center justify-between">
+          <div className="space-y-4 pt-2">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-foreground text-2xl font-bold">
-                  {t("common.interviewHistory")}
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  {t("common.interviewHistory", "Lịch sử phỏng vấn")}
                 </h2>
-                <p className="text-muted-foreground text-sm">
-                  {t("userAiinterview.reviewPreviousInterviews")}
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {t(
+                    "userAiinterview.reviewPreviousInterviews",
+                    "Xem lại các bài phỏng vấn đã thực hiện và kết quả chi tiết"
+                  )}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="relative w-80">
-                  <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                   <Input
                     type="text"
-                    placeholder={t("userAiinterview.searchByModeField")}
+                    placeholder={t("userAiinterview.searchByModeField", "Tìm kiếm theo chế độ...")}
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
                       historyPagination.goToFirstPage();
                     }}
-                    className="pl-10"
+                    className="h-9 rounded-xl border-slate-200 bg-white pl-9 text-xs dark:border-slate-800 dark:bg-slate-950"
                   />
                 </div>
                 <ReloadButton
@@ -386,186 +406,196 @@ export function AIInterviewListPage() {
                     await refetch();
                   }}
                   isLoading={isRefetching}
-                  tooltip={t("userAiinterview.reloadAiInterviewHistory")}
+                  tooltip={t("userAiinterview.reloadAiInterviewHistory", "Tải lại lịch sử")}
                 />
               </div>
-
-              {sortedHistorySessions.length > 0 && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <SortButton {...getHistorySortProps("createdAtSortValue")}>
-                    {t("common.latest")}
-                  </SortButton>
-                  <SortButton {...getHistorySortProps("scoreSortValue")}>
-                    {t("userAiinterview.score")}
-                  </SortButton>
-                  <SortButton {...getHistorySortProps("modeSortValue")}>
-                    {t("userAiinterview.regime")}
-                  </SortButton>
-                  <SortButton {...getHistorySortProps("statusSortValue")}>
-                    {t("common.status")}
-                  </SortButton>
-                </div>
-              )}
             </div>
-            <div className="space-y-4">
-              {historyPageData.map((session, index) => {
-                // "Đã hết hạn" nếu: sessionKey null, HOẶC session IN_PROGRESS nhưng đã qua 1 giờ
-                const isExpired =
-                  (session.status === "CREATED" || session.status === "IN_PROGRESS") &&
-                  (session.sessionKey == null || isSessionExpired(session.createdAt));
-                const statusConfig = isExpired
-                  ? {
-                      label: t("userAiinterview.expired"),
-                      className: "bg-gray-100 text-gray-600",
-                    }
-                  : (STATUS_CONFIG[session.status ?? ""] ?? {
-                      label: session.status,
-                      className: "bg-gray-100 text-gray-700",
-                    });
-                const modeLabel =
-                  MODE_LABELS[session.mode ?? ""] ?? session.mode ?? t("common.aiInterview");
-                const hasScore =
-                  session.overallScore !== undefined && session.overallScore !== null;
-                const histTargetRole = session.candidateProfile?.targetRole;
-                const histTargetLevel = session.candidateProfile?.targetLevel;
-                const histDifficulty = session.sessionConfig?.difficulty;
-                const histLanguage = session.sessionConfig?.language;
-                const jobTitle = (
-                  session.jobRequirement?.basic_info as Record<string, string> | undefined
-                )?.job_title;
-                return (
-                  <Card
-                    key={session.id}
-                    className="hover:border-primary/50 cursor-pointer transition-all hover:shadow-md">
-                    <CardContent className="flex items-center gap-6 p-6">
-                      {/* Number Badge */}
-                      <div className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
-                        <span className="text-primary text-xl font-bold">{index + 1}</span>
-                        <span className="sr-only">#{historyPagination.startIndex + index + 1}</span>
-                      </div>
 
-                      {/* Info */}
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-foreground text-lg font-semibold">{modeLabel}</h3>
+            {/* Sort Controls */}
+            {sortedHistorySessions.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <SortButton {...getHistorySortProps("createdAtSortValue")}>
+                  {t("common.latest", "Mới nhất")}
+                </SortButton>
+                <SortButton {...getHistorySortProps("scoreSortValue")}>
+                  {t("userAiinterview.score", "Điểm số")}
+                </SortButton>
+                <SortButton {...getHistorySortProps("modeSortValue")}>
+                  {t("userAiinterview.regime", "Chế độ")}
+                </SortButton>
+                <SortButton {...getHistorySortProps("statusSortValue")}>
+                  {t("common.status", "Trạng thái")}
+                </SortButton>
+              </div>
+            )}
 
-                        {/* Role / level / job title row */}
-                        {(histTargetRole || histTargetLevel || jobTitle) && (
-                          <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-3 text-sm">
-                            {(histTargetRole || histTargetLevel) && (
-                              <span className="flex items-center gap-1">
-                                <User className="h-3.5 w-3.5" />
-                                <span className="text-foreground font-medium">
+            {/* Result count when filter active */}
+            {searchQuery && (
+              <div className="text-xs text-slate-500">
+                Hiển thị{" "}
+                <strong className="text-slate-800 dark:text-slate-200">
+                  {historyPageData.length}
+                </strong>{" "}
+                / <strong>{historySessions.length}</strong> kết quả
+              </div>
+            )}
+
+            {/* Standard Table Container */}
+            <div className="overflow-hidden border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+              <Table>
+                <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
+                  <TableRow className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                    <TableHead className="w-[80px] pl-6 font-medium text-slate-500">#ID</TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("userAiinterview.regime", "Chế độ phỏng vấn")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.field", "Lĩnh vực / Ngôn ngữ")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.status", "Trạng thái")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("userAiinterview.score", "Điểm số")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.create", "Thời gian")}
+                    </TableHead>
+                    <TableHead className="pr-6 text-right font-medium text-slate-500">
+                      {t("common.actions", "Thao tác")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {historyPageData.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-48 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                            <Search className="h-5 w-5 text-slate-400" />
+                          </div>
+                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            {searchQuery
+                              ? t(
+                                  "userAiinterview.noInterviewsFound",
+                                  "Không tìm thấy phỏng vấn phù hợp"
+                                )
+                              : t(
+                                  "userAiinterview.thereHaveBeenNoInterviews",
+                                  "Chưa có lịch sử phỏng vấn nào"
+                                )}
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    historyPageData.map((session) => {
+                      const isExpired =
+                        (session.status === "CREATED" || session.status === "IN_PROGRESS") &&
+                        (session.sessionKey == null || isSessionExpired(session.createdAt));
+
+                      const statusConfig = isExpired
+                        ? {
+                            label: t("userAiinterview.expired", "Hết hạn"),
+                            className:
+                              "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+                          }
+                        : (STATUS_CONFIG[session.status ?? ""] ?? {
+                            label: session.status,
+                            className: "bg-slate-100 text-slate-700",
+                          });
+
+                      const modeLabel =
+                        MODE_LABELS[session.mode ?? ""] ??
+                        session.mode ??
+                        t("common.aiInterview", "Phỏng vấn AI");
+                      const hasScore =
+                        session.overallScore !== undefined && session.overallScore !== null;
+                      const histTargetRole = session.candidateProfile?.targetRole;
+                      const histTargetLevel = session.candidateProfile?.targetLevel;
+                      const histLanguage = session.sessionConfig?.language;
+
+                      return (
+                        <TableRow
+                          key={session.id}
+                          className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80"
+                          onClick={() => !isExpired && handleViewResult(session.id)}>
+                          <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                            #{session.id}
+                          </TableCell>
+                          <TableCell className="font-semibold text-slate-900 dark:text-slate-100">
+                            <div className="flex flex-col">
+                              <span>{modeLabel}</span>
+                              {(histTargetRole || histTargetLevel) && (
+                                <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
                                   {[histTargetRole, histTargetLevel].filter(Boolean).join(" · ")}
                                 </span>
-                              </span>
-                            )}
-                            {jobTitle && (
-                              <span className="flex items-center gap-1">
-                                <Briefcase className="h-3.5 w-3.5" />
-                                <span>{jobTitle}</span>
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              {t("common.create")} {formatUtcNaiveDateTime(session.createdAt)}
-                            </span>
-                          </div>
-                          {session.updatedAt && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              <span>
-                                {t("common.update")} {formatUtcNaiveDateTime(session.updatedAt)}
-                              </span>
+                              )}
                             </div>
-                          )}
-                          {session.completedAt && (
-                            <div className="flex items-center gap-1">
-                              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                              <span>
-                                {t("userAiinterview.complete")}{" "}
-                                {formatUtcNaiveDateTime(session.completedAt)}
-                              </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              {session.domain && (
+                                <Badge
+                                  variant="secondary"
+                                  className="rounded-md px-2 py-0.5 text-xs font-medium">
+                                  {DOMAIN_LABELS[session.domain] ?? session.domain}
+                                </Badge>
+                              )}
+                              {histLanguage && (
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                  ({LANGUAGE_LABELS[histLanguage] ?? histLanguage})
+                                </span>
+                              )}
                             </div>
-                          )}
-                          {session.sessionConfig?.duration_minutes && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              <span>
-                                {session.sessionConfig.duration_minutes} {t("common.minute")}
-                              </span>
-                            </div>
-                          )}
-                          {histLanguage && (
-                            <div className="flex items-center gap-1">
-                              <Globe className="h-4 w-4" />
-                              <span>{LANGUAGE_LABELS[histLanguage] ?? histLanguage}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {isExpired ? (
-                            <Badge className="flex items-center gap-1 bg-gray-100 text-gray-600">
-                              <AlertTriangle className="h-3 w-3" />
+                          </TableCell>
+                          <TableCell>
+                            <span
+                              className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${statusConfig.className}`}>
                               {statusConfig.label}
-                            </Badge>
-                          ) : (
-                            <Badge className={statusConfig.className}>{statusConfig.label}</Badge>
-                          )}
-                          {session.domain && (
-                            <Badge variant="secondary">
-                              {DOMAIN_LABELS[session.domain] ?? session.domain}
-                            </Badge>
-                          )}
-                          {histDifficulty && (
-                            <Badge variant="outline" className="text-xs">
-                              <Zap className="mr-1 h-3 w-3" />
-                              {DIFFICULTY_LABELS[histDifficulty] ?? histDifficulty}
-                            </Badge>
-                          )}
-                          {session.result && (
-                            <Badge variant="secondary">
-                              {RESULT_LABELS[session.result] ?? session.result}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Score Badge */}
-                      {hasScore && (
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="flex items-center gap-1 rounded-full bg-emerald-100 px-4 py-2">
-                            <Star className="h-5 w-5 fill-emerald-500 text-emerald-500" />
-                            <span className="text-xl font-bold text-emerald-600">
-                              {session.overallScore!.toFixed(1)}
                             </span>
-                            <span className="text-sm text-emerald-600">/10</span>
-                          </div>
-                          <span className="text-muted-foreground text-xs">
-                            {t("userAiinterview.score")}
-                          </span>
-                        </div>
-                      )}
+                          </TableCell>
+                          <TableCell>
+                            {hasScore ? (
+                              <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                                <Star className="h-3.5 w-3.5 fill-emerald-500 text-emerald-500" />
+                                {session.overallScore!.toFixed(1)}/10
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400">--</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                            {formatUtcNaiveDateTime(session.createdAt)}
+                          </TableCell>
+                          <TableCell className="pr-6 text-right">
+                            {!isExpired ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 gap-1 rounded-lg text-xs font-semibold text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950/50"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewResult(session.id);
+                                }}>
+                                <Eye className="h-3.5 w-3.5" />
+                                {t("common.seeDetails", "Xem chi tiết")}
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-slate-400">--</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
 
-                      {/* View Detail Button */}
-                      {!isExpired && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewResult(session.id)}>
-                          {t("common.seeDetails")}
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-
-              {sortedHistorySessions.length > 0 && (
+            {/* Pagination Control Bar */}
+            {sortedHistorySessions.length > 0 && (
+              <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
                 <PaginationControl
                   pagination={historyPagination}
                   onPageSizeChange={(nextPageSize) => {
@@ -574,54 +604,9 @@ export function AIInterviewListPage() {
                   }}
                   pageSizeOptions={[5, 10, 20, 30]}
                 />
-              )}
-
-              {sortedHistorySessions.length === 0 && (
-                <Card className="flex h-64 flex-col items-center justify-center gap-4">
-                  <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
-                    {searchQuery ? (
-                      <Search className="text-muted-foreground h-8 w-8" />
-                    ) : (
-                      <Clock className="text-muted-foreground h-8 w-8" />
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <p className="text-foreground font-medium">
-                      {searchQuery
-                        ? t("userAiinterview.noInterviewsFound")
-                        : t("userAiinterview.thereHaveBeenNoInterviews")}
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      {searchQuery
-                        ? t("common.trySearchingWithOtherKeywords")
-                        : t("userAiinterview.startANewInterviewFor")}
-                    </p>
-                  </div>
-                </Card>
-              )}
-
-              {/* CTA Card */}
-              <Card className="overflow-hidden border-0 bg-linear-to-br from-[#0047AB] to-[#007BFF]">
-                <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
-                    <Plus className="h-10 w-10 text-white" />
-                  </div>
-                  <CardTitle className="text-2xl text-white">
-                    {t("general.startANewInterviewSession")}
-                  </CardTitle>
-                  <CardDescription className="text-white/90">
-                    {t("userAiinterview.practiceWithAiToImprove")}
-                  </CardDescription>
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={() => navigate("/user/ai-interview/setup")}>
-                    {t("userAiinterview.createNewInterview")}
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
