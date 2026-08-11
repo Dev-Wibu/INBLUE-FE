@@ -460,8 +460,8 @@ export function SessionDetailPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <User className="h-4 w-4 text-slate-400" />
+            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800 dark:text-slate-300">
+              <User className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               <span className="text-slate-600 dark:text-slate-400">
                 {t("userMockinterview.instructor")}
               </span>
@@ -472,13 +472,13 @@ export function SessionDetailPage() {
                     : t("userMockinterview.notDetermined"))}
               </span>
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <Calendar className="h-4 w-4 text-slate-400" />
+            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800 dark:text-slate-300">
+              <Calendar className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               <span className="text-slate-600 dark:text-slate-400">{t("common.sessionCode")}</span>
               <span className="font-medium">{session.id}</span>
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <Clock className="h-4 w-4 text-slate-400" />
+            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800 dark:text-slate-300">
+              <Clock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               <span className="text-slate-600 dark:text-slate-400">
                 {t("common.appointmentTime")}
               </span>
@@ -486,13 +486,13 @@ export function SessionDetailPage() {
                 {session.joinTime ? formatDateTime(session.joinTime) : "-"}
               </span>
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <Clock className="h-4 w-4 text-slate-400" />
+            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800 dark:text-slate-300">
+              <Clock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               <span className="text-slate-600 dark:text-slate-400">{t("common.status1")}</span>
               <span className="font-medium">{session.status}</span>
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <Clock className="h-4 w-4 text-slate-400" />
+            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800 dark:text-slate-300">
+              <Clock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               <span className="text-slate-600 dark:text-slate-400">
                 {t("userMockinterview.estimatedDuration")}
               </span>
@@ -504,8 +504,8 @@ export function SessionDetailPage() {
                   : "-"}
               </span>
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
-              <CreditCard className="h-4 w-4 text-slate-400" />
+            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800 dark:text-slate-300">
+              <CreditCard className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               <span className="text-slate-600 dark:text-slate-400">{t("common.totalPrice")}</span>
               <span className="font-medium">
                 {typeof session.totalPrice === "number" && session.totalPrice > 0
@@ -513,8 +513,8 @@ export function SessionDetailPage() {
                   : "-"}
               </span>
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm sm:col-span-2 lg:col-span-3 dark:bg-slate-900/50">
-              <CreditCard className="h-4 w-4 text-slate-400" />
+            <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm sm:col-span-2 lg:col-span-3 dark:bg-slate-800 dark:text-slate-300">
+              <CreditCard className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               <span className="text-slate-600 dark:text-slate-400">
                 {t("common.transactionCode1")}
               </span>
@@ -522,7 +522,7 @@ export function SessionDetailPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+          <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800">
             <p className="mb-3 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {t("common.actFast")}
             </p>
@@ -609,7 +609,7 @@ export function SessionDetailPage() {
           {feedbackLoading ? (
             <Skeleton className="h-32" />
           ) : myFeedback ? (
-            <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+            <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800">
               <FeedbackCard
                 feedback={myFeedback}
                 showMentor
@@ -656,7 +656,7 @@ export function SessionDetailPage() {
           {reviewLoading ? (
             <Skeleton className="h-32" />
           ) : mentorReview ? (
-            <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+            <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800">
               <ReviewCard
                 review={mentorReview}
                 showMentor
