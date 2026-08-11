@@ -54,7 +54,7 @@ const STATIC_NAVIGATION: Array<{ labelKey: string; to: string }> = [
   { labelKey: "common.reviewFromMentor", to: "/admin/reviews" },
 ];
 
-export function AdminHeader({ title, category, onToggleSidebar }: AdminHeaderProps) {
+export function AdminHeader({ title, parentTitle, category, onToggleSidebar }: AdminHeaderProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
