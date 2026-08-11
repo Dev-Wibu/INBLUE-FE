@@ -35,6 +35,7 @@ import {
   Trophy,
   User,
   XCircle,
+  Zap,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
