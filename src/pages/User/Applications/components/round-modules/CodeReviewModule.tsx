@@ -1629,45 +1629,48 @@ function ModernGaugeClock({
   );
 }
 
-// Criteria metadata for dynamic metrics
-const CRITERIA_META: Record<string, { label: string; color: string; bg: string; bar: string }> = {
-  "Bug Detection": {
-    label: "Phát hiện lỗi (Bug Detection)",
-    color: "text-rose-400",
-    bg: "bg-rose-500/10",
-    bar: "bg-rose-500",
-  },
-  "Security Awareness": {
-    label: "Nhận thức bảo mật (Security)",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    bar: "bg-emerald-500",
-  },
-  "Solution Quality": {
-    label: "Chất lượng giải pháp (Solution)",
-    color: "text-indigo-400",
-    bg: "bg-indigo-500/10",
-    bar: "bg-indigo-500",
-  },
-  "Clean Code Awareness": {
-    label: "Chuẩn mực Clean Code",
-    color: "text-violet-400",
-    bg: "bg-violet-500/10",
-    bar: "bg-violet-500",
-  },
-  "Code Smell Detection": {
-    label: "Phát hiện Code Smell",
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
-    bar: "bg-amber-500",
-  },
-  "Performance Analysis": {
-    label: "Phân tích hiệu năng (Performance)",
-    color: "text-cyan-400",
-    bg: "bg-cyan-500/10",
-    bar: "bg-cyan-500",
-  },
-};
+// Criteria metadata for dynamic metrics. Each entry has a labelKey
+// pointing to userApplication.codeReview.criteria.* so the label is
+// localized via i18n at render time.
+const CRITERIA_META: Record<string, { labelKey: string; color: string; bg: string; bar: string }> =
+  {
+    "Bug Detection": {
+      labelKey: "criteriaBugDetection",
+      color: "text-rose-400",
+      bg: "bg-rose-500/10",
+      bar: "bg-rose-500",
+    },
+    "Security Awareness": {
+      labelKey: "criteriaSecurityAwareness",
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+      bar: "bg-emerald-500",
+    },
+    "Solution Quality": {
+      labelKey: "criteriaSolutionQuality",
+      color: "text-indigo-400",
+      bg: "bg-indigo-500/10",
+      bar: "bg-indigo-500",
+    },
+    "Clean Code Awareness": {
+      labelKey: "criteriaCleanCodeAwareness",
+      color: "text-violet-400",
+      bg: "bg-violet-500/10",
+      bar: "bg-violet-500",
+    },
+    "Code Smell Detection": {
+      labelKey: "criteriaCodeSmellDetection",
+      color: "text-amber-400",
+      bg: "bg-amber-500/10",
+      bar: "bg-amber-500",
+    },
+    "Performance Analysis": {
+      labelKey: "criteriaPerformanceAnalysis",
+      color: "text-cyan-400",
+      bg: "bg-cyan-500/10",
+      bar: "bg-cyan-500",
+    },
+  };
 
 // ============================================================================
 // SUB-COMPONENT: GradedResultView — Polished Result Screen (CV & Email Standard)
@@ -1765,14 +1768,14 @@ function GradedResultView({
           const max = isTenScale ? 10 : 100;
           const pct = isTenScale ? Math.round(numVal * 10) : Math.round(numVal);
           const meta = CRITERIA_META[key] || {
-            label: key,
+            labelKey: key,
             color: "text-indigo-400",
             bg: "bg-indigo-500/10",
             bar: "bg-indigo-500",
           };
           list.push({
             key,
-            label: meta.label,
+            label: t(`userApplication.codeReview.${meta.labelKey}`, key),
             score: numVal,
             max,
             pct: Math.min(100, Math.max(0, pct)),
@@ -1783,7 +1786,7 @@ function GradedResultView({
     }
 
     return { numericMetrics: list, missedIssuesText: missed };
-  }, [rawMetrics]);
+  }, [rawMetrics, t]);
 
   // Active problem & files
   const activeProblem = problems[activeProblemIdx] ?? problems[0];
@@ -1851,7 +1854,7 @@ function GradedResultView({
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 </div>
                 <h4 className="text-xs font-bold tracking-wider text-emerald-700 uppercase dark:text-emerald-400">
-                  Điểm mạnh nổi bật
+                  {t("userApplication.codeReview.strengthsTitle", "Điểm mạnh nổi bật")}
                 </h4>
               </div>
 
@@ -1874,7 +1877,7 @@ function GradedResultView({
                   <AlertTriangle className="h-3.5 w-3.5" />
                 </div>
                 <h4 className="text-xs font-bold tracking-wider text-amber-700 uppercase dark:text-amber-400">
-                  Điểm cần bổ sung & Cải thiện
+                  {t("userApplication.codeReview.weaknessesTitle", "Điểm cần bổ sung & Cải thiện")}
                 </h4>
               </div>
 
@@ -1897,7 +1900,10 @@ function GradedResultView({
                   <ShieldAlert className="h-4 w-4" />
                 </div>
                 <h4 className="text-xs font-bold tracking-wider text-rose-700 uppercase dark:text-rose-300">
-                  Các lỗi quan trọng bỏ sót (Missed Issues)
+                  {t(
+                    "userApplication.codeReview.missedIssuesTitle",
+                    "Các lỗi quan trọng bỏ sót (Missed Issues)"
+                  )}
                 </h4>
               </div>
 
@@ -1916,7 +1922,7 @@ function GradedResultView({
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-indigo-400" />
                 <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
-                  Chỉ số Match Score
+                  {t("userApplication.codeReview.matchScoreTitle", "Chỉ số Match Score")}
                 </h4>
               </div>
               <span className="text-[10px] font-semibold text-slate-400">AI vs HR</span>
@@ -1940,11 +1946,14 @@ function GradedResultView({
                 <div className="flex items-center gap-2">
                   <Code2 className="h-4 w-4 text-indigo-400" />
                   <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200">
-                    Phân tích tiêu chí chi tiết
+                    {t(
+                      "userApplication.codeReview.criteriaAnalysisTitle",
+                      "Phân tích tiêu chí chi tiết"
+                    )}
                   </h4>
                 </div>
                 <span className="text-[10px] font-bold tracking-wider text-indigo-400 uppercase">
-                  STAT BARS
+                  {t("userApplication.codeReview.statBarsLabel", "STAT BARS")}
                 </span>
               </div>
 

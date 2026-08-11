@@ -5278,7 +5278,19 @@
       "issueDeleted": "課題が削除されました",
       "copySuccess": "クリップボードにコピーしました！",
       "totalFound": "合計発見",
-      "matchRate": "一致率"
+      "matchRate": "一致率",
+      "criteriaBugDetection": "バグ検出 (Bug Detection)",
+      "criteriaSecurityAwareness": "セキュリティ意識 (Security)",
+      "criteriaSolutionQuality": "ソリューション品質 (Solution)",
+      "criteriaCleanCodeAwareness": "クリーンコード規範",
+      "criteriaCodeSmellDetection": "コードスメル検出",
+      "criteriaPerformanceAnalysis": "パフォーマンス分析 (Performance)",
+      "strengthsTitle": "強み",
+      "weaknessesTitle": "改善ポイント",
+      "missedIssuesTitle": "見落とした重要な問題 (Missed Issues)",
+      "matchScoreTitle": "マッチスコア",
+      "criteriaAnalysisTitle": "評価基準の詳細分析",
+      "statBarsLabel": "スタットバー"
     },
     "mentorReview": {
       "aiReportTitle": "AIメンター面接レポート",

@@ -5348,7 +5348,19 @@
       "issueDeleted": "Issue deleted",
       "copySuccess": "Copied to clipboard!",
       "totalFound": "Total found",
-      "matchRate": "Match Rate"
+      "matchRate": "Match Rate",
+      "criteriaBugDetection": "Bug Detection",
+      "criteriaSecurityAwareness": "Security Awareness",
+      "criteriaSolutionQuality": "Solution Quality",
+      "criteriaCleanCodeAwareness": "Clean Code",
+      "criteriaCodeSmellDetection": "Code Smell Detection",
+      "criteriaPerformanceAnalysis": "Performance Analysis",
+      "strengthsTitle": "Top Strengths",
+      "weaknessesTitle": "Areas to Improve",
+      "missedIssuesTitle": "Missed Critical Issues",
+      "matchScoreTitle": "Match Score",
+      "criteriaAnalysisTitle": "Detailed Criteria Analysis",
+      "statBarsLabel": "STAT BARS"
     },
     "mentorReview": {
       "aiReportTitle": "AI MENTOR INTERVIEW REPORT",

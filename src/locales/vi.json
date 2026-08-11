@@ -5342,7 +5342,19 @@
       "issueDeleted": "Đã xóa issue",
       "copySuccess": "Đã sao chép vào clipboard!",
       "totalFound": "Tổng tìm được",
-      "matchRate": "Tỷ lệ khớp"
+      "matchRate": "Tỷ lệ khớp",
+      "criteriaBugDetection": "Phát hiện lỗi (Bug Detection)",
+      "criteriaSecurityAwareness": "Nhận thức bảo mật (Security)",
+      "criteriaSolutionQuality": "Chất lượng giải pháp (Solution)",
+      "criteriaCleanCodeAwareness": "Chuẩn mực Clean Code",
+      "criteriaCodeSmellDetection": "Phát hiện Code Smell",
+      "criteriaPerformanceAnalysis": "Phân tích hiệu năng (Performance)",
+      "strengthsTitle": "Điểm mạnh nổi bật",
+      "weaknessesTitle": "Điểm cần bổ sung & Cải thiện",
+      "missedIssuesTitle": "Các lỗi quan trọng bỏ sót (Missed Issues)",
+      "matchScoreTitle": "Chỉ số Match Score",
+      "criteriaAnalysisTitle": "Phân tích tiêu chí chi tiết",
+      "statBarsLabel": "STAT BARS"
     },
     "mentorReview": {
       "aiReportTitle": "BÁO CÁO PHỎNG VẤN AI MENTOR",
