@@ -1,6 +1,6 @@
 import icon2 from "@/assets/icon2.svg";
 import type { SidebarMenuGroup } from "@/components/shared";
-import { DashboardSidebar, getInitialSidebarCollapsed, SettingsModal } from "@/components/shared";
+import { DashboardSidebar, getInitialSidebarCollapsed } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
@@ -11,7 +11,6 @@ import { useAuthStore } from "@/stores/authStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Calendar, LayoutDashboard, MessageSquare, Newspaper, Star, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { MentorAccountPage } from "../Account";
 import { GivenFeedbackListPage } from "../Feedback";
@@ -159,24 +158,22 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
   },
 ];
 const MENTOR_SIDEBAR_LOGO_COLLAPSED = (
-  <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
+  <a href="/" className="flex items-center justify-center">
+    <img src={icon2} alt="INBLUE AI" className="h-8 w-8 shrink-0 object-contain" />
+  </a>
 );
 const DEFAULT_TAB: TabType = "overview";
 export function MentorDashboardPage() {
-  const { t } = useTranslation();
   const MENTOR_SIDEBAR_LOGO = useMemo(
     () => (
-      <>
-        <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
-        <div className="flex flex-col">
-          <span className="text-lg font-bold text-emerald-700 dark:text-white">INBLUE AI</span>
-          <span className="text-xs text-emerald-600 dark:text-emerald-400">
-            {t("mentorMentordashboard.mentorGate")}
-          </span>
-        </div>
-      </>
+      <a href="/" className="flex items-center gap-2.5">
+        <img src={icon2} alt="INBLUE AI" className="h-8 w-8 shrink-0 object-contain" />
+        <span className="text-lg font-bold tracking-wide text-[#002654] dark:text-white">
+          INBLUE AI
+        </span>
+      </a>
     ),
-    [t]
+    []
   );
   const navigate = useNavigate();
   const location = useLocation();
@@ -190,7 +187,6 @@ export function MentorDashboardPage() {
       sidebarBehavior === "auto-collapse"
     )
   );
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const availableTabs = useMemo(() => getAvailableTabs(t), [t]);
   const sidebarMenuGroups = useMemo(() => getSidebarMenuGroups(t), [t]);
   const { activeTab, openTab } = useTabsState({
@@ -340,9 +336,7 @@ export function MentorDashboardPage() {
         showDesktopToggle={false}
         logo={MENTOR_SIDEBAR_LOGO}
         collapsedLogo={MENTOR_SIDEBAR_LOGO_COLLAPSED}
-        showSettings
-        settingsLabel={t("common.setting")}
-        onSettingsClick={() => setIsSettingsOpen(true)}
+        showSettings={false}
         theme={{
           wrapper:
             "h-full border-r border-slate-200/80 bg-white/95 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/95",
@@ -393,8 +387,6 @@ export function MentorDashboardPage() {
         </div>
         <ScrollToTopButton target={scrollTarget} threshold={600} hidden={shouldHideScrollButton} />
       </div>
-
-      <SettingsModal open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }

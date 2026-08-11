@@ -1,6 +1,6 @@
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { NotificationBell } from "@/components/notification";
-import { DashboardSidebarToggle, SettingsModal } from "@/components/shared";
+import { SettingsModal } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -102,13 +102,7 @@ const STATIC_NAVIGATION: Array<{
   },
 ];
 
-export function MentorHeader({
-  title,
-  parentTitle,
-  category,
-  onToggleSidebar,
-  isSidebarCollapsed,
-}: MentorHeaderProps) {
+export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: MentorHeaderProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -159,9 +153,13 @@ export function MentorHeader({
     <>
       <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/85 px-4 shadow-2xs backdrop-blur-md transition-all sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800/80 dark:bg-slate-950/85">
         <div className="flex h-full flex-1 items-center gap-3">
-          <div className="flex items-center gap-2">
-            <DashboardSidebarToggle isCollapsed={isSidebarCollapsed} onToggle={onToggleSidebar} />
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="-ml-2 h-9 w-9 text-slate-500 hover:bg-slate-100 hover:text-slate-900 md:hidden dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            onClick={onToggleSidebar}>
+            <Menu className="h-5 w-5" />
+          </Button>
 
           {/* Breadcrumb Title Container for Desktop */}
           <nav className="hidden items-center sm:flex" aria-label="Breadcrumb">
