@@ -546,63 +546,85 @@ export function OverviewPage() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Subheader aligned with JobSearchTab and UserCompaniesTab */}
-      <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {t("userOverview.interviewOverview", "Tổng quan phỏng vấn")}
-            </h1>
-            <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-              {t(
-                "userOverview.keepTrackOfAppointmentSchedules",
-                "Theo dõi lịch hẹn và các chỉ số tổng quan."
-              )}
-            </p>
-          </div>
+    <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
+      {/* Top Action Bar — same geometry as JobSearchTab and UserCompaniesTab */}
+      <div className="shrink-0 px-5 py-6 md:px-8">
+        <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {t("userOverview.interviewOverview", "Tổng quan phỏng vấn")}
+              </h2>
+              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                {t(
+                  "userOverview.keepTrackOfAppointmentSchedules",
+                  "Theo dõi lịch hẹn và các chỉ số tổng quan."
+                )}
+              </p>
+            </div>
 
-          <div className="grid grid-cols-2 gap-x-5 gap-y-4 sm:flex sm:items-center sm:justify-center sm:gap-5 lg:gap-6">
-            {[
-              [totalInterviews, t("common.totalInterviewSession", "Tổng lượt phỏng vấn")],
-              [upcomingInterviews, t("common.sessionIsComingSoon", "Sắp diễn ra")],
-              [completedInterviews, t("userOverview.sessionCompleted", "Đã hoàn thành")],
-              [pendingInterviews, t("userOverview.requestPendingApproval", "Chờ duyệt")],
-            ].map(([value, label], index) => (
-              <div key={String(label)} className="flex items-center gap-5 sm:gap-5 lg:gap-6">
-                {index > 0 && <div className="hidden h-7 w-px bg-slate-200 sm:block dark:bg-slate-800" />}
-                <div className="flex min-w-[86px] flex-col items-center justify-center text-center">
-                  <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
-                    {value}
-                  </span>
-                  <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
-                    {label}
-                  </span>
-                </div>
+            {/* Stats — same spacing and separators as the two reference tabs */}
+            <div className="flex items-center justify-center gap-5 sm:gap-6">
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                  {totalInterviews}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("common.totalInterviewSession", "Tổng lượt phỏng vấn")}
+                </span>
               </div>
-            ))}
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                  {upcomingInterviews}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("common.sessionIsComingSoon", "Sắp diễn ra")}
+                </span>
+              </div>
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                  {completedInterviews}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("userOverview.sessionCompleted", "Đã hoàn thành")}
+                </span>
+              </div>
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                  {pendingInterviews}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("userOverview.requestPendingApproval", "Chờ duyệt")}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Calendar + Agenda Grid Section */}
-      <div className="xl:hidden">
-        <Tabs value={mobileView} onValueChange={setMobileView}>
-          <TabsList className="mb-3 grid w-full grid-cols-2">
-            <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
-            <TabsTrigger value={MOBILE_VIEW_CALENDAR}>
-              {t("common.monthlyCalendar", "Lịch tháng")}
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value={MOBILE_VIEW_AGENDA}>{renderAgendaContent()}</TabsContent>
-          <TabsContent value={MOBILE_VIEW_CALENDAR}>{renderCalendarContent()}</TabsContent>
-        </Tabs>
-      </div>
+      <div className="flex-1 overflow-y-auto px-5 py-6 md:px-8">
+        <div className="xl:hidden">
+          <Tabs value={mobileView} onValueChange={setMobileView}>
+            <TabsList className="mb-3 grid w-full grid-cols-2">
+              <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
+              <TabsTrigger value={MOBILE_VIEW_CALENDAR}>
+                {t("common.monthlyCalendar", "Lịch tháng")}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value={MOBILE_VIEW_AGENDA}>{renderAgendaContent()}</TabsContent>
+            <TabsContent value={MOBILE_VIEW_CALENDAR}>{renderCalendarContent()}</TabsContent>
+          </Tabs>
+        </div>
 
-      <div className="hidden gap-6 xl:grid xl:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]">
-        {renderCalendarContent()}
-        {renderAgendaContent()}
+        <div className="hidden gap-6 xl:grid xl:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]">
+          {renderCalendarContent()}
+          {renderAgendaContent()}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
