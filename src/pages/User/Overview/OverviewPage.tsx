@@ -10,7 +10,7 @@ import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
-import { Calendar, ChevronLeft, ChevronRight, Clock, Target, Video } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -547,74 +547,40 @@ export function OverviewPage() {
 
   return (
     <div className="space-y-6">
-      {/* Clean Minimalist Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {t("userOverview.interviewOverview", "Tổng quan phỏng vấn")}
-        </h1>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          {t(
-            "userOverview.keepTrackOfAppointmentSchedules",
-            "Theo dõi lịch hẹn và các chỉ số tổng quan."
-          )}
-        </p>
-      </div>
-
-      {/* High-Contrast Bright Stats Cards Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      {/* Subheader aligned with JobSearchTab and UserCompaniesTab */}
+      <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {t("common.totalInterviewSession", "Tổng lượt phỏng vấn")}
-            </p>
-            <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
-              {totalInterviews}
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+              {t("userOverview.interviewOverview", "Tổng quan phỏng vấn")}
+            </h1>
+            <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+              {t(
+                "userOverview.keepTrackOfAppointmentSchedules",
+                "Theo dõi lịch hẹn và các chỉ số tổng quan."
+              )}
             </p>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400">
-            <Video className="h-5 w-5" />
-          </div>
-        </div>
 
-        <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {t("common.sessionIsComingSoon", "Sắp diễn ra")}
-            </p>
-            <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
-              {upcomingInterviews}
-            </p>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400">
-            <Clock className="h-5 w-5" />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {t("userOverview.sessionCompleted", "Đã hoàn thành")}
-            </p>
-            <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
-              {completedInterviews}
-            </p>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400">
-            <Calendar className="h-5 w-5" />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {t("userOverview.requestPendingApproval", "Chờ duyệt")}
-            </p>
-            <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
-              {pendingInterviews}
-            </p>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/80 dark:text-amber-400">
-            <Target className="h-5 w-5" />
+          <div className="grid grid-cols-2 gap-x-5 gap-y-4 sm:flex sm:items-center sm:justify-center sm:gap-5 lg:gap-6">
+            {[
+              [totalInterviews, t("common.totalInterviewSession", "Tổng lượt phỏng vấn")],
+              [upcomingInterviews, t("common.sessionIsComingSoon", "Sắp diễn ra")],
+              [completedInterviews, t("userOverview.sessionCompleted", "Đã hoàn thành")],
+              [pendingInterviews, t("userOverview.requestPendingApproval", "Chờ duyệt")],
+            ].map(([value, label], index) => (
+              <div key={String(label)} className="flex items-center gap-5 sm:gap-5 lg:gap-6">
+                {index > 0 && <div className="hidden h-7 w-px bg-slate-200 sm:block dark:bg-slate-800" />}
+                <div className="flex min-w-[86px] flex-col items-center justify-center text-center">
+                  <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                    {value}
+                  </span>
+                  <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                    {label}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
