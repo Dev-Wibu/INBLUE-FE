@@ -164,6 +164,7 @@ const MENTOR_SIDEBAR_LOGO_COLLAPSED = (
 );
 const DEFAULT_TAB: TabType = "overview";
 export function MentorDashboardPage() {
+  const { t } = useTranslation();
   const MENTOR_SIDEBAR_LOGO = useMemo(
     () => (
       <a href="/" className="flex items-center gap-2.5">
@@ -173,7 +174,7 @@ export function MentorDashboardPage() {
         </span>
       </a>
     ),
-    []
+    [t]
   );
   const navigate = useNavigate();
   const location = useLocation();
