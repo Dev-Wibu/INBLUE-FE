@@ -104,6 +104,7 @@ const STATIC_NAVIGATION: Array<{
 
 export function MentorHeader({
   title,
+  parentTitle,
   category,
   onToggleSidebar,
   isSidebarCollapsed,
