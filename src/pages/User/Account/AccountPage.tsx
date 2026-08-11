@@ -340,8 +340,8 @@ export function AccountPage() {
     <div className="min-h-full bg-slate-50 dark:bg-slate-950">
       <div className="w-full px-4 pt-4 pb-8 md:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-          <aside className="flex flex-col gap-6 lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <aside className="flex flex-col gap-6 lg:sticky lg:top-6 lg:col-span-3 lg:self-start">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800/80 dark:bg-slate-900">
               <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
                 <Button
                   variant="ghost"
@@ -405,11 +405,12 @@ export function AccountPage() {
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-white">
+            {/* Table of Contents / Account Management Navigation Card */}
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900">
+              <h3 className="mb-3 text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                 {t("userAccount.quickSettings")}
               </h3>
-              <ul className="space-y-1">
+              <ul className="space-y-1.5">
                 {tabItems.map((tab) => {
                   const TabIcon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -418,23 +419,23 @@ export function AccountPage() {
                       <button
                         onClick={() => handleSwitchTab(tab.id)}
                         className={cn(
-                          "flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors",
+                          "flex w-full items-center justify-between rounded-xl p-3 text-left transition-all",
                           isActive
-                            ? "bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
-                            : "text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                            ? "border border-indigo-200/80 bg-indigo-50/80 font-medium text-indigo-700 shadow-2xs dark:border-indigo-500/30 dark:bg-indigo-950/60 dark:text-indigo-300"
+                            : "border border-transparent text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
                         )}>
                         <div className="flex items-center gap-3">
                           <div
                             className={cn(
-                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
                               isActive
-                                ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                                ? "bg-indigo-600 text-white shadow-xs dark:bg-indigo-500"
                                 : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                             )}>
                             <TabIcon className="h-4 w-4" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium">{tab.label}</p>
+                            <p className="text-sm font-semibold">{tab.label}</p>
                             <p className="text-xs text-slate-500 dark:text-slate-400">
                               {tab.description}
                             </p>
@@ -442,8 +443,10 @@ export function AccountPage() {
                         </div>
                         <ChevronRight
                           className={cn(
-                            "h-4 w-4 shrink-0 transition-colors",
-                            isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"
+                            "h-4 w-4 shrink-0 transition-transform",
+                            isActive
+                              ? "translate-x-0.5 text-indigo-600 dark:text-indigo-400"
+                              : "text-slate-400"
                           )}
                         />
                       </button>
