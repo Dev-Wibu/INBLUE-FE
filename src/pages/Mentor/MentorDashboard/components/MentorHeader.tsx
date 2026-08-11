@@ -9,12 +9,14 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 import {
   Calendar,
+  ChevronRight,
   LayoutDashboard,
   MessageSquare,
   Newspaper,
@@ -30,6 +32,7 @@ import { useNavigate } from "react-router-dom";
 
 interface MentorHeaderProps {
   title: string;
+  parentTitle?: string;
   category?: string;
   onToggleSidebar: () => void;
   isSidebarCollapsed: boolean;
@@ -153,94 +156,117 @@ export function MentorHeader({
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white/95 px-4 shadow-xs backdrop-blur-md sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/95">
-        <div className="flex h-full flex-1 items-center gap-4">
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/85 px-4 shadow-2xs backdrop-blur-md transition-all sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800/80 dark:bg-slate-950/85">
+        <div className="flex h-full flex-1 items-center gap-3">
           <div className="flex items-center gap-2">
             <DashboardSidebarToggle isCollapsed={isSidebarCollapsed} onToggle={onToggleSidebar} />
           </div>
 
-          {/* Breadcrumb style title for Desktop */}
-          <nav className="hidden sm:flex" aria-label="Breadcrumb">
-            <ol role="list" className="flex items-center space-x-2">
+          {/* Breadcrumb Title Container for Desktop */}
+          <nav className="hidden items-center sm:flex" aria-label="Breadcrumb">
+            <ol role="list" className="flex items-center space-x-2 text-xs font-semibold">
               <li>
-                <span className="text-sm font-medium text-slate-400 dark:text-slate-500">
+                <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 dark:bg-slate-800/80 dark:text-slate-300">
                   {category || t("common.mentor", "Mentor")}
                 </span>
               </li>
+              {parentTitle && (
+                <>
+                  <li>
+                    <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600" />
+                  </li>
+                  <li>
+                    <span className="text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
+                      {parentTitle}
+                    </span>
+                  </li>
+                </>
+              )}
               <li>
-                <span className="mx-2 text-lg leading-none text-slate-300 dark:text-slate-600">
-                  /
-                </span>
+                <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600" />
               </li>
-              <li>
-                <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+              <li className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-500"></span>
+                </span>
+                <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
                   {title}
                 </span>
               </li>
             </ol>
           </nav>
 
-          {/* Mobile title */}
-          <h1 className="truncate text-lg font-semibold tracking-tight text-slate-900 sm:hidden dark:text-white">
-            {title}
-          </h1>
+          {/* Mobile Title */}
+          <div className="flex items-center gap-2 sm:hidden">
+            <span className="relative flex h-2 w-2">
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-500"></span>
+            </span>
+            <h1 className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">
+              {title}
+            </h1>
+          </div>
         </div>
 
-        <div className="flex h-full items-center gap-x-4 lg:gap-x-6">
-          {/* Quick Search Popover */}
+        <div className="flex h-full items-center gap-x-3.5 sm:gap-x-4">
+          {/* Quick Search Command Trigger */}
           <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
             <PopoverTrigger asChild>
               <button
                 type="button"
                 aria-label={t("common.quickSearch", "Tìm kiếm nhanh")}
-                className="group relative hidden items-center md:flex">
-                <Search className="absolute left-3 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-indigo-500" />
-                <span
-                  className={cn(
-                    "block w-48 cursor-pointer rounded-xl border-0 bg-slate-100/80 py-1.5 pr-10 pl-9 text-left text-sm text-slate-400 ring-1 ring-slate-200/60 transition-all hover:bg-slate-100 hover:ring-indigo-300",
-                    "lg:w-64 dark:bg-slate-800/80 dark:text-slate-500 dark:ring-slate-700 dark:hover:bg-slate-800 dark:hover:ring-indigo-500/40"
-                  )}>
+                className={cn(
+                  "group relative hidden items-center md:flex",
+                  "h-10 w-52 rounded-xl border border-slate-200/90 bg-slate-50/80 px-3 py-2 text-left text-xs font-medium shadow-2xs transition-all",
+                  "hover:border-indigo-300 hover:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none",
+                  "lg:w-64 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-indigo-500/40 dark:hover:bg-slate-900"
+                )}>
+                <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
+                <span className="truncate text-slate-400 dark:text-slate-500">
                   {t("common.quickSearch", "Tìm kiếm nhanh...")}
                 </span>
-                <div className="absolute right-2 flex items-center">
-                  <kbd className="hidden rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline-block dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
-                    ⌘K
-                  </kbd>
-                </div>
+                <span className="ml-auto inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10.5px] font-semibold text-slate-400 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-400">
+                  <span className="text-[9px]">⌘</span>K
+                </span>
               </button>
             </PopoverTrigger>
             <PopoverContent
               align="end"
-              className="w-[24rem] border-slate-200 p-0 shadow-xl dark:border-slate-800"
+              className="w-[28rem] rounded-2xl border-slate-200/90 p-0 shadow-xl dark:border-slate-800/80 dark:bg-slate-950"
               onOpenAutoFocus={(e) => e.preventDefault()}>
-              <Command shouldFilter={false}>
+              <Command shouldFilter={false} className="rounded-2xl">
                 <CommandInput
                   value={searchQuery}
                   onValueChange={setSearchQuery}
                   placeholder={t("common.quickSearch", "Tìm kiếm nhanh...")}
                 />
-                <CommandList>
+                <CommandList className="max-h-[320px] p-1.5">
                   {navigationMatches.length === 0 && (
                     <CommandEmpty>{t("common.noResults", "Không tìm thấy kết quả.")}</CommandEmpty>
                   )}
 
                   {navigationMatches.length > 0 && (
-                    <CommandGroup heading={t("common.pages", "Trang Mentor")}>
-                      {navigationMatches.map((n) => {
-                        const navItem = STATIC_NAVIGATION.find((i) => i.to === n.to);
-                        const IconComp = navItem?.icon || LayoutDashboard;
-                        return (
-                          <CommandItem
-                            key={`nav-${n.id}`}
-                            value={`nav-${n.id}`}
-                            onSelect={() => handleSelect(n.to)}
-                            className="cursor-pointer py-2.5">
-                            <IconComp className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                            <span className="ml-2 font-medium">{n.label}</span>
-                          </CommandItem>
-                        );
-                      })}
-                    </CommandGroup>
+                    <>
+                      <CommandSeparator className="my-1" />
+                      <CommandGroup heading={t("common.pages", "Trang Mentor")}>
+                        {navigationMatches.map((n) => {
+                          const navItem = STATIC_NAVIGATION.find((i) => i.to === n.to);
+                          const IconComp = navItem?.icon || LayoutDashboard;
+                          return (
+                            <CommandItem
+                              key={`nav-${n.id}`}
+                              value={`nav-${n.id}`}
+                              onSelect={() => handleSelect(n.to)}
+                              className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                              <IconComp className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                              <span className="ml-2 font-semibold text-slate-900 dark:text-slate-100">
+                                {n.label}
+                              </span>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </>
                   )}
                 </CommandList>
               </Command>
@@ -248,25 +274,26 @@ export function MentorHeader({
           </Popover>
 
           <div
-            className="hidden h-6 w-px bg-slate-200 sm:block dark:bg-slate-800"
+            className="hidden h-5 w-px bg-slate-200/80 sm:block dark:bg-slate-800/80"
             aria-hidden="true"
           />
 
-          {/* Actions Pill Container matching Candidate Header */}
-          <div className="flex items-center gap-1.5 rounded-full bg-slate-100/80 p-1.5 ring-1 ring-slate-200/60 dark:bg-slate-900/80 dark:ring-slate-800">
-            <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:hover:bg-white [&_button]:hover:shadow-xs dark:[&_button]:hover:bg-slate-800">
+          {/* Synchronized Action Controls Cluster */}
+          <div className="flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-50/70 p-1 shadow-2xs transition-all dark:border-slate-800/80 dark:bg-slate-900/60">
+            <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:transition-all [&_button]:hover:bg-white [&_button]:hover:shadow-2xs dark:[&_button]:hover:bg-slate-800">
               <NotificationBell notificationsPath="/mentor?tab=notifications" />
             </div>
 
-            <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:hover:bg-white [&_button]:hover:shadow-xs dark:[&_button]:hover:bg-slate-800">
+            <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:transition-all [&_button]:hover:bg-white [&_button]:hover:shadow-2xs dark:[&_button]:hover:bg-slate-800">
               <LanguageToggle />
             </div>
 
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 rounded-full text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-xs dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-              onClick={() => setIsSettingsOpen(true)}>
+              className="h-8 w-8 rounded-full text-slate-500 transition-all hover:bg-white hover:text-indigo-600 hover:shadow-2xs dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+              onClick={() => setIsSettingsOpen(true)}
+              title={t("userAccount.quickSettings", "Cài đặt")}>
               <Settings className="h-4 w-4" />
             </Button>
           </div>
