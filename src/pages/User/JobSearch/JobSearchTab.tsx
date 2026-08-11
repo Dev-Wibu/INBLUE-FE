@@ -84,93 +84,98 @@ export function JobCard({
   return (
     <div
       onClick={onClick}
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 transition-all hover:border-indigo-400 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-500/50">
-      {/* Header section */}
-      <div className="flex items-start gap-4">
-        {/* Avatar */}
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-100 bg-slate-50 text-xl font-bold text-indigo-600 dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={job.companyName || "Company"}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            initials
-          )}
+      className="group relative flex h-full cursor-pointer flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 transition-all hover:border-indigo-400 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-500/50">
+      {/* Upper content container */}
+      <div className="flex flex-col">
+        {/* Header section */}
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-100 bg-slate-50 text-xl font-bold text-indigo-600 dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={job.companyName || "Company"}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="min-w-0 flex-1">
+            <div className="flex h-[48px] items-start">
+              <h3 className="line-clamp-2 text-[16.5px] leading-tight font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                {job.title || t("enterpriseJobsearchpage.untitledJob", "Chưa có tiêu đề")}
+              </h3>
+            </div>
+
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 text-[13.5px] text-slate-600 dark:text-slate-300">
+                <Building2 className="h-4 w-4 shrink-0 text-slate-400" />
+                <span className="max-w-[130px] truncate">
+                  {job.companyName || t("common.unknownCompany", "Công ty ẩn danh")}
+                </span>
+              </div>
+
+              <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+
+              {job.level && (
+                <Badge
+                  variant="secondary"
+                  className={`border-transparent px-3 py-0.5 text-xs font-semibold ${LEVEL_COLORS[job.level] || "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"}`}>
+                  {job.level}
+                </Badge>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Info */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between">
-            <h3 className="truncate text-[17px] font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-              {job.title || t("enterpriseJobsearchpage.untitledJob", "Chưa có tiêu đề")}
-            </h3>
-            <div className="ml-2 flex shrink-0 items-center gap-1.5 text-[13px] text-slate-500 dark:text-slate-400">
-              <Users className="h-4 w-4" />
+        <div className="my-5 h-px w-full bg-slate-100 dark:bg-slate-800/60" />
+
+        {/* Details (Salary + Status + Candidates Count) */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2 text-[14.5px] font-bold text-emerald-600 dark:text-slate-200">
+              <Banknote className="h-5 w-5 shrink-0 text-emerald-500" />
+              <span className="truncate">{salaryText}</span>
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+              <Users className="h-4 w-4 text-indigo-500" />
               {job.appliedCount || 0} {t("common.candidates", "ứng viên")}
             </div>
           </div>
-
-          <div className="mt-2 flex items-center gap-2">
-            <div className="flex items-center gap-1.5 text-[13.5px] text-slate-600 dark:text-slate-300">
-              <Building2 className="h-4 w-4" />
-              <span className="max-w-[140px] truncate">
-                {job.companyName || t("common.unknownCompany", "Công ty ẩn danh")}
-              </span>
-            </div>
-
-            <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-
-            {job.level && (
-              <Badge
-                variant="secondary"
-                className={`border-transparent px-3 py-0.5 text-xs font-semibold ${LEVEL_COLORS[job.level] || "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"}`}>
-                {job.level}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="my-5 h-px w-full bg-slate-100 dark:bg-slate-800/60" />
-
-      {/* Details (Salary + Status) */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2 text-[15px] font-bold text-emerald-600 dark:text-slate-200">
-          <Banknote className="h-5 w-5 text-emerald-500" />
-          {salaryText}
-        </div>
-        <div className="mt-1 flex items-center justify-between">
-          <div
-            className={`flex items-center gap-2 text-[15px] font-semibold ${
-              job.status === "OPEN"
-                ? "text-emerald-600 dark:text-emerald-500"
-                : job.status === "CLOSED"
-                  ? "text-slate-600 dark:text-slate-400"
-                  : "text-orange-600 dark:text-orange-500"
-            }`}>
+          <div className="mt-1 flex items-center justify-between">
             <div
-              className={`h-2 w-2 rounded-full ${
+              className={`flex items-center gap-2 text-[15px] font-semibold ${
                 job.status === "OPEN"
-                  ? "bg-emerald-500 dark:bg-emerald-500"
+                  ? "text-emerald-600 dark:text-emerald-500"
                   : job.status === "CLOSED"
-                    ? "bg-slate-400 dark:bg-slate-500"
-                    : "bg-orange-500 dark:bg-orange-500"
-              }`}
-            />
-            {job.status === "OPEN"
-              ? t("enterpriseJobsearchpage.hiring", "Đang tuyển")
-              : job.status === "CLOSED"
-                ? t("enterpriseJobsearchpage.closed", "Đóng")
-                : job.status}
-          </div>
-          <div className="flex items-center gap-1.5 text-[14px] font-medium text-slate-500 dark:text-slate-400">
-            <CalendarDays className="h-4 w-4" />
-            HSD:{" "}
-            {job.deadlineAt
-              ? format(new Date(job.deadlineAt), "dd/MM/yyyy")
-              : t("common.noDeadline", "Không có thời hạn")}
+                    ? "text-slate-600 dark:text-slate-400"
+                    : "text-orange-600 dark:text-orange-500"
+              }`}>
+              <div
+                className={`h-2 w-2 rounded-full ${
+                  job.status === "OPEN"
+                    ? "bg-emerald-500 dark:bg-emerald-500"
+                    : job.status === "CLOSED"
+                      ? "bg-slate-400 dark:bg-slate-500"
+                      : "bg-orange-500 dark:bg-orange-500"
+                }`}
+              />
+              {job.status === "OPEN"
+                ? t("enterpriseJobsearchpage.hiring", "Đang tuyển")
+                : job.status === "CLOSED"
+                  ? t("enterpriseJobsearchpage.closed", "Đóng")
+                  : job.status}
+            </div>
+            <div className="flex items-center gap-1.5 text-[14px] font-medium text-slate-500 dark:text-slate-400">
+              <CalendarDays className="h-4 w-4" />
+              HSD:{" "}
+              {job.deadlineAt
+                ? format(new Date(job.deadlineAt), "dd/MM/yyyy")
+                : t("common.noDeadline", "Không có thời hạn")}
+            </div>
           </div>
         </div>
       </div>
@@ -350,28 +355,30 @@ export function JobSearchTab() {
             </div>
 
             {/* Stats */}
-            <div className="flex items-center gap-6">
-              <div className="flex flex-col items-center">
-                <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
+            <div className="flex items-center justify-center gap-5 sm:gap-6">
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
                   {jobs.filter((j) => j.status === "OPEN").length || jobs.length}
                 </span>
-                <span className="text-[13px] text-slate-500 dark:text-slate-400">
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
                   {t("jobSearch.openPositions", "Vị trí mở")}
                 </span>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
                   {new Set(jobs.map((j) => j.companyName).filter(Boolean)).size}
                 </span>
-                <span className="text-[13px] text-slate-500 dark:text-slate-400">
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
                   {t("jobSearch.companies", "Công ty")}
                 </span>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
-                  4
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                  {new Set(jobs.map((j) => j.level).filter(Boolean)).size || 4}
                 </span>
-                <span className="text-[13px] text-slate-500 dark:text-slate-400">
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
                   {t("jobSearch.levels", "Cấp bậc")}
                 </span>
               </div>

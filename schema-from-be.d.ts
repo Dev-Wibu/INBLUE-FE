@@ -2345,6 +2345,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/applications/summary-audio/{email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllJourneySummaryWithMissingAudio"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/applications/me": {
         parameters: {
             query?: never;
@@ -4089,10 +4105,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -4104,18 +4120,18 @@ export interface components {
         PageableObject: {
             /** Format: int32 */
             pageNumber?: number;
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
             sorted?: boolean;
-            unsorted?: boolean;
             empty?: boolean;
+            unsorted?: boolean;
         };
         Payment: {
             /** Format: int32 */
@@ -4421,8 +4437,8 @@ export interface components {
             defaultProfiles?: string[];
         };
         FilterRegistration: {
-            urlPatternMappings?: string[];
             servletNameMappings?: string[];
+            urlPatternMappings?: string[];
             initParameters?: {
                 [key: string]: string;
             };
@@ -4444,19 +4460,19 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            elIgnored?: string;
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
             includeCodas?: string[];
-            errorOnELNotFound?: string;
-            trimDirectiveWhitespaces?: string;
+            isXml?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
             buffer?: string;
-            elIgnored?: string;
-            isXml?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -4490,18 +4506,17 @@ export interface components {
             };
         };
         ServletContext: {
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
             servletContextName?: string;
+            serverInfo?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
@@ -4509,7 +4524,8 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            /** Format: int32 */
+            sessionTimeout?: number;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
             initParameterNames?: unknown;
@@ -4590,11 +4606,11 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
-            httpOnly?: boolean;
             /** Format: int32 */
             maxAge?: number;
             secure?: boolean;
             domain?: string;
+            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -8749,6 +8765,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CompetencyChartResponse"];
+                };
+            };
+        };
+    };
+    getAllJourneySummaryWithMissingAudio: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JourneySummary"][];
                 };
             };
         };

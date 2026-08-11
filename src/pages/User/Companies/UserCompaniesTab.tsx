@@ -6,7 +6,8 @@ import { companyManager, type Company } from "@/services/company.manager";
 import { BriefcaseBusiness, Building2, MapPin, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { CompanyDetailContainer } from "./CompanyDetailContainer";
 
 function getOpenRoleCount(company: Company) {
   return (
@@ -35,13 +36,148 @@ function normalizeCompanies(data: unknown): Company[] {
   return [];
 }
 
+export function CompanyCard({
+  company,
+  onClick,
+  onExplore,
+  t,
+}: {
+  company: Company;
+  onClick: () => void;
+  onExplore: (_e: React.MouseEvent) => void;
+  t: (key: string, defaultValue?: string | Record<string, unknown>) => string;
+}) {
+  const openRoles = getOpenRoleCount(company);
+  const logoUrl = company.logoUrl || null;
+  const initials = getCompanyInitials(company.name);
+
+  // Extract skills from company's job descriptions
+  const companySkills = useMemo(() => {
+    const set = new Set<string>();
+    company.jobDescriptions?.forEach((j) => {
+      j.skills?.forEach((s) => set.add(s));
+    });
+    return Array.from(set).slice(0, 3);
+  }, [company]);
+
+  return (
+    <div
+      onClick={onClick}
+      className="group relative flex h-full cursor-pointer flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 transition-all hover:border-indigo-400 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-500/50">
+      {/* Upper content container */}
+      <div className="flex flex-col">
+        {/* Header section — identical to JobCard layout */}
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-100 bg-slate-50 text-xl font-bold text-indigo-600 dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={company.name || "Company"}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="min-w-0 flex-1">
+            <div className="flex h-[48px] items-start">
+              <h3 className="line-clamp-2 text-[16.5px] leading-tight font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                {company.name || t("common.unknownCompany", "Công ty ẩn danh")}
+              </h3>
+            </div>
+
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 text-[13.5px] text-slate-600 dark:text-slate-300">
+                <Building2 className="h-4 w-4 shrink-0 text-slate-400" />
+                <span className="max-w-[130px] truncate">
+                  {company.industry || t("common.enterprise", "Doanh nghiệp")}
+                </span>
+              </div>
+
+              <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+
+              {openRoles > 0 ? (
+                <Badge
+                  variant="secondary"
+                  className="border-transparent bg-emerald-100 px-3 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                  {t("enterpriseJobsearchpage.hiring", "Đang tuyển")}
+                </Badge>
+              ) : (
+                <Badge
+                  variant="secondary"
+                  className="border-transparent bg-slate-100 px-3 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                  {t("enterpriseJobsearchpage.closed", "Đóng")}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="my-5 h-px w-full bg-slate-100 dark:bg-slate-800/60" />
+
+        {/* Details (Description & Tech Stack) */}
+        <div className="flex flex-col gap-3">
+          <div className="flex min-h-[40px] items-start">
+            <p className="line-clamp-2 text-[14px] leading-relaxed text-slate-600 dark:text-slate-300">
+              {company.description ||
+                t("userCompanies.noDescription", "Chưa có mô tả giới thiệu chi tiết.")}
+            </p>
+          </div>
+
+          <div className="mt-1 flex h-[24px] items-center justify-between">
+            <div className="flex min-w-0 items-center gap-1.5 text-[14px] font-medium text-slate-500 dark:text-slate-400">
+              <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+              <span className="max-w-[150px] truncate">
+                {company.location || "TP. Hồ Chí Minh"}
+              </span>
+            </div>
+
+            {companySkills.length > 0 && (
+              <div className="flex shrink-0 items-center gap-1">
+                {companySkills.map((skill, idx) => (
+                  <span
+                    key={idx}
+                    className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer (Action Button identical to JobCard) */}
+      <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 text-[14px] font-bold text-indigo-600 dark:text-indigo-400">
+          <BriefcaseBusiness className="h-[18px] w-[18px]" />
+          {openRoles > 0 ? `${openRoles} cơ hội` : t("common.overview", "Tổng quan")}
+        </div>
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            onExplore(e);
+          }}
+          className="h-11 shrink-0 rounded-xl border border-transparent bg-indigo-600 px-8 text-[15px] font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-500">
+          {t("userCompanies.exploreNow", "Khám phá")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function UserCompaniesTab() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndustry, setSelectedIndustry] = useState<string>("ALL");
+
+  const companyId = searchParams.get("companyId");
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -90,189 +226,206 @@ export function UserCompaniesTab() {
     return companies.reduce((acc, c) => acc + getOpenRoleCount(c), 0);
   }, [companies]);
 
-  return (
-    <div className="space-y-6">
-      {/* Top Header Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {t("common.companyList", "Danh sách công ty đối tác")}
-          </h1>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            {t(
-              "userCompanies.headerSubtitle",
-              "Khám phá các doanh nghiệp hàng đầu, môi trường làm việc và các vị trí tuyển dụng mở"
-            )}
-          </p>
-        </div>
+  const handleCompanyClick = (id: string | number) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("companyId", String(id));
+    setSearchParams(newParams);
+  };
 
-        {/* Stats Pill */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50/80 px-3.5 py-2 text-xs font-bold text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300">
-            <Building2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span>{companies.length} Công ty</span>
+  const handleCloseDetail = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("companyId");
+    setSearchParams(newParams);
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+  };
+
+  /* ─── In-Dashboard Company Detail View ─── */
+  if (companyId) {
+    return (
+      <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
+        <CompanyDetailContainer companyId={companyId} onClose={handleCloseDetail} />
+      </section>
+    );
+  }
+
+  return (
+    <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
+      {/* Top Action Bar (Hero Style — 100% Identical Layout to JobSearchTab) */}
+      <div className="shrink-0 px-5 py-6 md:px-8">
+        <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+            {/* Title & Subtitle */}
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {t("userCompanies.heroTitle", "Khám phá Công ty đối tác")}
+              </h2>
+              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                {t(
+                  "userCompanies.heroSubtitle",
+                  "Khám phá môi trường làm việc thực tế, văn hóa doanh nghiệp và cơ hội nghề nghiệp"
+                )}
+              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="flex items-center justify-center gap-5 sm:gap-6">
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                  {companies.length}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("jobSearch.companies", "Công ty")}
+                </span>
+              </div>
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                  {totalOpenRoles}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("jobSearch.openPositions", "Vị trí mở")}
+                </span>
+              </div>
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                  {industries.length || 1}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  Lĩnh vực
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/80 px-3.5 py-2 text-xs font-bold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-            <BriefcaseBusiness className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <span>{totalOpenRoles} Vị trí tuyển</span>
+
+          <form onSubmit={handleSearch} className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t(
+                  "userCompanies.searchPlaceholder",
+                  "Tìm theo tên công ty, địa điểm hoặc lĩnh vực..."
+                )}
+                className="h-[46px] w-full rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 text-[14.5px] text-slate-900 shadow-2xs transition-all placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800/80 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-500"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <Button
+              type="submit"
+              className="h-[46px] shrink-0 rounded-[10px] border border-slate-300 bg-transparent px-6 font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              <Search className="mr-2 h-[18px] w-[18px]" />
+              {t("general.search", "Tìm kiếm")}
+            </Button>
+          </form>
+
+          {/* Filters */}
+          <div className="mt-4 flex flex-col gap-5 xl:flex-row xl:items-center">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-2 text-[13px] font-semibold text-slate-500">Lĩnh vực:</span>
+              <button
+                key="ALL"
+                type="button"
+                onClick={() => setSelectedIndustry("ALL")}
+                className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                  selectedIndustry === "ALL"
+                    ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-600 dark:bg-indigo-600"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                }`}>
+                Tất cả
+              </button>
+              {industries.map((ind) => {
+                const isActive = selectedIndustry.toLowerCase() === ind.toLowerCase();
+                return (
+                  <button
+                    key={ind}
+                    type="button"
+                    onClick={() => setSelectedIndustry(ind)}
+                    className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                      isActive
+                        ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-600 dark:bg-indigo-600"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                    }`}>
+                    {ind}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Search and Filters Card */}
-      <div className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              type="text"
-              placeholder={t(
-                "userCompanies.searchPlaceholder",
-                "Tìm tên công ty, địa điểm, lĩnh vực..."
-              )}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 border-slate-200 bg-slate-50 pl-10 text-xs font-medium focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600">
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Industry Filter Pills */}
-        {industries.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-1 dark:border-slate-800">
-            <span className="mr-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-              Lĩnh vực:
+      {/* Company Grid List — 100% Identical Grid Ratio to JobSearchTab */}
+      <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 [&::-webkit-scrollbar-track]:bg-transparent">
+        {(searchQuery || selectedIndustry !== "ALL") && (
+          <div className="mb-5">
+            <span className="text-xs text-slate-500 dark:text-[#888888]">
+              {t("common.showing", "Hiển thị")}{" "}
+              <strong className="text-slate-800 dark:text-slate-200">
+                {filteredCompanies.length}
+              </strong>{" "}
+              {t("common.results", "kết quả")}
             </span>
-            <button
-              onClick={() => setSelectedIndustry("ALL")}
-              className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
-                selectedIndustry === "ALL"
-                  ? "bg-indigo-600 text-white shadow-2xs"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-              }`}>
-              Tất cả
-            </button>
-            {industries.map((ind) => (
-              <button
-                key={ind}
-                onClick={() => setSelectedIndustry(ind)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                  selectedIndustry.toLowerCase() === ind.toLowerCase()
-                    ? "bg-indigo-600 text-white shadow-2xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                }`}>
-                {ind}
-              </button>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-64 rounded-[20px]" />
+            ))}
+          </div>
+        ) : filteredCompanies.length === 0 ? (
+          <div className="mx-6 my-10 flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800">
+              <Building2 className="h-6 w-6" />
+            </div>
+            <div className="text-center">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                Không tìm thấy công ty phù hợp
+              </h3>
+              <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+                Chưa có doanh nghiệp nào phù hợp với bộ lọc hiện tại.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedIndustry("ALL");
+              }}
+              className="mt-2 h-8 border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10">
+              Xem tất cả
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
+            {filteredCompanies.map((company) => (
+              <CompanyCard
+                key={company.id}
+                company={company}
+                onClick={() => handleCompanyClick(company.id)}
+                onExplore={(e) => {
+                  e.stopPropagation();
+                  handleCompanyClick(company.id);
+                }}
+                t={t}
+              />
             ))}
           </div>
         )}
       </div>
-
-      {/* Companies Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-56 rounded-2xl" />
-          ))}
-        </div>
-      ) : filteredCompanies.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
-          <Building2 className="mx-auto h-10 w-10 text-slate-400" />
-          <h3 className="mt-3 text-base font-bold text-slate-900 dark:text-white">
-            Không tìm thấy công ty phù hợp
-          </h3>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Thử thay đổi từ khóa tìm kiếm hoặc bỏ bớt bộ lọc
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCompanies.map((company) => {
-            const openRoles = getOpenRoleCount(company);
-            const logoUrl = company.logoUrl || null;
-            const initials = getCompanyInitials(company.name);
-
-            return (
-              <div
-                key={company.id}
-                onClick={() => navigate(`/enterprise/company/${company.id}`)}
-                className="group flex cursor-pointer flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:border-indigo-400 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-500/50">
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 text-base font-bold text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-indigo-400">
-                      {logoUrl ? (
-                        <img
-                          src={logoUrl}
-                          alt={company.name || "Company"}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        initials
-                      )}
-                    </div>
-                    {openRoles > 0 ? (
-                      <Badge className="border-0 bg-emerald-100 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                        {openRoles} tuyển dụng
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-[11px] font-medium text-slate-500">
-                        Chưa mở tuyển
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div>
-                    <h3 className="line-clamp-1 text-base font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
-                      {company.name}
-                    </h3>
-                    {company.industry && (
-                      <p className="mt-0.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                        {company.industry}
-                      </p>
-                    )}
-                    {company.description && (
-                      <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                        {company.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-3.5 text-xs dark:border-slate-800">
-                  {company.location ? (
-                    <div className="flex max-w-[150px] items-center gap-1 truncate font-medium text-slate-500 dark:text-slate-400">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                      <span className="truncate">{company.location}</span>
-                    </div>
-                  ) : (
-                    <span className="text-[11px] text-slate-400">TP. Hồ Chí Minh</span>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs font-bold text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950/60"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(
-                        `/user?tab=jobSearch&search=${encodeURIComponent(company.name || "")}`
-                      );
-                    }}>
-                    Xem việc làm
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+    </section>
   );
 }

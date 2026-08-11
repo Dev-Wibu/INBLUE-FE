@@ -14,8 +14,9 @@ import { toast } from "sonner";
 
 interface JobDetailContainerProps {
   job: JobDescription;
-  onClose: () => void;
-  onRefresh: () => void;
+  onClose?: () => void;
+  onRefresh?: () => void;
+  hideBackButton?: boolean;
 }
 
 interface NativePaymentInfo {
@@ -80,7 +81,12 @@ function extractNativeInfoFromRawData(rawData: unknown): NativePaymentInfo | nul
   return null;
 }
 
-export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContainerProps) {
+export function JobDetailContainer({
+  job,
+  onClose,
+  onRefresh,
+  hideBackButton = false,
+}: JobDetailContainerProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -366,7 +372,12 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
   };
 
   return (
-    <div className="custom-scrollbar relative flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 [&::-webkit-scrollbar-track]:bg-transparent">
+    <div
+      className={
+        hideBackButton
+          ? "relative flex-1"
+          : "custom-scrollbar relative flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 [&::-webkit-scrollbar-track]:bg-transparent"
+      }>
       <JobDetailView
         job={job}
         hasPurchased={hasPurchased}
@@ -381,7 +392,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
         }}
         isLoadingAction={isApplying}
         isLoadingStatus={isLoadingStatus}
-        onBack={onClose}
+        onBack={hideBackButton ? undefined : onClose}
       />
 
       {/* ── Native 1-Screen Merged Payment Modal ────────────────────────────── */}

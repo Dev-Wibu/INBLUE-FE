@@ -352,6 +352,7 @@ export function UserDashboardPage() {
             typedActiveTab === "messenger" ||
               typedActiveTab === "mentors" ||
               typedActiveTab === "jobSearch" ||
+              typedActiveTab === "companies" ||
               typedActiveTab === "applicationHistory" ||
               typedActiveTab === "aiInterview" ||
               location.pathname.startsWith("/user/application")
