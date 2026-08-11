@@ -1,6 +1,6 @@
 import icon2 from "@/assets/icon2.svg";
 import type { SidebarMenuGroup } from "@/components/shared";
-import { DashboardSidebar, getInitialSidebarCollapsed, SettingsModal } from "@/components/shared";
+import { DashboardSidebar, getInitialSidebarCollapsed } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { useTabsState } from "@/hooks/useTabsState";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -126,7 +126,6 @@ export function StaffDashboardPage() {
       sidebarBehavior === "auto-collapse"
     )
   );
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const typedActiveTab: TabType = isValidTabType(activeTab) ? activeTab : "home";
 
   // ── Reset to home when sidebar collapses (mirrors Candidate behavior) ──
@@ -224,9 +223,7 @@ export function StaffDashboardPage() {
         showDesktopToggle={false}
         logo={STAFF_SIDEBAR_LOGO}
         collapsedLogo={STAFF_SIDEBAR_LOGO_COLLAPSED}
-        showSettings
-        settingsLabel={t("common.setting")}
-        onSettingsClick={() => setIsSettingsOpen(true)}
+        showSettings={false}
         theme={{
           wrapper:
             "h-full flex-shrink-0 border-r border-slate-200/80 bg-white/95 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/95",
@@ -273,8 +270,6 @@ export function StaffDashboardPage() {
         </div>
         <ScrollToTopButton target={scrollTarget} threshold={600} />
       </div>
-
-      <SettingsModal open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }
