@@ -4641,7 +4641,10 @@
     "mentorSelectOpenDetail": "View mentor detail",
     "mentorSelectExpertise": "Expertise",
     "mentorSelectContact": "Contact",
-    "mentorSession": "Mentor Session"
+    "mentorSession": "Mentor Session",
+    "competencyReportNode": "Competency Report",
+    "finalSummary": "AI Summary",
+    "completeAllRoundsToUnlock": "Complete all rounds to unlock"
   },
   "userApplication": {
     "applicationWorkspacePage": {

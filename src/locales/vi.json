@@ -4638,7 +4638,10 @@
     "mentorSelectOpenDetail": "[VI] userApplicationhistory.mentorSelectOpenDetail",
     "mentorSelectExpertise": "[VI] userApplicationhistory.mentorSelectExpertise",
     "mentorSelectContact": "[VI] userApplicationhistory.mentorSelectContact",
-    "mentorSession": "[VI] userApplicationhistory.mentorSession"
+    "mentorSession": "[VI] userApplicationhistory.mentorSession",
+    "competencyReportNode": "Báo cáo năng lực",
+    "finalSummary": "Tổng kết AI",
+    "completeAllRoundsToUnlock": "Hoàn tất tất cả vòng để mở"
   },
   "userApplication": {
     "applicationWorkspacePage": {

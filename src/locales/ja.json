@@ -4574,7 +4574,10 @@
     "mentorSelectOpenDetail": "[JA] userApplicationhistory.mentorSelectOpenDetail",
     "mentorSelectExpertise": "[JA] userApplicationhistory.mentorSelectExpertise",
     "mentorSelectContact": "[JA] userApplicationhistory.mentorSelectContact",
-    "mentorSession": "[JA] userApplicationhistory.mentorSession"
+    "mentorSession": "[JA] userApplicationhistory.mentorSession",
+    "competencyReportNode": "能力レポート",
+    "finalSummary": "AIサマリー",
+    "completeAllRoundsToUnlock": "全ラウンド完了で解放"
   },
   "userApplication": {
     "applicationWorkspacePage": {
