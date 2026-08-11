@@ -1388,7 +1388,8 @@ export function MessengerPage() {
                         size="icon"
                         className={cn(
                           "h-9 w-9 rounded-xl text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400",
-                          isMessageSearchOpen && "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20"
+                          isMessageSearchOpen &&
+                            "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20"
                         )}
                         onClick={() => {
                           setIsMessageSearchOpen((current) => {
