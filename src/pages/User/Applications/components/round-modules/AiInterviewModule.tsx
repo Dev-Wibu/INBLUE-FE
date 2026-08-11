@@ -517,7 +517,9 @@ function KioskPinDialog({
                   : t("userApplication.aiInterview.noData")}
               </p>
               <p className="mt-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-                {duration ? `${duration} phút` : t("userApplication.aiInterview.perSlot")}
+                {duration
+                  ? `${duration} ${t("userApplication.aiInterview.minutes", "minutes")}`
+                  : t("userApplication.aiInterview.perSlot")}
               </p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
@@ -541,7 +543,7 @@ function KioskPinDialog({
             <p>
               {t(
                 "userApplication.aiInterview.pinDialogNote",
-                "Thông tin chi tiết cũng sẽ được gửi qua email hoặc hộp thư thông báo. Chúc bạn làm bài thật tốt, bình tĩnh trả lời rõ ràng và đến sớm trước giờ hẹn 10-15 phút nhé."
+                "Detailed information will also be sent via email or notification inbox. Good luck, stay calm, answer clearly, and arrive 10-15 minutes early."
               )}
             </p>
           </div>
@@ -1014,7 +1016,7 @@ function AiInterviewQuestionsTab({
               type="text"
               placeholder={t(
                 "userApplication.aiInterview.searchPlaceholder",
-                "Tìm kiếm theo chủ đề, câu hỏi, câu trả lời, từ khóa..."
+                "Search by topic, question, answer, keyword..."
               )}
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
@@ -1024,7 +1026,7 @@ function AiInterviewQuestionsTab({
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                aria-label={t("userApplication.aiInterview.clearSearch", "Xóa nội dung tìm kiếm")}
+                aria-label={t("userApplication.aiInterview.clearSearch", "Clear search")}
                 className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:hover:bg-slate-800 dark:hover:text-slate-200">
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -1059,7 +1061,11 @@ function AiInterviewQuestionsTab({
                 ? "bg-indigo-600 text-white shadow-xs"
                 : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
             )}>
-            <span>Tất cả ({questions.length})</span>
+            <span>
+              {t("userApplication.aiInterview.filterAllQuestions", "All ({{count}})", {
+                count: questions.length,
+              })}
+            </span>
           </button>
           <button
             type="button"
@@ -1071,7 +1077,11 @@ function AiInterviewQuestionsTab({
                 : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
             )}>
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span>Điểm cao ({highCount})</span>
+            <span>
+              {t("userApplication.aiInterview.filterHighScores", "High Score ≥ 7 ({{count}})", {
+                count: highCount,
+              })}
+            </span>
           </button>
           <button
             type="button"
@@ -1083,7 +1093,13 @@ function AiInterviewQuestionsTab({
                 : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
             )}>
             <span className="h-2 w-2 rounded-full bg-amber-500" />
-            <span>Cần cải thiện ({improveCount})</span>
+            <span>
+              {t(
+                "userApplication.aiInterview.filterNeedsImprovement",
+                "Needs Work < 7 ({{count}})",
+                { count: improveCount }
+              )}
+            </span>
           </button>
           <button
             type="button"
@@ -1094,7 +1110,11 @@ function AiInterviewQuestionsTab({
                 ? "bg-indigo-600 text-white shadow-xs"
                 : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
             )}>
-            <span>Câu chính (JD) ({blueprintCount})</span>
+            <span>
+              {t("userApplication.aiInterview.filterBlueprint", "Blueprint ({{count}})", {
+                count: blueprintCount,
+              })}
+            </span>
           </button>
           <button
             type="button"
@@ -1105,7 +1125,11 @@ function AiInterviewQuestionsTab({
                 ? "bg-purple-600 text-white shadow-xs"
                 : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
             )}>
-            <span>Câu hỏi bồi ({followupCount})</span>
+            <span>
+              {t("userApplication.aiInterview.filterFollowup", "Follow-up ({{count}})", {
+                count: followupCount,
+              })}
+            </span>
           </button>
         </div>
       </div>
@@ -1116,7 +1140,11 @@ function AiInterviewQuestionsTab({
           <HelpCircle className="h-9 w-9 text-slate-400" />
           <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
             {searchQuery
-              ? `Không tìm thấy chủ đề phỏng vấn nào phù hợp với từ khóa "${searchQuery}"`
+              ? t(
+                  "userApplication.aiInterview.noTopicsFound",
+                  'No interview topics found matching "{{query}}"',
+                  { query: searchQuery }
+                )
               : t("userApplication.aiInterview.noQuestionsFound")}
           </p>
           {searchQuery && (
@@ -1124,7 +1152,7 @@ function AiInterviewQuestionsTab({
               type="button"
               onClick={() => setSearchQuery("")}
               className="mt-1 rounded-xl bg-indigo-50 px-3.5 py-1.5 text-xs font-extrabold text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400">
-              Xóa từ khóa tìm kiếm
+              {t("userApplication.aiInterview.clearSearchKeyword", "Clear search keyword")}
             </button>
           )}
         </div>
@@ -1161,11 +1189,19 @@ function AiInterviewQuestionsTab({
                     <div className="space-y-1.5">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-md bg-indigo-100/90 px-2.5 py-0.5 text-xs font-black text-indigo-800 uppercase dark:bg-indigo-950/80 dark:text-indigo-300">
-                          Chủ đề phỏng vấn #{cluster.id}
+                          {t(
+                            "userApplication.aiInterview.interviewTopic",
+                            "Interview Topic #{{id}}",
+                            { id: cluster.id }
+                          )}
                         </span>
                         {cluster.followups.length > 0 && (
                           <span className="rounded-md bg-purple-100/90 px-2.5 py-0.5 text-xs font-bold text-purple-800 dark:bg-purple-950/80 dark:text-purple-300">
-                            +{cluster.followups.length} câu hỏi bồi
+                            +{cluster.followups.length}{" "}
+                            {t(
+                              "userApplication.aiInterview.followUpQuestions",
+                              "follow-up questions"
+                            )}
                           </span>
                         )}
                       </div>
@@ -1596,39 +1632,30 @@ function AiInterviewResultView({
 
     return [
       {
-        label: t(
-          "userApplication.aiInterview.technicalCore",
-          "Kỹ năng Chuyên môn cốt lõi (Technical Core)"
-        ),
+        label: t("userApplication.aiInterview.technicalCore", "Technical Core Skills"),
         score: Math.round(coreAvg * 10),
         color: "bg-indigo-600",
       },
       {
         label: t(
           "userApplication.aiInterview.problemSolving",
-          "Tư duy Phản biện & Đào sâu (Problem Solving)"
+          "Critical Thinking & Problem Solving"
         ),
         score: Math.round(followAvg * 10),
         color: "bg-purple-600",
       },
       {
-        label: t(
-          "userApplication.aiInterview.terminologyAccuracy",
-          "Độ chính xác thuật ngữ (Terminology)"
-        ),
+        label: t("userApplication.aiInterview.terminologyAccuracy", "Terminology Accuracy"),
         score: termAccuracy,
         color: "bg-emerald-600",
       },
       {
-        label: t(
-          "userApplication.aiInterview.communication",
-          "Phong thái & Giao tiếp (Communication)"
-        ),
+        label: t("userApplication.aiInterview.communication", "Communication & Presence"),
         score: commScore,
         color: "bg-amber-600",
       },
     ];
-  }, [questions, aiScoreVal]);
+  }, [questions, aiScoreVal, t]);
 
   if (sessionLoading) {
     return (
@@ -1700,11 +1727,12 @@ function AiInterviewResultView({
                 <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                   <Clock3 className="h-4 w-4 text-indigo-500" />
                   <span className="text-[11px] font-bold">
-                    {t("userApplication.aiInterview.duration", "Thời lượng")}
+                    {t("userApplication.aiInterview.duration", "Duration")}
                   </span>
                 </div>
                 <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
-                  {sessionDurationText || "15 phút"}
+                  {sessionDurationText ||
+                    `15 ${t("userApplication.aiInterview.minutes", "minutes")}`}
                 </p>
               </Card>
 
@@ -1716,7 +1744,9 @@ function AiInterviewResultView({
                   </span>
                 </div>
                 <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
-                  {questions.length} câu hỏi
+                  {t("userApplication.aiInterview.questionsCount", "{{count}} questions", {
+                    count: questions.length,
+                  })}
                 </p>
               </Card>
 
@@ -1740,7 +1770,9 @@ function AiInterviewResultView({
                   </span>
                 </div>
                 <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
-                  {allExtractedKeywords.length} thuật ngữ
+                  {t("userApplication.aiInterview.termsCount", "{{count}} terms", {
+                    count: allExtractedKeywords.length,
+                  })}
                 </p>
               </Card>
             </div>
@@ -1757,13 +1789,13 @@ function AiInterviewResultView({
                       <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
                         {t(
                           "userApplication.aiInterview.multidimensionalCompetencyAnalysis",
-                          "Phân tích Chỉ số Năng lực Đa chiều"
+                          "Multidimensional Competency Analysis"
                         )}
                       </h4>
                       <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                         {t(
                           "userApplication.aiInterview.detailedEvaluationBasedOnContentAndResponseStyle",
-                          "Đánh giá chi tiết dựa trên nội dung & phong thái trả lời"
+                          "Detailed evaluation based on answer content & style"
                         )}
                       </p>
                     </div>
@@ -1801,7 +1833,11 @@ function AiInterviewResultView({
                   <div className="flex items-center gap-2">
                     <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                     <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
-                      Bộ Từ khóa Công nghệ Trích xuất ({allExtractedKeywords.length})
+                      {t(
+                        "userApplication.aiInterview.extractedTechKeywords",
+                        "Extracted Tech Keywords ({{count}})",
+                        { count: allExtractedKeywords.length }
+                      )}
                     </h4>
                   </div>
                   {allExtractedKeywords.length > 12 && (
@@ -1809,7 +1845,11 @@ function AiInterviewResultView({
                       type="button"
                       onClick={() => setShowAllKeywords((prev) => !prev)}
                       className="text-xs font-bold text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
-                      {showAllKeywords ? "Thu gọn" : `Xem tất cả (${allExtractedKeywords.length})`}
+                      {showAllKeywords
+                        ? t("userApplication.aiInterview.collapse", "Collapse")
+                        : t("userApplication.aiInterview.viewAll", "View all ({{count}})", {
+                            count: allExtractedKeywords.length,
+                          })}
                     </button>
                   )}
                 </div>
@@ -1952,10 +1992,10 @@ function AiInterviewResultView({
               <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-xs dark:border-slate-800 dark:bg-slate-950/40">
                 <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                   <span>
-                    {t("userApplication.aiInterview.totalQuestionsLabel", "Tổng số câu hỏi:")}
+                    {t("userApplication.aiInterview.totalQuestionsLabel", "Total questions:")}
                   </span>
                   <span className="font-extrabold text-slate-950 dark:text-white">
-                    {questions.length} {t("userApplication.aiInterview.questions", "câu")}
+                    {questions.length} {t("userApplication.aiInterview.questionsUnit", "questions")}
                   </span>
                 </div>
               </div>
@@ -2017,8 +2057,8 @@ function AiInterviewResultView({
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white">
                   {sessionData?.sessionConfig?.duration_minutes
-                    ? `${sessionData.sessionConfig.duration_minutes} phút`
-                    : "30 phút"}
+                    ? `${sessionData.sessionConfig.duration_minutes} ${t("userApplication.aiInterview.minutes", "minutes")}`
+                    : `30 ${t("userApplication.aiInterview.minutes", "minutes")}`}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
@@ -2457,11 +2497,11 @@ export function AiInterviewModule({
                   />
                   <SummaryItem
                     icon={<Clock3 className="h-4 w-4" />}
-                    label={t("userApplication.aiInterview.duration", "Thời lượng")}
+                    label={t("userApplication.aiInterview.duration", "Duration")}
                     value={
                       selectedDuration
-                        ? `${selectedDuration} ${t("userApplication.aiInterview.minutes", "phút")}`
-                        : t("userApplication.aiInterview.perSlot", "Theo slot")
+                        ? `${selectedDuration} ${t("userApplication.aiInterview.minutes", "minutes")}`
+                        : t("userApplication.aiInterview.perSlot", "Per slot")
                     }
                   />
                   <SummaryItem
@@ -2544,12 +2584,30 @@ export function AiInterviewModule({
             <Card className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
               <h3 className="flex items-center gap-2 text-sm font-extrabold text-slate-950 dark:text-white">
                 <Sparkles className="h-4 w-4 text-amber-500" />
-                Chuẩn bị trước khi đến Kiosk
+                {t(
+                  "userApplication.aiInterview.prepareBeforeKiosk",
+                  "Prepare Before Coming to Kiosk"
+                )}
               </h3>
               <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                <p>Đến trước giờ hẹn khoảng 10-15 phút để kiểm tra thiết bị.</p>
-                <p>Mang theo mã PIN phiên phỏng vấn và giấy tờ cần thiết nếu công ty yêu cầu.</p>
-                <p>Giữ môi trường yên tĩnh, trả lời rõ ràng để AI ghi nhận tốt hơn.</p>
+                <p>
+                  {t(
+                    "userApplication.aiInterview.prepareTip1",
+                    "Arrive about 10-15 minutes before your appointment to check equipment."
+                  )}
+                </p>
+                <p>
+                  {t(
+                    "userApplication.aiInterview.prepareTip2",
+                    "Bring your interview session PIN code and any required documents if the company requires."
+                  )}
+                </p>
+                <p>
+                  {t(
+                    "userApplication.aiInterview.prepareTip3",
+                    "Keep a quiet environment and answer clearly for better AI recording."
+                  )}
+                </p>
               </div>
             </Card>
           </aside>
