@@ -431,7 +431,7 @@ function AwaitingMentorStep() {
       <div className="bg-white p-6 sm:p-7 dark:bg-slate-950/40">
         <div className="mb-4 flex items-center justify-between">
           <h4 className="text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-            Quy trình các bước tiếp theo
+            {t("userApplication.mentorReview.nextStepsTitle", "Quy trình các bước tiếp theo")}
           </h4>
         </div>
 
@@ -445,14 +445,17 @@ function AwaitingMentorStep() {
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
-                  Đang xử lý
+                  {t("userApplication.mentorReview.nextStepInProgress", "Đang xử lý")}
                 </span>
               </div>
               <h5 className="mt-3 text-xs font-bold text-slate-950 dark:text-white">
-                1. Admin đề xuất Mentor
+                {t("userApplication.mentorReview.nextStep1Title", "1. Admin đề xuất Mentor")}
               </h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
-                Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí.
+                {t(
+                  "userApplication.mentorReview.nextStep1Desc",
+                  "Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí."
+                )}
               </p>
             </div>
           </div>
@@ -465,14 +468,17 @@ function AwaitingMentorStep() {
                   <UserCheck className="h-4 w-4" />
                 </div>
                 <span className="inline-flex items-center rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400">
-                  Bước tiếp theo
+                  {t("userApplication.mentorReview.nextStepUpcoming", "Bước tiếp theo")}
                 </span>
               </div>
               <h5 className="mt-3 text-xs font-bold text-slate-800 dark:text-slate-200">
-                2. Bạn chọn Mentor
+                {t("userApplication.mentorReview.nextStep2Title", "2. Bạn chọn Mentor")}
               </h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn.
+                {t(
+                  "userApplication.mentorReview.nextStep2Desc",
+                  "Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn."
+                )}
               </p>
             </div>
           </div>
@@ -485,14 +491,17 @@ function AwaitingMentorStep() {
                   <CalendarCheck className="h-4 w-4" />
                 </div>
                 <span className="inline-flex items-center rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400">
-                  Bước 3
+                  {t("userApplication.mentorReview.nextStep3Badge", "Bước 3")}
                 </span>
               </div>
               <h5 className="mt-3 text-xs font-bold text-slate-800 dark:text-slate-200">
-                3. Đặt lịch & Phỏng vấn
+                {t("userApplication.mentorReview.nextStep3Title", "3. Đặt lịch & Phỏng vấn")}
               </h5>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến.
+                {t(
+                  "userApplication.mentorReview.nextStep3Desc",
+                  "Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến."
+                )}
               </p>
             </div>
           </div>

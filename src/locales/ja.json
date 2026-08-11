@@ -5334,7 +5334,17 @@
       "stepWaitingShort": "待機",
       "stepSelectShort": "選択",
       "stepScheduleShort": "予約",
-      "onlineInterviewStation": "[JA] userApplication.mentorReview.onlineInterviewStation"
+      "onlineInterviewStation": "オンライン面接会場",
+      "nextStepsTitle": "次のステップの流れ",
+      "nextStepInProgress": "処理中",
+      "nextStep1Title": "1. 管理者がメンターを提案",
+      "nextStep1Desc": "管理者がプロフィールを審査し、ポジションに最適なスキルを持つメンターを任命します。",
+      "nextStepUpcoming": "次のステップ",
+      "nextStep2Title": "2. あなたがメンターを選択",
+      "nextStep2Desc": "スキルプロフィールと評価を確認し、面接したいメンターを選びます。",
+      "nextStep3Badge": "ステップ 3",
+      "nextStep3Title": "3. 予約と面接",
+      "nextStep3Desc": "都合の良い時間を選び、1対1のオンライン ビデオ面接ルームに入ります。"
     },
     "roundNumber": "ラウンド {{number}}"
   },

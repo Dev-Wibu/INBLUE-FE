@@ -5404,7 +5404,17 @@
       "stepWaitingShort": "Waiting",
       "stepSelectShort": "Select",
       "stepScheduleShort": "Schedule",
-      "onlineInterviewStation": "Online Interview Station"
+      "onlineInterviewStation": "Online Interview Station",
+      "nextStepsTitle": "Next Steps Roadmap",
+      "nextStepInProgress": "In progress",
+      "nextStep1Title": "1. Admin proposes Mentors",
+      "nextStep1Desc": "Admin reviews the profile and assigns mentors whose skills best match the position.",
+      "nextStepUpcoming": "Next step",
+      "nextStep2Title": "2. You select a Mentor",
+      "nextStep2Desc": "Browse expertise profiles, ratings and choose the mentor you want to interview with.",
+      "nextStep3Badge": "Step 3",
+      "nextStep3Title": "3. Schedule & Interview",
+      "nextStep3Desc": "Pick a convenient time slot and enter the 1-1 online video interview room."
     },
     "roundNumber": "Round {{number}}"
   },

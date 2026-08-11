@@ -5400,7 +5400,17 @@
       "stepWaitingShort": "Chờ",
       "stepSelectShort": "Chọn",
       "stepScheduleShort": "Đặt lịch",
-      "onlineInterviewStation": "[VI] userApplication.mentorReview.onlineInterviewStation"
+      "onlineInterviewStation": "Trạm Phỏng vấn trực tuyến",
+      "nextStepsTitle": "Quy trình các bước tiếp theo",
+      "nextStepInProgress": "Đang xử lý",
+      "nextStep1Title": "1. Admin đề xuất Mentor",
+      "nextStep1Desc": "Admin xem xét hồ sơ và chỉ định các mentor có kỹ năng phù hợp nhất với vị trí.",
+      "nextStepUpcoming": "Bước tiếp theo",
+      "nextStep2Title": "2. Bạn chọn Mentor",
+      "nextStep2Desc": "Xem hồ sơ năng lực, đánh giá và chọn mentor bạn mong muốn phỏng vấn.",
+      "nextStep3Badge": "Bước 3",
+      "nextStep3Title": "3. Đặt lịch & Phỏng vấn",
+      "nextStep3Desc": "Chọn thời gian rảnh thuận tiện và vào phòng họp video 1-1 trực tuyến."
     },
     "roundNumber": "Vòng {{number}}"
   },
