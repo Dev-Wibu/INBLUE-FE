@@ -85,7 +85,7 @@ export function CommunityFeedPage() {
   }, [hasMore, isFetchingMore, loadMore]);
   return (
     <div className="-m-4 min-h-full bg-slate-50/70 px-4 py-5 sm:-m-6 sm:px-6 lg:-m-8 lg:px-8 dark:bg-slate-950">
-      <div className="mx-auto grid w-full max-w-[1500px] gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="mx-auto grid w-full max-w-[1280px] gap-5 xl:grid-cols-[minmax(0,940px)_260px]">
         <main className="min-w-0 space-y-5">
           <Card className="overflow-hidden rounded-2xl border-slate-200/80 bg-white py-0 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
             <div className="flex flex-wrap items-center gap-3 px-4 py-3.5 sm:px-5">
@@ -245,7 +245,7 @@ function CommunityChatRail() {
 
   return (
     <aside className="hidden xl:block">
-      <Card className="sticky top-5 rounded-2xl border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+      <Card className="sticky top-5 h-fit rounded-2xl border-slate-200/80 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
             <MessageCircle className="h-4 w-4 text-indigo-500" />
@@ -260,14 +260,14 @@ function CommunityChatRail() {
           </button>
         </div>
 
-        <div className="mt-4 space-y-1">
+        <div className="mt-3 space-y-0.5">
           {contacts.length > 0 ? (
             contacts.map((contact) => (
               <button
                 key={contact.id}
                 type="button"
                 onClick={() => setSelectedContact(contact)}
-                className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
+                className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
                 <span className="relative shrink-0">
                   <Avatar className="h-9 w-9">
                     <AvatarImage src={contact.avatarUrl ?? undefined} alt={contact.name} />

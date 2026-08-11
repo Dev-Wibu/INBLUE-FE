@@ -130,12 +130,12 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
 
         {post?.coverImgUrl && (
           <div
-            className="flex max-h-[480px] w-full cursor-pointer items-center justify-center overflow-hidden bg-slate-950/5 dark:bg-black/20"
+            className="flex max-h-[720px] w-full cursor-pointer items-center justify-center overflow-hidden bg-slate-950/[0.04] dark:bg-black/20"
             onClick={() => setModalOpen(true)}>
             <img
               src={post.coverImgUrl}
               alt={post.title ?? ""}
-              className="max-h-[480px] w-full object-cover transition-transform duration-300 hover:scale-[1.015]"
+              className="max-h-[720px] w-full object-contain transition-transform duration-300 hover:scale-[1.01]"
             />
           </div>
         )}
