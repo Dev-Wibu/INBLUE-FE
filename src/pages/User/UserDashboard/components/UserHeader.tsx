@@ -19,6 +19,7 @@ import {
   Bot,
   Briefcase,
   Building2,
+  ChevronRight,
   FileText,
   LayoutDashboard,
   Menu,
@@ -163,7 +164,7 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
               label: String(c.name ?? ""),
               hint: c.description ? String(c.description) : undefined,
               type: "company" as const,
-              to: `/enterprise/companies`,
+              to: `/user?tab=companies`,
             }))
             .filter((c) => !trimmed || c.label.toLowerCase().includes(trimmed))
             .slice(0, 5)
@@ -176,7 +177,7 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
               label: String(p.title ?? ""),
               hint: p.summary ? String(p.summary) : undefined,
               type: "post" as const,
-              to: `/resources/blog`,
+              to: `/user?tab=homeFeed`,
             }))
             .filter((p) => !trimmed || p.label.toLowerCase().includes(trimmed))
             .slice(0, 5)
@@ -224,79 +225,85 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex h-full flex-1 items-center gap-4">
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/85 px-4 shadow-2xs backdrop-blur-md transition-all sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800/80 dark:bg-slate-950/85">
+        <div className="flex h-full flex-1 items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="-ml-2 h-9 w-9 text-slate-500 hover:text-slate-900 md:hidden dark:text-slate-400 dark:hover:text-white"
+            className="-ml-2 h-9 w-9 text-slate-500 hover:bg-slate-100 hover:text-slate-900 md:hidden dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
             onClick={onToggleSidebar}>
             <Menu className="h-5 w-5" />
           </Button>
 
-          {/* Breadcrumb style title for Desktop */}
-          <nav className="hidden sm:flex" aria-label="Breadcrumb">
-            <ol role="list" className="flex items-center space-x-2">
+          {/* Breadcrumb Title Container for Desktop */}
+          <nav className="hidden items-center sm:flex" aria-label="Breadcrumb">
+            <ol role="list" className="flex items-center space-x-2 text-xs font-semibold">
               <li>
-                <span className="text-sm font-medium text-slate-400 dark:text-slate-500">
+                <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 dark:bg-slate-800/80 dark:text-slate-300">
                   {category || t("common.user", "User")}
                 </span>
               </li>
               <li>
-                <span className="mx-2 text-lg leading-none text-slate-300 dark:text-slate-600">
-                  /
-                </span>
+                <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600" />
               </li>
-              <li>
-                <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+              <li className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-500"></span>
+                </span>
+                <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
                   {title}
                 </span>
               </li>
             </ol>
           </nav>
 
-          {/* Mobile title */}
-          <h1 className="truncate text-lg font-semibold tracking-tight text-slate-900 sm:hidden dark:text-white">
-            {title}
-          </h1>
+          {/* Mobile Title */}
+          <div className="flex items-center gap-2 sm:hidden">
+            <span className="relative flex h-2 w-2">
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-500"></span>
+            </span>
+            <h1 className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">
+              {title}
+            </h1>
+          </div>
         </div>
 
-        <div className="flex h-full items-center gap-x-4 lg:gap-x-6">
-          {/* Quick Search Popover */}
+        <div className="flex h-full items-center gap-x-3.5 sm:gap-x-4">
+          {/* Quick Search Command Trigger */}
           <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
             <PopoverTrigger asChild>
               <button
                 type="button"
                 aria-label={t("common.quickSearch", "Tìm kiếm nhanh")}
-                className="group relative hidden items-center md:flex">
-                <Search className="absolute left-3 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-indigo-500" />
-                <span
-                  className={cn(
-                    "block w-48 cursor-pointer rounded-md border-0 bg-slate-100 py-1.5 pr-10 pl-9 text-left text-sm text-slate-400 ring-1 ring-transparent transition-all ring-inset",
-                    "lg:w-64 dark:bg-slate-900 dark:text-slate-500"
-                  )}>
+                className={cn(
+                  "group relative hidden items-center md:flex",
+                  "h-10 w-52 rounded-xl border border-slate-200/90 bg-slate-50/80 px-3 py-2 text-left text-xs font-medium shadow-2xs transition-all",
+                  "hover:border-indigo-300 hover:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none",
+                  "lg:w-64 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-indigo-500/40 dark:hover:bg-slate-900"
+                )}>
+                <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
+                <span className="truncate text-slate-400 dark:text-slate-500">
                   {t("common.quickSearch", "Tìm kiếm nhanh...")}
                 </span>
-                <div className="absolute right-2 flex items-center">
-                  <kbd className="hidden rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline-block dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
-                    ⌘K
-                  </kbd>
-                </div>
+                <span className="ml-auto inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10.5px] font-semibold text-slate-400 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-400">
+                  <span className="text-[9px]">⌘</span>K
+                </span>
               </button>
             </PopoverTrigger>
             <PopoverContent
               align="end"
-              className="w-[28rem] p-0"
+              className="w-[28rem] rounded-2xl border-slate-200/90 p-0 shadow-xl dark:border-slate-800/80 dark:bg-slate-950"
               onOpenAutoFocus={(e) => e.preventDefault()}>
-              <Command shouldFilter={false}>
+              <Command shouldFilter={false} className="rounded-2xl">
                 <CommandInput
                   value={searchQuery}
                   onValueChange={setSearchQuery}
                   placeholder={t("common.quickSearch", "Tìm kiếm nhanh...")}
                 />
-                <CommandList>
+                <CommandList className="max-h-[320px] p-1.5">
                   {isLoading && (
-                    <div className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center justify-center py-6 text-xs text-slate-500 dark:text-slate-400">
                       {t("common.loading", "Đang tải...")}
                     </div>
                   )}
@@ -310,12 +317,15 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
                         <CommandItem
                           key={`mentor-${m.id}`}
                           value={`mentor-${m.id}`}
-                          onSelect={() => handleSelect(m.to)}>
-                          <UserCog className="h-4 w-4 text-orange-500" />
+                          onSelect={() => handleSelect(m.to)}
+                          className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                          <UserCog className="h-4 w-4 shrink-0 text-amber-500" />
                           <div className="ml-2 flex min-w-0 flex-col">
-                            <span className="truncate font-medium">{m.label}</span>
+                            <span className="truncate font-semibold text-slate-900 dark:text-slate-100">
+                              {m.label}
+                            </span>
                             {m.hint && (
-                              <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                              <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
                                 {m.hint}
                               </span>
                             )}
@@ -331,12 +341,15 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
                         <CommandItem
                           key={`company-${c.id}`}
                           value={`company-${c.id}`}
-                          onSelect={() => handleSelect(c.to)}>
-                          <Building2 className="h-4 w-4 text-indigo-500" />
+                          onSelect={() => handleSelect(c.to)}
+                          className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                          <Building2 className="h-4 w-4 shrink-0 text-indigo-500" />
                           <div className="ml-2 flex min-w-0 flex-col">
-                            <span className="truncate font-medium">{c.label}</span>
+                            <span className="truncate font-semibold text-slate-900 dark:text-slate-100">
+                              {c.label}
+                            </span>
                             {c.hint && (
-                              <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                              <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
                                 {c.hint}
                               </span>
                             )}
@@ -352,12 +365,15 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
                         <CommandItem
                           key={`post-${p.id}`}
                           value={`post-${p.id}`}
-                          onSelect={() => handleSelect(p.to)}>
-                          <FileText className="h-4 w-4 text-emerald-500" />
+                          onSelect={() => handleSelect(p.to)}
+                          className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                          <FileText className="h-4 w-4 shrink-0 text-emerald-500" />
                           <div className="ml-2 flex min-w-0 flex-col">
-                            <span className="truncate font-medium">{p.label}</span>
+                            <span className="truncate font-semibold text-slate-900 dark:text-slate-100">
+                              {p.label}
+                            </span>
                             {p.hint && (
-                              <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                              <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
                                 {p.hint}
                               </span>
                             )}
@@ -369,7 +385,7 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
 
                   {!isLoading && navigationMatches.length > 0 && (
                     <>
-                      <CommandSeparator />
+                      <CommandSeparator className="my-1" />
                       <CommandGroup heading={t("common.pages", "Trang")}>
                         {navigationMatches.map((n) => {
                           const navItem = STATIC_NAVIGATION.find((i) => i.to === n.to);
@@ -378,9 +394,12 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
                             <CommandItem
                               key={`nav-${n.id}`}
                               value={`nav-${n.id}`}
-                              onSelect={() => handleSelect(n.to)}>
-                              <IconComp className="h-4 w-4 text-slate-500" />
-                              <span className="ml-2">{n.label}</span>
+                              onSelect={() => handleSelect(n.to)}
+                              className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                              <IconComp className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
+                              <span className="ml-2 font-semibold text-slate-900 dark:text-slate-100">
+                                {n.label}
+                              </span>
                             </CommandItem>
                           );
                         })}
@@ -393,25 +412,26 @@ export function UserHeader({ title, category, onToggleSidebar }: UserHeaderProps
           </Popover>
 
           <div
-            className="hidden h-6 w-px bg-slate-200 sm:block dark:bg-slate-800"
+            className="hidden h-5 w-px bg-slate-200/80 sm:block dark:bg-slate-800/80"
             aria-hidden="true"
           />
 
-          {/* Actions Pill Container */}
-          <div className="flex items-center gap-1 rounded-full bg-slate-50 p-1 ring-1 ring-slate-200/50 dark:bg-slate-900 dark:ring-slate-800">
-            <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:hover:bg-white [&_button]:hover:shadow-sm dark:[&_button]:hover:bg-slate-800">
+          {/* Synchronized Action Controls Cluster */}
+          <div className="flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-50/70 p-1 shadow-2xs transition-all dark:border-slate-800/80 dark:bg-slate-900/60">
+            <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:transition-all [&_button]:hover:bg-white [&_button]:hover:shadow-2xs dark:[&_button]:hover:bg-slate-800">
               <NotificationBell notificationsPath="/user?tab=notifications" />
             </div>
 
-            <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:hover:bg-white [&_button]:hover:shadow-sm dark:[&_button]:hover:bg-slate-800">
+            <div className="flex h-8 w-8 items-center justify-center [&_button]:h-8 [&_button]:w-8 [&_button]:rounded-full [&_button]:transition-all [&_button]:hover:bg-white [&_button]:hover:shadow-2xs dark:[&_button]:hover:bg-slate-800">
               <LanguageToggle />
             </div>
 
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 rounded-full text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-              onClick={() => setIsSettingsOpen(true)}>
+              className="h-8 w-8 rounded-full text-slate-500 transition-all hover:bg-white hover:text-indigo-600 hover:shadow-2xs dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+              onClick={() => setIsSettingsOpen(true)}
+              title={t("userAccount.quickSettings", "Cài đặt")}>
               <Settings className="h-4 w-4" />
             </Button>
           </div>
