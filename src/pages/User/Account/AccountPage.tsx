@@ -20,6 +20,7 @@ import {
   Circle,
   FileText,
   Lightbulb,
+  ListOrdered,
   Mail,
   Pencil,
   Receipt,
@@ -485,57 +486,69 @@ export function AccountPage() {
             )}
           </div>
 
-          {/* Right Column: Dynamic Widget */}
-          <div className="hidden lg:col-span-2 lg:block">
+          {/* Right Column: Table of Contents / Dynamic Widget */}
+          <div className="z-10 hidden lg:sticky lg:top-6 lg:col-span-2 lg:block lg:self-start">
             {activeTab === "candidateProfile" && (
-              <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm lg:sticky lg:top-4 lg:self-start dark:border-slate-800/60 dark:bg-slate-900/40">
-                <h4 className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  {t("userAccount.contents")}
-                </h4>
+              <div className="rounded-2xl border border-slate-200/90 bg-white p-4.5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900">
+                <div className="mb-3.5 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                    <ListOrdered className="h-3.5 w-3.5" />
+                  </div>
+                  <h4 className="text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-white">
+                    {t("userAccount.contents")}
+                  </h4>
+                </div>
                 <nav className="space-y-1">
                   {candidateProfile?.introduction && (
                     <a
                       href="#intro"
                       onClick={(e) => scrollToSection(e, "intro")}
-                      className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                      {t("common.introduce")}
+                      className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
+                      <span>{t("common.introduce")}</span>
+                      <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
                     </a>
                   )}
                   <a
                     href="#skills"
                     onClick={(e) => scrollToSection(e, "skills")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.technicalSkills")}
+                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
+                    <span>{t("common.technicalSkills")}</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
                   </a>
                   <a
                     href="#experience"
                     onClick={(e) => scrollToSection(e, "experience")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.workExperience")}
+                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
+                    <span>{t("common.workExperience")}</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
                   </a>
                   <a
                     href="#projects"
                     onClick={(e) => scrollToSection(e, "projects")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.project")}
+                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
+                    <span>{t("common.project")}</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
                   </a>
                   <a
                     href="#education"
                     onClick={(e) => scrollToSection(e, "education")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.education")}
+                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
+                    <span>{t("common.education")}</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
                   </a>
                   <a
                     href="#certifications"
                     onClick={(e) => scrollToSection(e, "certifications")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.certifications")}
+                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
+                    <span>{t("common.certifications")}</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
                   </a>
                   <a
                     href="#achievements"
                     onClick={(e) => scrollToSection(e, "achievements")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.achievements")}
+                    className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-all hover:bg-indigo-50/80 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300">
+                    <span>{t("common.achievements")}</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
                   </a>
                 </nav>
               </div>
