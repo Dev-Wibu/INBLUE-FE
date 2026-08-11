@@ -214,7 +214,7 @@ export function FeedbackDetailPage() {
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-emerald-600">
                     <Target className="h-4 w-4" /> {t("common.situation")}
                   </h4>
-                  <p className="rounded bg-emerald-50 p-3 text-sm dark:bg-emerald-900/20">
+                  <p className="bg-background rounded p-3 text-sm dark:bg-slate-800">
                     {review.situationNote}
                   </p>
                 </div>
@@ -225,7 +225,7 @@ export function FeedbackDetailPage() {
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-blue-600">
                     <ClipboardList className="h-4 w-4" /> {t("common.mission")}
                   </h4>
-                  <p className="rounded bg-blue-50 p-3 text-sm dark:bg-blue-900/20">
+                  <p className="bg-background rounded p-3 text-sm dark:bg-slate-800">
                     {review.taskNote}
                   </p>
                 </div>
@@ -236,7 +236,7 @@ export function FeedbackDetailPage() {
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-purple-600">
                     <Zap className="h-4 w-4" /> {t("common.act")}
                   </h4>
-                  <p className="rounded bg-purple-50 p-3 text-sm dark:bg-purple-900/20">
+                  <p className="bg-background rounded p-3 text-sm dark:bg-slate-800">
                     {review.actionNote}
                   </p>
                 </div>
@@ -247,7 +247,7 @@ export function FeedbackDetailPage() {
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-amber-600">
                     <CheckCircle2 className="h-4 w-4" /> {t("common.result")}
                   </h4>
-                  <p className="rounded bg-amber-50 p-3 text-sm dark:bg-amber-900/20">
+                  <p className="bg-background rounded p-3 text-sm dark:bg-slate-800">
                     {review.resultNote}
                   </p>
                 </div>
@@ -259,7 +259,7 @@ export function FeedbackDetailPage() {
           {hasAdditionalNotes && (
             <div className="grid gap-3 sm:grid-cols-3">
               {review.strength && (
-                <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
+                <div className="bg-background rounded-lg p-3 dark:bg-slate-800">
                   <h4 className="mb-1 flex items-center gap-1 text-sm font-medium text-green-700 dark:text-green-400">
                     <ThumbsUp className="h-4 w-4" /> {t("common.strengths")}
                   </h4>
@@ -268,7 +268,7 @@ export function FeedbackDetailPage() {
               )}
 
               {review.weakness && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                <div className="bg-background rounded-lg border border-red-200 p-3 dark:border-red-800 dark:bg-slate-800">
                   <h4 className="mb-1 flex items-center gap-1 text-sm font-medium text-red-700 dark:text-red-400">
                     <AlertTriangle className="h-4 w-4" /> {t("common.pointsForImprovement")}
                   </h4>
@@ -277,7 +277,7 @@ export function FeedbackDetailPage() {
               )}
 
               {review.improve && (
-                <div className="rounded-lg bg-indigo-50 p-3 dark:bg-indigo-900/20">
+                <div className="bg-background rounded-lg p-3 dark:bg-slate-800">
                   <h4 className="mb-1 flex items-center gap-1 text-sm font-medium text-indigo-700 dark:text-indigo-400">
                     <Lightbulb className="h-4 w-4" /> {t("common.suggestedImprovements1")}
                   </h4>
