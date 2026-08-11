@@ -71,6 +71,20 @@ export type JourneySummary = {
   traceId?: string;
 };
 
+export type SummaryAudioItem = {
+  id: number;
+  applicationId: number;
+  narrative: string;
+  competencyChart: CompetencyChart;
+  swecomAssessments: SwecomAssessment[];
+  developmentRecommendations: DevelopmentRecommendation[];
+  generatedAt?: string;
+  createdAt?: string;
+  script?: string;
+  audioUrl?: string;
+  traceId?: string;
+};
+
 export type CompetencyResult = {
   chart: CompetencyChart;
   journey: JourneySummary | null;
@@ -127,6 +141,28 @@ export async function getApplicationsByEmail(email: string): Promise<CompetencyA
   );
 
   return body.data ?? [];
+}
+
+export async function getSummaryAudioByEmail(email: string): Promise<SummaryAudioItem[]> {
+  const body = await requestJson<{ data?: SummaryAudioItem[] }>(
+    `/api/applications/summary-audio/${encodeURIComponent(email.trim())}`,
+    "Unable to find competency summaries for this email."
+  );
+
+  return body.data ?? [];
+}
+
+export function parseSummaryAudioScript(value?: string) {
+  if (!value?.trim()) return undefined;
+
+  try {
+    const parsed = JSON.parse(value) as { script?: unknown };
+    if (typeof parsed.script === "string" && parsed.script.trim()) return parsed.script.trim();
+  } catch {
+    // The API may return either the JSON wrapper or the script text itself.
+  }
+
+  return value.trim();
 }
 
 export async function getCompetencyChart(applicationId: number): Promise<CompetencyChart> {

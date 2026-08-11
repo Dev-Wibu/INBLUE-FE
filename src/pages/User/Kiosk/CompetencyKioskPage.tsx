@@ -39,33 +39,18 @@ import {
 } from "@/lib/tts-playground";
 import {
   buildHoloboxCompetencyScript,
-  CompetencyChartError,
   competencyLevelLabel,
-  getApplicationsByEmail,
-  getCompetencyResult,
-  type CompetencyApplication,
+  getSummaryAudioByEmail,
+  parseSummaryAudioScript,
   type CompetencyChart,
   type JourneySummary,
+  type SummaryAudioItem,
 } from "@/services/competency-chart.manager";
 
 import { HoloboxThreeRobotPage } from "./HoloboxThreeRobotPage";
 
 type KioskStep = "search" | "applications" | "result";
 type HoloboxDimension = "overview" | "technical" | "behavioral" | "journey";
-
-const statusLabel: Record<CompetencyApplication["status"], string> = {
-  IN_PROGRESS: "In progress",
-  PASSED: "Passed",
-  FAILED: "Failed",
-  SOFT_FAILED: "Needs review",
-};
-
-const statusClass: Record<CompetencyApplication["status"], string> = {
-  IN_PROGRESS: "bg-amber-50 text-amber-700 ring-amber-200",
-  PASSED: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  FAILED: "bg-rose-50 text-rose-700 ring-rose-200",
-  SOFT_FAILED: "bg-orange-50 text-orange-700 ring-orange-200",
-};
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-GB", {
@@ -258,17 +243,17 @@ function SearchStep({
 
 function ApplicationsStep({
   email,
-  applications,
+  summaries,
   selectedId,
   isLoading,
   onSelect,
   onBack,
 }: {
   email: string;
-  applications: CompetencyApplication[];
+  summaries: SummaryAudioItem[];
   selectedId: number | null;
   isLoading: boolean;
-  onSelect: (_application: CompetencyApplication) => void;
+  onSelect: (_summary: SummaryAudioItem) => void;
   onBack: () => void;
 }) {
   return (
@@ -282,43 +267,44 @@ function ApplicationsStep({
       </button>
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <p className="mb-2 text-sm font-medium text-cyan-700">
-            Found {applications.length} application{applications.length === 1 ? "" : "s"}
+          <p className="mb-2 text-sm font-medium text-orange-700">
+            Found {summaries.length} role{summaries.length === 1 ? "" : "s"}
           </p>
           <h1 className="text-3xl font-bold tracking-[-0.03em] text-slate-950 sm:text-4xl">
-            Choose an application to explore
+            Choose a role to explore
           </h1>
           <p className="mt-3 text-sm text-slate-500">
             Results for <span className="font-medium text-slate-700">{email}</span>
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          <Search className="h-4 w-4" /> Tap a result to continue
+          <Search className="h-4 w-4" /> Select a job title to continue
         </div>
       </div>
 
       <div className="space-y-3">
-        {applications.map((application) => {
-          const isSelected = selectedId === application.id;
+        {summaries.map((summary) => {
+          const isSelected = selectedId === summary.id;
+          const chart = summary.competencyChart;
+          const createdAt = summary.createdAt || summary.generatedAt;
           return (
             <button
               type="button"
-              key={application.id}
-              onClick={() => onSelect(application)}
+              key={summary.id}
+              onClick={() => onSelect(summary)}
               disabled={isLoading}
-              className={`group grid w-full grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border bg-white p-5 text-left transition sm:grid-cols-[auto_1fr_auto_auto] sm:gap-6 sm:p-6 ${isSelected ? "border-cyan-400 ring-4 ring-cyan-50" : "border-slate-200 hover:border-slate-400 hover:shadow-md"} ${isLoading && !isSelected ? "opacity-50" : ""}`}>
+              className={`group grid w-full grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border bg-white p-5 text-left transition sm:grid-cols-[auto_1fr_auto_auto] sm:gap-6 sm:p-6 ${isSelected ? "border-orange-400 bg-orange-50/30 ring-4 ring-orange-50" : "border-slate-200 hover:border-orange-300 hover:shadow-md"} ${isLoading && !isSelected ? "opacity-50" : ""}`}>
               <div
-                className={`flex h-11 w-11 items-center justify-center rounded-xl font-mono text-sm font-bold ${isSelected ? "bg-cyan-400 text-slate-950" : "bg-slate-100 text-slate-500"}`}>
-                #{application.id}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl font-mono text-sm font-bold ${isSelected ? "bg-orange-400 text-white" : "bg-slate-100 text-slate-500"}`}>
+                #{summary.applicationId}
               </div>
               <div className="min-w-0">
                 <p className="truncate font-semibold text-slate-950">
-                  {application.applicationName ?? `Application #${application.id}`}
+                  {chart.jobTitle || `Application #${summary.applicationId}`}
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Application #{application.id} · Job description{" "}
-                  <span className="font-mono text-slate-700">#{application.jdId}</span> · Created{" "}
-                  {formatDate(application.createdAt)}
+                <p className="mt-1 truncate text-sm text-slate-500">
+                  {chart.candidateName} · Application #{summary.applicationId}
+                  {createdAt ? ` · ${formatDate(createdAt)}` : ""}
                 </p>
               </div>
               <div className="hidden text-right sm:block">
@@ -326,19 +312,15 @@ function ApplicationsStep({
                   Overall score
                 </p>
                 <p className="mt-1 text-xl font-bold text-slate-950">
-                  {formatApplicationScore(application.overallScore)}
+                  {formatApplicationScore(chart.overallScore)}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span
-                  className={`hidden rounded-full px-2.5 py-1 text-xs font-semibold ring-1 sm:inline-flex ${statusClass[application.status]}`}>
-                  {statusLabel[application.status]}
-                </span>
                 {isSelected && isLoading ? (
-                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-cyan-200 border-t-cyan-600" />
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-orange-200 border-t-orange-600" />
                 ) : (
                   <ArrowRight
-                    className={`h-5 w-5 transition group-hover:translate-x-1 ${isSelected ? "text-cyan-600" : "text-slate-300"}`}
+                    className={`h-5 w-5 transition group-hover:translate-x-1 ${isSelected ? "text-orange-600" : "text-slate-300"}`}
                   />
                 )}
               </div>
@@ -363,115 +345,29 @@ function compactSkillName(value: string) {
     .replace(/^Team Participation$/i, "Teamwork");
 }
 
-function HoloboxRobot({
-  score,
-  level,
-  isSpeaking,
-  activeDimension,
-  onDimensionSelect,
-}: {
-  score: number;
-  level: string;
-  isSpeaking: boolean;
-  activeDimension: HoloboxDimension;
-  onDimensionSelect: (_dimension: HoloboxDimension) => void;
-}) {
-  const dimensions: Array<{ key: HoloboxDimension; label: string; detail: string }> = [
-    { key: "overview", label: "CORE", detail: "Overview" },
-    { key: "technical", label: "TECH", detail: "Technical" },
-    { key: "behavioral", label: "HUMAN", detail: "Behavioral" },
-    { key: "journey", label: "PATH", detail: "Journey" },
-  ];
-
-  return (
-    <div className={`holobox-robot-stage ${isSpeaking ? "is-speaking" : ""}`}>
-      <div className="holobox-robot-grid" aria-hidden="true" />
-      <div className="holobox-robot-halo holobox-robot-halo-one" aria-hidden="true" />
-      <div className="holobox-robot-halo holobox-robot-halo-two" aria-hidden="true" />
-      <div className="holobox-robot-orbit holobox-robot-orbit-one" aria-hidden="true">
-        <span className="holobox-robot-orb holobox-robot-orb-one" />
-      </div>
-      <div className="holobox-robot-orbit holobox-robot-orbit-two" aria-hidden="true">
-        <span className="holobox-robot-orb holobox-robot-orb-two" />
-      </div>
-
-      {dimensions.map((dimension) => (
-        <button
-          type="button"
-          key={dimension.key}
-          className={`holobox-dimension-node holobox-dimension-node-${dimension.key} ${activeDimension === dimension.key ? "is-active" : ""}`}
-          onClick={() => onDimensionSelect(dimension.key)}
-          aria-label={`Show ${dimension.detail} report`}>
-          <span className="holobox-dimension-node-dot" />
-          <span>
-            <strong>{dimension.label}</strong>
-            <small>{dimension.detail}</small>
-          </span>
-        </button>
-      ))}
-
-      <div className="holobox-robot-data holobox-robot-data-one">
-        <span>NEURAL LINK</span>
-        <strong>ACTIVE</strong>
-      </div>
-      <div className="holobox-robot-data holobox-robot-data-two">
-        <span>CORE INDEX</span>
-        <strong>{Math.round(score).toString().padStart(2, "0")}</strong>
-      </div>
-
-      <div className={`holobox-robot ${isSpeaking ? "is-speaking" : ""}`} aria-hidden="true">
-        <div className="holobox-robot-antenna">
-          <span />
-        </div>
-        <div className="holobox-robot-head">
-          <span className="holobox-robot-ear holobox-robot-ear-left" />
-          <span className="holobox-robot-ear holobox-robot-ear-right" />
-          <div className="holobox-robot-face">
-            <div className="holobox-robot-brow" />
-            <div className="holobox-robot-eyes">
-              <span />
-              <span />
-            </div>
-            <div className="holobox-robot-mouth" />
-            <div className="holobox-robot-scanline" />
-          </div>
-        </div>
-        <div className="holobox-robot-neck" />
-        <div className="holobox-robot-body">
-          <div className="holobox-robot-shoulder holobox-robot-shoulder-left" />
-          <div className="holobox-robot-shoulder holobox-robot-shoulder-right" />
-          <div className="holobox-robot-chest">
-            <span className="holobox-robot-chest-label">INBLUE / SYNTH</span>
-            <strong>{level}</strong>
-            <div className="holobox-robot-core">
-              <span />
-            </div>
-          </div>
-          <div className="holobox-robot-arm holobox-robot-arm-left" />
-          <div className="holobox-robot-arm holobox-robot-arm-right" />
-        </div>
-      </div>
-      <div className="holobox-robot-floor" />
-      <div className="holobox-robot-floor-shadow" />
-    </div>
-  );
-}
-
 function ResultStep({
+  audioUrl,
   chart,
   journey,
+  narrationScript,
   onBack,
+  displayMode = "robot",
 }: {
+  audioUrl?: string;
   chart: CompetencyChart;
   journey: JourneySummary | null;
+  narrationScript?: string;
   onBack: () => void;
+  displayMode?: "robot" | "details";
 }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isVoiceLoading, setIsVoiceLoading] = useState(false);
   const [isScriptExpanded, setIsScriptExpanded] = useState(false);
   const [activeDimension, setActiveDimension] = useState<HoloboxDimension>("overview");
   const [isFullMode, setIsFullMode] = useState(false);
+  const [isRadarReady, setIsRadarReady] = useState(false);
   const script = useMemo(() => buildHoloboxCompetencyScript(chart, journey), [chart, journey]);
+  const robotScript = narrationScript?.trim() || script;
   const isVi = useMemo(
     () => /[àáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i.test(script),
     [script]
@@ -527,6 +423,11 @@ function ResultStep({
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setIsRadarReady(true));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const toggleFullMode = async () => {
@@ -603,451 +504,483 @@ function ResultStep({
     }
   };
 
-  return (
-    <main
-      className={`holobox-result-page mx-auto w-full max-w-[3600px] px-5 py-4 sm:px-8 sm:py-5 xl:px-10 ${isFullMode ? "is-full-mode" : ""}`}>
-      {isFullMode ? (
-        <div className="holobox-full-mode-bar">
-          <div>
-            <p className="holobox-full-mode-kicker">Inblue / Holobox theatre</p>
-            <strong>Immersive competency workspace</strong>
-          </div>
-          <div className="holobox-full-mode-actions flex-row">
-            <Button
-              onClick={speak}
-              disabled={isVoiceLoading}
-              className={`holobox-full-mode-voice ${isSpeaking ? "is-speaking" : ""}`}>
-              {isSpeaking ? (
-                <Square className="mr-2.5 h-4 w-4 fill-current" />
-              ) : (
-                <Volume2 className="mr-2.5 h-4 w-4" />
-              )}
-              {isSpeaking ? "Stop voice" : "Read result"}
-            </Button>
-            <Button
-              onClick={toggleFullMode}
-              className="holobox-full-mode-exit"
-              title="Exit full mode">
-              <Minimize2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-      ) : null}
-      <button
-        type="button"
-        onClick={onBack}
-        className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
-        <ArrowLeft className="h-4 w-4" />
-        Back to applications
-      </button>
-
-      {/* ── Unified Command Deck: merged Overall Score + AI Operator + Radar ── */}
-      <section className="holobox-command-deck holobox-command-deck--unified">
-        {/* Top bar: score info left, audio button right */}
-        <div className="holobox-unified-topbar flex w-full flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-            <h1 className="holobox-unified-name m-0 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-              {chart.candidateName}
-            </h1>
-            <span className="holobox-unified-level rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-0.5 text-xs font-semibold text-cyan-700 shadow-2xs sm:text-xs">
-              {competencyLevelLabel[chart.overallLevel]}
-            </span>
-            <div className="holobox-unified-score-block flex items-center gap-1.5 rounded-xl border border-cyan-200/90 bg-cyan-50/90 px-3 py-1 text-cyan-950 shadow-2xs">
-              <span className="text-[10px] font-bold tracking-wider text-cyan-700 uppercase">
-                Score
-              </span>
-              <span className="text-xl leading-none font-black text-cyan-900 sm:text-2xl">
-                {Math.round(chart.overallScore)}
-              </span>
-              <span className="text-xs font-bold text-cyan-700">/100</span>
+  if (displayMode === "details") {
+    return (
+      <main
+        className={`holobox-result-page mx-auto w-full max-w-[3600px] px-5 py-4 sm:px-8 sm:py-5 xl:px-10 ${isFullMode ? "is-full-mode" : ""}`}>
+        {isFullMode ? (
+          <div className="holobox-full-mode-bar">
+            <div>
+              <p className="holobox-full-mode-kicker">Inblue / Holobox theatre</p>
+              <strong>Immersive competency workspace</strong>
             </div>
-          </div>
-          {!isFullMode ? (
-            <div className="holobox-unified-actions flex items-center gap-3">
-              <Button
-                onClick={toggleFullMode}
-                className="holobox-unified-action-btn"
-                title="Full mode">
-                <Maximize2 className="h-4 w-4" />
-              </Button>
+            <div className="holobox-full-mode-actions flex-row">
               <Button
                 onClick={speak}
                 disabled={isVoiceLoading}
-                className={`holobox-unified-voice-btn ${isSpeaking ? "is-speaking" : ""}`}>
-                {isVoiceLoading ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                ) : isSpeaking ? (
-                  <Square className="h-4 w-4 fill-current" />
+                className={`holobox-full-mode-voice ${isSpeaking ? "is-speaking" : ""}`}>
+                {isSpeaking ? (
+                  <Square className="mr-2.5 h-4 w-4 fill-current" />
                 ) : (
-                  <Volume2 className="h-4 w-4" />
+                  <Volume2 className="mr-2.5 h-4 w-4" />
                 )}
-                <span className="holobox-unified-voice-label font-bold">
-                  {isVoiceLoading
-                    ? isVi
-                      ? "Chuẩn bị..."
-                      : "Loading..."
-                    : isSpeaking
-                      ? isVi
-                        ? "Dừng"
-                        : "Stop"
-                      : isVi
-                        ? "Nghe"
-                        : "Listen"}
-                </span>
+                {isSpeaking ? "Stop voice" : "Read result"}
+              </Button>
+              <Button
+                onClick={toggleFullMode}
+                className="holobox-full-mode-exit"
+                title="Exit full mode">
+                <Minimize2 className="h-3.5 w-3.5" />
               </Button>
             </div>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
+          <ArrowLeft className="h-4 w-4" />
+          Back to applications
+        </button>
 
-        {/* Main content: operator center, radar right */}
-        <div className="holobox-unified-body">
-          {/* AI Operator (center) */}
-          <div className="holobox-operator-bay holobox-operator-bay--unified">
-            <div className="holobox-operator-topline">
-              <span>AI operator</span>
-              <span className="holobox-operator-live">
-                <i /> Speaking simulation
+        {/* ── Unified Command Deck: merged Overall Score + AI Operator + Radar ── */}
+        <section className="holobox-command-deck holobox-command-deck--unified">
+          {/* Top bar: score info left, audio button right */}
+          <div className="holobox-unified-topbar flex w-full flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+              <h1 className="holobox-unified-name m-0 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+                {chart.candidateName}
+              </h1>
+              <span className="holobox-unified-level rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-0.5 text-xs font-semibold text-cyan-700 shadow-2xs sm:text-xs">
+                {competencyLevelLabel[chart.overallLevel]}
               </span>
-            </div>
-            <HoloboxRobot
-              score={chart.overallScore}
-              level={competencyLevelLabel[chart.overallLevel]}
-              isSpeaking={isSpeaking}
-              activeDimension={activeDimension}
-              onDimensionSelect={setActiveDimension}
-            />
-            <div className="holobox-operator-caption">
-              <div className="holobox-operator-status">
-                <span
-                  className={`holobox-operator-status-dot ${isSpeaking ? "is-speaking" : ""}`}
-                />
-                <strong>{isSpeaking ? "Speaking..." : "Ready to narrate"}</strong>
+              <div className="holobox-unified-score-block flex items-center gap-1.5 rounded-xl border border-cyan-200/90 bg-cyan-50/90 px-3 py-1 text-cyan-950 shadow-2xs">
+                <span className="text-[10px] font-bold tracking-wider text-cyan-700 uppercase">
+                  Score
+                </span>
+                <span className="text-xl leading-none font-black text-cyan-900 sm:text-2xl">
+                  {Math.round(chart.overallScore)}
+                </span>
+                <span className="text-xs font-bold text-cyan-700">/100</span>
               </div>
-              <div className="holobox-wave" aria-hidden="true">
+            </div>
+            {!isFullMode ? (
+              <div className="holobox-unified-actions flex items-center gap-3">
+                <Button
+                  onClick={toggleFullMode}
+                  className="holobox-unified-action-btn"
+                  title="Full mode">
+                  <Maximize2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={speak}
+                  disabled={isVoiceLoading}
+                  className={`holobox-unified-voice-btn ${isSpeaking ? "is-speaking" : ""}`}>
+                  {isVoiceLoading ? (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  ) : isSpeaking ? (
+                    <Square className="h-4 w-4 fill-current" />
+                  ) : (
+                    <Volume2 className="h-4 w-4" />
+                  )}
+                  <span className="holobox-unified-voice-label font-bold">
+                    {isVoiceLoading
+                      ? isVi
+                        ? "Chuẩn bị..."
+                        : "Loading..."
+                      : isSpeaking
+                        ? isVi
+                          ? "Dừng"
+                          : "Stop"
+                        : isVi
+                          ? "Nghe"
+                          : "Listen"}
+                  </span>
+                </Button>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Main content: operator center, radar right */}
+          <div className="holobox-unified-body">
+            {/* AI Operator (center) */}
+            <div className="holobox-operator-bay holobox-operator-bay--unified">
+              <div className="holobox-operator-topline">
+                <span>AI operator</span>
+                <span className="holobox-operator-live">
+                  <i /> Speaking simulation
+                </span>
+              </div>
+              <div className="holobox-operator-3d-robot">
+                <HoloboxThreeRobotPage
+                  audioUrl={audioUrl}
+                  embedded
+                  onNarrationStateChange={setIsSpeaking}
+                  script={robotScript}
+                />
+              </div>
+              <div className="holobox-operator-caption">
+                <div className="holobox-operator-status">
+                  <span
+                    className={`holobox-operator-status-dot ${isSpeaking ? "is-speaking" : ""}`}
+                  />
+                  <strong>{isSpeaking ? "Speaking..." : "Ready to narrate"}</strong>
+                </div>
+                <div className="holobox-wave" aria-hidden="true">
+                  {Array.from({ length: 18 }, (_, index) => (
+                    <span key={index} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Radar chart (right) */}
+            <div className="holobox-radar-panel holobox-radar-panel--unified flex h-full flex-col">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-900/10">
+                <div>
+                  <p className="text-[10px] font-bold tracking-[0.18em] text-cyan-600 uppercase">
+                    {activeDimensionCopy[activeDimension].kicker}
+                  </p>
+                  <h2 className="font-bold text-slate-950">
+                    {activeDimensionCopy[activeDimension].title}
+                  </h2>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {(["overview", "technical", "behavioral", "journey"] as HoloboxDimension[]).map(
+                    (dimension) => (
+                      <button
+                        key={dimension}
+                        type="button"
+                        onClick={() => setActiveDimension(dimension)}
+                        className={`holobox-dimension-tab ${activeDimension === dimension ? "is-active" : ""}`}>
+                        {dimension === "overview"
+                          ? "Core"
+                          : dimension === "technical"
+                            ? "Technical"
+                            : dimension === "behavioral"
+                              ? "Behavioral"
+                              : "Journey"}
+                      </button>
+                    )
+                  )}
+                </div>
+                <div className="holobox-radar-status">
+                  <span /> {activeChartData.length} signals
+                </div>
+              </div>
+              {activeChartData.length > 0 && activeDimension !== "journey" ? (
+                <>
+                  <div className="holobox-radar-stage holobox-radar-stage--unified w-full shrink-0">
+                    <div className="holobox-radar-floor" aria-hidden="true" />
+                    {isRadarReady ? (
+                      <ResponsiveContainer
+                        initialDimension={{ width: 640, height: 260 }}
+                        minWidth={0}
+                        minHeight={200}
+                        width="100%"
+                        height="100%">
+                        <RadarChart
+                          data={activeChartData}
+                          outerRadius="80%"
+                          margin={{ top: 300, right: 10, bottom: -300, left: 10 }}>
+                          <PolarGrid
+                            stroke={isFullMode ? "#67a4b5" : "#0891b2"}
+                            strokeOpacity={0.35}
+                            gridType="polygon"
+                          />
+                          <PolarAngleAxis
+                            dataKey="label"
+                            tick={({ x, y, payload }) => {
+                              // Identify top vertex (y < center y) to push label up for 100% clearance
+                              const numY = typeof y === "number" ? y : Number(y) || 0;
+                              const isTop = numY > 0 && numY < 140;
+                              return (
+                                <text
+                                  x={x}
+                                  y={y}
+                                  dy={isTop ? -10 : 10}
+                                  fill={isFullMode ? "#0e7490" : "#0f172a"}
+                                  fontSize={12}
+                                  fontWeight={800}
+                                  textAnchor="middle">
+                                  {payload.value}
+                                </text>
+                              );
+                            }}
+                          />
+                          <PolarRadiusAxis
+                            domain={[0, 100]}
+                            tickCount={6}
+                            angle={90}
+                            axisLine={false}
+                            stroke="transparent"
+                            tick={({ x, y, payload }) => {
+                              // Hide 0 and 100 to prevent outer rim clutter, render 20..80 straight vertically
+                              if (payload.value === 100 || payload.value === 0) return null;
+                              return (
+                                <text
+                                  x={x}
+                                  y={y}
+                                  dx={6}
+                                  fill={isFullMode ? "#0891b2" : "#0284c7"}
+                                  fontSize={10}
+                                  fontWeight={700}
+                                  textAnchor="start">
+                                  {payload.value}
+                                </text>
+                              );
+                            }}
+                          />
+                          <Radar
+                            name="Score"
+                            dataKey="score"
+                            stroke={isFullMode ? "#0891b2" : "#0284c7"}
+                            fill={isFullMode ? "#22d3ee" : "#38bdf8"}
+                            fillOpacity={0.35}
+                            strokeWidth={3}
+                            dot={{ r: 4, fill: isFullMode ? "#0e7490" : "#0284c7", strokeWidth: 0 }}
+                          />
+                          <Tooltip
+                            labelFormatter={(label) =>
+                              activeChartData.find((item) => item.label === label)?.subject ?? label
+                            }
+                            formatter={(value) => [`${Number(value).toFixed(2)}/100`, "Score"]}
+                          />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    ) : null}
+                  </div>
+                  <div className="shrink-0 border-t border-slate-200/60" />
+                  <div className="-mt-15 grid min-h-0 flex-1 grid-cols-2 gap-1.5 sm:grid-cols-4">
+                    {activeChartData.map((item) => (
+                      <div
+                        key={`${item.category}-${item.subject}`}
+                        className="rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-xs font-semibold text-slate-600">
+                            {item.label}
+                          </span>
+                          <span className={`text-sm font-bold ${scoreTone(item.score)}`}>
+                            {item.score}
+                          </span>
+                        </div>
+                        <p className="mt-1 truncate text-[10px] text-slate-400">
+                          {item.category} &middot; {item.sourceRounds.join(" \u00b7 ")}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="holobox-journey-preview flex min-h-[300px] flex-col justify-center">
+                  <p className="text-xs font-bold tracking-[0.16em] text-cyan-600 uppercase">
+                    AI operator feed
+                  </p>
+                  <p className="mt-3 max-w-lg text-lg leading-7 font-semibold text-slate-800">
+                    {journey?.narrative?.trim() || "No detailed journey summary is available yet."}
+                  </p>
+                  <p className="mt-4 text-xs font-medium text-slate-500">
+                    The center operator is ready to narrate this dimension.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+            <div className="mb-7 flex items-start justify-between">
+              <div>
+                <h2 className="font-bold text-slate-950">Behavioral skills</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  What was observed throughout the assessment
+                </p>
+              </div>
+              <Activity className="h-5 w-5 text-cyan-600" />
+            </div>
+            <div className="space-y-5">
+              {chart.behavioralSkills.length > 0 ? (
+                chart.behavioralSkills.map((item) => (
+                  <div key={item.skillName}>
+                    <div className="mb-2 flex items-center justify-between gap-4 text-sm">
+                      <span className="font-medium text-slate-700">{item.skillName}</span>
+                      <span className={`font-bold ${scoreTone(item.score)}`}>
+                        {Math.round(item.score)}
+                      </span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                      <div
+                        className="h-full rounded-full bg-cyan-500 transition-all"
+                        style={{ width: `${Math.max(0, Math.min(100, item.score))}%` }}
+                      />
+                    </div>
+                    <p className="mt-1.5 text-xs text-slate-400">
+                      Source: {item.sourceRounds.join(" · ") || "Summary"}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-400">No behavioral data available.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-2xl bg-cyan-50 p-6 sm:p-7">
+            <div className="absolute -right-10 -bottom-10 h-36 w-36 rounded-full border-[18px] border-cyan-100" />
+            <div className="relative">
+              <div className="flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-cyan-700 shadow-sm">
+                  <Volume2 className="h-5 w-5" />
+                </div>
+                <span className="flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-cyan-800 shadow-xs">
+                  <Volume2 className="h-3.5 w-3.5" />
+                  {isVi ? "Giọng đọc tự nhiên" : "Natural voice"}
+                </span>
+              </div>
+              <div className="holobox-wave mt-7" aria-hidden="true">
                 {Array.from({ length: 18 }, (_, index) => (
                   <span key={index} />
                 ))}
               </div>
-            </div>
-          </div>
 
-          {/* Radar chart (right) */}
-          <div className="holobox-radar-panel holobox-radar-panel--unified flex h-full flex-col">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-900/10">
-              <div>
-                <p className="text-[10px] font-bold tracking-[0.18em] text-cyan-600 uppercase">
-                  {activeDimensionCopy[activeDimension].kicker}
+              <div className="relative mt-7">
+                <p
+                  className={`text-lg leading-7 font-semibold text-slate-950 transition-all duration-300 ${
+                    !isScriptExpanded ? "line-clamp-4" : ""
+                  }`}>
+                  “{script}”
                 </p>
-                <h2 className="font-bold text-slate-950">
-                  {activeDimensionCopy[activeDimension].title}
-                </h2>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {(["overview", "technical", "behavioral", "journey"] as HoloboxDimension[]).map(
-                  (dimension) => (
-                    <button
-                      key={dimension}
-                      type="button"
-                      onClick={() => setActiveDimension(dimension)}
-                      className={`holobox-dimension-tab ${activeDimension === dimension ? "is-active" : ""}`}>
-                      {dimension === "overview"
-                        ? "Core"
-                        : dimension === "technical"
-                          ? "Technical"
-                          : dimension === "behavioral"
-                            ? "Behavioral"
-                            : "Journey"}
-                    </button>
-                  )
+                {script.length > 180 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsScriptExpanded(!isScriptExpanded)}
+                    className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-cyan-800 transition hover:text-cyan-950">
+                    {isScriptExpanded ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        {isVi ? "Thu gọn script" : "Collapse script"}
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        {isVi ? "Xem thêm script" : "Expand script"}
+                      </>
+                    )}
+                  </button>
                 )}
               </div>
-              <div className="holobox-radar-status">
-                <span /> {activeChartData.length} signals
-              </div>
-            </div>
-            {activeChartData.length > 0 && activeDimension !== "journey" ? (
-              <>
-                <div className="holobox-radar-stage holobox-radar-stage--unified w-full shrink-0">
-                  <div className="holobox-radar-floor" aria-hidden="true" />
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart
-                      data={activeChartData}
-                      outerRadius="80%"
-                      margin={{ top: 300, right: 10, bottom: -300, left: 10 }}>
-                      <PolarGrid
-                        stroke={isFullMode ? "#67a4b5" : "#0891b2"}
-                        strokeOpacity={0.35}
-                        gridType="polygon"
-                      />
-                      <PolarAngleAxis
-                        dataKey="label"
-                        tick={({ x, y, payload }) => {
-                          // Identify top vertex (y < center y) to push label up for 100% clearance
-                          const numY = typeof y === "number" ? y : Number(y) || 0;
-                          const isTop = numY > 0 && numY < 140;
-                          return (
-                            <text
-                              x={x}
-                              y={y}
-                              dy={isTop ? -10 : 10}
-                              fill={isFullMode ? "#0e7490" : "#0f172a"}
-                              fontSize={12}
-                              fontWeight={800}
-                              textAnchor="middle">
-                              {payload.value}
-                            </text>
-                          );
-                        }}
-                      />
-                      <PolarRadiusAxis
-                        domain={[0, 100]}
-                        tickCount={6}
-                        angle={90}
-                        axisLine={false}
-                        stroke="transparent"
-                        tick={({ x, y, payload }) => {
-                          // Hide 0 and 100 to prevent outer rim clutter, render 20..80 straight vertically
-                          if (payload.value === 100 || payload.value === 0) return null;
-                          return (
-                            <text
-                              x={x}
-                              y={y}
-                              dx={6}
-                              fill={isFullMode ? "#0891b2" : "#0284c7"}
-                              fontSize={10}
-                              fontWeight={700}
-                              textAnchor="start">
-                              {payload.value}
-                            </text>
-                          );
-                        }}
-                      />
-                      <Radar
-                        name="Score"
-                        dataKey="score"
-                        stroke={isFullMode ? "#0891b2" : "#0284c7"}
-                        fill={isFullMode ? "#22d3ee" : "#38bdf8"}
-                        fillOpacity={0.35}
-                        strokeWidth={3}
-                        dot={{ r: 4, fill: isFullMode ? "#0e7490" : "#0284c7", strokeWidth: 0 }}
-                      />
-                      <Tooltip
-                        labelFormatter={(label) =>
-                          activeChartData.find((item) => item.label === label)?.subject ?? label
-                        }
-                        formatter={(value) => [`${Number(value).toFixed(2)}/100`, "Score"]}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="shrink-0 border-t border-slate-200/60" />
-                <div className="-mt-15 grid min-h-0 flex-1 grid-cols-2 gap-1.5 sm:grid-cols-4">
-                  {activeChartData.map((item) => (
-                    <div
-                      key={`${item.category}-${item.subject}`}
-                      className="rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-xs font-semibold text-slate-600">
-                          {item.label}
-                        </span>
-                        <span className={`text-sm font-bold ${scoreTone(item.score)}`}>
-                          {item.score}
-                        </span>
-                      </div>
-                      <p className="mt-1 truncate text-[10px] text-slate-400">
-                        {item.category} &middot; {item.sourceRounds.join(" \u00b7 ")}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="holobox-journey-preview flex min-h-[300px] flex-col justify-center">
-                <p className="text-xs font-bold tracking-[0.16em] text-cyan-600 uppercase">
-                  AI operator feed
-                </p>
-                <p className="mt-3 max-w-lg text-lg leading-7 font-semibold text-slate-800">
-                  {journey?.narrative?.trim() || "No detailed journey summary is available yet."}
-                </p>
-                <p className="mt-4 text-xs font-medium text-slate-500">
-                  The center operator is ready to narrate this dimension.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
-      <section className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-          <div className="mb-7 flex items-start justify-between">
-            <div>
-              <h2 className="font-bold text-slate-950">Behavioral skills</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                What was observed throughout the assessment
-              </p>
+              <button
+                type="button"
+                onClick={speak}
+                className="mt-7 flex items-center gap-2 text-sm font-bold text-cyan-800 transition hover:text-cyan-950">
+                {isSpeaking ? (
+                  <Square className="h-4 w-4 fill-current" />
+                ) : (
+                  <Play className="h-4 w-4 fill-current" />
+                )}{" "}
+                {isSpeaking
+                  ? isVi
+                    ? "Đang đọc kết quả"
+                    : "Reading result"
+                  : isVi
+                    ? "Nghe tóm tắt"
+                    : "Listen to summary"}
+              </button>
             </div>
-            <Activity className="h-5 w-5 text-cyan-600" />
           </div>
-          <div className="space-y-5">
-            {chart.behavioralSkills.length > 0 ? (
-              chart.behavioralSkills.map((item) => (
-                <div key={item.skillName}>
-                  <div className="mb-2 flex items-center justify-between gap-4 text-sm">
-                    <span className="font-medium text-slate-700">{item.skillName}</span>
-                    <span className={`font-bold ${scoreTone(item.score)}`}>
-                      {Math.round(item.score)}
-                    </span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      className="h-full rounded-full bg-cyan-500 transition-all"
-                      style={{ width: `${Math.max(0, Math.min(100, item.score))}%` }}
-                    />
-                  </div>
-                  <p className="mt-1.5 text-xs text-slate-400">
-                    Source: {item.sourceRounds.join(" · ") || "Summary"}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-slate-400">No behavioral data available.</p>
-            )}
-          </div>
-        </div>
+        </section>
 
-        <div className="relative overflow-hidden rounded-2xl bg-cyan-50 p-6 sm:p-7">
-          <div className="absolute -right-10 -bottom-10 h-36 w-36 rounded-full border-[18px] border-cyan-100" />
-          <div className="relative">
-            <div className="flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-cyan-700 shadow-sm">
-                <Volume2 className="h-5 w-5" />
+        <section className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold tracking-[0.14em] text-cyan-700 uppercase">
+                  AI journey narrative
+                </p>
+                <h2 className="mt-2 text-xl font-bold text-slate-950">Competency story</h2>
               </div>
-              <span className="flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-cyan-800 shadow-xs">
-                <Volume2 className="h-3.5 w-3.5" />
-                {isVi ? "Giọng đọc tự nhiên" : "Natural voice"}
+              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                Journey summary
               </span>
             </div>
-            <div className="holobox-wave mt-7" aria-hidden="true">
-              {Array.from({ length: 18 }, (_, index) => (
-                <span key={index} />
-              ))}
-            </div>
-
-            <div className="relative mt-7">
-              <p
-                className={`text-lg leading-7 font-semibold text-slate-950 transition-all duration-300 ${
-                  !isScriptExpanded ? "line-clamp-4" : ""
-                }`}>
-                “{script}”
-              </p>
-              {script.length > 180 && (
-                <button
-                  type="button"
-                  onClick={() => setIsScriptExpanded(!isScriptExpanded)}
-                  className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-cyan-800 transition hover:text-cyan-950">
-                  {isScriptExpanded ? (
-                    <>
-                      <ChevronUp className="h-4 w-4" />
-                      {isVi ? "Thu gọn script" : "Collapse script"}
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="h-4 w-4" />
-                      {isVi ? "Xem thêm script" : "Expand script"}
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={speak}
-              className="mt-7 flex items-center gap-2 text-sm font-bold text-cyan-800 transition hover:text-cyan-950">
-              {isSpeaking ? (
-                <Square className="h-4 w-4 fill-current" />
-              ) : (
-                <Play className="h-4 w-4 fill-current" />
-              )}{" "}
-              {isSpeaking
-                ? isVi
-                  ? "Đang đọc kết quả"
-                  : "Reading result"
-                : isVi
-                  ? "Nghe tóm tắt"
-                  : "Listen to summary"}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-          <div className="mb-5 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold tracking-[0.14em] text-cyan-700 uppercase">
-                AI journey narrative
-              </p>
-              <h2 className="mt-2 text-xl font-bold text-slate-950">Competency story</h2>
-            </div>
-            <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
-              Journey summary
-            </span>
-          </div>
-          <p className="text-[15px] leading-7 text-slate-600">
-            {journey?.narrative?.trim() || "No detailed journey summary is available yet."}
-          </p>
-          {(journey?.swecomAssessments?.length ?? 0) > 0 && (
-            <div className="mt-6 space-y-3 border-t border-slate-100 pt-5">
-              {journey?.swecomAssessments?.slice(0, 3).map((item) => (
-                <div key={item.skillArea} className="rounded-xl bg-slate-50 p-3.5">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="font-semibold text-slate-700">{item.skillArea}</span>
-                    <span className={`font-bold ${scoreTone(item.score)}`}>{item.score}/100</span>
-                  </div>
-                  {item.evidenceSummary && (
-                    <p className="mt-1.5 text-xs leading-5 text-slate-500">
-                      {item.evidenceSummary}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </article>
-
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-          <div className="mb-5 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold tracking-[0.14em] text-violet-700 uppercase">
-                Next moves
-              </p>
-              <h2 className="mt-2 text-xl font-bold text-slate-950">Development recommendations</h2>
-            </div>
-            <ArrowRight className="h-5 w-5 text-violet-500" />
-          </div>
-          {(journey?.developmentRecommendations?.length ?? 0) > 0 ? (
-            <div className="space-y-4">
-              {journey?.developmentRecommendations?.slice(0, 3).map((item) => (
-                <div
-                  key={`${item.targetSkillArea}-${item.targetLevel}`}
-                  className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
-                  <p className="text-sm font-bold text-slate-800">{item.targetSkillArea}</p>
-                  <p className="mt-1.5 text-sm leading-6 text-slate-500">{item.recommendation}</p>
-                  <span className="mt-2 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
-                    Target: {competencyLevelLabel[item.targetLevel]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm leading-6 text-slate-500">
-              No detailed recommendations are available for this application.
+            <p className="text-[15px] leading-7 text-slate-600">
+              {journey?.narrative?.trim() || "No detailed journey summary is available yet."}
             </p>
-          )}
-        </article>
-      </section>
+            {(journey?.swecomAssessments?.length ?? 0) > 0 && (
+              <div className="mt-6 space-y-3 border-t border-slate-100 pt-5">
+                {journey?.swecomAssessments?.slice(0, 3).map((item) => (
+                  <div key={item.skillArea} className="rounded-xl bg-slate-50 p-3.5">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="font-semibold text-slate-700">{item.skillArea}</span>
+                      <span className={`font-bold ${scoreTone(item.score)}`}>{item.score}/100</span>
+                    </div>
+                    {item.evidenceSummary && (
+                      <p className="mt-1.5 text-xs leading-5 text-slate-500">
+                        {item.evidenceSummary}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </article>
+
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold tracking-[0.14em] text-violet-700 uppercase">
+                  Next moves
+                </p>
+                <h2 className="mt-2 text-xl font-bold text-slate-950">
+                  Development recommendations
+                </h2>
+              </div>
+              <ArrowRight className="h-5 w-5 text-violet-500" />
+            </div>
+            {(journey?.developmentRecommendations?.length ?? 0) > 0 ? (
+              <div className="space-y-4">
+                {journey?.developmentRecommendations?.slice(0, 3).map((item) => (
+                  <div
+                    key={`${item.targetSkillArea}-${item.targetLevel}`}
+                    className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+                    <p className="text-sm font-bold text-slate-800">{item.targetSkillArea}</p>
+                    <p className="mt-1.5 text-sm leading-6 text-slate-500">{item.recommendation}</p>
+                    <span className="mt-2 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
+                      Target: {competencyLevelLabel[item.targetLevel]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm leading-6 text-slate-500">
+                No detailed recommendations are available for this application.
+              </p>
+            )}
+          </article>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="holobox-robot-only-page">
+      <button
+        type="button"
+        onClick={onBack}
+        className="holobox-robot-only-back flex items-center gap-2 text-sm font-semibold">
+        <ArrowLeft className="h-4 w-4" />
+        Back to applications
+      </button>
+      <div className="holobox-robot-only-stage">
+        <HoloboxThreeRobotPage
+          audioUrl={audioUrl}
+          embedded
+          onNarrationStateChange={setIsSpeaking}
+          script={robotScript}
+        />
+      </div>
     </main>
   );
 }
@@ -1055,10 +988,9 @@ function ResultStep({
 export function CompetencyKioskPage() {
   const [step, setStep] = useState<KioskStep>("search");
   const [email, setEmail] = useState("");
-  const [applications, setApplications] = useState<CompetencyApplication[]>([]);
+  const [summaries, setSummaries] = useState<SummaryAudioItem[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [chart, setChart] = useState<CompetencyChart | null>(null);
-  const [journey, setJourney] = useState<JourneySummary | null>(null);
+  const [selectedSummary, setSelectedSummary] = useState<SummaryAudioItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -1066,10 +998,9 @@ export function CompetencyKioskPage() {
     window.speechSynthesis?.cancel();
     setStep("search");
     setEmail("");
-    setApplications([]);
+    setSummaries([]);
     setSelectedId(null);
-    setChart(null);
-    setJourney(null);
+    setSelectedSummary(null);
     setError(null);
   };
 
@@ -1078,17 +1009,12 @@ export function CompetencyKioskPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await getApplicationsByEmail(email);
+      const result = await getSummaryAudioByEmail(email);
       if (result.length === 0) {
-        setError("This email has no applications to display.");
+        setError("This email has no competency summaries to display.");
         return;
       }
-      const activeApplications = result.filter((application) => !application.isDeleted);
-      if (activeApplications.length === 0) {
-        setError("The applications for this email are no longer available.");
-        return;
-      }
-      setApplications(activeApplications);
+      setSummaries(result);
       setStep("applications");
     } catch (requestError) {
       setError(
@@ -1101,59 +1027,40 @@ export function CompetencyKioskPage() {
     }
   };
 
-  const handleSelect = async (application: CompetencyApplication) => {
-    setSelectedId(application.id);
-    setIsLoading(true);
+  const handleSelect = (summary: SummaryAudioItem) => {
+    setSelectedId(summary.id);
+    setSelectedSummary(summary);
     setError(null);
-    try {
-      const result = await getCompetencyResult(application.id);
-      setChart(result.chart);
-      setJourney(result.journey);
-      setStep("result");
-    } catch (requestError) {
-      const isNotReady =
-        requestError instanceof CompetencyChartError && requestError.status === 404;
-      setError(
-        isNotReady
-          ? "The competency report is still being generated. Please try again in a few minutes."
-          : requestError instanceof Error
-            ? requestError.message
-            : "Unable to load the competency report."
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    setStep("result");
   };
 
   const backToApplications = () => {
     window.speechSynthesis?.cancel();
     setError(null);
-    setChart(null);
-    setJourney(null);
+    setSelectedSummary(null);
+    setSelectedId(null);
     setStep("applications");
   };
 
-  const directScript = new URLSearchParams(window.location.search).get("script")?.trim();
+  const query = new URLSearchParams(window.location.search);
+  const directScript = query.get("script")?.trim();
+  const directAudioUrl = query.get("audio")?.trim();
 
   // Cho phép mở thẳng chế độ robot-only khi hệ thống đã có sẵn script trong URL.
   if (directScript) {
-    return <HoloboxThreeRobotPage script={directScript} />;
-  }
-
-  // Khi đã có kết quả, Holobox chỉ hiển thị robot. Script vẫn ở trong bộ nhớ
-  // và chỉ được đọc khi người dùng chạm robot, không render thành chữ.
-  if (step === "result" && chart) {
-    return <HoloboxThreeRobotPage script={buildHoloboxCompetencyScript(chart, journey)} />;
+    return <HoloboxThreeRobotPage audioUrl={directAudioUrl} script={directScript} />;
   }
 
   return (
     <div className="min-h-[100dvh] bg-[#f7fafc] text-slate-950">
-      <KioskHeader step={step} onReset={reset} />
-      <div className="border-b border-slate-200/70 bg-white px-6 py-3 sm:px-10">
-        <div className="mx-auto flex max-w-[1400px] justify-end">
-          <StepRail activeStep={step} />
+      {step !== "result" && <KioskHeader step={step} onReset={reset} />}
+      {step !== "result" && (
+        <div className="border-b border-slate-200/70 bg-white px-6 py-3 sm:px-10">
+          <div className="mx-auto flex max-w-[1400px] justify-end">
+            <StepRail activeStep={step} />
+          </div>
         </div>
-      </div>
+      )}
       {step === "search" && (
         <SearchStep
           email={email}
@@ -1166,7 +1073,7 @@ export function CompetencyKioskPage() {
       {step === "applications" && (
         <ApplicationsStep
           email={email}
-          applications={applications}
+          summaries={summaries}
           selectedId={selectedId}
           isLoading={isLoading}
           onSelect={handleSelect}
@@ -1184,8 +1091,23 @@ export function CompetencyKioskPage() {
           {error}
         </div>
       )}
-      {step === "result" && chart && (
-        <ResultStep chart={chart} journey={journey} onBack={backToApplications} />
+      {step === "result" && selectedSummary && (
+        <ResultStep
+          audioUrl={selectedSummary.audioUrl}
+          chart={selectedSummary.competencyChart}
+          journey={{
+            id: selectedSummary.id,
+            applicationId: selectedSummary.applicationId,
+            narrative: selectedSummary.narrative,
+            competencyChart: selectedSummary.competencyChart,
+            swecomAssessments: selectedSummary.swecomAssessments,
+            developmentRecommendations: selectedSummary.developmentRecommendations,
+            generatedAt: selectedSummary.generatedAt,
+            traceId: selectedSummary.traceId,
+          }}
+          narrationScript={parseSummaryAudioScript(selectedSummary.script)}
+          onBack={backToApplications}
+        />
       )}
     </div>
   );

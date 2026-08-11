@@ -87,6 +87,12 @@ const HoloboxRobotPage = lazy(() =>
   }))
 );
 
+const HoloboxExperienceRobotPreviewPage = lazy(() =>
+  import("@/pages/User/Kiosk/HoloboxExperienceRobotPreviewPage").then((module) => ({
+    default: module.HoloboxExperienceRobotPreviewPage,
+  }))
+);
+
 /** Preserves the path suffix after a given prefix when redirecting /dashboard/* → /user/* */
 function DashboardSubRedirect({ prefix }: { prefix: string }) {
   const { pathname, search } = useLocation();
@@ -155,6 +161,14 @@ function App() {
               element={
                 <Suspense fallback={null}>
                   <HoloboxRobotPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/holobox/robot-preview"
+              element={
+                <Suspense fallback={null}>
+                  <HoloboxExperienceRobotPreviewPage />
                 </Suspense>
               }
             />

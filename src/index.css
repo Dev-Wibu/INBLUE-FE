@@ -2961,6 +2961,17 @@
   transform-style: preserve-3d;
 }
 
+.holobox-operator-3d-robot {
+  position: absolute;
+  inset: 3.6rem 0 3.1rem;
+  z-index: 2;
+  min-height: 0;
+}
+
+.holobox-operator-3d-robot .holobox-experience-robot-embedded {
+  min-height: 0;
+}
+
 /* White back wall and floor plane: the shadow is what makes the robot read as floating. */
 .holobox-operator-bay--unified::before {
   position: absolute;
@@ -3283,6 +3294,10 @@
     min-height: 560px !important;
   }
 
+  .holobox-operator-3d-robot {
+    inset: 3.2rem 0 2.6rem;
+  }
+
   .holobox-operator-bay--unified .holobox-robot {
     scale: 1.12;
   }
@@ -3406,12 +3421,68 @@
   isolation: isolate;
 }
 
+.holobox-robot-only-back {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.5rem;
+  z-index: 34;
+  min-height: 2.5rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #9a3412;
+  box-shadow: 0 8px 18px rgba(124, 45, 18, 0.08);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.holobox-robot-only-back:hover {
+  background: #fff7ed;
+  color: #c2410c;
+  transform: translateY(-1px);
+}
+
+.holobox-robot-only-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.holobox-robot-only-stage .holobox-experience-robot-embedded {
+  min-height: 0;
+}
+
 .holobox-three-viewport canvas {
   display: block;
   width: 100%;
   height: 100%;
   outline: none;
+  cursor: grab;
   touch-action: none;
+}
+
+.holobox-three-viewport canvas:active {
+  cursor: grabbing;
+}
+
+.holobox-experience-robot-embedded {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.holobox-experience-robot-embedded .holobox-three-viewport--embedded {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .holobox-dance-controls {
