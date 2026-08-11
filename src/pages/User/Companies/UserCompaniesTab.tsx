@@ -367,7 +367,7 @@ export function UserCompaniesTab() {
       </div>
 
       {/* Company Grid List — 100% Identical Grid Ratio to JobSearchTab */}
-      <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 [&::-webkit-scrollbar-track]:bg-transparent">
+      <div className="flex-1 overflow-y-auto px-5 py-6 [-ms-overflow-style:none] [scrollbar-width:none] md:px-8 [&::-webkit-scrollbar]:hidden">
         {(searchQuery || selectedIndustry !== "ALL") && (
           <div className="mb-5">
             <span className="text-xs text-slate-500 dark:text-[#888888]">

@@ -150,7 +150,7 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
   const initials = getCompanyInitials(company.name);
 
   return (
-    <div className="custom-scrollbar h-full overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 [&::-webkit-scrollbar-track]:bg-transparent">
+    <div className="h-full overflow-y-auto px-5 py-6 [-ms-overflow-style:none] [scrollbar-width:none] md:px-8 [&::-webkit-scrollbar]:hidden">
       {/* Single Unified Header Container */}
       <div className="mb-6 w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {/* Back Button Link */}
