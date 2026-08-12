@@ -5958,6 +5958,7 @@
     "selectMentorDesc": "The admin has suggested multiple mentors for your interview. Please review their profiles and choose one.",
     "loadingAssignedMentors": "Loading mentor profiles...",
     "noMentorsAvailable": "No mentors available",
+    "mentorAvailable": "mentor(s)",
     "noMentorsAvailableDesc": "There are no mentors available at the moment. Please contact the admin.",
     "sessions": "sessions",
     "year": "year",

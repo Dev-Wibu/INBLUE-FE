@@ -5955,6 +5955,7 @@
     "selectMentorDesc": "Admin đã đề xuất danh sách mentor cho buổi phỏng vấn của bạn. Vui lòng xem thông tin và chọn 1 Mentor phù hợp.",
     "loadingAssignedMentors": "Đang tải thông tin mentor...",
     "noMentorsAvailable": "Không có mentor nào",
+    "mentorAvailable": "mentor(s)",
     "noMentorsAvailableDesc": "Hiện không có mentor nào khả dụng. Vui lòng liên hệ admin.",
     "sessions": "buổi",
     "year": "năm",

@@ -290,7 +290,7 @@ export function AssignMentorDialog({
                   <Input
                     ref={searchInputRef}
                     type="text"
-                    placeholder={t("common.searchMentor", "Tìm kiếm mentor...")}
+                    placeholder={t("common.searchMentorPlaceholder", "Tìm kiếm mentor...")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="h-10 pl-9"
