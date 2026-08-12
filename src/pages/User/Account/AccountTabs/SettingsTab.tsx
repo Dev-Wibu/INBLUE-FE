@@ -28,7 +28,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 export function SettingsTab() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
@@ -61,13 +61,14 @@ export function SettingsTab() {
       <div className="col-span-12 space-y-6 lg:col-span-8">
         <Card className="space-y-6 border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="mb-6 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-            <Eye className="h-4 w-4 text-[#6366f1]" /> Giao diện & Hiển thị
+            <Eye className="h-4 w-4 text-[#6366f1]" />{" "}
+            {t("userAccount.settingsDisplayAndInterface", "Display & Interface")}
           </h3>
 
           <div className="grid grid-cols-2 gap-4">
             <fieldset className="space-y-2">
               <Label className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                Giao diện màu
+                {t("userAccount.settingsColorTheme", "Color theme")}
               </Label>
               <RadioGroup
                 value={theme}
@@ -77,9 +78,9 @@ export function SettingsTab() {
                 }}
                 className="grid grid-cols-3 gap-2">
                 {[
-                  { v: "light", l: "Sáng", i: Sun },
-                  { v: "dark", l: "Tối", i: Moon },
-                  { v: "system", l: "Hệ thống", i: Monitor },
+                  { v: "light", l: t("userAccount.settingsLight", "Light"), i: Sun },
+                  { v: "dark", l: t("userAccount.settingsDark", "Dark"), i: Moon },
+                  { v: "system", l: t("userAccount.settingsSystem", "System"), i: Monitor },
                 ].map((o) => (
                   <Label
                     key={o.v}
@@ -101,13 +102,13 @@ export function SettingsTab() {
             <div className="space-y-4">
               <fieldset className="space-y-2">
                 <Label className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Cỡ chữ
+                  {t("userAccount.settingsFontSize", "Font size")}
                 </Label>
                 <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
                   {[
-                    { v: "small", l: "Nhỏ" },
-                    { v: "default", l: "Mặc định" },
-                    { v: "large", l: "Lớn" },
+                    { v: "small", l: t("userAccount.settingsSmall", "Small") },
+                    { v: "default", l: t("userAccount.settingsDefault", "Default") },
+                    { v: "large", l: t("userAccount.settingsLarge", "Large") },
                   ].map((o) => (
                     <button
                       key={o.v}
@@ -125,7 +126,7 @@ export function SettingsTab() {
               </fieldset>
               <fieldset className="space-y-2">
                 <Label className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Ngôn ngữ
+                  {t("userAccount.settingsLanguage", "Language")}
                 </Label>
                 <RadioGroup
                   value={language}
@@ -160,15 +161,16 @@ export function SettingsTab() {
         <div className="grid grid-cols-2 gap-4">
           <Card className="border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-              <Zap className="h-4 w-4 text-[#6366f1]" /> Năng suất
+              <Zap className="h-4 w-4 text-[#6366f1]" />{" "}
+              {t("userAccount.settingsProductivity", "Productivity")}
             </h3>
             <RadioGroup
               value={sidebarBehavior}
               onValueChange={(v) => setSidebarBehavior(v as SidebarBehavior)}
               className="space-y-2">
               {[
-                { v: "always-open", l: "Luôn mở" },
-                { v: "auto-collapse", l: "Thu gọn" },
+                { v: "always-open", l: t("userAccount.settingsAlwaysOpen", "Always open") },
+                { v: "auto-collapse", l: t("userAccount.settingsAutoCollapse", "Auto collapse") },
               ].map((o) => (
                 <Label
                   key={o.v}
@@ -188,11 +190,12 @@ export function SettingsTab() {
 
           <Card className="border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-              <Bell className="h-4 w-4 text-[#6366f1]" /> Thông báo
+              <Bell className="h-4 w-4 text-[#6366f1]" />{" "}
+              {t("userAccount.settingsNotifications", "Notifications")}
             </h3>
             <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
               <div className="flex items-center justify-between">
-                <Label>Âm thanh</Label>
+                <Label>{t("userAccount.settingsSound", "Sound")}</Label>
                 <Switch
                   className="scale-75"
                   checked={muteSoundNotification}
@@ -200,7 +203,7 @@ export function SettingsTab() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label>Popup Toast</Label>
+                <Label>{t("userAccount.settingsPopupToast", "Popup Toast")}</Label>
                 <Switch
                   className="scale-75"
                   checked={muteToastNotification}
@@ -217,14 +220,18 @@ export function SettingsTab() {
         <Card className="space-y-6 rounded-xl border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="space-y-2">
             <h4 className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-slate-400">
-              <Shield className="h-3 w-3" /> BẢO MẬT DỮ LIỆU
+              <Shield className="h-3 w-3" />{" "}
+              {t("userAccount.settingsDataSecurity", "DATA SECURITY")}
             </h4>
             <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-              Thông tin cá nhân và dữ liệu phỏng vấn của bạn được bảo mật tuyệt đối và mã hóa theo
-              tiêu chuẩn. Hệ thống không chia sẻ dữ liệu cho bên thứ ba.
+              {t(
+                "userAccount.settingsSecurityMessage",
+                "Your personal information and interview data are securely encrypted. The system does not share data with third parties."
+              )}
             </p>
             <a href="#" className="flex items-center gap-1 text-xs text-[#6366f1] hover:underline">
-              Chính sách bảo mật <ExternalLink className="h-3 w-3" />
+              {t("userAccount.settingsPrivacyPolicy", "Privacy Policy")}{" "}
+              <ExternalLink className="h-3 w-3" />
             </a>
           </div>
 
@@ -232,17 +239,20 @@ export function SettingsTab() {
 
           <div className="space-y-2">
             <h4 className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-slate-400">
-              <FileText className="h-3 w-3" /> ĐIỀU KHOẢN & PHÁP LÝ
+              <FileText className="h-3 w-3" />{" "}
+              {t("userAccount.settingsTermsAndLegal", "TERMS & LEGAL")}
             </h4>
             <a
               href="#"
               className="block text-xs text-slate-500 transition-colors hover:text-[#6366f1]">
-              Điều khoản dịch vụ <ExternalLink className="inline h-3 w-3" />
+              {t("userAccount.settingsTermsOfService", "Terms of Service")}{" "}
+              <ExternalLink className="inline h-3 w-3" />
             </a>
             <a
               href="#"
               className="block text-xs text-slate-500 transition-colors hover:text-[#6366f1]">
-              Quy định sử dụng AI <ExternalLink className="inline h-3 w-3" />
+              {t("userAccount.settingsAiUsagePolicy", "AI Usage Policy")}{" "}
+              <ExternalLink className="inline h-3 w-3" />
             </a>
           </div>
 
@@ -250,29 +260,34 @@ export function SettingsTab() {
 
           <div className="space-y-2">
             <h4 className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-slate-400">
-              <HelpCircle className="h-3 w-3" /> HỖ TRỢ
+              <HelpCircle className="h-3 w-3" /> {t("userAccount.settingsSupport", "SUPPORT")}
             </h4>
             <a
               href="#"
               className="block text-xs text-slate-500 transition-colors hover:text-[#6366f1]">
-              Trung tâm trợ giúp (FAQ) <ExternalLink className="inline h-3 w-3" />
+              {t("userAccount.settingsHelpCenter", "Help Center (FAQ)")}{" "}
+              <ExternalLink className="inline h-3 w-3" />
             </a>
             <a
               href="#"
               className="block text-xs text-slate-500 transition-colors hover:text-[#6366f1]">
-              Báo lỗi / Góp ý tính năng <ExternalLink className="inline h-3 w-3" />
+              {t("userAccount.settingsReportBug", "Report Bug / Feature Suggestion")}{" "}
+              <ExternalLink className="inline h-3 w-3" />
             </a>
           </div>
 
           <div className="space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-            <div className="text-[10px] text-slate-400 italic">✨ Cài đặt được tự động lưu</div>
+            <div className="text-[10px] text-slate-400 italic">
+              ✨ {t("userAccount.settingsAutoSaved", "Settings are automatically saved")}
+            </div>
             <div className="text-[10px] text-slate-400">INBLUE AI Platform • v1.2.0</div>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleReset}
               className="h-8 w-full justify-start text-[11px] text-slate-500 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800">
-              <RotateCcw className="mr-2 h-3 w-3" /> Khôi phục mặc định
+              <RotateCcw className="mr-2 h-3 w-3" />{" "}
+              {t("userAccount.settingsResetToDefault", "Reset to default")}
             </Button>
           </div>
         </Card>

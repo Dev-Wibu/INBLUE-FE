@@ -1,19 +1,11 @@
-import type { UserScheduleEventDto } from "@/hooks/useUserSchedule";
+import type { MentorScheduleEventDto } from "@/hooks/useMentorSchedule";
 import type { Session } from "@/interfaces";
 import { formatTime, parseBackendDate, toVietnamDateKey } from "@/lib/formatting";
 import i18n from "@/lib/i18n";
 
-export const USER_CALENDAR_STATUSES = [
-  "DRAFT",
-  "SCHEDULED",
-  "PAID",
-  "ONGOING",
-  "COMPLETED",
-  "REJECTED",
-  "CANCELED",
-] as const;
+export const MENTOR_CALENDAR_STATUSES = ["SCHEDULED", "PAID", "ONGOING", "COMPLETED"] as const;
 
-const USER_CALENDAR_STATUS_SET = new Set<string>(USER_CALENDAR_STATUSES);
+const MENTOR_CALENDAR_STATUS_SET = new Set<string>(MENTOR_CALENDAR_STATUSES);
 
 export interface SessionStatusConfig {
   label: string;
@@ -23,13 +15,8 @@ export interface SessionStatusConfig {
 
 const t = (key: string) => i18n.t(key) as string;
 
-export const getSessionStatusConfig = (status?: string): SessionStatusConfig => {
+export const getMentorSessionStatusConfig = (status?: string): SessionStatusConfig => {
   const configs: Record<string, SessionStatusConfig> = {
-    DRAFT: {
-      label: t("common.waitingForApproval"),
-      dot: "bg-amber-500",
-      badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    },
     SCHEDULED: {
       label: t("common.comingSoon"),
       dot: "bg-blue-500",
@@ -50,6 +37,11 @@ export const getSessionStatusConfig = (status?: string): SessionStatusConfig => 
       dot: "bg-slate-400",
       badgeClass: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
     },
+    DRAFT: {
+      label: t("common.waitingForApproval"),
+      dot: "bg-amber-500",
+      badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    },
     REJECTED: {
       label: t("common.rejected"),
       dot: "bg-red-500",
@@ -64,20 +56,15 @@ export const getSessionStatusConfig = (status?: string): SessionStatusConfig => 
   return configs[status || "SCHEDULED"] || configs.SCHEDULED;
 };
 
-// Extended interface that preserves original event data for navigation
-export interface UserCalendarSession {
+export interface MentorCalendarSession {
   session: Session;
   joinDate: Date;
   dateKey: string;
   timestamp: number;
-  // Original event data for navigation
-  eventType?: string;
-  applicationDetailId?: number;
-  sessionId?: number;
 }
 
-export const isUserCalendarStatus = (status?: string): boolean => {
-  return status ? USER_CALENDAR_STATUS_SET.has(status) : false;
+export const isMentorCalendarStatus = (status?: string): boolean => {
+  return status ? MENTOR_CALENDAR_STATUS_SET.has(status) : false;
 };
 
 export const parseJoinDate = (joinTime?: string): Date | undefined => {
@@ -92,30 +79,78 @@ export const formatCalendarTime = (joinTime?: string): string => {
   return formatTime(joinTime, "--:--");
 };
 
-export const buildUserCalendarSessions = (sessions: Session[]): UserCalendarSession[] => {
-  return sessions
-    .filter((session) => isUserCalendarStatus(session.status))
-    .reduce<UserCalendarSession[]>((result, session) => {
-      const joinDate = parseJoinDate(session.joinTime);
-      if (!joinDate) {
+/**
+ * Transform MentorScheduleEventDto to Session-like format
+ */
+export const transformMentorScheduleEventToSession = (event: MentorScheduleEventDto): Session => {
+  return {
+    id: event.sessionId || 0,
+    roomName: event.title || event.jobTitle || "Schedule Event",
+    joinTime: event.start,
+    status: mapMentorEventStatusToSession(event.status),
+    roomUrl: event.roomUrl,
+    kioskId: event.kioskId,
+  };
+};
+
+/**
+ * Map schedule event status to session status for mentor
+ */
+export const mapMentorEventStatusToSession = (status?: string): Session["status"] => {
+  const statusMap: Record<string, Session["status"]> = {
+    SCHEDULED: "SCHEDULED",
+    PENDING: "SCHEDULED",
+    PAID: "PAID",
+    ONGOING: "ONGOING",
+    COMPLETED: "COMPLETED",
+    CANCELLED: "CANCELED",
+    CANCELED: "CANCELED",
+    REJECTED: "REJECTED",
+    DRAFT: "DRAFT",
+    // Kiosk statuses
+    AWAITING_MENTOR: "SCHEDULED",
+    MENTOR_ASSIGNED: "SCHEDULED",
+    ROOM_CREATED: "PAID",
+    IN_PROGRESS: "ONGOING",
+    // Application round statuses
+    AWAITING_CANDIDATE_SELECT_MENTOR: "SCHEDULED",
+    SLOT_PICKED: "SCHEDULED",
+    SUBMITTED: "SCHEDULED",
+    AI_EVALUATED: "COMPLETED",
+  };
+  return statusMap[status || ""] || "SCHEDULED";
+};
+
+/**
+ * Build calendar items from mentor schedule events
+ */
+export const buildCalendarSessionsFromEvents = (
+  events: MentorScheduleEventDto[]
+): MentorCalendarSession[] => {
+  return events
+    .filter((event) => event.start && event.status !== "CANCELLED" && event.status !== "CANCELED")
+    .reduce<MentorCalendarSession[]>((result, event) => {
+      const startDate = parseBackendDate(event.start);
+      if (!startDate) {
         return result;
       }
 
+      const sessionLike = transformMentorScheduleEventToSession(event);
       result.push({
-        session,
-        joinDate,
-        dateKey: toDateKey(joinDate),
-        timestamp: joinDate.getTime(),
+        session: sessionLike as Session,
+        joinDate: startDate,
+        dateKey: toDateKey(startDate),
+        timestamp: startDate.getTime(),
       });
       return result;
     }, [])
     .sort((a, b) => a.timestamp - b.timestamp);
 };
 
-export const groupUserCalendarByDate = (
-  items: UserCalendarSession[]
-): Map<string, UserCalendarSession[]> => {
-  const grouped = new Map<string, UserCalendarSession[]>();
+export const groupMentorCalendarByDate = (
+  items: MentorCalendarSession[]
+): Map<string, MentorCalendarSession[]> => {
+  const grouped = new Map<string, MentorCalendarSession[]>();
 
   for (const item of items) {
     const current = grouped.get(item.dateKey) ?? [];
@@ -128,75 +163,4 @@ export const groupUserCalendarByDate = (
   }
 
   return grouped;
-};
-
-/**
- * Transform UserScheduleEventDto from /api/users/schedule to Session-like format
- * for use with existing calendar components
- */
-export const transformScheduleEventToSession = (event: UserScheduleEventDto): Session => {
-  return {
-    id: event.sessionId || 0,
-    roomName: event.title || event.jobTitle || "Schedule Event",
-    joinTime: event.start,
-    status: mapEventStatusToSession(event.status),
-    roomUrl: event.roomUrl,
-    // Map eventType to determine type
-    kioskId: event.kioskId,
-  };
-};
-
-/**
- * Map schedule event status to session status
- */
-export const mapEventStatusToSession = (status?: string): Session["status"] => {
-  const statusMap: Record<string, Session["status"]> = {
-    SCHEDULED: "SCHEDULED",
-    PENDING: "DRAFT",
-    ONGOING: "ONGOING",
-    IN_PROGRESS: "ONGOING",
-    COMPLETED: "COMPLETED",
-    CANCELLED: "CANCELED",
-    CANCELED: "CANCELED",
-    REJECTED: "REJECTED",
-    PAID: "PAID",
-    DRAFT: "DRAFT",
-    // Kiosk statuses
-    AWAITING_MENTOR: "SCHEDULED",
-    MENTOR_ASSIGNED: "SCHEDULED",
-    ROOM_CREATED: "PAID",
-    // AI Interview statuses
-    CREATED: "DRAFT",
-  };
-  return statusMap[status || ""] || "SCHEDULED";
-};
-
-/**
- * Build calendar items from schedule events
- */
-export const buildCalendarSessionsFromEvents = (
-  events: UserScheduleEventDto[]
-): UserCalendarSession[] => {
-  return events
-    .filter((event) => event.start && event.status !== "CANCELLED" && event.status !== "CANCELED")
-    .reduce<UserCalendarSession[]>((result, event) => {
-      const startDate = parseBackendDate(event.start);
-      if (!startDate) {
-        return result;
-      }
-
-      const sessionLike = transformScheduleEventToSession(event);
-      result.push({
-        session: sessionLike as Session,
-        joinDate: startDate,
-        dateKey: toDateKey(startDate),
-        timestamp: startDate.getTime(),
-        // Preserve original event data for navigation
-        eventType: event.eventType,
-        applicationDetailId: event.applicationDetailId,
-        sessionId: event.sessionId,
-      });
-      return result;
-    }, [])
-    .sort((a, b) => a.timestamp - b.timestamp);
 };

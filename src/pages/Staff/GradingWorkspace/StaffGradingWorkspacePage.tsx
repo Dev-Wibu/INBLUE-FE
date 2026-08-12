@@ -1309,7 +1309,7 @@ export function StaffGradingWorkspacePage() {
   return (
     <div className={applicationTheme.page}>
       {/* Top Header Navigation */}
-      <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
+      <div className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto flex w-full max-w-[1700px] items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
             <Button
@@ -1318,7 +1318,7 @@ export function StaffGradingWorkspacePage() {
               onClick={() => navigate("/staff?tab=applicationGrading")}
               className="h-8 gap-1.5 px-2 text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>{t("userApplicationhistory.allApplications", "Danh sách chấm điểm")}</span>
+              <span>{t("userApplicationhistory.goBackToList", " Quay lại danh sách")}</span>
             </Button>
 
             <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
@@ -1337,7 +1337,7 @@ export function StaffGradingWorkspacePage() {
             <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
 
             <h1 className="truncate text-sm font-extrabold text-slate-900 dark:text-white">
-              {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+              {jdInfo?.title ?? t("application.applications", "Đơn ứng tuyển")}
             </h1>
           </div>
 
@@ -1351,9 +1351,7 @@ export function StaffGradingWorkspacePage() {
               }}
               className="h-8 gap-1.5 border-slate-200 text-xs font-bold dark:border-slate-800">
               <RefreshCw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">
-                {t("userApplicationhistory.reload", "Làm mới")}
-              </span>
+              <span className="hidden sm:inline">{t("common.reload")}</span>
             </Button>
           </div>
         </div>

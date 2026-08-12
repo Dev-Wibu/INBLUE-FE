@@ -220,7 +220,7 @@ export function StaffDashboardPage() {
         storageKey="staff_sidebar_collapsed"
         collapsed={isSidebarCollapsed}
         onCollapsedChange={setIsSidebarCollapsed}
-        showDesktopToggle={false}
+        showDesktopToggle
         logo={STAFF_SIDEBAR_LOGO}
         collapsedLogo={STAFF_SIDEBAR_LOGO_COLLAPSED}
         showSettings={false}

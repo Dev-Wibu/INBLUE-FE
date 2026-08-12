@@ -7,86 +7,54 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
-import { useSessions } from "@/hooks/useSession";
-import type { Session } from "@/interfaces";
-import { formatCurrency, formatDateTime, toTimestamp, toVietnamDateKey } from "@/lib/formatting";
-import { isSessionMentor } from "@/lib/session-mentor";
+import { useMentorSchedule } from "@/hooks/useMentorSchedule";
+import { formatDateTime, toVietnamDateKey } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
-import {
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Filter,
-  Star,
-  TrendingUp,
-  Users,
-} from "lucide-react";
-import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Clock, Filter, Star } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
+  buildCalendarSessionsFromEvents,
+  formatCalendarTime,
+  getMentorSessionStatusConfig,
+  groupMentorCalendarByDate,
   MENTOR_CALENDAR_STATUSES,
   type MentorCalendarSession,
-  buildMentorCalendarSessions,
-  formatCalendarTime,
-  groupMentorCalendarByDate,
-} from "./mentorSchedule.utils";
+} from "./mentorOverview.utils";
+
 const MAX_VISIBLE_SESSIONS = 2;
 const MOBILE_VIEW_AGENDA = "agenda";
 const MOBILE_VIEW_CALENDAR = "calendar";
-const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-const getStatusConfig = (
-  t: (_key: string) => string
-): Record<string, { label: string; dot: string; badgeClass: string }> => ({
-  SCHEDULED: {
-    label: t("common.comingSoon"),
-    dot: "bg-blue-500",
-    badgeClass: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  },
-  PAID: {
-    label: t("common.paid"),
-    dot: "bg-emerald-500",
-    badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  },
-  ONGOING: {
-    label: t("common.ongoing"),
-    dot: "bg-green-500",
-    badgeClass: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  },
-  COMPLETED: {
-    label: t("general.completed"),
-    dot: "bg-slate-500",
-    badgeClass: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-  },
-});
+
 const getDaysInMonth = (year: number, month: number): number => {
   return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 };
-const toDateKeyFromParts = (year: number, month: number, day: number) => {
+
+const toDateKeyFromParts = (year: number, month: number, day: number): string => {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 };
+
 const getFirstDayOfMonth = (year: number, month: number): number => {
   return new Date(Date.UTC(year, month, 1)).getUTCDay();
 };
+
 const toFilterDateKey = (value?: Date): string | undefined => {
-  if (!value) {
-    return undefined;
-  }
+  if (!value) return undefined;
   return toVietnamDateKey(value) || undefined;
 };
+
 const isDateKeyInRange = (dateKey: string, fromKey?: string, toKey?: string) => {
-  if (fromKey && dateKey < fromKey) {
-    return false;
-  }
-  if (toKey && dateKey > toKey) {
-    return false;
-  }
+  if (fromKey && dateKey < fromKey) return false;
+  if (toKey && dateKey > toKey) return false;
   return true;
 };
+
+const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+
 function AgendaSessionItem({
   item,
   onOpenDetail,
@@ -99,125 +67,169 @@ function AgendaSessionItem({
   onOpenReview: (_sessionId?: number) => void;
 }) {
   const { t } = useTranslation();
-  const statusConfig = useMemo(() => getStatusConfig(t), [t]);
-  const defaultStatusConfig = statusConfig.SCHEDULED;
-  const status = statusConfig[item.session.status || "SCHEDULED"] || defaultStatusConfig;
+  const status = getMentorSessionStatusConfig(item.session.status);
   const canJoinRoom =
     (item.session.status === "PAID" || item.session.status === "ONGOING") && !!item.session.roomUrl;
   const canReview = item.session.status === "COMPLETED";
+
   return (
-    <div className="space-y-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-colors dark:border-slate-800 dark:bg-slate-950/40">
+    <div className="space-y-3 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-2xs transition-colors hover:border-emerald-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-            {item.session.roomName ||
-              t("common.sessionVar0", {
-                var_0: item.session.id,
-              })}
+          <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
+            {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {t("common.student")}
-            {item.session.userId || "-"}
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {t("common.mentorWithId", { id: item.session.userId ?? "-" })}
           </p>
         </div>
-        <Badge className={cn("border-0", status.badgeClass)}>{status.label}</Badge>
+        <Badge className={cn("shrink-0 border-0 text-[10px] font-semibold", status.badgeClass)}>
+          {status.label}
+        </Badge>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-        <Clock className="h-3.5 w-3.5" />
-        <span>{formatDateTime(item.session.joinTime)}</span>
+      <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+        <Clock className="h-3.5 w-3.5 text-emerald-500" />
+        <span className="font-medium">{formatDateTime(item.session.joinTime)}</span>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" onClick={() => onOpenDetail(item.session.id)}>
-          {t("common.seeDetails")}
+      <div className="flex flex-wrap gap-2 pt-1">
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          onClick={() => onOpenDetail(item.session.id)}>
+          {t("common.seeDetails", "Xem chi tiết")}
         </Button>
         {canJoinRoom && (
           <Button
             size="sm"
-            className="bg-emerald-600 hover:bg-emerald-700"
+            className="h-7 bg-emerald-600 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             onClick={() => onOpenRoom(item.session.id)}>
-            {t("common.enterTheRoom")}
+            {t("common.enterTheRoom", "Vào phòng")}
           </Button>
         )}
         {canReview && (
-          <Button size="sm" variant="secondary" onClick={() => onOpenReview(item.session.id)}>
-            {t("common.evaluate")}
+          <Button
+            size="sm"
+            variant="secondary"
+            className="h-7 bg-emerald-50 text-xs font-medium text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300"
+            onClick={() => onOpenReview(item.session.id)}>
+            {t("common.evaluate", "Đánh giá")}
           </Button>
         )}
       </div>
     </div>
   );
 }
-const getReviewSortTimestamp = (review: { id?: number; session?: Session }) => {
-  const value = review.session?.endTime1 || review.session?.startTime1;
-  if (!value) {
-    return typeof review.id === "number" ? review.id : 0;
-  }
-  return toTimestamp(value) ?? 0;
-};
+
 function CalendarSessionEntry({
-  session,
+  item,
   onOpen,
 }: {
-  session: Session;
+  item: MentorCalendarSession;
   onOpen: (_sessionId?: number) => void;
 }) {
   const { t } = useTranslation();
-  const statusConfig = useMemo(() => getStatusConfig(t), [t]);
-  const defaultStatusConfig = statusConfig.SCHEDULED;
-  const cfg = statusConfig[session.status || "SCHEDULED"] || defaultStatusConfig;
+  const status = getMentorSessionStatusConfig(item.session.status);
+
   return (
     <button
-      onClick={() => onOpen(session.id)}
-      className="hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors">
-      <span className={`h-2 w-2 shrink-0 rounded-full ${cfg.dot}`} />
-      <span className="text-muted-foreground shrink-0">{formatCalendarTime(session.joinTime)}</span>
-      <span className="text-foreground flex-1 truncate font-medium">
-        {session.roomName ||
-          t("common.sessionVar0", {
-            var_0: session.id,
-          })}
+      onClick={() => onOpen(item.session.id)}
+      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-emerald-50/60 dark:hover:bg-slate-800">
+      <span className={cn("h-2 w-2 shrink-0 rounded-full", status.dot)} />
+      <span className="shrink-0 font-medium text-slate-500 dark:text-slate-400">
+        {formatCalendarTime(item.session.joinTime)}
       </span>
-      <Badge className={`${cfg.badgeClass} border-0 px-1.5 py-0 text-[10px]`}>{cfg.label}</Badge>
+      <span className="flex-1 truncate font-semibold text-slate-900 dark:text-slate-100">
+        {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
+      </span>
+      <Badge className={cn("border-0 px-1.5 py-0 text-[10px]", status.badgeClass)}>
+        {status.label}
+      </Badge>
     </button>
   );
 }
+
 export function MentorOverviewPage() {
   const { t, i18n } = useTranslation();
-  const MONTH_NAMES = useMemo(
-    () => [
-      t("common.january"),
-      t("common.february"),
-      t("common.march"),
-      t("common.april"),
-      t("common.may"),
-      t("common.june"),
-      t("common.july"),
-      t("common.august"),
-      t("common.september"),
-      t("common.october"),
-      t("common.november"),
-      t("common.december"),
-    ],
-    [t]
-  );
-  const statusConfig = useMemo(() => getStatusConfig(t), [t]);
-  const defaultStatusConfig = statusConfig.SCHEDULED;
   const navigate = useNavigate();
+
+  const agendaScrollRef = useRef<HTMLDivElement>(null);
+
   const user = useAuthStore((state) => state.user);
-  // 2026-08-02: BE reviews endpoint filters by `Mentor.id` (PK bảng
-  //   mentor), not `User.id` (JWT sub). Resolve Mentor.id via email.
   const { data: mentorProfile } = useCurrentMentorProfile();
   const mentorPk = (mentorProfile as { id?: number } | null)?.id ?? 0;
   const reviewsQueryMentorId = mentorPk || user?.id || 0;
-  // 2026-08-02: reverted to `useSessions` (admin endpoint) because
-  //   `useUserSessions` was returning `[]` for user 15 (BE filter behaves
-  //   differently than documented when userId == userId2). Admin endpoint
-  //   is permitAll for mentors in this project.
-  const { data: allSessions = [], isLoading: sessionsLoading } = useSessions();
+
+  // Date filter state (copied from old MentorOverview)
+  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+  const [toDate, setToDate] = useState<Date | undefined>(undefined);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([...MENTOR_CALENDAR_STATUSES]);
+
+  // Fetch schedule from new API endpoint
+  const { data: scheduleEvents = [], isLoading: scheduleLoading } = useMentorSchedule();
+
   const { data: reviews = [], isLoading: reviewsLoading } =
     useMentorReviewsByMentor(reviewsQueryMentorId);
+
+  // Transform schedule events to calendar format
+  const calendarItems = useMemo(
+    () => buildCalendarSessionsFromEvents(scheduleEvents),
+    [scheduleEvents]
+  );
+
+  const fromKey = useMemo(() => toFilterDateKey(fromDate), [fromDate]);
+  const toKey = useMemo(() => toFilterDateKey(toDate), [toDate]);
+
+  const filteredCalendarItems = useMemo(() => {
+    return calendarItems.filter((item) => {
+      const status = item.session.status || "";
+      return selectedStatuses.includes(status) && isDateKeyInRange(item.dateKey, fromKey, toKey);
+    });
+  }, [calendarItems, selectedStatuses, fromKey, toKey]);
+
+  const sessionsByDate = useMemo(
+    () => groupMentorCalendarByDate(filteredCalendarItems),
+    [filteredCalendarItems]
+  );
+
+  // Calculate stats from events
+  const totalInterviews = scheduleEvents.length;
+  const completedInterviews = scheduleEvents.filter(
+    (e) => e.status === "COMPLETED" || e.status === "AI_EVALUATED"
+  ).length;
+  const upcomingInterviews = scheduleEvents.filter(
+    (e) =>
+      e.status === "SCHEDULED" ||
+      e.status === "PENDING" ||
+      e.status === "PAID" ||
+      e.status === "ONGOING" ||
+      e.status === "IN_PROGRESS"
+  ).length;
+  const pendingInterviews = scheduleEvents.filter(
+    (e) =>
+      e.status === "DRAFT" ||
+      e.status === "AWAITING_MENTOR" ||
+      e.status === "AWAITING_CANDIDATE_SELECT_MENTOR" ||
+      e.status === "SLOT_PICKED"
+  ).length;
+
+  const MONTH_NAMES = [
+    t("common.january"),
+    t("common.february"),
+    t("common.march"),
+    t("common.april"),
+    t("common.may"),
+    t("common.june"),
+    t("common.july"),
+    t("common.august"),
+    t("common.september"),
+    t("common.october"),
+    t("common.november"),
+    t("common.december"),
+  ];
+
   const now = new Date();
   const nowTimestamp = now.getTime();
   const fallbackTodayKey = toDateKeyFromParts(now.getFullYear(), now.getMonth(), now.getDate());
@@ -225,6 +237,7 @@ export function MentorOverviewPage() {
   const [todayYearRaw = "", todayMonthRaw = ""] = todayKey.split("-");
   const initialYear = Number.parseInt(todayYearRaw, 10);
   const initialMonth = Number.parseInt(todayMonthRaw, 10) - 1;
+
   const [currentYear, setCurrentYear] = useState(
     Number.isFinite(initialYear) ? initialYear : now.getFullYear()
   );
@@ -232,72 +245,43 @@ export function MentorOverviewPage() {
     Number.isFinite(initialMonth) ? initialMonth : now.getMonth()
   );
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([...MENTOR_CALENDAR_STATUSES]);
-  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
-  const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const [mobileView, setMobileView] = useState<string>(MOBILE_VIEW_AGENDA);
-  const mentorSessions = useMemo(() => {
-    if (!mentorPk && !user?.id) {
-      return [];
-    }
-    return allSessions.filter((session) => isSessionMentor(session, mentorPk || user?.id));
-  }, [allSessions, mentorPk, user]);
-  const calendarItems = useMemo(() => {
-    return buildMentorCalendarSessions(allSessions, mentorPk || user?.id);
-  }, [allSessions, mentorPk, user]);
-  const fromKey = useMemo(() => toFilterDateKey(fromDate), [fromDate]);
-  const toKey = useMemo(() => toFilterDateKey(toDate), [toDate]);
-  const filteredCalendarItems = useMemo(() => {
-    return calendarItems.filter((item) => {
-      const status = item.session.status || "";
-      return selectedStatuses.includes(status) && isDateKeyInRange(item.dateKey, fromKey, toKey);
-    });
-  }, [calendarItems, selectedStatuses, fromKey, toKey]);
-  const sessionsByDate = useMemo(() => {
-    return groupMentorCalendarByDate(filteredCalendarItems);
-  }, [filteredCalendarItems]);
-  const totalSessions = mentorSessions.length;
-  const completedSessions = mentorSessions.filter(
-    (session) => session.status === "COMPLETED"
-  ).length;
-  const upcomingSessions = mentorSessions.filter(
-    (session) =>
-      session.status === "SCHEDULED" || session.status === "PAID" || session.status === "ONGOING"
-  ).length;
-  const totalStudents = new Set(
-    mentorSessions
-      .map((session) => session.userId)
-      .filter((studentId): studentId is number => typeof studentId === "number")
-  ).size;
-  const ratings = reviews
-    .map((review) => review.rating)
-    .filter((rating): rating is number => typeof rating === "number");
-  const averageRating = ratings.length
-    ? (ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length).toFixed(1)
-    : "0.0";
-  const totalEarnings = mentorSessions.reduce((sum, session) => {
-    if (session.status !== "COMPLETED") {
-      return sum;
-    }
-    return typeof session.totalPrice === "number" ? sum + session.totalPrice : sum;
-  }, 0);
+
+  // Upcoming schedule items for the sidebar
   const upcomingScheduleItems = filteredCalendarItems
-    .filter((item) => item.timestamp >= nowTimestamp && item.session.status !== "COMPLETED")
+    .filter(
+      (item) =>
+        item.timestamp >= nowTimestamp &&
+        item.session.status !== "COMPLETED" &&
+        item.session.status !== "REJECTED" &&
+        item.session.status !== "CANCELED"
+    )
     .slice(0, 4);
+
   const selectedDayItems = sessionsByDate.get(selectedDateKey) || [];
+
   const selectedDateDisplay = useMemo(() => {
     const [year, month, day] = selectedDateKey.split("-").map(Number);
-    if (!year || !month || !day) {
-      return t("common.selectedDate");
-    }
+    if (!year || !month || !day) return t("common.selectedDate");
     const dateFnsLocale = i18n.language === "en" ? enUS : vi;
     return formatDateFn(new Date(year, month - 1, day), "EEEE, dd/MM/yyyy", {
       locale: dateFnsLocale,
     });
   }, [selectedDateKey, t, i18n]);
-  const recentReviews = [...reviews]
-    .sort((a, b) => getReviewSortTimestamp(b) - getReviewSortTimestamp(a))
-    .slice(0, 4);
+
+  // Reset agenda scroll whenever the selected date changes
+  useEffect(() => {
+    const reset = () => {
+      if (agendaScrollRef.current) {
+        agendaScrollRef.current.scrollTop = 0;
+      }
+    };
+    reset();
+    requestAnimationFrame(reset);
+    const timer = setTimeout(reset, 0);
+    return () => clearTimeout(timer);
+  }, [selectedDateKey, scheduleLoading]);
+
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
   const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
@@ -315,37 +299,43 @@ export function MentorOverviewPage() {
   for (let index = 0; index < calendarDays.length; index += 7) {
     weeks.push(calendarDays.slice(index, index + 7));
   }
+
   const handlePrevMonth = () => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
-      setCurrentYear((prevYear) => prevYear - 1);
-      return;
+      setCurrentYear((p) => p - 1);
+    } else {
+      setCurrentMonth((p) => p - 1);
     }
-    setCurrentMonth((prevMonth) => prevMonth - 1);
   };
+
   const handleNextMonth = () => {
     if (currentMonth === 11) {
       setCurrentMonth(0);
-      setCurrentYear((prevYear) => prevYear + 1);
-      return;
+      setCurrentYear((p) => p + 1);
+    } else {
+      setCurrentMonth((p) => p + 1);
     }
-    setCurrentMonth((prevMonth) => prevMonth + 1);
   };
+
   const handleOpenSessionDetail = (sessionId?: number) => {
     if (typeof sessionId === "number") {
       navigate(`/mentor/sessions/${sessionId}`);
     }
   };
+
   const handleOpenSessionRoom = (sessionId?: number) => {
     if (typeof sessionId === "number") {
       navigate(`/mentor/sessions/room/${sessionId}`);
     }
   };
+
   const handleOpenSessionReview = (sessionId?: number) => {
     if (typeof sessionId === "number") {
       navigate(`/mentor/sessions/${sessionId}/review`);
     }
   };
+
   const toggleStatus = (status: string) => {
     setSelectedStatuses((current) => {
       if (current.includes(status)) {
@@ -354,148 +344,190 @@ export function MentorOverviewPage() {
       return [...current, status];
     });
   };
+
   const resetFilters = () => {
     setSelectedStatuses([...MENTOR_CALENDAR_STATUSES]);
     setFromDate(undefined);
     setToDate(undefined);
   };
+
   const jumpToToday = () => {
     setCurrentYear(Number.isFinite(initialYear) ? initialYear : now.getFullYear());
     setCurrentMonth(Number.isFinite(initialMonth) ? initialMonth : now.getMonth());
     setSelectedDateKey(todayKey);
   };
+
+  // Recent reviews
+  const recentReviews = useMemo(() => {
+    return [...reviews]
+      .sort((a, b) => {
+        const aTime = a.session?.endTime1 || a.session?.startTime1 || 0;
+        const bTime = b.session?.endTime1 || b.session?.startTime1 || 0;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      })
+      .slice(0, 4);
+  }, [reviews]);
+
   const renderCalendarContent = () => (
-    <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-      <CardHeader className="gap-4 pb-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <CardTitle className="text-xl font-bold uppercase">
-              {MONTH_NAMES[currentMonth]} {currentYear}
-            </CardTitle>
-            <CardDescription>
-              {t("mentorOverview.mentoringAppointmentScheduleByMonth")}
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handlePrevMonth}
-              aria-label={t("common.lastMonth")}>
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleNextMonth}
-              aria-label={t("common.nextMonth")}>
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={jumpToToday}>
-              {t("common.today")}
-            </Button>
-          </div>
+    <Card className="flex flex-col overflow-hidden border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <CardHeader className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+        <div>
+          <CardTitle className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+            {MONTH_NAMES[currentMonth]} {currentYear}
+          </CardTitle>
+          <CardDescription className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {t("common.clickOnTheDateToSeeDetails", "Nhấp vào ngày để xem chi tiết lịch")}
+          </CardDescription>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          {MENTOR_CALENDAR_STATUSES.map((status) => {
-            const cfg = statusConfig[status] || defaultStatusConfig;
-            return (
-              <span
-                key={status}
-                className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
-                <span className={`h-2.5 w-2.5 rounded-full ${cfg.dot}`} />
-                {cfg.label}
-              </span>
-            );
-          })}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={jumpToToday}
+            className="h-8 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+            {t("common.today", "Hôm nay")}
+          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 dark:border-slate-700 dark:bg-slate-800"
+              onClick={handlePrevMonth}
+              aria-label={t("common.previousMonth")}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 dark:border-slate-700 dark:bg-slate-800"
+              onClick={handleNextMonth}
+              aria-label={t("common.nextMonth")}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent>
-        <div className="grid grid-cols-7 gap-1 border-b border-slate-200 pb-2 dark:border-slate-800">
+      <CardContent className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-auto pt-4">
+        {/* Legend */}
+        <div className="mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+            {t("common.legend")}:
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-blue-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.comingSoon", "Sắp diễn ra")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.paid", "Đã thanh toán")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-green-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.ongoing", "Đang diễn ra")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-slate-400" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("general.completed", "Hoàn thành")}
+            </span>
+          </div>
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="grid w-full grid-cols-7 border-b border-slate-200 pb-2.5 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {WEEK_DAYS.map((day) => (
-            <div
-              key={day}
-              className="text-center text-xs font-semibold tracking-wide text-slate-500 uppercase">
-              {day}
-            </div>
+            <div key={day}>{day}</div>
           ))}
         </div>
 
-        <div className="mt-2 space-y-1">
-          {weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="grid grid-cols-7 gap-1">
-              {week.map((day, dayIndex) => {
+        <div className="flex flex-col">
+          {weeks.map((week, weekIdx) => (
+            <div
+              key={weekIdx}
+              className="grid w-full min-w-[840px] grid-cols-7 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800"
+              style={{ minHeight: "100px" }}>
+              {week.map((day, dayIdx) => {
                 if (day === null) {
                   return (
                     <div
-                      key={`${weekIndex}-${dayIndex}`}
-                      className="min-h-32 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 opacity-50 dark:border-slate-800 dark:bg-slate-900/20"
+                      key={`empty-${weekIdx}-${dayIdx}`}
+                      className="bg-slate-50/40 p-1.5 dark:bg-slate-950/30"
                     />
                   );
                 }
+
                 const dateKey = toDateKeyFromParts(currentYear, currentMonth, day);
                 const dayItems = sessionsByDate.get(dateKey) || [];
-                const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
-                const overflowCount = dayItems.length - MAX_VISIBLE_SESSIONS;
-                const isToday = dateKey === todayKey;
                 const isSelected = dateKey === selectedDateKey;
+                const isToday = dateKey === todayKey;
+                const hasEvents = dayItems.length > 0;
+                const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
+                const overflowCount = Math.max(0, dayItems.length - MAX_VISIBLE_SESSIONS);
+
                 return (
                   <div
-                    key={`${weekIndex}-${dayIndex}`}
+                    key={dateKey}
+                    onClick={() => setSelectedDateKey(dateKey)}
                     className={cn(
-                      "bg-background min-h-32 rounded-xl border p-2.5 transition-colors",
+                      "group relative flex flex-1 cursor-pointer flex-col gap-1.5 overflow-hidden p-2 transition-all",
                       isSelected
-                        ? "border-emerald-500 ring-1 ring-emerald-500/30"
-                        : isToday
-                          ? "border-blue-400/70 bg-blue-50/50 dark:border-blue-700 dark:bg-blue-950/20"
-                          : "border-slate-200/80 dark:border-slate-800",
-                      !isSelected &&
-                        dayItems.length > 0 &&
-                        "hover:border-slate-300 dark:hover:border-slate-700"
+                        ? "bg-emerald-500/10 ring-2 ring-emerald-500/50 dark:bg-emerald-950/60 dark:ring-emerald-500/60"
+                        : hasEvents
+                          ? "border border-emerald-200/80 bg-emerald-50/90 shadow-2xs dark:border-emerald-900/60 dark:bg-emerald-950/40"
+                          : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
                     )}>
-                    <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center justify-between">
                       <button
-                        onClick={() => setSelectedDateKey(dateKey)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDateKey(dateKey);
+                        }}
                         className={cn(
-                          "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-semibold transition-colors",
+                          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors",
                           isSelected
-                            ? "bg-emerald-600 text-white"
+                            ? "bg-emerald-600 text-white shadow-xs"
                             : isToday
-                              ? "bg-blue-600 text-white"
-                              : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                              ? "bg-emerald-600 font-extrabold text-white shadow-xs"
+                              : hasEvents
+                                ? "bg-emerald-600/15 font-extrabold text-emerald-700 dark:bg-emerald-400/20 dark:text-emerald-300"
+                                : "text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800"
                         )}
-                        aria-label={t("general.selectDate", {
-                          var_0: day,
-                        })}>
+                        aria-label={t("general.selectDate", { var_0: day })}>
                         {String(day).padStart(2, "0")}
                       </button>
-                      {dayItems.length > 0 && (
-                        <Badge className="border-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      {hasEvents && (
+                        <Badge className="border-0 bg-emerald-600 px-1.5 py-0 text-[10px] font-bold text-white shadow-2xs dark:bg-emerald-500">
                           {dayItems.length}
                         </Badge>
                       )}
                     </div>
 
-                    {dayItems.length > 0 && (
+                    {hasEvents && (
                       <div className="space-y-1">
                         {visibleItems.map((item) => {
-                          const cfg =
-                            statusConfig[item.session.status || "SCHEDULED"] || defaultStatusConfig;
+                          const cfg = getMentorSessionStatusConfig(item.session.status);
                           return (
                             <button
                               key={item.session.id}
                               onClick={() => handleOpenSessionDetail(item.session.id)}
                               className={cn(
-                                "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] transition-colors hover:opacity-90",
+                                "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] font-medium shadow-2xs transition-colors hover:opacity-90",
                                 cfg.badgeClass
                               )}>
                               <Clock className="h-3 w-3 shrink-0" />
-                              <span className="shrink-0 font-medium">
+                              <span className="shrink-0 font-semibold">
                                 {formatCalendarTime(item.session.joinTime)}
                               </span>
-                              <span className="truncate">
+                              <span className="truncate font-semibold">
                                 {item.session.roomName || `#${item.session.id}`}
                               </span>
                             </button>
@@ -505,16 +537,16 @@ export function MentorOverviewPage() {
                         {overflowCount > 0 && (
                           <Popover>
                             <PopoverTrigger asChild>
-                              <button className="w-full rounded-md border border-dashed border-slate-300 px-2 py-1 text-center text-[11px] font-medium text-slate-600 transition-colors hover:border-slate-400 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600">
-                                +{overflowCount} {t("common.anotherSession")}
+                              <button className="w-full rounded-md border border-dashed border-emerald-300 bg-white/80 px-2 py-0.5 text-center text-[10px] font-bold text-emerald-600 transition-colors hover:border-emerald-400 dark:border-emerald-700 dark:bg-slate-900 dark:text-emerald-300">
+                                +{overflowCount} {t("common.anotherSession", "bài nữa")}
                               </button>
                             </PopoverTrigger>
                             <PopoverContent
-                              className="w-80 p-2"
+                              className="w-80 p-2 dark:border-slate-800 dark:bg-slate-900"
                               side="bottom"
                               align="start"
                               sideOffset={8}>
-                              <p className="mb-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
                                 {t("general.session5", {
                                   var_0: String(day).padStart(2, "0"),
                                   var_1: String(currentMonth + 1).padStart(2, "0"),
@@ -526,7 +558,7 @@ export function MentorOverviewPage() {
                                 {dayItems.map((item) => (
                                   <CalendarSessionEntry
                                     key={item.session.id}
-                                    session={item.session}
+                                    item={item}
                                     onOpen={handleOpenSessionDetail}
                                   />
                                 ))}
@@ -545,23 +577,34 @@ export function MentorOverviewPage() {
       </CardContent>
     </Card>
   );
-  const renderAgendaContent = () => (
-    <Card className="rounded-2xl border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-      <CardHeader className="space-y-4 pb-4">
-        <div className="space-y-1">
-          <CardTitle className="text-lg">{t("common.appointmentScheduleByDay")}</CardTitle>
-          <CardDescription className="capitalize">{selectedDateDisplay}</CardDescription>
-        </div>
 
-        <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/30">
-          <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+  const renderAgendaContent = () => (
+    <div
+      key={`agenda-${selectedDateKey}`}
+      className="flex h-[580px] max-h-[580px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="shrink-0 border-b border-slate-100 px-4 pt-4 pb-3 dark:border-slate-800">
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          {t("common.appointmentScheduleByDay", "Lịch hẹn theo ngày")}
+        </h3>
+        <p className="text-xs font-semibold text-emerald-600 capitalize dark:text-emerald-400">
+          {selectedDateDisplay}
+        </p>
+      </div>
+
+      <div
+        className="flex min-h-0 flex-1 scroll-pb-6 flex-col gap-4 overflow-y-auto px-4 pt-4 pb-10"
+        ref={agendaScrollRef}>
+        {/* Filter Section */}
+        <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
             <Filter className="h-4 w-4" />
-            {t("common.filter")}
+            {t("common.filter", "Bộ lọc")}
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          {/* Status Filter Buttons */}
+          <div className="mb-3 flex flex-wrap gap-2">
             {MENTOR_CALENDAR_STATUSES.map((status) => {
-              const cfg = statusConfig[status] || defaultStatusConfig;
+              const cfg = getMentorSessionStatusConfig(status);
               const active = selectedStatuses.includes(status);
               return (
                 <Button
@@ -569,14 +612,15 @@ export function MentorOverviewPage() {
                   size="sm"
                   variant={active ? "default" : "outline"}
                   onClick={() => toggleStatus(status)}
-                  className={cn("h-8", active && "bg-emerald-600 hover:bg-emerald-700")}>
-                  <span className={`mr-1.5 h-2 w-2 rounded-full ${cfg.dot}`} />
+                  className={cn("h-7 text-xs", active && "bg-emerald-600 hover:bg-emerald-700")}>
+                  <span className={cn("mr-1.5 h-2 w-2 rounded-full", cfg.dot)} />
                   {cfg.label}
                 </Button>
               );
             })}
           </div>
 
+          {/* Date Range Filter */}
           <div className="grid gap-2 sm:grid-cols-2">
             <DateTimePicker
               value={fromDate}
@@ -588,88 +632,105 @@ export function MentorOverviewPage() {
               }}
               showTime={false}
               themeVariant="mentor"
-              placeholder={t("common.fromDate")}
+              placeholder={t("common.fromDate", "Từ ngày")}
             />
-
             <DateTimePicker
               value={toDate}
               onChange={(value) => setToDate(value || undefined)}
               showTime={false}
               minDate={fromDate}
               themeVariant="mentor"
-              placeholder={t("common.comeDay")}
+              placeholder={t("common.comeDay", "Đến ngày")}
             />
           </div>
 
-          <Button variant="ghost" size="sm" className="w-fit" onClick={resetFilters}>
-            {t("common.resetTheFilter")}
+          <Button variant="ghost" size="sm" className="mt-2 w-fit" onClick={resetFilters}>
+            {t("common.resetTheFilter", "Đặt lại bộ lọc")}
           </Button>
         </div>
-      </CardHeader>
 
-      <CardContent className="space-y-3">
-        {sessionsLoading ? (
+        {/* Selected Day Agenda Items */}
+        {scheduleLoading ? (
           <div className="space-y-3">
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
+            <Skeleton className="h-20 rounded-xl" />
+            <Skeleton className="h-20 rounded-xl" />
           </div>
         ) : selectedDayItems.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center dark:border-slate-700">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              {t("common.thereAreNoAppointmentsAvailableFor")}
+          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center dark:border-slate-800 dark:bg-slate-950/40">
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {t(
+                "common.thereAreNoAppointmentsAvailableFor",
+                "Không có lịch hẹn trong ngày đã chọn"
+              )}
             </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("common.tryChangingTheDateOrAdjustingTheF")}
+            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              {t(
+                "common.selectAnotherDateOnCalendar",
+                "Nhấp vào ngày khác trên lịch để xem thông tin."
+              )}
             </p>
           </div>
         ) : (
-          selectedDayItems.map((item) => (
-            <AgendaSessionItem
-              key={item.session.id}
-              item={item}
-              onOpenDetail={handleOpenSessionDetail}
-              onOpenRoom={handleOpenSessionRoom}
-              onOpenReview={handleOpenSessionReview}
-            />
-          ))
+          <div className="space-y-3">
+            {selectedDayItems.map((item) => (
+              <AgendaSessionItem
+                key={item.session.id}
+                item={item}
+                onOpenDetail={handleOpenSessionDetail}
+                onOpenRoom={handleOpenSessionRoom}
+                onOpenReview={handleOpenSessionReview}
+              />
+            ))}
+          </div>
         )}
 
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/30">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              {t("mentorOverview.sessionsToFollow")}
+        {/* Upcoming Sessions Box */}
+        <div className="mt-2 rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/30">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+              {t("userOverview.upcomingSession", "Phiên sắp tới")}
             </p>
-            <Button variant="outline" size="sm" onClick={() => navigate("/mentor?tab=sessions")}>
-              {t("mentorOverview.seeAll")}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 px-2 text-[11px] font-semibold dark:border-slate-700 dark:bg-slate-800"
+              onClick={() => navigate("/mentor?tab=sessions")}>
+              {t("common.viewHistory", "Xem lịch sử")}
             </Button>
           </div>
 
           {upcomingScheduleItems.length === 0 ? (
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {t("mentorOverview.thereAreCurrentlyNoSessions")}
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              {t(
+                "userOverview.thereAreCurrentlyNoSessions",
+                "Hiện chưa có phiên nào cần theo dõi."
+              )}
             </p>
           ) : (
             <div className="space-y-2">
               {upcomingScheduleItems.map((item) => {
-                const cfg = statusConfig[item.session.status || "SCHEDULED"] || defaultStatusConfig;
+                const cfg = getMentorSessionStatusConfig(item.session.status);
                 return (
                   <button
                     key={item.session.id}
                     onClick={() => handleOpenSessionDetail(item.session.id)}
-                    className="hover:bg-background flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors dark:border-slate-800 dark:bg-slate-950/50">
+                    className="flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors hover:border-emerald-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
                     <div className="min-w-0">
-                      <p className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
                         {item.session.roomName ||
-                          t("common.sessionVar0", {
-                            var_0: item.session.id,
-                          })}
+                          t("common.sessionVar0", { var_0: item.session.id })}
                       </p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
                         {formatDateTime(item.session.joinTime)}
                       </p>
                     </div>
-                    <Badge className={cn("border-0", cfg.badgeClass)}>{cfg.label}</Badge>
+                    <Badge
+                      className={cn(
+                        "shrink-0 border-0 px-1.5 py-0.5 text-[10px] font-semibold",
+                        cfg.badgeClass
+                      )}>
+                      {cfg.label}
+                    </Badge>
                   </button>
                 );
               })}
@@ -677,9 +738,10 @@ export function MentorOverviewPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/30">
-          <p className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
-            {t("mentorOverview.recentReviews")}
+        {/* Recent Reviews Box */}
+        <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+          <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
+            {t("mentorOverview.recentReviews", "Đánh giá gần đây")}
           </p>
           {reviewsLoading ? (
             <div className="space-y-2">
@@ -687,8 +749,8 @@ export function MentorOverviewPage() {
               <Skeleton className="h-12" />
             </div>
           ) : recentReviews.length === 0 ? (
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {t("mentorOverview.youHaveNoRecentReviews")}
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              {t("mentorOverview.youHaveNoRecentReviews", "Chưa có đánh giá nào")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -700,9 +762,9 @@ export function MentorOverviewPage() {
                       navigate(`/mentor/reviews/${review.id}`);
                     }
                   }}
-                  className="hover:bg-background flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors dark:border-slate-800 dark:bg-slate-950/50">
+                  className="flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/50 dark:hover:border-slate-700">
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
                       {review.session?.roomName ||
                         t("common.sessionVar0", {
                           var_0: review.session?.id || review.id,
@@ -722,153 +784,102 @@ export function MentorOverviewPage() {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
-  );
-  const mentorName = user?.name?.split(" ").pop() || t("common.mentor");
-  const greetingTime = now.getHours();
-  const greetingLabel =
-    greetingTime < 12
-      ? t("common.goodMorning")
-      : greetingTime < 18
-        ? t("common.goodAfternoon")
-        : t("common.goodEvening");
-
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Mentor Welcome Banner */}
-      <Card className="overflow-hidden rounded-2xl border-emerald-200/60 bg-gradient-to-r from-emerald-50/80 via-teal-50/50 to-indigo-50/80 p-1 shadow-xs dark:border-emerald-900/40 dark:bg-slate-900 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-indigo-950/30">
-        <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100/80 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-              {greetingLabel}, {mentorName} 👋
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-              {t("mentorOverview.welcomeBack")} {user?.name || t("common.mentor")}
-            </h1>
-            <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
-              {t("mentorOverview.trackAppointmentsMentoringProgressAnd")}
-            </p>
-          </div>
-          <Button
-            className="h-11 shrink-0 rounded-xl bg-emerald-600 font-medium text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-            onClick={() => navigate("/mentor?tab=sessions")}>
-            <Calendar className="mr-2 h-4 w-4" />
-            {t("mentorOverview.sessionManagement")}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Metrics Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="rounded-2xl border-slate-200/80 bg-white p-2 shadow-xs transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("common.totalInterviewSession")}
-            </CardTitle>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
-              <Calendar className="h-5 w-5" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {totalSessions}
-            </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                {completedSessions}
-              </span>{" "}
-              {t("mentorOverview.complete")}
-              {" • "}
-              <span className="font-semibold text-blue-600 dark:text-blue-400">
-                {upcomingSessions}
-              </span>{" "}
-              {t("common.upcoming")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border-slate-200/80 bg-white p-2 shadow-xs transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("mentorOverview.studentsAssisted")}
-            </CardTitle>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
-              <Users className="h-5 w-5" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {totalStudents}
-            </div>
-            <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
-              {t("mentorOverview.calculatedBasedOnMentoringHistory")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border-slate-200/80 bg-white p-2 shadow-xs transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("common.averageRating")}
-            </CardTitle>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/50 dark:text-amber-400">
-              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {averageRating}
-              </span>
-              <span className="text-xs font-semibold text-slate-400">/ 5.0</span>
-            </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("mentorOverview.basedOnSubmittedReviews")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border-slate-200/80 bg-white p-2 shadow-xs transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("mentorOverview.estimatedTotalIncome")}
-            </CardTitle>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
-              {formatCurrency(totalEarnings)}
-            </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("mentorOverview.fromCompletedSessions")}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="xl:hidden">
-        <Tabs value={mobileView} onValueChange={setMobileView}>
-          <TabsList className="mb-3 grid w-full grid-cols-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-            <TabsTrigger value={MOBILE_VIEW_AGENDA} className="rounded-lg">
-              {t("common.list")}
-            </TabsTrigger>
-            <TabsTrigger value={MOBILE_VIEW_CALENDAR} className="rounded-lg">
-              {t("common.monthlyCalendar")}
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value={MOBILE_VIEW_AGENDA}>{renderAgendaContent()}</TabsContent>
-          <TabsContent value={MOBILE_VIEW_CALENDAR}>{renderCalendarContent()}</TabsContent>
-        </Tabs>
-      </div>
-
-      <div className="hidden gap-6 xl:grid xl:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]">
-        {renderCalendarContent()}
-        {renderAgendaContent()}
       </div>
     </div>
+  );
+
+  return (
+    <section className="flex h-full flex-col overflow-y-auto bg-slate-50 dark:bg-transparent">
+      {/* Top Action Bar - Mentor Stats */}
+      <div className="shrink-0 px-5 py-6 md:px-8">
+        <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {t("userOverview.interviewOverview", "Tổng quan phỏng vấn")}
+              </h2>
+              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                {t(
+                  "userOverview.keepTrackOfAppointmentSchedules",
+                  "Theo dõi lịch hẹn và các chỉ số tổng quan."
+                )}
+              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="flex items-center justify-center gap-5 sm:gap-6">
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-emerald-600 dark:text-emerald-400">
+                  {totalInterviews}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("common.totalInterviewSession", "Tổng lượt phỏng vấn")}
+                </span>
+              </div>
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-emerald-600 dark:text-emerald-400">
+                  {upcomingInterviews}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("common.sessionIsComingSoon", "Sắp diễn ra")}
+                </span>
+              </div>
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-emerald-600 dark:text-emerald-400">
+                  {completedInterviews}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("userOverview.sessionCompleted", "Đã hoàn thành")}
+                </span>
+              </div>
+              <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                <span className="text-2xl leading-none font-bold text-emerald-600 dark:text-emerald-400">
+                  {pendingInterviews}
+                </span>
+                <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                  {t("userOverview.requestPendingApproval", "Chờ duyệt")}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Calendar + Agenda Grid Section */}
+      <div className="flex w-full min-w-0 px-5 py-6 md:px-8">
+        <div className="w-full min-w-0 xl:hidden">
+          <Tabs value={mobileView} onValueChange={setMobileView}>
+            <TabsList className="mb-3 grid w-full grid-cols-2">
+              <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
+              <TabsTrigger value={MOBILE_VIEW_CALENDAR}>
+                {t("common.monthlyCalendar", "Lịch tháng")}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value={MOBILE_VIEW_AGENDA} className="mt-0">
+              <div key={`mobile-agenda-${selectedDateKey}`}>{renderAgendaContent()}</div>
+            </TabsContent>
+            <TabsContent value={MOBILE_VIEW_CALENDAR} className="mt-0">
+              {renderCalendarContent()}
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        <div className="hidden min-h-0 w-full min-w-0 xl:flex">
+          <div className="flex w-full min-w-0 flex-row items-start gap-6">
+            {/* Calendar - Natural height (full content visible) */}
+            <div className="flex min-w-0 flex-1 basis-0 flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+              {renderCalendarContent()}
+            </div>
+            {/* Agenda - Fixed height with internal scroll */}
+            <div className="flex h-[580px] w-[400px] shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 xl:w-[440px] 2xl:w-[480px] dark:border-slate-800 dark:bg-slate-900">
+              <div key={`desktop-agenda-${selectedDateKey}`}>{renderAgendaContent()}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

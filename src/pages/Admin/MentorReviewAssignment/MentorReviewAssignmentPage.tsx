@@ -8,7 +8,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -36,14 +35,19 @@ import { cn } from "@/lib/utils";
 import type { AdminApplicationDetailResponse } from "@/services/admin-application.manager";
 import {
   AlertTriangle,
+  BadgeDollarSign,
+  Briefcase,
   CheckCircle2,
   ChevronDown,
   Clock,
   Eye,
   Inbox,
   ListFilter,
+  Mail,
   RefreshCw,
   Search,
+  Star,
+  User,
   UserCheck,
   UserPlus,
   Users,
@@ -676,6 +680,7 @@ function AssignMentorDialog({
   const [assignMode, setAssignMode] = useState<"single" | "multiple">("single");
   const [selectedMentorId, setSelectedMentorId] = useState<string>("");
   const [selectedMentorIds, setSelectedMentorIds] = useState<number[]>([]);
+  const [selectedMentorForDetail, setSelectedMentorForDetail] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
 
   // Combobox (Option 1) state
@@ -760,58 +765,102 @@ function AssignMentorDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{t("adminKiosk.assignMentor")}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+        <DialogHeader className="mb-4 border-b pb-4 dark:border-slate-800">
+          <DialogTitle className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+              <UserCheck className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+            </div>
+            {t("adminKiosk.assignMentor")}
+          </DialogTitle>
+          <DialogDescription className="dark:text-slate-400">
             {t("adminMentorReviewAssignment.assignDescription")}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          {/* Detail info */}
+        <div className="grid gap-6 py-4 lg:grid-cols-2">
+          {/* Candidate info */}
           {detail && (
-            <div className="rounded-lg border bg-slate-50 p-3 text-sm dark:bg-slate-800">
-              <p>
-                <span className="font-medium">{t("adminMentorReviewAssignment.candidate")}:</span>{" "}
-                {detail.candidateName ?? detail.candidateEmail ?? "-"}
-              </p>
-              <p>
-                <span className="font-medium">{t("adminMentorReviewAssignment.application")}:</span>{" "}
-                #{detail.applicationId} · {t("adminMentorReviewAssignment.detailId")}: #{detail.id}
-              </p>
+            <div className="rounded-lg border bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+              <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
+                <User className="h-4 w-4 text-slate-500" />
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  {t("adminMentorReviewAssignment.candidateInfo")}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Avatar */}
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-lg font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  {detail.candidateAvatarUrl ? (
+                    <img
+                      src={detail.candidateAvatarUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    (detail.candidateName ?? detail.candidateEmail ?? "?")
+                      ?.charAt(0)
+                      .toUpperCase() || "?"
+                  )}
+                </div>
+                {/* Info */}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-slate-900 dark:text-slate-100">
+                    {detail.candidateName ?? detail.candidateEmail ?? "-"}
+                  </p>
+                  <p className="truncate text-sm text-slate-500 dark:text-slate-400">
+                    {detail.candidateEmail ?? "-"}
+                  </p>
+                  {(detail.jdTitle || detail.roundName) && (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      {detail.jdTitle && (
+                        <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                          {detail.jdTitle}
+                        </span>
+                      )}
+                      {detail.roundName && (
+                        <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                          {detail.roundName}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
           {/* Assignment mode selector */}
-          <div className="space-y-2">
-            <Label>{t("adminMentorReviewAssignment.assignmentMode")}</Label>
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              {t("adminMentorReviewAssignment.assignmentMode")}
+            </Label>
             <RadioGroup
               value={assignMode}
               onValueChange={(value) => setAssignMode(value as "single" | "multiple")}
               className="flex flex-col gap-3">
-              <div className="flex items-start gap-3 rounded-lg border p-3 dark:border-slate-700 dark:hover:bg-slate-800/50">
+              <div className="flex items-start gap-3 rounded-lg border bg-white p-4 transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800/50">
                 <RadioGroupItem value="single" id="mode-single" className="mt-0.5" />
                 <div className="flex-1">
                   <Label
                     htmlFor="mode-single"
-                    className="cursor-pointer font-medium dark:text-slate-200">
+                    className="cursor-pointer font-medium dark:text-slate-100">
                     {t("adminMentorReviewAssignment.option1Single")}
                   </Label>
-                  <p className="text-muted-foreground mt-0.5 text-xs">
+                  <p className="text-muted-foreground mt-1 text-xs">
                     {t("adminMentorReviewAssignment.option1SingleDesc")}
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 rounded-lg border p-3 dark:border-slate-700 dark:hover:bg-slate-800/50">
+              <div className="flex items-start gap-3 rounded-lg border bg-white p-4 transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800/50">
                 <RadioGroupItem value="multiple" id="mode-multiple" className="mt-0.5" />
                 <div className="flex-1">
                   <Label
                     htmlFor="mode-multiple"
-                    className="cursor-pointer font-medium dark:text-slate-200">
+                    className="cursor-pointer font-medium dark:text-slate-100">
                     {t("adminMentorReviewAssignment.option2Multiple")}
                   </Label>
-                  <p className="text-muted-foreground mt-0.5 text-xs">
+                  <p className="text-muted-foreground mt-1 text-xs">
                     {t("adminMentorReviewAssignment.option2MultipleDesc")}
                   </p>
                 </div>
@@ -819,201 +868,499 @@ function AssignMentorDialog({
             </RadioGroup>
           </div>
 
-          {/* Option 1: Radix Popover Searchable Combobox */}
+          {/* Option 1: Single mentor selection with detail panel */}
           {assignMode === "single" && (
-            <div className="grid gap-2">
-              <Label htmlFor="mentor-combobox-trigger">
-                {t("adminMentorReviewAssignment.selectMentor")}
-              </Label>
+            <div className="space-y-4 lg:col-span-2">
+              {/* Two column layout: Left=Combobox(1/3), Right=Detail(2/3) */}
+              <div className="grid gap-4 lg:grid-cols-3">
+                {/* LEFT - Mentor Combobox */}
+                <div className="space-y-3 lg:col-span-1">
+                  <Label htmlFor="mentor-combobox-trigger">
+                    {t("adminMentorReviewAssignment.selectMentor")}
+                  </Label>
 
-              <Popover open={isComboOpen} onOpenChange={setIsComboOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="mentor-combobox-trigger"
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={isComboOpen}
-                    className={cn(
-                      "h-9 w-full justify-between px-3 text-sm font-normal shadow-sm",
-                      !selectedMentorName && "text-muted-foreground"
-                    )}>
-                    <span className="truncate">
-                      {selectedMentorName ?? t("adminMentorReviewAssignment.selectMentor")}
-                    </span>
-                    <ChevronDown
-                      className={cn(
-                        "h-4 w-4 shrink-0 opacity-50 transition-transform duration-200",
-                        isComboOpen && "rotate-180"
-                      )}
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  onWheel={(e) => e.stopPropagation()}
-                  onTouchMove={(e) => e.stopPropagation()}
-                  className="w-[var(--radix-popover-trigger-width)] p-0 shadow-md"
-                  align="start">
-                  {/* Search input inside dropdown */}
-                  <div className="border-b p-2">
-                    <div className="relative">
-                      <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-                      <Input
-                        autoFocus
-                        placeholder={t("adminMentorReviewAssignment.searchMentorPlaceholder")}
-                        value={mentorQuery}
-                        onChange={(e) => setMentorQuery(e.target.value)}
-                        className="h-8 pl-8 text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Mentor list */}
-                  <div
-                    onWheel={(e) => e.stopPropagation()}
-                    className="max-h-52 touch-auto overflow-y-auto overscroll-contain py-1">
-                    {filteredSingleMentors.length === 0 ? (
-                      <p className="py-3 text-center text-sm text-slate-500">
-                        {t("common.noResults")}
-                      </p>
-                    ) : (
-                      filteredSingleMentors.map((mentor) => (
-                        <button
-                          key={mentor.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedMentorId(String(mentor.id));
-                            setIsComboOpen(false);
-                            setMentorQuery("");
-                          }}
+                  <Popover open={isComboOpen} onOpenChange={setIsComboOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="mentor-combobox-trigger"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={isComboOpen}
+                        className={cn(
+                          "h-10 w-full justify-between px-3 text-sm font-normal shadow-sm",
+                          !selectedMentorName && "text-muted-foreground"
+                        )}>
+                        <span className="truncate">
+                          {selectedMentorName ?? t("adminMentorReviewAssignment.selectMentor")}
+                        </span>
+                        <ChevronDown
                           className={cn(
-                            "flex w-full flex-col items-start px-3 py-2 text-left text-sm transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
-                            selectedMentorId === String(mentor.id) &&
-                              "bg-slate-100 font-medium dark:bg-slate-800"
-                          )}>
-                          <span className="font-medium">{mentor.name}</span>
-                          {mentor.email && (
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
-                              {mentor.email}
-                            </span>
+                            "h-4 w-4 shrink-0 opacity-50 transition-transform duration-200",
+                            isComboOpen && "rotate-180"
                           )}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </PopoverContent>
-              </Popover>
+                        />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      onWheel={(e) => e.stopPropagation()}
+                      onTouchMove={(e) => e.stopPropagation()}
+                      className="w-[var(--radix-popover-trigger-width)] p-0 shadow-md"
+                      align="start">
+                      {/* Search input inside dropdown */}
+                      <div className="border-b p-2">
+                        <div className="relative">
+                          <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                          <Input
+                            autoFocus
+                            placeholder={t("adminMentorReviewAssignment.searchMentorPlaceholder")}
+                            value={mentorQuery}
+                            onChange={(e) => setMentorQuery(e.target.value)}
+                            className="h-8 pl-8 text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Mentor list */}
+                      <div
+                        onWheel={(e) => e.stopPropagation()}
+                        className="max-h-52 touch-auto overflow-y-auto overscroll-contain py-1">
+                        {filteredSingleMentors.length === 0 ? (
+                          <p className="py-3 text-center text-sm text-slate-500">
+                            {t("common.noResults")}
+                          </p>
+                        ) : (
+                          filteredSingleMentors.map((mentor) => (
+                            <button
+                              key={mentor.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedMentorId(String(mentor.id));
+                                setIsComboOpen(false);
+                                setMentorQuery("");
+                              }}
+                              className={cn(
+                                "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
+                                selectedMentorId === String(mentor.id) &&
+                                  "bg-slate-100 font-medium dark:bg-slate-800"
+                              )}>
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                                {mentor.avatarUrl ? (
+                                  <img
+                                    src={mentor.avatarUrl}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  mentor.name?.charAt(0).toUpperCase() || "?"
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-medium">{mentor.name}</p>
+                                {mentor.email && (
+                                  <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                    {mentor.email}
+                                  </p>
+                                )}
+                              </div>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {/* RIGHT - Selected Mentor Detail Panel */}
+                <div className="rounded-lg border bg-white p-5 lg:col-span-2 dark:border-slate-700 dark:bg-slate-900">
+                  {selectedMentorId ? (
+                    (() => {
+                      const m = mentors.find((x) => String(x.id) === selectedMentorId);
+                      if (!m) return null;
+                      return (
+                        <div className="space-y-5">
+                          {/* Header */}
+                          <div className="flex items-start gap-4">
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-2xl font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                              {m.avatarUrl ? (
+                                <img
+                                  src={m.avatarUrl}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                m.name?.charAt(0).toUpperCase() || "?"
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-xl font-semibold dark:text-slate-100">
+                                {m.name}
+                              </h4>
+                              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                                {m.email}
+                              </p>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                  <User className="h-3 w-3" />
+                                  Mentor
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Contact Info */}
+                          <div className="space-y-2 rounded-lg bg-slate-50 p-4 dark:bg-slate-800/50">
+                            <div className="flex items-center gap-3">
+                              <Mail className="h-4 w-4 shrink-0 text-slate-400" />
+                              <span className="text-sm text-slate-600 dark:text-slate-400">
+                                {m.email}
+                              </span>
+                            </div>
+                            {m.currentCompany && (
+                              <div className="flex items-center gap-3">
+                                <Briefcase className="h-4 w-4 shrink-0 text-slate-400" />
+                                <span className="text-sm text-slate-600 dark:text-slate-400">
+                                  {m.currentCompany}
+                                </span>
+                              </div>
+                            )}
+                            {typeof m.pricePerMinute === "number" && m.pricePerMinute > 0 && (
+                              <div className="flex items-center gap-3">
+                                <BadgeDollarSign className="h-4 w-4 shrink-0 text-slate-400" />
+                                <span className="text-sm text-slate-600 dark:text-slate-400">
+                                  {m.pricePerMinute.toLocaleString("vi-VN")}đ / phút
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Expertise */}
+                          {m.expertise && (
+                            <div>
+                              <p className="mb-2 text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                                {t("adminMentorReviewAssignment.expertise")}
+                              </p>
+                              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                                {m.expertise}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Bio */}
+                          {m.bio && (
+                            <div>
+                              <p className="mb-2 text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                                {t("adminMentorReviewAssignment.bio")}
+                              </p>
+                              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                                {m.bio}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Rating */}
+                          <div className="flex items-center gap-4 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+                            <div className="flex items-center gap-1.5">
+                              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                              <span className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                {m.averageRating?.toFixed(1) ?? "4.5"}
+                              </span>
+                            </div>
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                            <span className="text-sm text-slate-500 dark:text-slate-400">
+                              {t("adminMentorReviewAssignment.rating")}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="mb-4 rounded-full bg-slate-100 p-4 dark:bg-slate-800">
+                        <User className="h-8 w-8 text-slate-400" />
+                      </div>
+                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                        {t("adminMentorReviewAssignment.selectMentorToView")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Notes section for Option 1 */}
+              <div className="grid gap-2">
+                <Label htmlFor="notes">{t("adminKiosk.notes")}</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder={t("adminKiosk.notesPlaceholder")}
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
             </div>
           )}
 
-          {/* Option 2: Multiple mentor selection with search & selected chips */}
+          {/* Option 2: Multiple mentor selection - Left list, Right detail */}
           {assignMode === "multiple" && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label>{t("adminMentorReviewAssignment.selectMentors")}</Label>
-                <p className="text-muted-foreground text-xs">
+            <div className="space-y-4 lg:col-span-2">
+              <div>
+                <Label className="text-base font-semibold">
+                  {t("adminMentorReviewAssignment.selectMentors")}
+                </Label>
+                <p className="text-muted-foreground mt-1 text-sm">
                   {t("adminMentorReviewAssignment.selectMentorsHint")}
                 </p>
               </div>
 
-              {/* Badges / Chips list of currently selected mentors */}
+              {/* Selected Badges */}
               {selectedMentorsObjects.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-indigo-100 bg-indigo-50/50 p-2.5 dark:border-indigo-900/30 dark:bg-indigo-950/20">
-                  <span className="mr-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-slate-100 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                     {t("adminMentorReviewAssignment.selectedMentors")}:
                   </span>
                   {selectedMentorsObjects.map((mentor) => (
                     <Badge
                       key={mentor.id}
                       variant="secondary"
-                      className="flex items-center gap-1.5 border border-indigo-200 bg-white py-1 pr-1.5 pl-2.5 text-xs font-medium text-indigo-900 shadow-xs dark:border-indigo-800 dark:bg-slate-800 dark:text-indigo-200">
-                      <span>{mentor.name}</span>
+                      className="flex items-center gap-2 border bg-white py-1.5 pr-2 pl-3 text-sm dark:border-slate-600 dark:bg-slate-700">
+                      {mentor.name}
                       <button
                         type="button"
                         onClick={() => mentor.id && toggleMentorSelection(mentor.id)}
-                        className="rounded-full p-0.5 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-700 dark:hover:text-red-400"
-                        title={t("common.delete")}>
-                        <X className="h-3 w-3" />
+                        className="rounded-full p-0.5 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-600 dark:hover:text-red-400">
+                        <X className="h-3.5 w-3.5" />
                       </button>
                     </Badge>
                   ))}
                 </div>
               )}
 
-              {/* Search for Option 2 */}
-              <div className="relative">
-                <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-                <Input
-                  placeholder={t("adminMentorReviewAssignment.searchMentorPlaceholder")}
-                  value={mentorMultiQuery}
-                  onChange={(e) => setMentorMultiQuery(e.target.value)}
-                  className="h-8 pl-8 text-sm"
-                />
-              </div>
+              {/* Two column layout: Left=1/3, Right=2/3 */}
+              <div className="grid gap-4 lg:grid-cols-3">
+                {/* LEFT - Mentor List (smaller) */}
+                <div className="space-y-3 lg:col-span-1">
+                  {/* Search */}
+                  <div className="relative">
+                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      placeholder={t("adminMentorReviewAssignment.searchMentorPlaceholder")}
+                      value={mentorMultiQuery}
+                      onChange={(e) => setMentorMultiQuery(e.target.value)}
+                      className="h-9 pl-9 text-sm"
+                    />
+                  </div>
 
-              {/* Checklist */}
-              <div className="max-h-60 space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-                {filteredMultiMentors.length === 0 ? (
-                  <p className="py-3 text-center text-sm text-slate-500 dark:text-slate-400">
-                    {t("common.noResults")}
-                  </p>
-                ) : (
-                  filteredMultiMentors.map((mentor) => (
-                    <div
-                      key={mentor.id}
-                      className="flex items-center gap-3 rounded-lg border p-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
-                      <Checkbox
-                        id={`mentor-${mentor.id}`}
-                        checked={selectedMentorIds.includes(mentor.id as number)}
-                        onCheckedChange={() => mentor.id && toggleMentorSelection(mentor.id)}
-                      />
-                      <Label
-                        htmlFor={`mentor-${mentor.id}`}
-                        className="flex flex-1 cursor-pointer items-center gap-3">
-                        <div className="flex flex-col">
-                          <span className="font-medium dark:text-slate-200">{mentor.name}</span>
-                          {mentor.email && (
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
-                              {mentor.email}
-                            </span>
-                          )}
+                  {/* Mentor Checklist */}
+                  <div className="max-h-[360px] space-y-1 overflow-y-auto rounded-lg border bg-white p-2 dark:border-slate-700 dark:bg-slate-900">
+                    {filteredMultiMentors.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8">
+                        <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                        <p className="mt-2 text-xs text-slate-500">{t("common.noResults")}</p>
+                      </div>
+                    ) : (
+                      filteredMultiMentors.map((mentor) => (
+                        <div
+                          key={mentor.id}
+                          className={cn(
+                            "group flex items-center gap-2 rounded-md p-2 transition-colors dark:border-slate-700",
+                            selectedMentorForDetail === mentor.id
+                              ? "border-primary/50 bg-primary/5 dark:bg-primary/10 border"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          )}>
+                          <Checkbox
+                            id={`mentor-${mentor.id}`}
+                            checked={selectedMentorIds.includes(mentor.id as number)}
+                            onCheckedChange={() => mentor.id && toggleMentorSelection(mentor.id)}
+                            className="shrink-0"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setSelectedMentorForDetail(mentor.id as number)}
+                            className="flex flex-1 cursor-pointer items-center gap-2 text-left">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                              {mentor.avatarUrl ? (
+                                <img
+                                  src={mentor.avatarUrl}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                mentor.name?.charAt(0).toUpperCase() || "?"
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium dark:text-slate-100">
+                                {mentor.name}
+                              </p>
+                              <p className="truncate text-xs text-slate-400 dark:text-slate-500">
+                                {mentor.email}
+                              </p>
+                            </div>
+                          </button>
                         </div>
-                      </Label>
-                    </div>
-                  ))
-                )}
-              </div>
-              {selectedMentorIds.length > 0 && (
-                <p className="text-muted-foreground text-xs">
-                  {t("adminMentorReviewAssignment.selectedCount", {
-                    count: selectedMentorIds.length,
-                  })}
-                </p>
-              )}
-            </div>
-          )}
+                      ))
+                    )}
+                  </div>
 
-          {/* Notes - only for Option 1 */}
-          {assignMode === "single" && (
-            <div className="grid gap-2">
-              <Label htmlFor="notes">{t("adminKiosk.notes")}</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={t("adminKiosk.notesPlaceholder")}
-                rows={3}
-                className="resize-none"
-              />
+                  {selectedMentorIds.length > 0 && (
+                    <p className="text-center text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {t("adminMentorReviewAssignment.selectedCount", {
+                        count: selectedMentorIds.length,
+                      })}
+                    </p>
+                  )}
+                </div>
+
+                {/* RIGHT - Mentor Detail Panel (larger) */}
+                <div className="rounded-lg border bg-white p-5 lg:col-span-2 dark:border-slate-700 dark:bg-slate-900">
+                  {selectedMentorForDetail ? (
+                    (() => {
+                      const m = mentors.find((x) => x.id === selectedMentorForDetail);
+                      if (!m) return null;
+                      return (
+                        <div className="space-y-5">
+                          {/* Header */}
+                          <div className="flex items-start gap-4">
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-2xl font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                              {m.avatarUrl ? (
+                                <img
+                                  src={m.avatarUrl}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                m.name?.charAt(0).toUpperCase() || "?"
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-xl font-semibold dark:text-slate-100">
+                                {m.name}
+                              </h4>
+                              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                                {m.email}
+                              </p>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {selectedMentorIds.includes(selectedMentorForDetail) && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    {t("adminMentorReviewAssignment.selected")}
+                                  </span>
+                                )}
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                  <User className="h-3 w-3" />
+                                  Mentor
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Contact Info */}
+                          <div className="space-y-2.5 rounded-lg bg-slate-50 p-4 dark:bg-slate-800/50">
+                            <div className="flex items-center gap-3">
+                              <Mail className="h-4 w-4 shrink-0 text-slate-400" />
+                              <span className="text-sm text-slate-600 dark:text-slate-400">
+                                {m.email}
+                              </span>
+                            </div>
+                            {m.currentCompany && (
+                              <div className="flex items-center gap-3">
+                                <Briefcase className="h-4 w-4 shrink-0 text-slate-400" />
+                                <span className="text-sm text-slate-600 dark:text-slate-400">
+                                  {m.currentCompany}
+                                </span>
+                              </div>
+                            )}
+                            {typeof m.pricePerMinute === "number" && m.pricePerMinute > 0 && (
+                              <div className="flex items-center gap-3">
+                                <BadgeDollarSign className="h-4 w-4 shrink-0 text-slate-400" />
+                                <span className="text-sm text-slate-600 dark:text-slate-400">
+                                  {m.pricePerMinute.toLocaleString("vi-VN")}đ / phút
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Expertise / Skills */}
+                          {m.expertise && (
+                            <div>
+                              <p className="mb-2 text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                                Chuyên môn
+                              </p>
+                              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                                {m.expertise}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Bio */}
+                          {m.bio && (
+                            <div>
+                              <p className="mb-2 text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                                Giới thiệu
+                              </p>
+                              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                                {m.bio}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Rating */}
+                          <div className="flex items-center gap-4 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+                            <div className="flex items-center gap-1.5">
+                              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                              <span className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                {m.averageRating?.toFixed(1) ?? "4.5"}
+                              </span>
+                            </div>
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                            <span className="text-sm text-slate-500 dark:text-slate-400">
+                              {m.averageRating?.toFixed(1) ?? "4.5"}
+                            </span>
+                          </div>
+
+                          {/* Tip */}
+                          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-4 dark:border-slate-700 dark:bg-slate-800/30">
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                              💡 Xem thông tin mentor bên trên để đưa ra quyết định gán mentor phù
+                              hợp với ứng viên này.
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="mb-4 rounded-full bg-slate-100 p-4 dark:bg-slate-800">
+                        <Eye className="h-8 w-8 text-slate-400" />
+                      </div>
+                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                        {t("adminMentorReviewAssignment.selectMentorToView")}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                        {t("adminMentorReviewAssignment.selectMentorHint", { icon: "" })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+        <div className="mt-auto flex items-center justify-center gap-3 border-t pt-4">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+            className="flex-1">
             {t("common.cancel")}
           </Button>
           {assignMode === "single" ? (
-            <Button onClick={handleSubmitSingle} disabled={isLoading || !selectedMentorId}>
+            <Button
+              onClick={handleSubmitSingle}
+              disabled={isLoading || !selectedMentorId}
+              className="flex-1">
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -1026,7 +1373,8 @@ function AssignMentorDialog({
           ) : (
             <Button
               onClick={handleSubmitMultiple}
-              disabled={isLoading || selectedMentorIds.length < 2}>
+              disabled={isLoading || selectedMentorIds.length < 2}
+              className="flex-1">
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -1037,7 +1385,7 @@ function AssignMentorDialog({
               )}
             </Button>
           )}
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

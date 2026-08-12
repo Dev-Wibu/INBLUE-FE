@@ -56,6 +56,10 @@ export function LoginPage() {
         localStorage.setItem("current-user-id", String(userId));
       }
 
+      // Clear React Query cache before setting new auth state
+      // This prevents stale data from previous user appearing in new user session
+      queryClient.clear();
+
       // USER role goes to landing page, other roles go to their dashboard
       const redirectPath =
         payload.user.role?.toUpperCase() === "USER" ? "/" : getDashboardPath(payload.user.role);

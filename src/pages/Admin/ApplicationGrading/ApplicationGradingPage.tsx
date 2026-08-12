@@ -619,25 +619,25 @@ function ApplicationGradingTable({
         <TableHeader className="border-b border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90">
           <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
             <TableHead className="h-11 pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Mã đơn
+              {t("adminApplicationGrading.tableHeaderCode")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Ứng viên
+              {t("adminApplicationGrading.tableHeaderCandidate")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Vị trí ứng tuyển
+              {t("adminApplicationGrading.tableHeaderPosition")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Vòng chấm
+              {t("adminApplicationGrading.tableHeaderRound")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Trạng thái
+              {t("adminApplicationGrading.tableHeaderStatus")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Điểm số
+              {t("adminApplicationGrading.tableHeaderScore")}
             </TableHead>
             <TableHead className="h-11 pr-6 text-right text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Thao tác
+              {t("adminApplicationGrading.tableHeaderActions")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -1090,7 +1090,7 @@ export function ApplicationGradingPage({
   return (
     <div className="flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-col gap-4 border-b border-slate-200/80 bg-white/95 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-950/95">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             {t("adminApplicationGrading.pageTitle")}
@@ -1103,7 +1103,7 @@ export function ApplicationGradingPage({
         <div className="flex flex-wrap items-center gap-3">
           {/* Search */}
           <div className="relative w-full sm:w-56">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <Input
               type="text"
               placeholder={t("application.searchByUserOrJob")}
@@ -1112,7 +1112,7 @@ export function ApplicationGradingPage({
                 setSearchQuery(e.target.value);
                 pagination.setPage(1);
               }}
-              className="h-9 pl-9 text-xs"
+              className="h-9 border-slate-200 bg-white pl-9 text-xs dark:border-slate-700 dark:bg-slate-900"
             />
           </div>
 
@@ -1165,9 +1165,9 @@ export function ApplicationGradingPage({
                   ? "bg-white text-indigo-600 shadow-2xs dark:bg-slate-900 dark:text-indigo-400"
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               )}
-              title="Xem dạng danh sách">
+              title={t("common.listView")}>
               <List className="mr-1.5 h-4 w-4" />
-              <span className="hidden sm:inline">Danh sách</span>
+              <span className="hidden sm:inline">{t("common.list")}</span>
             </Button>
             <Button
               variant="ghost"
@@ -1179,9 +1179,9 @@ export function ApplicationGradingPage({
                   ? "bg-white text-indigo-600 shadow-2xs dark:bg-slate-900 dark:text-indigo-400"
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               )}
-              title="Xem dạng thẻ">
+              title={t("common.cardView")}>
               <LayoutGrid className="mr-1.5 h-4 w-4" />
-              <span className="hidden sm:inline">Thẻ</span>
+              <span className="hidden sm:inline">{t("common.card")}</span>
             </Button>
           </div>
 
@@ -1382,7 +1382,7 @@ export function ApplicationGradingPage({
             )}
 
             {/* Pagination */}
-            <div className="mt-auto flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mt-auto flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 {pagination.startIndex + 1}-{Math.min(pagination.endIndex + 1, sortedData.length)} /{" "}
                 {sortedData.length}
@@ -1809,13 +1809,10 @@ export function ApplicationGradingDetailPage({
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-slate-50/70 dark:bg-slate-950">
+    <div className="flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
       {/* ── CANDIDATE WORKSPACE HEADER BANNER (Theme Aware: Light & Dark) ─────── */}
-      <div className="relative border-b border-slate-200/80 bg-gradient-to-r from-indigo-50/90 via-purple-50/40 to-white px-4 py-6 text-slate-900 sm:px-8 dark:border-slate-800 dark:from-slate-950 dark:via-indigo-950/60 dark:to-slate-950 dark:text-white">
+      <div className="relative border-b border-slate-200/80 bg-slate-50 px-4 py-6 text-slate-900 sm:px-8 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
         {/* Ambient background glow */}
-        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/10" />
-        <div className="pointer-events-none absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-purple-500/10 blur-2xl dark:bg-purple-500/10" />
-
         <div className="relative mx-auto max-w-7xl">
           {/* Top Breadcrumb & Actions */}
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">

@@ -87,7 +87,7 @@ export interface DashboardSidebarToggleProps {
   expandedAriaLabel?: string;
 }
 const DEFAULT_DESKTOP_TOGGLE_BUTTON_CLASS =
-  "absolute top-14 -right-3 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700";
+  "absolute top-14 -right-3 z-10 flex items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition-all hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700";
 export function DashboardSidebarToggle({
   isCollapsed,
   onToggle,
@@ -174,6 +174,22 @@ export function DashboardSidebar({
   useEffect(() => {
     localStorage.setItem(storageKey, String(isCollapsed));
   }, [isCollapsed, storageKey]);
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      const isToggleCombo = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "b";
+      if (!isToggleCombo) return;
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || target?.isContentEditable) {
+        return;
+      }
+      event.preventDefault();
+      setCollapsed((prev) => !prev);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);
   };
@@ -393,12 +409,16 @@ export function DashboardSidebar({
             <button
               type="button"
               onClick={toggleCollapse}
+              title={`${isCollapsed ? t("compShared.expandTheNavigationBar") : t("compShared.collapseTheNavigationBar")} (Ctrl+B)`}
               aria-label={
                 isCollapsed
                   ? t("compShared.expandTheNavigationBar")
                   : t("compShared.collapseTheNavigationBar")
               }
-              className={theme.toggleBtn || DEFAULT_DESKTOP_TOGGLE_BUTTON_CLASS}>
+              className={cn(
+                "h-7 w-7 hover:scale-110",
+                theme.toggleBtn || DEFAULT_DESKTOP_TOGGLE_BUTTON_CLASS
+              )}>
               {isCollapsed ? (
                 <PanelLeftOpen
                   className={cn(

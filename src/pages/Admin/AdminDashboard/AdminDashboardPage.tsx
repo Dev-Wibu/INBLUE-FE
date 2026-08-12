@@ -252,7 +252,7 @@ export function AdminDashboardPage() {
         legacyStorageKey="manager_sidebar_collapsed"
         collapsed={isSidebarCollapsed}
         onCollapsedChange={setIsSidebarCollapsed}
-        showDesktopToggle={false}
+        showDesktopToggle
         logo={ADMIN_SIDEBAR_LOGO}
         collapsedLogo={ADMIN_SIDEBAR_LOGO_COLLAPSED}
         showSettings={false}

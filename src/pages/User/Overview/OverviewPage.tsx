@@ -1,25 +1,26 @@
+import { DateTimePicker } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useUserSessions } from "@/hooks/useSession";
+import { useUserSchedule } from "@/hooks/useUserSchedule";
 import { formatDateTime, toVietnamDateKey } from "@/lib/formatting";
 import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Clock, Filter } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
-  type UserCalendarSession,
-  buildUserCalendarSessions,
+  buildCalendarSessionsFromEvents,
   formatCalendarTime,
   getSessionStatusConfig,
   groupUserCalendarByDate,
+  type UserCalendarSession,
 } from "./userSchedule.utils";
 
 const MAX_VISIBLE_SESSIONS = 2;
@@ -40,6 +41,18 @@ const getFirstDayOfMonth = (year: number, month: number): number => {
 
 const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
+// Date filter helpers
+const toFilterDateKey = (value?: Date): string | undefined => {
+  if (!value) return undefined;
+  return toVietnamDateKey(value) || undefined;
+};
+
+const isDateKeyInRange = (dateKey: string, fromKey?: string, toKey?: string) => {
+  if (fromKey && dateKey < fromKey) return false;
+  if (toKey && dateKey > toKey) return false;
+  return true;
+};
+
 function AgendaSessionItem({
   item,
   onOpenDetail,
@@ -47,9 +60,9 @@ function AgendaSessionItem({
   onWriteReview,
 }: {
   item: UserCalendarSession;
-  onOpenDetail: (_sessionId?: number) => void;
-  onOpenRoom: (_sessionId?: number) => void;
-  onWriteReview: (_sessionId?: number) => void;
+  onOpenDetail: (item: UserCalendarSession) => void;
+  onOpenRoom: (item: UserCalendarSession) => void;
+  onWriteReview: (item: UserCalendarSession) => void;
 }) {
   const { t } = useTranslation();
   const status = getSessionStatusConfig(item.session.status);
@@ -83,14 +96,14 @@ function AgendaSessionItem({
           size="sm"
           variant="outline"
           className="h-7 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-          onClick={() => onOpenDetail(item.session.id)}>
+          onClick={() => onOpenDetail(item)}>
           {t("common.seeDetails", "Xem chi tiết")}
         </Button>
         {canJoinRoom && (
           <Button
             size="sm"
             className="h-7 bg-emerald-600 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-            onClick={() => onOpenRoom(item.session.id)}>
+            onClick={() => onOpenRoom(item)}>
             {t("common.enterTheRoom", "Vào phòng")}
           </Button>
         )}
@@ -99,7 +112,7 @@ function AgendaSessionItem({
             size="sm"
             variant="secondary"
             className="h-7 bg-indigo-50 text-xs font-medium text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-300"
-            onClick={() => onWriteReview(item.session.id)}>
+            onClick={() => onWriteReview(item)}>
             {t("common.writeAReview", "Đánh giá")}
           </Button>
         )}
@@ -113,14 +126,14 @@ function CalendarSessionEntry({
   onOpen,
 }: {
   item: UserCalendarSession;
-  onOpen: (_sessionId?: number) => void;
+  onOpen: (item: UserCalendarSession) => void;
 }) {
   const { t } = useTranslation();
   const status = getSessionStatusConfig(item.session.status);
 
   return (
     <button
-      onClick={() => onOpen(item.session.id)}
+      onClick={() => onOpen(item)}
       className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-indigo-50/60 dark:hover:bg-slate-800">
       <span className={cn("h-2 w-2 shrink-0 rounded-full", status.dot)} />
       <span className="shrink-0 font-medium text-slate-500 dark:text-slate-400">
@@ -139,7 +152,59 @@ function CalendarSessionEntry({
 export function OverviewPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions();
+
+  const agendaScrollRef = useRef<HTMLDivElement>(null);
+
+  // Date filter state (copied from Mentor Overview)
+  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+  const [toDate, setToDate] = useState<Date | undefined>(undefined);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([
+    "DRAFT",
+    "SCHEDULED",
+    "PAID",
+    "ONGOING",
+    "COMPLETED",
+  ]);
+
+  // Fetch schedule from new API endpoint
+  const { data: scheduleEvents = [], isLoading: scheduleLoading } = useUserSchedule();
+
+  // Transform schedule events to calendar format
+  const calendarItems = useMemo(
+    () => buildCalendarSessionsFromEvents(scheduleEvents),
+    [scheduleEvents]
+  );
+
+  // Filter by date range
+  const fromKey = useMemo(() => toFilterDateKey(fromDate), [fromDate]);
+  const toKey = useMemo(() => toFilterDateKey(toDate), [toDate]);
+
+  const filteredCalendarItems = useMemo(() => {
+    return calendarItems.filter((item) => {
+      const status = item.session.status || "";
+      return selectedStatuses.includes(status) && isDateKeyInRange(item.dateKey, fromKey, toKey);
+    });
+  }, [calendarItems, selectedStatuses, fromKey, toKey]);
+
+  const sessionsByDate = useMemo(
+    () => groupUserCalendarByDate(filteredCalendarItems),
+    [filteredCalendarItems]
+  );
+
+  // Calculate stats from events
+  const totalInterviews = scheduleEvents.length;
+  const completedInterviews = scheduleEvents.filter((e) => e.status === "COMPLETED").length;
+  const upcomingInterviews = scheduleEvents.filter(
+    (e) =>
+      e.status === "SCHEDULED" ||
+      e.status === "PENDING" ||
+      e.status === "ONGOING" ||
+      e.status === "IN_PROGRESS" ||
+      e.status === "PAID"
+  ).length;
+  const pendingInterviews = scheduleEvents.filter(
+    (e) => e.status === "DRAFT" || e.status === "CREATED" || e.status === "AWAITING_MENTOR"
+  ).length;
 
   const MONTH_NAMES = [
     t("common.january"),
@@ -173,17 +238,8 @@ export function OverviewPage() {
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
   const [mobileView, setMobileView] = useState<string>(MOBILE_VIEW_AGENDA);
 
-  const calendarItems = useMemo(() => buildUserCalendarSessions(sessions), [sessions]);
-  const sessionsByDate = useMemo(() => groupUserCalendarByDate(calendarItems), [calendarItems]);
-
-  const totalInterviews = sessions.length;
-  const completedInterviews = sessions.filter((s) => s.status === "COMPLETED").length;
-  const upcomingInterviews = sessions.filter(
-    (s) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
-  ).length;
-  const pendingInterviews = sessions.filter((s) => s.status === "DRAFT").length;
-
-  const upcomingScheduleItems = calendarItems
+  // Upcoming schedule items for the sidebar (using filtered items)
+  const upcomingScheduleItems = filteredCalendarItems
     .filter(
       (item) =>
         item.timestamp >= nowTimestamp &&
@@ -204,22 +260,57 @@ export function OverviewPage() {
     });
   }, [selectedDateKey, t, i18n]);
 
+  // Reset agenda scroll whenever the selected date changes
+  useEffect(() => {
+    const reset = () => {
+      if (agendaScrollRef.current) {
+        agendaScrollRef.current.scrollTop = 0;
+      }
+    };
+    reset();
+    requestAnimationFrame(reset);
+    const t = setTimeout(reset, 0);
+    return () => clearTimeout(t);
+  }, [selectedDateKey, scheduleLoading]);
+
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+  const daysInPrevMonth = getDaysInMonth(currentYear, currentMonth - 1);
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
   const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
-  const calendarDays: (number | null)[] = [];
-  for (let index = 0; index < adjustedFirstDay; index += 1) {
-    calendarDays.push(null);
+  type CalendarCell = {
+    day: number;
+    year: number;
+    month: number;
+    isCurrentMonth: boolean;
+  };
+  const calendarCells: CalendarCell[] = [];
+  // Leading days from previous month
+  for (let index = adjustedFirstDay - 1; index >= 0; index -= 1) {
+    const day = daysInPrevMonth - index;
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    calendarCells.push({ day, year: prevYear, month: prevMonth, isCurrentMonth: false });
   }
+  // Current month
   for (let day = 1; day <= daysInMonth; day += 1) {
-    calendarDays.push(day);
+    calendarCells.push({ day, year: currentYear, month: currentMonth, isCurrentMonth: true });
   }
-  while (calendarDays.length % 7 !== 0) {
-    calendarDays.push(null);
+  // Trailing days from next month
+  let nextDay = 1;
+  const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+  const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+  while (calendarCells.length % 7 !== 0) {
+    calendarCells.push({
+      day: nextDay,
+      year: nextYear,
+      month: nextMonth,
+      isCurrentMonth: false,
+    });
+    nextDay += 1;
   }
-  const weeks: (number | null)[][] = [];
-  for (let index = 0; index < calendarDays.length; index += 7) {
-    weeks.push(calendarDays.slice(index, index + 7));
+  const weeks: CalendarCell[][] = [];
+  for (let index = 0; index < calendarCells.length; index += 7) {
+    weeks.push(calendarCells.slice(index, index + 7));
   }
 
   const handlePrevMonth = () => {
@@ -240,22 +331,67 @@ export function OverviewPage() {
     }
   };
 
-  const handleOpenSessionDetail = (sessionId?: number) => {
-    if (typeof sessionId === "number") {
-      navigate(`/user/mock-interview/history/${sessionId}`);
+  const handleOpenSessionDetail = (item: UserCalendarSession) => {
+    const { eventType, sessionId, applicationDetailId } = item;
+
+    // Determine navigation based on event type
+    switch (eventType) {
+      case "KIOSK_BOOKING":
+        // Kiosk bookings don't have a detail page yet, show toast
+        if (typeof applicationDetailId === "number") {
+          navigate(`/user/application-history?highlight=${applicationDetailId}`);
+        }
+        break;
+      case "APPLICATION_ROUND":
+        // Application rounds - navigate to application history
+        if (typeof applicationDetailId === "number") {
+          navigate(`/user/application-history?highlight=${applicationDetailId}`);
+        }
+        break;
+      case "MENTOR_SESSION":
+      case "SESSION":
+      default:
+        // Mock interview sessions - navigate to session detail
+        if (typeof sessionId === "number" && sessionId > 0) {
+          navigate(`/user/mock-interview/history/${sessionId}`);
+        } else if (typeof item.session.id === "number" && item.session.id > 0) {
+          navigate(`/user/mock-interview/history/${item.session.id}`);
+        }
+        break;
     }
   };
 
-  const handleOpenSessionRoom = (sessionId?: number) => {
-    if (typeof sessionId === "number") {
+  const handleOpenSessionRoom = (item: UserCalendarSession) => {
+    const { sessionId } = item;
+    if (typeof sessionId === "number" && sessionId > 0) {
       navigate(`/user/mock-interview/room/${sessionId}`);
+    } else if (typeof item.session.id === "number" && item.session.id > 0) {
+      navigate(`/user/mock-interview/room/${item.session.id}`);
     }
   };
 
-  const handleWriteReview = (sessionId?: number) => {
-    if (typeof sessionId === "number") {
+  const handleWriteReview = (item: UserCalendarSession) => {
+    const { sessionId } = item;
+    if (typeof sessionId === "number" && sessionId > 0) {
       navigate(`/user/mock-interview/history/${sessionId}/feedback`);
+    } else if (typeof item.session.id === "number" && item.session.id > 0) {
+      navigate(`/user/mock-interview/history/${item.session.id}/feedback`);
     }
+  };
+
+  const toggleStatus = (status: string) => {
+    setSelectedStatuses((current) => {
+      if (current.includes(status)) {
+        return current.filter((item) => item !== status);
+      }
+      return [...current, status];
+    });
+  };
+
+  const resetFilters = () => {
+    setSelectedStatuses(["DRAFT", "SCHEDULED", "PAID", "ONGOING", "COMPLETED"]);
+    setFromDate(undefined);
+    setToDate(undefined);
   };
 
   const jumpToToday = () => {
@@ -265,7 +401,7 @@ export function OverviewPage() {
   };
 
   const renderCalendarContent = () => (
-    <Card className="border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <Card className="flex min-w-0 flex-1 flex-col overflow-hidden border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <CardHeader className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
         <div>
           <CardTitle className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
@@ -305,156 +441,252 @@ export function OverviewPage() {
         </div>
       </CardHeader>
 
-      <CardContent className="pt-4">
-        <div className="grid grid-cols-7 border-b border-slate-200 pb-2.5 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
+      <CardContent className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-auto pt-4">
+        {/* Legend */}
+        <div className="mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+            {t("common.legend")}:
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-amber-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.waitingForApproval", "Chờ duyệt")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-blue-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.comingSoon", "Sắp diễn ra")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.paid", "Đã thanh toán")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-green-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.ongoing", "Đang diễn ra")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-slate-400" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("general.completed", "Hoàn thành")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-red-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.rejected", "Từ chối")}
+            </span>
+          </div>
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="grid w-full min-w-0 grid-cols-7 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {WEEK_DAYS.map((day) => (
-            <div key={day}>{day}</div>
+            <div key={day} className="pb-2">
+              {day}
+            </div>
           ))}
         </div>
 
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          {weeks.map((week, weekIdx) => (
-            <div
-              key={weekIdx}
-              className="grid grid-cols-7 divide-x divide-slate-100 dark:divide-slate-800">
-              {week.map((day, dayIdx) => {
-                if (day === null) {
-                  return (
-                    <div
-                      key={`empty-${weekIdx}-${dayIdx}`}
-                      className="min-h-[105px] bg-slate-50/40 p-1.5 dark:bg-slate-950/30"
-                    />
-                  );
-                }
+        <div className="grid w-full grid-cols-7 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800">
+          {weeks.map((week) =>
+            week.map((cell) => {
+              const dateKey = toDateKeyFromParts(cell.year, cell.month, cell.day);
+              const dayItems = cell.isCurrentMonth ? sessionsByDate.get(dateKey) || [] : [];
+              const isSelected = dateKey === selectedDateKey;
+              const isToday = dateKey === todayKey;
+              const hasEvents = dayItems.length > 0;
+              const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
+              const overflowCount = Math.max(0, dayItems.length - MAX_VISIBLE_SESSIONS);
 
-                const dateKey = toDateKeyFromParts(currentYear, currentMonth, day);
-                const dayItems = sessionsByDate.get(dateKey) || [];
-                const isSelected = dateKey === selectedDateKey;
-                const isToday = dateKey === todayKey;
-                const hasEvents = dayItems.length > 0;
-                const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
-                const overflowCount = Math.max(0, dayItems.length - MAX_VISIBLE_SESSIONS);
-
-                return (
-                  <div
-                    key={dateKey}
-                    onClick={() => setSelectedDateKey(dateKey)}
-                    className={cn(
-                      "group relative flex min-h-[105px] cursor-pointer flex-col gap-1.5 p-2 transition-all",
-                      isSelected
-                        ? "bg-indigo-500/10 ring-2 ring-indigo-500/50 dark:bg-indigo-950/60 dark:ring-indigo-500/60"
+              return (
+                <div
+                  key={dateKey}
+                  onClick={() => setSelectedDateKey(dateKey)}
+                  className={cn(
+                    "group relative min-h-[100px] min-w-0 cursor-pointer overflow-hidden border-r border-b border-slate-200 p-1.5 transition-all sm:p-2 dark:border-slate-800",
+                    cell.isCurrentMonth
+                      ? isSelected
+                        ? "bg-indigo-50 dark:bg-indigo-950"
                         : hasEvents
-                          ? "border border-indigo-200/80 bg-indigo-50/90 shadow-2xs dark:border-indigo-900/60 dark:bg-indigo-950/40"
-                          : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                    )}>
-                    <div className="flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedDateKey(dateKey);
-                        }}
-                        className={cn(
-                          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors",
-                          isSelected
-                            ? "bg-indigo-600 text-white shadow-xs"
-                            : isToday
-                              ? "bg-indigo-600 font-extrabold text-white shadow-xs"
-                              : hasEvents
-                                ? "bg-indigo-600/15 font-extrabold text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-300"
-                                : "text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800"
-                        )}
-                        aria-label={t("general.selectDate", { var_0: day })}>
-                        {String(day).padStart(2, "0")}
-                      </button>
-                      {hasEvents && (
-                        <Badge className="border-0 bg-indigo-600 px-1.5 py-0 text-[10px] font-bold text-white shadow-2xs dark:bg-indigo-500">
-                          {dayItems.length}
-                        </Badge>
+                          ? "bg-white dark:bg-slate-900"
+                          : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                      : "bg-slate-50/50 text-slate-300 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-slate-600 dark:hover:bg-slate-800/60"
+                  )}>
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedDateKey(dateKey);
+                      }}
+                      className={cn(
+                        "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold transition-colors sm:text-xs",
+                        isSelected
+                          ? "bg-indigo-600 text-white"
+                          : isToday
+                            ? "bg-indigo-600 font-extrabold text-white"
+                            : hasEvents
+                              ? "bg-indigo-100 font-extrabold text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+                              : cell.isCurrentMonth
+                                ? "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                                : "text-slate-300 hover:bg-slate-200/60 dark:text-slate-700 dark:hover:bg-slate-800/60"
                       )}
-                    </div>
-
+                      aria-label={t("general.selectDate", { var_0: cell.day })}>
+                      {String(cell.day).padStart(2, "0")}
+                    </button>
                     {hasEvents && (
-                      <div className="space-y-1">
-                        {visibleItems.map((item) => {
-                          const cfg = getSessionStatusConfig(item.session.status);
-                          return (
-                            <button
-                              key={item.session.id}
-                              onClick={() => handleOpenSessionDetail(item.session.id)}
-                              className={cn(
-                                "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] font-medium shadow-2xs transition-colors hover:opacity-90",
-                                cfg.badgeClass
-                              )}>
-                              <Clock className="h-3 w-3 shrink-0" />
-                              <span className="shrink-0 font-semibold">
-                                {formatCalendarTime(item.session.joinTime)}
-                              </span>
-                              <span className="truncate font-semibold">
-                                {item.session.roomName || `#${item.session.id}`}
-                              </span>
-                            </button>
-                          );
-                        })}
-
-                        {overflowCount > 0 && (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button className="w-full rounded-md border border-dashed border-indigo-300 bg-white/80 px-2 py-0.5 text-center text-[10px] font-bold text-indigo-600 transition-colors hover:border-indigo-400 dark:border-indigo-700 dark:bg-slate-900 dark:text-indigo-300">
-                                +{overflowCount} {t("common.anotherSession", "bài nữa")}
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-80 p-2 dark:border-slate-800 dark:bg-slate-900"
-                              side="bottom"
-                              align="start"
-                              sideOffset={8}>
-                              <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
-                                {t("general.session5", {
-                                  var_0: String(day).padStart(2, "0"),
-                                  var_1: String(currentMonth + 1).padStart(2, "0"),
-                                  var_2: currentYear,
-                                  var_3: dayItems.length,
-                                })}
-                              </p>
-                              <div className="flex max-h-52 flex-col gap-1 overflow-y-auto">
-                                {dayItems.map((item) => (
-                                  <CalendarSessionEntry
-                                    key={item.session.id}
-                                    item={item}
-                                    onOpen={handleOpenSessionDetail}
-                                  />
-                                ))}
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        )}
-                      </div>
+                      <Badge className="h-4 min-w-[16px] items-center justify-center border-0 bg-indigo-600 px-1 text-[9px] font-bold text-white sm:h-5 sm:min-w-[20px] sm:text-[10px] dark:bg-indigo-500">
+                        {dayItems.length}
+                      </Badge>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          ))}
+
+                  {hasEvents && (
+                    <div className="flex min-h-0 flex-col gap-0.5 overflow-hidden sm:gap-1">
+                      {visibleItems.map((item) => {
+                        const cfg = getSessionStatusConfig(item.session.status);
+                        return (
+                          <button
+                            key={item.session.id}
+                            onClick={() => handleOpenSessionDetail(item)}
+                            className={cn(
+                              "flex w-full items-center gap-0.5 rounded px-1 py-0.5 text-left text-[8px] font-medium transition-colors hover:opacity-80 sm:gap-1 sm:text-[10px]",
+                              cfg.badgeClass
+                            )}>
+                            <Clock className="h-2 w-2 shrink-0 sm:h-2.5 sm:w-2.5" />
+                            <span className="shrink-0 font-semibold">
+                              {formatCalendarTime(item.session.joinTime)}
+                            </span>
+                            <span className="truncate font-semibold">
+                              {item.session.roomName || `#${item.session.id}`}
+                            </span>
+                          </button>
+                        );
+                      })}
+
+                      {overflowCount > 0 && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="w-full rounded border border-dashed border-indigo-300 bg-white px-1 py-0.5 text-center text-[8px] font-bold text-indigo-600 transition-colors hover:border-indigo-400 sm:text-[10px] dark:border-indigo-700 dark:bg-slate-800 dark:text-indigo-300">
+                              +{overflowCount}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-80 p-2 dark:border-slate-800 dark:bg-slate-900"
+                            side="bottom"
+                            align="start"
+                            sideOffset={8}>
+                            <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
+                              {t("general.session5", {
+                                var_0: String(cell.day).padStart(2, "0"),
+                                var_1: String(cell.month + 1).padStart(2, "0"),
+                                var_2: cell.year,
+                                var_3: dayItems.length,
+                              })}
+                            </p>
+                            <div className="flex max-h-52 flex-col gap-1 overflow-y-auto">
+                              {dayItems.map((item) => (
+                                <CalendarSessionEntry
+                                  key={item.session.id}
+                                  item={item}
+                                  onOpen={handleOpenSessionDetail}
+                                />
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </CardContent>
     </Card>
   );
 
   const renderAgendaContent = () => (
-    <Card className="border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <CardHeader className="border-b border-slate-100 pb-3 dark:border-slate-800">
-        <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
-          {t("common.appointmentScheduleByDay", "Lịch hẹn theo ngày")}
-        </CardTitle>
-        <CardDescription className="text-xs font-semibold text-indigo-600 capitalize dark:text-indigo-400">
+    <div
+      key={`agenda-${selectedDateKey}`}
+      className="flex h-[580px] max-h-[580px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="shrink-0 border-b border-slate-100 px-4 pt-4 pb-3 dark:border-slate-800">
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          {t("common.appointmentScheduleByDay")}
+        </h3>
+        <p className="text-xs font-semibold text-indigo-600 capitalize dark:text-indigo-400">
           {selectedDateDisplay}
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <CardContent className="space-y-4 pt-4">
+      <div
+        className="flex min-h-0 flex-1 scroll-pb-6 flex-col gap-4 overflow-y-auto px-4 pt-4 pb-10"
+        ref={agendaScrollRef}>
+        {/* Filter Section */}
+        <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Filter className="h-4 w-4" />
+            {t("common.filter", "Bộ lọc")}
+          </div>
+
+          {/* Status Filter Buttons */}
+          <div className="mb-3 flex flex-wrap gap-2">
+            {["DRAFT", "SCHEDULED", "PAID", "ONGOING", "COMPLETED"].map((status) => {
+              const cfg = getSessionStatusConfig(status);
+              const active = selectedStatuses.includes(status);
+              return (
+                <Button
+                  key={status}
+                  size="sm"
+                  variant={active ? "default" : "outline"}
+                  onClick={() => toggleStatus(status)}
+                  className={cn("h-7 text-xs", active && "bg-indigo-600 hover:bg-indigo-700")}>
+                  <span className={cn("mr-1.5 h-2 w-2 rounded-full", cfg.dot)} />
+                  {cfg.label}
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="grid gap-2 sm:grid-cols-2">
+            <DateTimePicker
+              value={fromDate}
+              onChange={(value) => {
+                setFromDate(value || undefined);
+                if (value && toDate && value > toDate) {
+                  setToDate(undefined);
+                }
+              }}
+              showTime={false}
+              themeVariant="user"
+              placeholder={t("common.fromDate", "Từ ngày")}
+            />
+            <DateTimePicker
+              value={toDate}
+              onChange={(value) => setToDate(value || undefined)}
+              showTime={false}
+              minDate={fromDate}
+              themeVariant="user"
+              placeholder={t("common.comeDay", "Đến ngày")}
+            />
+          </div>
+
+          <Button variant="ghost" size="sm" className="mt-2 w-fit" onClick={resetFilters}>
+            {t("common.resetTheFilter", "Đặt lại bộ lọc")}
+          </Button>
+        </div>
+
         {/* Selected Day Agenda Items */}
-        {sessionsLoading ? (
+        {scheduleLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-20 rounded-xl" />
             <Skeleton className="h-20 rounded-xl" />
@@ -489,7 +721,7 @@ export function OverviewPage() {
         )}
 
         {/* Upcoming Sessions Box */}
-        <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/30">
+        <div className="mt-2 rounded-xl border border-indigo-100 bg-indigo-50 p-4 dark:border-indigo-900/50 dark:bg-indigo-950">
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
               {t("userOverview.upcomingSession", "Phiên sắp tới")}
@@ -517,7 +749,7 @@ export function OverviewPage() {
                 return (
                   <button
                     key={item.session.id}
-                    onClick={() => handleOpenSessionDetail(item.session.id)}
+                    onClick={() => handleOpenSessionDetail(item)}
                     className="flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
                     <div className="min-w-0">
                       <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
@@ -541,12 +773,12 @@ export function OverviewPage() {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 
   return (
-    <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
+    <section className="flex h-full flex-col overflow-y-auto bg-slate-50 dark:bg-transparent">
       {/* Top Action Bar — same geometry as JobSearchTab and UserCompaniesTab */}
       <div className="shrink-0 px-5 py-6 md:px-8">
         <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -606,8 +838,8 @@ export function OverviewPage() {
       </div>
 
       {/* Calendar + Agenda Grid Section */}
-      <div className="flex-1 overflow-y-auto px-5 py-6 md:px-8">
-        <div className="xl:hidden">
+      <div className="flex w-full min-w-0 px-5 py-6 md:px-8 xl:self-center">
+        <div className="w-full min-w-0 xl:hidden">
           <Tabs value={mobileView} onValueChange={setMobileView}>
             <TabsList className="mb-3 grid w-full grid-cols-2">
               <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
@@ -615,14 +847,26 @@ export function OverviewPage() {
                 {t("common.monthlyCalendar", "Lịch tháng")}
               </TabsTrigger>
             </TabsList>
-            <TabsContent value={MOBILE_VIEW_AGENDA}>{renderAgendaContent()}</TabsContent>
-            <TabsContent value={MOBILE_VIEW_CALENDAR}>{renderCalendarContent()}</TabsContent>
+            <TabsContent value={MOBILE_VIEW_AGENDA} className="mt-0">
+              <div key={`mobile-agenda-${selectedDateKey}`}>{renderAgendaContent()}</div>
+            </TabsContent>
+            <TabsContent value={MOBILE_VIEW_CALENDAR} className="mt-0">
+              {renderCalendarContent()}
+            </TabsContent>
           </Tabs>
         </div>
 
-        <div className="hidden gap-6 xl:grid xl:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]">
-          {renderCalendarContent()}
-          {renderAgendaContent()}
+        <div className="hidden min-h-0 w-full min-w-0 xl:flex xl:self-center">
+          <div className="flex w-full min-w-0 flex-row items-start gap-6">
+            {/* Calendar - Natural height (no constraint, full content visible) */}
+            <div className="flex min-w-0 flex-1 basis-0 flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+              {renderCalendarContent()}
+            </div>
+            {/* Agenda - Fixed height with internal scroll */}
+            <div className="flex h-[580px] w-[400px] shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 xl:w-[440px] 2xl:w-[480px] dark:border-slate-800 dark:bg-slate-900">
+              <div key={`desktop-agenda-${selectedDateKey}`}>{renderAgendaContent()}</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
