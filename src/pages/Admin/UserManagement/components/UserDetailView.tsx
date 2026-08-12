@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CVUploadModal from "@/components/ui/cv-upload-modal";
-import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -19,15 +18,12 @@ import {
   Award,
   Briefcase,
   Calendar,
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
-  Circle,
   Code,
   FileText,
   FolderOpen,
   GraduationCap,
-  Lightbulb,
   Mail,
   Pencil,
   Trophy,
@@ -141,32 +137,6 @@ export function UserDetailView({
   const rawMajor = derivedTargetRole || derivedEduMajor || String(userRecord.major || "");
   const derivedMajor = getMajorLabel(rawMajor);
 
-  const completenessFields = useMemo(
-    () => [
-      !!(activeProfile?.introduction || user.name),
-      !!(
-        (activeProfile?.technicalSkills?.length ?? 0) > 0 ||
-        (activeProfile?.softSkills?.length ?? 0) > 0
-      ),
-      !!(
-        (activeProfile?.workExperiences?.length ?? 0) > 0 ||
-        (activeProfile?.projects?.length ?? 0) > 0
-      ),
-      !!((activeProfile?.educations?.length ?? 0) > 0),
-      !!user?.cvUrl,
-    ],
-    [activeProfile, user]
-  );
-
-  const completedCount = useMemo(
-    () => completenessFields.filter(Boolean).length,
-    [completenessFields]
-  );
-  const completenessPercentage = useMemo(
-    () => Math.round((completedCount / completenessFields.length) * 100),
-    [completedCount, completenessFields.length]
-  );
-
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isCvModalOpen, setIsCvModalOpen] = useState(false);
@@ -226,8 +196,8 @@ export function UserDetailView({
           </div>
         ) : (
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-            {/* Left Column: Sticky Profile Card & Completeness Progress */}
-            <div className="flex flex-col gap-6 lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
+            {/* Left Column: Sticky Profile Card */}
+            <div className="lg:sticky lg:top-0 lg:col-span-3 lg:self-start">
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
                   <Button
@@ -322,69 +292,6 @@ export function UserDetailView({
                     </Button>
                   </div>
                 </div>
-              </div>
-
-              {/* Card 2: Profile Completeness Card */}
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <h4 className="mb-3 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  {t("userAccount.profileCompleteness", "Độ hoàn thiện hồ sơ")}
-                </h4>
-                <div className="mb-3 flex items-center gap-3">
-                  <Progress value={completenessPercentage} className="h-2 flex-1" />
-                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                    {completenessPercentage}%
-                  </span>
-                </div>
-                <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
-                  <li className="flex items-center gap-2">
-                    {completenessFields[0] ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                    ) : (
-                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
-                    )}
-                    <span className="truncate">
-                      {t("userAccount.profileBasicInfo", "Thông tin & Giới thiệu")}
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    {completenessFields[1] ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                    ) : (
-                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
-                    )}
-                    <span className="truncate">
-                      {t("common.technicalSkills", "Kỹ năng & Công cụ")}
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    {completenessFields[2] ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                    ) : (
-                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
-                    )}
-                    <span className="truncate">
-                      {t("common.workExperience", "Kinh nghiệm & Dự án")}
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    {completenessFields[3] ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                    ) : (
-                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
-                    )}
-                    <span className="truncate">{t("common.education", "Học vấn & Bằng cấp")}</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    {completenessFields[4] ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                    ) : (
-                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
-                    )}
-                    <span className="truncate">
-                      {t("adminUsermanagement.cvUploaded", "File CV đính kèm")}
-                    </span>
-                  </li>
-                </ul>
               </div>
             </div>
 
@@ -705,9 +612,9 @@ export function UserDetailView({
               )}
             </div>
 
-            {/* Right Column: TOC Menu & Quick Tip Card */}
+            {/* Right Column: TOC Menu (Only visible when not editing profile) */}
             {!isEditingProfile && (
-              <div className="hidden lg:sticky lg:top-4 lg:col-span-2 lg:flex lg:flex-col lg:gap-6 lg:self-start">
+              <div className="hidden lg:sticky lg:top-0 lg:col-span-2 lg:block lg:self-start">
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                   <h4 className="mb-3 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                     {t("common.tableOfContents", "Nội dung")}
@@ -758,19 +665,6 @@ export function UserDetailView({
                       {t("common.achievements")}
                     </a>
                   </nav>
-                </div>
-
-                <div className="rounded-2xl border border-indigo-100 bg-indigo-50/80 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/40">
-                  <h4 className="mb-1.5 flex items-center gap-2 text-xs font-bold text-indigo-900 dark:text-indigo-300">
-                    <Lightbulb className="h-4 w-4 shrink-0 text-amber-500" />
-                    {t("adminUsermanagement.adminTipTitle", "Ghi chú Quản trị")}
-                  </h4>
-                  <p className="text-[11.5px] leading-relaxed text-indigo-700 dark:text-indigo-400">
-                    {t(
-                      "adminUsermanagement.adminTipContent",
-                      "Dữ liệu hồ sơ giúp đánh giá năng lực trước khi gán Mentor hoặc duyệt đơn."
-                    )}
-                  </p>
                 </div>
               </div>
             )}
