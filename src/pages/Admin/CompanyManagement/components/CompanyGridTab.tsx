@@ -327,11 +327,11 @@ export function CompanyGridTab({
 
                     {/* Company logo */}
                     {selectedCompany.logoUrl && (
-                      <div className="mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 shadow-xs dark:border-slate-700 dark:bg-slate-800">
+                      <div className="mt-0.5 flex h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 shadow-xs dark:border-slate-700 dark:bg-slate-800">
                         <img
                           src={selectedCompany.logoUrl}
                           alt={selectedCompany.name}
-                          className="h-full w-full object-contain p-1"
+                          className="h-full w-full object-cover"
                         />
                       </div>
                     )}

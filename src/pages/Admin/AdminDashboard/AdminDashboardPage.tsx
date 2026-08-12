@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { MentorReviewAssignmentPage } from "@/pages/Admin/MentorReviewAssignment";
 import { AdminAccountPage } from "../Account/AdminAccountPage";
@@ -194,6 +194,7 @@ export function AdminDashboardPage() {
     navigate(`/admin/${type === "dashboard" ? "" : type}`);
   };
 
+  const [searchParams] = useSearchParams();
   // Find current title and category for header
   const { currentTitle, currentCategory, parentTitle } = useMemo(() => {
     for (const group of sidebarMenuGroups) {
@@ -210,6 +211,25 @@ export function AdminDashboardPage() {
             if (activeTab === "mentors") {
               return {
                 currentTitle: t("adminMentormanagement.mentorDetail", "Chi tiết Mentor"),
+                currentCategory: group.label,
+                parentTitle: item.label,
+              };
+            }
+          }
+          // companies: detect drill-down via query params
+          if (activeTab === "companies") {
+            const companyId = searchParams.get("companyId");
+            const jdId = searchParams.get("jdId");
+            if (jdId) {
+              return {
+                currentTitle: t("adminCompanymanagement.jdDetail", "Chi tiết JD"),
+                currentCategory: group.label,
+                parentTitle: item.label,
+              };
+            }
+            if (companyId) {
+              return {
+                currentTitle: t("adminCompanymanagement.companyDetail", "Chi tiết công ty"),
                 currentCategory: group.label,
                 parentTitle: item.label,
               };
