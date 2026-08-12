@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Building2, Loader2, MapPin, Power, Sparkles } from "lucide-react";
+import { Building2, Loader2, MapPin, Power } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Kiosk, KioskFormValues } from "../types";
@@ -71,18 +71,14 @@ export function KioskFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-md gap-0 overflow-hidden p-0">
-        <div className="from-primary/10 via-primary/5 relative bg-gradient-to-br to-transparent px-6 pt-6 pb-4">
+      <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-[520px] dark:border-slate-800 dark:bg-slate-900">
+        <div className="border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
           <DialogHeader>
-            <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs font-medium tracking-wider uppercase">
-              <Sparkles className="h-3.5 w-3.5" />
-              {t("common.administration")}
-            </div>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <Building2 className="text-primary h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+              <Building2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               {isEdit ? t("adminKioskManagement.editKiosk") : t("adminKioskManagement.createKiosk")}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {isEdit
                 ? t("adminKioskManagement.editKioskDescription")
                 : t("adminKioskManagement.createKioskDescription")}
@@ -90,9 +86,13 @@ export function KioskFormDialog({
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-6 pt-5 pb-6">
+        <form onSubmit={handleSubmit} className="space-y-5 overflow-y-auto p-6">
           <div className="space-y-2">
-            <Label htmlFor="kiosk-name">{t("adminKioskManagement.nameLabel")}</Label>
+            <Label
+              htmlFor="kiosk-name"
+              className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              {t("adminKioskManagement.nameLabel")}
+            </Label>
             <div className="relative">
               <Building2 className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
@@ -101,7 +101,7 @@ export function KioskFormDialog({
                 onChange={(event) => setValues((prev) => ({ ...prev, name: event.target.value }))}
                 onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
                 placeholder={t("adminKioskManagement.namePlaceholder")}
-                className="pl-9"
+                className="h-10.5 rounded-xl border border-slate-200 bg-slate-50/50 pl-9 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100"
                 aria-invalid={nameError || undefined}
                 maxLength={120}
                 required
@@ -113,7 +113,11 @@ export function KioskFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="kiosk-location">{t("adminKioskManagement.locationLabel")}</Label>
+            <Label
+              htmlFor="kiosk-location"
+              className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              {t("adminKioskManagement.locationLabel")}
+            </Label>
             <div className="relative">
               <MapPin className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
@@ -124,7 +128,7 @@ export function KioskFormDialog({
                 }
                 onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
                 placeholder={t("adminKioskManagement.locationPlaceholder")}
-                className="pl-9"
+                className="h-10.5 rounded-xl border border-slate-200 bg-slate-50/50 pl-9 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100"
                 aria-invalid={locationError || undefined}
                 maxLength={240}
                 required
@@ -137,9 +141,9 @@ export function KioskFormDialog({
             )}
           </div>
 
-          <div className="border-border bg-muted/30 flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/60">
             <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-lg">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400">
                 <Power className="h-4 w-4" />
               </div>
               <div>
@@ -158,7 +162,7 @@ export function KioskFormDialog({
             />
           </div>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="-mx-6 mt-2 -mb-6 gap-2 border-t border-slate-200/90 bg-slate-100/90 px-6 py-3.5 dark:border-slate-800 dark:bg-slate-950">
             <Button
               type="button"
               variant="outline"
@@ -166,7 +170,10 @@ export function KioskFormDialog({
               disabled={isSubmitting}>
               {t("common.cancel")}
             </Button>
-            <Button type="submit" disabled={isSubmitting || isInvalid} className="min-w-32 gap-2">
+            <Button
+              type="submit"
+              disabled={isSubmitting || isInvalid}
+              className="h-9.5 min-w-32 gap-2 rounded-xl bg-indigo-600 px-6 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 hover:bg-indigo-500">
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />

@@ -29,7 +29,7 @@ interface KioskTableProps {
 function formatDate(dateStr?: string) {
   if (!dateStr) return null;
   try {
-    return format(new Date(dateStr), "dd/MM/yyyy HH:mm");
+    return format(new Date(dateStr), "dd/MM/yyyy");
   } catch {
     return null;
   }
@@ -149,7 +149,7 @@ export function KioskTable({
                       <Building2 className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      <p className="truncate text-sm font-bold text-slate-950 dark:text-white">
                         {kiosk.name ??
                           t("adminKioskManagement.kioskStationWithId", `Trạm Kiosk #${kiosk.id}`, {
                             id: kiosk.id,
@@ -161,7 +161,7 @@ export function KioskTable({
 
                 {/* Location */}
                 <TableCell className="px-4 py-4 text-xs font-medium text-slate-700 dark:text-slate-200">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
                     <MapPin className="h-3.5 w-3.5 text-rose-500" />
                     {kiosk.location ||
                       t("adminKioskManagement.locationNotUpdated", "Chưa cập nhật vị trí")}
@@ -170,7 +170,7 @@ export function KioskTable({
 
                 {/* Schedules count */}
                 <TableCell className="px-5 py-4">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-slate-200/80 bg-slate-100/90 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-100">
                     <Clock4 className="h-3 w-3 text-indigo-500" />
                     {t("adminKioskManagement.timeSlotsCount", "{{count}} khung giờ", {
                       count: kiosk.scheduleCount ?? 0,
@@ -202,7 +202,7 @@ export function KioskTable({
                 {/* Created Date */}
                 <TableCell className="px-5 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                   {createdAtFormatted ? (
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                       {createdAtFormatted}
                     </span>
                   ) : (
@@ -216,8 +216,8 @@ export function KioskTable({
                     variant="ghost"
                     size="sm"
                     onClick={() => onEdit(kiosk)}
-                    className="h-8 gap-1.5 px-2 text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                    <Pencil className="h-3.5 w-3.5" />
+                    className="group/btn h-8.5 gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-700 shadow-2xs transition-all hover:border-indigo-300 hover:bg-indigo-50/70 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-400">
+                    <Pencil className="h-3.5 w-3.5 text-slate-400 transition-colors group-hover/btn:text-indigo-500" />
                     <span>{t("common.edit")}</span>
                   </Button>
                 </TableCell>

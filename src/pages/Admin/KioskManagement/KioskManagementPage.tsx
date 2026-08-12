@@ -1,4 +1,3 @@
-import { ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SpinnerBlock } from "@/components/ui/spinner";
@@ -14,7 +13,6 @@ export function KioskManagementPage() {
   const { t } = useTranslation();
   const [kiosks, setKiosks] = useState<KioskTableRow[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isReloading, setIsReloading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
@@ -50,39 +48,34 @@ export function KioskManagementPage() {
     ] as const;
   }, [kiosks, t]);
 
-  const loadData = useCallback(
-    async (showReloading = false) => {
-      if (showReloading) setIsReloading(true);
-      else setIsInitialLoading(true);
-      try {
-        const kiosksRes = await kioskManager.getActiveKiosks();
-        if (!kiosksRes.success) {
-          toast.error(kiosksRes.error || t("adminKioskManagement.unableToLoadKiosks"));
-          setKiosks([]);
-          return;
-        }
-        const raw = (kiosksRes.data ?? []) as Kiosk[];
-        const counts = await Promise.all(
-          raw.map(async (kiosk) => {
-            if (!kiosk.id) return { id: kiosk.id ?? null, scheduleCount: 0 };
-            const result = await kioskManager.getSchedulesByKiosk(kiosk.id);
-            return { id: kiosk.id, scheduleCount: result.success ? (result.data ?? []).length : 0 };
-          })
-        );
-        const countMap = new Map(counts.map((count) => [count.id, count.scheduleCount]));
-        setKiosks(
-          raw.map((kiosk) => ({ ...kiosk, scheduleCount: countMap.get(kiosk.id ?? null) ?? 0 }))
-        );
-      } catch (error) {
-        console.error("Error loading kiosks:", error);
-        toast.error(t("adminKioskManagement.unableToLoadKiosks"));
-      } finally {
-        setIsInitialLoading(false);
-        setIsReloading(false);
+  const loadData = useCallback(async () => {
+    setIsInitialLoading(true);
+    try {
+      const kiosksRes = await kioskManager.getActiveKiosks();
+      if (!kiosksRes.success) {
+        toast.error(kiosksRes.error || t("adminKioskManagement.unableToLoadKiosks"));
+        setKiosks([]);
+        return;
       }
-    },
-    [t]
-  );
+      const raw = (kiosksRes.data ?? []) as Kiosk[];
+      const counts = await Promise.all(
+        raw.map(async (kiosk) => {
+          if (!kiosk.id) return { id: kiosk.id ?? null, scheduleCount: 0 };
+          const result = await kioskManager.getSchedulesByKiosk(kiosk.id);
+          return { id: kiosk.id, scheduleCount: result.success ? (result.data ?? []).length : 0 };
+        })
+      );
+      const countMap = new Map(counts.map((count) => [count.id, count.scheduleCount]));
+      setKiosks(
+        raw.map((kiosk) => ({ ...kiosk, scheduleCount: countMap.get(kiosk.id ?? null) ?? 0 }))
+      );
+    } catch (error) {
+      console.error("Error loading kiosks:", error);
+      toast.error(t("adminKioskManagement.unableToLoadKiosks"));
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, [t]);
 
   useEffect(() => {
     void loadData();
@@ -116,7 +109,7 @@ export function KioskManagementPage() {
           )
         );
         closeForm();
-        await loadData(true);
+        await loadData();
       } else {
         toast.error(result.error || t("common.unableToSave"));
       }
@@ -137,7 +130,7 @@ export function KioskManagementPage() {
         location: kiosk.location ?? "",
         isActive: !(status.isActive ?? status.active ?? false),
       });
-      if (result.success) await loadData(true);
+      if (result.success) await loadData();
       else toast.error(result.error || t("adminKioskManagement.unableToUpdateKiosk"));
     } catch (error) {
       console.error("Error toggling kiosk:", error);
@@ -187,7 +180,7 @@ export function KioskManagementPage() {
             </div>
             <form
               onSubmit={(event) => event.preventDefault()}
-              className="mt-6 flex flex-col gap-3 sm:flex-row">
+              className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
                 <Input
@@ -204,19 +197,14 @@ export function KioskManagementPage() {
               <Button
                 type="submit"
                 variant="outline"
-                className="h-[46px] rounded-xl px-6 font-semibold">
+                className="h-[46px] shrink-0 rounded-xl px-6 font-semibold">
                 <Search className="mr-2 h-[18px] w-[18px]" />
                 {t("common.search", "Tìm kiếm")}
               </Button>
-              <ReloadButton
-                onReload={() => void loadData(true)}
-                isLoading={isReloading}
-                size="sm"
-              />
               <Button
                 type="button"
                 onClick={openCreate}
-                className="h-[46px] rounded-xl bg-indigo-600 px-5 font-semibold text-white hover:bg-indigo-700">
+                className="h-[46px] shrink-0 rounded-xl bg-indigo-600 px-5 font-semibold text-white hover:bg-indigo-700">
                 <Plus className="mr-1.5 h-4 w-4" />
                 {t("adminKioskManagement.createKioskButton", "Thêm Kiosk")}
               </Button>
