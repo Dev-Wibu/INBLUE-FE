@@ -199,6 +199,22 @@ export function AdminDashboardPage() {
     for (const group of sidebarMenuGroups) {
       for (const item of group.items) {
         if (item.type === activeTab) {
+          if (pathParts.length > 2) {
+            if (activeTab === "users") {
+              return {
+                currentTitle: t("adminUsermanagement.userDetail", "Chi tiết người dùng"),
+                currentCategory: group.label,
+                parentTitle: item.label,
+              };
+            }
+            if (activeTab === "mentors") {
+              return {
+                currentTitle: t("adminMentormanagement.mentorDetail", "Chi tiết Mentor"),
+                currentCategory: group.label,
+                parentTitle: item.label,
+              };
+            }
+          }
           return { currentTitle: item.label, currentCategory: group.label, parentTitle: undefined };
         }
         if (item.children) {
@@ -218,7 +234,7 @@ export function AdminDashboardPage() {
       currentCategory: undefined,
       parentTitle: undefined,
     };
-  }, [activeTab, sidebarMenuGroups, t]);
+  }, [activeTab, pathParts, sidebarMenuGroups, t]);
 
   const ADMIN_SIDEBAR_LOGO = useMemo(
     () => (
@@ -302,7 +318,9 @@ export function AdminDashboardPage() {
             <Route path="/" element={<DashboardOverviewPage />} />
             <Route path="account" element={<AdminAccountPage />} />
             <Route path="users" element={<UserManagementPage />} />
+            <Route path="users/:userId" element={<UserManagementPage />} />
             <Route path="mentors" element={<MentorManagementPage />} />
+            <Route path="mentors/:mentorId" element={<MentorManagementPage />} />
             <Route path="sessions" element={<SessionManagementPage />} />
             <Route path="sessions/create" element={<SessionFormPage />} />
             <Route path="sessions/:id" element={<SessionFormPage />} />

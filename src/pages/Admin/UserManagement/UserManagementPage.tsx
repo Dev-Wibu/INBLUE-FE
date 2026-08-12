@@ -1,15 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { PaginationControl, ReloadButton } from "@/components/shared";
-import { Badge } from "@/components/ui/badge";
+import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
@@ -17,9 +8,10 @@ import type { CandidateProfile } from "@/interfaces/schema.types";
 import { cn } from "@/lib/utils";
 import { candidateProfileManager, usersAdminManager } from "@/services";
 import { getLatestCandidateProfile } from "@/services/candidate-profile.manager";
-import { ArrowLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { UserDetailView, UserTable } from "./components";
 import { UserEditForm, type ExtendedUserFormData } from "./components/UserEditForm";
@@ -29,7 +21,6 @@ export function UserManagementPage() {
   const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");
 
@@ -39,38 +30,83 @@ export function UserManagementPage() {
 
   const [selectedProfileData, setSelectedProfileData] = useState<CandidateProfile | null>(null);
 
-  const loadUsers = useCallback(
-    async (showReloading = false) => {
-      if (showReloading) {
-        setIsReloading(true);
+  const navigate = useNavigate();
+  const { userId } = useParams();
+
+  const loadUsers = useCallback(async () => {
+    setIsInitialLoading(true);
+    try {
+      const response = await usersAdminManager.getAll();
+      if (response.success && response.data) {
+        const userData = Array.isArray(response.data) ? response.data : response.data.data;
+        setUsers(userData as User[]);
       } else {
-        setIsInitialLoading(true);
+        toast.error(response.error || t("common.unableToLoadUserList"));
       }
-      try {
-        const response = await usersAdminManager.getAll();
-        if (response.success && response.data) {
-          const userData = Array.isArray(response.data) ? response.data : response.data.data;
-          setUsers(userData as User[]);
-        } else {
-          toast.error(response.error || t("common.unableToLoadUserList"));
-        }
-      } catch (error) {
-        console.error("Error loading users:", error);
-        toast.error(t("common.unableToLoadUserList"));
-      } finally {
-        if (showReloading) {
-          setIsReloading(false);
-        } else {
-          setIsInitialLoading(false);
-        }
-      }
-    },
-    [t]
-  );
+    } catch (error) {
+      console.error("Error loading users:", error);
+      toast.error(t("common.unableToLoadUserList"));
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, [t]);
 
   useEffect(() => {
     void loadUsers();
   }, [loadUsers]);
+
+  const handleViewDetail = useCallback(
+    async (user: User, shouldNavigate = true) => {
+      setSelectedUser(user);
+      setFormData({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      });
+      if (user.role === "USER" && user.id) {
+        try {
+          const response = await candidateProfileManager.getByUserId(user.id);
+          if (response.success && response.data) {
+            setSelectedProfileData(getLatestCandidateProfile(response.data));
+          } else {
+            setSelectedProfileData(null);
+          }
+        } catch {
+          setSelectedProfileData(null);
+        }
+      } else {
+        setSelectedProfileData(null);
+      }
+      setViewMode("detail");
+      if (shouldNavigate) {
+        navigate(`/admin/users/${user.id}`);
+      }
+    },
+    [navigate]
+  );
+
+  useEffect(() => {
+    if (!userId) {
+      if (viewMode === "detail") {
+        setViewMode("list");
+        setSelectedUser(null);
+        setSelectedProfileData(null);
+      }
+      return;
+    }
+    const numericId = Number(userId);
+    if (!Number.isFinite(numericId)) return;
+    const user = users.find((u) => u.id === numericId);
+    if (user) {
+      void handleViewDetail(user, false);
+    } else if (!isInitialLoading) {
+      usersAdminManager.getById(numericId).then((res) => {
+        if (res.success && res.data) {
+          void handleViewDetail(res.data as User, false);
+        }
+      });
+    }
+  }, [userId, users, isInitialLoading, handleViewDetail, viewMode]);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -213,152 +249,9 @@ export function UserManagementPage() {
     <div
       className={cn(
         "flex flex-col bg-slate-50 dark:bg-slate-950",
-        viewMode === "list" || viewMode === "create"
-          ? "-m-4 h-[calc(100%+32px)] md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]"
-          : "-mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-8 lg:-mt-8"
+        (viewMode === "list" || viewMode === "create") &&
+          "-m-4 h-[calc(100%+32px)] md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]"
       )}>
-      {/* Unified Single Hierarchical Header (Fixed 68px height) */}
-      <div
-        className={cn(
-          "flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900",
-          viewMode === "list" && "hidden"
-        )}>
-        <div className="flex min-w-0 flex-wrap items-center gap-3">
-          {viewMode === "detail" && selectedUser ? (
-            /* Mode 2: User Detail View (Sleek 1-line breadcrumb) */
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setViewMode("list");
-                  setSelectedUser(null);
-                  setSelectedProfileData(null);
-                }}
-                className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-                {t("adminUsermanagement.userManagement")}
-              </button>
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-              <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
-                {selectedUser.name}
-              </h1>
-              <Badge
-                className={
-                  (selectedUser as any).status === "ACTIVE" ||
-                  (selectedUser as any).isActive !== false ||
-                  (selectedUser as any).active !== false
-                    ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
-                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                }>
-                {(selectedUser as any).status || "ACTIVE"}
-              </Badge>
-              {selectedUser.role && <Badge variant="outline">{selectedUser.role}</Badge>}
-            </div>
-          ) : viewMode === "create" ? (
-            /* Mode 3: Create User View */
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-                {t("adminUsermanagement.userManagement")}
-              </button>
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-              <h1 className="text-base font-bold text-slate-900 dark:text-white">
-                {t("adminUsermanagement.addNewUser")}
-              </h1>
-            </div>
-          ) : (
-            /* Mode 1: Root User Management List View */
-            <div className="flex flex-col justify-center">
-              <h1 className="text-lg leading-tight font-bold text-slate-900 dark:text-white">
-                {t("adminUsermanagement.userManagement")}
-              </h1>
-              <p className="mt-0.5 text-xs leading-tight text-slate-500 dark:text-slate-400">
-                {t("adminUsermanagement.manageUserAccountsRolesAnd")}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Header Right Action Controls */}
-        <div className="flex flex-wrap items-center gap-3">
-          {viewMode === "detail" || viewMode === "create" ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setViewMode("list");
-                setSelectedUser(null);
-                setSelectedProfileData(null);
-              }}
-              className="h-8 gap-1.5 text-xs font-semibold">
-              <ArrowLeft className="h-3.5 w-3.5" />
-              {t("common.back")}
-            </Button>
-          ) : (
-            <>
-              <div className="relative w-64">
-                <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-                <Input
-                  type="text"
-                  placeholder={t("adminUsermanagement.searchByNameEmailUniversity")}
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    pagination.goToFirstPage();
-                  }}
-                  className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
-                />
-              </div>
-
-              <Select
-                value={statusFilter}
-                onValueChange={(value) => {
-                  setStatusFilter(value);
-                  pagination.goToFirstPage();
-                }}>
-                <SelectTrigger className="h-8 w-32 border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
-                  <SelectValue placeholder={t("common.filterByStatus")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">{t("common.active")}</SelectItem>
-                  <SelectItem value="inactive">{t("common.shutDown")}</SelectItem>
-                  <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {(searchQuery || statusFilter !== "active") && (
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setStatusFilter("active");
-                    pagination.goToFirstPage();
-                  }}
-                  className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
-                  {t("common.clearFilter")}
-                </Button>
-              )}
-
-              <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-
-              <ReloadButton
-                onReload={() => loadUsers(true)}
-                isLoading={isReloading}
-                tooltip={t("adminUsermanagement.reloadUserList")}
-              />
-
-              <Button
-                onClick={handleCreate}
-                className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                {t("adminUsermanagement.addUser")}
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-
       <div
         className={cn(
           "flex flex-col bg-slate-50 dark:bg-slate-950",
@@ -372,9 +265,7 @@ export function UserManagementPage() {
             onFormChange={setFormData}
             onSubmit={handleSubmitEdit}
             onBack={() => {
-              setViewMode("list");
-              setSelectedUser(null);
-              setSelectedProfileData(null);
+              navigate("/admin/users");
             }}
           />
         ) : viewMode === "create" ? (
