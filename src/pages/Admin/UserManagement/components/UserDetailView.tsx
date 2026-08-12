@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
 import { usersAdminManager } from "@/services/users-admin.manager";
 import {
+  ArrowLeft,
   Award,
   Briefcase,
   Calendar,
