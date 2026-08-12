@@ -15,7 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Briefcase, Calendar, Clock, MapPin, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { EnrichedKioskBooking, Mentor } from "../types";
@@ -58,81 +60,218 @@ export function AssignMentorDialog({
     onAssign(booking.id, mentorId, notes);
   };
 
+  // Format date for display
+  const formatDisplayDate = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("vi-VN", {
+        weekday: "short",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Format time for display
+  const formatDisplayTime = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "-";
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl lg:max-w-3xl">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>{t("adminKiosk.assignMentorFor", { id: booking?.id })}</DialogTitle>
-            <DialogDescription>{t("adminKiosk.assignMentorDescription")}</DialogDescription>
+          <DialogHeader className="pb-4">
+            <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50">
+                <User className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              {t("adminKiosk.assignMentorFor", { id: booking?.id })}
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              {t("adminKiosk.assignMentorDescription")}
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="booking-info" className="text-muted-foreground">
-                {t("adminKiosk.bookingInfo")}
-              </Label>
-              <div className="rounded-lg border bg-slate-50 p-3 text-sm dark:bg-slate-800">
-                <p>
-                  <span className="font-medium">{t("common.id")}:</span> {booking?.id}
-                </p>
-                {booking?.userName && (
-                  <p>
-                    <span className="font-medium">{t("adminKiosk.candidate")}:</span>{" "}
-                    {booking.userName}
-                  </p>
-                )}
-                {booking?.jobTitle && (
-                  <p>
-                    <span className="font-medium">{t("adminKiosk.position")}:</span>{" "}
-                    {booking.jobTitle}
-                  </p>
-                )}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Left Column - Booking Information */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  <Briefcase className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  {t("adminKiosk.bookingInfo")}
+                </h3>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                        <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                          #{booking?.id || "-"}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                          {t("common.id")}
+                        </p>
+                        <p className="font-semibold text-slate-900 dark:text-slate-100">
+                          {booking?.id || "-"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {booking?.userName && (
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                          <User className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                            {t("adminKiosk.candidate")}
+                          </p>
+                          <p className="font-semibold text-slate-900 dark:text-slate-100">
+                            {booking.userName}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {booking?.jobTitle && (
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                          <Briefcase className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                            {t("adminKiosk.position")}
+                          </p>
+                          <p className="font-semibold text-slate-900 dark:text-slate-100">
+                            {booking.jobTitle}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <Separator className="my-2" />
+
+                    {booking?.scheduledStart && (
+                      <>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                            <Calendar className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                              {t("common.startTime")}
+                            </p>
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">
+                              {formatDisplayDate(booking.scheduledStart)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/30">
+                            <Clock className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                              {t("common.time")}
+                            </p>
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">
+                              {formatDisplayTime(booking.scheduledStart)} -{" "}
+                              {formatDisplayTime(booking.scheduledEnd)}
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {booking?.kioskId && (
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/30">
+                          <MapPin className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                            Kiosk
+                          </p>
+                          <p className="font-semibold text-slate-900 dark:text-slate-100">
+                            #{booking.kioskId}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="mentorId">{t("adminKiosk.mentor")}</Label>
-              <Select name="mentorId" required>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("adminKiosk.selectMentor")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {mentors.map((mentor) => (
-                    <SelectItem key={mentor.id} value={String(mentor.id)}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{mentor.name}</span>
-                        {mentor.expertise && (
-                          <span className="text-muted-foreground text-xs">{mentor.expertise}</span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Right Column - Mentor Selection & Notes */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  <User className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  {t("adminKiosk.mentor")}
+                </h3>
+                <div className="space-y-2">
+                  <Label htmlFor="mentorId" className="text-sm font-medium">
+                    {t("adminKiosk.selectMentor")}
+                  </Label>
+                  <Select name="mentorId" required>
+                    <SelectTrigger className="h-11 bg-white dark:bg-slate-900">
+                      <SelectValue placeholder={t("adminKiosk.selectMentor")} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {mentors.map((mentor) => (
+                        <SelectItem key={mentor.id} value={String(mentor.id)}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{mentor.name}</span>
+                            {mentor.expertise && (
+                              <span className="text-muted-foreground text-xs">
+                                {mentor.expertise}
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="notes">{t("adminKiosk.notes")}</Label>
-              <Textarea
-                id="notes"
-                name="notes"
-                placeholder={t("adminKiosk.notesPlaceholder")}
-                rows={3}
-                className="resize-none"
-              />
+              <div>
+                <Label htmlFor="notes" className="text-sm font-medium">
+                  {t("adminKiosk.notes")}
+                </Label>
+                <Textarea
+                  id="notes"
+                  name="notes"
+                  placeholder={t("adminKiosk.notesPlaceholder")}
+                  rows={4}
+                  className="mt-1.5 resize-none bg-white dark:bg-slate-900"
+                />
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="mt-6 flex-row-reverse gap-2 sm:mt-6">
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}>
-              {t("common.cancel")}
-            </Button>
-            <Button type="submit" disabled={isLoading}>
+              type="submit"
+              disabled={isLoading}
+              className="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -141,6 +280,13 @@ export function AssignMentorDialog({
               ) : (
                 t("adminKiosk.confirmAssign")
               )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isLoading}>
+              {t("common.cancel")}
             </Button>
           </DialogFooter>
         </form>
