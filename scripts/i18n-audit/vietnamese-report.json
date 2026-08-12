@@ -433,62 +433,6 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 622,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Mã đơn"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 625,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Ứng viên"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 628,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vị trí ứng tuyển"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 631,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vòng chấm"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 634,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Trạng thái"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 637,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Điểm số"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 640,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thao tác"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
     "line": 676,
     "character": 73,
     "type": "TemplateLiteral",
@@ -518,54 +462,6 @@
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Chưa gắn JD"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1168,
-    "character": 15,
-    "type": "JsxAttribute[title]",
-    "category": "vietnamese",
-    "text": "Xem dạng danh sách"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1168,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Xem dạng danh sách"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1170,
-    "character": 50,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Danh sách"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1182,
-    "character": 15,
-    "type": "JsxAttribute[title]",
-    "category": "vietnamese",
-    "text": "Xem dạng thẻ"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1182,
-    "character": 21,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Xem dạng thẻ"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1184,
-    "character": 50,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Thẻ"
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
@@ -769,7 +665,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2091,
+    "line": 2088,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -777,7 +673,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2096,
+    "line": 2093,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -785,7 +681,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2100,
+    "line": 2097,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -793,7 +689,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2109,
+    "line": 2106,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -801,7 +697,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2114,
+    "line": 2111,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -838,6 +734,46 @@
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "0 = Miễn phí"
+  },
+  {
+    "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
+    "line": 1030,
+    "character": 77,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "đ / phút"
+  },
+  {
+    "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
+    "line": 1278,
+    "character": 77,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "đ / phút"
+  },
+  {
+    "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
+    "line": 1288,
+    "character": 33,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Chuyên môn"
+  },
+  {
+    "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
+    "line": 1300,
+    "character": 33,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Giới thiệu"
+  },
+  {
+    "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
+    "line": 1325,
+    "character": 31,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "💡 Xem thông tin mentor bên trên để đưa ra quyết định gán mentor phù\r\n                              hợp với ứng viên này."
   },
   {
     "file": "src/pages/Enterprise/CompanyDetail/components/MasterJobCard.tsx",

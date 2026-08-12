@@ -1185,7 +1185,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1872,
+    "line": 1869,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -1193,7 +1193,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1989,
+    "line": 1986,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -1201,7 +1201,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2023,
+    "line": 2020,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -1209,7 +1209,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2151,
+    "line": 2148,
     "character": 67,
     "type": "JsxText",
     "category": "english",
@@ -1217,7 +1217,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2209,
+    "line": 2206,
     "character": 40,
     "type": "JsxText",
     "category": "english",
@@ -1225,7 +1225,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2288,
+    "line": 2285,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2129,11 +2129,27 @@
   },
   {
     "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
-    "line": 623,
+    "line": 627,
     "character": 27,
     "type": "JsxText",
     "category": "english",
     "text": "Session #"
+  },
+  {
+    "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
+    "line": 1004,
+    "character": 35,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Mentor"
+  },
+  {
+    "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
+    "line": 1252,
+    "character": 35,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Mentor"
   },
   {
     "file": "src/pages/Admin/PracticeSetManagement/components/PracticeSetFormDialog.tsx",
@@ -2561,7 +2577,7 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1552,
+    "line": 1550,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2569,7 +2585,7 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1555,
+    "line": 1553,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2577,7 +2593,7 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1558,
+    "line": 1556,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2585,7 +2601,7 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1561,
+    "line": 1559,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -3097,7 +3113,7 @@
   },
   {
     "file": "src/pages/User/Feedback/FeedbackDetailPage.tsx",
-    "line": 366,
+    "line": 334,
     "character": 57,
     "type": "JsxText",
     "category": "english",
@@ -3553,7 +3569,7 @@
   },
   {
     "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
-    "line": 333,
+    "line": 338,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -3561,7 +3577,7 @@
   },
   {
     "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
-    "line": 335,
+    "line": 340,
     "character": 11,
     "type": "JsxText",
     "category": "english",
@@ -3569,7 +3585,7 @@
   },
   {
     "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
-    "line": 345,
+    "line": 350,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
