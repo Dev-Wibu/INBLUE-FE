@@ -661,7 +661,7 @@ export function JobDescriptionDetailView({
                 currentJd.level === "FRESHER" && "bg-green-500",
                 currentJd.level === "JUNIOR" && "bg-blue-500",
                 currentJd.level === "MIDDLE" && "bg-purple-600",
-                currentJd.level === "SENIOR" && "bg-orange-500"
+                String(currentJd.level) === "SENIOR" && "bg-orange-500"
               )}>
               {currentJd.level.charAt(0).toUpperCase() + currentJd.level.slice(1).toLowerCase()}
             </span>

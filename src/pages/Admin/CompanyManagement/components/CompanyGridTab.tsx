@@ -156,8 +156,8 @@ export function CompanyGridTab({
       const isActive = jdStatusFilter === "active";
       result = result.filter((j) =>
         isActive
-          ? j.status === "ACTIVE" || j.status === "OPEN"
-          : j.status !== "ACTIVE" && j.status !== "OPEN"
+          ? String(j.status) === "ACTIVE" || String(j.status) === "OPEN"
+          : String(j.status) !== "ACTIVE" && String(j.status) !== "OPEN"
       );
     }
     if (jdSearchQuery.trim()) {
@@ -359,13 +359,13 @@ export function CompanyGridTab({
                         ],
                         [
                           enrichedCompanyJds.filter(
-                            (j) => j.status === "ACTIVE" || j.status === "OPEN"
+                            (j) => String(j.status) === "ACTIVE" || String(j.status) === "OPEN"
                           ).length,
                           t("adminCompanymanagement.activeJds", "Đang mở"),
                         ],
                         [
                           enrichedCompanyJds.filter(
-                            (j) => j.status !== "ACTIVE" && j.status !== "OPEN"
+                            (j) => String(j.status) !== "ACTIVE" && String(j.status) !== "OPEN"
                           ).length,
                           t("adminCompanymanagement.closedJds", "Đã đóng"),
                         ],

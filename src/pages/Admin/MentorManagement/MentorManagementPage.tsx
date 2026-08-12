@@ -16,7 +16,7 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { cn } from "@/lib/utils";
 import { mentorManager } from "@/services";
-import { Plus, Search } from "lucide-react";
+import { ChevronLeft, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
