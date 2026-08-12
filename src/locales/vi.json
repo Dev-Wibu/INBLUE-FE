@@ -68,7 +68,16 @@
     "pageTitle": "Chấm bài ứng viên",
     "pageDescription": "Xem và chấm điểm các vòng thi của ứng viên trong quy trình tuyển dụng.",
     "applicationGrading": "Chấm bài ứng viên",
-    "gradeApplications": "Xem và chấm điểm bài thi của ứng viên"
+    "gradeApplications": "Xem và chấm điểm bài thi của ứng viên",
+    "tableHeaderCode": "Mã đơn",
+    "tableHeaderCandidate": "Ứng viên",
+    "tableHeaderPosition": "Vị trí ứng tuyển",
+    "tableHeaderRound": "Vòng chấm",
+    "tableHeaderStatus": "Trạng thái",
+    "tableHeaderScore": "Điểm số",
+    "tableHeaderActions": "Thao tác",
+    "listView": "Xem dạng danh sách",
+    "cardView": "Xem dạng thẻ"
   },
   "adminKiosk": {
     "bookingRequests": "Yêu cầu đặt lịch Kiosk",

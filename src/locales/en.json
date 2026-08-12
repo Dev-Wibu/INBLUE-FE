@@ -68,7 +68,16 @@
     "pageTitle": "Grade Candidate Applications",
     "pageDescription": "View and grade interview rounds for candidates in the recruitment pipeline.",
     "applicationGrading": "Grade Applications",
-    "gradeApplications": "View and grade candidate test submissions"
+    "gradeApplications": "View and grade candidate test submissions",
+    "tableHeaderCode": "Code",
+    "tableHeaderCandidate": "Candidate",
+    "tableHeaderPosition": "Position",
+    "tableHeaderRound": "Round",
+    "tableHeaderStatus": "Status",
+    "tableHeaderScore": "Score",
+    "tableHeaderActions": "Actions",
+    "listView": "List view",
+    "cardView": "Card view"
   },
   "adminKiosk": {
     "bookingRequests": "Kiosk Booking Requests",

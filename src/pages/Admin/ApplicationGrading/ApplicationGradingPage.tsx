@@ -619,25 +619,25 @@ function ApplicationGradingTable({
         <TableHeader className="border-b border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90">
           <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
             <TableHead className="h-11 pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Mã đơn
+              {t("adminApplicationGrading.tableHeaderCode")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Ứng viên
+              {t("adminApplicationGrading.tableHeaderCandidate")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Vị trí ứng tuyển
+              {t("adminApplicationGrading.tableHeaderPosition")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Vòng chấm
+              {t("adminApplicationGrading.tableHeaderRound")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Trạng thái
+              {t("adminApplicationGrading.tableHeaderStatus")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Điểm số
+              {t("adminApplicationGrading.tableHeaderScore")}
             </TableHead>
             <TableHead className="h-11 pr-6 text-right text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Thao tác
+              {t("adminApplicationGrading.tableHeaderActions")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -1165,9 +1165,9 @@ export function ApplicationGradingPage({
                   ? "bg-white text-indigo-600 shadow-2xs dark:bg-slate-900 dark:text-indigo-400"
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               )}
-              title="Xem dạng danh sách">
+              title={t("common.listView")}>
               <List className="mr-1.5 h-4 w-4" />
-              <span className="hidden sm:inline">Danh sách</span>
+              <span className="hidden sm:inline">{t("common.list")}</span>
             </Button>
             <Button
               variant="ghost"
@@ -1179,9 +1179,9 @@ export function ApplicationGradingPage({
                   ? "bg-white text-indigo-600 shadow-2xs dark:bg-slate-900 dark:text-indigo-400"
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               )}
-              title="Xem dạng thẻ">
+              title={t("common.cardView")}>
               <LayoutGrid className="mr-1.5 h-4 w-4" />
-              <span className="hidden sm:inline">Thẻ</span>
+              <span className="hidden sm:inline">{t("common.card")}</span>
             </Button>
           </div>
 
