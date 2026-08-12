@@ -119,12 +119,14 @@ export function AdminApplicationManagementPage() {
       const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
       const jdInfo = openJds.find((j) => j.jdId === numericSelectedJdId);
       type AppWithCompany = ApplicationListItemDto & {
+        companyId?: number;
         companyName?: string;
         companyLogoUrl?: string;
         jobTitle?: string;
       };
       const enrichedApps = apps.map((app: AppWithCompany) => ({
         ...app,
+        companyId: jdInfo?.company?.id ?? app.companyId,
         companyName: app.companyName || jdInfo?.company?.name,
         companyLogoUrl: app.companyLogoUrl || jdInfo?.company?.logoUrl,
         jobTitle: app.jobTitle || jdInfo?.title,
@@ -160,12 +162,14 @@ export function AdminApplicationManagementPage() {
         const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
         const jdInfo = openJds.find((j) => j.jdId === jdId);
         type AppWithCompany = ApplicationListItemDto & {
+          companyId?: number;
           companyName?: string;
           companyLogoUrl?: string;
           jobTitle?: string;
         };
         const enriched = apps.map((app: AppWithCompany) => ({
           ...app,
+          companyId: jdInfo?.company?.id ?? app.companyId,
           companyName: app.companyName || jdInfo?.company?.name,
           companyLogoUrl: app.companyLogoUrl || jdInfo?.company?.logoUrl,
           jobTitle: app.jobTitle || jdInfo?.title,
