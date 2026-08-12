@@ -807,7 +807,7 @@ function AssignMentorDialog({
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-20 shrink-0 font-medium text-slate-500 dark:text-slate-400">
-                    App ID:
+                    {t("adminMentorReviewAssignment.appId")}:
                   </span>
                   <span className="rounded bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-300">
                     #{detail.applicationId}
@@ -957,7 +957,7 @@ function AssignMentorDialog({
               {selectedMentorsObjects.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-slate-100 p-3 dark:border-slate-700 dark:bg-slate-800/50">
                   <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                    Đã chọn:
+                    {t("adminMentorReviewAssignment.selectedMentors")}:
                   </span>
                   {selectedMentorsObjects.map((mentor) => (
                     <Badge
@@ -996,7 +996,7 @@ function AssignMentorDialog({
                     {filteredMultiMentors.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-10">
                         <User className="h-10 w-10 text-slate-300 dark:text-slate-600" />
-                        <p className="mt-2 text-sm text-slate-500">Không có kết quả</p>
+                        <p className="mt-2 text-sm text-slate-500">{t("common.noResults")}</p>
                       </div>
                     ) : (
                       filteredMultiMentors.map((mentor) => (
@@ -1045,7 +1045,9 @@ function AssignMentorDialog({
 
                   {selectedMentorIds.length > 0 && (
                     <p className="text-center text-sm font-medium text-slate-600 dark:text-slate-400">
-                      Đã chọn: {selectedMentorIds.length} mentor
+                      {t("adminMentorReviewAssignment.selectedCount", {
+                        count: selectedMentorIds.length,
+                      })}
                     </p>
                   )}
                 </div>
@@ -1074,7 +1076,7 @@ function AssignMentorDialog({
                                 {selectedMentorIds.includes(selectedMentorForDetail) && (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
                                     <CheckCircle2 className="h-3 w-3" />
-                                    Đã chọn
+                                    {t("adminMentorReviewAssignment.selected")}
                                   </span>
                                 )}
                                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
