@@ -44,6 +44,7 @@ import {
   ListFilter,
   RefreshCw,
   Search,
+  User,
   UserCheck,
   UserPlus,
   Users,
@@ -760,10 +761,15 @@ function AssignMentorDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{t("adminKiosk.assignMentor")}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="border-2 border-indigo-200 sm:max-w-md dark:border-indigo-800">
+        <DialogHeader className="mb-4 border-b-2 border-indigo-100 pb-4 dark:border-indigo-900">
+          <DialogTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md">
+              <UserCheck className="h-4 w-4" />
+            </div>
+            {t("adminKiosk.assignMentor")}
+          </DialogTitle>
+          <DialogDescription className="text-indigo-600/70 dark:text-indigo-400/70">
             {t("adminMentorReviewAssignment.assignDescription")}
           </DialogDescription>
         </DialogHeader>
@@ -771,47 +777,73 @@ function AssignMentorDialog({
         <div className="grid gap-4 py-4">
           {/* Detail info */}
           {detail && (
-            <div className="rounded-lg border bg-slate-50 p-3 text-sm dark:bg-slate-800">
-              <p>
-                <span className="font-medium">{t("adminMentorReviewAssignment.candidate")}:</span>{" "}
-                {detail.candidateName ?? detail.candidateEmail ?? "-"}
-              </p>
-              <p>
-                <span className="font-medium">{t("adminMentorReviewAssignment.application")}:</span>{" "}
-                #{detail.applicationId} · {t("adminMentorReviewAssignment.detailId")}: #{detail.id}
-              </p>
+            <div className="rounded-xl border-2 border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-purple-50/30 p-4 dark:border-indigo-900/50 dark:from-indigo-950/20 dark:to-purple-950/20">
+              <div className="mb-3 flex items-center gap-2">
+                <User className="h-4 w-4 text-indigo-600" />
+                <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                  Thông tin ứng viên
+                </span>
+              </div>
+              <div className="space-y-2 text-sm">
+                <p>
+                  <span className="font-semibold text-slate-600 dark:text-slate-400">
+                    {t("adminMentorReviewAssignment.candidate")}:
+                  </span>{" "}
+                  <span className="font-medium">
+                    {detail.candidateName ?? detail.candidateEmail ?? "-"}
+                  </span>
+                </p>
+                <p>
+                  <span className="font-semibold text-slate-600 dark:text-slate-400">
+                    {t("adminMentorReviewAssignment.application")}:
+                  </span>{" "}
+                  <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+                    #{detail.applicationId}
+                  </span>
+                </p>
+                <p>
+                  <span className="font-semibold text-slate-600 dark:text-slate-400">
+                    {t("adminMentorReviewAssignment.detailId")}:
+                  </span>{" "}
+                  <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-bold text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                    #{detail.id}
+                  </span>
+                </p>
+              </div>
             </div>
           )}
 
           {/* Assignment mode selector */}
-          <div className="space-y-2">
-            <Label>{t("adminMentorReviewAssignment.assignmentMode")}</Label>
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              {t("adminMentorReviewAssignment.assignmentMode")}
+            </Label>
             <RadioGroup
               value={assignMode}
               onValueChange={(value) => setAssignMode(value as "single" | "multiple")}
               className="flex flex-col gap-3">
-              <div className="flex items-start gap-3 rounded-lg border p-3 dark:border-slate-700 dark:hover:bg-slate-800/50">
-                <RadioGroupItem value="single" id="mode-single" className="mt-0.5" />
+              <div className="flex items-start gap-3 rounded-xl border-2 border-indigo-200 bg-white p-4 transition-all hover:border-indigo-400 hover:shadow-md dark:border-indigo-800 dark:bg-slate-900">
+                <RadioGroupItem value="single" id="mode-single" className="mt-0.5 border-2" />
                 <div className="flex-1">
                   <Label
                     htmlFor="mode-single"
-                    className="cursor-pointer font-medium dark:text-slate-200">
+                    className="cursor-pointer font-semibold text-slate-900 dark:text-slate-100">
                     {t("adminMentorReviewAssignment.option1Single")}
                   </Label>
-                  <p className="text-muted-foreground mt-0.5 text-xs">
+                  <p className="text-muted-foreground mt-1 text-xs">
                     {t("adminMentorReviewAssignment.option1SingleDesc")}
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 rounded-lg border p-3 dark:border-slate-700 dark:hover:bg-slate-800/50">
-                <RadioGroupItem value="multiple" id="mode-multiple" className="mt-0.5" />
+              <div className="flex items-start gap-3 rounded-xl border-2 border-purple-200 bg-white p-4 transition-all hover:border-purple-400 hover:shadow-md dark:border-purple-800 dark:bg-slate-900">
+                <RadioGroupItem value="multiple" id="mode-multiple" className="mt-0.5 border-2" />
                 <div className="flex-1">
                   <Label
                     htmlFor="mode-multiple"
-                    className="cursor-pointer font-medium dark:text-slate-200">
+                    className="cursor-pointer font-semibold text-slate-900 dark:text-slate-100">
                     {t("adminMentorReviewAssignment.option2Multiple")}
                   </Label>
-                  <p className="text-muted-foreground mt-0.5 text-xs">
+                  <p className="text-muted-foreground mt-1 text-xs">
                     {t("adminMentorReviewAssignment.option2MultipleDesc")}
                   </p>
                 </div>
@@ -1038,6 +1070,45 @@ function AssignMentorDialog({
             </Button>
           )}
         </DialogFooter>
+
+        <div className="flex items-center justify-center gap-3 pt-2 pb-1">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+            className="flex-1">
+            {t("common.cancel")}
+          </Button>
+          {assignMode === "single" ? (
+            <Button
+              onClick={handleSubmitSingle}
+              disabled={isLoading || !selectedMentorId}
+              className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:from-indigo-600 hover:to-purple-700">
+              {isLoading ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  {t("adminKiosk.assigning")}
+                </>
+              ) : (
+                t("adminKiosk.confirmAssign")
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSubmitMultiple}
+              disabled={isLoading || selectedMentorIds.length < 2}
+              className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:from-indigo-600 hover:to-purple-700">
+              {isLoading ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  {t("adminKiosk.assigning")}
+                </>
+              ) : (
+                t("adminKiosk.confirmAssign")
+              )}
+            </Button>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
