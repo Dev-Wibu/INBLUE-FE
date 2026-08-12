@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PaginationControl } from "@/components/shared";
+import { Button } from "@/components/ui/button";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Plus } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -272,7 +274,7 @@ export function CompanyGridTab({
   if (selectedCompany) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950">
+        <div className="flex-1 overflow-auto bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
           {selectedJd ? (
             <JobDescriptionDetailView
               jobDescription={selectedJd}
@@ -281,24 +283,64 @@ export function CompanyGridTab({
               onEdit={() => onCompanyUpdate?.()}
             />
           ) : (
-            <JobDescriptionTable
-              jobDescriptions={enrichedCompanyJds}
-              onView={(jd) => setSelectedJdId(jd.id!)}
-              onToggleStatus={async (job) => {
-                try {
-                  const res = await jobDescriptionManager.toggleStatus(job.id!);
-                  if (res.success) {
-                    toast.success(t("common.updateSuccess", "Cập nhật thành công"));
-                    void refetchCompanyJds();
-                    queryClient.invalidateQueries({ queryKey: ["admin", "all-jds"] });
-                  } else {
-                    toast.error(t("common.updateFailed", "Cập nhật thất bại"));
-                  }
-                } catch {
-                  toast.error(t("common.updateFailed", "Cập nhật thất bại"));
-                }
-              }}
-            />
+            <>
+              {/* Header Stat & Control Card for Selected Company */}
+              <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedCompanyId(null)}
+                      className="h-9 gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                      <ArrowLeft className="h-4 w-4" />
+                      <span>{t("common.back", "Quay lại")}</span>
+                    </Button>
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                        {selectedCompany.name}
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {t(
+                          "adminCompanymanagement.jdsCount",
+                          "Danh sách các vị trí tuyển dụng của công ty"
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setJdFormData({});
+                      setIsJdDialogOpen(true);
+                    }}
+                    className="h-10 shrink-0 rounded-xl bg-indigo-600 px-5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
+                    <Plus className="mr-1.5 h-4 w-4" />
+                    {t("adminCompanymanagement.addJd", "Thêm JD")}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <JobDescriptionTable
+                  jobDescriptions={enrichedCompanyJds}
+                  onView={(jd) => setSelectedJdId(jd.id!)}
+                  onToggleStatus={async (job) => {
+                    try {
+                      const res = await jobDescriptionManager.toggleStatus(job.id!);
+                      if (res.success) {
+                        toast.success(t("common.updateSuccess", "Cập nhật thành công"));
+                        void refetchCompanyJds();
+                        queryClient.invalidateQueries({ queryKey: ["admin", "all-jds"] });
+                      } else {
+                        toast.error(t("common.updateFailed", "Cập nhật thất bại"));
+                      }
+                    } catch {
+                      toast.error(t("common.updateFailed", "Cập nhật thất bại"));
+                    }
+                  }}
+                />
+              </div>
+            </>
           )}
         </div>
 
