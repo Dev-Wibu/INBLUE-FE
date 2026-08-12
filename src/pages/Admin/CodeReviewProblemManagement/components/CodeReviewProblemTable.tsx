@@ -66,119 +66,117 @@ export function CodeReviewProblemTable({
   }
 
   return (
-    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
-            <TableHead className="min-w-[200px] font-medium text-slate-500">
-              {t("adminCodingProblem.columnProblem", "Bài tập")}
-            </TableHead>
-            <TableHead className="w-[120px] font-medium text-slate-500">
-              {t("general.language", "Ngôn ngữ")}
-            </TableHead>
-            <TableHead className="w-[110px] font-medium text-slate-500">
-              {t("general.difficulty", "Độ khó")}
-            </TableHead>
-            <TableHead className="w-[180px] font-medium text-slate-500">
-              {t("common.configuration", "Cấu hình")}
-            </TableHead>
-            <TableHead className="w-[100px] text-center font-medium text-slate-500">
-              {t("adminCodingProblem.columnStatus", "Bật/Tắt")}
-            </TableHead>
-            <TableHead className="w-[130px] font-medium text-slate-500">
-              {t("adminCompanymanagement.createdDate", "Ngày tạo")}
-            </TableHead>
-            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">
-              {t("adminCompanymanagement.updatedDate", "Cập nhật")}
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {problems.map((p) => {
-            const diff = DIFF_CONFIG[p.difficulty || "MEDIUM"] ?? DIFF_CONFIG.MEDIUM;
-            const isActive = p.isDeleted === false || p.isDeleted === undefined;
+    <Table>
+      <TableHeader>
+        <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+          <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
+          <TableHead className="min-w-[260px] font-medium text-slate-500">
+            {t("adminCodingProblem.columnProblem", "Bài tập")}
+          </TableHead>
+          <TableHead className="w-[120px] font-medium text-slate-500">
+            {t("general.language", "Ngôn ngữ")}
+          </TableHead>
+          <TableHead className="w-[110px] font-medium text-slate-500">
+            {t("general.difficulty", "Độ khó")}
+          </TableHead>
+          <TableHead className="w-[180px] font-medium text-slate-500">
+            {t("common.configuration", "Cấu hình")}
+          </TableHead>
+          <TableHead className="w-[100px] text-center font-medium text-slate-500">
+            {t("adminCodingProblem.columnStatus", "Bật/Tắt")}
+          </TableHead>
+          <TableHead className="w-[130px] font-medium text-slate-500">
+            {t("adminCompanymanagement.createdDate", "Ngày tạo")}
+          </TableHead>
+          <TableHead className="w-[130px] pr-6 font-medium text-slate-500">
+            {t("adminCompanymanagement.updatedDate", "Cập nhật")}
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {problems.map((p) => {
+          const diff = DIFF_CONFIG[p.difficulty || "MEDIUM"] ?? DIFF_CONFIG.MEDIUM;
+          const isActive = p.isDeleted === false || p.isDeleted === undefined;
 
-            return (
-              <TableRow
-                key={p.id}
-                onClick={() => onViewDetail(p)}
-                className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
-                  !isActive ? "opacity-60 grayscale-[30%]" : ""
-                }`}>
-                <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                  #{p.id}
-                </TableCell>
-                <TableCell>
-                  <p
-                    className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
-                    title={p.title}>
-                    {p.title}
-                  </p>
-                </TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {p.language || "N/A"}
+          return (
+            <TableRow
+              key={p.id}
+              onClick={() => onViewDetail(p)}
+              className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                !isActive ? "opacity-60 grayscale-[30%]" : ""
+              }`}>
+              <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                #{p.id}
+              </TableCell>
+              <TableCell className="max-w-0">
+                <p
+                  className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
+                  title={p.title}>
+                  {p.title}
+                </p>
+              </TableCell>
+              <TableCell>
+                <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  {p.language || "N/A"}
+                </span>
+              </TableCell>
+              <TableCell>
+                <div className={`flex items-center gap-1.5 text-xs font-bold ${diff.cls}`}>
+                  <Circle className={`h-2.5 w-2.5 ${diff.fill}`} />
+                  {diff.label}
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-indigo-700 dark:text-indigo-400">
+                    <FileCode2 className="h-3.5 w-3.5" />
+                    <span>{p.files?.length ?? 0} file</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-rose-600 dark:text-rose-400">
+                    <Bug className="h-3.5 w-3.5" />
+                    <span>
+                      {p.expectedIssues?.length ?? 0}{" "}
+                      {t("adminCodeReviewProblem.errorCount", "lỗi")}
+                    </span>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                {onToggleStatus ? (
+                  <Switch
+                    checked={isActive}
+                    onCheckedChange={(val) => onToggleStatus(p, val)}
+                    className="shadow-sm data-[state=checked]:bg-emerald-500"
+                  />
+                ) : (
+                  <span
+                    className={`text-xs font-semibold ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
+                    {isActive ? t("common.on", "Bật") : t("common.off", "Tắt")}
                   </span>
-                </TableCell>
-                <TableCell>
-                  <div className={`flex items-center gap-1.5 text-xs font-bold ${diff.cls}`}>
-                    <Circle className={`h-2.5 w-2.5 ${diff.fill}`} />
-                    {diff.label}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-indigo-700 dark:text-indigo-400">
-                      <FileCode2 className="h-3.5 w-3.5" />
-                      <span>{p.files?.length ?? 0} file</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-rose-600 dark:text-rose-400">
-                      <Bug className="h-3.5 w-3.5" />
-                      <span>
-                        {p.expectedIssues?.length ?? 0}{" "}
-                        {t("adminCodeReviewProblem.errorCount", "lỗi")}
-                      </span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                  {onToggleStatus ? (
-                    <Switch
-                      checked={isActive}
-                      onCheckedChange={(val) => onToggleStatus(p, val)}
-                      className="shadow-sm data-[state=checked]:bg-emerald-500"
-                    />
-                  ) : (
-                    <span
-                      className={`text-xs font-semibold ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
-                      {isActive ? t("common.on", "Bật") : t("common.off", "Tắt")}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {p.createdAt ? (
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                      {formatDate(p.createdAt)}
-                    </span>
-                  ) : (
-                    <span className="text-xs text-slate-400">—</span>
-                  )}
-                </TableCell>
-                <TableCell className="pr-6">
-                  {p.updatedAt ? (
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                      {formatDate(p.updatedAt)}
-                    </span>
-                  ) : (
-                    <span className="text-xs text-slate-400">—</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+                )}
+              </TableCell>
+              <TableCell>
+                {p.createdAt ? (
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                    {formatDate(p.createdAt)}
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-400">—</span>
+                )}
+              </TableCell>
+              <TableCell className="pr-6">
+                {p.updatedAt ? (
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                    {formatDate(p.updatedAt)}
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-400">—</span>
+                )}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 }
