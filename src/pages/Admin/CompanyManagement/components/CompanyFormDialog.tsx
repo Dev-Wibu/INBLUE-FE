@@ -179,9 +179,9 @@ export function CompanyFormDialog({
 
         {/* Scrollable Body */}
         <div className="space-y-6 overflow-y-auto p-6">
-          {/* Main Info Section */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+          {/* Main Info Section (3:1 proportional grid balance) */}
+          <div className="grid gap-4 sm:grid-cols-4">
+            <div className="space-y-2 sm:col-span-3">
               <Label
                 htmlFor="company-name"
                 className="text-xs font-bold text-slate-700 dark:text-slate-200">
@@ -202,7 +202,7 @@ export function CompanyFormDialog({
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 sm:col-span-1">
               <Label
                 htmlFor="company-status"
                 className="text-xs font-bold text-slate-700 dark:text-slate-200">
@@ -219,14 +219,14 @@ export function CompanyFormDialog({
                 <SelectTrigger
                   id="company-status"
                   className="h-11 rounded-xl border border-slate-200/90 bg-slate-50/70 text-sm font-medium dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100">
-                  <SelectValue placeholder={t("common.selectStatus", "Chọn trạng thái")} />
+                  <SelectValue placeholder={t("common.selectStatus", "Trạng thái")} />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
                   {COMPANY_STATUSES.map((status) => (
                     <SelectItem key={status} value={status} className="text-sm font-medium">
                       {status === "ACTIVE"
-                        ? t("common.active", "Hoạt động (Active)")
-                        : t("common.shutDown", "Đã tắt (Inactive)")}
+                        ? t("common.active", "Hoạt động")
+                        : t("common.shutDown", "Đã tắt")}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -254,12 +254,12 @@ export function CompanyFormDialog({
                 "adminCompanymanagement.companyDescription",
                 "Giới thiệu ngắn về công ty, văn hóa làm việc..."
               )}
-              rows={4}
+              rows={3}
               className="rounded-xl border border-slate-200/90 bg-slate-50/70 p-3 text-sm leading-relaxed font-medium focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
           </div>
 
-          {/* Media Assets Section (Logo & Banner Upload Cards) */}
+          {/* Media Assets Section (Symmetric Height Upload Cards) */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("adminCompanymanagement.companyMedia", "Hình ảnh thương hiệu")}
@@ -267,22 +267,22 @@ export function CompanyFormDialog({
 
             <div className="grid gap-4 sm:grid-cols-2">
               {/* Logo Upload Card */}
-              <div className="flex flex-col justify-between space-y-3 rounded-2xl border border-slate-200/90 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
-                <div>
-                  <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    {t("adminCompanymanagement.companyLogo", "Logo Công ty")}
-                  </Label>
-                  <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-                    Khuyên dùng ảnh vuông 1:1 (PNG, JPG)
-                  </p>
+              <div className="flex flex-col justify-between space-y-4 rounded-2xl border border-slate-200/90 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {t("adminCompanymanagement.companyLogo", "Logo Công ty")}
+                    </Label>
+                    <span className="text-[11px] font-medium text-slate-400">Vuông 1:1</span>
+                  </div>
 
-                  <div className="mt-3 flex items-center gap-3">
+                  <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-900">
                     {displayLogoUrl ? (
                       <div className="group/logo relative">
-                        <div className="h-16 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
                           <img
                             src={displayLogoUrl}
-                            alt={t("adminCompanymanagement.companyLogo", "Logo")}
+                            alt="Logo"
                             className="h-full w-full object-cover"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = "none";
@@ -293,19 +293,25 @@ export function CompanyFormDialog({
                           <button
                             type="button"
                             onClick={handleClearLogo}
-                            title={t("adminCompanymanagement.deleteLogo", "Xóa logo")}
-                            className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-xs hover:bg-red-600">
+                            className="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600">
                             <X className="h-3 w-3" />
                           </button>
                         )}
                       </div>
                     ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
-                        <ImageIcon className="h-6 w-6 text-slate-400" />
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                        <ImageIcon className="h-5 w-5 text-slate-400" />
                       </div>
                     )}
 
-                    <div className="flex-1 space-y-1">
+                    <div className="flex min-w-0 flex-1 flex-col justify-center">
+                      <span className="truncate text-xs font-medium text-slate-700 dark:text-slate-300">
+                        {logoPreview
+                          ? t("common.newFileSelected", "Đã chọn file mới")
+                          : displayLogoUrl
+                            ? t("common.currentImage", "Ảnh hiện tại")
+                            : t("adminCompanymanagement.noLogoYet", "Chưa có logo")}
+                      </span>
                       {displayLogoUrl && (
                         <button
                           type="button"
@@ -315,18 +321,11 @@ export function CompanyFormDialog({
                               displayLogoUrl
                             )
                           }
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
+                          className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
                           <span>{t("common.seeFullPhoto", "Xem phóng to")}</span>
                           <ExternalLink className="h-3 w-3" />
                         </button>
                       )}
-                      <p className="text-[11px] text-slate-400">
-                        {logoPreview
-                          ? t("common.newFileSelected", "Đã chọn file mới")
-                          : displayLogoUrl
-                            ? t("common.currentImage", "Ảnh hiện tại")
-                            : t("adminCompanymanagement.noLogoYet", "Chưa có logo")}
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -340,29 +339,29 @@ export function CompanyFormDialog({
                       variant="outline"
                       className="h-9 w-full gap-2 rounded-xl border-slate-200/90 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
                       <Upload className="h-3.5 w-3.5" />
-                      {t("common.uploadFile", "Tải ảnh mới")}
+                      {t("common.uploadFile", "Tải logo mới")}
                     </Button>
                   }
                 />
               </div>
 
               {/* Banner Upload Card */}
-              <div className="flex flex-col justify-between space-y-3 rounded-2xl border border-slate-200/90 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
-                <div>
-                  <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    {t("adminCompanymanagement.companyBanners", "Ảnh Banner bìa")}
-                  </Label>
-                  <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-                    Khuyên dùng ảnh tỷ lệ 16:9
-                  </p>
+              <div className="flex flex-col justify-between space-y-4 rounded-2xl border border-slate-200/90 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {t("adminCompanymanagement.companyBanners", "Ảnh Banner bìa")}
+                    </Label>
+                    <span className="text-[11px] font-medium text-slate-400">Ngang 16:9</span>
+                  </div>
 
-                  <div className="mt-3 space-y-2">
+                  <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-900">
                     {displayBannerUrl ? (
                       <div className="group/banner relative">
-                        <div className="h-16 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                        <div className="h-14 w-24 shrink-0 overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
                           <img
                             src={displayBannerUrl}
-                            alt={t("adminCompanymanagement.companyBanners", "Banner")}
+                            alt="Banner"
                             className="h-full w-full object-cover"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = "none";
@@ -373,20 +372,26 @@ export function CompanyFormDialog({
                           <button
                             type="button"
                             onClick={handleClearBanner}
-                            title={t("adminCompanymanagement.deleteBanners", "Xóa banner")}
-                            className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-xs hover:bg-red-600">
+                            className="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600">
                             <X className="h-3 w-3" />
                           </button>
                         )}
                       </div>
                     ) : (
-                      <div className="flex h-16 w-full items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
-                        <ImageIcon className="h-6 w-6 text-slate-400" />
+                      <div className="flex h-14 w-24 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                        <ImageIcon className="h-5 w-5 text-slate-400" />
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between">
-                      {displayBannerUrl ? (
+                    <div className="flex min-w-0 flex-1 flex-col justify-center">
+                      <span className="truncate text-xs font-medium text-slate-700 dark:text-slate-300">
+                        {bannerPreview
+                          ? t("common.newFileSelected", "Đã chọn file mới")
+                          : displayBannerUrl
+                            ? t("common.currentImage", "Ảnh hiện tại")
+                            : t("adminCompanymanagement.noBannersYet", "Chưa có banner")}
+                      </span>
+                      {displayBannerUrl && (
                         <button
                           type="button"
                           onClick={() =>
@@ -395,19 +400,10 @@ export function CompanyFormDialog({
                               displayBannerUrl
                             )
                           }
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
+                          className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
                           <span>{t("common.seeFullPhoto", "Xem phóng to")}</span>
                           <ExternalLink className="h-3 w-3" />
                         </button>
-                      ) : (
-                        <span className="text-[11px] text-slate-400">
-                          {t("adminCompanymanagement.noBannersYet", "Chưa có banner")}
-                        </span>
-                      )}
-                      {bannerPreview && (
-                        <span className="text-[11px] font-medium text-emerald-600">
-                          {t("common.newFileSelected", "Đã chọn file mới")}
-                        </span>
                       )}
                     </div>
                   </div>
@@ -422,7 +418,7 @@ export function CompanyFormDialog({
                       variant="outline"
                       className="h-9 w-full gap-2 rounded-xl border-slate-200/90 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
                       <Upload className="h-3.5 w-3.5" />
-                      {t("common.uploadFile", "Tải ảnh mới")}
+                      {t("common.uploadFile", "Tải banner mới")}
                     </Button>
                   }
                 />
