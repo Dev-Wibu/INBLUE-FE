@@ -29,13 +29,15 @@ function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }
   return (
     <div
       id={id}
-      className="scroll-mt-24 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm transition-all dark:border-slate-800/60 dark:bg-slate-900/40">
+      className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all dark:border-slate-800 dark:bg-slate-900">
       <div
         className="flex cursor-pointer items-center justify-between"
         onClick={() => setIsOpen(!isOpen)}>
         <div className="flex items-center gap-2">
-          {Icon && <Icon className="h-5 w-5 text-slate-500" />}
-          <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
+          {Icon && <Icon className="h-5 w-5 text-slate-500 dark:text-slate-400" />}
+          <h3 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+            {title}
+          </h3>
         </div>
         <Button
           variant="ghost"
@@ -84,7 +86,7 @@ export function MentorDetailView({
       {/* Main Content */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Left Sidebar - Sticky Profile Info */}
-        <div className="hidden h-full w-80 flex-shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-slate-50/50 p-6 lg:flex dark:border-slate-800 dark:bg-slate-900/20">
+        <div className="hidden h-full w-80 flex-shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-slate-50/50 p-6 lg:flex dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-md dark:border-slate-800">
               {mentor.avatarUrl ? (
@@ -94,7 +96,7 @@ export function MentorDetailView({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-blue-100 text-3xl font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                <div className="flex h-full w-full items-center justify-center bg-indigo-100 text-3xl font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
                   {mentor.name?.charAt(0)?.toUpperCase()}
                 </div>
               )}
@@ -109,7 +111,7 @@ export function MentorDetailView({
           </div>
 
           <div className="mt-8">
-            <h4 className="mb-3 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+            <h4 className="mb-3 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("common.navigation", "Điều hướng")}
             </h4>
             <div className="flex flex-col gap-1">
@@ -117,7 +119,7 @@ export function MentorDetailView({
                 <button
                   key={section.id}
                   onClick={() => scrollToSection(section.id)}
-                  className="rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-slate-200/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-200">
+                  className="rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-slate-200/50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
                   {section.label}
                 </button>
               ))}
@@ -130,18 +132,18 @@ export function MentorDetailView({
           <div className="mx-auto max-w-4xl space-y-6">
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   {t("common.experience")}
                 </div>
                 <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                   {mentor.yearsOfExperience || 0}
-                  <span className="ml-1 text-sm font-normal text-slate-500">
+                  <span className="ml-1 text-sm font-normal text-slate-500 dark:text-slate-400">
                     {t("common.year")}
                   </span>
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   {t("adminMentormanagement.numberOfSessions")}
                 </div>
@@ -149,7 +151,7 @@ export function MentorDetailView({
                   {mentor.totalSession || 0}
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   {t("adminMentormanagement.unitPricePerMinuteVnd")}
                 </div>
