@@ -458,7 +458,7 @@ export function CompanyManagementPage() {
                 <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
                   {t(
                     "adminCompanymanagement.manageCompaniesDesc",
-                    "Quản lý danh sách các công ty đối tác và vị trí tuyển dụng"
+                    "Quản lý danh sách các công ty đối tác và Vị trí tuyển dụng"
                   )}
                 </p>
               </div>
@@ -540,7 +540,7 @@ export function CompanyManagementPage() {
                         )
                       : t(
                           "common.searchJdByTitleOrCompany",
-                          "Tìm kiếm theo tiêu đề vị trí JD hoặc công ty..."
+                          "Tìm kiếm theo tiêu đề Vị trí JD hoặc công ty..."
                         )
                   }
                   value={activeTab === "companies" ? searchQuery : jdSearchQuery}

@@ -303,7 +303,7 @@ export function CompanyGridTab({
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {t(
                           "adminCompanymanagement.jdsCount",
-                          "Danh sách các vị trí tuyển dụng của công ty"
+                          "Danh sách các Vị trí tuyển dụng của công ty"
                         )}
                       </p>
                     </div>
