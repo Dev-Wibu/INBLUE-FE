@@ -502,7 +502,7 @@ export function SessionDetailPage() {
           <ArrowLeft className="h-4 w-4" />
           {t("general.back")}
         </Button>
-        <Card className="flex flex-col items-center gap-3 p-12 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <Video className="h-12 w-12 text-slate-400" />
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
             {t("common.noInterviewSessionsFound")}
@@ -510,7 +510,7 @@ export function SessionDetailPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {t("common.thisInterviewSessionDoesNotExistOr")}
           </p>
-        </Card>
+        </div>
       </div>
     );
   }
@@ -525,7 +525,7 @@ export function SessionDetailPage() {
           <ArrowLeft className="h-4 w-4" />
           {t("userMockinterview.backToHistory")}
         </Button>
-        <Card className="flex flex-col items-center gap-3 p-12 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <User className="h-12 w-12 text-slate-400" />
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
             {t("common.noAccess")}
@@ -533,7 +533,7 @@ export function SessionDetailPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {t("userMockinterview.youCannotViewAnInterview")}
           </p>
-        </Card>
+        </div>
       </div>
     );
   }
