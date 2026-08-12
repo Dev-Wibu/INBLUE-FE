@@ -29,7 +29,8 @@
     },
     "aiInterview": {
       "title": "AI Interview",
-      "description": "Automated mock interview with AI Assistant."
+      "description": "Automated mock interview with AI Assistant.",
+      "sessionDetails": "Interview Session Details"
     },
     "dragRoundsInstruction": "Drag rounds from the left panel and drop here to configure",
     "editRecruitmentPipeline": "Edit Recruitment Pipeline"
@@ -1514,6 +1515,7 @@
     "language": "Language",
     "lastMonth": "Last month",
     "latest": "Latest",
+    "legend": "Legend",
     "leThiMaiAnh": "Le Thi Mai Anh",
     "lesson": "Lesson",
     "level": "Level",
@@ -1814,6 +1816,8 @@
     "theSidebarIsAlwaysVisibleOnLargeS": "The sidebar is always visible on large screens",
     "theSystemIsGeneratingAPaymentLink": "The system is generating a payment link. Please wait a moment.",
     "thereAreNoAppointmentsAvailableFor": "There are no appointments available for the selected date",
+    "clickOnTheDateToSeeDetails": "Click on a date to view the interview schedule details",
+    "selectAnotherDateOnCalendar": "Click another date on the calendar to see information.",
     "thereAreNoCandidateProfilesYet": "There are no candidate profiles yet",
     "thereAreNoDetailedComments": "There are no detailed comments.",
     "thereAreNoReviews": "There are no reviews",
@@ -4878,6 +4882,7 @@
       "readyToStart": "READY TO START",
       "questionsList": "QUESTIONS LIST",
       "selectedCount": "{{answered}}/{{total}} Selected",
+      "legend": "Legend",
       "legendCurrent": "Viewing",
       "legendAnswered": "Answered",
       "legendReview": "Review",

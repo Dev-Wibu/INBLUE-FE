@@ -29,7 +29,8 @@
     },
     "aiInterview": {
       "title": "Phỏng vấn AI",
-      "description": "Phỏng vấn giả lập tự động với Trợ lý AI."
+      "description": "Phỏng vấn giả lập tự động với Trợ lý AI.",
+      "sessionDetails": "Chi tiết phiên phỏng vấn"
     },
     "dragRoundsInstruction": "Kéo các vòng từ cột bên trái và thả vào đây để thiết lập",
     "editRecruitmentPipeline": "Chỉnh sửa quy trình vòng tuyển dụng"
@@ -1511,6 +1512,7 @@
     "language": "Ngôn ngữ",
     "lastMonth": "Tháng trước",
     "latest": "Mới nhất",
+    "legend": "Chú thích",
     "leThiMaiAnh": "Lê Thị Mai Anh",
     "lesson": "Bài học",
     "level": "Cấp độ",
@@ -1811,6 +1813,8 @@
     "theSidebarIsAlwaysVisibleOnLargeS": "Thanh bên luôn hiển thị trên màn hình lớn",
     "theSystemIsGeneratingAPaymentLink": "Hệ thống đang tạo liên kết thanh toán. Vui lòng chờ trong giây lát.",
     "thereAreNoAppointmentsAvailableFor": "Không có lịch hẹn trong ngày đã chọn",
+    "clickOnTheDateToSeeDetails": "Nhấp vào ngày để xem chi tiết lịch phỏng vấn",
+    "selectAnotherDateOnCalendar": "Nhấp vào ngày khác trên lịch để xem thông tin.",
     "thereAreNoCandidateProfilesYet": "Chưa có hồ sơ ứng viên",
     "thereAreNoDetailedComments": "Không có nhận xét chi tiết.",
     "thereAreNoReviews": "Không có đánh giá",
@@ -4876,6 +4880,7 @@
       "readyToStart": "SẴN SÀNG BẮT ĐẦU",
       "questionsList": "DANH SÁCH CÂU HỎI",
       "selectedCount": "{{answered}}/{{total}} Đã chọn",
+      "legend": "Chú thích",
       "legendCurrent": "Đang xem",
       "legendAnswered": "Đã chọn",
       "legendReview": "Xem lại",
