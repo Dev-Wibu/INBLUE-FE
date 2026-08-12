@@ -3804,6 +3804,7 @@
     "staffPanel": "Bảng điều khiển Staff"
   },
   "userAccount": {
+    "transactionHistory": "Lịch sử giao dịch",
     "alreadyTt": "Đã TT",
     "anErrorOccurredPleaseTry": "Có lỗi xảy ra. Vui lòng thử lại.",
     "certificatesAchievements": "Chứng chỉ & Thành tích",

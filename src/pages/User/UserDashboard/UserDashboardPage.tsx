@@ -161,7 +161,7 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
       {
         type: "accountTransactions",
         icon: ReceiptText,
-        label: t("userAccount.transactionHistory", "Lịch sử giao dịch"),
+        label: t("userAccount.transactionHistory"),
         color: "text-amber-600 dark:text-amber-400",
       },
       {

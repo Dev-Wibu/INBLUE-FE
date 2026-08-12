@@ -3806,6 +3806,7 @@
     "staffPanel": "Staff Panel"
   },
   "userAccount": {
+    "transactionHistory": "Transaction History",
     "alreadyTt": "Already TT",
     "anErrorOccurredPleaseTry": "An error occurred. Please try again.",
     "certificatesAchievements": "Certificates & Achievements",

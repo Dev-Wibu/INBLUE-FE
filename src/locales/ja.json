@@ -3782,6 +3782,7 @@
     "staffPanel": "Staff パネル"
   },
   "userAccount": {
+    "transactionHistory": "取引履歴",
     "alreadyTt": "支払い済み",
     "anErrorOccurredPleaseTry": "エラーが発生しました。もう一度お試しください。",
     "certificatesAchievements": "資格・実績",
