@@ -237,7 +237,7 @@ export function KioskManagementPage() {
               )}
             </div>
           )}
-          <div className="flex-1 overflow-auto rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <KioskTable
               kiosks={filteredKiosks}
               onEdit={openEdit}
