@@ -8,7 +8,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -761,7 +760,7 @@ function AssignMentorDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-2 border-indigo-200 sm:max-w-3xl dark:border-indigo-800">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-2 border-indigo-200 sm:max-w-4xl dark:border-indigo-800">
         <DialogHeader className="mb-4 border-b-2 border-indigo-100 pb-4 dark:border-indigo-900">
           <DialogTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md">
@@ -937,76 +936,82 @@ function AssignMentorDialog({
             </div>
           )}
 
-          {/* Option 2: Multiple mentor selection with search & selected chips */}
+          {/* Option 2: Multiple mentor selection - Full width card */}
           {assignMode === "multiple" && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label>{t("adminMentorReviewAssignment.selectMentors")}</Label>
-                <p className="text-muted-foreground text-xs">
+            <div className="space-y-4 rounded-xl border-2 border-purple-200 bg-purple-50/30 p-6 lg:col-span-2 dark:border-purple-900/50 dark:bg-purple-950/20">
+              <div>
+                <Label className="text-base font-semibold">
+                  {t("adminMentorReviewAssignment.selectMentors")}
+                </Label>
+                <p className="text-muted-foreground mt-1 text-sm">
                   {t("adminMentorReviewAssignment.selectMentorsHint")}
                 </p>
               </div>
 
-              {/* Badges / Chips list of currently selected mentors */}
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  placeholder={t("adminMentorReviewAssignment.searchMentorPlaceholder")}
+                  value={mentorMultiQuery}
+                  onChange={(e) => setMentorMultiQuery(e.target.value)}
+                  className="h-11 pl-10"
+                />
+              </div>
+
+              {/* Selected Badges */}
               {selectedMentorsObjects.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-indigo-100 bg-indigo-50/50 p-2.5 dark:border-indigo-900/30 dark:bg-indigo-950/20">
-                  <span className="mr-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-                    {t("adminMentorReviewAssignment.selectedMentors")}:
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border border-indigo-100 bg-indigo-50/50 p-3 dark:border-indigo-900/30 dark:bg-indigo-950/20">
+                  <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                    Đã chọn:
                   </span>
                   {selectedMentorsObjects.map((mentor) => (
                     <Badge
                       key={mentor.id}
                       variant="secondary"
-                      className="flex items-center gap-1.5 border border-indigo-200 bg-white py-1 pr-1.5 pl-2.5 text-xs font-medium text-indigo-900 shadow-xs dark:border-indigo-800 dark:bg-slate-800 dark:text-indigo-200">
-                      <span>{mentor.name}</span>
+                      className="flex items-center gap-2 border border-indigo-200 bg-white py-1.5 pr-2 pl-3 text-sm font-medium text-indigo-900 shadow-sm dark:border-indigo-800 dark:bg-slate-800 dark:text-indigo-200">
+                      {mentor.name}
                       <button
                         type="button"
                         onClick={() => mentor.id && toggleMentorSelection(mentor.id)}
-                        className="rounded-full p-0.5 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-700 dark:hover:text-red-400"
-                        title={t("common.delete")}>
-                        <X className="h-3 w-3" />
+                        className="rounded-full p-0.5 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-700 dark:hover:text-red-400">
+                        <X className="h-4 w-4" />
                       </button>
                     </Badge>
                   ))}
                 </div>
               )}
 
-              {/* Search for Option 2 */}
-              <div className="relative">
-                <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-                <Input
-                  placeholder={t("adminMentorReviewAssignment.searchMentorPlaceholder")}
-                  value={mentorMultiQuery}
-                  onChange={(e) => setMentorMultiQuery(e.target.value)}
-                  className="h-8 pl-8 text-sm"
-                />
-              </div>
-
-              {/* Checklist */}
-              <div className="max-h-60 space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+              {/* Mentor Checklist - Larger */}
+              <div className="max-h-80 space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
                 {filteredMultiMentors.length === 0 ? (
-                  <p className="py-3 text-center text-sm text-slate-500 dark:text-slate-400">
-                    {t("common.noResults")}
-                  </p>
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <User className="h-14 w-14 text-slate-300 dark:text-slate-600" />
+                    <p className="mt-3 text-base text-slate-500">Không có kết quả</p>
+                  </div>
                 ) : (
                   filteredMultiMentors.map((mentor) => (
                     <div
                       key={mentor.id}
-                      className="flex items-center gap-3 rounded-lg border p-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
+                      className="flex items-center gap-4 rounded-lg border border-slate-100 bg-white p-4 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800">
                       <Checkbox
                         id={`mentor-${mentor.id}`}
                         checked={selectedMentorIds.includes(mentor.id as number)}
                         onCheckedChange={() => mentor.id && toggleMentorSelection(mentor.id)}
+                        className="shrink-0"
                       />
                       <Label
                         htmlFor={`mentor-${mentor.id}`}
-                        className="flex flex-1 cursor-pointer items-center gap-3">
-                        <div className="flex flex-col">
-                          <span className="font-medium dark:text-slate-200">{mentor.name}</span>
+                        className="flex flex-1 cursor-pointer items-center gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-lg font-bold text-white">
+                          {mentor.name?.charAt(0).toUpperCase() || "?"}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold dark:text-slate-100">{mentor.name}</p>
                           {mentor.email && (
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                            <p className="truncate text-sm text-slate-500 dark:text-slate-400">
                               {mentor.email}
-                            </span>
+                            </p>
                           )}
                         </div>
                       </Label>
@@ -1014,11 +1019,10 @@ function AssignMentorDialog({
                   ))
                 )}
               </div>
+
               {selectedMentorIds.length > 0 && (
-                <p className="text-muted-foreground text-xs">
-                  {t("adminMentorReviewAssignment.selectedCount", {
-                    count: selectedMentorIds.length,
-                  })}
+                <p className="text-center text-base font-semibold text-purple-600 dark:text-purple-400">
+                  Đã chọn: {selectedMentorIds.length} mentor
                 </p>
               )}
             </div>
@@ -1040,38 +1044,7 @@ function AssignMentorDialog({
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            {t("common.cancel")}
-          </Button>
-          {assignMode === "single" ? (
-            <Button onClick={handleSubmitSingle} disabled={isLoading || !selectedMentorId}>
-              {isLoading ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  {t("adminKiosk.assigning")}
-                </>
-              ) : (
-                t("adminKiosk.confirmAssign")
-              )}
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmitMultiple}
-              disabled={isLoading || selectedMentorIds.length < 2}>
-              {isLoading ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  {t("adminKiosk.assigning")}
-                </>
-              ) : (
-                t("adminKiosk.confirmAssign")
-              )}
-            </Button>
-          )}
-        </DialogFooter>
-
-        <div className="flex items-center justify-center gap-3 pt-2 pb-1">
+        <div className="mt-auto flex items-center justify-center gap-3 border-t pt-4">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

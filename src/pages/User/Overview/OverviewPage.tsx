@@ -375,7 +375,7 @@ export function OverviewPage() {
           {weeks.map((week, weekIdx) => (
             <div
               key={weekIdx}
-              className="grid h-[60px] grid-cols-7 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800">
+              className="grid min-h-[100px] grid-cols-7 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800">
               {week.map((day, dayIdx) => {
                 if (day === null) {
                   return (
