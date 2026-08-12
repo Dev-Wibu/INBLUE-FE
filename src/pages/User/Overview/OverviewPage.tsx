@@ -60,9 +60,9 @@ function AgendaSessionItem({
   onWriteReview,
 }: {
   item: UserCalendarSession;
-  onOpenDetail: (_sessionId?: number) => void;
-  onOpenRoom: (_sessionId?: number) => void;
-  onWriteReview: (_sessionId?: number) => void;
+  onOpenDetail: (item: UserCalendarSession) => void;
+  onOpenRoom: (item: UserCalendarSession) => void;
+  onWriteReview: (item: UserCalendarSession) => void;
 }) {
   const { t } = useTranslation();
   const status = getSessionStatusConfig(item.session.status);
@@ -96,14 +96,14 @@ function AgendaSessionItem({
           size="sm"
           variant="outline"
           className="h-7 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-          onClick={() => onOpenDetail(item.session.id)}>
+          onClick={() => onOpenDetail(item)}>
           {t("common.seeDetails", "Xem chi tiết")}
         </Button>
         {canJoinRoom && (
           <Button
             size="sm"
             className="h-7 bg-emerald-600 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-            onClick={() => onOpenRoom(item.session.id)}>
+            onClick={() => onOpenRoom(item)}>
             {t("common.enterTheRoom", "Vào phòng")}
           </Button>
         )}
@@ -112,7 +112,7 @@ function AgendaSessionItem({
             size="sm"
             variant="secondary"
             className="h-7 bg-indigo-50 text-xs font-medium text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-300"
-            onClick={() => onWriteReview(item.session.id)}>
+            onClick={() => onWriteReview(item)}>
             {t("common.writeAReview", "Đánh giá")}
           </Button>
         )}
@@ -126,14 +126,14 @@ function CalendarSessionEntry({
   onOpen,
 }: {
   item: UserCalendarSession;
-  onOpen: (_sessionId?: number) => void;
+  onOpen: (item: UserCalendarSession) => void;
 }) {
   const { t } = useTranslation();
   const status = getSessionStatusConfig(item.session.status);
 
   return (
     <button
-      onClick={() => onOpen(item.session.id)}
+      onClick={() => onOpen(item)}
       className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-indigo-50/60 dark:hover:bg-slate-800">
       <span className={cn("h-2 w-2 shrink-0 rounded-full", status.dot)} />
       <span className="shrink-0 font-medium text-slate-500 dark:text-slate-400">
@@ -294,21 +294,51 @@ export function OverviewPage() {
     }
   };
 
-  const handleOpenSessionDetail = (sessionId?: number) => {
-    if (typeof sessionId === "number") {
-      navigate(`/user/mock-interview/history/${sessionId}`);
+  const handleOpenSessionDetail = (item: UserCalendarSession) => {
+    const { eventType, sessionId, applicationDetailId } = item;
+
+    // Determine navigation based on event type
+    switch (eventType) {
+      case "KIOSK_BOOKING":
+        // Kiosk bookings don't have a detail page yet, show toast
+        if (typeof applicationDetailId === "number") {
+          navigate(`/user/application-history?highlight=${applicationDetailId}`);
+        }
+        break;
+      case "APPLICATION_ROUND":
+        // Application rounds - navigate to application history
+        if (typeof applicationDetailId === "number") {
+          navigate(`/user/application-history?highlight=${applicationDetailId}`);
+        }
+        break;
+      case "MENTOR_SESSION":
+      case "SESSION":
+      default:
+        // Mock interview sessions - navigate to session detail
+        if (typeof sessionId === "number" && sessionId > 0) {
+          navigate(`/user/mock-interview/history/${sessionId}`);
+        } else if (typeof item.session.id === "number" && item.session.id > 0) {
+          navigate(`/user/mock-interview/history/${item.session.id}`);
+        }
+        break;
     }
   };
 
-  const handleOpenSessionRoom = (sessionId?: number) => {
-    if (typeof sessionId === "number") {
+  const handleOpenSessionRoom = (item: UserCalendarSession) => {
+    const { sessionId } = item;
+    if (typeof sessionId === "number" && sessionId > 0) {
       navigate(`/user/mock-interview/room/${sessionId}`);
+    } else if (typeof item.session.id === "number" && item.session.id > 0) {
+      navigate(`/user/mock-interview/room/${item.session.id}`);
     }
   };
 
-  const handleWriteReview = (sessionId?: number) => {
-    if (typeof sessionId === "number") {
+  const handleWriteReview = (item: UserCalendarSession) => {
+    const { sessionId } = item;
+    if (typeof sessionId === "number" && sessionId > 0) {
       navigate(`/user/mock-interview/history/${sessionId}/feedback`);
+    } else if (typeof item.session.id === "number" && item.session.id > 0) {
+      navigate(`/user/mock-interview/history/${item.session.id}/feedback`);
     }
   };
 
@@ -334,7 +364,7 @@ export function OverviewPage() {
   };
 
   const renderCalendarContent = () => (
-    <Card className="border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <Card className="flex flex-col border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <CardHeader className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
         <div>
           <CardTitle className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
@@ -374,9 +404,9 @@ export function OverviewPage() {
         </div>
       </CardHeader>
 
-      <CardContent className="pt-4">
+      <CardContent className="flex min-h-0 flex-1 flex-col pt-4">
         {/* Legend */}
-        <div className="mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
           <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
             {t("common.legend", "Chú thích")}:
           </span>
@@ -419,155 +449,153 @@ export function OverviewPage() {
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 border-b border-slate-200 pb-2.5 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
+        <div className="mb-2 grid grid-cols-7 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {WEEK_DAYS.map((day) => (
-            <div key={day}>{day}</div>
+            <div key={day} className="pb-2">
+              {day}
+            </div>
           ))}
         </div>
 
-        <div className="flex flex-col">
-          {weeks.map((week, weekIdx) => (
-            <div
-              key={weekIdx}
-              className="grid min-h-[100px] grid-cols-7 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800">
-              {week.map((day, dayIdx) => {
-                if (day === null) {
-                  return (
-                    <div
-                      key={`empty-${weekIdx}-${dayIdx}`}
-                      className="bg-slate-50/40 p-1.5 dark:bg-slate-950/30"
-                    />
-                  );
-                }
-
-                const dateKey = toDateKeyFromParts(currentYear, currentMonth, day);
-                const dayItems = sessionsByDate.get(dateKey) || [];
-                const isSelected = dateKey === selectedDateKey;
-                const isToday = dateKey === todayKey;
-                const hasEvents = dayItems.length > 0;
-                const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
-                const overflowCount = Math.max(0, dayItems.length - MAX_VISIBLE_SESSIONS);
-
+        <div className="grid grid-cols-7 [grid-template-rows:repeat(6,minmax(0,1fr))] gap-px rounded-lg border border-slate-200 bg-slate-200 dark:border-slate-700 dark:bg-slate-700">
+          {weeks.map((week, weekIdx) =>
+            week.map((day, dayIdx) => {
+              if (day === null) {
                 return (
                   <div
-                    key={dateKey}
-                    onClick={() => setSelectedDateKey(dateKey)}
-                    className={cn(
-                      "group relative flex flex-1 cursor-pointer flex-col gap-1.5 overflow-hidden p-2 transition-all",
-                      isSelected
-                        ? "bg-indigo-500/10 ring-2 ring-indigo-500/50 dark:bg-indigo-950/60 dark:ring-indigo-500/60"
-                        : hasEvents
-                          ? "border border-indigo-200/80 bg-indigo-50/90 shadow-2xs dark:border-indigo-900/60 dark:bg-indigo-950/40"
-                          : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                    )}>
-                    <div className="flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedDateKey(dateKey);
-                        }}
-                        className={cn(
-                          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors",
-                          isSelected
-                            ? "bg-indigo-600 text-white shadow-xs"
-                            : isToday
-                              ? "bg-indigo-600 font-extrabold text-white shadow-xs"
-                              : hasEvents
-                                ? "bg-indigo-600/15 font-extrabold text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-300"
-                                : "text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800"
-                        )}
-                        aria-label={t("general.selectDate", { var_0: day })}>
-                        {String(day).padStart(2, "0")}
-                      </button>
-                      {hasEvents && (
-                        <Badge className="border-0 bg-indigo-600 px-1.5 py-0 text-[10px] font-bold text-white shadow-2xs dark:bg-indigo-500">
-                          {dayItems.length}
-                        </Badge>
+                    key={`empty-${weekIdx}-${dayIdx}`}
+                    className="min-h-0 bg-slate-50 p-1.5 dark:bg-slate-900"
+                  />
+                );
+              }
+
+              const dateKey = toDateKeyFromParts(currentYear, currentMonth, day);
+              const dayItems = sessionsByDate.get(dateKey) || [];
+              const isSelected = dateKey === selectedDateKey;
+              const isToday = dateKey === todayKey;
+              const hasEvents = dayItems.length > 0;
+              const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
+              const overflowCount = Math.max(0, dayItems.length - MAX_VISIBLE_SESSIONS);
+
+              return (
+                <div
+                  key={dateKey}
+                  onClick={() => setSelectedDateKey(dateKey)}
+                  className={cn(
+                    "group relative flex min-h-0 cursor-pointer flex-col gap-1 overflow-hidden p-1.5 transition-all sm:p-2",
+                    isSelected
+                      ? "bg-indigo-50 dark:bg-indigo-950"
+                      : hasEvents
+                        ? "bg-white dark:bg-slate-900"
+                        : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                  )}>
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedDateKey(dateKey);
+                      }}
+                      className={cn(
+                        "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold transition-colors sm:text-xs",
+                        isSelected
+                          ? "bg-indigo-600 text-white"
+                          : isToday
+                            ? "bg-indigo-600 font-extrabold text-white"
+                            : hasEvents
+                              ? "bg-indigo-100 font-extrabold text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+                              : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                       )}
-                    </div>
-
+                      aria-label={t("general.selectDate", { var_0: day })}>
+                      {String(day).padStart(2, "0")}
+                    </button>
                     {hasEvents && (
-                      <div className="space-y-1">
-                        {visibleItems.map((item) => {
-                          const cfg = getSessionStatusConfig(item.session.status);
-                          return (
-                            <button
-                              key={item.session.id}
-                              onClick={() => handleOpenSessionDetail(item.session.id)}
-                              className={cn(
-                                "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] font-medium shadow-2xs transition-colors hover:opacity-90",
-                                cfg.badgeClass
-                              )}>
-                              <Clock className="h-3 w-3 shrink-0" />
-                              <span className="shrink-0 font-semibold">
-                                {formatCalendarTime(item.session.joinTime)}
-                              </span>
-                              <span className="truncate font-semibold">
-                                {item.session.roomName || `#${item.session.id}`}
-                              </span>
-                            </button>
-                          );
-                        })}
-
-                        {overflowCount > 0 && (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button className="w-full rounded-md border border-dashed border-indigo-300 bg-white/80 px-2 py-0.5 text-center text-[10px] font-bold text-indigo-600 transition-colors hover:border-indigo-400 dark:border-indigo-700 dark:bg-slate-900 dark:text-indigo-300">
-                                +{overflowCount} {t("common.anotherSession", "bài nữa")}
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-80 p-2 dark:border-slate-800 dark:bg-slate-900"
-                              side="bottom"
-                              align="start"
-                              sideOffset={8}>
-                              <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
-                                {t("general.session5", {
-                                  var_0: String(day).padStart(2, "0"),
-                                  var_1: String(currentMonth + 1).padStart(2, "0"),
-                                  var_2: currentYear,
-                                  var_3: dayItems.length,
-                                })}
-                              </p>
-                              <div className="flex max-h-52 flex-col gap-1 overflow-y-auto">
-                                {dayItems.map((item) => (
-                                  <CalendarSessionEntry
-                                    key={item.session.id}
-                                    item={item}
-                                    onOpen={handleOpenSessionDetail}
-                                  />
-                                ))}
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        )}
-                      </div>
+                      <Badge className="h-4 min-w-[16px] items-center justify-center border-0 bg-indigo-600 px-1 text-[9px] font-bold text-white sm:h-5 sm:min-w-[20px] sm:text-[10px] dark:bg-indigo-500">
+                        {dayItems.length}
+                      </Badge>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          ))}
+
+                  {hasEvents && (
+                    <div className="flex min-h-0 flex-col gap-0.5 overflow-hidden sm:gap-1">
+                      {visibleItems.map((item) => {
+                        const cfg = getSessionStatusConfig(item.session.status);
+                        return (
+                          <button
+                            key={item.session.id}
+                            onClick={() => handleOpenSessionDetail(item)}
+                            className={cn(
+                              "flex w-full items-center gap-0.5 rounded px-1 py-0.5 text-left text-[8px] font-medium transition-colors hover:opacity-80 sm:gap-1 sm:text-[10px]",
+                              cfg.badgeClass
+                            )}>
+                            <Clock className="h-2 w-2 shrink-0 sm:h-2.5 sm:w-2.5" />
+                            <span className="shrink-0 font-semibold">
+                              {formatCalendarTime(item.session.joinTime)}
+                            </span>
+                            <span className="truncate font-semibold">
+                              {item.session.roomName || `#${item.session.id}`}
+                            </span>
+                          </button>
+                        );
+                      })}
+
+                      {overflowCount > 0 && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="w-full rounded border border-dashed border-indigo-300 bg-white px-1 py-0.5 text-center text-[8px] font-bold text-indigo-600 transition-colors hover:border-indigo-400 sm:text-[10px] dark:border-indigo-700 dark:bg-slate-800 dark:text-indigo-300">
+                              +{overflowCount}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-80 p-2 dark:border-slate-800 dark:bg-slate-900"
+                            side="bottom"
+                            align="start"
+                            sideOffset={8}>
+                            <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
+                              {t("general.session5", {
+                                var_0: String(day).padStart(2, "0"),
+                                var_1: String(currentMonth + 1).padStart(2, "0"),
+                                var_2: currentYear,
+                                var_3: dayItems.length,
+                              })}
+                            </p>
+                            <div className="flex max-h-52 flex-col gap-1 overflow-y-auto">
+                              {dayItems.map((item) => (
+                                <CalendarSessionEntry
+                                  key={item.session.id}
+                                  item={item}
+                                  onOpen={handleOpenSessionDetail}
+                                />
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </CardContent>
     </Card>
   );
 
   const renderAgendaContent = () => (
-    <Card className="border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <CardHeader className="border-b border-slate-100 pb-3 dark:border-slate-800">
-        <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
-          {t("common.appointmentScheduleByDay", "Lịch hẹn theo ngày")}
-        </CardTitle>
-        <CardDescription className="text-xs font-semibold text-indigo-600 capitalize dark:text-indigo-400">
+    <div className="flex h-[600px] max-h-[600px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="shrink-0 border-b border-slate-100 px-4 pt-4 pb-3 dark:border-slate-800">
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          {t("common.appointmentScheduleByDay")}
+        </h3>
+        <p className="text-xs font-semibold text-indigo-600 capitalize dark:text-indigo-400">
           {selectedDateDisplay}
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <CardContent className="space-y-4 pt-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pt-4">
         {/* Filter Section */}
-        <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
             <Filter className="h-4 w-4" />
             {t("common.filter", "Bộ lọc")}
@@ -657,7 +685,7 @@ export function OverviewPage() {
         )}
 
         {/* Upcoming Sessions Box */}
-        <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/30">
+        <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 dark:border-indigo-900/50 dark:bg-indigo-950">
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
               {t("userOverview.upcomingSession", "Phiên sắp tới")}
@@ -685,7 +713,7 @@ export function OverviewPage() {
                 return (
                   <button
                     key={item.session.id}
-                    onClick={() => handleOpenSessionDetail(item.session.id)}
+                    onClick={() => handleOpenSessionDetail(item)}
                     className="flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
                     <div className="min-w-0">
                       <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
@@ -709,12 +737,12 @@ export function OverviewPage() {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 
   return (
-    <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
+    <section className="flex h-full flex-col overflow-y-auto bg-slate-50 dark:bg-transparent">
       {/* Top Action Bar — same geometry as JobSearchTab and UserCompaniesTab */}
       <div className="shrink-0 px-5 py-6 md:px-8">
         <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -774,8 +802,8 @@ export function OverviewPage() {
       </div>
 
       {/* Calendar + Agenda Grid Section */}
-      <div className="flex-1 overflow-y-auto px-5 py-6 md:px-8">
-        <div className="xl:hidden">
+      <div className="flex px-5 py-6 md:px-8 xl:self-center">
+        <div className="w-full xl:hidden">
           <Tabs value={mobileView} onValueChange={setMobileView}>
             <TabsList className="mb-3 grid w-full grid-cols-2">
               <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
@@ -792,12 +820,14 @@ export function OverviewPage() {
           </Tabs>
         </div>
 
-        <div className="hidden flex-col gap-6 xl:flex">
-          <div className="flex flex-col gap-6 lg:flex-row">
-            <div className="flex-1 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="hidden min-h-0 flex-col gap-6 xl:flex xl:self-center">
+          <div className="flex flex-row items-start gap-6">
+            {/* Calendar - Fixed height to match agenda */}
+            <div className="flex h-[600px] w-[calc(100%-520px)] flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
               {renderCalendarContent()}
             </div>
-            <div className="w-full shrink-0 rounded-xl border border-slate-200 bg-white lg:w-[420px] xl:w-[480px] dark:border-slate-800 dark:bg-slate-900">
+            {/* Agenda - Fixed height */}
+            <div className="flex h-[600px] w-[480px] flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
               {renderAgendaContent()}
             </div>
           </div>
