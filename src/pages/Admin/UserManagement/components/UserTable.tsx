@@ -30,13 +30,13 @@ interface UserTableProps {
 const getRoleBadgeClass = (role?: UserRole): string => {
   switch (role) {
     case "ADMIN":
-      return "bg-purple-600 hover:bg-purple-600";
+      return "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:border-purple-500/35 dark:bg-purple-500/15 dark:text-purple-300";
     case "STAFF":
-      return "bg-blue-600 hover:bg-blue-600";
+      return "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:border-sky-500/35 dark:bg-sky-500/15 dark:text-sky-300";
     case "MENTOR":
-      return "bg-orange-500 hover:bg-orange-500";
+      return "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:border-amber-500/35 dark:bg-amber-500/15 dark:text-amber-300";
     default:
-      return "bg-gray-500 hover:bg-gray-500";
+      return "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:border-slate-700/80 dark:bg-slate-800/70 dark:text-slate-300";
   }
 };
 
@@ -49,7 +49,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
           <Search className="h-6 w-6 text-slate-400 dark:text-slate-500" />
         </div>
-        <p className="text-sm font-medium text-slate-500">
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
           {t("adminUsermanagement.noUsersFound")}
         </p>
       </div>
@@ -60,26 +60,30 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-[80px] pl-6 font-medium text-slate-500">
+          <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.id")}
             </TableHead>
-            <TableHead className="font-medium text-slate-500">
+            <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
               {getSortProps ? (
                 <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
               ) : (
                 t("common.name")
               )}
             </TableHead>
-            <TableHead className="font-medium text-slate-500">{t("common.email")}</TableHead>
-            <TableHead className="w-24 font-medium text-slate-500">{t("common.role")}</TableHead>
-            <TableHead className="w-32 font-medium text-slate-500">
+            <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+              {t("common.email")}
+            </TableHead>
+            <TableHead className="w-24 font-semibold text-slate-700 dark:text-slate-200">
+              {t("common.role")}
+            </TableHead>
+            <TableHead className="w-32 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminUsermanagement.joinedDate")}
             </TableHead>
-            <TableHead className="w-32 font-medium text-slate-500">
+            <TableHead className="w-32 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminUsermanagement.lastUpdated")}
             </TableHead>
-            <TableHead className="w-24 pr-6 font-medium text-slate-500">
+            <TableHead className="w-24 pr-6 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.status")}
             </TableHead>
           </TableRow>
@@ -89,8 +93,8 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
             <TableRow
               key={user.id}
               onClick={() => onViewDetail(user)}
-              className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-              <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+              className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+              <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                 <div className="flex items-center gap-2">
                   <span>#{user.id}</span>
                   {/* Dummy element to force row height alignment */}
@@ -104,22 +108,26 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
               </TableCell>
               <TableCell className="py-4">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 rounded-[14px] border border-slate-100 dark:border-slate-800/80">
+                  <Avatar className="h-10 w-10 rounded-[14px] border border-slate-100 dark:border-slate-800">
                     <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
-                    <AvatarFallback className="rounded-[14px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                    <AvatarFallback className="rounded-[14px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
                       {user.name?.charAt(0)?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium">{user.name}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">{user.name}</span>
                 </div>
               </TableCell>
-              <TableCell className="text-muted-foreground py-4">{user.email}</TableCell>
+              <TableCell className="py-4 font-medium text-slate-700 dark:text-slate-200">
+                {user.email}
+              </TableCell>
               <TableCell className="py-4">
-                <Badge variant="default" className={`text-white ${getRoleBadgeClass(user.role)}`}>
+                <Badge
+                  variant="outline"
+                  className={`font-semibold ${getRoleBadgeClass(user.role)}`}>
                   {user.role}
                 </Badge>
               </TableCell>
-              <TableCell className="text-muted-foreground py-4 text-sm">
+              <TableCell className="py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                 {(user as Record<string, unknown>).createdAt ||
                 (user as Record<string, unknown>).created_at
                   ? formatDate(
@@ -128,7 +136,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                     )
                   : "—"}
               </TableCell>
-              <TableCell className="text-muted-foreground py-4 text-sm">
+              <TableCell className="py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                 {(user as Record<string, unknown>).updatedAt ||
                 (user as Record<string, unknown>).updated_at
                   ? formatDate(

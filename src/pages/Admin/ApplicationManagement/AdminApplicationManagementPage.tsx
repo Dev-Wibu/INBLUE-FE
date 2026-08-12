@@ -408,7 +408,7 @@ export function AdminApplicationManagementPage() {
       </div>
 
       <div className="flex-1 space-y-6 overflow-y-auto bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
-        <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -433,7 +433,7 @@ export function AdminApplicationManagementPage() {
                 <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
                   {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
                   <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
-                    <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                    <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
                       {value}
                     </span>
                     <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
@@ -462,11 +462,11 @@ export function AdminApplicationManagementPage() {
                 "adminApplicationManagement.searchPlaceholder",
                 "Tìm theo tên ứng viên, công ty hoặc vị trí..."
               )}
-              className="h-[46px] flex-1 rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 text-[14.5px] text-slate-900 shadow-2xs placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800/80 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-500"
+              className="h-[46px] flex-1 rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 text-[14.5px] text-slate-900 shadow-2xs placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
             />
             <Button
               type="submit"
-              className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800/80 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
+              className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white">
               <Search className="mr-2 h-[18px] w-[18px]" />
               {t("jobSearch.searchButton", "Tìm kiếm")}
             </Button>
@@ -475,14 +475,16 @@ export function AdminApplicationManagementPage() {
               variant="outline"
               onClick={() => void refetchApplications()}
               disabled={isLoading}
-              className="h-[46px] shrink-0 rounded-xl border-slate-200/90 px-4 dark:border-slate-800/80">
+              className="h-[46px] shrink-0 rounded-xl border-slate-200/90 px-4 dark:border-slate-800 dark:bg-slate-900">
               <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             </Button>
           </form>
 
           <div className="mt-4 flex flex-col gap-4 xl:flex-row xl:items-center">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-2 text-[13px] font-semibold text-slate-500">Công ty:</span>
+              <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                Công ty:
+              </span>
               <Select
                 value={selectedCompanyId}
                 onValueChange={(val) => {
@@ -490,7 +492,7 @@ export function AdminApplicationManagementPage() {
                   setSelectedJdId("");
                   pagination.goToFirstPage();
                 }}>
-                <SelectTrigger className="h-9 w-44 rounded-full border-slate-200 bg-white px-4 text-[13.5px] dark:border-slate-700 dark:bg-transparent">
+                <SelectTrigger className="h-9 w-44 rounded-full border-slate-200 bg-white px-4 text-[13.5px] dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200">
                   <SelectValue placeholder="Tất cả" />
                 </SelectTrigger>
                 <SelectContent>
@@ -503,9 +505,11 @@ export function AdminApplicationManagementPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="hidden h-5 w-px bg-slate-200 xl:block dark:bg-slate-700" />
+            <div className="hidden h-5 w-px bg-slate-200 xl:block dark:bg-slate-800" />
             <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-2 text-[13px] font-semibold text-slate-500">Trạng thái:</span>
+              <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                Trạng thái:
+              </span>
               {[
                 ["ALL", "Tất cả"],
                 ["IN_PROGRESS", "Đang xử lý"],
@@ -521,8 +525,8 @@ export function AdminApplicationManagementPage() {
                   }}
                   className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
                     statusFilter === id
-                      ? "border-indigo-600 bg-indigo-600 text-white"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                      ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90 dark:text-white dark:shadow-indigo-500/20"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                   }`}>
                   {label}
                 </button>
@@ -721,27 +725,29 @@ export function AdminApplicationManagementPage() {
 
         {/* Table (Khảo thí & Đào tạo Standard) */}
         <div>
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800/80 dark:bg-slate-900">
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <Table>
               <TableHeader>
-                <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                  <TableHead className="w-[80px] pl-6 font-medium text-slate-500">#ID</TableHead>
-                  <TableHead className="min-w-[200px] font-medium text-slate-500">
+                <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                  <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                    #ID
+                  </TableHead>
+                  <TableHead className="min-w-[200px] font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.candidate", "Ứng viên")}
                   </TableHead>
-                  <TableHead className="min-w-[160px] font-medium text-slate-500">
+                  <TableHead className="min-w-[160px] font-semibold text-slate-700 dark:text-slate-200">
                     {t("common.company", "Công ty")}
                   </TableHead>
-                  <TableHead className="min-w-[180px] font-medium text-slate-500">
+                  <TableHead className="min-w-[180px] font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.jobPosition", "Vị trí tuyển dụng")}
                   </TableHead>
-                  <TableHead className="w-[140px] font-medium text-slate-500">
+                  <TableHead className="w-[140px] font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.currentRound", "Vòng hiện tại")}
                   </TableHead>
-                  <TableHead className="w-[100px] text-center font-medium text-slate-500">
+                  <TableHead className="w-[100px] text-center font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.score", "Điểm số")}
                   </TableHead>
-                  <TableHead className="w-[130px] font-medium text-slate-500">
+                  <TableHead className="w-[130px] font-semibold text-slate-700 dark:text-slate-200">
                     {t("common.status", "Trạng thái")}
                   </TableHead>
                 </TableRow>
@@ -749,7 +755,9 @@ export function AdminApplicationManagementPage() {
               <TableBody>
                 {openJds.length === 0 && isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-48 text-center text-slate-400">
+                    <TableCell
+                      colSpan={7}
+                      className="h-48 text-center text-slate-400 dark:text-slate-500">
                       <div className="flex items-center justify-center gap-2">
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
                         <span>{t("common.loadingData", "Đang tải dữ liệu...")}</span>
@@ -758,7 +766,9 @@ export function AdminApplicationManagementPage() {
                   </TableRow>
                 ) : isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-48 text-center text-slate-400">
+                    <TableCell
+                      colSpan={7}
+                      className="h-48 text-center text-slate-400 dark:text-slate-500">
                       <div className="flex items-center justify-center gap-2">
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
                         <span>{t("common.loadingData", "Đang tải dữ liệu...")}</span>
@@ -767,7 +777,9 @@ export function AdminApplicationManagementPage() {
                   </TableRow>
                 ) : pageData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-48 text-center text-slate-400">
+                    <TableCell
+                      colSpan={7}
+                      className="h-48 text-center text-slate-400 dark:text-slate-500">
                       {t(
                         "adminApplicationManagement.noApplicationsFound",
                         "Không tìm thấy đơn ứng tuyển nào."
@@ -802,8 +814,8 @@ export function AdminApplicationManagementPage() {
                       <TableRow
                         key={app.applicationId || app.id || idx}
                         onClick={() => handleViewDetail(app.applicationId || app.id)}
-                        className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                        <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                        className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                        <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                           <div className="flex items-center gap-2">
                             <span>#{app.applicationId || app.id}</span>
                             {/* Dummy element to force row height alignment */}
@@ -823,9 +835,9 @@ export function AdminApplicationManagementPage() {
                         </TableCell>
                         <TableCell className="py-4">
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 shrink-0 rounded-[14px] border border-slate-100 dark:border-slate-800/80">
+                            <Avatar className="h-10 w-10 shrink-0 rounded-[14px] border border-slate-100 dark:border-slate-800">
                               <AvatarImage src={avatarUrl} alt={name} />
-                              <AvatarFallback className="rounded-[14px] bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                              <AvatarFallback className="rounded-[14px] bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-300">
                                 {name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -833,13 +845,15 @@ export function AdminApplicationManagementPage() {
                               <div className="text-xs font-semibold text-slate-900 dark:text-white">
                                 {name}
                               </div>
-                              <div className="text-[11px] text-slate-400">{email}</div>
+                              <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                                {email}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="py-4">
-                          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-100 bg-slate-50 text-xs font-bold text-indigo-600 dark:border-slate-800/80 dark:bg-slate-950 dark:text-indigo-400">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-100 bg-slate-50 text-xs font-bold text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-indigo-400">
                               {companyLogoUrl ? (
                                 <img
                                   src={companyLogoUrl}
@@ -869,7 +883,7 @@ export function AdminApplicationManagementPage() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-center font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                        <TableCell className="text-center font-mono text-xs font-bold text-indigo-600 dark:text-sky-400">
                           {app.overallScore !== undefined ? `${app.overallScore}/100` : "—"}
                         </TableCell>
                         <TableCell className="py-4">{getStatusBadge(app.status)}</TableCell>
@@ -879,7 +893,7 @@ export function AdminApplicationManagementPage() {
                 )}
               </TableBody>
             </Table>
-            <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800/80 dark:bg-slate-900">
+            <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
               <PaginationControl pagination={pagination} />
             </div>
           </div>

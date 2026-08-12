@@ -395,7 +395,7 @@ export function UserManagementPage() {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
-            <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
               <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -417,7 +417,7 @@ export function UserManagementPage() {
                     <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
                       {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
                       <div className="flex min-w-[78px] flex-col items-center justify-center text-center">
-                        <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                        <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
                           {value}
                         </span>
                         <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
@@ -433,7 +433,7 @@ export function UserManagementPage() {
                 onSubmit={(event) => event.preventDefault()}
                 className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <div className="relative flex-1">
-                  <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
+                  <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                   <Input
                     type="text"
                     placeholder={t("adminUsermanagement.searchByNameEmailUniversity")}
@@ -442,26 +442,28 @@ export function UserManagementPage() {
                       setSearchQuery(e.target.value);
                       pagination.goToFirstPage();
                     }}
-                    className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800/80 dark:bg-slate-900/60"
+                    className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="h-[46px] rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800/80 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-800">
+                  className="h-[46px] rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                   <Search className="mr-2 h-[18px] w-[18px]" />
                   Tìm kiếm
                 </Button>
                 <Button
                   type="button"
                   onClick={handleCreate}
-                  className="h-[46px] rounded-xl bg-indigo-600 px-5 font-semibold text-white hover:bg-indigo-700">
+                  className="h-[46px] rounded-xl bg-indigo-600 px-5 font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
                   <Plus className="mr-1.5 h-4 w-4" />
                   {t("adminUsermanagement.addUser")}
                 </Button>
               </form>
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="mr-2 text-[13px] font-semibold text-slate-500">Trạng thái:</span>
+                <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                  Trạng thái:
+                </span>
                 {[
                   ["active", t("common.active")],
                   ["inactive", t("common.shutDown")],
@@ -476,8 +478,8 @@ export function UserManagementPage() {
                     }}
                     className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
                       statusFilter === value
-                        ? "border-indigo-600 bg-indigo-600 text-white"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800"
+                        ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90 dark:text-white dark:shadow-indigo-500/20"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                     }`}>
                     {label}
                   </button>
@@ -485,7 +487,7 @@ export function UserManagementPage() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-auto rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800/80 dark:bg-slate-900">
+            <div className="flex-1 overflow-auto rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <UserTable
                 users={pageData}
                 onDelete={handleToggleStatus}
@@ -493,7 +495,7 @@ export function UserManagementPage() {
                 getSortProps={getSortProps}
               />
               {sortedData.length > 0 && (
-                <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800/80 dark:bg-slate-900">
+                <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800 dark:bg-slate-900">
                   <PaginationControl
                     pagination={pagination}
                     showBoundaryButtons={false}

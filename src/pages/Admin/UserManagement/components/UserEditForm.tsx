@@ -246,7 +246,11 @@ export function UserEditForm({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">{innerForm}</div>
+      <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+        <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {innerForm}
+        </div>
+      </div>
     </div>
   );
 }

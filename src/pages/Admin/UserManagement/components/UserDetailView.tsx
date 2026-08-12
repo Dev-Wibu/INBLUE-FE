@@ -43,13 +43,15 @@ function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }
   return (
     <div
       id={id}
-      className="scroll-mt-24 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm transition-all dark:border-slate-800/60 dark:bg-slate-900/40">
+      className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all dark:border-slate-800 dark:bg-slate-900">
       <div
         className="flex cursor-pointer items-center justify-between"
         onClick={() => setIsOpen(!isOpen)}>
         <div className="flex items-center gap-2">
-          {Icon && <Icon className="h-5 w-5 text-slate-500" />}
-          <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
+          {Icon && <Icon className="h-5 w-5 text-slate-500 dark:text-slate-400" />}
+          <h3 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+            {title}
+          </h3>
         </div>
         <Button
           variant="ghost"
@@ -146,7 +148,7 @@ export function UserDetailView({
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
             {/* Left Column: Sticky Profile Card */}
             <div className="lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
-              <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
                   <Button
                     variant="ghost"
@@ -244,7 +246,7 @@ export function UserDetailView({
               ) : (
                 <div className="space-y-6">
                   {/* Header Card — Identical to User AccountPage */}
-                  <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">

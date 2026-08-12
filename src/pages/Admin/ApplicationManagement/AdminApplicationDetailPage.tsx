@@ -57,7 +57,9 @@ function DetailStat({ label, value }: { label: string; value?: string | null }) 
   if (!value) return null;
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
-      <p className="text-[11px] font-semibold text-slate-400 uppercase">{label}</p>
+      <p className="text-[11px] font-semibold text-slate-500 uppercase dark:text-slate-400">
+        {label}
+      </p>
       <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">{value}</p>
     </div>
   );
@@ -66,8 +68,10 @@ function DetailStat({ label, value }: { label: string; value?: string | null }) 
 function TextBlock({ title, children }: { title: string; children?: React.ReactNode }) {
   if (!children) return null;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-      <p className="mb-1 text-xs font-bold tracking-wider text-slate-400 uppercase">{title}</p>
+    <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+      <p className="mb-1 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+        {title}
+      </p>
       {children}
     </div>
   );
@@ -123,7 +127,7 @@ function RoundFullCard({
   const anchor = roundAnchor(round);
 
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div id={anchor ? `round-${anchor}` : undefined} className="scroll-mt-24" />
       <div className="flex flex-col gap-4 px-6 py-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex min-w-0 items-start gap-3">

@@ -127,7 +127,7 @@ export function CVUploadModal({
         <div className="flex-1 space-y-4 overflow-y-auto px-1 py-4">
           {/* Current CV Section */}
           {currentCvUrl && !selectedFile && (
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
                 {t("common.currentCv")}
               </div>
