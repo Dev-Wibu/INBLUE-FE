@@ -93,7 +93,7 @@ export function JdPurchaseHistoryTab() {
               </h1>
               {purchases.length > 0 && (
                 <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
-                  {purchases.length} {t("payment.purchasesCount", "giao dịch")}
+                  {t("payment.jdPurchaseTransactionsCount", { count: purchases.length })}
                 </span>
               )}
             </div>
@@ -139,14 +139,30 @@ export function JdPurchaseHistoryTab() {
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                <TableHead className="w-[100px] pl-6 font-medium text-slate-500">#ID</TableHead>
-                <TableHead className="font-medium text-slate-500">Doanh nghiệp</TableHead>
-                <TableHead className="font-medium text-slate-500">Thông tin JD</TableHead>
-                <TableHead className="font-medium text-slate-500">Giao dịch</TableHead>
-                <TableHead className="font-medium text-slate-500">Trạng thái</TableHead>
-                <TableHead className="text-right font-medium text-slate-500">Thành tiền</TableHead>
-                <TableHead className="pl-4 font-medium text-slate-500">Ngày mua</TableHead>
-                <TableHead className="pr-6 font-medium text-slate-500">Hạn / SD</TableHead>
+                <TableHead className="w-[100px] pl-6 font-medium text-slate-500">
+                  {t("payment.jdPurchaseJdId", "JD #")}
+                </TableHead>
+                <TableHead className="font-medium text-slate-500">
+                  {t("payment.jdPurchaseCompany", "Company")}
+                </TableHead>
+                <TableHead className="font-medium text-slate-500">
+                  {t("payment.jdPurchaseJdInfo", "JD Information")}
+                </TableHead>
+                <TableHead className="font-medium text-slate-500">
+                  {t("payment.jdPurchaseTransaction", "Transaction")}
+                </TableHead>
+                <TableHead className="font-medium text-slate-500">
+                  {t("payment.jdPurchaseStatus", "Status")}
+                </TableHead>
+                <TableHead className="text-right font-medium text-slate-500">
+                  {t("payment.jdPurchaseTotalAmount", "Total Amount")}
+                </TableHead>
+                <TableHead className="pl-4 font-medium text-slate-500">
+                  {t("payment.jdPurchaseDate", "Purchase Date")}
+                </TableHead>
+                <TableHead className="pr-6 font-medium text-slate-500">
+                  {t("payment.jdPurchaseExpiry", "Expires")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -186,13 +202,13 @@ export function JdPurchaseHistoryTab() {
                           to={`/user?tab=jobSearch&jobId=${purchase.jobDescription.id}`}
                           className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
                           <span className="line-clamp-2 max-w-[200px]">
-                            {purchase.jobDescription?.title || "Untitled"}
+                            {purchase.jobDescription?.title || t("common.untitled")}
                           </span>
                           <ExternalLink className="h-3 w-3 shrink-0" />
                         </Link>
                       ) : (
                         <span className="line-clamp-2 max-w-[200px] text-sm font-semibold text-slate-700 dark:text-slate-300">
-                          {purchase.jobDescription?.title || "Untitled"}
+                          {purchase.jobDescription?.title || t("common.untitled")}
                         </span>
                       )}
                     </div>
@@ -200,7 +216,9 @@ export function JdPurchaseHistoryTab() {
                   <TableCell className="py-4">
                     <div className="flex flex-col items-start gap-1.5">
                       <span className="inline-flex items-center justify-center rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                        {purchase.payment?.id ? `#${purchase.payment.id}` : "N/A"}
+                        {purchase.payment?.id
+                          ? `#${purchase.payment.id}`
+                          : t("common.notAvailable", "N/A")}
                       </span>
                       <span className="text-[11px] font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400">
                         {purchase.payment?.method || "PayOS"}
