@@ -782,45 +782,44 @@ function AssignMentorDialog({
           {/* Candidate info */}
           {detail && (
             <div className="rounded-lg border bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
-              <div className="mb-3 flex items-center gap-2">
-                <User className="h-4 w-4 text-slate-500" />
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  {t("adminMentorReviewAssignment.candidateInfo")}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="shrink-0 font-medium text-slate-500 dark:text-slate-400">
-                    {t("adminMentorReviewAssignment.name")}:
-                  </span>
-                  <span className="font-medium text-slate-900 dark:text-slate-100">
+              <div className="flex items-start gap-3">
+                {/* Avatar */}
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-lg font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                  {detail.candidateAvatarUrl ? (
+                    <img
+                      src={detail.candidateAvatarUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    (detail.candidateName ?? detail.candidateEmail ?? "?")
+                      ?.charAt(0)
+                      .toUpperCase() || "?"
+                  )}
+                </div>
+                {/* Info */}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-slate-900 dark:text-slate-100">
                     {detail.candidateName ?? detail.candidateEmail ?? "-"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="shrink-0 font-medium text-slate-500 dark:text-slate-400">
-                    {t("adminMentorReviewAssignment.email")}:
-                  </span>
-                  <span className="text-slate-600 dark:text-slate-400">
+                  </p>
+                  <p className="truncate text-sm text-slate-500 dark:text-slate-400">
                     {detail.candidateEmail ?? "-"}
-                  </span>
+                  </p>
+                  {(detail.jdTitle || detail.roundName) && (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      {detail.jdTitle && (
+                        <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                          {detail.jdTitle}
+                        </span>
+                      )}
+                      {detail.roundName && (
+                        <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                          {detail.roundName}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
-                {detail.jdTitle && (
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 font-medium text-slate-500 dark:text-slate-400">
-                      {t("adminMentorReviewAssignment.jobDescription")}:
-                    </span>
-                    <span className="text-slate-600 dark:text-slate-400">{detail.jdTitle}</span>
-                  </div>
-                )}
-                {detail.roundName && (
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 font-medium text-slate-500 dark:text-slate-400">
-                      {t("adminMentorReviewAssignment.roundName")}:
-                    </span>
-                    <span className="text-slate-600 dark:text-slate-400">{detail.roundName}</span>
-                  </div>
-                )}
               </div>
             </div>
           )}
