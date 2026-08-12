@@ -1,3 +1,4 @@
+import type { UserScheduleEventDto } from "@/hooks/useUserSchedule";
 import type { Session } from "@/interfaces";
 import { formatTime, parseBackendDate, toVietnamDateKey } from "@/lib/formatting";
 import i18n from "@/lib/i18n";
@@ -122,4 +123,71 @@ export const groupUserCalendarByDate = (
   }
 
   return grouped;
+};
+
+/**
+ * Transform UserScheduleEventDto from /api/users/schedule to Session-like format
+ * for use with existing calendar components
+ */
+export const transformScheduleEventToSession = (event: UserScheduleEventDto): Session => {
+  return {
+    id: event.sessionId || 0,
+    roomName: event.title || event.jobTitle || "Schedule Event",
+    joinTime: event.start,
+    status: mapEventStatusToSession(event.status),
+    roomUrl: event.roomUrl,
+    // Map eventType to determine type
+    kioskId: event.kioskId,
+  };
+};
+
+/**
+ * Map schedule event status to session status
+ */
+export const mapEventStatusToSession = (status?: string): Session["status"] => {
+  const statusMap: Record<string, Session["status"]> = {
+    SCHEDULED: "SCHEDULED",
+    PENDING: "DRAFT",
+    ONGOING: "ONGOING",
+    IN_PROGRESS: "ONGOING",
+    COMPLETED: "COMPLETED",
+    CANCELLED: "CANCELED",
+    CANCELED: "CANCELED",
+    REJECTED: "REJECTED",
+    PAID: "PAID",
+    DRAFT: "DRAFT",
+    // Kiosk statuses
+    AWAITING_MENTOR: "SCHEDULED",
+    MENTOR_ASSIGNED: "SCHEDULED",
+    ROOM_CREATED: "PAID",
+    // AI Interview statuses
+    CREATED: "DRAFT",
+  };
+  return statusMap[status || ""] || "SCHEDULED";
+};
+
+/**
+ * Build calendar items from schedule events
+ */
+export const buildCalendarSessionsFromEvents = (
+  events: UserScheduleEventDto[]
+): UserCalendarSession[] => {
+  return events
+    .filter((event) => event.start && event.status !== "CANCELLED" && event.status !== "CANCELED")
+    .reduce<UserCalendarSession[]>((result, event) => {
+      const startDate = parseBackendDate(event.start);
+      if (!startDate) {
+        return result;
+      }
+
+      const sessionLike = transformScheduleEventToSession(event);
+      result.push({
+        session: sessionLike as Session,
+        joinDate: startDate,
+        dateKey: toDateKey(startDate),
+        timestamp: startDate.getTime(),
+      });
+      return result;
+    }, [])
+    .sort((a, b) => a.timestamp - b.timestamp);
 };

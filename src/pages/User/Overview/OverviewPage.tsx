@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useUserSessions } from "@/hooks/useSession";
+import { useUserSchedule } from "@/hooks/useUserSchedule";
 import { formatDateTime, toVietnamDateKey } from "@/lib/formatting";
 import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
@@ -15,11 +15,11 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
-  type UserCalendarSession,
-  buildUserCalendarSessions,
+  buildCalendarSessionsFromEvents,
   formatCalendarTime,
   getSessionStatusConfig,
   groupUserCalendarByDate,
+  type UserCalendarSession,
 } from "./userSchedule.utils";
 
 const MAX_VISIBLE_SESSIONS = 2;
@@ -139,7 +139,31 @@ function CalendarSessionEntry({
 export function OverviewPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions();
+
+  // Fetch schedule from new API endpoint
+  const { data: scheduleEvents = [], isLoading: scheduleLoading } = useUserSchedule();
+
+  // Transform schedule events to calendar format
+  const calendarItems = useMemo(
+    () => buildCalendarSessionsFromEvents(scheduleEvents),
+    [scheduleEvents]
+  );
+  const sessionsByDate = useMemo(() => groupUserCalendarByDate(calendarItems), [calendarItems]);
+
+  // Calculate stats from events
+  const totalInterviews = scheduleEvents.length;
+  const completedInterviews = scheduleEvents.filter((e) => e.status === "COMPLETED").length;
+  const upcomingInterviews = scheduleEvents.filter(
+    (e) =>
+      e.status === "SCHEDULED" ||
+      e.status === "PENDING" ||
+      e.status === "ONGOING" ||
+      e.status === "IN_PROGRESS" ||
+      e.status === "PAID"
+  ).length;
+  const pendingInterviews = scheduleEvents.filter(
+    (e) => e.status === "DRAFT" || e.status === "CREATED" || e.status === "AWAITING_MENTOR"
+  ).length;
 
   const MONTH_NAMES = [
     t("common.january"),
@@ -173,16 +197,7 @@ export function OverviewPage() {
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
   const [mobileView, setMobileView] = useState<string>(MOBILE_VIEW_AGENDA);
 
-  const calendarItems = useMemo(() => buildUserCalendarSessions(sessions), [sessions]);
-  const sessionsByDate = useMemo(() => groupUserCalendarByDate(calendarItems), [calendarItems]);
-
-  const totalInterviews = sessions.length;
-  const completedInterviews = sessions.filter((s) => s.status === "COMPLETED").length;
-  const upcomingInterviews = sessions.filter(
-    (s) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
-  ).length;
-  const pendingInterviews = sessions.filter((s) => s.status === "DRAFT").length;
-
+  // Upcoming schedule items for the sidebar
   const upcomingScheduleItems = calendarItems
     .filter(
       (item) =>
@@ -454,7 +469,7 @@ export function OverviewPage() {
 
       <CardContent className="space-y-4 pt-4">
         {/* Selected Day Agenda Items */}
-        {sessionsLoading ? (
+        {scheduleLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-20 rounded-xl" />
             <Skeleton className="h-20 rounded-xl" />
