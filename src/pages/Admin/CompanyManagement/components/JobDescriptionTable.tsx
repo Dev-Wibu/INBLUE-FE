@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SortButton, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -12,8 +13,7 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/formatting";
 import { getJobDescriptionLevelBadge } from "@/lib/status-utils";
-import { Briefcase, Building2, Calendar, Clock, Users } from "lucide-react";
-import { useState } from "react";
+import { Briefcase, Calendar, Clock, MapPin, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
 
@@ -47,7 +47,6 @@ export function JobDescriptionTable({
   showCompany,
 }: JobDescriptionTableProps) {
   const { t } = useTranslation();
-  const [failedImages, setFailedImages] = useState<Record<string | number, boolean>>({});
 
   if (!jobDescriptions.length) {
     return (
@@ -98,6 +97,9 @@ export function JobDescriptionTable({
                 {t("adminCompanymanagement.companyName", "Công ty")}
               </TableHead>
             )}
+            <TableHead className="w-[160px] min-w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+              {t("common.location", "Địa điểm")}
+            </TableHead>
             <TableHead className="w-[120px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCompanymanagement.rounds", "Số vòng thi")}
             </TableHead>
@@ -142,7 +144,7 @@ export function JobDescriptionTable({
               0;
             const createdDate =
               (job as any).createdAt || (job as any).createdDate || (job as any).createdAtDate;
-            const isImageFailed = job.id ? failedImages[job.id] : false;
+            const locationText = (job as any).location || "TP. Hồ Chí Minh";
 
             return (
               <TableRow
@@ -171,28 +173,24 @@ export function JobDescriptionTable({
                 {showCompany && (
                   <TableCell className="px-4 py-4 text-slate-600 dark:text-slate-300">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-                        {compLogo && !isImageFailed ? (
-                          <img
-                            src={compLogo}
-                            alt={compName}
-                            onError={() => {
-                              if (job.id) {
-                                setFailedImages((prev) => ({ ...prev, [job.id!]: true }));
-                              }
-                            }}
-                            className="h-full w-full object-contain p-1"
-                          />
-                        ) : (
-                          <Building2 className="h-4 w-4 text-slate-400" />
-                        )}
-                      </div>
+                      <Avatar className="h-10 w-10 shrink-0 rounded-[14px] border border-slate-100 dark:border-slate-800">
+                        <AvatarImage src={compLogo} alt={compName} className="object-cover" />
+                        <AvatarFallback className="rounded-[14px] bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-300">
+                          {compName?.charAt(0)?.toUpperCase() || "C"}
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="font-semibold text-slate-900 dark:text-slate-100">
                         {compName}
                       </span>
                     </div>
                   </TableCell>
                 )}
+                <TableCell className="px-4 py-4">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                    <span>{locationText}</span>
+                  </div>
+                </TableCell>
                 <TableCell className="px-4 py-4">
                   <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     {job.rounds?.length || 0} {t("adminCompanymanagement.roundsCount", "vòng")}
