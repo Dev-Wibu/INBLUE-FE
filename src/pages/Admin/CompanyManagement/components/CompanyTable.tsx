@@ -136,7 +136,7 @@ export function CompanyTable({
                   </p>
                 </TableCell>
                 <TableCell className="px-4 py-4 text-center">
-                  <span className="inline-flex items-center justify-center rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
+                  <span className="inline-flex items-center justify-center rounded-md border border-slate-200/80 bg-slate-100/90 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-800 dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-200">
                     {company.jobDescriptions?.length || 0}
                   </span>
                 </TableCell>
