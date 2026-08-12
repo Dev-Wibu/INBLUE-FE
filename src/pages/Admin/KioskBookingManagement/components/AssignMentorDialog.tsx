@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Briefcase, Calendar, Clock, MapPin, Search, Star, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { EnrichedKioskBooking, Mentor } from "../types";
@@ -37,6 +37,60 @@ export function AssignMentorDialog({
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMentorId, setSelectedMentorId] = useState<string>("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Filter mentors by search query
+  const filteredMentors = mentors.filter(
+    (mentor) =>
+      mentor.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mentor.expertise?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Focus search input when modal opens
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [open]);
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!open) {
+      setSearchQuery("");
+      setSelectedMentorId("");
+    }
+  }, [open]);
+
+  // Keyboard navigation for mentor list
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!open || filteredMentors.length === 0) return;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const currentIndex = filteredMentors.findIndex((m) => String(m.id) === selectedMentorId);
+        const nextIndex = currentIndex < filteredMentors.length - 1 ? currentIndex + 1 : 0;
+        setSelectedMentorId(String(filteredMentors[nextIndex].id));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const currentIndex = filteredMentors.findIndex((m) => String(m.id) === selectedMentorId);
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : filteredMentors.length - 1;
+        setSelectedMentorId(String(filteredMentors[prevIndex].id));
+      } else if (e.key === "Enter" && selectedMentorId) {
+        e.preventDefault();
+        // Submit form
+        const form = document.getElementById("assign-mentor-form");
+        if (form) {
+          form.dispatchEvent(new Event("submit", { bubbles: true }));
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, filteredMentors, selectedMentorId]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,13 +110,6 @@ export function AssignMentorDialog({
     }
     onAssign(booking.id, mentorId, notes);
   };
-
-  // Filter mentors by search query
-  const filteredMentors = mentors.filter(
-    (mentor) =>
-      mentor.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mentor.expertise?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   // Format date for display
   const formatDisplayDate = (dateStr?: string) => {
@@ -97,7 +144,7 @@ export function AssignMentorDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl lg:max-w-3xl">
-        <form onSubmit={handleSubmit}>
+        <form id="assign-mentor-form" onSubmit={handleSubmit}>
           <DialogHeader className="pb-4">
             <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50">
@@ -235,6 +282,7 @@ export function AssignMentorDialog({
                 <div className="relative mb-3">
                   <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <Input
+                    ref={searchInputRef}
                     type="text"
                     placeholder={t("common.searchMentor", "Tìm kiếm mentor...")}
                     value={searchQuery}
