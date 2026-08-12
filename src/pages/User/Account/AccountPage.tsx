@@ -247,7 +247,7 @@ export function AccountPage() {
       <div className="hidden space-y-6 lg:sticky lg:top-4 lg:col-span-3 lg:block">
         <Card className="border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h4 className="mb-4 text-xs font-bold tracking-wider text-slate-500 uppercase">
-            ĐỘ HOÀN THIỆN HỒ SƠ
+            {t("userAccount.profileCompleteness")}
           </h4>
           <div className="mb-4 flex items-center gap-3">
             <Progress value={percentage} className="h-2" />
@@ -260,7 +260,7 @@ export function AccountPage() {
               ) : (
                 <Circle className="h-4 w-4 text-slate-300" />
               )}
-              Thông tin cơ bản
+              {t("userAccount.profileBasicInfo")}
             </li>
             <li className="flex items-center gap-2">
               {fields[1] ? (
@@ -268,7 +268,7 @@ export function AccountPage() {
               ) : (
                 <Circle className="h-4 w-4 text-slate-300" />
               )}
-              Số điện thoại & Địa chỉ
+              {t("userAccount.profilePhoneAndAddress")}
             </li>
             <li className="flex items-center gap-2">
               {fields[2] ? (
@@ -283,11 +283,10 @@ export function AccountPage() {
 
         <div className="rounded-xl border border-indigo-100 bg-indigo-50/80 p-5 dark:border-indigo-900/50 dark:bg-indigo-950/40">
           <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-indigo-900 dark:text-indigo-300">
-            <Lightbulb className="h-4 w-4 text-amber-500" /> Mẹo tối ưu từ AI
+            <Lightbulb className="h-4 w-4 text-amber-500" /> {t("userAccount.profileAiTipTitle")}
           </h4>
           <p className="text-xs leading-relaxed text-indigo-700 dark:text-indigo-400">
-            Hồ sơ được cập nhật đầy đủ thông tin liên hệ và GitHub giúp hệ thống AI phân tích và đề
-            xuất các câu hỏi phỏng vấn sát với thực tế công việc của bạn hơn 40%.
+            {t("userAccount.profileAiTipContent")}
           </p>
         </div>
       </div>
