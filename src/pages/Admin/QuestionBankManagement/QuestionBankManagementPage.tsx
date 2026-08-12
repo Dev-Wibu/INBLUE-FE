@@ -45,9 +45,25 @@ export function QuestionBankManagementPage() {
   // Stats calculation
   const stats = useMemo(() => {
     const total = questions.length;
-    const activeCount = questions.filter((q) => q.isActive !== false).length;
-    const categoryCount = new Set(questions.map((q) => String(q.categoryId ?? "")).filter(Boolean))
-      .size;
+    const activeCount = questions.filter(
+      (q) =>
+        (q as unknown as { isDeleted?: boolean }).isDeleted === false ||
+        (q as unknown as { isDeleted?: boolean }).isDeleted === undefined
+    ).length;
+    const categoryCount = new Set(
+      questions
+        .map((q) => {
+          const anyQ = q as unknown as {
+            questionCategoryId?: number;
+            questionCategory?: { id?: number };
+            category?: { id?: number };
+          };
+          return String(
+            anyQ.questionCategoryId ?? q.questionCategory?.id ?? anyQ.category?.id ?? ""
+          );
+        })
+        .filter(Boolean)
+    ).size;
     return { total, activeCount, categoryCount };
   }, [questions]);
 
