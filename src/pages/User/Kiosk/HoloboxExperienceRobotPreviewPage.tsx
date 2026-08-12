@@ -99,6 +99,95 @@ function getElasticStepPulse(phase: number) {
   return THREE.MathUtils.clamp(easedWave + rebound, 0, 1);
 }
 
+type PresenterArmPose = readonly [shoulderOut: number, shoulderDrop: number, elbowBend: number];
+
+type PresenterGesture = {
+  left: PresenterArmPose;
+  right: PresenterArmPose;
+};
+
+const PRESENTER_GESTURES: readonly PresenterGesture[] = [
+  // Brief neutral pause with both arms relaxed beside the hips.
+  { left: [0.24, 1.4, 0.34], right: [0.24, 1.4, 0.34] },
+  // Both palms open at waist height.
+  { left: [0.38, 0.94, -0.35], right: [0.38, 0.94, -0.35] },
+  // Compact framing gesture in front of the abdomen.
+  { left: [0.31, 1.08, 0.62], right: [0.31, 1.08, 0.62] },
+  // Point toward a board on the presenter's left, with the other hand near the abdomen.
+  { left: [0.46, 0.76, -0.92], right: [0.29, 1.2, 0.8] },
+  // Mirror the board-pointing gesture on the right.
+  { left: [0.29, 1.2, 0.8], right: [0.46, 0.76, -0.92] },
+  // Current asymmetric presentation rhythm: right hand leads.
+  { left: [0.28, 1.2, 0.78], right: [0.45, 0.86, -0.7] },
+  // Offer an idea with the left hand while the right hand settles at the torso.
+  { left: [0.46, 0.88, -0.58], right: [0.28, 1.2, 0.8] },
+  // Offer the idea from the opposite side.
+  { left: [0.28, 1.2, 0.8], right: [0.46, 0.88, -0.58] },
+  // Emphasize a key point on the right, inspired by the raised-index reference.
+  { left: [0.29, 1.18, 0.8], right: [0.48, 0.78, -1.04] },
+  // Emphasize a key point on the left.
+  { left: [0.48, 0.78, -1.04], right: [0.29, 1.18, 0.8] },
+  // Mirror the current asymmetric gesture before returning to the open pose.
+  { left: [0.45, 0.86, -0.7], right: [0.28, 1.2, 0.78] },
+  // Wide welcome gesture.
+  { left: [0.5, 0.86, -0.42], right: [0.5, 0.86, -0.42] },
+  // Compare two ideas at different heights.
+  { left: [0.46, 0.84, -0.62], right: [0.34, 1.08, 0.28] },
+  { left: [0.34, 1.08, 0.28], right: [0.46, 0.84, -0.62] },
+] as const;
+
+function interpolateArmPose(from: PresenterArmPose, to: PresenterArmPose, progress: number) {
+  return [
+    THREE.MathUtils.lerp(from[0], to[0], progress),
+    THREE.MathUtils.lerp(from[1], to[1], progress),
+    THREE.MathUtils.lerp(from[2], to[2], progress),
+  ] as const;
+}
+
+function interpolatePresenterGesture(
+  current: PresenterGesture,
+  next: PresenterGesture,
+  transition: number
+) {
+  return {
+    left: interpolateArmPose(current.left, next.left, transition),
+    right: interpolateArmPose(current.right, next.right, transition),
+  };
+}
+
+function createShuffledGestureBag(previousIndex: number) {
+  const indexes = PRESENTER_GESTURES.map((_, index) => index);
+  for (let index = indexes.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [indexes[index], indexes[randomIndex]] = [indexes[randomIndex], indexes[index]];
+  }
+
+  if (indexes[0] === previousIndex) {
+    const swapIndex = indexes.findIndex((index) => index !== previousIndex);
+    [indexes[0], indexes[swapIndex]] = [indexes[swapIndex], indexes[0]];
+  }
+  return indexes;
+}
+
+function applyPresenterArmPose(
+  upperArm: THREE.Bone | null,
+  forearm: THREE.Bone | null,
+  pose: PresenterArmPose,
+  direction: -1 | 1,
+  time: number
+) {
+  if (!upperArm || !forearm) return;
+
+  const breathing = Math.sin(time * 2.2 + direction * 0.7);
+  const handAccent = Math.sin(time * 3.05 + direction * 0.9);
+  upperArm.rotation.set(
+    -0.16 + breathing * 0.018,
+    direction * (pose[0] + breathing * 0.024),
+    direction * (pose[1] + breathing * 0.028)
+  );
+  forearm.rotation.set(0, 0, direction * (pose[2] + handAccent * 0.05));
+}
+
 function keepPresenterArmInFront(
   upperArm: THREE.Bone | null,
   forearm: THREE.Bone | null,
@@ -107,10 +196,13 @@ function keepPresenterArmInFront(
   if (!upperArm || !forearm) return;
 
   const shoulderBend = Math.max(0.68, Math.abs(upperArm.rotation.z));
-  const elbowBend = Math.abs(forearm.rotation.z);
+  const signedElbowBend = forearm.rotation.z * direction;
   const maxCombinedBend = 2.05;
-  const clampedElbowBend = Math.min(elbowBend, Math.max(0.35, maxCombinedBend - shoulderBend));
-  const combinedBend = shoulderBend + clampedElbowBend;
+  const clampedElbowBend =
+    signedElbowBend >= 0
+      ? Math.min(signedElbowBend, Math.max(0.25, maxCombinedBend - shoulderBend))
+      : Math.max(signedElbowBend, -1.08);
+  const combinedBend = shoulderBend + Math.max(0, clampedElbowBend);
   const frontCorrection = THREE.MathUtils.smoothstep(combinedBend, 1.3, maxCombinedBend);
 
   upperArm.rotation.z = direction * shoulderBend;
@@ -173,9 +265,9 @@ export function HoloboxExperienceRobotPreviewPage({
     const viewport = viewportRef.current;
     if (!viewport) return;
 
-    const forceHoloboxMotion = import.meta.env.VITE_HOLOBOX_FORCE_MOTION === "true";
-    const reducedMotion =
-      !forceHoloboxMotion && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Holobox is an animated presentation surface, so motion must survive production builds.
+    // Deployments can still freeze it explicitly for constrained devices.
+    const motionEnabled = import.meta.env.VITE_HOLOBOX_FORCE_MOTION !== "false";
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
 
@@ -281,6 +373,10 @@ export function HoloboxExperienceRobotPreviewPage({
     let leftLowerLeg: THREE.Bone | null = null;
     let rightUpperLeg: THREE.Bone | null = null;
     let rightLowerLeg: THREE.Bone | null = null;
+    let chest: THREE.Bone | null = null;
+    let hip: THREE.Bone | null = null;
+    let leftFoot: THREE.Bone | null = null;
+    let rightFoot: THREE.Bone | null = null;
     let fixedAnimationTime: number | null = null;
     let presentationTime = 0;
     let disposed = false;
@@ -302,6 +398,10 @@ export function HoloboxExperienceRobotPreviewPage({
         leftLowerLeg = root.getObjectByName("Presentation_L_LowerLeg") as THREE.Bone | null;
         rightUpperLeg = root.getObjectByName("Presentation_R_UpperLeg") as THREE.Bone | null;
         rightLowerLeg = root.getObjectByName("Presentation_R_LowerLeg") as THREE.Bone | null;
+        chest = root.getObjectByName("Presentation_Chest") as THREE.Bone | null;
+        hip = root.getObjectByName("Presentation_Hip") as THREE.Bone | null;
+        leftFoot = root.getObjectByName("Presentation_L_Foot") as THREE.Bone | null;
+        rightFoot = root.getObjectByName("Presentation_R_Foot") as THREE.Bone | null;
         const requestedAnimationTime = new URLSearchParams(window.location.search).get(
           "animationTime"
         );
@@ -557,6 +657,51 @@ export function HoloboxExperienceRobotPreviewPage({
     let danceMode: ExperienceDayRobotDanceMode | null = null;
     let danceUntil = 0;
     let dancePhase = 0;
+    let wasNarrating = false;
+    let presenterGestureBag: number[] = [];
+    let currentPresenterGestureIndex = 0;
+    let nextPresenterGestureIndex = 1;
+    let presenterGestureElapsed = 0;
+    let presenterGestureHold = 2.2;
+    let presenterGestureTransition = 0.9;
+    const drawPresenterGesture = (previousIndex: number) => {
+      if (presenterGestureBag.length === 0) {
+        presenterGestureBag = createShuffledGestureBag(previousIndex);
+      }
+      return presenterGestureBag.shift() ?? 0;
+    };
+    const randomizePresenterTiming = () => {
+      presenterGestureHold = THREE.MathUtils.lerp(1.8, 3.1, Math.random());
+      presenterGestureTransition = THREE.MathUtils.lerp(0.75, 1.15, Math.random());
+    };
+    const resetPresenterGestures = () => {
+      presenterGestureBag = createShuffledGestureBag(-1);
+      currentPresenterGestureIndex = presenterGestureBag.shift() ?? 0;
+      nextPresenterGestureIndex = drawPresenterGesture(currentPresenterGestureIndex);
+      presenterGestureElapsed = 0;
+      randomizePresenterTiming();
+    };
+    const updatePresenterGesture = (delta: number) => {
+      presenterGestureElapsed += delta;
+      const transition = THREE.MathUtils.smoothstep(
+        presenterGestureElapsed,
+        presenterGestureHold,
+        presenterGestureHold + presenterGestureTransition
+      );
+      const gesture = interpolatePresenterGesture(
+        PRESENTER_GESTURES[currentPresenterGestureIndex],
+        PRESENTER_GESTURES[nextPresenterGestureIndex],
+        transition
+      );
+
+      if (presenterGestureElapsed >= presenterGestureHold + presenterGestureTransition) {
+        currentPresenterGestureIndex = nextPresenterGestureIndex;
+        nextPresenterGestureIndex = drawPresenterGesture(currentPresenterGestureIndex);
+        presenterGestureElapsed = 0;
+        randomizePresenterTiming();
+      }
+      return gesture;
+    };
     const onDanceCommand = (event: Event) => {
       const nextMode = (event as CustomEvent<ExperienceDayRobotDanceMode>).detail;
       if (!nextMode) return;
@@ -586,7 +731,7 @@ export function HoloboxExperienceRobotPreviewPage({
     renderer.setAnimationLoop(() => {
       const delta = Math.min(clock.getDelta(), 0.05);
       const time = clock.elapsedTime;
-      const motion = reducedMotion ? 0 : 1;
+      const motion = motionEnabled ? 1 : 0;
       smoothedAudio = THREE.MathUtils.damp(smoothedAudio, readAudioLevel(time), 8, delta);
       speechPulse *= Math.exp(-delta * 6.3);
       const danceActive = danceMode !== null && time < danceUntil;
@@ -603,6 +748,8 @@ export function HoloboxExperienceRobotPreviewPage({
         speaking ||
         Boolean(window.speechSynthesis?.speaking) ||
         (Boolean(audioUrl) && !audio.paused);
+      if (isNarrating && !wasNarrating) resetPresenterGestures();
+      wasNarrating = isNarrating;
       const blinkClosure =
         Math.max(
           getBlinkClosure(choreographyTime),
@@ -634,6 +781,20 @@ export function HoloboxExperienceRobotPreviewPage({
       );
       robotMixer?.update(delta * motion);
 
+      const jointEnergy = isNarrating ? 1 : 0.38;
+      const chestPulse = Math.sin(time * (isNarrating ? 2.15 : 1.2));
+      const weightShift = Math.sin(time * (isNarrating ? 1.45 : 0.82));
+      chest?.rotation.set(
+        chestPulse * 0.018 * jointEnergy * motion,
+        weightShift * 0.026 * jointEnergy * motion,
+        Math.sin(time * 1.75) * 0.014 * jointEnergy * motion
+      );
+      hip?.rotation.set(
+        -chestPulse * 0.009 * jointEnergy * motion,
+        -weightShift * 0.018 * jointEnergy * motion,
+        Math.sin(time * 2.25 + 0.7) * 0.016 * jointEnergy * motion
+      );
+
       if (danceMode === "wave") {
         const leftEmphasis = 0.5 + Math.sin(dancePhase * 1.15) * 0.5;
         const rightEmphasis = 1 - leftEmphasis;
@@ -652,36 +813,9 @@ export function HoloboxExperienceRobotPreviewPage({
       }
 
       if (isNarrating && danceMode !== "wave") {
-        // Keep a visible presenter pose even when the audio analyser reports very little energy.
-        const leftEmphasis = 0.5 + Math.sin(time * 1.65) * 0.5;
-        const rightEmphasis = 1 - leftEmphasis;
-        const openClose = 0.5 + Math.sin(time * 1.85 + 0.4) * 0.5;
-        const sharedOpening = (openClose - 0.5) * 0.18;
-        const handWave = Math.sin(time * 3.1) * 0.14;
-        leftUpperArm?.rotation.set(
-          -0.16,
-          THREE.MathUtils.lerp(0.25, 0.48, openClose) + leftEmphasis * 0.04,
-          THREE.MathUtils.lerp(1.38, 0.78, leftEmphasis) - sharedOpening
-        );
-        leftForearm?.rotation.set(
-          0,
-          0,
-          THREE.MathUtils.lerp(0.38, 1.72, leftEmphasis) +
-            (1 - openClose) * 0.3 +
-            handWave * (0.25 + leftEmphasis * 0.65)
-        );
-        rightUpperArm?.rotation.set(
-          -0.16,
-          -(THREE.MathUtils.lerp(0.25, 0.48, openClose) + rightEmphasis * 0.04),
-          THREE.MathUtils.lerp(-1.38, -0.78, rightEmphasis) + sharedOpening
-        );
-        rightForearm?.rotation.set(
-          0,
-          0,
-          THREE.MathUtils.lerp(-0.38, -1.72, rightEmphasis) -
-            (1 - openClose) * 0.3 -
-            handWave * (0.25 + rightEmphasis * 0.65)
-        );
+        const gesture = updatePresenterGesture(delta * motion);
+        applyPresenterArmPose(leftUpperArm, leftForearm, gesture.left, 1, time);
+        applyPresenterArmPose(rightUpperArm, rightForearm, gesture.right, -1, time);
       }
 
       if (isNarrating && motion > 0) {
@@ -694,6 +828,12 @@ export function HoloboxExperienceRobotPreviewPage({
         leftLowerLeg?.rotation.set(0.025 + leftStep * 0.235, 0, -0.01 - sideRhythm * 0.5);
         rightUpperLeg?.rotation.set(-0.025 - rightStep * 0.095, 0, -0.014 + sideRhythm);
         rightLowerLeg?.rotation.set(0.025 + rightStep * 0.235, 0, 0.01 - sideRhythm * 0.5);
+        leftFoot?.rotation.set(-0.035 + leftStep * 0.1, 0, -sideRhythm * 1.35);
+        rightFoot?.rotation.set(-0.035 + rightStep * 0.1, 0, -sideRhythm * 1.35);
+      } else {
+        const anklePulse = Math.sin(time * 1.35) * 0.018 * motion;
+        leftFoot?.rotation.set(anklePulse, 0, anklePulse * 0.35);
+        rightFoot?.rotation.set(-anklePulse, 0, anklePulse * 0.35);
       }
 
       keepPresenterArmInFront(leftUpperArm, leftForearm, 1);

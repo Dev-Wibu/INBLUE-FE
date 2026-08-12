@@ -33,6 +33,10 @@ type PresentationBones = {
   leftLowerLeg: THREE.Bone;
   rightUpperLeg: THREE.Bone;
   rightLowerLeg: THREE.Bone;
+  chest: THREE.Bone;
+  hip: THREE.Bone;
+  leftFoot: THREE.Bone;
+  rightFoot: THREE.Bone;
   blinkMeshes: THREE.Mesh[];
 };
 
@@ -175,6 +179,18 @@ function createPresentationSkeleton(mesh: THREE.SkinnedMesh): PresentationBones 
     new THREE.Vector3(0, -0.19 * sourceHeight, 0),
     rightUpperLeg
   );
+  const chest = createBone("Presentation_Chest", fromCanonical(0, 0.59, 0), root);
+  const hip = createBone("Presentation_Hip", fromCanonical(0, 0.43, 0), root);
+  const leftFoot = createBone(
+    "Presentation_L_Foot",
+    new THREE.Vector3(0, -0.17 * sourceHeight, 0),
+    leftLowerLeg
+  );
+  const rightFoot = createBone(
+    "Presentation_R_Foot",
+    new THREE.Vector3(0, -0.17 * sourceHeight, 0),
+    rightLowerLeg
+  );
 
   const bones = [
     root,
@@ -189,6 +205,10 @@ function createPresentationSkeleton(mesh: THREE.SkinnedMesh): PresentationBones 
     leftLowerLeg,
     rightUpperLeg,
     rightLowerLeg,
+    chest,
+    hip,
+    leftFoot,
+    rightFoot,
   ];
   const position = mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
   const skinIndices = new Uint16Array(position.count * 4);
@@ -207,7 +227,23 @@ function createPresentationSkeleton(mesh: THREE.SkinnedMesh): PresentationBones 
     if (y < 0.46 && absoluteX > 0.045 && absoluteX < 0.215) {
       const upperLeg = x < 0 ? 8 : 10;
       const lowerLeg = x < 0 ? 9 : 11;
-      assignSkinWeight(skinIndices, skinWeights, vertexIndex, y < 0.265 ? lowerLeg : upperLeg);
+      const foot = x < 0 ? 14 : 15;
+      if (y < 0.2) {
+        const footWeight = 1 - smoothstep(0.14, 0.2, y);
+        assignSkinWeight(skinIndices, skinWeights, vertexIndex, foot, lowerLeg, footWeight);
+      } else {
+        assignSkinWeight(skinIndices, skinWeights, vertexIndex, y < 0.265 ? lowerLeg : upperLeg);
+      }
+      continue;
+    }
+
+    if (y >= 0.535 && y <= 0.735 && absoluteX < 0.145) {
+      assignSkinWeight(skinIndices, skinWeights, vertexIndex, 12);
+      continue;
+    }
+
+    if (y >= 0.36 && y < 0.535 && absoluteX < 0.15) {
+      assignSkinWeight(skinIndices, skinWeights, vertexIndex, 13);
       continue;
     }
 
@@ -255,6 +291,10 @@ function createPresentationSkeleton(mesh: THREE.SkinnedMesh): PresentationBones 
     leftLowerLeg,
     rightUpperLeg,
     rightLowerLeg,
+    chest,
+    hip,
+    leftFoot,
+    rightFoot,
     blinkMeshes,
   };
 }
