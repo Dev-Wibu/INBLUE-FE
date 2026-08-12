@@ -364,14 +364,14 @@ export function OverviewPage() {
           </div>
         </div>
 
+        {/* Calendar Grid */}
         <div className="grid grid-cols-7 border-b border-slate-200 pb-2.5 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {WEEK_DAYS.map((day) => (
             <div key={day}>{day}</div>
           ))}
         </div>
 
-        {/* Calendar Grid with fixed height */}
-        <div className="h-[400px] overflow-hidden">
+        <div className="grid h-[calc(100%-60px)] grid-rows-6 divide-y divide-slate-100 dark:divide-slate-800">
           {weeks.map((week, weekIdx) => (
             <div
               key={weekIdx}
@@ -665,8 +665,8 @@ export function OverviewPage() {
       </div>
 
       {/* Calendar + Agenda Grid Section */}
-      <div className="flex-1 overflow-y-auto px-5 py-6 md:px-8">
-        <div className="xl:hidden">
+      <div className="flex-1 overflow-hidden px-5 py-6 md:px-8">
+        <div className="h-full xl:hidden">
           <Tabs value={mobileView} onValueChange={setMobileView}>
             <TabsList className="mb-3 grid w-full grid-cols-2">
               <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
@@ -674,14 +674,26 @@ export function OverviewPage() {
                 {t("common.monthlyCalendar", "Lịch tháng")}
               </TabsTrigger>
             </TabsList>
-            <TabsContent value={MOBILE_VIEW_AGENDA}>{renderAgendaContent()}</TabsContent>
-            <TabsContent value={MOBILE_VIEW_CALENDAR}>{renderCalendarContent()}</TabsContent>
+            <TabsContent
+              value={MOBILE_VIEW_AGENDA}
+              className="mt-0 h-[calc(100vh-300px)] overflow-y-auto">
+              {renderAgendaContent()}
+            </TabsContent>
+            <TabsContent
+              value={MOBILE_VIEW_CALENDAR}
+              className="mt-0 h-[calc(100vh-300px)] overflow-y-auto">
+              {renderCalendarContent()}
+            </TabsContent>
           </Tabs>
         </div>
 
-        <div className="hidden gap-6 xl:grid xl:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]">
-          {renderCalendarContent()}
-          {renderAgendaContent()}
+        <div className="hidden h-[calc(100vh-220px)] gap-6 xl:grid xl:grid-cols-[1fr_400px]">
+          <div className="h-full overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            {renderCalendarContent()}
+          </div>
+          <div className="h-full overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            {renderAgendaContent()}
+          </div>
         </div>
       </div>
     </section>
