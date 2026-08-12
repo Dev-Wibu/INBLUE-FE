@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -49,7 +48,7 @@ export function KioskTable({
 
   if (isLoading) {
     return (
-      <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex h-64 items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600 dark:border-indigo-900 dark:border-t-indigo-400" />
         </div>
@@ -83,27 +82,29 @@ export function KioskTable({
   }
 
   return (
-    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
-            <TableHead className="min-w-[240px] font-medium text-slate-500">
+          <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+              ID
+            </TableHead>
+            <TableHead className="min-w-[240px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminKioskManagement.kioskName", "Tên trạm Kiosk")}
             </TableHead>
-            <TableHead className="min-w-[200px] font-medium text-slate-500">
+            <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminKioskManagement.location", "Vị trí trạm")}
             </TableHead>
-            <TableHead className="w-[140px] font-medium text-slate-500">
+            <TableHead className="w-[140px] px-5 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminKioskManagement.operatingSchedule", "Lịch hoạt động")}
             </TableHead>
-            <TableHead className="w-[100px] text-center font-medium text-slate-500">
+            <TableHead className="w-[100px] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("common.onOff", "Bật/Tắt")}
             </TableHead>
-            <TableHead className="w-[130px] font-medium text-slate-500">
+            <TableHead className="w-[130px] px-5 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.createdDate", "Ngày tạo")}
             </TableHead>
-            <TableHead className="w-[80px] pr-6 text-right font-medium text-slate-500">
+            <TableHead className="w-[100px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
               {t("common.actions", "Thao tác")}
             </TableHead>
           </TableRow>
@@ -118,11 +119,11 @@ export function KioskTable({
               <TableRow
                 key={kiosk.id}
                 onClick={() => navigate(`/admin/kiosk-management/${kiosk.id}`)}
-                className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                className={`group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80 ${
                   !isActive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
                 {/* ID Column */}
-                <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <span>#{kiosk.id}</span>
                     {/* Dummy element to force row height alignment */}
@@ -142,7 +143,7 @@ export function KioskTable({
                 </TableCell>
 
                 {/* Name */}
-                <TableCell>
+                <TableCell className="px-4 py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
                       <Building2 className="h-4 w-4" />
@@ -159,7 +160,7 @@ export function KioskTable({
                 </TableCell>
 
                 {/* Location */}
-                <TableCell>
+                <TableCell className="px-4 py-4 text-xs font-medium text-slate-700 dark:text-slate-200">
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
                     <MapPin className="h-3.5 w-3.5 text-rose-500" />
                     {kiosk.location ||
@@ -168,7 +169,7 @@ export function KioskTable({
                 </TableCell>
 
                 {/* Schedules count */}
-                <TableCell>
+                <TableCell className="px-5 py-4">
                   <span className="inline-flex items-center gap-1 rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     <Clock4 className="h-3 w-3 text-indigo-500" />
                     {t("adminKioskManagement.timeSlotsCount", "{{count}} khung giờ", {
@@ -178,16 +179,28 @@ export function KioskTable({
                 </TableCell>
 
                 {/* Status Switch */}
-                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                  <Switch
-                    checked={isActive}
-                    onCheckedChange={() => onToggleStatus(kiosk)}
-                    className="shadow-xs data-[state=checked]:bg-emerald-500"
-                  />
+                <TableCell className="px-5 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    onClick={() => onToggleStatus(kiosk)}
+                    className={
+                      isActive
+                        ? "inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-50/80 px-3 py-1 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-100/90 dark:border-emerald-500/30 dark:bg-emerald-950/60 dark:text-emerald-400"
+                        : "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/80 px-3 py-1 text-xs font-semibold text-slate-600 transition-all hover:bg-slate-200/80 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400"
+                    }>
+                    <span
+                      className={
+                        isActive
+                          ? "h-2 w-2 rounded-full bg-emerald-500"
+                          : "h-2 w-2 rounded-full bg-slate-400"
+                      }
+                    />
+                    {isActive ? t("common.active", "Hoạt động") : t("common.shutDown", "Đã tắt")}
+                  </button>
                 </TableCell>
 
                 {/* Created Date */}
-                <TableCell>
+                <TableCell className="px-5 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                   {createdAtFormatted ? (
                     <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                       {createdAtFormatted}
@@ -198,7 +211,7 @@ export function KioskTable({
                 </TableCell>
 
                 {/* Actions - Direct Edit Button */}
-                <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="py-4 pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="ghost"
                     size="sm"

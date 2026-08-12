@@ -215,6 +215,13 @@ export function AdminDashboardPage() {
                 parentTitle: item.label,
               };
             }
+            if (activeTab === "kiosk-management") {
+              return {
+                currentTitle: t("adminKioskManagement.kioskDetail", "Chi tiết Kiosk"),
+                currentCategory: group.label,
+                parentTitle: item.label,
+              };
+            }
           }
           // companies: detect drill-down via query params
           if (activeTab === "companies") {

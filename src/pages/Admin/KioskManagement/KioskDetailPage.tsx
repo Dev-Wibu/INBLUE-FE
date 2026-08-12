@@ -43,6 +43,7 @@ export function KioskDetailPage() {
   const [editingSchedule, setEditingSchedule] = useState<KioskSchedule | null>(null);
   const [scheduleSubmitting, setScheduleSubmitting] = useState(false);
   const [presetDay, setPresetDay] = useState<DayOfWeek | null>(null);
+  const [showLegacyHeader] = useState(false);
 
   const loadData = useCallback(
     async (showReloading = false) => {
@@ -235,80 +236,85 @@ export function KioskDetailPage() {
       : null;
 
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      {/* Unified Single Hierarchical Header (Fixed 68px height) */}
-      <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
-        {/* Left: Breadcrumb */}
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => navigate("/admin/kiosk-management")}
-            className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-            {t("adminKioskManagement.title", "Quản lý Kiosk")}
-          </button>
-          <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-          {isLoading ? (
-            <div className="h-4 w-36 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-          ) : (
-            <>
-              <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
-                {kiosk?.name || `Kiosk #${kioskId}`}
-              </h1>
-              <Badge
+    <div className="-m-4 flex min-h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
+      {showLegacyHeader && (
+        <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+          {/* Left: Breadcrumb */}
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate("/admin/kiosk-management")}
+              className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+              {t("adminKioskManagement.title", "Quản lý Kiosk")}
+            </button>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            {isLoading ? (
+              <div className="h-4 w-36 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+            ) : (
+              <>
+                <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
+                  {kiosk?.name || `Kiosk #${kioskId}`}
+                </h1>
+                <Badge
+                  variant="outline"
+                  className="gap-1 border-slate-200 font-mono text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                  #{kioskId}
+                </Badge>
+                <Badge
+                  className={
+                    kioskStatus
+                      ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
+                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                  }>
+                  {kioskStatus
+                    ? t("adminKioskManagement.active", "Hoạt động")
+                    : t("adminKioskManagement.inactive", "Dừng hoạt động")}
+                </Badge>
+              </>
+            )}
+          </div>
+
+          {/* Right: Actions */}
+          {!isLoading && kiosk && (
+            <div className="flex items-center gap-3">
+              {/* Location */}
+              <div className="hidden items-center gap-1.5 text-xs font-medium text-slate-600 lg:flex dark:text-slate-400">
+                <MapPin className="h-3.5 w-3.5 text-rose-500" />
+                {kiosk?.location || t("adminKioskManagement.noLocation")}
+              </div>
+
+              {/* Status toggle */}
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 dark:border-slate-800">
+                <span className="text-xs font-medium text-slate-500">
+                  {kioskStatus
+                    ? t("adminKioskManagement.active")
+                    : t("adminKioskManagement.inactive")}
+                </span>
+                <Switch
+                  checked={kioskStatus}
+                  onCheckedChange={() => void handleToggleKioskStatus()}
+                  className="shadow-xs data-[state=checked]:bg-emerald-500"
+                />
+              </div>
+
+              <ReloadButton
+                onReload={() => void loadData(true)}
+                isLoading={isReloading}
+                size="sm"
+              />
+
+              <Button
+                type="button"
+                onClick={() => setEditOpen(true)}
                 variant="outline"
-                className="gap-1 border-slate-200 font-mono text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                #{kioskId}
-              </Badge>
-              <Badge
-                className={
-                  kioskStatus
-                    ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
-                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                }>
-                {kioskStatus
-                  ? t("adminKioskManagement.active", "Hoạt động")
-                  : t("adminKioskManagement.inactive", "Dừng hoạt động")}
-              </Badge>
-            </>
+                className="h-8 gap-1.5 border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800">
+                <Pencil className="h-3.5 w-3.5" />
+                {t("common.edit")}
+              </Button>
+            </div>
           )}
         </div>
-
-        {/* Right: Actions */}
-        {!isLoading && kiosk && (
-          <div className="flex items-center gap-3">
-            {/* Location */}
-            <div className="hidden items-center gap-1.5 text-xs font-medium text-slate-600 lg:flex dark:text-slate-400">
-              <MapPin className="h-3.5 w-3.5 text-rose-500" />
-              {kiosk.location || t("adminKioskManagement.noLocation")}
-            </div>
-
-            {/* Status toggle */}
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 dark:border-slate-800">
-              <span className="text-xs font-medium text-slate-500">
-                {kioskStatus
-                  ? t("adminKioskManagement.active")
-                  : t("adminKioskManagement.inactive")}
-              </span>
-              <Switch
-                checked={kioskStatus}
-                onCheckedChange={() => void handleToggleKioskStatus()}
-                className="shadow-xs data-[state=checked]:bg-emerald-500"
-              />
-            </div>
-
-            <ReloadButton onReload={() => void loadData(true)} isLoading={isReloading} size="sm" />
-
-            <Button
-              type="button"
-              onClick={() => setEditOpen(true)}
-              variant="outline"
-              className="h-8 gap-1.5 border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800">
-              <Pencil className="h-3.5 w-3.5" />
-              {t("common.edit")}
-            </Button>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* ── SCROLLABLE CONTENT ───────────────────────────────────────── */}
       <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-900/20">
