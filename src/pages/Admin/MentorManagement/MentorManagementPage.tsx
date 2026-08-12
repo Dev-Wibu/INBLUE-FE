@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PaginationControl } from "@/components/shared";
 import {
   AlertDialog,
@@ -10,7 +9,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SpinnerBlock } from "@/components/ui/spinner";
@@ -18,15 +16,19 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { cn } from "@/lib/utils";
 import { mentorManager } from "@/services";
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { MentorDetailView, MentorEditForm, MentorTable } from "./components";
 import type { Mentor, MentorFormData } from "./types";
 
 export function MentorManagementPage() {
   const { t } = useTranslation();
+  const { mentorId } = useParams<{ mentorId?: string }>();
+  const navigate = useNavigate();
+
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,6 +61,32 @@ export function MentorManagementPage() {
   useEffect(() => {
     void loadMentors();
   }, [loadMentors]);
+
+  // Synchronize viewMode and selectedMentor with URL parameter
+  useEffect(() => {
+    if (mentorId) {
+      const found = mentors.find((m) => String(m.id) === mentorId);
+      if (found) {
+        setSelectedMentor(found);
+        setFormData({
+          name: found.name || "",
+          email: found.email || "",
+          password: found.password || "",
+          bio: found.bio,
+          expertise: found.expertise,
+          yearsOfExperience: found.yearsOfExperience,
+          linkedInUrl: found.linkedInUrl,
+          currentCompany: found.currentCompany,
+          pricePerMinute: found.pricePerMinute,
+          active: found.active ?? true,
+        });
+        setViewMode("detail");
+      }
+    } else if (viewMode !== "create") {
+      setViewMode("list");
+      setSelectedMentor(null);
+    }
+  }, [mentorId, mentors, viewMode]);
 
   // Filter mentors based on search query and status filter
   const filteredMentors = useMemo(() => {
@@ -111,20 +139,18 @@ export function MentorManagementPage() {
   };
 
   const handleViewDetail = (mentor: Mentor) => {
-    setSelectedMentor(mentor);
-    setFormData({
-      name: mentor.name || "",
-      email: mentor.email || "",
-      password: mentor.password || "",
-      bio: mentor.bio,
-      expertise: mentor.expertise,
-      yearsOfExperience: mentor.yearsOfExperience,
-      linkedInUrl: mentor.linkedInUrl,
-      currentCompany: mentor.currentCompany,
-      pricePerMinute: mentor.pricePerMinute,
-      active: mentor.active ?? true,
-    });
-    setViewMode("detail");
+    if (mentor.id) {
+      navigate(`/admin/mentors/${mentor.id}`);
+    } else {
+      setSelectedMentor(mentor);
+      setViewMode("detail");
+    }
+  };
+
+  const handleBackToList = () => {
+    navigate("/admin/mentors");
+    setViewMode("list");
+    setSelectedMentor(null);
   };
 
   const handleSubmitCreate = async () => {
@@ -132,7 +158,7 @@ export function MentorManagementPage() {
       const response = await mentorManager.create(formData);
       if (response.success) {
         toast.success(t("adminMentormanagement.successfullyCreatedMentor"));
-        setViewMode("list");
+        handleBackToList();
         void loadMentors();
       } else {
         toast.error(response.error || t("common.cannotCreateMentor"));
@@ -203,74 +229,8 @@ export function MentorManagementPage() {
     <div
       className={cn(
         "flex flex-col bg-slate-50 dark:bg-slate-950",
-        viewMode === "list" || viewMode === "create"
-          ? "-m-4 h-[calc(100%+32px)] md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]"
-          : "-mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-8 lg:-mt-8"
+        "-m-4 min-h-[calc(100%+32px)] md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)]"
       )}>
-      {/* Header Bar - Hidden in List View to match User Management single-header pattern */}
-      <div
-        className={cn(
-          "flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900",
-          viewMode === "list" && "hidden"
-        )}>
-        <div className="flex min-w-0 flex-wrap items-center gap-3">
-          {viewMode === "detail" && selectedMentor ? (
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setViewMode("list");
-                  setSelectedMentor(null);
-                }}
-                className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-                {t("adminMentormanagement.mentorManagement", "Quản lý Mentor")}
-              </button>
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-              <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
-                {selectedMentor.name}
-              </h1>
-              <Badge
-                className={
-                  (selectedMentor as any).status === "ACTIVE" ||
-                  (selectedMentor as any).isActive !== false ||
-                  selectedMentor.active !== false
-                    ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
-                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                }>
-                {selectedMentor.active !== false
-                  ? t("common.active", "Hoạt động")
-                  : t("common.inactive", "Đã tắt")}
-              </Badge>
-            </div>
-          ) : viewMode === "create" ? (
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-                {t("adminMentormanagement.mentorManagement", "Quản lý Mentor")}
-              </button>
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-              <h1 className="text-base font-bold text-slate-900 dark:text-white">
-                {t("adminMentormanagement.addNewMentor", "Thêm Mentor mới")}
-              </h1>
-            </div>
-          ) : null}
-        </div>
-
-        {/* Header Right Action Controls */}
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setViewMode("list")}
-            className="h-8 gap-1.5 text-xs font-semibold dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            {t("common.back", "Quay lại")}
-          </Button>
-        </div>
-      </div>
-
       {/* Main Content Area */}
       <div
         className={cn(
@@ -419,7 +379,7 @@ export function MentorManagementPage() {
           <div className="animate-in fade-in slide-in-from-right-8 h-full duration-300">
             <MentorDetailView
               mentor={selectedMentor}
-              onBack={() => setViewMode("list")}
+              onBack={handleBackToList}
               formData={formData}
               onFormChange={setFormData}
               onSubmit={handleSubmitEdit}
@@ -432,7 +392,7 @@ export function MentorManagementPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setViewMode("list")}
+                  onClick={handleBackToList}
                   className="h-8 w-8 rounded-full dark:hover:bg-slate-800">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -453,7 +413,7 @@ export function MentorManagementPage() {
                   formData={formData}
                   onFormChange={setFormData}
                   onSubmit={handleSubmitCreate}
-                  onCancel={() => setViewMode("list")}
+                  onCancel={handleBackToList}
                   submitLabel={t("adminMentormanagement.createMentors", "Tạo Mentor")}
                 />
               </div>
