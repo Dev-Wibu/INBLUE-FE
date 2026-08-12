@@ -29,7 +29,6 @@ import {
   Clock,
   Hash,
   Lightbulb,
-  Sparkles,
   Star,
   Target,
   ThumbsUp,
@@ -42,9 +41,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 const GLASS_SURFACE = cn(
-  "rounded-2xl p-5 ring-1 ring-inset transition-all",
-  "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
-  "dark:bg-white/[0.03] dark:ring-white/5"
+  "rounded-xl border border-slate-200/80 bg-white p-4 transition-all",
+  "dark:border-slate-800 dark:bg-slate-900"
 );
 
 const fadeUp = (delay: number) => ({
@@ -68,13 +66,6 @@ const STAR_CARD_ICON = {
   task: ClipboardList,
   action: Zap,
   result: CheckCircle2,
-};
-
-const STAR_HUE = {
-  situation: "from-sky-500/10 to-transparent",
-  task: "from-indigo-500/10 to-transparent",
-  action: "from-purple-500/10 to-transparent",
-  result: "from-amber-500/10 to-transparent",
 };
 
 const STAR_INK = {
@@ -246,55 +237,32 @@ export function FeedbackDetailPage() {
       {/* Hero Banner */}
       <motion.div
         {...fadeUp(0.05)}
-        className="relative overflow-hidden rounded-2xl ring-1 ring-slate-200/70 ring-inset dark:ring-white/5">
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-sky-500/15 dark:from-emerald-500/25 dark:via-teal-500/15 dark:to-sky-500/15"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-slate-950 dark:via-slate-950/40 dark:to-transparent"
-        />
-        <div
-          aria-hidden
-          className="absolute -top-24 -left-12 h-72 w-72 rounded-full bg-emerald-400/30 opacity-60 blur-3xl dark:bg-emerald-500/30"
-        />
-        <div
-          aria-hidden
-          className="absolute -right-12 -bottom-24 h-72 w-72 rounded-full bg-sky-300/20 opacity-50 blur-3xl dark:bg-sky-500/20"
-        />
-
-        <div className="relative grid gap-4 p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            {/* Avatar Halo */}
-            <div className="relative">
-              <div
-                aria-hidden
-                className="absolute inset-0 -m-2 rounded-full bg-gradient-to-br from-emerald-400/40 to-sky-400/40 opacity-60 blur-xl"
-              />
-              <Avatar className="relative h-20 w-20 ring-2 ring-white/10">
-                <AvatarImage src={mentorAvatarUrl} alt={mentorName} />
-                <AvatarFallback className="bg-emerald-100 text-2xl font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-                  {mentorName?.charAt(0) || "M"}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+            {/* Avatar */}
+            <Avatar className="h-14 w-14 sm:h-16 sm:w-16">
+              <AvatarImage src={mentorAvatarUrl} alt={mentorName} />
+              <AvatarFallback className="bg-slate-100 text-lg font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                {mentorName?.charAt(0) || "M"}
+              </AvatarFallback>
+            </Avatar>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold tracking-[0.06em] text-emerald-600 uppercase ring-1 ring-emerald-500/20 ring-inset dark:text-emerald-300">
-                  <Sparkles className="h-3 w-3" aria-hidden />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold tracking-wider text-indigo-600 uppercase dark:bg-indigo-950 dark:text-indigo-400">
+                  <Star className="h-3 w-3" aria-hidden />
                   {t("userFeedback.evaluationContent")}
                 </span>
                 <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
                   #{review.id}
                 </span>
               </div>
-              <h1 className="mt-1.5 text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+              <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl dark:text-slate-100">
                 {t("common.reviewDetails1")} #{review.id}
               </h1>
               <div className="mt-2 flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
                 <p className="flex items-center gap-2 font-medium text-slate-800 dark:text-slate-200">
-                  <User className="h-3.5 w-3.5 text-emerald-500" aria-hidden />
+                  <User className="h-3.5 w-3.5 text-slate-400" aria-hidden />
                   {mentorName}
                 </p>
                 {mentorExpertise && (
@@ -386,37 +354,24 @@ export function FeedbackDetailPage() {
                 {starCards.map((card) => {
                   if (!card.value) return null;
                   const Icon = STAR_CARD_ICON[card.key];
-                  const hue = STAR_HUE[card.key];
                   const ink = STAR_INK[card.key];
                   return (
                     <motion.article
                       key={card.key}
                       variants={cardMotion}
-                      className={cn(
-                        "relative overflow-hidden rounded-2xl p-5 ring-1 transition-all ring-inset hover:-translate-y-0.5",
-                        "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
-                        "dark:bg-white/[0.03] dark:ring-white/5"
-                      )}>
-                      <div
-                        aria-hidden
-                        className={cn(
-                          "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-60",
-                          hue
-                        )}
-                      />
-                      <div className="relative flex items-center gap-2.5">
+                      className="rounded-xl border border-slate-200/80 bg-white p-4 transition-all hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
+                      <div className="flex items-center gap-2.5">
                         <div
                           className={cn(
                             "flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-inset",
-                            "bg-slate-900/[0.04] ring-slate-900/10",
-                            "dark:bg-white/[0.05] dark:ring-white/10"
+                            "bg-slate-100 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
                           )}>
                           <Icon className={cn("h-4 w-4", ink)} aria-hidden />
                         </div>
                         <div>
                           <p
                             className={cn(
-                              "text-[10px] font-semibold tracking-[0.08em] uppercase",
+                              "text-[10px] font-semibold tracking-[0.06em] uppercase",
                               ink
                             )}>
                             {card.label}
@@ -426,7 +381,7 @@ export function FeedbackDetailPage() {
                           </p>
                         </div>
                       </div>
-                      <p className="relative mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                      <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
                         {card.value}
                       </p>
                     </motion.article>
@@ -544,9 +499,9 @@ export function FeedbackDetailPage() {
             {[5, 4, 3, 2, 1].map((star) => (
               <div key={star} className="mt-1.5 flex items-center gap-2 text-xs" aria-hidden>
                 <span className="w-5 text-slate-500 dark:text-slate-400">{star}★</span>
-                <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800/60">
+                <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
                   <div
-                    className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                    className="absolute inset-y-0 left-0 rounded-full bg-indigo-500"
                     style={{ width: `${rating === star ? 100 : 0}%` }}
                   />
                 </div>
