@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/formatting";
-import { Building2, Calendar, Edit, MapPin } from "lucide-react";
+import { Building2, Edit, MapPin } from "lucide-react";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import type { Company } from "../types";
@@ -67,9 +67,9 @@ export function CompanyTable({
               {t("common.description", "Mô tả")}
             </TableHead>
             <TableHead className="w-[110px] min-w-[110px] text-center font-semibold text-slate-700 dark:text-slate-200">
-              {t("adminCompanymanagement.jdCount", "Số JD")}
+              {t("adminCompanymanagement.jdCount", "Số Vị Trí")}
             </TableHead>
-            <TableHead className="w-[160px] min-w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[160px] min-w-[160px] px-5 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
             </TableHead>
             <TableHead className="w-[120px] min-w-[120px] text-center font-semibold text-slate-700 dark:text-slate-200">
@@ -125,8 +125,8 @@ export function CompanyTable({
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
-                    <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    <MapPin className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
                     <span>{locationText}</span>
                   </div>
                 </TableCell>
@@ -136,15 +136,12 @@ export function CompanyTable({
                   </p>
                 </TableCell>
                 <TableCell className="px-4 py-4 text-center">
-                  <span className="inline-flex items-center justify-center rounded-full border border-indigo-200/60 bg-indigo-50/90 px-3 py-0.5 font-mono text-xs font-bold text-indigo-600 dark:border-indigo-800/60 dark:bg-indigo-950/70 dark:text-indigo-400">
+                  <span className="inline-flex items-center justify-center rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
                     {company.jobDescriptions?.length || 0}
                   </span>
                 </TableCell>
-                <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    <Calendar className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
-                    <span>{joinedDateRaw ? formatDate(joinedDateRaw as string) : "—"}</span>
-                  </div>
+                <TableCell className="px-5 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                  {joinedDateRaw ? formatDate(joinedDateRaw as string) : "—"}
                 </TableCell>
                 <TableCell className="py-4 text-center" onClick={(e) => e.stopPropagation()}>
                   <Switch

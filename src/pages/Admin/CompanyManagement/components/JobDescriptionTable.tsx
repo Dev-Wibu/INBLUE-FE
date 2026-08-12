@@ -186,8 +186,8 @@ export function JobDescriptionTable({
                   </TableCell>
                 )}
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
-                    <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    <MapPin className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
                     <span>{locationText}</span>
                   </div>
                 </TableCell>
