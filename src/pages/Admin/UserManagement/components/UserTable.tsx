@@ -64,26 +64,26 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
             <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.id")}
             </TableHead>
-            <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {getSortProps ? (
                 <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
               ) : (
                 t("common.name")
               )}
             </TableHead>
-            <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.email")}
             </TableHead>
-            <TableHead className="w-24 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[140px] min-w-[140px] px-5 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.role")}
             </TableHead>
-            <TableHead className="w-32 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[170px] min-w-[170px] px-5 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminUsermanagement.joinedDate")}
             </TableHead>
-            <TableHead className="w-32 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[170px] min-w-[170px] px-5 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminUsermanagement.lastUpdated")}
             </TableHead>
-            <TableHead className="w-24 pr-6 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[120px] min-w-[120px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("common.status")}
             </TableHead>
           </TableRow>
@@ -106,9 +106,9 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                   </div>
                 </div>
               </TableCell>
-              <TableCell className="py-4">
+              <TableCell className="px-4 py-4">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 rounded-[14px] border border-slate-100 dark:border-slate-800">
+                  <Avatar className="h-10 w-10 shrink-0 rounded-[14px] border border-slate-100 dark:border-slate-800">
                     <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
                     <AvatarFallback className="rounded-[14px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
                       {user.name?.charAt(0)?.toUpperCase()}
@@ -117,17 +117,17 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                   <span className="font-semibold text-slate-900 dark:text-white">{user.name}</span>
                 </div>
               </TableCell>
-              <TableCell className="py-4 font-medium text-slate-700 dark:text-slate-200">
+              <TableCell className="px-4 py-4 font-medium text-slate-700 dark:text-slate-200">
                 {user.email}
               </TableCell>
-              <TableCell className="py-4">
+              <TableCell className="px-5 py-4">
                 <Badge
                   variant="outline"
                   className={`font-semibold ${getRoleBadgeClass(user.role)}`}>
                   {user.role}
                 </Badge>
               </TableCell>
-              <TableCell className="py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+              <TableCell className="px-5 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                 {(user as Record<string, unknown>).createdAt ||
                 (user as Record<string, unknown>).created_at
                   ? formatDate(
@@ -136,7 +136,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                     )
                   : "—"}
               </TableCell>
-              <TableCell className="py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+              <TableCell className="px-5 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                 {(user as Record<string, unknown>).updatedAt ||
                 (user as Record<string, unknown>).updated_at
                   ? formatDate(
@@ -145,7 +145,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                     )
                   : "—"}
               </TableCell>
-              <TableCell className="py-4 pr-6">
+              <TableCell className="py-4 pr-6 text-center">
                 <Switch
                   className="data-[state=checked]:bg-emerald-500"
                   checked={user.isActive !== false}
