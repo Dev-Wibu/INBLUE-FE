@@ -29,6 +29,7 @@ export function CompanyManagementPage() {
   const [activeTab, setActiveTab] = useState<"companies" | "jds">("companies");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [formData, setFormData] = useState<CompanyFormData>({});
   const [isCreating, setIsCreating] = useState(false);
 
@@ -267,8 +268,20 @@ export function CompanyManagementPage() {
   }, [companies, allJds]);
 
   const handleCreateCompany = () => {
+    setEditingCompany(null);
     setFormData({
       status: "ACTIVE",
+    });
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleEditCompany = (company: Company, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEditingCompany(company);
+    setFormData({
+      name: company.name || "",
+      description: company.description || "",
+      status: (company.status as any) || "ACTIVE",
     });
     setIsCreateDialogOpen(true);
   };
@@ -289,6 +302,7 @@ export function CompanyManagementPage() {
       if (res.success) {
         toast.success(t("common.createSuccess", "Tạo công ty thành công"));
         setIsCreateDialogOpen(false);
+        setEditingCompany(null);
         setFormData({});
         void refetchCompanies();
       } else {
@@ -296,6 +310,37 @@ export function CompanyManagementPage() {
       }
     } catch {
       toast.error(t("common.createFailed", "Tạo công ty thất bại"));
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleSubmitEditCompany = async () => {
+    if (!editingCompany?.id) return;
+    try {
+      setIsCreating(true);
+      const res = await companyManager.update({
+        data: {
+          id: Number(editingCompany.id),
+          name: formData.name || "",
+          description: formData.description,
+          status: formData.status || "ACTIVE",
+        },
+        logo: formData.logo,
+        banner: formData.banner,
+      });
+
+      if (res.success) {
+        toast.success(t("common.updateSuccess", "Cập nhật công ty thành công"));
+        setIsCreateDialogOpen(false);
+        setEditingCompany(null);
+        setFormData({});
+        void refetchCompanies();
+      } else {
+        toast.error(res.error || t("common.updateFailed", "Cập nhật công ty thất bại"));
+      }
+    } catch {
+      toast.error(t("common.updateFailed", "Cập nhật công ty thất bại"));
     } finally {
       setIsCreating(false);
     }
@@ -619,15 +664,7 @@ export function CompanyManagementPage() {
                 <CompanyTable
                   companies={pageCompanies}
                   onSelectCompany={(company) => setSelectedCompanyId(company.id!)}
-                  onEditCompany={(company, e) => {
-                    e.stopPropagation();
-                    setFormData({
-                      name: company.name,
-                      description: company.description,
-                      status: company.status as any,
-                    });
-                    setIsCreateDialogOpen(true);
-                  }}
+                  onEditCompany={handleEditCompany}
                   onToggleStatus={handleToggleCompanyStatus}
                 />
                 {filteredCompanies.length > 0 && (
@@ -682,13 +719,30 @@ export function CompanyManagementPage() {
       {/* Edit / Create Company Dialog */}
       <CompanyFormDialog
         isOpen={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
+        onOpenChange={(open) => {
+          setIsCreateDialogOpen(open);
+          if (!open) setEditingCompany(null);
+        }}
         formData={formData}
         onFormChange={setFormData}
-        onSubmit={handleSubmitCreate}
-        title={t("adminCompanymanagement.addNewPartners")}
-        description={t("adminCompanymanagement.addNewPartnerDescription")}
-        submitLabel={t("general.save", "Lưu")}
+        onSubmit={editingCompany ? handleSubmitEditCompany : handleSubmitCreate}
+        title={
+          editingCompany
+            ? t("adminCompanymanagement.editCompanyTitle", "Chỉnh sửa thông tin công ty")
+            : t("adminCompanymanagement.addNewPartners", "Thêm đối tác mới")
+        }
+        description={
+          editingCompany
+            ? t(
+                "adminCompanymanagement.editCompanyDesc",
+                "Cập nhật các thông tin chi tiết của công ty đối tác."
+              )
+            : t("adminCompanymanagement.addNewPartnerDescription")
+        }
+        submitLabel={
+          editingCompany ? t("general.save", "Lưu thay đổi") : t("common.create", "Tạo mới")
+        }
+        selectedCompany={editingCompany}
         isSubmitting={isCreating}
       />
 
