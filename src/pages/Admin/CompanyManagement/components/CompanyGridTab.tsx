@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Search } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -72,6 +73,10 @@ export function CompanyGridTab({
   const setIsJdDialogOpen = onAddJdDialogChange || setInternalJdDialogOpen;
   const [jdFormData, setJdFormData] = useState<Partial<JobDescriptionFormData>>({});
   const [isSubmittingJd, setIsSubmittingJd] = useState(false);
+
+  // JD filter states
+  const [jdSearchQuery, setJdSearchQuery] = useState("");
+  const [jdStatusFilter, setJdStatusFilter] = useState("all");
 
   // Pagination for company table
   const [companyPageSize, setCompanyPageSize] = useHybridPageSize({
@@ -144,6 +149,28 @@ export function CompanyGridTab({
       };
     });
   }, [companyJds, selectedCompany, openJds]);
+
+  const filteredJds = useMemo(() => {
+    let result = enrichedCompanyJds;
+    if (jdStatusFilter !== "all") {
+      const isActive = jdStatusFilter === "active";
+      result = result.filter((j) =>
+        isActive
+          ? j.status === "ACTIVE" || j.status === "OPEN"
+          : j.status !== "ACTIVE" && j.status !== "OPEN"
+      );
+    }
+    if (jdSearchQuery.trim()) {
+      const q = jdSearchQuery.toLowerCase();
+      result = result.filter(
+        (j) =>
+          j.title?.toLowerCase().includes(q) ||
+          String(j.id).includes(q) ||
+          j.level?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [enrichedCompanyJds, jdSearchQuery, jdStatusFilter]);
 
   const selectedJd = useMemo(() => {
     return selectedJdId ? enrichedCompanyJds.find((j) => j.id === selectedJdId) : null;
@@ -348,23 +375,64 @@ export function CompanyGridTab({
                 </div>
 
                 {/* Control row: search + add button */}
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <div className="flex-1" />
+                <form
+                  onSubmit={(e) => e.preventDefault()}
+                  className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <div className="relative flex-1">
+                    <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+                    <Input
+                      type="text"
+                      placeholder={t(
+                        "adminCompanymanagement.searchJd",
+                        "Tìm kiếm JD theo tên, cấp độ..."
+                      )}
+                      value={jdSearchQuery}
+                      onChange={(e) => setJdSearchQuery(e.target.value)}
+                      className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
+                    />
+                  </div>
                   <Button
+                    type="button"
                     onClick={() => {
                       setJdFormData({});
                       setIsJdDialogOpen(true);
                     }}
-                    className="h-10 shrink-0 gap-1.5 rounded-xl bg-indigo-600 px-5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
+                    className="h-[46px] shrink-0 gap-1.5 rounded-xl bg-indigo-600 px-5 font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
                     <Plus className="h-4 w-4" />
                     <span>{t("adminCompanymanagement.addJd", "Thêm JD")}</span>
                   </Button>
+                </form>
+
+                {/* Status filter pills */}
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                    {t("common.status", "Trạng thái")}:
+                  </span>
+                  {(
+                    [
+                      ["all", t("common.allStatus", "Tất cả trạng thái")],
+                      ["active", t("common.active", "Đang mở")],
+                      ["inactive", t("common.shutDown", "Đã đóng")],
+                    ] as [string, string][]
+                  ).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setJdStatusFilter(value)}
+                      className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                        jdStatusFilter === value
+                          ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800"
+                      }`}>
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
               <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <JobDescriptionTable
-                  jobDescriptions={enrichedCompanyJds}
+                  jobDescriptions={filteredJds}
                   onView={(jd) => setSelectedJdId(jd.id!)}
                   onToggleStatus={async (job) => {
                     try {
