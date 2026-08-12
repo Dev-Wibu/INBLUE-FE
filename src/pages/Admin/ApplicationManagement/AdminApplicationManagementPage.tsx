@@ -1,4 +1,3 @@
-import { ApplicationDetailDrawer } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -28,9 +27,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   Briefcase,
   Clock,
-  Eye,
   FileCheck2,
-  Folder,
   Layers,
   RefreshCw,
   Search,
@@ -39,16 +36,15 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 export function AdminApplicationManagementPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-
-  const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // 1. Fetch Open JDs for dropdown filters with caching.
   //    Use the same queryKey as CompanyManagementPage so both pages share
@@ -122,10 +118,15 @@ export function AdminApplicationManagementPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
       const jdInfo = openJds.find((j) => j.jdId === numericSelectedJdId);
-      type AppWithCompany = ApplicationListItemDto & { companyName?: string; jobTitle?: string };
+      type AppWithCompany = ApplicationListItemDto & {
+        companyName?: string;
+        companyLogoUrl?: string;
+        jobTitle?: string;
+      };
       const enrichedApps = apps.map((app: AppWithCompany) => ({
         ...app,
         companyName: app.companyName || jdInfo?.company?.name,
+        companyLogoUrl: app.companyLogoUrl || jdInfo?.company?.logoUrl,
         jobTitle: app.jobTitle || jdInfo?.title,
       }));
       return { applications: enrichedApps as ApplicationListItemDto[], jdInfo };
@@ -160,11 +161,13 @@ export function AdminApplicationManagementPage() {
         const jdInfo = openJds.find((j) => j.jdId === jdId);
         type AppWithCompany = ApplicationListItemDto & {
           companyName?: string;
+          companyLogoUrl?: string;
           jobTitle?: string;
         };
         const enriched = apps.map((app: AppWithCompany) => ({
           ...app,
           companyName: app.companyName || jdInfo?.company?.name,
+          companyLogoUrl: app.companyLogoUrl || jdInfo?.company?.logoUrl,
           jobTitle: app.jobTitle || jdInfo?.title,
         }));
         return { applications: enriched, jdInfo };
@@ -338,8 +341,7 @@ export function AdminApplicationManagementPage() {
   }, [filteredApplications, pagination.startIndex, pagination.endIndex]);
 
   const handleViewDetail = (appId: number) => {
-    setSelectedAppId(appId);
-    setIsDrawerOpen(true);
+    navigate(`/admin/applications/${appId}/details`);
   };
 
   const getStatusBadge = (status?: string) => {
@@ -374,7 +376,7 @@ export function AdminApplicationManagementPage() {
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* Header Bar */}
-      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
+      <div className="hidden">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10">
             <FileCheck2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
@@ -405,202 +407,321 @@ export function AdminApplicationManagementPage() {
         </Button>
       </div>
 
-      <div className="flex-1 space-y-6 overflow-y-auto p-4 sm:p-6">
-        {/* Metric Cards */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex-1 space-y-6 overflow-y-auto bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
+        <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
             <div>
-              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                {t("adminApplicationManagement.openJds", "JD Đang mở")}
-              </span>
-              <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
-                {stats.openJdCount}
-              </div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {t("adminApplicationManagement.title", "Quản lý đơn ứng tuyển")}
+              </h2>
+              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                {t(
+                  "adminApplicationManagement.subtitle",
+                  "Theo dõi ứng viên, tiến độ tuyển dụng và kết quả ứng tuyển"
+                )}
+              </p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-              <Briefcase className="h-5 w-5" />
+            <div className="flex items-center justify-center gap-5 sm:gap-6">
+              {[
+                [
+                  stats.totalApplications,
+                  t("adminApplicationManagement.totalApplications", "Đơn ứng tuyển"),
+                ],
+                [companyOptions.length, t("common.company", "Công ty")],
+                [openJds.length, t("adminApplicationManagement.openJds", "Vị trí mở")],
+              ].map(([value, label], index) => (
+                <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
+                  {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
+                  <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                    <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-[#66B2FF]">
+                      {value}
+                    </span>
+                    <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                      {label}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-            <div>
-              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                {t("adminApplicationManagement.totalApplications", "Tổng đơn Apply")}
-              </span>
-              <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
-                {stats.totalApplications}
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
-              <Users className="h-5 w-5" />
-            </div>
-          </div>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              pagination.goToFirstPage();
+            }}
+            className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                pagination.goToFirstPage();
+              }}
+              placeholder={t(
+                "adminApplicationManagement.searchPlaceholder",
+                "Tìm theo tên ứng viên, công ty hoặc vị trí..."
+              )}
+              className="h-[46px] flex-1 rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 text-[14.5px] text-slate-900 shadow-2xs placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800/80 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
+            <Button
+              type="submit"
+              className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800/80 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
+              <Search className="mr-2 h-[18px] w-[18px]" />
+              {t("jobSearch.searchButton", "Tìm kiếm")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void refetchApplications()}
+              disabled={isLoading}
+              className="h-[46px] shrink-0 rounded-xl border-slate-200/90 px-4 dark:border-slate-800/80">
+              <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            </Button>
+          </form>
 
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-            <div>
-              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                {t("adminApplicationManagement.inProgress", "Đang phỏng vấn")}
-              </span>
-              <div className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
-                {stats.inProgressCount}
-              </div>
+          <div className="mt-4 flex flex-col gap-4 xl:flex-row xl:items-center">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-2 text-[13px] font-semibold text-slate-500">Công ty:</span>
+              <Select
+                value={selectedCompanyId}
+                onValueChange={(val) => {
+                  setSelectedCompanyId(val);
+                  setSelectedJdId("");
+                  pagination.goToFirstPage();
+                }}>
+                <SelectTrigger className="h-9 w-44 rounded-full border-slate-200 bg-white px-4 text-[13.5px] dark:border-slate-700 dark:bg-transparent">
+                  <SelectValue placeholder="Tất cả" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Tất cả</SelectItem>
+                  {companyOptions.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
-              <Clock className="h-5 w-5" />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-            <div>
-              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                {t("adminApplicationManagement.passed", "Đã trúng tuyển")}
-              </span>
-              <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                {stats.passedCount}
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
-              <UserCheck className="h-5 w-5" />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-            <div>
-              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                {t("adminApplicationManagement.failed", "Trượt")}
-              </span>
-              <div className="mt-1 text-2xl font-bold text-rose-600 dark:text-rose-400">
-                {stats.failedCount}
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
-              <UserCheck className="h-5 w-5" />
+            <div className="hidden h-5 w-px bg-slate-200 xl:block dark:bg-slate-700" />
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-2 text-[13px] font-semibold text-slate-500">Trạng thái:</span>
+              {[
+                ["ALL", "Tất cả"],
+                ["IN_PROGRESS", "Đang xử lý"],
+                ["PASSED", "Đạt"],
+                ["FAILED", "Trượt"],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter(id);
+                    pagination.goToFirstPage();
+                  }}
+                  className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                    statusFilter === id
+                      ? "border-indigo-600 bg-indigo-600 text-white"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                  }`}>
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Filters Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  pagination.goToFirstPage();
-                }}
-                placeholder={t(
-                  "adminApplicationManagement.searchPlaceholder",
-                  "Tìm tên, email ứng viên, công ty..."
-                )}
-                className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-indigo-500 dark:border-slate-700"
-              />
+        {/* Legacy metric/filter controls kept out of the layout; the new subheader above is the single source of interaction. */}
+        <div className="hidden">
+          {/* Metric Cards */}
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+            <div className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div>
+                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                  {t("adminApplicationManagement.openJds", "JD Đang mở")}
+                </span>
+                <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                  {stats.openJdCount}
+                </div>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                <Briefcase className="h-5 w-5" />
+              </div>
             </div>
 
-            {/* Company Filter */}
-            <Select
-              value={selectedCompanyId}
-              onValueChange={(val) => {
-                setSelectedCompanyId(val);
-                // Reset JD selection to "ALL" when company changes
-                setSelectedJdId("");
-                pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="h-8 w-44 border-slate-200 text-xs dark:border-slate-700">
-                <SelectValue
-                  placeholder={t("adminApplicationManagement.allCompanies", "Tất cả công ty")}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">
-                  {t("adminApplicationManagement.allCompanies", "Tất cả công ty")}
-                </SelectItem>
-                {companyOptions.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div>
+                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                  {t("adminApplicationManagement.totalApplications", "Tổng đơn Apply")}
+                </span>
+                <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                  {stats.totalApplications}
+                </div>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
+                <Users className="h-5 w-5" />
+              </div>
+            </div>
 
-            {/* JD Filter */}
-            <Select
-              value={selectedJdId || "ALL"}
-              onValueChange={(val) => {
-                setSelectedJdId(val === "ALL" ? "" : val);
-                pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="h-8 w-64 border-slate-200 text-xs dark:border-slate-700">
-                <SelectValue
-                  placeholder={t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">
-                  {t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
-                </SelectItem>
-                {availableJds.map((j) => (
-                  <SelectItem key={j.jdId} value={String(j.jdId)}>
-                    {j.title} (
-                    {j.company?.name ||
-                      t("adminApplicationManagement.unknownCompany", "Chưa rõ công ty")}
-                    )
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div>
+                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                  {t("adminApplicationManagement.inProgress", "Đang phỏng vấn")}
+                </span>
+                <div className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
+                  {stats.inProgressCount}
+                </div>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+                <Clock className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div>
+                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                  {t("adminApplicationManagement.passed", "Đã trúng tuyển")}
+                </span>
+                <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  {stats.passedCount}
+                </div>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+                <UserCheck className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div>
+                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                  {t("adminApplicationManagement.failed", "Trượt")}
+                </span>
+                <div className="mt-1 text-2xl font-bold text-rose-600 dark:text-rose-400">
+                  {stats.failedCount}
+                </div>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
+                <UserCheck className="h-5 w-5" />
+              </div>
+            </div>
           </div>
 
-          {/* Status Filter Pills — Per FE Guide: lọc client-side */}
-          <div className="flex items-center gap-1">
-            {[
-              { id: "ALL", label: t("common.all", "Tất cả") },
-              {
-                id: "IN_PROGRESS",
-                label: t("adminApplicationManagement.statusInProgress", "Đang xử lý"),
-              },
-              { id: "PASSED", label: t("adminApplicationManagement.statusPassed", "Đạt") },
-              {
-                id: "FAILED",
-                label: t("adminApplicationManagement.statusFailed", "Trượt"),
-              },
-              {
-                id: "SOFT_FAILED",
-                label: t("adminApplicationManagement.statusSoftFailed", "Rớt vòng — vẫn làm tiếp"),
-              },
-            ].map((st) => (
-              <button
-                key={st.id}
-                type="button"
-                onClick={() => {
-                  setStatusFilter(st.id);
+          {/* Filters Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    pagination.goToFirstPage();
+                  }}
+                  placeholder={t(
+                    "adminApplicationManagement.searchPlaceholder",
+                    "Tìm tên, email ứng viên, công ty..."
+                  )}
+                  className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-indigo-500 dark:border-slate-700"
+                />
+              </div>
+
+              {/* Company Filter */}
+              <Select
+                value={selectedCompanyId}
+                onValueChange={(val) => {
+                  setSelectedCompanyId(val);
+                  // Reset JD selection to "ALL" when company changes
+                  setSelectedJdId("");
                   pagination.goToFirstPage();
-                }}
-                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
-                  statusFilter === st.id
-                    ? "bg-indigo-600 text-white shadow-2xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
-                }`}>
-                {st.label}
-              </button>
-            ))}
+                }}>
+                <SelectTrigger className="h-8 w-44 border-slate-200 text-xs dark:border-slate-700">
+                  <SelectValue
+                    placeholder={t("adminApplicationManagement.allCompanies", "Tất cả công ty")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">
+                    {t("adminApplicationManagement.allCompanies", "Tất cả công ty")}
+                  </SelectItem>
+                  {companyOptions.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* JD Filter */}
+              <Select
+                value={selectedJdId || "ALL"}
+                onValueChange={(val) => {
+                  setSelectedJdId(val === "ALL" ? "" : val);
+                  pagination.goToFirstPage();
+                }}>
+                <SelectTrigger className="h-8 w-64 border-slate-200 text-xs dark:border-slate-700">
+                  <SelectValue
+                    placeholder={t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">
+                    {t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
+                  </SelectItem>
+                  {availableJds.map((j) => (
+                    <SelectItem key={j.jdId} value={String(j.jdId)}>
+                      {j.title} (
+                      {j.company?.name ||
+                        t("adminApplicationManagement.unknownCompany", "Chưa rõ công ty")}
+                      )
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Status Filter Pills — Per FE Guide: lọc client-side */}
+            <div className="flex items-center gap-1">
+              {[
+                { id: "ALL", label: t("common.all", "Tất cả") },
+                {
+                  id: "IN_PROGRESS",
+                  label: t("adminApplicationManagement.statusInProgress", "Đang xử lý"),
+                },
+                { id: "PASSED", label: t("adminApplicationManagement.statusPassed", "Đạt") },
+                {
+                  id: "FAILED",
+                  label: t("adminApplicationManagement.statusFailed", "Trượt"),
+                },
+                {
+                  id: "SOFT_FAILED",
+                  label: t(
+                    "adminApplicationManagement.statusSoftFailed",
+                    "Rớt vòng — vẫn làm tiếp"
+                  ),
+                },
+              ].map((st) => (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter(st.id);
+                    pagination.goToFirstPage();
+                  }}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
+                    statusFilter === st.id
+                      ? "bg-indigo-600 text-white shadow-2xs"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+                  }`}>
+                  {st.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Table (Khảo thí & Đào tạo Standard) */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>
-              {t("common.showing", "Hiển thị")}{" "}
-              <strong className="text-slate-800 dark:text-slate-200">
-                {filteredApplications.length}
-              </strong>{" "}
-              {t("adminApplicationManagement.applicationsUnit", "đơn ứng tuyển")}
-            </span>
-          </div>
-
-          <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <div>
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800/80 dark:bg-slate-900">
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
@@ -623,15 +744,12 @@ export function AdminApplicationManagementPage() {
                   <TableHead className="w-[130px] font-medium text-slate-500">
                     {t("common.status", "Trạng thái")}
                   </TableHead>
-                  <TableHead className="w-[100px] pr-6 text-right font-medium text-slate-500">
-                    {t("common.actions", "Thao tác")}
-                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {openJds.length === 0 && isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-48 text-center text-slate-400">
+                    <TableCell colSpan={7} className="h-48 text-center text-slate-400">
                       <div className="flex items-center justify-center gap-2">
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
                         <span>{t("common.loadingData", "Đang tải dữ liệu...")}</span>
@@ -640,7 +758,7 @@ export function AdminApplicationManagementPage() {
                   </TableRow>
                 ) : isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-48 text-center text-slate-400">
+                    <TableCell colSpan={7} className="h-48 text-center text-slate-400">
                       <div className="flex items-center justify-center gap-2">
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
                         <span>{t("common.loadingData", "Đang tải dữ liệu...")}</span>
@@ -649,7 +767,7 @@ export function AdminApplicationManagementPage() {
                   </TableRow>
                 ) : pageData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-48 text-center text-slate-400">
+                    <TableCell colSpan={7} className="h-48 text-center text-slate-400">
                       {t(
                         "adminApplicationManagement.noApplicationsFound",
                         "Không tìm thấy đơn ứng tuyển nào."
@@ -668,13 +786,24 @@ export function AdminApplicationManagementPage() {
                       app.email ||
                       t("adminApplicationManagement.noEmail", "Chưa có email");
                     const avatarUrl = app.avatarUrl || app.applicantAvatar;
+                    const companyName = app.companyName || t("common.unspecified", "Company");
+                    const companyLogoUrl =
+                      app.companyLogoUrl || app.companyLogo || app.company?.logoUrl;
+                    const companyInitials =
+                      companyName
+                        .split(" ")
+                        .filter(Boolean)
+                        .map((word: string) => word[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase() || "IB";
 
                     return (
                       <TableRow
                         key={app.applicationId || app.id || idx}
                         onClick={() => handleViewDetail(app.applicationId || app.id)}
                         className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                        <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                           <div className="flex items-center gap-2">
                             <span>#{app.applicationId || app.id}</span>
                             {/* Dummy element to force row height alignment */}
@@ -692,11 +821,11 @@ export function AdminApplicationManagementPage() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-4">
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8 border border-slate-200 dark:border-slate-800">
+                            <Avatar className="h-10 w-10 shrink-0 rounded-[14px] border border-slate-100 dark:border-slate-800/80">
                               <AvatarImage src={avatarUrl} alt={name} />
-                              <AvatarFallback className="bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                              <AvatarFallback className="rounded-[14px] bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                                 {name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -708,18 +837,28 @@ export function AdminApplicationManagementPage() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-4">
                           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
-                            <Folder className="h-3.5 w-3.5 text-slate-400" />
-                            {app.companyName || t("common.unspecified", "Chưa xác định")}
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-100 bg-slate-50 text-xs font-bold text-indigo-600 dark:border-slate-800/80 dark:bg-slate-950 dark:text-indigo-400">
+                              {companyLogoUrl ? (
+                                <img
+                                  src={companyLogoUrl}
+                                  alt={companyName}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                companyInitials
+                              )}
+                            </div>
+                            <span className="truncate">{companyName}</span>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-4">
                           <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                             {app.jobTitle || t("common.unspecified", "Chưa xác định")}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-4">
                           <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
                             <Layers className="h-3.5 w-3.5 text-indigo-500" />
                             <span>
@@ -733,42 +872,19 @@ export function AdminApplicationManagementPage() {
                         <TableCell className="text-center font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
                           {app.overallScore !== undefined ? `${app.overallScore}/100` : "—"}
                         </TableCell>
-                        <TableCell>{getStatusBadge(app.status)}</TableCell>
-                        <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewDetail(app.applicationId || app.id)}
-                            className="h-7 w-7 p-0 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                        <TableCell className="py-4">{getStatusBadge(app.status)}</TableCell>
                       </TableRow>
                     );
                   })
                 )}
               </TableBody>
             </Table>
-          </div>
-
-          <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
-            <PaginationControl pagination={pagination} />
+            <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800/80 dark:bg-slate-900">
+              <PaginationControl pagination={pagination} />
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Slide-over Application Detail Drawer */}
-      <ApplicationDetailDrawer
-        applicationId={selectedAppId}
-        isOpen={isDrawerOpen}
-        onClose={() => {
-          setIsDrawerOpen(false);
-          setSelectedAppId(null);
-        }}
-        onStatusChange={() => {
-          void refetchApplications();
-        }}
-      />
     </div>
   );
 }

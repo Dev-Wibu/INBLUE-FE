@@ -57,7 +57,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
   }
 
   return (
-    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -91,7 +91,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                 key={user.id}
                 onClick={() => onViewDetail(user)}
                 className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                   <div className="flex items-center gap-2">
                     <span>#{user.id}</span>
                     {/* Dummy element to force row height alignment */}
@@ -103,24 +103,24 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4">
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-10 w-10 rounded-[14px] border border-slate-100 dark:border-slate-800/80">
                       <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
-                      <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                      <AvatarFallback className="rounded-[14px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
                         {user.name?.charAt(0)?.toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <span className="font-medium">{user.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                <TableCell>
+                <TableCell className="text-muted-foreground py-4">{user.email}</TableCell>
+                <TableCell className="py-4">
                   <Badge variant="default" className={`text-white ${getRoleBadgeClass(user.role)}`}>
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
+                <TableCell className="text-muted-foreground py-4 text-sm">
                   {(user as Record<string, unknown>).createdAt ||
                   (user as Record<string, unknown>).created_at
                     ? formatDate(
@@ -129,7 +129,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                       )
                     : "—"}
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
+                <TableCell className="text-muted-foreground py-4 text-sm">
                   {(user as Record<string, unknown>).updatedAt ||
                   (user as Record<string, unknown>).updated_at
                     ? formatDate(
@@ -138,7 +138,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                       )
                     : "—"}
                 </TableCell>
-                <TableCell className="pr-6">
+                <TableCell className="py-4 pr-6">
                   <Switch
                     className="data-[state=checked]:bg-emerald-500"
                     checked={user.isActive !== false}

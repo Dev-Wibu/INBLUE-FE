@@ -1,12 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import type { UsePaginationReturn } from "@/hooks/usePagination";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -17,6 +11,8 @@ interface PaginationControlProps {
   pageSizeOptions?: number[];
   showPageSizeSelector?: boolean;
   onPageSizeChange?: (size: number) => void;
+  showBoundaryButtons?: boolean;
+  showPageJump?: boolean;
 }
 
 export function PaginationControl({
@@ -24,6 +20,8 @@ export function PaginationControl({
   pageSizeOptions = [10, 20, 50, 100],
   showPageSizeSelector = true,
   onPageSizeChange,
+  showBoundaryButtons = true,
+  showPageJump = true,
 }: PaginationControlProps) {
   const { t } = useTranslation();
   const {
@@ -86,8 +84,10 @@ export function PaginationControl({
         {/* Page size selector */}
         {showPageSizeSelector && onPageSizeChange && (
           <Select value={String(pageSize)} onValueChange={handlePageSizeSelection}>
-            <SelectTrigger className="h-7 w-[70px] text-xs">
-              <SelectValue />
+            <SelectTrigger className="h-7 w-[92px] text-xs">
+              <span>
+                {pageSize} / {t("common.perPage")}
+              </span>
             </SelectTrigger>
             <SelectContent>
               {pageSizeOptions.map((size) => (
@@ -101,24 +101,28 @@ export function PaginationControl({
 
         {/* Page navigation buttons */}
         <div className="flex items-center gap-0.5">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToFirstPage}
-            disabled={!hasPrevPage}
-            title={t("compShared.frontPage")}
-            className="h-7 w-7">
-            <ChevronsLeft className="h-3 w-3" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={prevPage}
-            disabled={!hasPrevPage}
-            title={t("compShared.previousPage")}
-            className="h-7 w-7">
-            <ChevronLeft className="h-3 w-3" />
-          </Button>
+          {showBoundaryButtons && (
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={goToFirstPage}
+                disabled={!hasPrevPage}
+                title={t("compShared.frontPage")}
+                className="h-7 w-7">
+                <ChevronsLeft className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={prevPage}
+                disabled={!hasPrevPage}
+                title={t("compShared.previousPage")}
+                className="h-7 w-7">
+                <ChevronLeft className="h-3 w-3" />
+              </Button>
+            </>
+          )}
 
           {visiblePages.map((page, index) =>
             page === "ellipsis" ? (
@@ -137,28 +141,32 @@ export function PaginationControl({
             )
           )}
 
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={nextPage}
-            disabled={!hasNextPage}
-            title={t("compShared.nextPageTitle")}
-            className="h-7 w-7">
-            <ChevronRight className="h-3 w-3" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToLastPage}
-            disabled={!hasNextPage}
-            title={t("compShared.lastPage")}
-            className="h-7 w-7">
-            <ChevronsRight className="h-3 w-3" />
-          </Button>
+          {showBoundaryButtons && (
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={nextPage}
+                disabled={!hasNextPage}
+                title={t("compShared.nextPageTitle")}
+                className="h-7 w-7">
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={goToLastPage}
+                disabled={!hasNextPage}
+                title={t("compShared.lastPage")}
+                className="h-7 w-7">
+                <ChevronsRight className="h-3 w-3" />
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Go to page */}
-        {totalPages > 1 && (
+        {showPageJump && totalPages > 1 && (
           <div className="flex items-center gap-0.5">
             <Input
               value={jumpToPageInput}
