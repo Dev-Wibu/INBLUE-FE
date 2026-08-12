@@ -40,7 +40,6 @@ import {
   CheckCircle2,
   ChevronDown,
   Clock,
-  Eye,
   Inbox,
   ListFilter,
   Mail,
@@ -1198,14 +1197,6 @@ function AssignMentorDialog({
                               </p>
                             </div>
                           </button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedMentorForDetail(mentor.id as number)}
-                            className="h-7 w-7 shrink-0 p-0 opacity-0 group-hover:opacity-100">
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
                         </div>
                       ))
                     )}
