@@ -24,7 +24,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
-import { Building2, ExternalLink, ImageIcon, Upload, X } from "lucide-react";
+import { Building2, Camera, ExternalLink, ImageIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Company, CompanyFormData, CompanyStatus } from "../types";
@@ -159,11 +159,11 @@ export function CompanyFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="flex max-h-[85vh] w-full flex-col overflow-hidden rounded-[20px] border border-slate-200/90 bg-white p-0 shadow-2xl sm:max-w-[540px] dark:border-slate-800 dark:bg-slate-900">
-        {/* Header */}
-        <DialogHeader className="border-b border-slate-100 bg-slate-50/60 px-5 py-4 dark:border-slate-800/80 dark:bg-slate-900/60">
+      <DialogContent className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[24px] border border-slate-200/90 bg-white p-0 shadow-2xl sm:max-w-[560px] dark:border-slate-800 dark:bg-slate-900">
+        {/* Header Bar */}
+        <DialogHeader className="border-b border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800/80 dark:bg-slate-900/90">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 ring-1 ring-indigo-500/20 dark:bg-indigo-500/20 dark:text-indigo-400 dark:ring-indigo-400/30">
               <Building2 className="h-4.5 w-4.5" />
             </div>
             <div>
@@ -177,271 +177,232 @@ export function CompanyFormDialog({
           </div>
         </DialogHeader>
 
-        {/* Scrollable Form Body */}
-        <div className="space-y-4 overflow-y-auto p-5">
-          {/* Company Name & Status Row */}
-          <div className="flex flex-wrap items-start gap-3">
-            <div className="min-w-[240px] flex-1 space-y-1.5">
-              <Label
-                htmlFor="company-name"
-                className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                {t("adminCompanymanagement.companyName", "Tên công ty")}{" "}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="company-name"
-                value={formData.name || ""}
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    name: e.target.value,
-                  })
-                }
-                placeholder={t("adminCompanymanagement.enterTheCompanyName", "VD: VNG Corporation")}
-                className="h-10 rounded-xl border border-slate-200/90 bg-slate-50/50 text-xs font-medium focus-visible:border-indigo-500 focus-visible:ring-1 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-100"
-              />
-            </div>
-
-            <div className="w-[120px] shrink-0 space-y-1.5">
-              <Label
-                htmlFor="company-status"
-                className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                {t("common.status", "Trạng thái")}
-              </Label>
-              <Select
-                value={formData.status || "ACTIVE"}
-                onValueChange={(value) =>
-                  onFormChange({
-                    ...formData,
-                    status: value as CompanyStatus,
-                  })
-                }>
-                <SelectTrigger
-                  id="company-status"
-                  className="h-10 rounded-xl border border-slate-200/90 bg-slate-50/50 text-xs font-medium dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-100">
-                  <SelectValue placeholder={t("common.selectStatus", "Trạng thái")} />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  {COMPANY_STATUSES.map((status) => (
-                    <SelectItem key={status} value={status} className="text-xs font-medium">
-                      {status === "ACTIVE"
-                        ? t("common.active", "Hoạt động")
-                        : t("common.shutDown", "Đã tắt")}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-1.5">
-            <Label
-              htmlFor="company-description"
-              className="text-xs font-bold text-slate-700 dark:text-slate-200">
-              {t("common.describe", "Mô tả công ty")}
-            </Label>
-            <Textarea
-              id="company-description"
-              value={formData.description || ""}
-              onChange={(e) =>
-                onFormChange({
-                  ...formData,
-                  description: e.target.value,
-                })
-              }
-              placeholder={t(
-                "adminCompanymanagement.companyDescription",
-                "Giới thiệu ngắn về công ty, văn hóa làm việc..."
-              )}
-              rows={3}
-              className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-3 text-xs leading-relaxed font-medium focus-visible:border-indigo-500 focus-visible:ring-1 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-100"
-            />
-          </div>
-
-          {/* Media Assets Section */}
-          <div className="space-y-2 pt-1">
-            <h4 className="text-[11px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("adminCompanymanagement.companyMedia", "Hình ảnh thương hiệu")}
-            </h4>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              {/* Logo Upload Card */}
-              <div className="flex flex-col justify-between space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-950/50">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      {t("adminCompanymanagement.companyLogo", "Logo Công ty")}
-                    </Label>
-                    <span className="text-[10px] font-medium text-slate-400">1:1</span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5 rounded-lg border border-slate-200/80 bg-white p-2 dark:border-slate-800 dark:bg-slate-900">
-                    {displayLogoUrl ? (
-                      <div className="group/logo relative">
-                        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800">
-                          <img
-                            src={displayLogoUrl}
-                            alt="Logo"
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = "none";
-                            }}
-                          />
-                        </div>
-                        {logoPreview && (
-                          <button
-                            type="button"
-                            onClick={handleClearLogo}
-                            className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600">
-                            <X className="h-2.5 w-2.5" />
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
-                        <ImageIcon className="h-4 w-4 text-slate-400" />
-                      </div>
-                    )}
-
-                    <div className="flex min-w-0 flex-1 flex-col justify-center">
-                      <span className="truncate text-[11px] font-medium text-slate-700 dark:text-slate-300">
-                        {logoPreview
-                          ? t("common.newFileSelected", "Đã chọn file")
-                          : displayLogoUrl
-                            ? t("common.currentImage", "Ảnh hiện tại")
-                            : t("adminCompanymanagement.noLogoYet", "Chưa có logo")}
-                      </span>
-                      {displayLogoUrl && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            openMediaPreview(
-                              t("adminCompanymanagement.companyLogo", "Logo công ty"),
-                              displayLogoUrl
-                            )
-                          }
-                          className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
-                          <span>{t("common.seeFullPhoto", "Xem ảnh")}</span>
-                          <ExternalLink className="h-2.5 w-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <UniversalMediaUploader
-                  preset="single-image"
-                  onFilesChange={(files) => handleLogoChange(files[0])}
-                  customTrigger={
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-8 w-full gap-1.5 rounded-lg border-slate-200/90 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                      <Upload className="h-3 w-3" />
-                      {t("common.uploadFile", "Tải logo mới")}
-                    </Button>
-                  }
+        {/* Scrollable Content Body */}
+        <div className="space-y-6 overflow-y-auto p-6">
+          {/* Banner & Logo Visual Header Card */}
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-950">
+            {/* Banner Cover Image Container */}
+            <div className="relative h-28 w-full overflow-hidden bg-gradient-to-r from-slate-800 via-indigo-950 to-slate-900">
+              {displayBannerUrl ? (
+                <img
+                  src={displayBannerUrl}
+                  alt="Company Banner"
+                  className="h-full w-full object-cover opacity-90 transition-opacity hover:opacity-100"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
                 />
-              </div>
-
-              {/* Banner Upload Card */}
-              <div className="flex flex-col justify-between space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-950/50">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      {t("adminCompanymanagement.companyBanners", "Ảnh Banner bìa")}
-                    </Label>
-                    <span className="text-[10px] font-medium text-slate-400">16:9</span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5 rounded-lg border border-slate-200/80 bg-white p-2 dark:border-slate-800 dark:bg-slate-900">
-                    {displayBannerUrl ? (
-                      <div className="group/banner relative">
-                        <div className="h-11 w-18 shrink-0 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800">
-                          <img
-                            src={displayBannerUrl}
-                            alt="Banner"
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = "none";
-                            }}
-                          />
-                        </div>
-                        {bannerPreview && (
-                          <button
-                            type="button"
-                            onClick={handleClearBanner}
-                            className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600">
-                            <X className="h-2.5 w-2.5" />
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex h-11 w-18 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
-                        <ImageIcon className="h-4 w-4 text-slate-400" />
-                      </div>
-                    )}
-
-                    <div className="flex min-w-0 flex-1 flex-col justify-center">
-                      <span className="truncate text-[11px] font-medium text-slate-700 dark:text-slate-300">
-                        {bannerPreview
-                          ? t("common.newFileSelected", "Đã chọn file")
-                          : displayBannerUrl
-                            ? t("common.currentImage", "Ảnh hiện tại")
-                            : t("adminCompanymanagement.noBannersYet", "Chưa có banner")}
-                      </span>
-                      {displayBannerUrl && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            openMediaPreview(
-                              t("adminCompanymanagement.companyBanners", "Banner công ty"),
-                              displayBannerUrl
-                            )
-                          }
-                          className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
-                          <span>{t("common.seeFullPhoto", "Xem ảnh")}</span>
-                          <ExternalLink className="h-2.5 w-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-slate-600 dark:text-slate-500">
+                  <ImageIcon className="h-8 w-8 opacity-40" />
                 </div>
+              )}
+
+              {/* Banner Action Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+              <div className="absolute top-2.5 right-2.5 flex items-center gap-2">
+                {displayBannerUrl && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openMediaPreview(
+                        t("adminCompanymanagement.companyBanners", "Banner công ty"),
+                        displayBannerUrl
+                      )
+                    }
+                    className="flex h-7 items-center gap-1 rounded-lg bg-black/50 px-2 text-[11px] font-semibold text-white backdrop-blur-md transition-colors hover:bg-black/70">
+                    <ExternalLink className="h-3 w-3" />
+                    <span>Xem ảnh</span>
+                  </button>
+                )}
 
                 <UniversalMediaUploader
                   preset="single-image"
                   onFilesChange={(files) => handleBannerChange(files[0])}
                   customTrigger={
-                    <Button
+                    <button
                       type="button"
-                      variant="outline"
-                      className="h-8 w-full gap-1.5 rounded-lg border-slate-200/90 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                      <Upload className="h-3 w-3" />
-                      {t("common.uploadFile", "Tải banner mới")}
-                    </Button>
+                      className="flex h-7 items-center gap-1.5 rounded-lg bg-indigo-600/90 px-2.5 text-[11px] font-semibold text-white shadow-xs backdrop-blur-md transition-all hover:bg-indigo-600">
+                      <Camera className="h-3.5 w-3.5" />
+                      <span>{displayBannerUrl ? "Đổi banner" : "Tải banner"}</span>
+                    </button>
                   }
                 />
+                {bannerPreview && (
+                  <button
+                    type="button"
+                    onClick={handleClearBanner}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/80 text-white backdrop-blur-md hover:bg-red-600">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
+            </div>
+
+            {/* Overlapping Logo Container & Meta */}
+            <div className="relative px-4 pb-3">
+              <div className="-mt-8 flex items-end justify-between">
+                <div className="group/logo relative">
+                  <div className="h-16 w-16 overflow-hidden rounded-2xl border-2 border-white bg-white shadow-md dark:border-slate-900 dark:bg-slate-900">
+                    {displayLogoUrl ? (
+                      <img
+                        src={displayLogoUrl}
+                        alt="Company Logo"
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                        <Building2 className="h-7 w-7" />
+                      </div>
+                    )}
+                  </div>
+
+                  <UniversalMediaUploader
+                    preset="single-image"
+                    onFilesChange={(files) => handleLogoChange(files[0])}
+                    customTrigger={
+                      <button
+                        type="button"
+                        title={t("adminCompanymanagement.companyLogo", "Đổi logo")}
+                        className="absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-white shadow-xs transition-transform hover:scale-105">
+                        <Camera className="h-3.5 w-3.5" />
+                      </button>
+                    }
+                  />
+
+                  {logoPreview && (
+                    <button
+                      type="button"
+                      onClick={handleClearLogo}
+                      className="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-white shadow-xs hover:bg-red-600">
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+
+                {displayLogoUrl && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openMediaPreview(
+                        t("adminCompanymanagement.companyLogo", "Logo công ty"),
+                        displayLogoUrl
+                      )
+                    }
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
+                    <span>Xem phóng to logo</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Form Fields Section */}
+          <div className="space-y-4">
+            {/* Row 1: Company Name & Status */}
+            <div className="flex flex-wrap items-start gap-3">
+              <div className="min-w-[240px] flex-1 space-y-1.5">
+                <Label
+                  htmlFor="company-name"
+                  className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {t("adminCompanymanagement.companyName", "Tên công ty")}{" "}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="company-name"
+                  value={formData.name || ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder={t(
+                    "adminCompanymanagement.enterTheCompanyName",
+                    "VD: VNG Corporation"
+                  )}
+                  className="h-10.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs font-semibold focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-400 dark:focus-visible:bg-slate-950"
+                />
+              </div>
+
+              <div className="w-[130px] shrink-0 space-y-1.5">
+                <Label
+                  htmlFor="company-status"
+                  className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {t("common.status", "Trạng thái")}
+                </Label>
+                <Select
+                  value={formData.status || "ACTIVE"}
+                  onValueChange={(value) =>
+                    onFormChange({
+                      ...formData,
+                      status: value as CompanyStatus,
+                    })
+                  }>
+                  <SelectTrigger
+                    id="company-status"
+                    className="h-10.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100">
+                    <SelectValue placeholder={t("common.selectStatus", "Trạng thái")} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {COMPANY_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status} className="text-xs font-semibold">
+                        {status === "ACTIVE"
+                          ? t("common.active", "Hoạt động")
+                          : t("common.shutDown", "Đã tắt")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="company-description"
+                className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                {t("common.describe", "Mô tả công ty")}
+              </Label>
+              <Textarea
+                id="company-description"
+                value={formData.description || ""}
+                onChange={(e) =>
+                  onFormChange({
+                    ...formData,
+                    description: e.target.value,
+                  })
+                }
+                placeholder={t(
+                  "adminCompanymanagement.companyDescription",
+                  "Giới thiệu ngắn về công ty, lĩnh vực hoạt động, văn hóa..."
+                )}
+                rows={3.5}
+                className="rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs leading-relaxed font-medium focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-400 dark:focus-visible:bg-slate-950"
+              />
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <DialogFooter className="border-t border-slate-100 bg-slate-50/60 px-5 py-3 dark:border-slate-800/80 dark:bg-slate-900/60">
+        <DialogFooter className="border-t border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800/80 dark:bg-slate-900/90">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
-            className="h-9 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            className="h-10 rounded-xl border border-slate-200 bg-white px-5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
             {t("general.cancel", "Hủy")}
           </Button>
           <Button
             type="button"
             onClick={onSubmit}
             disabled={isSubmitting}
-            className="h-9 gap-1.5 rounded-xl bg-indigo-600 px-5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
+            className="h-10 gap-2 rounded-xl bg-indigo-600 px-6 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 transition-all hover:bg-indigo-500 active:scale-98 dark:bg-indigo-600 dark:hover:bg-indigo-500">
             {isSubmitting ? (
               <>
                 <Spinner size="sm" tone="white" />
