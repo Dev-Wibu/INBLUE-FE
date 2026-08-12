@@ -1,3 +1,4 @@
+import { DateTimePicker } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,7 @@ import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Filter } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +40,18 @@ const getFirstDayOfMonth = (year: number, month: number): number => {
 };
 
 const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+
+// Date filter helpers
+const toFilterDateKey = (value?: Date): string | undefined => {
+  if (!value) return undefined;
+  return toVietnamDateKey(value) || undefined;
+};
+
+const isDateKeyInRange = (dateKey: string, fromKey?: string, toKey?: string) => {
+  if (fromKey && dateKey < fromKey) return false;
+  if (toKey && dateKey > toKey) return false;
+  return true;
+};
 
 function AgendaSessionItem({
   item,
@@ -140,6 +153,17 @@ export function OverviewPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
+  // Date filter state (copied from Mentor Overview)
+  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+  const [toDate, setToDate] = useState<Date | undefined>(undefined);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([
+    "DRAFT",
+    "SCHEDULED",
+    "PAID",
+    "ONGOING",
+    "COMPLETED",
+  ]);
+
   // Fetch schedule from new API endpoint
   const { data: scheduleEvents = [], isLoading: scheduleLoading } = useUserSchedule();
 
@@ -148,7 +172,22 @@ export function OverviewPage() {
     () => buildCalendarSessionsFromEvents(scheduleEvents),
     [scheduleEvents]
   );
-  const sessionsByDate = useMemo(() => groupUserCalendarByDate(calendarItems), [calendarItems]);
+
+  // Filter by date range
+  const fromKey = useMemo(() => toFilterDateKey(fromDate), [fromDate]);
+  const toKey = useMemo(() => toFilterDateKey(toDate), [toDate]);
+
+  const filteredCalendarItems = useMemo(() => {
+    return calendarItems.filter((item) => {
+      const status = item.session.status || "";
+      return selectedStatuses.includes(status) && isDateKeyInRange(item.dateKey, fromKey, toKey);
+    });
+  }, [calendarItems, selectedStatuses, fromKey, toKey]);
+
+  const sessionsByDate = useMemo(
+    () => groupUserCalendarByDate(filteredCalendarItems),
+    [filteredCalendarItems]
+  );
 
   // Calculate stats from events
   const totalInterviews = scheduleEvents.length;
@@ -197,8 +236,8 @@ export function OverviewPage() {
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
   const [mobileView, setMobileView] = useState<string>(MOBILE_VIEW_AGENDA);
 
-  // Upcoming schedule items for the sidebar
-  const upcomingScheduleItems = calendarItems
+  // Upcoming schedule items for the sidebar (using filtered items)
+  const upcomingScheduleItems = filteredCalendarItems
     .filter(
       (item) =>
         item.timestamp >= nowTimestamp &&
@@ -271,6 +310,21 @@ export function OverviewPage() {
     if (typeof sessionId === "number") {
       navigate(`/user/mock-interview/history/${sessionId}/feedback`);
     }
+  };
+
+  const toggleStatus = (status: string) => {
+    setSelectedStatuses((current) => {
+      if (current.includes(status)) {
+        return current.filter((item) => item !== status);
+      }
+      return [...current, status];
+    });
+  };
+
+  const resetFilters = () => {
+    setSelectedStatuses(["DRAFT", "SCHEDULED", "PAID", "ONGOING", "COMPLETED"]);
+    setFromDate(undefined);
+    setToDate(undefined);
   };
 
   const jumpToToday = () => {
@@ -512,6 +566,61 @@ export function OverviewPage() {
       </CardHeader>
 
       <CardContent className="space-y-4 pt-4">
+        {/* Filter Section */}
+        <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Filter className="h-4 w-4" />
+            {t("common.filter", "Bộ lọc")}
+          </div>
+
+          {/* Status Filter Buttons */}
+          <div className="mb-3 flex flex-wrap gap-2">
+            {["DRAFT", "SCHEDULED", "PAID", "ONGOING", "COMPLETED"].map((status) => {
+              const cfg = getSessionStatusConfig(status);
+              const active = selectedStatuses.includes(status);
+              return (
+                <Button
+                  key={status}
+                  size="sm"
+                  variant={active ? "default" : "outline"}
+                  onClick={() => toggleStatus(status)}
+                  className={cn("h-7 text-xs", active && "bg-indigo-600 hover:bg-indigo-700")}>
+                  <span className={cn("mr-1.5 h-2 w-2 rounded-full", cfg.dot)} />
+                  {cfg.label}
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="grid gap-2 sm:grid-cols-2">
+            <DateTimePicker
+              value={fromDate}
+              onChange={(value) => {
+                setFromDate(value || undefined);
+                if (value && toDate && value > toDate) {
+                  setToDate(undefined);
+                }
+              }}
+              showTime={false}
+              themeVariant="user"
+              placeholder={t("common.fromDate", "Từ ngày")}
+            />
+            <DateTimePicker
+              value={toDate}
+              onChange={(value) => setToDate(value || undefined)}
+              showTime={false}
+              minDate={fromDate}
+              themeVariant="user"
+              placeholder={t("common.comeDay", "Đến ngày")}
+            />
+          </div>
+
+          <Button variant="ghost" size="sm" className="mt-2 w-fit" onClick={resetFilters}>
+            {t("common.resetTheFilter", "Đặt lại bộ lọc")}
+          </Button>
+        </div>
+
         {/* Selected Day Agenda Items */}
         {scheduleLoading ? (
           <div className="space-y-3">
