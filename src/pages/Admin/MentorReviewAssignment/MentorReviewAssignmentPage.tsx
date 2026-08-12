@@ -1018,8 +1018,16 @@ function AssignMentorDialog({
                             type="button"
                             onClick={() => setSelectedMentorForDetail(mentor.id as number)}
                             className="flex flex-1 cursor-pointer items-center gap-3 text-left">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                              {mentor.name?.charAt(0).toUpperCase() || "?"}
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-sm font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                              {mentor.avatarUrl ? (
+                                <img
+                                  src={mentor.avatarUrl}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                mentor.name?.charAt(0).toUpperCase() || "?"
+                              )}
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="font-medium dark:text-slate-100">{mentor.name}</p>
@@ -1062,8 +1070,16 @@ function AssignMentorDialog({
                         <div className="space-y-5">
                           {/* Header */}
                           <div className="flex items-start gap-4">
-                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                              {m.name?.charAt(0).toUpperCase() || "?"}
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-2xl font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                              {m.avatarUrl ? (
+                                <img
+                                  src={m.avatarUrl}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                m.name?.charAt(0).toUpperCase() || "?"
+                              )}
                             </div>
                             <div className="min-w-0 flex-1">
                               <h4 className="text-xl font-semibold dark:text-slate-100">
