@@ -246,43 +246,53 @@ export function AssignMentorDialog({
                 {/* Mentor List */}
                 <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900">
                   {filteredMentors.length === 0 ? (
-                    <p className="p-4 text-center text-sm text-slate-500">
-                      {t("common.noMentorsFound", "Không tìm thấy mentor")}
-                    </p>
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <User className="mb-2 h-10 w-10 text-slate-300 dark:text-slate-600" />
+                      <p className="text-sm text-slate-500">
+                        {searchQuery
+                          ? t("common.noMentorsFound", "Không tìm thấy mentor")
+                          : t("common.noMentorsAvailable", "Không có mentor nào")}
+                      </p>
+                    </div>
                   ) : (
-                    filteredMentors.map((mentor) => (
-                      <button
-                        key={mentor.id}
-                        type="button"
-                        onClick={() => setSelectedMentorId(String(mentor.id))}
-                        className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors ${
-                          selectedMentorId === String(mentor.id)
-                            ? "bg-indigo-50 ring-2 ring-indigo-500 dark:bg-indigo-950/50"
-                            : "hover:bg-slate-50 dark:hover:bg-slate-800"
-                        }`}>
-                        <div
-                          className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors ${
+                    <div className="space-y-1">
+                      <p className="px-2 pb-1 text-xs font-medium text-slate-500">
+                        {filteredMentors.length} {t("common.mentorAvailable", "mentor(s)")}
+                      </p>
+                      {filteredMentors.map((mentor) => (
+                        <button
+                          key={mentor.id}
+                          type="button"
+                          onClick={() => setSelectedMentorId(String(mentor.id))}
+                          className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors ${
                             selectedMentorId === String(mentor.id)
-                              ? "border-indigo-500 bg-indigo-500"
-                              : "border-slate-300 dark:border-slate-600"
+                              ? "bg-indigo-50 ring-2 ring-indigo-500 dark:bg-indigo-950/50"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-800"
                           }`}>
-                          {selectedMentorId === String(mentor.id) && (
-                            <div className="h-2 w-2 rounded-full bg-white" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium text-slate-900 dark:text-slate-100">
-                            {mentor.name}
-                          </p>
-                          {mentor.expertise && (
-                            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                              {mentor.expertise}
+                          <div
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                              selectedMentorId === String(mentor.id)
+                                ? "border-indigo-500 bg-indigo-500"
+                                : "border-slate-300 dark:border-slate-600"
+                            }`}>
+                            {selectedMentorId === String(mentor.id) && (
+                              <div className="h-2 w-2 rounded-full bg-white" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium text-slate-900 dark:text-slate-100">
+                              {mentor.name}
                             </p>
-                          )}
-                        </div>
-                        <Star className="h-4 w-4 shrink-0 text-amber-400" />
-                      </button>
-                    ))
+                            {mentor.expertise && (
+                              <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                {mentor.expertise}
+                              </p>
+                            )}
+                          </div>
+                          <Star className="h-4 w-4 shrink-0 text-amber-400" />
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
 
