@@ -631,9 +631,9 @@ export function CompanyManagementPage() {
                 {t("common.status", "Trạng thái")}:
               </span>
               {[
-                ["active", t("common.active", "Đang hoạt động")],
-                ["inactive", t("common.shutDown", "Đã tắt")],
-                ["all", t("common.allStatus", "Tất cả")],
+                ["all", t("common.allStatus", "Tất cả trạng thái")],
+                ["active", t("common.active", "Bật")],
+                ["inactive", t("common.shutDown", "Ngưng hoạt động")],
               ].map(([value, label]) => (
                 <button
                   key={value}

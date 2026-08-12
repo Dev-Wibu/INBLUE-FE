@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/formatting";
 import { getJobDescriptionLevelBadge } from "@/lib/status-utils";
-import { Briefcase, Calendar, Clock, MapPin, Users } from "lucide-react";
+import { Briefcase, Calendar, Clock, Layers, MapPin, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
 
@@ -77,13 +77,11 @@ export function JobDescriptionTable({
                 t("common.id", "ID")
               )}
             </TableHead>
-            <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-              {getSortProps ? (
-                <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
-              ) : (
-                t("common.title")
-              )}
-            </TableHead>
+            {showCompany && (
+              <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                {t("adminCompanymanagement.companyName", "Công ty")}
+              </TableHead>
+            )}
             <TableHead className="w-[120px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {getSortProps ? (
                 <SortButton {...getSortProps("levelSortValue")}>{t("common.level")}</SortButton>
@@ -91,19 +89,21 @@ export function JobDescriptionTable({
                 t("common.level")
               )}
             </TableHead>
-            {showCompany && (
-              <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-                {t("adminCompanymanagement.companyName", "Công ty")}
-              </TableHead>
-            )}
+            <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+              {getSortProps ? (
+                <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
+              ) : (
+                t("common.title")
+              )}
+            </TableHead>
             <TableHead className="w-[160px] min-w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.location", "Địa điểm")}
             </TableHead>
-            <TableHead className="w-[120px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-              {t("adminCompanymanagement.rounds", "Số vòng thi")}
+            <TableHead className="w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminCompanymanagement.rounds", "Các vòng phỏng vấn")}
             </TableHead>
-            <TableHead className="w-[150px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-              {t("adminCompanymanagement.totalApplications", "Lượt ứng tuyển")}
+            <TableHead className="w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminCompanymanagement.totalApplications", "Tổng lượt ứng tuyển")}
             </TableHead>
             <TableHead className="w-[150px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {getSortProps ? (
@@ -163,12 +163,6 @@ export function JobDescriptionTable({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-white">
-                  {job.title || "—"}
-                </TableCell>
-                <TableCell className="px-4 py-4">
-                  {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
-                </TableCell>
                 {showCompany && (
                   <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-3">
@@ -185,20 +179,31 @@ export function JobDescriptionTable({
                   </TableCell>
                 )}
                 <TableCell className="px-4 py-4">
+                  {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
+                </TableCell>
+                <TableCell className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-white">
+                  {job.title || "—"}
+                </TableCell>
+                <TableCell className="px-4 py-4">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
                     <MapPin className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
                     <span>{locationText}</span>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {job.rounds?.length || 0} {t("adminCompanymanagement.roundsCount", "vòng")}
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/90 bg-slate-100/90 px-2.5 py-1 text-xs font-bold text-slate-800 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-100">
+                    <Layers className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                    <span>
+                      {job.rounds?.length || 0} {t("adminCompanymanagement.roundsCount", "vòng")}
+                    </span>
                   </span>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50/80 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
-                    <Users className="h-3 w-3 text-indigo-500" />
-                    {appCount} {t("adminCompanymanagement.applicationsCount", "lượt")}
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-indigo-200/80 bg-indigo-50/90 px-2.5 py-1 text-xs font-bold text-indigo-800 shadow-2xs dark:border-indigo-800/80 dark:bg-indigo-950/80 dark:text-indigo-300">
+                    <Users className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <span>
+                      {appCount} {t("adminCompanymanagement.applicationsCount", "lượt")}
+                    </span>
                   </span>
                 </TableCell>
                 <TableCell className="px-4 py-4">
