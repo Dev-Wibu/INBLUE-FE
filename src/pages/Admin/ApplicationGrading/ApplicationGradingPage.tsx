@@ -1809,13 +1809,10 @@ export function ApplicationGradingDetailPage({
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-slate-50/70 dark:bg-slate-950">
+    <div className="flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
       {/* ── CANDIDATE WORKSPACE HEADER BANNER (Theme Aware: Light & Dark) ─────── */}
-      <div className="relative border-b border-slate-200/80 bg-gradient-to-r from-indigo-50/90 via-purple-50/40 to-white px-4 py-6 text-slate-900 sm:px-8 dark:border-slate-800 dark:from-slate-950 dark:via-indigo-950/60 dark:to-slate-950 dark:text-white">
+      <div className="relative border-b border-slate-200/80 bg-slate-50 px-4 py-6 text-slate-900 sm:px-8 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
         {/* Ambient background glow */}
-        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/10" />
-        <div className="pointer-events-none absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-purple-500/10 blur-2xl dark:bg-purple-500/10" />
-
         <div className="relative mx-auto max-w-7xl">
           {/* Top Breadcrumb & Actions */}
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
