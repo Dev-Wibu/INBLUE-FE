@@ -321,13 +321,57 @@ export function OverviewPage() {
       </CardHeader>
 
       <CardContent className="pt-4">
+        {/* Legend */}
+        <div className="mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+            {t("common.legend", "Chú thích")}:
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-amber-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.waitingForApproval", "Chờ duyệt")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-blue-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.comingSoon", "Sắp diễn ra")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.paid", "Đã thanh toán")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-green-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.ongoing", "Đang diễn ra")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-slate-400" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("general.completed", "Hoàn thành")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-red-500" />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {t("common.rejected", "Từ chối")}
+            </span>
+          </div>
+        </div>
+
         <div className="grid grid-cols-7 border-b border-slate-200 pb-2.5 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {WEEK_DAYS.map((day) => (
             <div key={day}>{day}</div>
           ))}
         </div>
 
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+        {/* Calendar Grid with fixed height */}
+        <div className="h-[400px] overflow-hidden">
           {weeks.map((week, weekIdx) => (
             <div
               key={weekIdx}
@@ -355,7 +399,7 @@ export function OverviewPage() {
                     key={dateKey}
                     onClick={() => setSelectedDateKey(dateKey)}
                     className={cn(
-                      "group relative flex min-h-[105px] cursor-pointer flex-col gap-1.5 p-2 transition-all",
+                      "group relative flex flex-1 cursor-pointer flex-col gap-1.5 overflow-hidden p-2 transition-all",
                       isSelected
                         ? "bg-indigo-500/10 ring-2 ring-indigo-500/50 dark:bg-indigo-950/60 dark:ring-indigo-500/60"
                         : hasEvents

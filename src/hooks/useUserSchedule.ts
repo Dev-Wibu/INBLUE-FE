@@ -21,6 +21,10 @@ export const useUserSchedule = (options?: UseUserScheduleOptions) => {
         endDate: options?.endDate,
       },
     },
+    // Always refetch when component mounts or window regains focus
+    // This ensures correct data when user switches accounts
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 };
 
