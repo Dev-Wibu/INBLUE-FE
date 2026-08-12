@@ -57,101 +57,99 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-              <TableHead className="w-[80px] pl-6 font-medium text-slate-500">
-                {t("common.id")}
-              </TableHead>
-              <TableHead className="font-medium text-slate-500">
-                {getSortProps ? (
-                  <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
-                ) : (
-                  t("common.name")
-                )}
-              </TableHead>
-              <TableHead className="font-medium text-slate-500">{t("common.email")}</TableHead>
-              <TableHead className="w-24 font-medium text-slate-500">{t("common.role")}</TableHead>
-              <TableHead className="w-32 font-medium text-slate-500">
-                {t("adminUsermanagement.joinedDate")}
-              </TableHead>
-              <TableHead className="w-32 font-medium text-slate-500">
-                {t("adminUsermanagement.lastUpdated")}
-              </TableHead>
-              <TableHead className="w-24 pr-6 font-medium text-slate-500">
-                {t("common.status")}
-              </TableHead>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+            <TableHead className="w-[80px] pl-6 font-medium text-slate-500">
+              {t("common.id")}
+            </TableHead>
+            <TableHead className="font-medium text-slate-500">
+              {getSortProps ? (
+                <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
+              ) : (
+                t("common.name")
+              )}
+            </TableHead>
+            <TableHead className="font-medium text-slate-500">{t("common.email")}</TableHead>
+            <TableHead className="w-24 font-medium text-slate-500">{t("common.role")}</TableHead>
+            <TableHead className="w-32 font-medium text-slate-500">
+              {t("adminUsermanagement.joinedDate")}
+            </TableHead>
+            <TableHead className="w-32 font-medium text-slate-500">
+              {t("adminUsermanagement.lastUpdated")}
+            </TableHead>
+            <TableHead className="w-24 pr-6 font-medium text-slate-500">
+              {t("common.status")}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {users.map((user) => (
+            <TableRow
+              key={user.id}
+              onClick={() => onViewDetail(user)}
+              className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+              <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-2">
+                  <span>#{user.id}</span>
+                  {/* Dummy element to force row height alignment */}
+                  <div
+                    className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                    aria-hidden="true">
+                    <div className="h-3.5 w-3.5"></div>
+                    <div className="h-3.5 w-3.5"></div>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="py-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10 rounded-[14px] border border-slate-100 dark:border-slate-800/80">
+                    <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
+                    <AvatarFallback className="rounded-[14px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                      {user.name?.charAt(0)?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">{user.name}</span>
+                </div>
+              </TableCell>
+              <TableCell className="text-muted-foreground py-4">{user.email}</TableCell>
+              <TableCell className="py-4">
+                <Badge variant="default" className={`text-white ${getRoleBadgeClass(user.role)}`}>
+                  {user.role}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-muted-foreground py-4 text-sm">
+                {(user as Record<string, unknown>).createdAt ||
+                (user as Record<string, unknown>).created_at
+                  ? formatDate(
+                      ((user as Record<string, unknown>).createdAt ||
+                        (user as Record<string, unknown>).created_at) as string
+                    )
+                  : "—"}
+              </TableCell>
+              <TableCell className="text-muted-foreground py-4 text-sm">
+                {(user as Record<string, unknown>).updatedAt ||
+                (user as Record<string, unknown>).updated_at
+                  ? formatDate(
+                      ((user as Record<string, unknown>).updatedAt ||
+                        (user as Record<string, unknown>).updated_at) as string
+                    )
+                  : "—"}
+              </TableCell>
+              <TableCell className="py-4 pr-6">
+                <Switch
+                  className="data-[state=checked]:bg-emerald-500"
+                  checked={user.isActive !== false}
+                  onCheckedChange={() => onDelete(user)}
+                  aria-label="Toggle user status"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow
-                key={user.id}
-                onClick={() => onViewDetail(user)}
-                className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <span>#{user.id}</span>
-                    {/* Dummy element to force row height alignment */}
-                    <div
-                      className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
-                      aria-hidden="true">
-                      <div className="h-3.5 w-3.5"></div>
-                      <div className="h-3.5 w-3.5"></div>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 rounded-[14px] border border-slate-100 dark:border-slate-800/80">
-                      <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
-                      <AvatarFallback className="rounded-[14px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                        {user.name?.charAt(0)?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">{user.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-muted-foreground py-4">{user.email}</TableCell>
-                <TableCell className="py-4">
-                  <Badge variant="default" className={`text-white ${getRoleBadgeClass(user.role)}`}>
-                    {user.role}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground py-4 text-sm">
-                  {(user as Record<string, unknown>).createdAt ||
-                  (user as Record<string, unknown>).created_at
-                    ? formatDate(
-                        ((user as Record<string, unknown>).createdAt ||
-                          (user as Record<string, unknown>).created_at) as string
-                      )
-                    : "—"}
-                </TableCell>
-                <TableCell className="text-muted-foreground py-4 text-sm">
-                  {(user as Record<string, unknown>).updatedAt ||
-                  (user as Record<string, unknown>).updated_at
-                    ? formatDate(
-                        ((user as Record<string, unknown>).updatedAt ||
-                          (user as Record<string, unknown>).updated_at) as string
-                      )
-                    : "—"}
-                </TableCell>
-                <TableCell className="py-4 pr-6">
-                  <Switch
-                    className="data-[state=checked]:bg-emerald-500"
-                    checked={user.isActive !== false}
-                    onCheckedChange={() => onDelete(user)}
-                    aria-label="Toggle user status"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

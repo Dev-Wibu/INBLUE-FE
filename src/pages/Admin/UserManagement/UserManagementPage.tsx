@@ -492,21 +492,20 @@ export function UserManagementPage() {
                 onViewDetail={handleViewDetail}
                 getSortProps={getSortProps}
               />
+              {sortedData.length > 0 && (
+                <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800/80 dark:bg-slate-900">
+                  <PaginationControl
+                    pagination={pagination}
+                    showBoundaryButtons={false}
+                    showPageJump={false}
+                    onPageSizeChange={(nextPageSize) => {
+                      setPageSize(nextPageSize);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                </div>
+              )}
             </div>
-
-            {sortedData.length > 0 && (
-              <div className="flex flex-none items-center justify-end border-x border-b border-slate-200/90 bg-white px-4 py-3 sm:px-6 dark:border-x-slate-800/80 dark:border-b-slate-800/80 dark:bg-slate-900">
-                <PaginationControl
-                  pagination={pagination}
-                  showBoundaryButtons={false}
-                  showPageJump={false}
-                  onPageSizeChange={(nextPageSize) => {
-                    setPageSize(nextPageSize);
-                    pagination.goToFirstPage();
-                  }}
-                />
-              </div>
-            )}
 
             {sortedData.length === 0 && (searchQuery || statusFilter !== "active") && (
               <div className="flex justify-center pt-4 pb-4">
