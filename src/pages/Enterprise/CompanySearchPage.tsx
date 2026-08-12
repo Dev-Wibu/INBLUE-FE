@@ -369,12 +369,16 @@ export function CompanySearchPage() {
   const locations = useMemo(() => uniqueValues(companies, "location"), [companies]);
 
   const filteredCompanies = useMemo(() => {
-    return companies.filter((company) => {
-      const matchesIndustry = industryFilter === ALL_FILTER || company.industry === industryFilter;
-      const matchesLocation = locationFilter === ALL_FILTER || company.location === locationFilter;
-      const matchesOpenRoles = !openRolesOnly || getOpenRoleCount(company) > 0;
-      return matchesIndustry && matchesLocation && matchesOpenRoles;
-    });
+    return companies
+      .filter((company) => {
+        const matchesIndustry =
+          industryFilter === ALL_FILTER || company.industry === industryFilter;
+        const matchesLocation =
+          locationFilter === ALL_FILTER || company.location === locationFilter;
+        const matchesOpenRoles = !openRolesOnly || getOpenRoleCount(company) > 0;
+        return matchesIndustry && matchesLocation && matchesOpenRoles;
+      })
+      .sort((a, b) => getOpenRoleCount(b) - getOpenRoleCount(a));
   }, [companies, industryFilter, locationFilter, openRolesOnly]);
 
   const totalOpenRoles = useMemo(

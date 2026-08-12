@@ -172,6 +172,17 @@ export function JobDescriptionSlice() {
             })
           );
 
+          filteredList.sort((a, b) => {
+            const countA = (a.jobDescriptions ?? []).filter(
+              (j) => j.id && j.status === "OPEN" && !j.isDeleted
+            ).length;
+            const countB = (b.jobDescriptions ?? []).filter(
+              (j) => j.id && j.status === "OPEN" && !j.isDeleted
+            ).length;
+            if (countB !== countA) return countB - countA;
+            return (a.name || "").localeCompare(b.name || "");
+          });
+
           setCompanies(filteredList);
         }
       } catch (err) {

@@ -189,9 +189,29 @@ export function UserCompaniesTab() {
       try {
         const result = await companyManager.getAll();
         if (result.success && result.data) {
-          const list = normalizeCompanies(result.data).filter(
+          let list = normalizeCompanies(result.data).filter(
             (c) => !c.isDeleted && c.status === "ACTIVE"
           );
+
+          list = await Promise.all(
+            list.map(async (c) => {
+              if (c.id && (!c.jobDescriptions || c.jobDescriptions.length === 0)) {
+                try {
+                  const jobsRes = await companyManager.getJobs(c.id);
+                  if (jobsRes.success && jobsRes.data) {
+                    const jobs = Array.isArray(jobsRes.data)
+                      ? jobsRes.data
+                      : (jobsRes.data as { data?: JobDescription[] }).data || [];
+                    return { ...c, jobDescriptions: jobs };
+                  }
+                } catch (err) {
+                  console.error("[UserCompaniesTab] Error fetching jobs for company", c.id, err);
+                }
+              }
+              return c;
+            })
+          );
+
           setCompanies(list);
         }
       } catch (err) {
@@ -212,18 +232,21 @@ export function UserCompaniesTab() {
   }, [companies]);
 
   const filteredCompanies = useMemo(() => {
-    return companies.filter((c) => {
-      const matchesSearch =
-        !searchQuery.trim() ||
-        c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.location?.toLowerCase().includes(searchQuery.toLowerCase());
+    return companies
+      .filter((c) => {
+        const matchesSearch =
+          !searchQuery.trim() ||
+          c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.location?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesIndustry =
-        selectedIndustry === "ALL" || c.industry?.toLowerCase() === selectedIndustry.toLowerCase();
+        const matchesIndustry =
+          selectedIndustry === "ALL" ||
+          c.industry?.toLowerCase() === selectedIndustry.toLowerCase();
 
-      return matchesSearch && matchesIndustry;
-    });
+        return matchesSearch && matchesIndustry;
+      })
+      .sort((a, b) => getOpenRoleCount(b) - getOpenRoleCount(a));
   }, [companies, searchQuery, selectedIndustry]);
 
   const totalOpenRoles = useMemo(() => {
