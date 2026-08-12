@@ -468,7 +468,7 @@ export function AdminApplicationManagementPage() {
               type="submit"
               className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white">
               <Search className="mr-2 h-[18px] w-[18px]" />
-              {t("jobSearch.searchButton", "Tìm kiếm")}
+              {t("common.search", "Tìm kiếm")}
             </Button>
             <Button
               type="button"

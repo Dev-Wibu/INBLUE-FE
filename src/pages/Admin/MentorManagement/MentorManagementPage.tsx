@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PaginationControl, ReloadButton } from "@/components/shared";
+import { PaginationControl } from "@/components/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +29,6 @@ export function MentorManagementPage() {
   const { t } = useTranslation();
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");
   const [viewMode, setViewMode] = useState<"list" | "detail" | "create">("list");
@@ -39,34 +38,23 @@ export function MentorManagementPage() {
   const [isToggling, setIsToggling] = useState(false);
 
   // Load mentors using the mentor manager service
-  const loadMentors = useCallback(
-    async (showReloading = false) => {
-      if (showReloading) {
-        setIsReloading(true);
+  const loadMentors = useCallback(async () => {
+    setIsInitialLoading(true);
+    try {
+      const response = await mentorManager.getAll();
+      if (response.success && response.data) {
+        const mentorData = Array.isArray(response.data) ? response.data : response.data.data;
+        setMentors(mentorData as Mentor[]);
       } else {
-        setIsInitialLoading(true);
+        toast.error(response.error || t("common.unableToLoadMentorList"));
       }
-      try {
-        const response = await mentorManager.getAll();
-        if (response.success && response.data) {
-          const mentorData = Array.isArray(response.data) ? response.data : response.data.data;
-          setMentors(mentorData as Mentor[]);
-        } else {
-          toast.error(response.error || t("common.unableToLoadMentorList"));
-        }
-      } catch (error) {
-        console.error("Error loading mentors:", error);
-        toast.error(t("common.unableToLoadMentorList"));
-      } finally {
-        if (showReloading) {
-          setIsReloading(false);
-        } else {
-          setIsInitialLoading(false);
-        }
-      }
-    },
-    [t]
-  );
+    } catch (error) {
+      console.error("Error loading mentors:", error);
+      toast.error(t("common.unableToLoadMentorList"));
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, [t]);
 
   useEffect(() => {
     void loadMentors();
@@ -367,14 +355,8 @@ export function MentorManagementPage() {
                     type="submit"
                     className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                     <Search className="mr-2 h-[18px] w-[18px]" />
-                    {t("jobSearch.searchButton", "Tìm kiếm")}
+                    {t("common.search", "Tìm kiếm")}
                   </Button>
-                  <ReloadButton
-                    onReload={() => loadMentors(true)}
-                    isLoading={isReloading}
-                    tooltip={t("common.reloadMentorList", "Tải lại danh sách Mentor")}
-                    className="h-[46px] w-[46px] shrink-0 rounded-xl border-slate-200/90 dark:border-slate-800 dark:bg-slate-900"
-                  />
                   <Button
                     onClick={handleCreate}
                     className="h-[46px] shrink-0 rounded-xl border border-indigo-600 bg-indigo-600 px-6 text-[14.5px] font-semibold text-white shadow-xs shadow-indigo-500/20 hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
