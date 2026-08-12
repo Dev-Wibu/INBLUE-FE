@@ -130,12 +130,9 @@ export function QuestionBankManagementPage() {
   return (
     <div
       className={cn(
-        "-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950"
+        "-m-4 flex min-h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950"
       )}>
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="flex flex-1 flex-col gap-0 overflow-hidden">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col gap-0">
         <div className="m-4 mb-0 sm:m-6 sm:mb-0 lg:m-8 lg:mb-0">
           <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
@@ -206,8 +203,8 @@ export function QuestionBankManagementPage() {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-          <TabsContent value="questions" className="m-0 flex h-full flex-col overflow-hidden">
+        <div className="flex flex-1 flex-col bg-slate-50 dark:bg-slate-950">
+          <TabsContent value="questions" className="m-0 flex h-full flex-col">
             {isLoading ? (
               <div className="flex h-64 flex-col items-center justify-center gap-3">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
@@ -240,7 +237,7 @@ export function QuestionBankManagementPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="categories" className="m-0 flex h-full flex-col overflow-hidden">
+          <TabsContent value="categories" className="m-0 flex h-full flex-col">
             <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 pt-6 duration-300 sm:p-6 sm:pt-6 md:px-8 dark:bg-slate-950">
               <QuestionBankCategoryTab
                 questions={questions}
