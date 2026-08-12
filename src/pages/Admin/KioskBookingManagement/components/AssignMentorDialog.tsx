@@ -170,7 +170,7 @@ export function AssignMentorDialog({
                   <Briefcase className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   {t("adminKiosk.bookingInfo")}
                 </h3>
-                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900">
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
