@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CVUploadModal from "@/components/ui/cv-upload-modal";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -19,12 +19,15 @@ import {
   Award,
   Briefcase,
   Calendar,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
+  Circle,
   Code,
   FileText,
   FolderOpen,
   GraduationCap,
+  Lightbulb,
   Mail,
   Pencil,
   Trophy,
@@ -47,7 +50,21 @@ interface UserDetailViewProps {
   onSubmit: () => void;
 }
 
-function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }: any) {
+interface CollapsibleCardProps {
+  title: string;
+  icon?: React.ElementType;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  id?: string;
+}
+
+function CollapsibleCard({
+  title,
+  icon: Icon,
+  children,
+  defaultOpen = true,
+  id,
+}: CollapsibleCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
     <div
@@ -115,11 +132,40 @@ export function UserDetailView({
     return matched?.label || value;
   };
 
-  const derivedSchool = (user as any).university || activeProfile?.educations?.[0]?.school || "";
+  const userRecord = user as Record<string, unknown>;
+  const derivedSchool = String(
+    userRecord.university || activeProfile?.educations?.[0]?.school || ""
+  );
   const derivedTargetRole = activeProfile?.targetRole || "";
   const derivedEduMajor = activeProfile?.educations?.[0]?.major || "";
-  const rawMajor = derivedTargetRole || derivedEduMajor || (user as any).major || "";
+  const rawMajor = derivedTargetRole || derivedEduMajor || String(userRecord.major || "");
   const derivedMajor = getMajorLabel(rawMajor);
+
+  const completenessFields = useMemo(
+    () => [
+      !!(activeProfile?.introduction || user.name),
+      !!(
+        (activeProfile?.technicalSkills?.length ?? 0) > 0 ||
+        (activeProfile?.softSkills?.length ?? 0) > 0
+      ),
+      !!(
+        (activeProfile?.workExperiences?.length ?? 0) > 0 ||
+        (activeProfile?.projects?.length ?? 0) > 0
+      ),
+      !!((activeProfile?.educations?.length ?? 0) > 0),
+      !!user?.cvUrl,
+    ],
+    [activeProfile, user]
+  );
+
+  const completedCount = useMemo(
+    () => completenessFields.filter(Boolean).length,
+    [completenessFields]
+  );
+  const completenessPercentage = useMemo(
+    () => Math.round((completedCount / completenessFields.length) * 100),
+    [completedCount, completenessFields.length]
+  );
 
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -142,8 +188,7 @@ export function UserDetailView({
       } else {
         toast.error(response.error || t("adminUsermanagement.uploadCvFailed"));
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch {
       toast.error(t("adminUsermanagement.uploadCvFailed"));
     } finally {
       setIsCvUploading(false);
@@ -155,7 +200,7 @@ export function UserDetailView({
     setIsEditingUser(false);
   };
 
-  const scrollToSection = (e: any, id: string) => {
+  const scrollToSection = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
@@ -181,8 +226,8 @@ export function UserDetailView({
           </div>
         ) : (
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-            {/* Left Column: Sticky Profile Card */}
-            <div className="lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
+            {/* Left Column: Sticky Profile Card & Completeness Progress */}
+            <div className="flex flex-col gap-6 lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
                   <Button
@@ -277,6 +322,69 @@ export function UserDetailView({
                     </Button>
                   </div>
                 </div>
+              </div>
+
+              {/* Card 2: Profile Completeness Card */}
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <h4 className="mb-3 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  {t("userAccount.profileCompleteness", "Độ hoàn thiện hồ sơ")}
+                </h4>
+                <div className="mb-3 flex items-center gap-3">
+                  <Progress value={completenessPercentage} className="h-2 flex-1" />
+                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                    {completenessPercentage}%
+                  </span>
+                </div>
+                <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
+                  <li className="flex items-center gap-2">
+                    {completenessFields[0] ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
+                    )}
+                    <span className="truncate">
+                      {t("userAccount.profileBasicInfo", "Thông tin & Giới thiệu")}
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    {completenessFields[1] ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
+                    )}
+                    <span className="truncate">
+                      {t("common.technicalSkills", "Kỹ năng & Công cụ")}
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    {completenessFields[2] ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
+                    )}
+                    <span className="truncate">
+                      {t("common.workExperience", "Kinh nghiệm & Dự án")}
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    {completenessFields[3] ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
+                    )}
+                    <span className="truncate">{t("common.education", "Học vấn & Bằng cấp")}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    {completenessFields[4] ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
+                    )}
+                    <span className="truncate">
+                      {t("adminUsermanagement.cvUploaded", "File CV đính kèm")}
+                    </span>
+                  </li>
+                </ul>
               </div>
             </div>
 
@@ -597,11 +705,11 @@ export function UserDetailView({
               )}
             </div>
 
-            {/* Right Column: TOC Menu (Only visible when not editing profile) */}
+            {/* Right Column: TOC Menu & Quick Tip Card */}
             {!isEditingProfile && (
-              <div className="hidden lg:sticky lg:top-4 lg:col-span-2 lg:block lg:self-start">
-                <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-                  <h4 className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+              <div className="hidden lg:sticky lg:top-4 lg:col-span-2 lg:flex lg:flex-col lg:gap-6 lg:self-start">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                  <h4 className="mb-3 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                     {t("common.tableOfContents", "Nội dung")}
                   </h4>
                   <nav className="space-y-1">
@@ -609,47 +717,60 @@ export function UserDetailView({
                       <a
                         href="#intro"
                         onClick={(e) => scrollToSection(e, "intro")}
-                        className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                        className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
                         {t("common.introduce")}
                       </a>
                     )}
                     <a
                       href="#skills"
                       onClick={(e) => scrollToSection(e, "skills")}
-                      className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
                       {t("common.technicalSkills")}
                     </a>
                     <a
                       href="#experience"
                       onClick={(e) => scrollToSection(e, "experience")}
-                      className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
                       {t("common.workExperience")}
                     </a>
                     <a
                       href="#projects"
                       onClick={(e) => scrollToSection(e, "projects")}
-                      className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
                       {t("common.project")}
                     </a>
                     <a
                       href="#education"
                       onClick={(e) => scrollToSection(e, "education")}
-                      className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
                       {t("common.education")}
                     </a>
                     <a
                       href="#certifications"
                       onClick={(e) => scrollToSection(e, "certifications")}
-                      className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
                       {t("common.certifications")}
                     </a>
                     <a
                       href="#achievements"
                       onClick={(e) => scrollToSection(e, "achievements")}
-                      className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
                       {t("common.achievements")}
                     </a>
                   </nav>
+                </div>
+
+                <div className="rounded-2xl border border-indigo-100 bg-indigo-50/80 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/40">
+                  <h4 className="mb-1.5 flex items-center gap-2 text-xs font-bold text-indigo-900 dark:text-indigo-300">
+                    <Lightbulb className="h-4 w-4 shrink-0 text-amber-500" />
+                    {t("adminUsermanagement.adminTipTitle", "Ghi chú Quản trị")}
+                  </h4>
+                  <p className="text-[11.5px] leading-relaxed text-indigo-700 dark:text-indigo-400">
+                    {t(
+                      "adminUsermanagement.adminTipContent",
+                      "Dữ liệu hồ sơ giúp đánh giá năng lực trước khi gán Mentor hoặc duyệt đơn."
+                    )}
+                  </p>
                 </div>
               </div>
             )}
