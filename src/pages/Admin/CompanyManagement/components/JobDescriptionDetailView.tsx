@@ -31,8 +31,6 @@ import { formatCurrency } from "@/lib/formatting";
 
 import { useUsers } from "@/hooks/useApplication";
 
-import { StatusBadge } from "@/components/shared/StatusBadge";
-import { getJobDescriptionLevelBadge } from "@/lib/status-utils";
 import { cn } from "@/lib/utils";
 import {
   adminApplicationManager,
@@ -656,7 +654,24 @@ export function JobDescriptionDetailView({
             {currentJd.title || t("common.title")}
           </h1>
 
-          {currentJd.level && <StatusBadge {...getJobDescriptionLevelBadge(currentJd.level)} />}
+          {currentJd.level && (
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wide",
+                currentJd.level === "INTERN" &&
+                  "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+                currentJd.level === "FRESHER" &&
+                  "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800",
+                currentJd.level === "JUNIOR" &&
+                  "bg-blue-50 text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:ring-blue-800",
+                currentJd.level === "MIDDLE" &&
+                  "bg-violet-50 text-violet-700 ring-1 ring-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:ring-violet-800",
+                currentJd.level === "SENIOR" &&
+                  "bg-orange-50 text-orange-700 ring-1 ring-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:ring-orange-800"
+              )}>
+              {currentJd.level.charAt(0).toUpperCase() + currentJd.level.slice(1).toLowerCase()}
+            </span>
+          )}
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
