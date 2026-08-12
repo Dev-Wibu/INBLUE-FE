@@ -13,13 +13,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
@@ -370,31 +363,18 @@ export function MentorManagementPage() {
                       className="h-[46px] w-full rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
                     />
                   </div>
-                  <Select
-                    value={statusFilter}
-                    onValueChange={(value) => {
-                      setStatusFilter(value);
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger className="h-[46px] w-full rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 text-[14.5px] font-medium text-slate-700 shadow-2xs sm:w-44 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200">
-                      <SelectValue
-                        placeholder={t("common.filterByStatus", "Lọc theo trạng thái")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">{t("common.active", "Đang hoạt động")}</SelectItem>
-                      <SelectItem value="inactive">{t("common.shutDown", "Đã tắt")}</SelectItem>
-                      <SelectItem value="all">{t("common.allStatus", "Tất cả")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-
+                  <Button
+                    type="submit"
+                    className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                    <Search className="mr-2 h-[18px] w-[18px]" />
+                    {t("jobSearch.searchButton", "Tìm kiếm")}
+                  </Button>
                   <ReloadButton
                     onReload={() => loadMentors(true)}
                     isLoading={isReloading}
                     tooltip={t("common.reloadMentorList", "Tải lại danh sách Mentor")}
                     className="h-[46px] w-[46px] shrink-0 rounded-xl border-slate-200/90 dark:border-slate-800 dark:bg-slate-900"
                   />
-
                   <Button
                     onClick={handleCreate}
                     className="h-[46px] shrink-0 rounded-xl border border-indigo-600 bg-indigo-600 px-6 text-[14.5px] font-semibold text-white shadow-xs shadow-indigo-500/20 hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
@@ -402,6 +382,33 @@ export function MentorManagementPage() {
                     {t("adminMentormanagement.addMentor", "Thêm Mentor")}
                   </Button>
                 </form>
+
+                {/* Status Filter Pills Row (Below search form, matching User Management) */}
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                    {t("common.status", "Trạng thái")}:
+                  </span>
+                  {[
+                    ["active", t("common.active", "Đang hoạt động")],
+                    ["inactive", t("common.shutDown", "Đã tắt")],
+                    ["all", t("common.allStatus", "Tất cả")],
+                  ].map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        setStatusFilter(value);
+                        pagination.goToFirstPage();
+                      }}
+                      className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                        statusFilter === value
+                          ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90 dark:text-white dark:shadow-indigo-500/20"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                      }`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Table Card Container */}
