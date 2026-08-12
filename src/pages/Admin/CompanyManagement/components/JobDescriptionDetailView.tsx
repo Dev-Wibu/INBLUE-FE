@@ -228,6 +228,8 @@ interface JobDescriptionDetailViewProps {
 
 export function JobDescriptionDetailView({
   jobDescription,
+  companyName,
+  onBack,
   onEdit,
   onApplicationsCountChange,
 }: JobDescriptionDetailViewProps) {
