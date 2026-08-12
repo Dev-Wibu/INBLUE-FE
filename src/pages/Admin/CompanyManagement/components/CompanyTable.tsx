@@ -31,7 +31,7 @@ export function CompanyTable({
 
   if (!companies.length) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+      <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
           <Building2 className="h-6 w-6 text-slate-400" />
         </div>
@@ -48,26 +48,26 @@ export function CompanyTable({
   }
 
   return (
-    <div className="border-y border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-950">
+    <div className="overflow-x-auto">
       <Table>
-        <TableHeader className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-          <TableRow>
-            <TableHead className="w-20 pl-6 font-medium text-slate-500">
+        <TableHeader>
+          <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.id", "ID")}
             </TableHead>
-            <TableHead className="font-medium text-slate-500">
+            <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCompanymanagement.companyName", "Tên công ty")}
             </TableHead>
-            <TableHead className="font-medium text-slate-500">
+            <TableHead className="px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.description", "Mô tả")}
             </TableHead>
-            <TableHead className="w-28 text-center font-medium text-slate-500">
+            <TableHead className="w-[120px] text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCompanymanagement.jdCount", "Số JD")}
             </TableHead>
-            <TableHead className="w-32 text-center font-medium text-slate-500">
+            <TableHead className="w-[120px] text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("common.status", "Trạng thái")}
             </TableHead>
-            <TableHead className="w-28 pr-6 text-right font-medium text-slate-500">
+            <TableHead className="w-[100px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
               {t("common.actions", "Thao tác")}
             </TableHead>
           </TableRow>
@@ -81,30 +81,23 @@ export function CompanyTable({
               <TableRow
                 key={company.id}
                 onClick={() => onSelectCompany(company)}
-                className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                className={`group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80 ${
                   isInactive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
-                <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <span>#{company.id}</span>
-                    {/* Dummy element to force row height alignment */}
                     <div
                       className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
                       aria-hidden="true">
-                      <div className="flex items-center gap-1.5 text-[11px]">
-                        <span className="h-3.5 w-3.5"></span>
-                        <span>dummy</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[11px]">
-                        <span className="h-3.5 w-3.5"></span>
-                        <span>sample</span>
-                      </div>
+                      <div className="h-3.5 w-3.5"></div>
+                      <div className="h-3.5 w-3.5"></div>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-4 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
                       {company.logoUrl && !imageFailed ? (
                         <img
                           src={company.logoUrl}
@@ -117,7 +110,7 @@ export function CompanyTable({
                           className="h-full w-full object-contain p-1"
                         />
                       ) : (
-                        <Building2 className="h-4 w-4 text-slate-400" />
+                        <Building2 className="h-5 w-5 text-slate-400" />
                       )}
                     </div>
                     <span className="font-semibold text-slate-900 dark:text-slate-100">
@@ -125,25 +118,26 @@ export function CompanyTable({
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="max-w-xs">
-                  <p className="line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
+                <TableCell className="max-w-xs px-4 py-4">
+                  <p className="line-clamp-1 text-xs font-medium text-slate-600 dark:text-slate-300">
                     {company.description || "—"}
                   </p>
                 </TableCell>
-                <TableCell className="text-center">
-                  <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {company.jobDescriptions?.length || 0} {t("adminCompanymanagement.jdShort")}
+                <TableCell className="px-4 py-4 text-center">
+                  <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    {company.jobDescriptions?.length || 0}{" "}
+                    {t("adminCompanymanagement.jdShort", "JD")}
                   </span>
                 </TableCell>
-                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="py-4 text-center" onClick={(e) => e.stopPropagation()}>
                   <Switch
                     checked={company.status === "ACTIVE"}
                     onCheckedChange={() => onToggleStatus?.(company)}
-                    className="shadow-sm data-[state=checked]:bg-emerald-500"
+                    className="data-[state=checked]:bg-emerald-500"
                     aria-label={`Toggle status for ${company.name}`}
                   />
                 </TableCell>
-                <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="py-4 pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1">
                     <Button
                       variant="ghost"

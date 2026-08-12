@@ -491,43 +491,43 @@ export function CompanyManagementPage() {
               </div>
             </div>
 
+            {/* Tab Switcher Pills Row */}
+            <div className="mt-5 flex items-center gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("companies");
+                  setSelectedCompanyId(null);
+                  setSelectedJdId(null);
+                }}
+                className={`rounded-full border px-4 py-1.5 text-[13.5px] font-semibold transition-all ${
+                  activeTab === "companies"
+                    ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600 dark:text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`}>
+                {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("jds");
+                  setSelectedCompanyId(null);
+                  setSelectedJdId(null);
+                }}
+                className={`rounded-full border px-4 py-1.5 text-[13.5px] font-semibold transition-all ${
+                  activeTab === "jds"
+                    ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600 dark:text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`}>
+                {t("adminCompanymanagement.jdList", "Danh sách JD")}
+              </button>
+            </div>
+
             {/* Search & Control Row */}
             <form
               onSubmit={(e) => e.preventDefault()}
-              className="mt-6 flex flex-col gap-3 sm:flex-row">
-              {/* Tab Pills Switcher */}
-              <div className="flex shrink-0 items-center rounded-xl border border-slate-200/90 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-950/70">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("companies");
-                    setSelectedCompanyId(null);
-                    setSelectedJdId(null);
-                  }}
-                  className={`rounded-lg px-3.5 py-2 text-[13.5px] font-semibold transition-all ${
-                    activeTab === "companies"
-                      ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-900 dark:text-indigo-400"
-                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  }`}>
-                  {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("jds");
-                    setSelectedCompanyId(null);
-                    setSelectedJdId(null);
-                  }}
-                  className={`rounded-lg px-3.5 py-2 text-[13.5px] font-semibold transition-all ${
-                    activeTab === "jds"
-                      ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-900 dark:text-indigo-400"
-                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  }`}>
-                  {t("adminCompanymanagement.jdList", "Danh sách JD")}
-                </button>
-              </div>
-
-              {/* Search Field */}
+              className="mt-4 flex flex-col gap-3 sm:flex-row">
+              {/* Search Field (Fixed 100% width consistency across tabs) */}
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <Input
@@ -564,16 +564,19 @@ export function CompanyManagementPage() {
                 {t("common.search", "Tìm kiếm")}
               </Button>
 
+              {/* Action Button (Fixed 165px width to prevent search bar layout shift) */}
               <Button
                 type="button"
                 onClick={() =>
                   activeTab === "companies" ? handleCreateCompany() : handleOpenCreateJd()
                 }
-                className="h-[46px] shrink-0 rounded-xl border border-indigo-600 bg-indigo-600 px-6 text-[14.5px] font-semibold text-white shadow-xs shadow-indigo-500/20 hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
-                <Plus className="mr-2 h-[18px] w-[18px]" />
-                {activeTab === "companies"
-                  ? t("adminCompanymanagement.addCompany", "Thêm công ty")
-                  : t("adminCompanymanagement.createJd", "Tạo JD mới")}
+                className="h-[46px] w-[165px] shrink-0 justify-center rounded-xl border border-indigo-600 bg-indigo-600 text-[14.5px] font-semibold text-white shadow-xs shadow-indigo-500/20 hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+                <Plus className="mr-1.5 h-[18px] w-[18px] shrink-0" />
+                <span className="truncate">
+                  {activeTab === "companies"
+                    ? t("adminCompanymanagement.addCompany", "Thêm công ty")
+                    : t("adminCompanymanagement.createJd", "Tạo JD mới")}
+                </span>
               </Button>
             </form>
 
