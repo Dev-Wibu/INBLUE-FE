@@ -7,17 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, Calendar, Clock, MapPin, User } from "lucide-react";
+import { Briefcase, Calendar, Clock, MapPin, Search, Star, User } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { EnrichedKioskBooking, Mentor } from "../types";
@@ -40,6 +35,8 @@ export function AssignMentorDialog({
   onAssign,
 }: AssignMentorDialogProps) {
   const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMentorId, setSelectedMentorId] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,8 +47,8 @@ export function AssignMentorDialog({
       return;
     }
 
+    const mentorId = Number(selectedMentorId);
     const formData = new FormData(e.currentTarget);
-    const mentorId = Number(formData.get("mentorId"));
     const notes = String(formData.get("notes") || "");
 
     if (!mentorId || isNaN(mentorId) || !booking?.id) {
@@ -59,6 +56,13 @@ export function AssignMentorDialog({
     }
     onAssign(booking.id, mentorId, notes);
   };
+
+  // Filter mentors by search query
+  const filteredMentors = mentors.filter(
+    (mentor) =>
+      mentor.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mentor.expertise?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Format date for display
   const formatDisplayDate = (dateStr?: string) => {
@@ -226,30 +230,64 @@ export function AssignMentorDialog({
                   <User className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   {t("adminKiosk.mentor")}
                 </h3>
-                <div className="space-y-2">
-                  <Label htmlFor="mentorId" className="text-sm font-medium">
-                    {t("adminKiosk.selectMentor")}
-                  </Label>
-                  <Select name="mentorId" required>
-                    <SelectTrigger className="h-11 bg-white dark:bg-slate-900">
-                      <SelectValue placeholder={t("adminKiosk.selectMentor")} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {mentors.map((mentor) => (
-                        <SelectItem key={mentor.id} value={String(mentor.id)}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{mentor.name}</span>
-                            {mentor.expertise && (
-                              <span className="text-muted-foreground text-xs">
-                                {mentor.expertise}
-                              </span>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+
+                {/* Search Input */}
+                <div className="relative mb-3">
+                  <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    type="text"
+                    placeholder={t("common.searchMentor", "Tìm kiếm mentor...")}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-10 pl-9"
+                  />
                 </div>
+
+                {/* Mentor List */}
+                <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900">
+                  {filteredMentors.length === 0 ? (
+                    <p className="p-4 text-center text-sm text-slate-500">
+                      {t("common.noMentorsFound", "Không tìm thấy mentor")}
+                    </p>
+                  ) : (
+                    filteredMentors.map((mentor) => (
+                      <button
+                        key={mentor.id}
+                        type="button"
+                        onClick={() => setSelectedMentorId(String(mentor.id))}
+                        className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors ${
+                          selectedMentorId === String(mentor.id)
+                            ? "bg-indigo-50 ring-2 ring-indigo-500 dark:bg-indigo-950/50"
+                            : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                        }`}>
+                        <div
+                          className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors ${
+                            selectedMentorId === String(mentor.id)
+                              ? "border-indigo-500 bg-indigo-500"
+                              : "border-slate-300 dark:border-slate-600"
+                          }`}>
+                          {selectedMentorId === String(mentor.id) && (
+                            <div className="h-2 w-2 rounded-full bg-white" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-medium text-slate-900 dark:text-slate-100">
+                            {mentor.name}
+                          </p>
+                          {mentor.expertise && (
+                            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                              {mentor.expertise}
+                            </p>
+                          )}
+                        </div>
+                        <Star className="h-4 w-4 shrink-0 text-amber-400" />
+                      </button>
+                    ))
+                  )}
+                </div>
+
+                {/* Hidden input for form submission */}
+                <input type="hidden" name="mentorId" value={selectedMentorId} />
               </div>
 
               <div>
@@ -260,7 +298,7 @@ export function AssignMentorDialog({
                   id="notes"
                   name="notes"
                   placeholder={t("adminKiosk.notesPlaceholder")}
-                  rows={4}
+                  rows={3}
                   className="mt-1.5 resize-none bg-white dark:bg-slate-900"
                 />
               </div>
