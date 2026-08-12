@@ -7,7 +7,10 @@ import { useSortable } from "@/hooks/useSortable";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { cn } from "@/lib/utils";
 import { candidateProfileManager, usersAdminManager } from "@/services";
-import { getLatestCandidateProfile } from "@/services/candidate-profile.manager";
+import {
+  getLatestCandidateProfile,
+  normalizeCandidateProfiles,
+} from "@/services/candidate-profile.manager";
 import { Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,6 +32,7 @@ export function UserManagementPage() {
   const [formData, setFormData] = useState<ExtendedUserFormData>({});
 
   const [selectedProfileData, setSelectedProfileData] = useState<CandidateProfile | null>(null);
+  const [userProfiles, setUserProfiles] = useState<CandidateProfile[]>([]);
 
   const navigate = useNavigate();
   const { userId } = useParams();
@@ -67,14 +71,19 @@ export function UserManagementPage() {
         try {
           const response = await candidateProfileManager.getByUserId(user.id);
           if (response.success && response.data) {
-            setSelectedProfileData(getLatestCandidateProfile(response.data));
+            const profiles = normalizeCandidateProfiles(response.data);
+            setUserProfiles(profiles);
+            setSelectedProfileData(getLatestCandidateProfile(profiles));
           } else {
+            setUserProfiles([]);
             setSelectedProfileData(null);
           }
         } catch {
+          setUserProfiles([]);
           setSelectedProfileData(null);
         }
       } else {
+        setUserProfiles([]);
         setSelectedProfileData(null);
       }
       setViewMode("detail");
@@ -91,6 +100,7 @@ export function UserManagementPage() {
         setViewMode("list");
         setSelectedUser(null);
         setSelectedProfileData(null);
+        setUserProfiles([]);
       }
       return;
     }
@@ -225,8 +235,7 @@ export function UserManagementPage() {
     <div
       className={cn(
         "flex flex-col bg-slate-50 dark:bg-slate-950",
-        (viewMode === "list" || viewMode === "create") &&
-          "-m-4 h-[calc(100%+32px)] md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]"
+        "-m-4 min-h-[calc(100%+32px)] md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)]"
       )}>
       <div
         className={cn(
@@ -237,6 +246,7 @@ export function UserManagementPage() {
           <UserDetailView
             user={selectedUser}
             profile={selectedProfileData}
+            profiles={userProfiles}
             formData={formData}
             onFormChange={setFormData}
             onSubmit={handleSubmitEdit}

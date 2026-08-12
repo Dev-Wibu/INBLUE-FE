@@ -2,6 +2,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CVUploadModal from "@/components/ui/cv-upload-modal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useMajorOptions } from "@/constants/majors";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { formatDate } from "@/lib/formatting";
@@ -23,7 +30,7 @@ import {
   Trophy,
   User as UserIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { User as UserType } from "../types";
@@ -33,6 +40,7 @@ import { UserEditForm, type ExtendedUserFormData } from "./UserEditForm";
 interface UserDetailViewProps {
   user: UserType;
   profile: CandidateProfile | null;
+  profiles?: CandidateProfile[];
   onBack: () => void;
   formData: ExtendedUserFormData;
   onFormChange: (data: ExtendedUserFormData) => void;
@@ -69,6 +77,7 @@ function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }
 export function UserDetailView({
   user,
   profile,
+  profiles = [],
   onBack,
   formData,
   onFormChange,
@@ -76,15 +85,39 @@ export function UserDetailView({
 }: UserDetailViewProps) {
   const { t } = useTranslation();
   const majorOptions = useMajorOptions();
+
+  const activeProfiles = useMemo(() => {
+    if (profiles.length > 0) return profiles;
+    return profile ? [profile] : [];
+  }, [profiles, profile]);
+
+  const [selectedProfileId, setSelectedProfileId] = useState<number | null>(
+    () => profile?.id ?? null
+  );
+
+  useEffect(() => {
+    if (profile?.id) {
+      setSelectedProfileId(profile.id);
+    }
+  }, [profile?.id]);
+
+  const activeProfile = useMemo(() => {
+    if (selectedProfileId) {
+      const found = activeProfiles.find((p) => p.id === selectedProfileId);
+      if (found) return found;
+    }
+    return profile || activeProfiles[0] || null;
+  }, [selectedProfileId, activeProfiles, profile]);
+
   const getMajorLabel = (value: string): string => {
     if (!value) return "";
     const matched = majorOptions.find((option) => option.value === value);
     return matched?.label || value;
   };
 
-  const derivedSchool = (user as any).university || profile?.educations?.[0]?.school || "";
-  const derivedTargetRole = profile?.targetRole || "";
-  const derivedEduMajor = profile?.educations?.[0]?.major || "";
+  const derivedSchool = (user as any).university || activeProfile?.educations?.[0]?.school || "";
+  const derivedTargetRole = activeProfile?.targetRole || "";
+  const derivedEduMajor = activeProfile?.educations?.[0]?.major || "";
   const rawMajor = derivedTargetRole || derivedEduMajor || (user as any).major || "";
   const derivedMajor = getMajorLabel(rawMajor);
 
@@ -209,11 +242,11 @@ export function UserDetailView({
                       <Mail className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
                       <span className="truncate">{user.email}</span>
                     </div>
-                    {profile?.createdAt && (
+                    {activeProfile?.createdAt && (
                       <div className="flex items-center justify-center gap-2 px-1">
                         <Calendar className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
                         <span className="truncate">
-                          {t("userAccount.joinDate")} {formatDate(profile.createdAt)}
+                          {t("userAccount.joinDate")} {formatDate(activeProfile.createdAt)}
                         </span>
                       </div>
                     )}
@@ -225,9 +258,9 @@ export function UserDetailView({
                       className="px-2.5 py-0.5 text-xs font-medium tracking-wider uppercase">
                       {user.role}
                     </Badge>
-                    {profile?.targetLevel && (
+                    {activeProfile?.targetLevel && (
                       <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">
-                        {profile.targetLevel}
+                        {activeProfile.targetLevel}
                       </Badge>
                     )}
                   </div>
@@ -267,16 +300,46 @@ export function UserDetailView({
                           {t("userAccount.overviewOfYourApplicationProfile")}
                         </p>
                       </div>
-                      <Button onClick={() => setIsEditingProfile(true)}>{t("general.edit")}</Button>
+                      <div className="flex flex-wrap items-center gap-3">
+                        {activeProfiles.length > 1 && (
+                          <Select
+                            value={selectedProfileId ? String(selectedProfileId) : undefined}
+                            onValueChange={(val) => setSelectedProfileId(Number(val))}>
+                            <SelectTrigger className="h-10 min-w-52 rounded-xl border-slate-200 text-xs font-semibold shadow-2xs focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950">
+                              <SelectValue
+                                placeholder={t("common.selectProfile", "Chọn bộ hồ sơ")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {activeProfiles
+                                .filter((p) => p.id !== undefined)
+                                .map((p) => (
+                                  <SelectItem
+                                    key={p.id}
+                                    value={String(p.id)}
+                                    className="text-xs font-medium">
+                                    {p.applicationId
+                                      ? `Hồ sơ ứng tuyển #${p.applicationId}`
+                                      : `Bộ hồ sơ #${p.id}`}
+                                    {p.targetRole ? ` (${p.targetRole})` : ""}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                        <Button onClick={() => setIsEditingProfile(true)}>
+                          {t("general.edit")}
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
-                  {profile ? (
+                  {activeProfile ? (
                     <>
-                      {profile.introduction && (
+                      {activeProfile.introduction && (
                         <CollapsibleCard id="intro" title={t("common.introduce")} icon={UserIcon}>
                           <p className="text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                            {profile.introduction}
+                            {activeProfile.introduction}
                           </p>
                         </CollapsibleCard>
                       )}
@@ -290,8 +353,8 @@ export function UserDetailView({
                               {t("common.technicalSkills")}
                             </h4>
                             <div className="flex flex-wrap gap-2">
-                              {(profile.technicalSkills ?? []).length > 0 ? (
-                                profile.technicalSkills!.map((s) => (
+                              {(activeProfile.technicalSkills ?? []).length > 0 ? (
+                                activeProfile.technicalSkills!.map((s) => (
                                   <Badge
                                     key={s}
                                     className="border-none bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20">
@@ -312,8 +375,8 @@ export function UserDetailView({
                               {t("common.softSkills")}
                             </h4>
                             <div className="flex flex-wrap gap-2">
-                              {(profile.softSkills ?? []).length > 0 ? (
-                                profile.softSkills!.map((s) => (
+                              {(activeProfile.softSkills ?? []).length > 0 ? (
+                                activeProfile.softSkills!.map((s) => (
                                   <Badge
                                     key={s}
                                     className="border-none bg-purple-50 px-3 py-1 text-sm font-medium text-purple-700 hover:bg-purple-100 dark:bg-purple-500/10 dark:text-purple-400 dark:hover:bg-purple-500/20">
@@ -334,8 +397,8 @@ export function UserDetailView({
                               {t("common.tools")}
                             </h4>
                             <div className="flex flex-wrap gap-2">
-                              {(profile.tools ?? []).length > 0 ? (
-                                profile.tools!.map((t_) => (
+                              {(activeProfile.tools ?? []).length > 0 ? (
+                                activeProfile.tools!.map((t_) => (
                                   <Badge
                                     key={t_}
                                     className="border-none bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700 hover:bg-orange-100 dark:bg-orange-500/10 dark:text-orange-400 dark:hover:bg-orange-500/20">
@@ -357,10 +420,10 @@ export function UserDetailView({
                         id="experience"
                         title={t("common.workExperience")}
                         icon={Briefcase}>
-                        {(profile.workExperiences ?? []).length > 0 ? (
+                        {(activeProfile.workExperiences ?? []).length > 0 ? (
                           <div className="relative border-l-2 border-slate-100 pl-6 dark:border-slate-800">
                             <div className="space-y-8">
-                              {profile.workExperiences!.map((w, i) => (
+                              {activeProfile.workExperiences!.map((w, i) => (
                                 <div key={i} className="relative">
                                   <div className="absolute top-1 -left-[35px] h-4 w-4 rounded-full border-4 border-white bg-indigo-500 dark:border-slate-900" />
                                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
@@ -392,10 +455,10 @@ export function UserDetailView({
 
                       {/* Projects */}
                       <CollapsibleCard id="projects" title={t("common.project")} icon={FolderOpen}>
-                        {(profile.projects ?? []).length > 0 ? (
+                        {(activeProfile.projects ?? []).length > 0 ? (
                           <div className="relative border-l-2 border-slate-100 pl-6 dark:border-slate-800">
                             <div className="space-y-8">
-                              {profile.projects!.map((p, i) => (
+                              {activeProfile.projects!.map((p, i) => (
                                 <div key={i} className="relative">
                                   <div className="absolute top-1 -left-[35px] h-4 w-4 rounded-full border-4 border-white bg-teal-500 dark:border-slate-900" />
                                   <h4 className="text-base font-semibold text-slate-900 dark:text-white">
@@ -445,10 +508,10 @@ export function UserDetailView({
                         id="education"
                         title={t("common.education")}
                         icon={GraduationCap}>
-                        {(profile.educations ?? []).length > 0 ? (
+                        {(activeProfile.educations ?? []).length > 0 ? (
                           <div className="relative border-l-2 border-slate-100 pl-6 dark:border-slate-800">
                             <div className="space-y-8">
-                              {profile.educations!.map((e, i) => (
+                              {activeProfile.educations!.map((e, i) => (
                                 <div key={i} className="relative">
                                   <div className="absolute top-1 -left-[35px] h-4 w-4 rounded-full border-4 border-white bg-rose-500 dark:border-slate-900" />
                                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
@@ -486,9 +549,9 @@ export function UserDetailView({
                         id="certifications"
                         title={t("common.certifications")}
                         icon={Award}>
-                        {(profile.certifications ?? []).length > 0 ? (
+                        {(activeProfile.certifications ?? []).length > 0 ? (
                           <ul className="space-y-3">
-                            {profile.certifications!.map((cert, i) => (
+                            {activeProfile.certifications!.map((cert, i) => (
                               <li key={i} className="flex items-start gap-3">
                                 <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
                                 <span className="text-slate-700 dark:text-slate-300">{cert}</span>
@@ -507,9 +570,9 @@ export function UserDetailView({
                         id="achievements"
                         title={t("common.achievements")}
                         icon={Trophy}>
-                        {(profile.achievements ?? []).length > 0 ? (
+                        {(activeProfile.achievements ?? []).length > 0 ? (
                           <ul className="space-y-3">
-                            {profile.achievements!.map((ach, i) => (
+                            {activeProfile.achievements!.map((ach, i) => (
                               <li key={i} className="flex items-start gap-3">
                                 <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500" />
                                 <span className="text-slate-700 dark:text-slate-300">{ach}</span>
@@ -542,7 +605,7 @@ export function UserDetailView({
                     {t("common.tableOfContents", "Nội dung")}
                   </h4>
                   <nav className="space-y-1">
-                    {profile?.introduction && (
+                    {activeProfile?.introduction && (
                       <a
                         href="#intro"
                         onClick={(e) => scrollToSection(e, "intro")}
