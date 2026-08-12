@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock, Filter } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -153,6 +153,8 @@ export function OverviewPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
+  const agendaScrollRef = useRef<HTMLDivElement>(null);
+
   // Date filter state (copied from Mentor Overview)
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
@@ -258,22 +260,57 @@ export function OverviewPage() {
     });
   }, [selectedDateKey, t, i18n]);
 
+  // Reset agenda scroll whenever the selected date changes
+  useEffect(() => {
+    const reset = () => {
+      if (agendaScrollRef.current) {
+        agendaScrollRef.current.scrollTop = 0;
+      }
+    };
+    reset();
+    requestAnimationFrame(reset);
+    const t = setTimeout(reset, 0);
+    return () => clearTimeout(t);
+  }, [selectedDateKey, scheduleLoading]);
+
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+  const daysInPrevMonth = getDaysInMonth(currentYear, currentMonth - 1);
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
   const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
-  const calendarDays: (number | null)[] = [];
-  for (let index = 0; index < adjustedFirstDay; index += 1) {
-    calendarDays.push(null);
+  type CalendarCell = {
+    day: number;
+    year: number;
+    month: number;
+    isCurrentMonth: boolean;
+  };
+  const calendarCells: CalendarCell[] = [];
+  // Leading days from previous month
+  for (let index = adjustedFirstDay - 1; index >= 0; index -= 1) {
+    const day = daysInPrevMonth - index;
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    calendarCells.push({ day, year: prevYear, month: prevMonth, isCurrentMonth: false });
   }
+  // Current month
   for (let day = 1; day <= daysInMonth; day += 1) {
-    calendarDays.push(day);
+    calendarCells.push({ day, year: currentYear, month: currentMonth, isCurrentMonth: true });
   }
-  while (calendarDays.length % 7 !== 0) {
-    calendarDays.push(null);
+  // Trailing days from next month
+  let nextDay = 1;
+  const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+  const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+  while (calendarCells.length % 7 !== 0) {
+    calendarCells.push({
+      day: nextDay,
+      year: nextYear,
+      month: nextMonth,
+      isCurrentMonth: false,
+    });
+    nextDay += 1;
   }
-  const weeks: (number | null)[][] = [];
-  for (let index = 0; index < calendarDays.length; index += 7) {
-    weeks.push(calendarDays.slice(index, index + 7));
+  const weeks: CalendarCell[][] = [];
+  for (let index = 0; index < calendarCells.length; index += 7) {
+    weeks.push(calendarCells.slice(index, index + 7));
   }
 
   const handlePrevMonth = () => {
@@ -364,7 +401,7 @@ export function OverviewPage() {
   };
 
   const renderCalendarContent = () => (
-    <Card className="flex flex-col border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <Card className="flex min-w-0 flex-1 flex-col overflow-hidden border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <CardHeader className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
         <div>
           <CardTitle className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
@@ -404,11 +441,11 @@ export function OverviewPage() {
         </div>
       </CardHeader>
 
-      <CardContent className="flex min-h-0 flex-1 flex-col pt-4">
+      <CardContent className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-auto pt-4">
         {/* Legend */}
         <div className="mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
           <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-            {t("common.legend", "Chú thích")}:
+            {t("common.legend")}:
           </span>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-amber-500" />
@@ -449,7 +486,7 @@ export function OverviewPage() {
         </div>
 
         {/* Calendar Grid */}
-        <div className="mb-2 grid grid-cols-7 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
+        <div className="grid w-full min-w-0 grid-cols-7 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {WEEK_DAYS.map((day) => (
             <div key={day} className="pb-2">
               {day}
@@ -457,20 +494,11 @@ export function OverviewPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 [grid-template-rows:repeat(6,minmax(0,1fr))] gap-px rounded-lg border border-slate-200 bg-slate-200 dark:border-slate-700 dark:bg-slate-700">
-          {weeks.map((week, weekIdx) =>
-            week.map((day, dayIdx) => {
-              if (day === null) {
-                return (
-                  <div
-                    key={`empty-${weekIdx}-${dayIdx}`}
-                    className="min-h-0 bg-slate-50 p-1.5 dark:bg-slate-900"
-                  />
-                );
-              }
-
-              const dateKey = toDateKeyFromParts(currentYear, currentMonth, day);
-              const dayItems = sessionsByDate.get(dateKey) || [];
+        <div className="grid w-full grid-cols-7 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800">
+          {weeks.map((week) =>
+            week.map((cell) => {
+              const dateKey = toDateKeyFromParts(cell.year, cell.month, cell.day);
+              const dayItems = cell.isCurrentMonth ? sessionsByDate.get(dateKey) || [] : [];
               const isSelected = dateKey === selectedDateKey;
               const isToday = dateKey === todayKey;
               const hasEvents = dayItems.length > 0;
@@ -482,12 +510,14 @@ export function OverviewPage() {
                   key={dateKey}
                   onClick={() => setSelectedDateKey(dateKey)}
                   className={cn(
-                    "group relative flex min-h-0 cursor-pointer flex-col gap-1 overflow-hidden p-1.5 transition-all sm:p-2",
-                    isSelected
-                      ? "bg-indigo-50 dark:bg-indigo-950"
-                      : hasEvents
-                        ? "bg-white dark:bg-slate-900"
-                        : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                    "group relative min-h-[100px] min-w-0 cursor-pointer overflow-hidden border-r border-b border-slate-200 p-1.5 transition-all sm:p-2 dark:border-slate-800",
+                    cell.isCurrentMonth
+                      ? isSelected
+                        ? "bg-indigo-50 dark:bg-indigo-950"
+                        : hasEvents
+                          ? "bg-white dark:bg-slate-900"
+                          : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                      : "bg-slate-50/50 text-slate-300 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-slate-600 dark:hover:bg-slate-800/60"
                   )}>
                   <div className="flex items-center justify-between">
                     <button
@@ -504,10 +534,12 @@ export function OverviewPage() {
                             ? "bg-indigo-600 font-extrabold text-white"
                             : hasEvents
                               ? "bg-indigo-100 font-extrabold text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
-                              : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                              : cell.isCurrentMonth
+                                ? "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                                : "text-slate-300 hover:bg-slate-200/60 dark:text-slate-700 dark:hover:bg-slate-800/60"
                       )}
-                      aria-label={t("general.selectDate", { var_0: day })}>
-                      {String(day).padStart(2, "0")}
+                      aria-label={t("general.selectDate", { var_0: cell.day })}>
+                      {String(cell.day).padStart(2, "0")}
                     </button>
                     {hasEvents && (
                       <Badge className="h-4 min-w-[16px] items-center justify-center border-0 bg-indigo-600 px-1 text-[9px] font-bold text-white sm:h-5 sm:min-w-[20px] sm:text-[10px] dark:bg-indigo-500">
@@ -553,9 +585,9 @@ export function OverviewPage() {
                             sideOffset={8}>
                             <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
                               {t("general.session5", {
-                                var_0: String(day).padStart(2, "0"),
-                                var_1: String(currentMonth + 1).padStart(2, "0"),
-                                var_2: currentYear,
+                                var_0: String(cell.day).padStart(2, "0"),
+                                var_1: String(cell.month + 1).padStart(2, "0"),
+                                var_2: cell.year,
                                 var_3: dayItems.length,
                               })}
                             </p>
@@ -583,7 +615,9 @@ export function OverviewPage() {
   );
 
   const renderAgendaContent = () => (
-    <div className="flex h-[600px] max-h-[600px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <div
+      key={`agenda-${selectedDateKey}`}
+      className="flex h-[580px] max-h-[580px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="shrink-0 border-b border-slate-100 px-4 pt-4 pb-3 dark:border-slate-800">
         <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
           {t("common.appointmentScheduleByDay")}
@@ -593,7 +627,9 @@ export function OverviewPage() {
         </p>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pt-4">
+      <div
+        className="flex min-h-0 flex-1 scroll-pb-6 flex-col gap-4 overflow-y-auto px-4 pt-4 pb-10"
+        ref={agendaScrollRef}>
         {/* Filter Section */}
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -685,7 +721,7 @@ export function OverviewPage() {
         )}
 
         {/* Upcoming Sessions Box */}
-        <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 dark:border-indigo-900/50 dark:bg-indigo-950">
+        <div className="mt-2 rounded-xl border border-indigo-100 bg-indigo-50 p-4 dark:border-indigo-900/50 dark:bg-indigo-950">
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
               {t("userOverview.upcomingSession", "Phiên sắp tới")}
@@ -802,8 +838,8 @@ export function OverviewPage() {
       </div>
 
       {/* Calendar + Agenda Grid Section */}
-      <div className="flex px-5 py-6 md:px-8 xl:self-center">
-        <div className="w-full xl:hidden">
+      <div className="flex w-full min-w-0 px-5 py-6 md:px-8 xl:self-center">
+        <div className="w-full min-w-0 xl:hidden">
           <Tabs value={mobileView} onValueChange={setMobileView}>
             <TabsList className="mb-3 grid w-full grid-cols-2">
               <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
@@ -812,7 +848,7 @@ export function OverviewPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value={MOBILE_VIEW_AGENDA} className="mt-0">
-              {renderAgendaContent()}
+              <div key={`mobile-agenda-${selectedDateKey}`}>{renderAgendaContent()}</div>
             </TabsContent>
             <TabsContent value={MOBILE_VIEW_CALENDAR} className="mt-0">
               {renderCalendarContent()}
@@ -820,15 +856,15 @@ export function OverviewPage() {
           </Tabs>
         </div>
 
-        <div className="hidden min-h-0 flex-col gap-6 xl:flex xl:self-center">
-          <div className="flex flex-row items-start gap-6">
-            {/* Calendar - Fixed height to match agenda */}
-            <div className="flex h-[600px] w-[calc(100%-520px)] flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+        <div className="hidden min-h-0 w-full min-w-0 xl:flex xl:self-center">
+          <div className="flex w-full min-w-0 flex-row items-start gap-6">
+            {/* Calendar - Natural height (no constraint, full content visible) */}
+            <div className="flex min-w-0 flex-1 basis-0 flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
               {renderCalendarContent()}
             </div>
-            {/* Agenda - Fixed height */}
-            <div className="flex h-[600px] w-[480px] flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
-              {renderAgendaContent()}
+            {/* Agenda - Fixed height with internal scroll */}
+            <div className="flex h-[580px] w-[400px] shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 xl:w-[440px] 2xl:w-[480px] dark:border-slate-800 dark:bg-slate-900">
+              <div key={`desktop-agenda-${selectedDateKey}`}>{renderAgendaContent()}</div>
             </div>
           </div>
         </div>
