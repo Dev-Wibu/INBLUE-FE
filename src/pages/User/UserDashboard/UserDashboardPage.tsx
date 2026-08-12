@@ -220,7 +220,6 @@ export function UserDashboardPage() {
     const searchParams = new URLSearchParams(location.search);
 
     const homeGroupLabel = t("common.home", "Trang chủ");
-    const interviewGroupLabel = t("common.interview", "Phỏng vấn");
     const individualGroupLabel = t("common.individual", "Cá nhân");
 
     // 1. Account Subtabs & Change Password (under "Cá nhân")
@@ -279,15 +278,21 @@ export function UserDashboardPage() {
       };
     }
 
-    // 2. AI Mock Interview Session History & Session Routes (under "Phỏng vấn")
-    if (
-      location.pathname.startsWith("/user/mock-interview/history") ||
-      location.pathname.startsWith("/user/ai-interview/session")
-    ) {
+    // 2. Mock Interview Session History (under "Interview")
+    if (location.pathname.startsWith("/user/mock-interview/history")) {
       return {
-        currentTitle: t("aiInterview.sessionDetails", "Chi tiết phiên phỏng vấn"),
-        parentTitle: t("common.aiInterview1", "Phỏng vấn AI"),
-        currentCategory: interviewGroupLabel,
+        currentTitle: t("common.interviewSession"),
+        parentTitle: t("common.mockInterview"),
+        currentCategory: t("common.interview"),
+      };
+    }
+
+    // 3. AI Interview Session Routes (under "Interview")
+    if (location.pathname.startsWith("/user/ai-interview/session")) {
+      return {
+        currentTitle: t("common.interviewSession"),
+        parentTitle: t("common.aiInterview1"),
+        currentCategory: t("common.interview"),
       };
     }
 
@@ -431,7 +436,6 @@ export function UserDashboardPage() {
         storageKey="user_dashboard_sidebar_collapsed"
         collapsed={isSidebarCollapsed}
         onCollapsedChange={setIsSidebarCollapsed}
-        showDesktopToggle={false}
         logo={USER_SIDEBAR_LOGO}
         collapsedLogo={USER_SIDEBAR_LOGO_COLLAPSED}
         showSettings={false}
@@ -480,19 +484,20 @@ export function UserDashboardPage() {
           ref={handleContentRef}
           className={cn(
             "flex-1 overflow-hidden",
-            typedActiveTab === "messenger" ||
-              typedActiveTab === "mentors" ||
-              typedActiveTab === "overview" ||
-              typedActiveTab === "jobSearch" ||
-              typedActiveTab === "companies" ||
-              typedActiveTab === "applicationHistory" ||
-              typedActiveTab === "aiInterview" ||
-              location.pathname.startsWith("/user/application")
-              ? "overflow-auto p-0"
-              : location.pathname.startsWith("/user/account") ||
-                  location.pathname.startsWith("/user/settings")
+            typedActiveTab === "overview"
+              ? "overflow-auto"
+              : typedActiveTab === "messenger" ||
+                  typedActiveTab === "mentors" ||
+                  typedActiveTab === "jobSearch" ||
+                  typedActiveTab === "companies" ||
+                  typedActiveTab === "applicationHistory" ||
+                  typedActiveTab === "aiInterview" ||
+                  location.pathname.startsWith("/user/application")
                 ? "overflow-auto p-0"
-                : "overflow-auto p-4 md:p-6 lg:p-8"
+                : location.pathname.startsWith("/user/account") ||
+                    location.pathname.startsWith("/user/settings")
+                  ? "overflow-auto p-0"
+                  : "overflow-auto p-4 md:p-6 lg:p-8"
           )}>
           {outlet ?? renderContent()}
         </div>
