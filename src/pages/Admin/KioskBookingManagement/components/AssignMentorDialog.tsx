@@ -387,7 +387,10 @@ export function AssignMentorDialog({
                   {t("adminKiosk.assigning")}
                 </div>
               ) : (
-                t("adminKiosk.confirmAssign")
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  {t("adminKiosk.confirmAssign")}
+                </div>
               )}
             </Button>
             <Button
