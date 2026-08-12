@@ -132,16 +132,6 @@ export function UserDetailView({
 
   return (
     <div className="w-full px-4 pt-4 pb-8 md:px-6 lg:px-8">
-      <div className="mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onBack}
-          className="h-9 gap-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
-          <ArrowLeft className="h-4 w-4" />
-          {t("common.back", "Quay lại danh sách")}
-        </Button>
-      </div>
       <div className="w-full">
         {isEditingUser ? (
           <div className="mx-auto max-w-4xl">
@@ -164,9 +154,18 @@ export function UserDetailView({
                 <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
                   <Button
                     variant="ghost"
+                    size="sm"
+                    onClick={onBack}
+                    className="absolute top-2.5 left-2.5 h-8 gap-1.5 rounded-full bg-white/80 px-3 text-xs font-semibold text-slate-700 shadow-xs backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:bg-slate-900 dark:hover:text-white"
+                    title={t("common.back", "Quay lại danh sách")}>
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    <span>{t("common.back", "Quay lại")}</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => setIsEditingUser(true)}
-                    className="absolute top-2.5 right-2.5 h-8 w-8 rounded-full bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                    className="absolute top-2.5 right-2.5 h-8 w-8 rounded-full bg-white/80 text-slate-600 shadow-xs backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
                     title={t("general.edit")}>
                     <Pencil className="h-4 w-4" />
                   </Button>
