@@ -14,7 +14,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock, Filter, Star } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -155,6 +155,8 @@ export function MentorOverviewPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
+  const agendaScrollRef = useRef<HTMLDivElement>(null);
+
   const user = useAuthStore((state) => state.user);
   const { data: mentorProfile } = useCurrentMentorProfile();
   const mentorPk = (mentorProfile as { id?: number } | null)?.id ?? 0;
@@ -267,6 +269,19 @@ export function MentorOverviewPage() {
     });
   }, [selectedDateKey, t, i18n]);
 
+  // Reset agenda scroll whenever the selected date changes
+  useEffect(() => {
+    const reset = () => {
+      if (agendaScrollRef.current) {
+        agendaScrollRef.current.scrollTop = 0;
+      }
+    };
+    reset();
+    requestAnimationFrame(reset);
+    const timer = setTimeout(reset, 0);
+    return () => clearTimeout(timer);
+  }, [selectedDateKey, scheduleLoading]);
+
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
   const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
@@ -354,7 +369,7 @@ export function MentorOverviewPage() {
   }, [reviews]);
 
   const renderCalendarContent = () => (
-    <Card className="border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <Card className="flex flex-col overflow-hidden border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <CardHeader className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
         <div>
           <CardTitle className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
@@ -394,11 +409,11 @@ export function MentorOverviewPage() {
         </div>
       </CardHeader>
 
-      <CardContent className="pt-4">
+      <CardContent className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-auto pt-4">
         {/* Legend */}
         <div className="mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
           <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-            {t("common.legend", "Chú thích")}:
+            {t("common.legend")}:
           </span>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-blue-500" />
@@ -427,7 +442,7 @@ export function MentorOverviewPage() {
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 border-b border-slate-200 pb-2.5 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
+        <div className="grid w-full grid-cols-7 border-b border-slate-200 pb-2.5 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {WEEK_DAYS.map((day) => (
             <div key={day}>{day}</div>
           ))}
@@ -437,7 +452,8 @@ export function MentorOverviewPage() {
           {weeks.map((week, weekIdx) => (
             <div
               key={weekIdx}
-              className="grid min-h-[100px] grid-cols-7 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800">
+              className="grid w-full min-w-[840px] grid-cols-7 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800"
+              style={{ minHeight: "100px" }}>
               {week.map((day, dayIdx) => {
                 if (day === null) {
                   return (
@@ -563,17 +579,21 @@ export function MentorOverviewPage() {
   );
 
   const renderAgendaContent = () => (
-    <Card className="border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <CardHeader className="border-b border-slate-100 pb-3 dark:border-slate-800">
-        <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+    <div
+      key={`agenda-${selectedDateKey}`}
+      className="flex h-[580px] max-h-[580px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="shrink-0 border-b border-slate-100 px-4 pt-4 pb-3 dark:border-slate-800">
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
           {t("common.appointmentScheduleByDay", "Lịch hẹn theo ngày")}
-        </CardTitle>
-        <CardDescription className="text-xs font-semibold text-emerald-600 capitalize dark:text-emerald-400">
+        </h3>
+        <p className="text-xs font-semibold text-emerald-600 capitalize dark:text-emerald-400">
           {selectedDateDisplay}
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <CardContent className="space-y-4 pt-4">
+      <div
+        className="flex min-h-0 flex-1 scroll-pb-6 flex-col gap-4 overflow-y-auto px-4 pt-4 pb-10"
+        ref={agendaScrollRef}>
         {/* Filter Section */}
         <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
           <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -665,7 +685,7 @@ export function MentorOverviewPage() {
         )}
 
         {/* Upcoming Sessions Box */}
-        <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/30">
+        <div className="mt-2 rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/30">
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
               {t("userOverview.upcomingSession", "Phiên sắp tới")}
@@ -764,12 +784,12 @@ export function MentorOverviewPage() {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 
   return (
-    <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
+    <section className="flex h-full flex-col overflow-y-auto bg-slate-50 dark:bg-transparent">
       {/* Top Action Bar - Mentor Stats */}
       <div className="shrink-0 px-5 py-6 md:px-8">
         <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -829,8 +849,8 @@ export function MentorOverviewPage() {
       </div>
 
       {/* Calendar + Agenda Grid Section */}
-      <div className="flex-1 overflow-y-auto px-5 py-6 md:px-8">
-        <div className="xl:hidden">
+      <div className="flex w-full min-w-0 px-5 py-6 md:px-8">
+        <div className="w-full min-w-0 xl:hidden">
           <Tabs value={mobileView} onValueChange={setMobileView}>
             <TabsList className="mb-3 grid w-full grid-cols-2">
               <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
@@ -839,7 +859,7 @@ export function MentorOverviewPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value={MOBILE_VIEW_AGENDA} className="mt-0">
-              {renderAgendaContent()}
+              <div key={`mobile-agenda-${selectedDateKey}`}>{renderAgendaContent()}</div>
             </TabsContent>
             <TabsContent value={MOBILE_VIEW_CALENDAR} className="mt-0">
               {renderCalendarContent()}
@@ -847,13 +867,15 @@ export function MentorOverviewPage() {
           </Tabs>
         </div>
 
-        <div className="hidden flex-col gap-6 xl:flex">
-          <div className="flex flex-col gap-6 lg:flex-row">
-            <div className="flex-1 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="hidden min-h-0 w-full min-w-0 xl:flex">
+          <div className="flex w-full min-w-0 flex-row items-start gap-6">
+            {/* Calendar - Natural height (full content visible) */}
+            <div className="flex min-w-0 flex-1 basis-0 flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
               {renderCalendarContent()}
             </div>
-            <div className="w-full shrink-0 rounded-xl border border-slate-200 bg-white lg:w-[420px] xl:w-[480px] dark:border-slate-800 dark:bg-slate-900">
-              {renderAgendaContent()}
+            {/* Agenda - Fixed height with internal scroll */}
+            <div className="flex h-[580px] w-[400px] shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 xl:w-[440px] 2xl:w-[480px] dark:border-slate-800 dark:bg-slate-900">
+              <div key={`desktop-agenda-${selectedDateKey}`}>{renderAgendaContent()}</div>
             </div>
           </div>
         </div>
