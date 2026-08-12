@@ -1382,7 +1382,7 @@ export function ApplicationGradingPage({
             )}
 
             {/* Pagination */}
-            <div className="mt-auto flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mt-auto flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 {pagination.startIndex + 1}-{Math.min(pagination.endIndex + 1, sortedData.length)} /{" "}
                 {sortedData.length}
