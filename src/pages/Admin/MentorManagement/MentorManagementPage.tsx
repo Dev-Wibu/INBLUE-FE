@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PaginationControl } from "@/components/shared";
+import { PaginationControl, ReloadButton } from "@/components/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,11 +13,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import { cn } from "@/lib/utils";
 import { mentorManager } from "@/services";
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, RefreshCw, Search } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -211,15 +219,28 @@ export function MentorManagementPage() {
   };
 
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      {/* Header Bar */}
-      <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+    <div
+      className={cn(
+        "flex flex-col bg-slate-50 dark:bg-slate-950",
+        viewMode === "list" || viewMode === "create"
+          ? "-m-4 h-[calc(100%+32px)] md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]"
+          : "-mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-8 lg:-mt-8"
+      )}>
+      {/* Header Bar - Hidden in List View to match User Management single-header pattern */}
+      <div
+        className={cn(
+          "flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900",
+          viewMode === "list" && "hidden"
+        )}>
         <div className="flex min-w-0 flex-wrap items-center gap-3">
           {viewMode === "detail" && selectedMentor ? (
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => setViewMode("list")}
+                onClick={() => {
+                  setViewMode("list");
+                  setSelectedMentor(null);
+                }}
                 className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
                 {t("adminMentormanagement.mentorManagement", "Quản lý Mentor")}
               </button>
@@ -253,45 +274,28 @@ export function MentorManagementPage() {
                 {t("adminMentormanagement.addNewMentor", "Thêm Mentor mới")}
               </h1>
             </div>
-          ) : (
-            <div className="flex flex-col justify-center">
-              <h1 className="text-lg leading-tight font-bold text-slate-900 dark:text-white">
-                {t("adminMentormanagement.mentorManagement", "Quản lý Mentor")}
-              </h1>
-              <p className="mt-0.5 text-xs leading-tight text-slate-500 dark:text-slate-400">
-                {t(
-                  "adminMentormanagement.manageAccountsProfilesAndMentor",
-                  "Quản lý tài khoản và hồ sơ Mentor."
-                )}
-              </p>
-            </div>
-          )}
+          ) : null}
         </div>
 
         {/* Header Right Action Controls */}
         <div className="flex flex-wrap items-center gap-3">
-          {viewMode === "detail" || viewMode === "create" ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="h-8 gap-1.5 text-xs font-semibold dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-              <ArrowLeft className="h-3.5 w-3.5" />
-              {t("common.back", "Quay lại")}
-            </Button>
-          ) : (
-            <Button
-              onClick={handleCreate}
-              className="h-9 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-xs shadow-indigo-500/20 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
-              <Plus className="mr-1.5 h-4 w-4" />
-              {t("adminMentormanagement.addMentor", "Thêm Mentor")}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setViewMode("list")}
+            className="h-8 gap-1.5 text-xs font-semibold dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+            <ArrowLeft className="h-3.5 w-3.5" />
+            {t("common.back", "Quay lại")}
+          </Button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div
+        className={cn(
+          "flex flex-col bg-slate-50 dark:bg-slate-950",
+          (viewMode === "list" || viewMode === "create") && "flex-1 overflow-hidden"
+        )}>
         {viewMode === "list" ? (
           isInitialLoading ? (
             <div className="flex h-64 items-center justify-center">
@@ -304,9 +308,9 @@ export function MentorManagementPage() {
               />
             </div>
           ) : (
-            <div className="flex-1 space-y-6 overflow-y-auto p-5 sm:p-6 md:px-8">
-              {/* Stat Summary Card */}
-              <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+            <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
+              {/* Stat Summary & Control Card */}
+              <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
                 <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
                   <div>
                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -333,7 +337,7 @@ export function MentorManagementPage() {
                     ].map(([value, label], index) => (
                       <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
                         {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
-                        <div className="flex min-w-[70px] flex-col items-center justify-center text-center">
+                        <div className="flex min-w-[78px] flex-col items-center justify-center text-center">
                           <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
                             {value}
                           </span>
@@ -346,68 +350,58 @@ export function MentorManagementPage() {
                   </div>
                 </div>
 
-                {/* Filter Form */}
+                {/* Search & Filter Form Row (Matching User Management) */}
                 <form
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    pagination.goToFirstPage();
-                  }}
+                  onSubmit={(event) => event.preventDefault()}
                   className="mt-6 flex flex-col gap-3 sm:flex-row">
-                  <Input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      pagination.goToFirstPage();
-                    }}
-                    placeholder={t(
-                      "common.searchByNameEmailExpertise",
-                      "Tìm kiếm theo tên, email, chuyên môn hoặc công ty..."
-                    )}
-                    className="h-[46px] flex-1 rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 text-[14.5px] text-slate-900 shadow-2xs placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
-                  />
-                  <Button
-                    type="submit"
-                    className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white">
-                    <Search className="mr-2 h-[18px] w-[18px]" />
-                    {t("jobSearch.searchButton", "Tìm kiếm")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => void loadMentors(true)}
-                    disabled={isReloading}
-                    className="h-[46px] shrink-0 rounded-xl border-slate-200/90 px-4 dark:border-slate-800 dark:bg-slate-900">
-                    <RefreshCw className={`h-4 w-4 ${isReloading ? "animate-spin" : ""}`} />
-                  </Button>
-                </form>
-
-                {/* Status Filter Pills */}
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
-                    {t("common.status", "Trạng thái")}:
-                  </span>
-                  {[
-                    ["active", t("common.active", "Đang hoạt động")],
-                    ["inactive", t("common.shutDown", "Đã tắt")],
-                    ["all", t("common.allStatus", "Tất cả")],
-                  ].map(([id, label]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => {
-                        setStatusFilter(id);
+                  <div className="relative flex-1">
+                    <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+                    <Input
+                      type="text"
+                      placeholder={t(
+                        "common.searchByNameEmailExpertise",
+                        "Tìm kiếm theo tên, email, chuyên môn hoặc công ty..."
+                      )}
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
                         pagination.goToFirstPage();
                       }}
-                      className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
-                        statusFilter === id
-                          ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90 dark:text-white dark:shadow-indigo-500/20"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                      }`}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
+                      className="h-[46px] w-full rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
+                    />
+                  </div>
+                  <Select
+                    value={statusFilter}
+                    onValueChange={(value) => {
+                      setStatusFilter(value);
+                      pagination.goToFirstPage();
+                    }}>
+                    <SelectTrigger className="h-[46px] w-full rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 text-[14.5px] font-medium text-slate-700 shadow-2xs sm:w-44 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200">
+                      <SelectValue
+                        placeholder={t("common.filterByStatus", "Lọc theo trạng thái")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">{t("common.active", "Đang hoạt động")}</SelectItem>
+                      <SelectItem value="inactive">{t("common.shutDown", "Đã tắt")}</SelectItem>
+                      <SelectItem value="all">{t("common.allStatus", "Tất cả")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <ReloadButton
+                    onReload={() => loadMentors(true)}
+                    isLoading={isReloading}
+                    tooltip={t("common.reloadMentorList", "Tải lại danh sách Mentor")}
+                    className="h-[46px] w-[46px] shrink-0 rounded-xl border-slate-200/90 dark:border-slate-800 dark:bg-slate-900"
+                  />
+
+                  <Button
+                    onClick={handleCreate}
+                    className="h-[46px] shrink-0 rounded-xl border border-indigo-600 bg-indigo-600 px-6 text-[14.5px] font-semibold text-white shadow-xs shadow-indigo-500/20 hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+                    <Plus className="mr-2 h-[18px] w-[18px]" />
+                    {t("adminMentormanagement.addMentor", "Thêm Mentor")}
+                  </Button>
+                </form>
               </div>
 
               {/* Table Card Container */}
