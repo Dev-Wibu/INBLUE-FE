@@ -271,7 +271,11 @@ export function MentorReviewAssignmentPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-slate-950">
+    <div
+      className={cn(
+        "flex flex-col bg-slate-50 dark:bg-slate-950",
+        "-m-4 min-h-[calc(100%+32px)] md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)]"
+      )}>
       {/* Stat Summary & Control Card (matching User/Mentor pattern) */}
       <div className="m-4 mb-0 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm sm:m-6 sm:mb-0 lg:m-8 lg:mb-0 dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
@@ -674,12 +678,16 @@ export function MentorReviewAssignmentPage() {
                 );
               })}
             </div>
-
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-center justify-end px-4 py-3 sm:px-6">
-                <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
+            {pageData.length > 0 && (
+              <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800 dark:bg-slate-900">
+                <PaginationControl
+                  pagination={pagination}
+                  onPageSizeChange={setPageSize}
+                  showBoundaryButtons={false}
+                  showPageJump={false}
+                />
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
