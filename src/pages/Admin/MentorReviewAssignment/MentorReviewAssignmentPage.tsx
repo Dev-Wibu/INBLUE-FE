@@ -761,7 +761,7 @@ function AssignMentorDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="border-2 border-indigo-200 sm:max-w-md dark:border-indigo-800">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-2 border-indigo-200 sm:max-w-3xl dark:border-indigo-800">
         <DialogHeader className="mb-4 border-b-2 border-indigo-100 pb-4 dark:border-indigo-900">
           <DialogTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md">
@@ -774,7 +774,7 @@ function AssignMentorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-6 py-4 lg:grid-cols-5">
           {/* Detail info */}
           {detail && (
             <div className="rounded-xl border-2 border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-purple-50/30 p-4 dark:border-indigo-900/50 dark:from-indigo-950/20 dark:to-purple-950/20">
