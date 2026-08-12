@@ -161,7 +161,7 @@ export function CompanyFormDialog({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[24px] border border-slate-200/90 bg-white p-0 shadow-2xl sm:max-w-[560px] dark:border-slate-800 dark:bg-slate-900">
         {/* Header Bar */}
-        <DialogHeader className="border-b border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800/80 dark:bg-slate-900/90">
+        <DialogHeader className="border-b border-slate-200/90 bg-slate-100/90 px-5 py-3.5 dark:border-slate-800/90 dark:bg-slate-950/90">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 ring-1 ring-indigo-500/20 dark:bg-indigo-500/20 dark:text-indigo-400 dark:ring-indigo-400/30">
               <Building2 className="h-4.5 w-4.5" />
@@ -178,7 +178,7 @@ export function CompanyFormDialog({
         </DialogHeader>
 
         {/* Scrollable Content Body */}
-        <div className="space-y-6 overflow-y-auto p-6">
+        <div className="space-y-4 overflow-y-auto p-4 sm:p-5">
           {/* Banner & Logo Visual Header Card */}
           <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-950">
             {/* Banner Cover Image Container */}
@@ -389,7 +389,7 @@ export function CompanyFormDialog({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="border-t border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800/80 dark:bg-slate-900/90">
+        <DialogFooter className="border-t border-slate-200/90 bg-slate-100/90 px-5 py-3 dark:border-slate-800/90 dark:bg-slate-950/90">
           <Button
             type="button"
             variant="outline"
