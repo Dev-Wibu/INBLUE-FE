@@ -297,7 +297,7 @@ export function AssignMentorDialog({
                 </div>
 
                 {/* Mentor List */}
-                <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900">
+                <div className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent hover:scrollbar-thumb-slate-400 dark:scrollbar-thumb-slate-600 dark:hover:scrollbar-thumb-slate-500 max-h-64 space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900">
                   {filteredMentors.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8">
                       <User className="mb-2 h-10 w-10 text-slate-300 dark:text-slate-600" />
