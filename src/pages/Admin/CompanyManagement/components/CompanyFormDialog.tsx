@@ -159,9 +159,9 @@ export function CompanyFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[24px] border border-slate-200/90 bg-white p-0 shadow-2xl sm:max-w-[560px] dark:border-slate-800 dark:bg-slate-900">
-        {/* Header Bar (Seamless) */}
-        <DialogHeader className="border-b border-slate-100 bg-transparent px-6 pt-5 pb-4 dark:border-slate-800/80 dark:bg-transparent">
+      <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-[560px] sm:!p-0 dark:border-slate-800 dark:bg-slate-900">
+        {/* Full-width Edge-to-Edge Header Bar */}
+        <DialogHeader className="w-full border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
           <div className="flex items-center gap-3">
             <div className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 ring-1 ring-indigo-500/20 dark:bg-indigo-500/20 dark:text-indigo-400 dark:ring-indigo-400/30">
               <Building2 className="h-5 w-5" />
@@ -178,7 +178,7 @@ export function CompanyFormDialog({
         </DialogHeader>
 
         {/* Scrollable Content Body */}
-        <div className="space-y-5 overflow-y-auto px-6 py-4">
+        <div className="space-y-4 overflow-y-auto p-5">
           {/* Banner & Logo Visual Header Card */}
           <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-950">
             {/* Banner Cover Image Container */}
@@ -309,7 +309,8 @@ export function CompanyFormDialog({
                 <Label
                   htmlFor="company-name"
                   className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  {t("adminCompanymanagement.companyName", "Tên công ty")}
+                  {t("adminCompanymanagement.companyName", "Tên công ty")}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="company-name"
@@ -387,21 +388,21 @@ export function CompanyFormDialog({
           </div>
         </div>
 
-        {/* Footer Bar (Seamless) */}
-        <DialogFooter className="border-t border-slate-100 bg-transparent px-6 py-4 dark:border-slate-800/80 dark:bg-transparent">
+        {/* Full-width Edge-to-Edge Footer Bar */}
+        <DialogFooter className="w-full border-t border-slate-200/90 bg-slate-100/90 px-6 py-3.5 dark:border-slate-800 dark:bg-slate-950">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
-            className="h-10 rounded-xl border border-slate-200 bg-white px-5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
+            className="h-9.5 rounded-xl border border-slate-200 bg-white px-5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
             {t("general.cancel", "Hủy")}
           </Button>
           <Button
             type="button"
             onClick={onSubmit}
             disabled={isSubmitting}
-            className="h-10 gap-2 rounded-xl bg-indigo-600 px-6 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 transition-all hover:bg-indigo-500 active:scale-98 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+            className="h-9.5 gap-2 rounded-xl bg-indigo-600 px-6 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 transition-all hover:bg-indigo-500 active:scale-98 dark:bg-indigo-600 dark:hover:bg-indigo-500">
             {isSubmitting ? (
               <>
                 <Spinner size="sm" tone="white" />
