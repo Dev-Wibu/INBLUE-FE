@@ -335,7 +335,6 @@ export function MentorDashboardPage() {
         storageKey="mentor_dashboard_sidebar_collapsed"
         collapsed={isSidebarCollapsed}
         onCollapsedChange={setIsSidebarCollapsed}
-        showDesktopToggle={false}
         logo={MENTOR_SIDEBAR_LOGO}
         collapsedLogo={MENTOR_SIDEBAR_LOGO_COLLAPSED}
         showSettings={false}
@@ -383,7 +382,11 @@ export function MentorDashboardPage() {
           ref={handleContentRef}
           className={cn(
             "flex-1 overflow-hidden",
-            typedActiveTab === "messenger" ? "p-0" : "overflow-auto p-4 md:p-6 lg:p-8"
+            typedActiveTab === "messenger"
+              ? "p-0"
+              : typedActiveTab === "overview"
+                ? "overflow-auto"
+                : "overflow-auto p-4 md:p-6 lg:p-8"
           )}>
           {outlet ?? renderContent()}
         </div>
