@@ -976,10 +976,10 @@ function AssignMentorDialog({
                 </div>
               )}
 
-              {/* Two column layout */}
-              <div className="grid gap-4 lg:grid-cols-2">
-                {/* LEFT - Mentor List */}
-                <div className="space-y-3">
+              {/* Two column layout: Left=1/3, Right=2/3 */}
+              <div className="grid gap-4 lg:grid-cols-3">
+                {/* LEFT - Mentor List (smaller) */}
+                <div className="space-y-3 lg:col-span-1">
                   {/* Search */}
                   <div className="relative">
                     <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -987,25 +987,25 @@ function AssignMentorDialog({
                       placeholder={t("adminMentorReviewAssignment.searchMentorPlaceholder")}
                       value={mentorMultiQuery}
                       onChange={(e) => setMentorMultiQuery(e.target.value)}
-                      className="h-10 pl-10"
+                      className="h-9 pl-9 text-sm"
                     />
                   </div>
 
                   {/* Mentor Checklist */}
-                  <div className="max-h-[340px] space-y-1.5 overflow-y-auto rounded-lg border bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
+                  <div className="max-h-[360px] space-y-1 overflow-y-auto rounded-lg border bg-white p-2 dark:border-slate-700 dark:bg-slate-900">
                     {filteredMultiMentors.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-10">
-                        <User className="h-10 w-10 text-slate-300 dark:text-slate-600" />
-                        <p className="mt-2 text-sm text-slate-500">{t("common.noResults")}</p>
+                      <div className="flex flex-col items-center justify-center py-8">
+                        <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                        <p className="mt-2 text-xs text-slate-500">{t("common.noResults")}</p>
                       </div>
                     ) : (
                       filteredMultiMentors.map((mentor) => (
                         <div
                           key={mentor.id}
                           className={cn(
-                            "group flex items-center gap-3 rounded-lg border p-3 transition-colors dark:border-slate-700",
+                            "group flex items-center gap-2 rounded-md p-2 transition-colors dark:border-slate-700",
                             selectedMentorForDetail === mentor.id
-                              ? "border-primary bg-primary/5 dark:border-primary/50 dark:bg-primary/10"
+                              ? "border-primary/50 bg-primary/5 dark:bg-primary/10 border"
                               : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
                           )}>
                           <Checkbox
@@ -1017,8 +1017,8 @@ function AssignMentorDialog({
                           <button
                             type="button"
                             onClick={() => setSelectedMentorForDetail(mentor.id as number)}
-                            className="flex flex-1 cursor-pointer items-center gap-3 text-left">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-sm font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                            className="flex flex-1 cursor-pointer items-center gap-2 text-left">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                               {mentor.avatarUrl ? (
                                 <img
                                   src={mentor.avatarUrl}
@@ -1030,12 +1030,12 @@ function AssignMentorDialog({
                               )}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="font-medium dark:text-slate-100">{mentor.name}</p>
-                              {mentor.email && (
-                                <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                                  {mentor.email}
-                                </p>
-                              )}
+                              <p className="truncate text-sm font-medium dark:text-slate-100">
+                                {mentor.name}
+                              </p>
+                              <p className="truncate text-xs text-slate-400 dark:text-slate-500">
+                                {mentor.email}
+                              </p>
                             </div>
                           </button>
                           <Button
@@ -1043,8 +1043,8 @@ function AssignMentorDialog({
                             variant="ghost"
                             size="sm"
                             onClick={() => setSelectedMentorForDetail(mentor.id as number)}
-                            className="shrink-0 opacity-0 group-hover:opacity-100">
-                            <Eye className="h-4 w-4" />
+                            className="h-7 w-7 shrink-0 p-0 opacity-0 group-hover:opacity-100">
+                            <Eye className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       ))
@@ -1052,7 +1052,7 @@ function AssignMentorDialog({
                   </div>
 
                   {selectedMentorIds.length > 0 && (
-                    <p className="text-center text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-center text-xs font-medium text-slate-500 dark:text-slate-400">
                       {t("adminMentorReviewAssignment.selectedCount", {
                         count: selectedMentorIds.length,
                       })}
@@ -1060,8 +1060,8 @@ function AssignMentorDialog({
                   )}
                 </div>
 
-                {/* RIGHT - Mentor Detail Panel */}
-                <div className="rounded-lg border bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+                {/* RIGHT - Mentor Detail Panel (larger) */}
+                <div className="rounded-lg border bg-white p-5 lg:col-span-2 dark:border-slate-700 dark:bg-slate-900">
                   {selectedMentorForDetail ? (
                     (() => {
                       const m = mentors.find((x) => x.id === selectedMentorForDetail);
