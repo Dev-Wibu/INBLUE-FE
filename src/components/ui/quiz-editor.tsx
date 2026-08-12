@@ -217,7 +217,7 @@ export function QuizEditor({
     setSelectedBankIndexes([]);
   };
 
-  const passScore = Math.round(passThreshold * maxScore);
+  const passScore = Math.round((passThreshold / 100) * maxScore);
 
   // ========================== RENDER ==========================
   return (
@@ -292,7 +292,7 @@ export function QuizEditor({
                   variant="circular"
                   size="sm"
                   onChange={(val) => {
-                    onPassThresholdChange(maxScore > 0 ? val / maxScore : 0.8);
+                    onPassThresholdChange(maxScore > 0 ? Math.round((val / maxScore) * 100) : 80);
                   }}
                 />
               </div>

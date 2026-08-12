@@ -331,27 +331,36 @@ export function JobDescriptionDetailView({
       (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
     );
 
-    return sortedRounds.map((r) => ({
-      id: r.id,
-      name: r.name,
-      roundOrder: r.roundOrder,
-      roundType: r.roundType as RoundType,
-      passThreshold: r.passThreshold ?? 0.8,
-      reviewerId: r.reviewerId ?? null,
-      configData: {
-        ...r.configData,
-        codingProblemsId:
-          r.configData?.codingProblems
-            ?.map((cp: any) => cp.problemId)
-            .filter((id: any): id is number => id !== undefined) ?? [],
-        codingProblems: r.configData?.codingProblems ?? [],
-        codeReviewProblemsId:
-          r.configData?.codeReviewProblems
-            ?.map((cp: any) => cp.problemId)
-            .filter((id: any): id is number => id !== undefined) ?? [],
-        codeReviewProblems: r.configData?.codeReviewProblems ?? [],
-      },
-    }));
+    return sortedRounds.map((r) => {
+      const passThreshold =
+        r.passThreshold == null
+          ? 80
+          : r.passThreshold <= 1
+            ? Math.round(r.passThreshold * 100)
+            : Math.round(r.passThreshold);
+
+      return {
+        id: r.id,
+        name: r.name,
+        roundOrder: r.roundOrder,
+        roundType: r.roundType as RoundType,
+        passThreshold,
+        reviewerId: r.reviewerId ?? null,
+        configData: {
+          ...r.configData,
+          codingProblemsId:
+            r.configData?.codingProblems
+              ?.map((cp: any) => cp.problemId)
+              .filter((id: any): id is number => id !== undefined) ?? [],
+          codingProblems: r.configData?.codingProblems ?? [],
+          codeReviewProblemsId:
+            r.configData?.codeReviewProblems
+              ?.map((cp: any) => cp.problemId)
+              .filter((id: any): id is number => id !== undefined) ?? [],
+          codeReviewProblems: r.configData?.codeReviewProblems ?? [],
+        },
+      };
+    });
   }, [currentJd.rounds]);
 
   // Load all users and filter to active STAFF only — used by the round editor
@@ -393,7 +402,7 @@ export function JobDescriptionDetailView({
         name: r.name || `${t("adminApplicationManagement.roundPrefix", "Vòng ")}${idx + 1}`,
         roundOrder: idx + 1,
         roundType: r.roundType as any,
-        passThreshold: Number(r.passThreshold ?? 0.8),
+        passThreshold: Math.round(Number(r.passThreshold ?? 80)),
         ...(r.reviewerId != null ? { reviewerId: r.reviewerId } : {}),
         configData: {
           instruction: r.configData?.instruction || "",
@@ -478,7 +487,12 @@ export function JobDescriptionDetailView({
           name: r.name ?? "",
           roundOrder: r.roundOrder ?? 0,
           roundType: r.roundType as any,
-          passThreshold: r.passThreshold ?? 0,
+          passThreshold:
+            r.passThreshold == null
+              ? 80
+              : r.passThreshold <= 1
+                ? Math.round(r.passThreshold * 100)
+                : Math.round(r.passThreshold),
           ...(r.reviewerId != null ? { reviewerId: r.reviewerId } : {}),
           configData: {
             instruction: r.configData?.instruction ?? "",
@@ -664,7 +678,10 @@ export function JobDescriptionDetailView({
                           </Badge>
                           {round.passThreshold !== undefined && (
                             <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                              {Math.round(round.passThreshold * 100)}%
+                              {round.passThreshold <= 1
+                                ? Math.round(round.passThreshold * 100)
+                                : Math.round(round.passThreshold)}
+                              %
                             </span>
                           )}
                         </div>

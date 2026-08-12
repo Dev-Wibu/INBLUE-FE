@@ -478,7 +478,7 @@ export const CodeReviewEditor = React.forwardRef<
       return Array.from(langs);
     }, [bankProblems]);
 
-    const passScore = Math.round(passThreshold * maxScore);
+    const passScore = Math.round((passThreshold / 100) * maxScore);
     const selectedProblemDetails =
       selectedIndex !== null
         ? bankProblems.find((p) => p.id === codeReviewProblemsId[selectedIndex])
@@ -570,7 +570,7 @@ export const CodeReviewEditor = React.forwardRef<
                 <div className="space-y-1.5">
                   <Label className="text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
                     {t("adminCodeReviewProblem.passingScore")}
-                    {passScore}/{maxScore} ({Math.round(passThreshold * 100)}%)
+                    {passScore}/{maxScore} ({Math.round(passThreshold)}%)
                   </Label>
                   <div className="flex justify-center">
                     <ScoreInput
@@ -582,7 +582,9 @@ export const CodeReviewEditor = React.forwardRef<
                       variant="circular"
                       size="sm"
                       onChange={(val) => {
-                        onPassThresholdChange(maxScore > 0 ? val / maxScore : 0.8);
+                        onPassThresholdChange(
+                          maxScore > 0 ? Math.round((val / maxScore) * 100) : 80
+                        );
                       }}
                     />
                   </div>

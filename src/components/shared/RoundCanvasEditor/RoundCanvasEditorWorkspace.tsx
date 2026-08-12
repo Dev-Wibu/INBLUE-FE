@@ -290,7 +290,7 @@ export function RoundCanvasEditorWorkspace({
     const newRound: UIRound = {
       name: template.title,
       roundType: draggedType,
-      passThreshold: 0.8,
+      passThreshold: 80,
       configData: JSON.parse(JSON.stringify(template.defaultConfig)),
     };
     if (rounds.length === 0) {
@@ -843,8 +843,7 @@ export function RoundCanvasEditorWorkspace({
                                 </span>
                               </div>
                               <span className="font-semibold text-slate-700 dark:text-slate-300">
-                                {t("common.obtain")}{" "}
-                                {Math.round((round.passThreshold ?? 0.8) * 100)}%
+                                {t("common.obtain")} {Math.round(round.passThreshold ?? 80)}%
                               </span>
                             </div>
                             {/* Reviewer row — hidden for QUIZ (auto-graded),
@@ -1038,7 +1037,7 @@ export function RoundCanvasEditorWorkspace({
                   onMaxScoreChange={(v) =>
                     updateRoundConfigField(selectedRoundIndex, "maxScore", v)
                   }
-                  passThreshold={selectedRound.passThreshold ?? 0.8}
+                  passThreshold={selectedRound.passThreshold ?? 80}
                   onPassThresholdChange={(v) =>
                     updateRoundField(selectedRoundIndex, "passThreshold", v)
                   }
@@ -1068,7 +1067,7 @@ export function RoundCanvasEditorWorkspace({
                   onMaxScoreChange={(v) =>
                     updateRoundConfigField(selectedRoundIndex, "maxScore", v)
                   }
-                  passThreshold={selectedRound.passThreshold ?? 0.8}
+                  passThreshold={selectedRound.passThreshold ?? 80}
                   onPassThresholdChange={(v) =>
                     updateRoundField(selectedRoundIndex, "passThreshold", v)
                   }
@@ -1098,7 +1097,7 @@ export function RoundCanvasEditorWorkspace({
                   onMaxScoreChange={(v) =>
                     updateRoundConfigField(selectedRoundIndex, "maxScore", v)
                   }
-                  passThreshold={selectedRound.passThreshold ?? 0.8}
+                  passThreshold={selectedRound.passThreshold ?? 80}
                   onPassThresholdChange={(v) =>
                     updateRoundField(selectedRoundIndex, "passThreshold", v)
                   }
@@ -1265,7 +1264,7 @@ export function RoundCanvasEditorWorkspace({
                         <div className="flex justify-center">
                           <ScoreInput
                             value={Math.round(
-                              (selectedRound.passThreshold ?? 0.8) *
+                              ((selectedRound.passThreshold ?? 80) / 100) *
                                 (selectedRound.configData?.maxScore ?? 100)
                             )}
                             min={0}
@@ -1279,7 +1278,7 @@ export function RoundCanvasEditorWorkspace({
                               updateRoundField(
                                 selectedRoundIndex,
                                 "passThreshold",
-                                max > 0 ? val / max : 0.8
+                                max > 0 ? Math.round((val / max) * 100) : 80
                               );
                             }}
                           />

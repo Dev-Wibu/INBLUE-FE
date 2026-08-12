@@ -536,7 +536,7 @@ export const CodingEditor = React.forwardRef<
       return matchesSearch && matchesDifficulty;
     });
 
-    const passScore = Math.round(passThreshold * maxScore);
+    const passScore = Math.round((passThreshold / 100) * maxScore);
     const selectedProblemDetails =
       selectedIndex !== null
         ? bankProblems.find((p) => p.id === codingProblemsId[selectedIndex])
@@ -634,7 +634,7 @@ export const CodingEditor = React.forwardRef<
                     variant="circular"
                     size="sm"
                     onChange={(val) => {
-                      onPassThresholdChange(maxScore > 0 ? val / maxScore : 0.8);
+                      onPassThresholdChange(maxScore > 0 ? Math.round((val / maxScore) * 100) : 80);
                     }}
                   />
                 </div>
