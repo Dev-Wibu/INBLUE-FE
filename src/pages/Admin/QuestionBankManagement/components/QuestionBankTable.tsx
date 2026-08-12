@@ -92,7 +92,7 @@ export function QuestionBankTable({
       <TableHeader>
         <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
           <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
-          <TableHead className="min-w-[400px] font-medium text-slate-500">
+          <TableHead className="min-w-[260px] font-medium text-slate-500">
             {t("adminQuestionbankmanagement.questionContent", "Nội dung câu hỏi")}
           </TableHead>
           <TableHead className="w-[150px] font-medium text-slate-500">
@@ -128,28 +128,12 @@ export function QuestionBankTable({
               <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                 #{q.id}
               </TableCell>
-              <TableCell>
-                <div className="flex max-w-[800px] items-center">
-                  <p
-                    className="flex-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
-                    title={q.questionText}>
-                    {q.questionText ||
-                      t("adminQuestionbankmanagement.noContent", "Chưa có nội dung")}
-                  </p>
-                  {/* Dummy element to force exactly identical row height as Coding table */}
-                  <div
-                    className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
-                    aria-hidden="true">
-                    <div className="flex items-center gap-1.5 text-[11px]">
-                      <span className="h-3.5 w-3.5"></span>
-                      <span>{t("common.hidden", "ẩn")}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[11px]">
-                      <span className="h-3.5 w-3.5"></span>
-                      <span>{t("common.sample", "mẫu")}</span>
-                    </div>
-                  </div>
-                </div>
+              <TableCell className="max-w-0">
+                <p
+                  className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
+                  title={q.questionText}>
+                  {q.questionText || t("adminQuestionbankmanagement.noContent", "Chưa có nội dung")}
+                </p>
               </TableCell>
               <TableCell>
                 <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">

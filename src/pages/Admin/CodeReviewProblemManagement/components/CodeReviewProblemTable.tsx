@@ -70,7 +70,7 @@ export function CodeReviewProblemTable({
       <TableHeader>
         <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
           <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
-          <TableHead className="min-w-[200px] font-medium text-slate-500">
+          <TableHead className="min-w-[260px] font-medium text-slate-500">
             {t("adminCodingProblem.columnProblem", "Bài tập")}
           </TableHead>
           <TableHead className="w-[120px] font-medium text-slate-500">
@@ -108,7 +108,7 @@ export function CodeReviewProblemTable({
               <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                 #{p.id}
               </TableCell>
-              <TableCell>
+              <TableCell className="max-w-0">
                 <p
                   className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
                   title={p.title}>

@@ -67,7 +67,7 @@ export function CodingProblemTable({ problems, onEdit, onToggleStatus }: CodingP
       <TableHeader>
         <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
           <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
-          <TableHead className="min-w-[400px] font-medium text-slate-500">
+          <TableHead className="min-w-[260px] font-medium text-slate-500">
             {t("adminCodingProblem.columnProblem", "Bài tập")}
           </TableHead>
           <TableHead className="w-[110px] font-medium text-slate-500">
@@ -113,14 +113,12 @@ export function CodingProblemTable({ problems, onEdit, onToggleStatus }: CodingP
               <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                 #{p.id}
               </TableCell>
-              <TableCell>
-                <div className="max-w-[800px]">
-                  <p
-                    className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
-                    title={p.title}>
-                    {p.title}
-                  </p>
-                </div>
+              <TableCell className="max-w-0">
+                <p
+                  className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
+                  title={p.title}>
+                  {p.title}
+                </p>
               </TableCell>
               <TableCell>
                 <div className={`flex items-center gap-1.5 text-xs font-bold ${diff.cls}`}>
