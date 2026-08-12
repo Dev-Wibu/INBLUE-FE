@@ -100,7 +100,7 @@ export function StaffHeader({ title, parentTitle, category, onToggleSidebar }: S
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/85 px-4 shadow-2xs backdrop-blur-md transition-all sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800/80 dark:bg-slate-950/85">
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 shadow-2xs backdrop-blur-md transition-all sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800/80 dark:bg-slate-950/95">
         <div className="flex h-full flex-1 items-center gap-3">
           <Button
             variant="ghost"

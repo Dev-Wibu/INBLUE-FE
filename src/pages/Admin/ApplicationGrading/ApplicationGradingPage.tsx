@@ -1090,7 +1090,7 @@ export function ApplicationGradingPage({
   return (
     <div className="flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-col gap-4 border-b border-slate-200/80 bg-white/95 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-950/95">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             {t("adminApplicationGrading.pageTitle")}
@@ -1103,7 +1103,7 @@ export function ApplicationGradingPage({
         <div className="flex flex-wrap items-center gap-3">
           {/* Search */}
           <div className="relative w-full sm:w-56">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <Input
               type="text"
               placeholder={t("application.searchByUserOrJob")}
@@ -1112,7 +1112,7 @@ export function ApplicationGradingPage({
                 setSearchQuery(e.target.value);
                 pagination.setPage(1);
               }}
-              className="h-9 pl-9 text-xs"
+              className="h-9 border-slate-200 bg-white pl-9 text-xs dark:border-slate-700 dark:bg-slate-900"
             />
           </div>
 
