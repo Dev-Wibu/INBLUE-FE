@@ -152,8 +152,13 @@ export function AssignMentorDialog({
               </div>
               {t("adminKiosk.assignMentorFor", { id: booking?.id })}
             </DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogDescription className="flex items-center gap-2 text-sm">
               {t("adminKiosk.assignMentorDescription")}
+              {selectedMentorId && (
+                <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                  {t("common.mentorSelected", "Đã chọn mentor")}
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
 
