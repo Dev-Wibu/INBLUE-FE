@@ -183,30 +183,6 @@ export function UserManagementPage() {
     }
   };
 
-  const handleViewDetail = async (user: User) => {
-    setSelectedUser(user);
-    setFormData({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    });
-    if (user.role === "USER" && user.id) {
-      try {
-        const response = await candidateProfileManager.getByUserId(user.id);
-        if (response.success && response.data) {
-          setSelectedProfileData(getLatestCandidateProfile(response.data));
-        } else {
-          setSelectedProfileData(null);
-        }
-      } catch {
-        setSelectedProfileData(null);
-      }
-    } else {
-      setSelectedProfileData(null);
-    }
-    setViewMode("detail");
-  };
-
   const handleSubmitCreate = async () => {
     try {
       const response = await usersAdminManager.create(formData as UserFormData);
