@@ -264,7 +264,7 @@ export function AssignMentorDialog({
                           key={mentor.id}
                           type="button"
                           onClick={() => setSelectedMentorId(String(mentor.id))}
-                          className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors ${
+                          className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-all ${
                             selectedMentorId === String(mentor.id)
                               ? "bg-indigo-50 ring-2 ring-indigo-500 dark:bg-indigo-950/50"
                               : "hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -296,6 +296,14 @@ export function AssignMentorDialog({
                   )}
                 </div>
 
+                {/* Validation message */}
+                {!selectedMentorId && (
+                  <p className="mt-2 flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                    <span className="text-[10px]">(*)</span>{" "}
+                    {t("common.pleaseSelectMentor", "Vui lòng chọn một mentor")}
+                  </p>
+                )}
+
                 {/* Hidden input for form submission */}
                 <input type="hidden" name="mentorId" value={selectedMentorId} />
               </div>
@@ -318,8 +326,8 @@ export function AssignMentorDialog({
           <DialogFooter className="mt-6 flex-row-reverse gap-2 sm:mt-6">
             <Button
               type="submit"
-              disabled={isLoading}
-              className="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+              disabled={isLoading || !selectedMentorId}
+              className="bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-600 dark:hover:bg-indigo-500">
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
