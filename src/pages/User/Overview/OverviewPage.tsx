@@ -371,132 +371,130 @@ export function OverviewPage() {
           ))}
         </div>
 
-        <div className="h-[420px] overflow-hidden">
-          <div className="flex h-full flex-col">
-            {weeks.map((week, weekIdx) => (
-              <div
-                key={weekIdx}
-                className="grid flex-1 grid-cols-7 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800">
-                {week.map((day, dayIdx) => {
-                  if (day === null) {
-                    return (
-                      <div
-                        key={`empty-${weekIdx}-${dayIdx}`}
-                        className="bg-slate-50/40 p-1.5 dark:bg-slate-950/30"
-                      />
-                    );
-                  }
-
-                  const dateKey = toDateKeyFromParts(currentYear, currentMonth, day);
-                  const dayItems = sessionsByDate.get(dateKey) || [];
-                  const isSelected = dateKey === selectedDateKey;
-                  const isToday = dateKey === todayKey;
-                  const hasEvents = dayItems.length > 0;
-                  const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
-                  const overflowCount = Math.max(0, dayItems.length - MAX_VISIBLE_SESSIONS);
-
+        <div className="flex flex-col">
+          {weeks.map((week, weekIdx) => (
+            <div
+              key={weekIdx}
+              className="grid h-[60px] grid-cols-7 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800">
+              {week.map((day, dayIdx) => {
+                if (day === null) {
                   return (
                     <div
-                      key={dateKey}
-                      onClick={() => setSelectedDateKey(dateKey)}
-                      className={cn(
-                        "group relative flex flex-1 cursor-pointer flex-col gap-1.5 overflow-hidden p-2 transition-all",
-                        isSelected
-                          ? "bg-indigo-500/10 ring-2 ring-indigo-500/50 dark:bg-indigo-950/60 dark:ring-indigo-500/60"
-                          : hasEvents
-                            ? "border border-indigo-200/80 bg-indigo-50/90 shadow-2xs dark:border-indigo-900/60 dark:bg-indigo-950/40"
-                            : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                      )}>
-                      <div className="flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedDateKey(dateKey);
-                          }}
-                          className={cn(
-                            "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors",
-                            isSelected
-                              ? "bg-indigo-600 text-white shadow-xs"
-                              : isToday
-                                ? "bg-indigo-600 font-extrabold text-white shadow-xs"
-                                : hasEvents
-                                  ? "bg-indigo-600/15 font-extrabold text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-300"
-                                  : "text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800"
-                          )}
-                          aria-label={t("general.selectDate", { var_0: day })}>
-                          {String(day).padStart(2, "0")}
-                        </button>
-                        {hasEvents && (
-                          <Badge className="border-0 bg-indigo-600 px-1.5 py-0 text-[10px] font-bold text-white shadow-2xs dark:bg-indigo-500">
-                            {dayItems.length}
-                          </Badge>
+                      key={`empty-${weekIdx}-${dayIdx}`}
+                      className="bg-slate-50/40 p-1.5 dark:bg-slate-950/30"
+                    />
+                  );
+                }
+
+                const dateKey = toDateKeyFromParts(currentYear, currentMonth, day);
+                const dayItems = sessionsByDate.get(dateKey) || [];
+                const isSelected = dateKey === selectedDateKey;
+                const isToday = dateKey === todayKey;
+                const hasEvents = dayItems.length > 0;
+                const visibleItems = dayItems.slice(0, MAX_VISIBLE_SESSIONS);
+                const overflowCount = Math.max(0, dayItems.length - MAX_VISIBLE_SESSIONS);
+
+                return (
+                  <div
+                    key={dateKey}
+                    onClick={() => setSelectedDateKey(dateKey)}
+                    className={cn(
+                      "group relative flex flex-1 cursor-pointer flex-col gap-1.5 overflow-hidden p-2 transition-all",
+                      isSelected
+                        ? "bg-indigo-500/10 ring-2 ring-indigo-500/50 dark:bg-indigo-950/60 dark:ring-indigo-500/60"
+                        : hasEvents
+                          ? "border border-indigo-200/80 bg-indigo-50/90 shadow-2xs dark:border-indigo-900/60 dark:bg-indigo-950/40"
+                          : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                    )}>
+                    <div className="flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDateKey(dateKey);
+                        }}
+                        className={cn(
+                          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors",
+                          isSelected
+                            ? "bg-indigo-600 text-white shadow-xs"
+                            : isToday
+                              ? "bg-indigo-600 font-extrabold text-white shadow-xs"
+                              : hasEvents
+                                ? "bg-indigo-600/15 font-extrabold text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-300"
+                                : "text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800"
                         )}
-                      </div>
-
+                        aria-label={t("general.selectDate", { var_0: day })}>
+                        {String(day).padStart(2, "0")}
+                      </button>
                       {hasEvents && (
-                        <div className="space-y-1">
-                          {visibleItems.map((item) => {
-                            const cfg = getSessionStatusConfig(item.session.status);
-                            return (
-                              <button
-                                key={item.session.id}
-                                onClick={() => handleOpenSessionDetail(item.session.id)}
-                                className={cn(
-                                  "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] font-medium shadow-2xs transition-colors hover:opacity-90",
-                                  cfg.badgeClass
-                                )}>
-                                <Clock className="h-3 w-3 shrink-0" />
-                                <span className="shrink-0 font-semibold">
-                                  {formatCalendarTime(item.session.joinTime)}
-                                </span>
-                                <span className="truncate font-semibold">
-                                  {item.session.roomName || `#${item.session.id}`}
-                                </span>
-                              </button>
-                            );
-                          })}
-
-                          {overflowCount > 0 && (
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <button className="w-full rounded-md border border-dashed border-indigo-300 bg-white/80 px-2 py-0.5 text-center text-[10px] font-bold text-indigo-600 transition-colors hover:border-indigo-400 dark:border-indigo-700 dark:bg-slate-900 dark:text-indigo-300">
-                                  +{overflowCount} {t("common.anotherSession", "bài nữa")}
-                                </button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-80 p-2 dark:border-slate-800 dark:bg-slate-900"
-                                side="bottom"
-                                align="start"
-                                sideOffset={8}>
-                                <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
-                                  {t("general.session5", {
-                                    var_0: String(day).padStart(2, "0"),
-                                    var_1: String(currentMonth + 1).padStart(2, "0"),
-                                    var_2: currentYear,
-                                    var_3: dayItems.length,
-                                  })}
-                                </p>
-                                <div className="flex max-h-52 flex-col gap-1 overflow-y-auto">
-                                  {dayItems.map((item) => (
-                                    <CalendarSessionEntry
-                                      key={item.session.id}
-                                      item={item}
-                                      onOpen={handleOpenSessionDetail}
-                                    />
-                                  ))}
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          )}
-                        </div>
+                        <Badge className="border-0 bg-indigo-600 px-1.5 py-0 text-[10px] font-bold text-white shadow-2xs dark:bg-indigo-500">
+                          {dayItems.length}
+                        </Badge>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
+
+                    {hasEvents && (
+                      <div className="space-y-1">
+                        {visibleItems.map((item) => {
+                          const cfg = getSessionStatusConfig(item.session.status);
+                          return (
+                            <button
+                              key={item.session.id}
+                              onClick={() => handleOpenSessionDetail(item.session.id)}
+                              className={cn(
+                                "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] font-medium shadow-2xs transition-colors hover:opacity-90",
+                                cfg.badgeClass
+                              )}>
+                              <Clock className="h-3 w-3 shrink-0" />
+                              <span className="shrink-0 font-semibold">
+                                {formatCalendarTime(item.session.joinTime)}
+                              </span>
+                              <span className="truncate font-semibold">
+                                {item.session.roomName || `#${item.session.id}`}
+                              </span>
+                            </button>
+                          );
+                        })}
+
+                        {overflowCount > 0 && (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="w-full rounded-md border border-dashed border-indigo-300 bg-white/80 px-2 py-0.5 text-center text-[10px] font-bold text-indigo-600 transition-colors hover:border-indigo-400 dark:border-indigo-700 dark:bg-slate-900 dark:text-indigo-300">
+                                +{overflowCount} {t("common.anotherSession", "bài nữa")}
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-80 p-2 dark:border-slate-800 dark:bg-slate-900"
+                              side="bottom"
+                              align="start"
+                              sideOffset={8}>
+                              <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
+                                {t("general.session5", {
+                                  var_0: String(day).padStart(2, "0"),
+                                  var_1: String(currentMonth + 1).padStart(2, "0"),
+                                  var_2: currentYear,
+                                  var_3: dayItems.length,
+                                })}
+                              </p>
+                              <div className="flex max-h-52 flex-col gap-1 overflow-y-auto">
+                                {dayItems.map((item) => (
+                                  <CalendarSessionEntry
+                                    key={item.session.id}
+                                    item={item}
+                                    onOpen={handleOpenSessionDetail}
+                                  />
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
@@ -667,8 +665,8 @@ export function OverviewPage() {
       </div>
 
       {/* Calendar + Agenda Grid Section */}
-      <div className="flex-1 overflow-hidden px-5 py-6 md:px-8">
-        <div className="h-full xl:hidden">
+      <div className="flex-1 overflow-y-auto px-5 py-6 md:px-8">
+        <div className="xl:hidden">
           <Tabs value={mobileView} onValueChange={setMobileView}>
             <TabsList className="mb-3 grid w-full grid-cols-2">
               <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
@@ -676,25 +674,23 @@ export function OverviewPage() {
                 {t("common.monthlyCalendar", "Lịch tháng")}
               </TabsTrigger>
             </TabsList>
-            <TabsContent
-              value={MOBILE_VIEW_AGENDA}
-              className="mt-0 h-[calc(100vh-300px)] overflow-y-auto">
+            <TabsContent value={MOBILE_VIEW_AGENDA} className="mt-0">
               {renderAgendaContent()}
             </TabsContent>
-            <TabsContent
-              value={MOBILE_VIEW_CALENDAR}
-              className="mt-0 h-[calc(100vh-300px)] overflow-y-auto">
+            <TabsContent value={MOBILE_VIEW_CALENDAR} className="mt-0">
               {renderCalendarContent()}
             </TabsContent>
           </Tabs>
         </div>
 
-        <div className="hidden h-[calc(100vh-220px)] gap-6 xl:grid xl:grid-cols-[1fr_400px]">
-          <div className="h-full overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            {renderCalendarContent()}
-          </div>
-          <div className="h-full overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            {renderAgendaContent()}
+        <div className="hidden flex-col gap-6 xl:flex">
+          <div className="flex flex-col gap-6 lg:flex-row">
+            <div className="flex-1 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              {renderCalendarContent()}
+            </div>
+            <div className="w-full shrink-0 rounded-xl border border-slate-200 bg-white lg:w-[420px] xl:w-[480px] dark:border-slate-800 dark:bg-slate-900">
+              {renderAgendaContent()}
+            </div>
           </div>
         </div>
       </div>

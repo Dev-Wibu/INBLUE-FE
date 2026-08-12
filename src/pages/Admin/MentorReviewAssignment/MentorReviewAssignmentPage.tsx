@@ -774,7 +774,7 @@ function AssignMentorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6 py-4 lg:grid-cols-5">
+        <div className="grid gap-6 py-4 lg:grid-cols-2">
           {/* Detail info */}
           {detail && (
             <div className="rounded-xl border-2 border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-purple-50/30 p-4 dark:border-indigo-900/50 dark:from-indigo-950/20 dark:to-purple-950/20">
