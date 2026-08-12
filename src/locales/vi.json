@@ -75,9 +75,7 @@
     "tableHeaderRound": "Vòng chấm",
     "tableHeaderStatus": "Trạng thái",
     "tableHeaderScore": "Điểm số",
-    "tableHeaderActions": "Thao tác",
-    "listView": "Xem dạng danh sách",
-    "cardView": "Xem dạng thẻ"
+    "tableHeaderActions": "Thao tác"
   },
   "adminKiosk": {
     "bookingRequests": "Yêu cầu đặt lịch Kiosk",
@@ -1195,6 +1193,10 @@
     "createFailed": "Tạo thất bại",
     "actions": "Thao tác",
     "quickSearch": "Tìm kiếm nhanh",
+    "list": "Danh sách",
+    "card": "Thẻ",
+    "listView": "Xem dạng danh sách",
+    "cardView": "Xem dạng thẻ",
     "loading": "Đang tải...",
     "noResults": "Không tìm thấy kết quả.",
     "pages": "Trang",

@@ -75,9 +75,7 @@
     "tableHeaderRound": "Round",
     "tableHeaderStatus": "Status",
     "tableHeaderScore": "Score",
-    "tableHeaderActions": "Actions",
-    "listView": "List view",
-    "cardView": "Card view"
+    "tableHeaderActions": "Actions"
   },
   "adminKiosk": {
     "bookingRequests": "Kiosk Booking Requests",
@@ -1198,6 +1196,10 @@
     "createFailed": "Create failed",
     "actions": "Actions",
     "quickSearch": "Quick search",
+    "list": "List",
+    "card": "Card",
+    "listView": "List view",
+    "cardView": "Card view",
     "loading": "Loading...",
     "noResults": "No results found.",
     "pages": "Pages",

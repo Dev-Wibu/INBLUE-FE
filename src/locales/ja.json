@@ -40,9 +40,7 @@
     "tableHeaderRound": "ラウンド",
     "tableHeaderStatus": "ステータス",
     "tableHeaderScore": "スコア",
-    "tableHeaderActions": "操作",
-    "listView": "リスト表示",
-    "cardView": "カード表示"
+    "tableHeaderActions": "操作"
   },
   "adminKiosk": {
     "bookingRequests": "キオスク予約リクエスト",
@@ -1159,6 +1157,10 @@
     "createFailed": "作成に失敗しました",
     "actions": "操作",
     "quickSearch": "クイック検索",
+    "list": "リスト",
+    "card": "カード",
+    "listView": "リスト表示",
+    "cardView": "カード表示",
     "loading": "読み込み中...",
     "noResults": "結果が見つかりません。",
     "pages": "ページ",
