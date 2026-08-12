@@ -1,7 +1,6 @@
 import { SortButton, type SortDirection } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -145,14 +144,29 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                     )
                   : "—"}
               </TableCell>
-              <TableCell className="py-4 pr-6 text-center">
-                <Switch
-                  className="data-[state=checked]:bg-emerald-500"
-                  checked={user.isActive !== false}
-                  onCheckedChange={() => onDelete(user)}
-                  aria-label="Toggle user status"
-                  onClick={(e) => e.stopPropagation()}
-                />
+              <TableCell className="py-4 pr-6 text-center" onClick={(e) => e.stopPropagation()}>
+                {user.isActive !== false ? (
+                  <button
+                    type="button"
+                    onClick={() => onDelete(user)}
+                    title={t("common.clickToDisable", "Nhấp để tắt")}
+                    className="group/status inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-50/80 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-2xs transition-all hover:bg-emerald-100/90 dark:border-emerald-500/30 dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-950/90">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                    </span>
+                    <span>{t("common.active", "Hoạt động")}</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onDelete(user)}
+                    title={t("common.clickToEnable", "Nhấp để bật")}
+                    className="group/status inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/80 px-3 py-1 text-xs font-semibold text-slate-600 transition-all hover:bg-slate-200/80 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                    <span className="h-2 w-2 rounded-full bg-slate-400 dark:bg-slate-500"></span>
+                    <span>{t("common.shutDown", "Đã tắt")}</span>
+                  </button>
+                )}
               </TableCell>
             </TableRow>
           ))}
