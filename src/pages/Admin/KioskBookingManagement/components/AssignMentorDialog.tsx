@@ -323,9 +323,9 @@ export function AssignMentorDialog({
                               : "hover:bg-slate-50 dark:hover:bg-slate-800"
                           }`}>
                           <div
-                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
                               selectedMentorId === String(mentor.id)
-                                ? "border-indigo-500 bg-indigo-500"
+                                ? "scale-110 border-indigo-500 bg-indigo-500"
                                 : "border-slate-300 dark:border-slate-600"
                             }`}>
                             {selectedMentorId === String(mentor.id) && (
