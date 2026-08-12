@@ -31,6 +31,8 @@ import { formatCurrency } from "@/lib/formatting";
 
 import { useUsers } from "@/hooks/useApplication";
 
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { getJobDescriptionLevelBadge } from "@/lib/status-utils";
 import { cn } from "@/lib/utils";
 import {
   adminApplicationManager,
@@ -39,6 +41,7 @@ import {
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import { roundManager } from "@/services/round.manager";
 import {
+  ArrowLeft,
   Briefcase,
   Calendar,
   Check,
@@ -613,6 +616,58 @@ export function JobDescriptionDetailView({
 
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-slate-50 p-4 lg:p-5 dark:bg-slate-950">
+      {/* ── TOP SUBHEADER / BREADCRUMB CARD ── */}
+      <div className="mb-4 flex flex-col justify-between gap-4 rounded-[20px] border border-slate-200 bg-white p-4 shadow-xs sm:flex-row sm:items-center sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onBack}
+            className="h-8.5 gap-1.5 rounded-xl border-slate-200 px-3 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>{t("common.back", "Quay lại")}</span>
+          </Button>
+
+          <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-800" />
+
+          <span
+            onClick={onBack}
+            className="cursor-pointer text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+            {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
+          </span>
+
+          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+
+          {companyName && (
+            <>
+              <span
+                onClick={onBack}
+                className="cursor-pointer text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+                {companyName}
+              </span>
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+            </>
+          )}
+
+          <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
+            {currentJd.title || t("common.title")}
+          </h1>
+
+          {currentJd.level && <StatusBadge {...getJobDescriptionLevelBadge(currentJd.level)} />}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            type="button"
+            onClick={() => setIsEditorOpen(true)}
+            className="h-8.5 gap-1.5 rounded-xl bg-indigo-600 px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>{t("adminCompanymanagement.studioWorkspace", "Studio Workspace sơ đồ")}</span>
+          </Button>
+        </div>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
         {/* ── LEFT COLUMN (2/3): RECRUITMENT PIPELINE & COMBINED SPEC TABS CARD ─ */}
         <main className="min-w-0 space-y-4">
