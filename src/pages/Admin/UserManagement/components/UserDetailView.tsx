@@ -68,6 +68,7 @@ function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }
 export function UserDetailView({
   user,
   profile,
+  onBack,
   formData,
   onFormChange,
   onSubmit,
