@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { companyManager, type Company } from "@/services/company.manager";
+import { companyManager, type Company, type JobDescription } from "@/services/company.manager";
 import { BriefcaseBusiness, Building2, MapPin, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
