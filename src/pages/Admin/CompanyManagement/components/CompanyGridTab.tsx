@@ -324,6 +324,18 @@ export function CompanyGridTab({
                       <ArrowLeft className="h-4 w-4" />
                       <span>{t("common.back", "Quay lại")}</span>
                     </Button>
+
+                    {/* Company logo */}
+                    {selectedCompany.logoUrl && (
+                      <div className="mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 shadow-xs dark:border-slate-700 dark:bg-slate-800">
+                        <img
+                          src={selectedCompany.logoUrl}
+                          alt={selectedCompany.name}
+                          className="h-full w-full object-contain p-1"
+                        />
+                      </div>
+                    )}
+
                     <div>
                       <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                         {selectedCompany.name}
@@ -391,6 +403,12 @@ export function CompanyGridTab({
                       className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
                     />
                   </div>
+                  <Button
+                    type="submit"
+                    className="h-[46px] rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                    <Search className="mr-2 h-[18px] w-[18px]" />
+                    {t("common.search", "Tìm kiếm")}
+                  </Button>
                   <Button
                     type="button"
                     onClick={() => {
