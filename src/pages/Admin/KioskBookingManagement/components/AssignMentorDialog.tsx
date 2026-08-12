@@ -169,6 +169,7 @@ export function AssignMentorDialog({
                 <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
                   <Briefcase className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   {t("adminKiosk.bookingInfo")}
+                  <span className="ml-auto text-xs font-normal text-slate-400">#{booking?.id}</span>
                 </h3>
                 <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900">
                   <div className="space-y-3">
