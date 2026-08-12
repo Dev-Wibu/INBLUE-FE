@@ -5888,7 +5888,6 @@
     "selectMentorDesc": "管理者が面接用のメンター候補リストを提案しました。プロフィールを確認し、1人のメンターを選んでください。",
     "loadingAssignedMentors": "メンターのプロフィールを読み込み中...",
     "noMentorsAvailable": "メンターがいません",
-    "mentorAvailable": "メンター(s)",
     "noMentorsAvailableDesc": "現在利用可能なメンターがいません。管理者にお問い合わせください。",
     "sessions": "セッション",
     "year": "年",
