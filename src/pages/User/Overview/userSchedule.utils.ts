@@ -64,11 +64,16 @@ export const getSessionStatusConfig = (status?: string): SessionStatusConfig => 
   return configs[status || "SCHEDULED"] || configs.SCHEDULED;
 };
 
+// Extended interface that preserves original event data for navigation
 export interface UserCalendarSession {
   session: Session;
   joinDate: Date;
   dateKey: string;
   timestamp: number;
+  // Original event data for navigation
+  eventType?: string;
+  applicationDetailId?: number;
+  sessionId?: number;
 }
 
 export const isUserCalendarStatus = (status?: string): boolean => {
@@ -186,6 +191,10 @@ export const buildCalendarSessionsFromEvents = (
         joinDate: startDate,
         dateKey: toDateKey(startDate),
         timestamp: startDate.getTime(),
+        // Preserve original event data for navigation
+        eventType: event.eventType,
+        applicationDetailId: event.applicationDetailId,
+        sessionId: event.sessionId,
       });
       return result;
     }, [])
