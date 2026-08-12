@@ -35,6 +35,8 @@ import { cn } from "@/lib/utils";
 import type { AdminApplicationDetailResponse } from "@/services/admin-application.manager";
 import {
   AlertTriangle,
+  BadgeDollarSign,
+  Briefcase,
   CheckCircle2,
   ChevronDown,
   Clock,
@@ -44,6 +46,7 @@ import {
   Mail,
   RefreshCw,
   Search,
+  Star,
   User,
   UserCheck,
   UserPlus,
@@ -1051,53 +1054,106 @@ function AssignMentorDialog({
                 <div className="rounded-lg border bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
                   {selectedMentorForDetail ? (
                     (() => {
-                      const selectedMentor = mentors.find((m) => m.id === selectedMentorForDetail);
-                      if (!selectedMentor) return null;
+                      const m = mentors.find((x) => x.id === selectedMentorForDetail);
+                      if (!m) return null;
                       return (
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-4">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-200 text-xl font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                              {selectedMentor.name?.charAt(0).toUpperCase() || "?"}
+                        <div className="space-y-5">
+                          {/* Header */}
+                          <div className="flex items-start gap-4">
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                              {m.name?.charAt(0).toUpperCase() || "?"}
                             </div>
-                            <div>
-                              <h4 className="text-lg font-semibold dark:text-slate-100">
-                                {selectedMentor.name}
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-xl font-semibold dark:text-slate-100">
+                                {m.name}
                               </h4>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">
-                                {selectedMentor.email}
+                              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                                {m.email}
                               </p>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {selectedMentorIds.includes(selectedMentorForDetail) && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    Đã chọn
+                                  </span>
+                                )}
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                  <User className="h-3 w-3" />
+                                  Mentor
+                                </span>
+                              </div>
                             </div>
-                            {selectedMentorIds.includes(selectedMentorForDetail) && (
-                              <Badge
-                                variant="outline"
-                                className="ml-auto border-green-500 text-green-600 dark:border-green-400 dark:text-green-400">
-                                Đã chọn
-                              </Badge>
+                          </div>
+
+                          {/* Contact Info */}
+                          <div className="space-y-2.5 rounded-lg bg-slate-50 p-4 dark:bg-slate-800/50">
+                            <div className="flex items-center gap-3">
+                              <Mail className="h-4 w-4 shrink-0 text-slate-400" />
+                              <span className="text-sm text-slate-600 dark:text-slate-400">
+                                {m.email}
+                              </span>
+                            </div>
+                            {m.currentCompany && (
+                              <div className="flex items-center gap-3">
+                                <Briefcase className="h-4 w-4 shrink-0 text-slate-400" />
+                                <span className="text-sm text-slate-600 dark:text-slate-400">
+                                  {m.currentCompany}
+                                </span>
+                              </div>
+                            )}
+                            {typeof m.pricePerMinute === "number" && m.pricePerMinute > 0 && (
+                              <div className="flex items-center gap-3">
+                                <BadgeDollarSign className="h-4 w-4 shrink-0 text-slate-400" />
+                                <span className="text-sm text-slate-600 dark:text-slate-400">
+                                  {m.pricePerMinute.toLocaleString("vi-VN")}đ / phút
+                                </span>
+                              </div>
                             )}
                           </div>
 
-                          <div className="space-y-3 border-t pt-4 dark:border-slate-700">
-                            <div className="flex items-center gap-3">
-                              <Mail className="h-4 w-4 text-slate-400" />
-                              <span className="text-sm text-slate-600 dark:text-slate-400">
-                                {selectedMentor.email}
+                          {/* Expertise / Skills */}
+                          {m.expertise && (
+                            <div>
+                              <p className="mb-2 text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                                Chuyên môn
+                              </p>
+                              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                                {m.expertise}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Bio */}
+                          {m.bio && (
+                            <div>
+                              <p className="mb-2 text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                                Giới thiệu
+                              </p>
+                              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                                {m.bio}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Rating */}
+                          <div className="flex items-center gap-4 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+                            <div className="flex items-center gap-1.5">
+                              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                              <span className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                {m.averageRating?.toFixed(1) ?? "4.5"}
                               </span>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <User className="h-4 w-4 text-slate-400" />
-                              <span className="text-sm text-slate-600 dark:text-slate-400">
-                                Mentor
-                              </span>
-                            </div>
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                            <span className="text-sm text-slate-500 dark:text-slate-400">
+                              {m.averageRating?.toFixed(1) ?? "4.5"}
+                            </span>
                           </div>
 
-                          <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-800/50">
-                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                              Gợi ý cho ứng viên này:
-                            </p>
-                            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                              Xem thông tin chi tiết của mentor để đưa ra quyết định phù hợp với
-                              trình độ và yêu cầu của ứng viên.
+                          {/* Tip */}
+                          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-4 dark:border-slate-700 dark:bg-slate-800/30">
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                              💡 Xem thông tin mentor bên trên để đưa ra quyết định gán mentor phù
+                              hợp với ứng viên này.
                             </p>
                           </div>
                         </div>
