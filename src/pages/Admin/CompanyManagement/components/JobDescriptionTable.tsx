@@ -164,14 +164,14 @@ export function JobDescriptionTable({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-4 font-semibold text-slate-900 dark:text-slate-100">
+                <TableCell className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-white">
                   {job.title || "—"}
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
                 </TableCell>
                 {showCompany && (
-                  <TableCell className="px-4 py-4 text-slate-600 dark:text-slate-300">
+                  <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 shrink-0 rounded-[14px] border border-slate-100 dark:border-slate-800">
                         <AvatarImage src={compLogo} alt={compName} className="object-cover" />
@@ -179,14 +179,14 @@ export function JobDescriptionTable({
                           {compName?.charAt(0)?.toUpperCase() || "C"}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-semibold text-slate-900 dark:text-slate-100">
+                      <span className="text-sm font-semibold text-slate-900 dark:text-white">
                         {compName}
                       </span>
                     </div>
                   </TableCell>
                 )}
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
                     <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
                     <span>{locationText}</span>
                   </div>

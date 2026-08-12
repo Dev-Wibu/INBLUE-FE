@@ -10,7 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Building2, Edit, MapPin } from "lucide-react";
+import { formatDate } from "@/lib/formatting";
+import { Building2, Calendar, Edit, MapPin } from "lucide-react";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import type { Company } from "../types";
@@ -56,19 +57,22 @@ export function CompanyTable({
             <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.id", "ID")}
             </TableHead>
-            <TableHead className="min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCompanymanagement.companyName", "Tên công ty")}
             </TableHead>
-            <TableHead className="w-[170px] min-w-[170px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[160px] min-w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.location", "Địa điểm")}
             </TableHead>
-            <TableHead className="min-w-[240px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.description", "Mô tả")}
             </TableHead>
-            <TableHead className="w-[130px] min-w-[130px] text-center font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[110px] min-w-[110px] text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCompanymanagement.jdCount", "Số JD")}
             </TableHead>
-            <TableHead className="w-[130px] min-w-[130px] text-center font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[160px] min-w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
+            </TableHead>
+            <TableHead className="w-[120px] min-w-[120px] text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("common.status", "Trạng thái")}
             </TableHead>
             <TableHead className="w-[100px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
@@ -80,6 +84,10 @@ export function CompanyTable({
           {companies.map((company) => {
             const isInactive = company.status !== "ACTIVE";
             const locationText = (company as any).location || "TP. Hồ Chí Minh";
+            const joinedDateRaw =
+              (company as any).createdAt ||
+              (company as any).created_at ||
+              (company as any).createdAtDate;
 
             return (
               <TableRow
@@ -111,13 +119,13 @@ export function CompanyTable({
                         {company.name?.charAt(0)?.toUpperCase() || "C"}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-semibold text-slate-900 dark:text-white">
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">
                       {company.name}
                     </span>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
                     <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
                     <span>{locationText}</span>
                   </div>
@@ -128,10 +136,15 @@ export function CompanyTable({
                   </p>
                 </TableCell>
                 <TableCell className="px-4 py-4 text-center">
-                  <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {company.jobDescriptions?.length || 0}{" "}
-                    {t("adminCompanymanagement.jdShort", "JD")}
+                  <span className="inline-flex items-center justify-center rounded-full border border-indigo-200/60 bg-indigo-50/90 px-3 py-0.5 font-mono text-xs font-bold text-indigo-600 dark:border-indigo-800/60 dark:bg-indigo-950/70 dark:text-indigo-400">
+                    {company.jobDescriptions?.length || 0}
                   </span>
+                </TableCell>
+                <TableCell className="px-4 py-4">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <Calendar className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
+                    <span>{joinedDateRaw ? formatDate(joinedDateRaw as string) : "—"}</span>
+                  </div>
                 </TableCell>
                 <TableCell className="py-4 text-center" onClick={(e) => e.stopPropagation()}>
                   <Switch
