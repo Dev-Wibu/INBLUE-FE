@@ -88,6 +88,13 @@ export const useAuthStore = create<AuthState>()(
         // Remove current user ID from localStorage on logout
         localStorage.removeItem("current-user-id");
 
+        // Clear all React Query cache to prevent stale data from previous user
+        import("@/lib/queryClient")
+          .then(({ queryClient: client }) => {
+            client.clear();
+          })
+          .catch(console.error);
+
         // Disconnect socket using dynamic import to avoid circular dependency
         import("@/services/socket.manager")
           .then(({ socketService }) => {
