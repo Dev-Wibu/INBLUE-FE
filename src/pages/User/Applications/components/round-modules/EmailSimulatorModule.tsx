@@ -186,14 +186,16 @@ export function EmailSimulatorModule({
     null;
 
   // 2. Nếu emailSubmissionId khác null/undefined, gọi GET /api/email-submissions/{id} để lấy kết quả chi tiết
-  //    Guard: staff view reads email data from detail.submissionData instead
+  //    Staff view (read-only workspace) is allowed to call this API so the staff can see the
+  //    candidate's submitted email body — this is the only extra API call permitted for
+  //    the Email round on the staff detail page.
   const { data: emailSubmission } = useEmailSubmission(
     emailSubmissionId ?? 0,
-    emailSubmissionId != null && emailSubmissionId > 0 && !isStaffView
+    emailSubmissionId != null && emailSubmissionId > 0
   );
 
   // Auto-fetch email submission for preview modal when opened
-  useEmailSubmission(previewEmailId ?? 0, previewOpen && previewEmailId != null && !isStaffView);
+  useEmailSubmission(previewEmailId ?? 0, previewOpen && previewEmailId != null);
 
   // 3. Tính toán Phase thuần túy (Derived State) dựa trên emailSubmissionId, emailSubmission và detail status
   const phase = useMemo<Phase>(() => {
@@ -292,6 +294,8 @@ export function EmailSimulatorModule({
     | undefined;
 
   const handleSubmit = () => {
+    // Guard: staff view is read-only on this page, no candidate actions allowed.
+    if (isStaffView) return;
     // Không có submit endpoint — vòng này hoàn toàn dựa vào cronjob server quét email.
     // Chỉ chuyển phase sang WAITING để app bắt đầu poll trạng thái.
     toast.success(t("userApplication.emailSimulator.confirmEmailSent"));
@@ -300,6 +304,8 @@ export function EmailSimulatorModule({
   };
 
   const openGmailPopup = () => {
+    // Guard: staff view is read-only on this page, no candidate actions allowed.
+    if (isStaffView) return;
     // Chuyển phase sang WAITING để hệ thống bắt đầu poll kết quả từ application detail
     setUserWaiting(true);
     onSuccess?.();
@@ -561,7 +567,7 @@ export function EmailSimulatorModule({
                   rows={13}
                   value={sampleBody}
                   onChange={(e) => setSampleBody(e.target.value)}
-                  disabled={isCompleted || !isCurrent}
+                  disabled={isCompleted || !isCurrent || isStaffView}
                   className="resize-y rounded-t-none rounded-b-xl border-x border-b border-slate-200 bg-white font-sans text-xs leading-relaxed text-slate-700 shadow-inner focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
                 />
               </div>
@@ -569,7 +575,7 @@ export function EmailSimulatorModule({
               <div className="flex items-center justify-end border-t border-slate-200 pt-4 dark:border-slate-800/80">
                 <Button
                   onClick={openGmailPopup}
-                  disabled={isCompleted || !isCurrent}
+                  disabled={isCompleted || !isCurrent || isStaffView}
                   className="h-9 gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 px-6 text-xs font-bold text-white shadow-lg transition-all hover:from-indigo-500 hover:to-blue-500">
                   <Globe className="h-3.5 w-3.5" />
                   <span>{t("userApplication.emailSimulator.openGmail")}</span>
