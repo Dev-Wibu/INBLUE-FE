@@ -42,7 +42,7 @@ export function MasterJobCard({
     job.salaryMin || job.salaryMax
       ? `${job.salaryMin ? job.salaryMin.toLocaleString() : 0} - ${
           job.salaryMax ? job.salaryMax.toLocaleString() : "Max"
-        } ${job.currency || "USD"}`
+        } ${job.currency || "VND"}`
       : t("enterpriseCompanydetail.negotiate", "Thỏa thuận");
 
   return (

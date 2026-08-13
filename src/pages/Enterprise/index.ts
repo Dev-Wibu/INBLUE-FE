@@ -6,3 +6,4 @@
 export { CompanyDetailPage } from "./CompanyDetail/CompanyDetailPage";
 export { CompanySearchPage } from "./CompanySearchPage";
 export { JobDescriptionDetailPage } from "./JobDescriptionDetailPage";
+export { JobSearchPage } from "./JobSearchPage";

@@ -21,7 +21,7 @@ const levelColors: Record<string, string> = {
 };
 
 export function JobCard({ job }: JobCardProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const levelLabels: Record<string, string> = {
     INTERN: t("enterpriseCompanydetail.internInternship"),
     FRESHER: t("enterpriseCompanydetail.fresher"),
@@ -29,21 +29,18 @@ export function JobCard({ job }: JobCardProps) {
     MIDDLE: t("enterpriseCompanydetail.middle"),
   };
 
-  const formatSalary = (min?: number, max?: number, currency = "VND"): string => {
-    if (!min && !max) return t("enterpriseCompanydetail.negotiate");
-    const format = (num: number) => {
-      if (num >= 1000000) {
-        return t("general.million1", {
-          var_0: (num / 1000000).toFixed(1).replace(/\.0$/, ""),
-        });
-      }
-      return num.toLocaleString(i18n.language === "en" ? "en-US" : "vi-VN");
-    };
-    if (min && max) return `${format(min)} - ${format(max)} ${currency}`;
-    if (min) return t("common.fromVar0Var1", { var_0: format(min), var_1: currency });
-    if (max) return t("common.toVar0Var1", { var_0: format(max), var_1: currency });
-    return t("enterpriseCompanydetail.negotiate");
+  const formatSalaryVND = (min?: number, max?: number): { text: string; hasIcon: boolean } => {
+    if (!min && !max) {
+      return { text: t("enterpriseCompanydetail.negotiate", "Thỏa thuận"), hasIcon: false };
+    }
+    const fmt = (num: number): string => num.toLocaleString("en-US");
+    if (min && max) return { text: `${fmt(min)} - ${fmt(max)} VND`, hasIcon: false };
+    if (min) return { text: `${fmt(min)}+ VND`, hasIcon: false };
+    if (max) return { text: `Tối đa ${fmt(max)} VND`, hasIcon: false };
+    return { text: t("enterpriseCompanydetail.negotiate", "Thỏa thuận"), hasIcon: false };
   };
+
+  const salaryInfo = formatSalaryVND(job.salaryMin, job.salaryMax);
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors hover:border-[#0047AB]/30 sm:p-6 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-[#66B2FF]/30">
@@ -72,8 +69,8 @@ export function JobCard({ job }: JobCardProps) {
 
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-600 dark:text-slate-400">
             <span className="flex items-center gap-1 font-medium text-[#0047AB] dark:text-[#66B2FF]">
-              <DollarSign className="h-4 w-4" />
-              {formatSalary(job.salaryMin, job.salaryMax, job.currency)}
+              {salaryInfo.hasIcon && <DollarSign className="h-4 w-4" />}
+              {salaryInfo.text}
             </span>
             {job.location && (
               <span className="flex items-center gap-1">

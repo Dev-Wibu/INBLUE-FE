@@ -1,4 +1,3 @@
-import interviewSetupImage from "@/assets/homepage/ai-interview-setup.png";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { companyManager, type Company, type JobDescription } from "@/services/company.manager";
@@ -79,19 +78,165 @@ export function NewHomepageHero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: reduceMotion ? 0 : 0.12, ease: motionEase }}
           className="relative">
-          <div className="overflow-hidden rounded-xl bg-slate-200 p-1.5 shadow-[0_12px_28px_rgba(15,23,42,0.12)] dark:bg-slate-800">
-            <img
-              src={interviewSetupImage}
-              alt={t("landingNew.setupScreenshotAlt")}
-              className="aspect-[1.44] w-full rounded-[9px] object-cover object-left-top"
-            />
-          </div>
-          <figcaption className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+          <AIInterviewHeroMockup />
+          <figcaption className="mt-3 text-center text-sm text-slate-500 dark:text-slate-400">
             {t("landingNew.heroCaption")}
           </figcaption>
         </motion.figure>
       </div>
     </section>
+  );
+}
+
+export function AIInterviewHeroMockup() {
+  const [isMuted, setIsMuted] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(true);
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 shadow-[0_16px_32px_rgba(15,23,42,0.1)] backdrop-blur-sm dark:border-slate-800/90 dark:bg-slate-900/95">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-3.5 py-2.5 dark:border-slate-800/80 dark:bg-slate-900/60">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <div className="h-2.5 w-2.5 rounded-full bg-rose-400 dark:bg-rose-500/80" />
+            <div className="h-2.5 w-2.5 rounded-full bg-amber-400 dark:bg-amber-500/80" />
+            <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 dark:bg-emerald-500/80" />
+          </div>
+          <span className="ml-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            INBLUE AI Interview Studio
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+            </span>
+            LIVE SESSION
+          </span>
+          <span className="font-mono text-[11px] font-bold text-slate-600 dark:text-slate-300">
+            14:25
+          </span>
+        </div>
+      </div>
+
+      {/* Main Content Area - Compact padding */}
+      <div className="space-y-3 p-3.5 sm:p-4">
+        {/* AI Interviewer Question Card */}
+        <div className="flex items-start gap-3 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#0047AB] to-indigo-600 text-white shadow-xs">
+            <Sparkles className="h-4 w-4 animate-pulse" />
+          </div>
+          <div className="flex-1 space-y-0.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#0047AB] dark:text-[#66B2FF]">
+                AI Interviewer • Tech Lead
+              </span>
+              <span className="text-[10px] font-medium text-slate-400">AI Round</span>
+            </div>
+            <p className="text-xs leading-snug font-medium text-slate-800 dark:text-slate-200">
+              "How do you optimize component re-renders in a large React application handling
+              high-frequency WebSocket streams?"
+            </p>
+          </div>
+        </div>
+
+        {/* Candidate Audio & Speech Stream */}
+        <div className="relative rounded-xl border border-slate-200/80 bg-slate-50/60 p-3 dark:border-slate-800/80 dark:bg-slate-950/60">
+          <div className="flex items-center justify-between pb-2">
+            <div className="flex items-center gap-1.5">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
+                ME
+              </div>
+              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                Your Answer (Voice Input)
+              </span>
+            </div>
+            {/* Live Audio Equalizer Waveform Animation */}
+            <div className="flex items-center gap-0.5">
+              {[40, 75, 30, 90, 60, 100, 45, 80, 50, 35].map((height, i) => (
+                <motion.span
+                  key={i}
+                  animate={
+                    isSpeaking
+                      ? { height: [`${height * 0.3}%`, `${height}%`, `${height * 0.3}%`] }
+                      : { height: "20%" }
+                  }
+                  transition={{
+                    duration: 0.8,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    delay: i * 0.08,
+                  }}
+                  className="w-0.5 rounded-full bg-[#0047AB] dark:bg-[#66B2FF]"
+                  style={{ height: `${height}%`, minHeight: "5px" }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <p className="text-[11px] leading-relaxed text-slate-600 italic dark:text-slate-300">
+            "I leverage{" "}
+            <strong className="font-semibold text-indigo-600 not-italic dark:text-indigo-400">
+              React.memo
+            </strong>{" "}
+            with custom equality checks, paired with{" "}
+            <strong className="font-semibold text-indigo-600 not-italic dark:text-indigo-400">
+              virtualized lists
+            </strong>{" "}
+            to ensure DOM updates remain decoupled from state updates..."
+          </p>
+        </div>
+
+        {/* Realtime Telemetry Indicators Grid */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-lg border border-slate-200/60 bg-white p-2 text-center shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+              Clarity
+            </div>
+            <div className="mt-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              96%
+            </div>
+          </div>
+          <div className="rounded-lg border border-slate-200/60 bg-white p-2 text-center shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Pacing</div>
+            <div className="mt-0.5 text-xs font-bold text-[#0047AB] dark:text-[#66B2FF]">
+              140 wpm
+            </div>
+          </div>
+          <div className="rounded-lg border border-slate-200/60 bg-white p-2 text-center shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+              Keywords
+            </div>
+            <div className="mt-0.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">92%</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Control Bar Footer */}
+      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/80 px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-900/60">
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsMuted(!isMuted)}
+            className="h-7 gap-1 rounded-full px-2.5 text-[11px] font-semibold">
+            <Mic2 className={cn("h-3 w-3", isMuted && "text-rose-500")} />
+            {isMuted ? "Mic Off" : "Mic Active"}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setIsSpeaking(!isSpeaking)}
+            className="h-7 gap-1 rounded-full px-2.5 text-[11px] font-medium text-slate-600 dark:text-slate-300">
+            <Bot className="h-3 w-3 text-[#0047AB] dark:text-[#66B2FF]" />
+            AI Hints
+          </Button>
+        </div>
+        <span className="text-[10px] font-medium text-slate-400">INBLUE Engine</span>
+      </div>
+    </div>
   );
 }
 
@@ -561,15 +706,153 @@ export function FeedbackActionSection() {
             ))}
           </div>
         </div>
-        <figure className="overflow-hidden rounded-xl bg-slate-200 p-1.5 shadow-[0_12px_28px_rgba(15,23,42,0.1)] dark:bg-slate-800">
-          <img
-            src={interviewSetupImage}
-            alt={t("landingNew.feedbackScreenshotAlt")}
-            className="aspect-[1.44] w-full rounded-[9px] object-cover object-right-top"
-          />
+        <figure className="relative">
+          <AIInterviewFeedbackMockup />
         </figure>
       </div>
     </section>
+  );
+}
+
+export function AIInterviewFeedbackMockup() {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_16px_32px_rgba(15,23,42,0.1)] dark:border-slate-800/90 dark:bg-slate-900">
+      {/* Top Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-4 py-3 dark:border-slate-800/80 dark:bg-slate-900/60">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#0047AB] to-indigo-600 text-white shadow-2xs">
+            <FileCheck2 className="h-3.5 w-3.5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h4 className="text-[11px] font-bold text-slate-900 dark:text-white">
+                Final Application Summary
+              </h4>
+              <span className="py-0.2 rounded bg-indigo-50 px-1.5 text-[9.5px] font-semibold text-[#0047AB] dark:bg-indigo-950/60 dark:text-[#66B2FF]">
+                JD #APP-9824
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              Frontend Engineer • 4-Round Assessment
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-400">
+            <Check className="h-3 w-3" />
+            Passed 94 / 100
+          </span>
+        </div>
+      </div>
+
+      {/* Main Body - Compact padding */}
+      <div className="space-y-3 p-3.5 sm:p-4">
+        {/* Application Rounds Progress Grid */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
+            <span>Rounds Progress</span>
+            <span className="text-emerald-600 dark:text-emerald-400">4/4 Completed</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            {/* Round 1 */}
+            <div className="rounded-lg border border-emerald-200/80 bg-emerald-50/40 p-2 text-center dark:border-emerald-900/40 dark:bg-emerald-950/20">
+              <div className="text-[9.5px] font-semibold text-slate-500 dark:text-slate-400">
+                Round 1: CV
+              </div>
+              <div className="mt-0.5 flex items-center justify-center gap-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                <Check className="h-2.5 w-2.5" /> Matched
+              </div>
+            </div>
+
+            {/* Round 2 */}
+            <div className="rounded-lg border border-emerald-200/80 bg-emerald-50/40 p-2 text-center dark:border-emerald-900/40 dark:bg-emerald-950/20">
+              <div className="text-[9.5px] font-semibold text-slate-500 dark:text-slate-400">
+                Round 2: Quiz
+              </div>
+              <div className="mt-0.5 flex items-center justify-center gap-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                <Check className="h-2.5 w-2.5" /> 90/100
+              </div>
+            </div>
+
+            {/* Round 3 */}
+            <div className="rounded-lg border border-indigo-200/80 bg-indigo-50/40 p-2 text-center dark:border-indigo-900/40 dark:bg-indigo-950/20">
+              <div className="text-[9.5px] font-semibold text-slate-500 dark:text-slate-400">
+                Round 3: AI Stream
+              </div>
+              <div className="mt-0.5 flex items-center justify-center gap-0.5 text-[11px] font-bold text-[#0047AB] dark:text-[#66B2FF]">
+                <Sparkles className="h-2.5 w-2.5" /> 95/100
+              </div>
+            </div>
+
+            {/* Round 4 */}
+            <div className="rounded-lg border border-purple-200/80 bg-purple-50/40 p-2 text-center dark:border-purple-900/40 dark:bg-purple-950/20">
+              <div className="text-[9.5px] font-semibold text-slate-500 dark:text-slate-400">
+                Round 4: Mentor
+              </div>
+              <div className="mt-0.5 flex items-center justify-center gap-0.5 text-[11px] font-bold text-purple-700 dark:text-purple-300">
+                <UserRoundCheck className="h-2.5 w-2.5" /> 92/100
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Actionable Feedback Highlights Cards */}
+        <div className="space-y-2 pt-0.5">
+          {/* Keep */}
+          <div className="flex items-start gap-2.5 rounded-lg border border-emerald-100 bg-emerald-50/50 p-2.5 dark:border-emerald-950/60 dark:bg-emerald-950/20">
+            <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+              <Check className="h-3 w-3" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                Keep (Application Strengths)
+              </span>
+              <p className="mt-0.5 text-[11px] leading-snug text-slate-700 dark:text-slate-300">
+                Solid algorithm fundamentals, confident AI interview posture, and positive mentor
+                review.
+              </p>
+            </div>
+          </div>
+
+          {/* Improve */}
+          <div className="flex items-start gap-2.5 rounded-lg border border-amber-100 bg-amber-50/50 p-2.5 dark:border-amber-950/60 dark:bg-amber-950/20">
+            <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white">
+              <Sparkles className="h-3 w-3" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
+                Improve (Enhancement Area)
+              </span>
+              <p className="mt-0.5 text-[11px] leading-snug text-slate-700 dark:text-slate-300">
+                Add quantified metrics from past projects (e.g., "reduced render latency by 35%")
+                for impact.
+              </p>
+            </div>
+          </div>
+
+          {/* Practice Next */}
+          <div className="flex items-start gap-2.5 rounded-lg border border-indigo-100 bg-indigo-50/50 p-2.5 dark:border-indigo-950/60 dark:bg-indigo-950/20">
+            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0047AB] text-white">
+              <ArrowRight className="h-3 w-3" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-[#0047AB] dark:text-[#66B2FF]">
+                Next Step (Final Verdict)
+              </span>
+              <p className="mt-0.5 text-[11px] leading-snug text-slate-700 dark:text-slate-300">
+                Application status:{" "}
+                <strong className="font-semibold text-slate-900 dark:text-white">
+                  Ready for Official Enterprise Referral & Submission
+                </strong>
+                .
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

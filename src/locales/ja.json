@@ -6847,6 +6847,8 @@
   },
   "landingNew": {
     "headerExplore": "職種を見る",
+    "headerExploreCompanies": "Explore companies",
+    "headerExploreJobs": "Explore jobs",
     "headerHowItWorks": "仕組み",
     "headerCta": "練習を始める",
     "headerNavLabel": "メインナビゲーション",
