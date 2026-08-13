@@ -48,7 +48,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -666,6 +666,43 @@ function AssignMentorDialog({
   const [notes, setNotes] = useState("");
 
   const { data: mentors = [] } = useMentors();
+
+  // Auto-populate previously assigned mentors when dialog opens
+  useEffect(() => {
+    if (open && detail) {
+      const record = detail as Record<string, unknown>;
+      const rawAssigned = (record.assignedMentors || record.assigned_mentors || record.mentors) as
+        | Array<Record<string, unknown>>
+        | undefined;
+
+      const ids: number[] = [];
+      if (Array.isArray(rawAssigned) && rawAssigned.length > 0) {
+        rawAssigned.forEach((m) => {
+          if (typeof m === "number") {
+            ids.push(m);
+          } else if (m && typeof m === "object") {
+            const id = (m.id ?? m.mentorId ?? m.userId ?? m.mentor_id ?? m.user_id) as number;
+            if (typeof id === "number" && !isNaN(id)) {
+              ids.push(id);
+            }
+          }
+        });
+      } else {
+        const singleId = (record.assignedMentorId ??
+          record.assigned_mentor_id ??
+          record.mentorId ??
+          record.mentor_id) as number;
+        if (typeof singleId === "number" && !isNaN(singleId) && singleId > 0) {
+          ids.push(singleId);
+        }
+      }
+
+      if (ids.length > 0) {
+        setSelectedMentorIds(ids);
+        setActivePreviewId(ids[ids.length - 1]);
+      }
+    }
+  }, [open, detail]);
 
   // Filter mentors based on search query
   const filteredMentors = useMemo(() => {
