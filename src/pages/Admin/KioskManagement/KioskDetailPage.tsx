@@ -318,7 +318,7 @@ export function KioskDetailPage() {
 
       {/* ── SCROLLABLE CONTENT ───────────────────────────────────────── */}
       <div className="flex-1 overflow-auto bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
-        <div className="mb-6 flex flex-col justify-between gap-4 rounded-[20px] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">
+        <div className="hidden">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="truncate text-lg font-bold text-slate-950 dark:text-white">
@@ -361,6 +361,31 @@ export function KioskDetailPage() {
           </Button>
         </div>
         {/* ── SCHEDULE GRID SECTION ────────────────────────────────── */}
+        <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <div>
+              <h1 className="text-lg font-bold text-slate-950 dark:text-white">
+                {t("adminKioskManagement.weeklySchedule", "Lịch hoạt động theo tuần")}
+              </h1>
+              <p className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t(
+                  "adminKioskManagement.weeklyScheduleDescription",
+                  "Quản lý các khung giờ hoạt động của Kiosk"
+                )}
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setEditOpen(true)}
+            disabled={!kiosk || isLoading}
+            className="group/btn h-8.5 gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-700 shadow-2xs transition-all hover:border-indigo-300 hover:bg-indigo-50/70 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-400">
+            <Pencil className="h-3.5 w-3.5 text-slate-400 transition-colors group-hover/btn:text-indigo-500" />
+            {t("common.edit", "Chỉnh sửa")}
+          </Button>
+        </div>
         <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-5 py-3 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center gap-2">
@@ -374,6 +399,48 @@ export function KioskDetailPage() {
             </span>
           </div>
           <div className="p-5">
+            <div className="mb-5 grid gap-3 border-b border-slate-200 pb-5 sm:grid-cols-2 lg:grid-cols-4 dark:border-slate-800">
+              <div>
+                <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                  {t("adminKioskManagement.kioskName", "Tên trạm Kiosk")}
+                </p>
+                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                  {kiosk?.name || `Kiosk #${kioskId}`}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                  {t("common.id", "Mã")}
+                </p>
+                <p className="mt-1 font-mono text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  #{kioskId}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                  {t("adminKioskManagement.location", "Vị trí")}
+                </p>
+                <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <MapPin className="h-3.5 w-3.5 text-indigo-500" />
+                  {kiosk?.location || t("adminKioskManagement.noLocation", "Chưa cập nhật")}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                  {t("common.status", "Trạng thái")}
+                </p>
+                <p
+                  className={
+                    kioskStatus
+                      ? "mt-1 text-sm font-bold text-emerald-600 dark:text-emerald-400"
+                      : "mt-1 text-sm font-bold text-slate-500 dark:text-slate-400"
+                  }>
+                  {kioskStatus
+                    ? t("adminKioskManagement.active", "Hoạt động")
+                    : t("adminKioskManagement.inactive", "Đã tắt")}
+                </p>
+              </div>
+            </div>
             <KioskScheduleGrid
               kioskId={kioskId}
               schedules={sortedSchedules}
