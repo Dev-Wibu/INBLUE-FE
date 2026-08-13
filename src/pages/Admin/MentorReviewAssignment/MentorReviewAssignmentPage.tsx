@@ -748,9 +748,9 @@ function AssignMentorDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="flex max-h-[92vh] w-[96vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-5xl dark:border-slate-800 dark:bg-slate-900">
-        {/* Header Block: Candidate Avatar/Name/Email + Company Logo/Name/JD Title as DialogHeader */}
-        <div className="border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
+      <DialogContent className="flex h-[88vh] max-h-[820px] w-[96vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-6xl dark:border-slate-800 dark:bg-slate-900">
+        {/* Fixed Header Block: Candidate Avatar/Name/Email + Company Logo/Name/JD Title */}
+        <div className="shrink-0 border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
           <DialogHeader className="flex flex-col gap-4 space-y-0 sm:flex-row sm:items-center sm:justify-between">
             {/* Left: Candidate Info */}
             <div className="flex min-w-0 items-center gap-3">
@@ -809,13 +809,13 @@ function AssignMentorDialog({
           </DialogHeader>
         </div>
 
-        {/* Modal Main Body */}
-        <div className="max-h-[calc(92vh-130px)] space-y-4 overflow-y-auto p-6">
-          {/* 2-Column Workspace Grid */}
-          <div className="grid min-h-[420px] grid-cols-1 items-start gap-5 lg:grid-cols-12">
+        {/* Modal Main Workspace - Fixed Flex-1 Area */}
+        <div className="flex-1 overflow-hidden bg-slate-50/50 p-6 dark:bg-slate-950/40">
+          {/* 2-Column Fixed Grid */}
+          <div className="grid h-full grid-cols-1 items-stretch gap-5 overflow-hidden lg:grid-cols-12">
             {/* LEFT COLUMN (5/12) - Search & Scrollable Mentor List */}
-            <div className="flex max-h-[440px] flex-col gap-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 lg:col-span-5 dark:border-slate-800 dark:bg-slate-950/40">
-              <div className="flex items-center justify-between">
+            <div className="flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex shrink-0 items-center justify-between">
                 <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-300">
                   Danh sách Mentor ({filteredMentors.length})
                 </span>
@@ -829,18 +829,18 @@ function AssignMentorDialog({
               </div>
 
               {/* Search Input */}
-              <div className="relative">
+              <div className="relative shrink-0">
                 <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                 <Input
                   placeholder="Tìm theo tên, email, kỹ năng..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9.5 rounded-xl border-slate-200 bg-white pl-8.5 text-xs dark:border-slate-800 dark:bg-slate-900"
+                  className="h-9.5 rounded-xl border-slate-200 bg-slate-50/50 pl-8.5 text-xs dark:border-slate-800 dark:bg-slate-950/80"
                 />
               </div>
 
               {/* Scrollable Mentor List */}
-              <div className="flex max-h-[340px] flex-col gap-2 overflow-y-auto pr-1">
+              <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1">
                 {filteredMentors.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
@@ -903,12 +903,12 @@ function AssignMentorDialog({
             </div>
 
             {/* RIGHT COLUMN (7/12) - Selected Mentor Dossier Panel */}
-            <div className="flex min-h-[440px] flex-col gap-4 rounded-xl border border-slate-200/80 bg-slate-50/70 p-5 lg:col-span-7 dark:border-slate-800 dark:bg-slate-950/60">
+            <div className="flex h-full flex-col gap-4 overflow-y-auto rounded-xl border border-slate-200/80 bg-white p-5 shadow-2xs lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
               {previewMentor ? (
                 <div className="flex flex-1 flex-col gap-4">
                   {/* Multiple Selected Mentor Chips */}
                   {selectedMentorsList.length > 1 && (
-                    <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-200/80 pb-3 dark:border-slate-800">
+                    <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-slate-200/80 pb-3 dark:border-slate-800">
                       <span className="mr-1 text-xs font-semibold text-slate-500">
                         Đã chọn ({selectedMentorsList.length}):
                       </span>
@@ -937,7 +937,7 @@ function AssignMentorDialog({
                   )}
 
                   {/* Mentor Header Profile */}
-                  <div className="flex items-start gap-4 border-b border-slate-200/80 pb-4 dark:border-slate-800">
+                  <div className="flex shrink-0 items-start gap-4 border-b border-slate-200/80 pb-4 dark:border-slate-800">
                     <Avatar className="h-14 w-14 shrink-0 rounded-2xl border-2 border-indigo-500/20 shadow-sm dark:border-indigo-500/40">
                       {previewMentor.avatarUrl ? (
                         <AvatarImage src={previewMentor.avatarUrl} className="object-cover" />
@@ -990,7 +990,7 @@ function AssignMentorDialog({
 
                   {/* Skill Badges */}
                   {previewMentor.expertise && (
-                    <div>
+                    <div className="shrink-0">
                       <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                         Chuyên môn & Kỹ năng
                       </span>
@@ -999,7 +999,7 @@ function AssignMentorDialog({
                           <Badge
                             key={idx}
                             variant="secondary"
-                            className="rounded-lg border border-slate-200/80 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                            className="rounded-lg border border-slate-200/80 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-300">
                             {skill.trim()}
                           </Badge>
                         ))}
@@ -1009,7 +1009,7 @@ function AssignMentorDialog({
 
                   {/* Bio */}
                   {previewMentor.bio && (
-                    <div>
+                    <div className="shrink-0">
                       <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                         Giới thiệu bản thân
                       </span>
@@ -1020,7 +1020,7 @@ function AssignMentorDialog({
                   )}
 
                   {/* Admin Note Input */}
-                  <div className="mt-auto border-t border-slate-200/80 pt-3 dark:border-slate-800">
+                  <div className="mt-auto shrink-0 border-t border-slate-200/80 pt-3 dark:border-slate-800">
                     <Label
                       htmlFor="admin-assign-notes"
                       className="text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -1054,8 +1054,8 @@ function AssignMentorDialog({
           </div>
         </div>
 
-        {/* Footer Block matching KioskFormDialog */}
-        <DialogFooter className="flex flex-row items-center justify-between border-t border-slate-200/90 bg-slate-100/90 px-6 py-3.5 dark:border-slate-800 dark:bg-slate-950">
+        {/* Fixed Footer Block matching KioskFormDialog */}
+        <DialogFooter className="flex shrink-0 flex-row items-center justify-between border-t border-slate-200/90 bg-slate-100/90 px-6 py-3.5 dark:border-slate-800 dark:bg-slate-950">
           <Button
             type="button"
             variant="outline"
