@@ -121,6 +121,11 @@ export function QuestionBankTable({
             const isActive =
               (q as unknown as { isDeleted?: boolean }).isDeleted === false ||
               (q as unknown as { isDeleted?: boolean }).isDeleted === undefined;
+
+            const textContent =
+              q.questionText || t("adminQuestionbankmanagement.noContent", "Chưa có nội dung");
+            const isLongText = textContent.length > 45;
+
             return (
               <TableRow
                 key={q.id}
@@ -139,14 +144,19 @@ export function QuestionBankTable({
                 </TableCell>
 
                 <TableCell className="max-w-[500px] min-w-[280px] px-4 py-4">
-                  <div className="group/scroll relative w-full overflow-hidden">
-                    <div className="whitespace-nowrap transition-transform duration-[3500ms] ease-linear group-hover/scroll:-translate-x-full">
-                      <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                        {q.questionText ||
-                          t("adminQuestionbankmanagement.noContent", "Chưa có nội dung")}
-                      </span>
+                  {isLongText ? (
+                    <div className="group/scroll relative w-full overflow-hidden">
+                      <div className="whitespace-nowrap transition-transform duration-[8000ms] ease-linear group-hover/scroll:-translate-x-full">
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          {textContent}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
+                      {textContent}
+                    </p>
+                  )}
                 </TableCell>
 
                 <TableCell className="w-[160px] px-4 py-4">
