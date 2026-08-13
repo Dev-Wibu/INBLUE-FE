@@ -152,6 +152,29 @@ function ApplicationStatusBadge({ status }: { status?: string }) {
   );
 }
 
+function AiInterviewPendingNotice({ status }: { status: string }) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+      <div className="flex items-start gap-3">
+        <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+        <div>
+          <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+            {t("pendingAicvGrading", "Ứng viên chưa hoàn thành vòng AI Interview")}
+          </p>
+          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+            {t(
+              "pendingAicvGradingHint",
+              "Vòng AI Interview hiện đang ở trạng thái chờ. Không có bài nộp để chấm."
+            )}{" "}
+            <span className="font-semibold">(Trạng thái: {status || "PENDING"})</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============================================================
 // Inline Grading Form for Staff (replaces modal)
 // ============================================================
@@ -461,7 +484,7 @@ function InlineGradingForm({
               {scoreError}
             </p>
           )}
-          {detail.aiScore !== undefined && (
+          {detail.aiScore !== undefined && detail.status !== "PENDING" && (
             <button
               type="button"
               onClick={() => handleScoreChange(String(Math.round(detail.aiScore!)))}
@@ -572,6 +595,7 @@ function StaffGradingWorkspaceHeaderCard({
   onSuccess,
   onCancel,
   onSafeClose,
+  onDirtyChange,
 }: {
   selectedRoundOrder: number;
   staffActiveDetail?: ApplicationDetail;
@@ -585,6 +609,7 @@ function StaffGradingWorkspaceHeaderCard({
   onSuccess?: () => void;
   onCancel?: () => void;
   onSafeClose: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
   const { t } = useTranslation();
   const detail = staffActiveDetail;
@@ -653,10 +678,10 @@ function StaffGradingWorkspaceHeaderCard({
               </span>
             )}
 
-            {aiScore !== undefined && (
+            {aiScore !== undefined && detail?.status !== "PENDING" && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/15 px-3 py-1 text-xs font-bold text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">
                 <Star className="h-3.5 w-3.5 text-purple-500" />
-                {t("staffGrading.aiReferenceLabel", { score: Math.round(aiScore) })}
+                {`AI: ${Math.round(aiScore)}/100`}
               </span>
             )}
           </div>
@@ -742,7 +767,7 @@ function StaffGradingWorkspaceHeaderCard({
                   }}
                   isEditing={true}
                   onCancel={onCancel ?? (() => {})}
-                  onDirtyChange={setIsGradingDirty}
+                  onDirtyChange={onDirtyChange ?? (() => {})}
                 />
               </div>
             </div>
@@ -799,7 +824,7 @@ function StaffGradingWorkspaceHeaderCard({
                     </span>
                     <span className="text-sm font-bold text-white/60">/100</span>
                   </div>
-                ) : aiScore !== undefined ? (
+                ) : aiScore !== undefined && detail?.status !== "PENDING" ? (
                   <div className="flex flex-col items-center justify-center">
                     <span className="text-[10px] font-extrabold tracking-wider text-purple-200 uppercase">
                       {t("staffGrading.referenceAi", "Tham chiếu AI")}
@@ -1088,6 +1113,13 @@ export function StaffGradingWorkspacePage() {
     upperType === "MENTROR_REVIEW" ||
     upperName.includes("MENTOR");
   const isAiInterviewRound = upperType === "AI_INTERVIEW" || upperName.includes("AI");
+
+  // Detect pending states for AI Interview regardless of inferred roundType
+  // (data may be empty so inferRoundType can miss AI_INTERVIEW)
+  const aiPendingStatuses = ["PENDING", "SLOT_PICKED", "AWAITING_CANDIDATE_SELECT_MENTOR"];
+  const detailStatus = (staffActiveDetail?.status as string | undefined) ?? "";
+  const isAiInterviewPendingRound = isAiInterviewRound || aiPendingStatuses.includes(detailStatus);
+
   const isStandaloneLayout =
     isCvScreeningRound ||
     isEmailSimulatorRound ||
@@ -1095,7 +1127,7 @@ export function StaffGradingWorkspacePage() {
     isCodingRound ||
     isCodeReviewRound ||
     isMentorReviewRound ||
-    isAiInterviewRound;
+    isAiInterviewPendingRound;
 
   // Status calculations
   const totalRounds = rounds.length;
@@ -1186,7 +1218,7 @@ export function StaffGradingWorkspacePage() {
               onClick={() => navigate("/staff?tab=applicationGrading")}
               className="h-8 gap-1.5 px-2 text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>{t("userApplicationhistory.goBackToList", " Quay lại danh sách")}</span>
+              <span>{t("common.backToList")}</span>
             </Button>
 
             <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
@@ -1205,7 +1237,7 @@ export function StaffGradingWorkspacePage() {
             <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
 
             <h1 className="truncate text-sm font-extrabold text-slate-900 dark:text-white">
-              {jdInfo?.title ?? t("application.applications", "Đơn ứng tuyển")}
+              {jdInfo?.title ?? t("application.applications")}
             </h1>
           </div>
 
@@ -1246,6 +1278,7 @@ export function StaffGradingWorkspacePage() {
           onSuccess={handleGradingSuccess}
           onCancel={() => setIsGradingEditing(false)}
           onSafeClose={handleSafeGradingClose}
+          onDirtyChange={setIsGradingDirty}
         />
 
         {/* Workspace Main Grid */}
@@ -1334,19 +1367,25 @@ export function StaffGradingWorkspacePage() {
 
                   {/* Main Interactive Round Workspace Module */}
                   <div className="p-6">
-                    <RoundWorkspaceDispatcher
-                      round={activeRound}
-                      detail={staffActiveDetail}
-                      applicationId={applicationId}
-                      jdId={detailJdId}
-                      jdInfo={jdInfo}
-                      currentRoundOrder={apiCurrentRoundOrder ?? 1}
-                      appStatus={apiAppStatus}
-                      isStaffView={true}
-                      onRefresh={() => {
-                        void refetchReviewer();
-                      }}
-                    />
+                    {isAiInterviewPendingRound &&
+                    aiPendingStatuses.includes(detailStatus) &&
+                    !isAiInterviewRound ? (
+                      <AiInterviewPendingNotice status={detailStatus} />
+                    ) : (
+                      <RoundWorkspaceDispatcher
+                        round={activeRound}
+                        detail={staffActiveDetail}
+                        applicationId={applicationId}
+                        jdId={detailJdId}
+                        jdInfo={jdInfo}
+                        currentRoundOrder={apiCurrentRoundOrder ?? 1}
+                        appStatus={apiAppStatus}
+                        isStaffView={true}
+                        onRefresh={() => {
+                          void refetchReviewer();
+                        }}
+                      />
+                    )}
                   </div>
                 </Card>
               )}

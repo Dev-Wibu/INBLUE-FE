@@ -2357,7 +2357,11 @@ export function AiInterviewModule({
   const isStaffInProgress =
     isStaffView &&
     !isCompletedEffective &&
-    (statusStr === "PENDING" || statusStr === "SLOT_PICKED");
+    (statusStr === "PENDING" ||
+      statusStr === "SLOT_PICKED" ||
+      statusStr === "IN_PROGRESS" ||
+      statusStr === "INTERVIEWING" ||
+      statusStr === "SCHEDULED");
 
   const aiScore = detail?.aiScore;
   const hrScore = detail?.hrScore;
