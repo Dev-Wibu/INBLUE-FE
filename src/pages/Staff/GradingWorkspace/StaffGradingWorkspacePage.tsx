@@ -161,11 +161,13 @@ function InlineGradingForm({
   onSuccess,
   isEditing,
   onCancel,
+  onDirtyChange,
 }: {
   detail: ApplicationDetail;
   onSuccess: () => void;
   isEditing: boolean;
   onCancel: () => void;
+  onDirtyChange?: (_isDirty: boolean) => void;
 }) {
   const { t } = useTranslation();
   const hasExistingGrade = detail.hrScore !== undefined && detail.hrScore !== null;
@@ -181,6 +183,11 @@ function InlineGradingForm({
   const [scoreError, setScoreError] = useState<string | null>(null);
   // Track if user has made any changes to the form
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Notify parent when dirty state changes
+  useEffect(() => {
+    onDirtyChange?.(hasUnsavedChanges);
+  }, [hasUnsavedChanges, onDirtyChange]);
 
   // Reset unsaved changes tracking when form opens
   useEffect(() => {
@@ -223,24 +230,6 @@ function InlineGradingForm({
   const handlePassChange = (val: boolean) => {
     setIsPass(val);
     setHasUnsavedChanges(true);
-  };
-
-  // Safe cancel handler - warns if there are unsaved changes
-  const handleSafeCancel = () => {
-    if (hasUnsavedChanges) {
-      if (
-        window.confirm(
-          t(
-            "grading.unsavedChangesWarning",
-            "You have unsaved changes. Are you sure you want to close?"
-          )
-        )
-      ) {
-        onCancel();
-      }
-    } else {
-      onCancel();
-    }
   };
 
   const handleSubmit = () => {
@@ -407,7 +396,7 @@ function InlineGradingForm({
         <div className="flex justify-end gap-2 pt-1">
           <Button
             variant="outline"
-            onClick={handleSafeCancel}
+            onClick={onCancel}
             className="h-8 rounded-lg border-slate-200 px-4 text-xs font-medium dark:border-slate-700">
             Cancel
           </Button>
@@ -538,7 +527,7 @@ function InlineGradingForm({
       <div className="flex justify-end gap-2 pt-1">
         <Button
           variant="outline"
-          onClick={handleSafeCancel}
+          onClick={onCancel}
           className="h-8 rounded-lg border-slate-200 px-4 text-xs font-medium dark:border-slate-700">
           Cancel
         </Button>
@@ -582,6 +571,7 @@ function StaffGradingWorkspaceHeaderCard({
   isEditing,
   onSuccess,
   onCancel,
+  onSafeClose,
 }: {
   selectedRoundOrder: number;
   staffActiveDetail?: ApplicationDetail;
@@ -594,6 +584,7 @@ function StaffGradingWorkspaceHeaderCard({
   isEditing?: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
+  onSafeClose: () => void;
 }) {
   const { t } = useTranslation();
   const detail = staffActiveDetail;
@@ -738,7 +729,7 @@ function StaffGradingWorkspaceHeaderCard({
                     : t("grading.hrGrading", "Chấm điểm HR")}
                 </span>
                 <button
-                  onClick={onCancel}
+                  onClick={onSafeClose}
                   className="text-[10px] font-semibold text-slate-400 hover:text-slate-600">
                   Đóng
                 </button>
@@ -751,6 +742,7 @@ function StaffGradingWorkspaceHeaderCard({
                   }}
                   isEditing={true}
                   onCancel={onCancel ?? (() => {})}
+                  onDirtyChange={setIsGradingDirty}
                 />
               </div>
             </div>
@@ -1060,6 +1052,26 @@ export function StaffGradingWorkspacePage() {
 
   // Inline Grading State (replaces modal)
   const [isGradingEditing, setIsGradingEditing] = useState(false);
+  const [isGradingDirty, setIsGradingDirty] = useState(false);
+
+  // Safe close handler for grading form with unsaved changes warning
+  const handleSafeGradingClose = useCallback(() => {
+    if (isGradingDirty) {
+      if (
+        window.confirm(
+          t(
+            "grading.unsavedChangesWarning",
+            "You have unsaved changes. Are you sure you want to close?"
+          )
+        )
+      ) {
+        setIsGradingEditing(false);
+        setIsGradingDirty(false);
+      }
+    } else {
+      setIsGradingEditing(false);
+    }
+  }, [isGradingDirty, t]);
 
   // Round type detection using effectiveRoundType (inferRoundType fallback for robustness)
   const upperType = effectiveRoundType?.toUpperCase() ?? "";
@@ -1233,6 +1245,7 @@ export function StaffGradingWorkspacePage() {
           isEditing={isGradingEditing}
           onSuccess={handleGradingSuccess}
           onCancel={() => setIsGradingEditing(false)}
+          onSafeClose={handleSafeGradingClose}
         />
 
         {/* Workspace Main Grid */}
