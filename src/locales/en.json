@@ -1821,6 +1821,7 @@
     "theSystemIsGeneratingAPaymentLink": "The system is generating a payment link. Please wait a moment.",
     "thereAreNoAppointmentsAvailableFor": "There are no appointments available for the selected date",
     "clickOnTheDateToSeeDetails": "Click on a date to view the interview schedule details",
+    "clickToEnlarge": "Click to enlarge",
     "selectAnotherDateOnCalendar": "Click another date on the calendar to see information.",
     "thereAreNoCandidateProfilesYet": "There are no candidate profiles yet",
     "thereAreNoDetailedComments": "There are no detailed comments.",
@@ -2164,7 +2165,17 @@
     "writeACommentCtrlEnter": "Write a comment... (Ctrl+Enter to post)",
     "writeArticles": "Write articles",
     "searchComments": "Search comments by content or author name...",
-    "youHaveReadTheEntire": "You have read the entire article."
+    "youHaveReadTheEntire": "You have read the entire article.",
+    "feedDetail": {
+      "backToFeed": "Back to feed",
+      "media": "Post media",
+      "postNotFound": "This post could not be found.",
+      "postNotFoundHint": "It may have been removed or you may not have permission to view it.",
+      "invalidPostId": "Invalid post id.",
+      "noMediaAttached": "This post has no media attached.",
+      "seeMore": "See more",
+      "showLess": "Show less"
+    }
   },
   "compReview": {
     "action": "Action",

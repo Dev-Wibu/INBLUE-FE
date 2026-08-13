@@ -391,6 +391,9 @@ export function CompanyManagementPage() {
         toast.success(t("adminCompanymanagement.successfullyCreatedJd", "Tạo JD mới thành công"));
         setIsJdDialogOpen(false);
         setJdFormData({});
+        queryClient.invalidateQueries({ queryKey: ["admin", "all-jds"] });
+        queryClient.invalidateQueries({ queryKey: ["admin", "open-jds"] });
+        queryClient.invalidateQueries({ queryKey: ["admin", "companies"] });
         void refetchAllJds();
       } else {
         toast.error(res.error || t("common.cannotCreateJd", "Không thể tạo JD"));
@@ -423,6 +426,13 @@ export function CompanyManagementPage() {
       if (res.success) {
         toast.success(t("common.updateSuccess", "Cập nhật JD thành công"));
         setIsJdEditDialogOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["admin", "all-jds"] });
+        queryClient.invalidateQueries({ queryKey: ["admin", "open-jds"] });
+        if (editingJd.id) {
+          queryClient.invalidateQueries({
+            queryKey: ["admin", "jd-detail-header", editingJd.id],
+          });
+        }
         void refetchAllJds();
       } else {
         toast.error(res.error || t("common.updateFailed", "Cập nhật thất bại"));

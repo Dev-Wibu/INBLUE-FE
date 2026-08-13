@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -35,7 +34,6 @@ export function SignupPage() {
     password: "",
     confirmPassword: "",
   });
-  const [agreeTerms, setAgreeTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -137,11 +135,6 @@ export function SignupPage() {
       return;
     }
 
-    // Validate terms agreement
-    if (!agreeTerms) {
-      setError(t("authSignuppage.pleaseAgreeToTerms"));
-      return;
-    }
     setIsLoading(true);
     const result = await authManager.signup({
       fullName: formData.fullName,
@@ -329,24 +322,6 @@ export function SignupPage() {
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-          </div>
-
-          <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-950/60">
-            <Checkbox
-              id="agreeTerms"
-              checked={agreeTerms}
-              onCheckedChange={(checked) => setAgreeTerms(checked === true)}
-              className="mt-0.5"
-            />
-            <label
-              htmlFor="agreeTerms"
-              className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-              {t("authSignuppage.iAgreeWithThese")}{" "}
-              <Link to="#" className="text-[#0047AB] hover:underline dark:text-[#66B2FF]">
-                {t("authSignuppage.terms")}
-              </Link>{" "}
-              {t("authSignuppage.byInblue")}
-            </label>
           </div>
 
           {error && (

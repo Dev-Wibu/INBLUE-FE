@@ -1816,6 +1816,7 @@
     "theSystemIsGeneratingAPaymentLink": "Hệ thống đang tạo liên kết thanh toán. Vui lòng chờ trong giây lát.",
     "thereAreNoAppointmentsAvailableFor": "Không có lịch hẹn trong ngày đã chọn",
     "clickOnTheDateToSeeDetails": "Nhấp vào ngày để xem chi tiết lịch phỏng vấn",
+    "clickToEnlarge": "Bấm để phóng to",
     "selectAnotherDateOnCalendar": "Nhấp vào ngày khác trên lịch để xem thông tin.",
     "thereAreNoCandidateProfilesYet": "Chưa có hồ sơ ứng viên",
     "thereAreNoDetailedComments": "Không có nhận xét chi tiết.",
@@ -2159,7 +2160,17 @@
     "writeACommentCtrlEnter": "Viết bình luận... (Ctrl+Enter để gửi)",
     "writeArticles": "Viết bài",
     "searchComments": "Tìm kiếm bình luận theo nội dung hoặc tên tác giả...",
-    "youHaveReadTheEntire": "Bạn đã xem hết bài viết rồi."
+    "youHaveReadTheEntire": "Bạn đã xem hết bài viết rồi.",
+    "feedDetail": {
+      "backToFeed": "Quay lại bảng tin",
+      "media": "Media của bài viết",
+      "postNotFound": "Không tìm thấy bài viết này.",
+      "postNotFoundHint": "Bài viết có thể đã bị xoá hoặc bạn không có quyền xem.",
+      "invalidPostId": "Mã bài viết không hợp lệ.",
+      "noMediaAttached": "Bài viết này không có hình ảnh đính kèm.",
+      "seeMore": "Xem thêm",
+      "showLess": "Thu gọn"
+    }
   },
   "compReview": {
     "action": "Hành động (Action)",

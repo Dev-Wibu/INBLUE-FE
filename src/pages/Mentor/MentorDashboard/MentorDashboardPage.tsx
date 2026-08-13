@@ -380,13 +380,22 @@ export function MentorDashboardPage() {
         />
         <div
           ref={handleContentRef}
+          data-dashboard-content-scroll="true"
           className={cn(
-            "flex-1 overflow-hidden",
-            typedActiveTab === "messenger"
+            "relative min-h-0 flex-1 overflow-hidden",
+            // Home feed detail page is its own two-column layout that must
+            // fill the content area edge-to-edge with no padding and no
+            // page-level scroll. The page uses absolute inset-0 to lock
+            // its size to this container, so we need position:relative
+            // here and we must not let min-height:auto (default) let the
+            // page grow with content.
+            location.pathname.startsWith("/mentor/home-feed/")
               ? "p-0"
-              : typedActiveTab === "overview"
-                ? "overflow-auto"
-                : "overflow-auto p-4 md:p-6 lg:p-8"
+              : typedActiveTab === "messenger"
+                ? "p-0"
+                : typedActiveTab === "overview"
+                  ? "overflow-auto"
+                  : "overflow-auto p-4 md:p-6 lg:p-8"
           )}>
           {outlet ?? renderContent()}
         </div>

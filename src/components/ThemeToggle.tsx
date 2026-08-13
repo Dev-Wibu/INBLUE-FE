@@ -36,7 +36,10 @@ export function ThemeToggle({ className, iconOnly = false }: ThemeToggleProps) {
             <span className="sr-only">{t("compThemetoggle.switchInterface")}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent sideOffset={8} align="end">
+        <DropdownMenuContent
+          sideOffset={8}
+          align="end"
+          className="border border-slate-200 bg-white/95 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
           <DropdownMenuItem
             onClick={() => handleThemeChange("light")}
             className={theme === "light" ? "bg-accent" : ""}>
@@ -68,7 +71,10 @@ export function ThemeToggle({ className, iconOnly = false }: ThemeToggleProps) {
           <span className="ml-4">{t("common.interface")}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent sideOffset={8} align="end">
+      <DropdownMenuContent
+        sideOffset={8}
+        align="end"
+        className="border border-slate-200 bg-white/95 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
         <DropdownMenuItem
           onClick={() => handleThemeChange("light")}
           className={theme === "light" ? "bg-accent" : ""}>

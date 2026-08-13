@@ -63,7 +63,7 @@ describe("useDashboardScrollRestoration", () => {
     window.sessionStorage.clear();
   });
 
-  it("resets scroll on push and restores on pop", async () => {
+  it("does not reset scroll on first push and restores on pop", async () => {
     render(
       <MemoryRouter initialEntries={["/dashboard?tab=a"]}>
         <ScrollHarness />
@@ -73,10 +73,15 @@ describe("useDashboardScrollRestoration", () => {
     const scrollContainer = screen.getByTestId("scroll-container");
     scrollContainer.scrollTop = 320;
 
+    // First visit to /dashboard?tab=b (PUSH). With no saved position
+    // for this route the hook deliberately does NOT touch scrollTop,
+    // so child components (e.g. CommunityFeedPage reading from
+    // sessionStorage) own the restore. The previous behaviour of
+    // clobbering to 0 raced with the child restore and was wrong.
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
 
     await waitFor(() => {
-      expect(scrollContainer.scrollTop).toBe(0);
+      expect(scrollContainer.scrollTop).toBe(320);
     });
 
     scrollContainer.scrollTop = 140;
@@ -161,11 +166,12 @@ describe("useDashboardScrollRestoration", () => {
     const scrollContainer = screen.getByTestId("scroll-container");
     scrollContainer.scrollTop = 100;
 
-    // Should not throw — corrupt data is ignored
+    // Corrupt data is ignored; PUSH with no usable saved value leaves
+    // scrollTop alone so child components can own restoration.
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
 
     await waitFor(() => {
-      expect(scrollContainer.scrollTop).toBe(0);
+      expect(scrollContainer.scrollTop).toBe(100);
     });
   });
 
@@ -179,6 +185,7 @@ describe("useDashboardScrollRestoration", () => {
     );
 
     const scrollContainer = screen.getByTestId("scroll-container");
+    scrollContainer.scrollTop = 0;
 
     // Should not crash — valid JSON but not an object → starts fresh
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
@@ -191,29 +198,33 @@ describe("useDashboardScrollRestoration", () => {
   it("evicts oldest entries when maxEntries is exceeded", async () => {
     render(
       <MemoryRouter initialEntries={["/dashboard?tab=a"]}>
-        <ScrollHarness enabled={true} maxEntries={2} />
+        <ScrollHarness enabled={true} maxEntries={4} />
       </MemoryRouter>
     );
 
     const scrollContainer = screen.getByTestId("scroll-container");
 
-    // Save position for tab=a (cleanup-based save on location change)
+    // Each navigation now stores up to 2 keys per position (the route key
+    // /dashboard?tab=X and the history entry key). With maxEntries=4 we
+    // can keep one full round of positions before eviction kicks in.
     scrollContainer.scrollTop = 100;
 
-    // Navigate to tab=b → saves tab=a entry, resets to 0
+    // Navigate to tab=b → saves tab=a entry (route + entry). PUSH with
+    // no saved value leaves scrollTop untouched.
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
-    await waitFor(() => expect(scrollContainer.scrollTop).toBe(0));
+    await waitFor(() => expect(scrollContainer.scrollTop).toBe(100));
 
     scrollContainer.scrollTop = 200;
 
-    // Navigate to tab=c → saves tab=b entry, resets to 0. Now we have 2 entries (maxEntries).
+    // Navigate to tab=c → saves tab=b entry.
     fireEvent.click(screen.getByRole("button", { name: "Go C" }));
-    await waitFor(() => expect(scrollContainer.scrollTop).toBe(0));
+    await waitFor(() => expect(scrollContainer.scrollTop).toBe(200));
 
     scrollContainer.scrollTop = 300;
 
-    // Navigate back → cleanup saves tab=c entry. Now 3 entries exist in Map, but maxEntries=2
-    // so the oldest (tab=a) should be evicted.
+    // Navigate back → cleanup saves tab=c entry. Now 6 entries exist in
+    // Map, but maxEntries=4 so the oldest two (a route, a entry) should
+    // be evicted.
     fireEvent.click(screen.getByRole("button", { name: "Go Back" }));
     // Restored scroll should be tab=b's saved position (200), not tab=c's (300)
     await waitFor(() => expect(scrollContainer.scrollTop).toBe(200));
@@ -222,8 +233,8 @@ describe("useDashboardScrollRestoration", () => {
       window.sessionStorage.getItem("dashboard_scroll_positions_v1") || "{}"
     );
     const keys = Object.keys(stored);
-    // At most maxEntries (2) entries should remain — eviction removed the oldest
-    expect(keys.length).toBeLessThanOrEqual(2);
+    // At most maxEntries (4) entries should remain — eviction removed the oldest
+    expect(keys.length).toBeLessThanOrEqual(4);
   });
 
   it("saves scroll position via debounced scroll handler", async () => {
@@ -307,18 +318,54 @@ describe("useDashboardScrollRestoration", () => {
     // Save position for tab=a
     scrollContainer.scrollTop = 50;
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
-    await waitFor(() => expect(scrollContainer.scrollTop).toBe(0));
+    await waitFor(() => expect(scrollContainer.scrollTop).toBe(50));
 
     // Save position for tab=b
     scrollContainer.scrollTop = 100;
     fireEvent.click(screen.getByRole("button", { name: "Go C" }));
-    await waitFor(() => expect(scrollContainer.scrollTop).toBe(0));
+    await waitFor(() => expect(scrollContainer.scrollTop).toBe(100));
 
     const stored = JSON.parse(
       window.sessionStorage.getItem("dashboard_scroll_positions_v1") || "{}"
     );
-    // With maxEntries=0 → fallback to 100 → both entries should be kept
-    expect(Object.keys(stored).length).toBe(2);
+    // With maxEntries=0 → fallback to 100 → all entries should be kept.
+    // Each route contributes 2 keys (route key + history entry key), so
+    // tab=a + tab+b = 4 entries total.
+    expect(Object.keys(stored).length).toBe(4);
+  });
+
+  it("restores scroll on push when revisiting a known route", async () => {
+    render(
+      <MemoryRouter initialEntries={["/dashboard?tab=a"]}>
+        <ScrollHarness />
+      </MemoryRouter>
+    );
+
+    const scrollContainer = screen.getByTestId("scroll-container");
+    scrollContainer.scrollTop = 480;
+
+    // First visit to /dashboard?tab=b (PUSH). With no saved position
+    // for this route yet the hook leaves scrollTop alone — child
+    // components own the restoration. The /a value (480) stays.
+    fireEvent.click(screen.getByRole("button", { name: "Go B" }));
+    await waitFor(() => {
+      expect(scrollContainer.scrollTop).toBe(480);
+    });
+
+    // Scroll the b page, then go back to a.
+    scrollContainer.scrollTop = 250;
+    fireEvent.click(screen.getByRole("button", { name: "Go Back" }));
+    await waitFor(() => {
+      expect(scrollContainer.scrollTop).toBe(480);
+    });
+
+    // Now PUSH to b again. The hook should restore the saved position
+    // (250) for the route /dashboard?tab=b — that's the whole point of
+    // restoring by route key, not just by history entry.
+    fireEvent.click(screen.getByRole("button", { name: "Go B" }));
+    await waitFor(() => {
+      expect(scrollContainer.scrollTop).toBe(250);
+    });
   });
 
   it("cleans up scroll listener on unmount", async () => {

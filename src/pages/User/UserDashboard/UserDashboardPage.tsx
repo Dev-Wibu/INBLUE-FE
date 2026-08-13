@@ -482,22 +482,31 @@ export function UserDashboardPage() {
 
         <div
           ref={handleContentRef}
+          data-dashboard-content-scroll="true"
           className={cn(
-            "flex-1 overflow-hidden",
-            typedActiveTab === "overview"
-              ? "overflow-auto"
-              : typedActiveTab === "messenger" ||
-                  typedActiveTab === "mentors" ||
-                  typedActiveTab === "jobSearch" ||
-                  typedActiveTab === "companies" ||
-                  typedActiveTab === "applicationHistory" ||
-                  typedActiveTab === "aiInterview" ||
-                  location.pathname.startsWith("/user/application")
-                ? "overflow-auto p-0"
-                : location.pathname.startsWith("/user/account") ||
-                    location.pathname.startsWith("/user/settings")
+            "relative min-h-0 flex-1",
+            // Home feed detail page overlays the feed container with
+            // absolute inset-0, so we need overflow-hidden + p-0 only for
+            // the detail sub-route. The bare feed tab keeps overflow-auto
+            // so useDashboardScrollRestoration can track the user's
+            // scroll position and restore it when they return from a
+            // post detail.
+            location.pathname.startsWith("/user/home-feed/")
+              ? "overflow-hidden p-0"
+              : typedActiveTab === "overview"
+                ? "overflow-auto"
+                : typedActiveTab === "messenger" ||
+                    typedActiveTab === "mentors" ||
+                    typedActiveTab === "jobSearch" ||
+                    typedActiveTab === "companies" ||
+                    typedActiveTab === "applicationHistory" ||
+                    typedActiveTab === "aiInterview" ||
+                    location.pathname.startsWith("/user/application")
                   ? "overflow-auto p-0"
-                  : "overflow-auto p-4 md:p-6 lg:p-8"
+                  : location.pathname.startsWith("/user/account") ||
+                      location.pathname.startsWith("/user/settings")
+                    ? "overflow-auto p-0"
+                    : "overflow-auto p-4 md:p-6 lg:p-8"
           )}>
           {outlet ?? renderContent()}
         </div>

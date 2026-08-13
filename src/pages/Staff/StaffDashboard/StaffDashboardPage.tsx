@@ -2,12 +2,14 @@ import icon2 from "@/assets/icon2.svg";
 import type { SidebarMenuGroup } from "@/components/shared";
 import { DashboardSidebar, getInitialSidebarCollapsed } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
+import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
+import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { ClipboardCheck, Home, LayoutDashboard } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ApplicationGradingPage } from "../../Admin/ApplicationGrading/ApplicationGradingPage";
 import { StaffAccountPage } from "../Account/StaffAccountPage";
@@ -116,6 +118,7 @@ export function StaffDashboardPage() {
     availableTabs: availableTabs,
   });
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollTarget] = useState<HTMLDivElement | null>(null);
@@ -210,6 +213,8 @@ export function StaffDashboardPage() {
     contentRef.current = node;
   }, []);
 
+  useDashboardScrollRestoration(contentRef);
+
   return (
     <div className="isolate flex h-screen bg-slate-50 dark:bg-slate-950">
       <DashboardSidebar
@@ -265,7 +270,21 @@ export function StaffDashboardPage() {
           isSidebarCollapsed={isSidebarCollapsed}
         />
 
-        <div ref={handleContentRef} className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+        <div
+          ref={handleContentRef}
+          data-dashboard-content-scroll="true"
+          className={cn(
+            "relative min-h-0 flex-1",
+            // Home feed detail page is its own two-column layout that must
+            // fill the content area edge-to-edge with no padding and no
+            // page-level scroll. The page uses absolute inset-0 to lock
+            // its size to this container, so we need position:relative
+            // here and we must not let min-height:auto (default) let the
+            // page grow with content.
+            location.pathname.startsWith("/staff/home/")
+              ? "overflow-hidden p-0"
+              : "overflow-auto p-4 md:p-6 lg:p-8"
+          )}>
           {renderTabContent(typedActiveTab)}
         </div>
         <ScrollToTopButton target={scrollTarget} threshold={600} />

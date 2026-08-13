@@ -6,6 +6,7 @@ import { AuthLayout } from "@/components/layouts";
 import {
   ProtectedRoute,
   PublicOnlyRoute,
+  ScrollRestorationLegacy,
   ScrollToTop,
   SessionExpiryGuard,
 } from "@/components/shared";
@@ -38,7 +39,6 @@ import {
   HomePage,
   InterviewTipsPage,
   MentorInterviewFeaturePage,
-  QuestionBankPage,
 } from "@/pages/Homepage";
 import {
   MentorDashboardPage,
@@ -51,6 +51,7 @@ import {
   WriteFeedbackPage,
 } from "@/pages/Mentor";
 import { PaymentCancelPage, PaymentSuccessPage } from "@/pages/Payment";
+import { HomeFeedDetailPage } from "@/pages/Shared/HomeFeedDetail";
 import { StaffDashboardPage } from "@/pages/Staff";
 import {
   AccountPage,
@@ -134,6 +135,7 @@ function App() {
           <SessionExpiryGuard />
           <ScrollToTop />
           <PublicScrollToTopButton />
+          <ScrollRestorationLegacy />
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<HomePage />} />
@@ -145,7 +147,6 @@ function App() {
             <Route path="/oauth2/callback" element={<QueryHashRedirect to="/login" />} />
 
             {/* Questions pages (public) */}
-            <Route path="/questions/bank" element={<QuestionBankPage />} />
             <Route path="/questions/tips" element={<InterviewTipsPage />} />
 
             {/* Enterprise Simulation pages (public) */}
@@ -246,6 +247,28 @@ function App() {
             {/* Quiz page — full page, no sidebar, outside ChromeTabs shell */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
               <Route path="/user/quiz/:appId/round/:roundId" element={<ApplicationQuizPage />} />
+            </Route>
+
+            {/* Home Feed Detail — full page, no sidebar (outside ChromeTabs shell).
+                Lives outside the /user shell so the X / browser-back button returns
+                the user to the previous Home Feed with its scroll position intact. */}
+            <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+              <Route
+                path="/user/home-feed/:postId"
+                element={<HomeFeedDetailPage backTo="/user?tab=homeFeed" />}
+              />
+            </Route>
+            <Route element={<ProtectedRoute allowedRoles={["MENTOR"]} />}>
+              <Route
+                path="/mentor/home-feed/:postId"
+                element={<HomeFeedDetailPage backTo="/mentor?tab=homeFeed" />}
+              />
+            </Route>
+            <Route element={<ProtectedRoute allowedRoles={["STAFF"]} />}>
+              <Route
+                path="/staff/home-feed/:postId"
+                element={<HomeFeedDetailPage backTo="/staff?tab=home" />}
+              />
             </Route>
             {/* Mentor Review — full page, no sidebar */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>

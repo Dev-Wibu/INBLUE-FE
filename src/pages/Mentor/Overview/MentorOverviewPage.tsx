@@ -1,4 +1,3 @@
-import { DateTimePicker } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Clock, Filter, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Star } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +21,6 @@ import {
   formatCalendarTime,
   getMentorSessionStatusConfig,
   groupMentorCalendarByDate,
-  MENTOR_CALENDAR_STATUSES,
   type MentorCalendarSession,
 } from "./mentorOverview.utils";
 
@@ -40,17 +38,6 @@ const toDateKeyFromParts = (year: number, month: number, day: number): string =>
 
 const getFirstDayOfMonth = (year: number, month: number): number => {
   return new Date(Date.UTC(year, month, 1)).getUTCDay();
-};
-
-const toFilterDateKey = (value?: Date): string | undefined => {
-  if (!value) return undefined;
-  return toVietnamDateKey(value) || undefined;
-};
-
-const isDateKeyInRange = (dateKey: string, fromKey?: string, toKey?: string) => {
-  if (fromKey && dateKey < fromKey) return false;
-  if (toKey && dateKey > toKey) return false;
-  return true;
 };
 
 const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
@@ -162,11 +149,6 @@ export function MentorOverviewPage() {
   const mentorPk = (mentorProfile as { id?: number } | null)?.id ?? 0;
   const reviewsQueryMentorId = mentorPk || user?.id || 0;
 
-  // Date filter state (copied from old MentorOverview)
-  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
-  const [toDate, setToDate] = useState<Date | undefined>(undefined);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([...MENTOR_CALENDAR_STATUSES]);
-
   // Fetch schedule from new API endpoint
   const { data: scheduleEvents = [], isLoading: scheduleLoading } = useMentorSchedule();
 
@@ -179,20 +161,7 @@ export function MentorOverviewPage() {
     [scheduleEvents]
   );
 
-  const fromKey = useMemo(() => toFilterDateKey(fromDate), [fromDate]);
-  const toKey = useMemo(() => toFilterDateKey(toDate), [toDate]);
-
-  const filteredCalendarItems = useMemo(() => {
-    return calendarItems.filter((item) => {
-      const status = item.session.status || "";
-      return selectedStatuses.includes(status) && isDateKeyInRange(item.dateKey, fromKey, toKey);
-    });
-  }, [calendarItems, selectedStatuses, fromKey, toKey]);
-
-  const sessionsByDate = useMemo(
-    () => groupMentorCalendarByDate(filteredCalendarItems),
-    [filteredCalendarItems]
-  );
+  const sessionsByDate = useMemo(() => groupMentorCalendarByDate(calendarItems), [calendarItems]);
 
   // Calculate stats from events
   const totalInterviews = scheduleEvents.length;
@@ -248,7 +217,7 @@ export function MentorOverviewPage() {
   const [mobileView, setMobileView] = useState<string>(MOBILE_VIEW_AGENDA);
 
   // Upcoming schedule items for the sidebar
-  const upcomingScheduleItems = filteredCalendarItems
+  const upcomingScheduleItems = calendarItems
     .filter(
       (item) =>
         item.timestamp >= nowTimestamp &&
@@ -334,21 +303,6 @@ export function MentorOverviewPage() {
     if (typeof sessionId === "number") {
       navigate(`/mentor/sessions/${sessionId}/review`);
     }
-  };
-
-  const toggleStatus = (status: string) => {
-    setSelectedStatuses((current) => {
-      if (current.includes(status)) {
-        return current.filter((item) => item !== status);
-      }
-      return [...current, status];
-    });
-  };
-
-  const resetFilters = () => {
-    setSelectedStatuses([...MENTOR_CALENDAR_STATUSES]);
-    setFromDate(undefined);
-    setToDate(undefined);
   };
 
   const jumpToToday = () => {
@@ -594,61 +548,6 @@ export function MentorOverviewPage() {
       <div
         className="flex min-h-0 flex-1 scroll-pb-6 flex-col gap-4 overflow-y-auto px-4 pt-4 pb-10"
         ref={agendaScrollRef}>
-        {/* Filter Section */}
-        <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
-          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-            <Filter className="h-4 w-4" />
-            {t("common.filter", "Bộ lọc")}
-          </div>
-
-          {/* Status Filter Buttons */}
-          <div className="mb-3 flex flex-wrap gap-2">
-            {MENTOR_CALENDAR_STATUSES.map((status) => {
-              const cfg = getMentorSessionStatusConfig(status);
-              const active = selectedStatuses.includes(status);
-              return (
-                <Button
-                  key={status}
-                  size="sm"
-                  variant={active ? "default" : "outline"}
-                  onClick={() => toggleStatus(status)}
-                  className={cn("h-7 text-xs", active && "bg-emerald-600 hover:bg-emerald-700")}>
-                  <span className={cn("mr-1.5 h-2 w-2 rounded-full", cfg.dot)} />
-                  {cfg.label}
-                </Button>
-              );
-            })}
-          </div>
-
-          {/* Date Range Filter */}
-          <div className="grid gap-2 sm:grid-cols-2">
-            <DateTimePicker
-              value={fromDate}
-              onChange={(value) => {
-                setFromDate(value || undefined);
-                if (value && toDate && value > toDate) {
-                  setToDate(undefined);
-                }
-              }}
-              showTime={false}
-              themeVariant="mentor"
-              placeholder={t("common.fromDate", "Từ ngày")}
-            />
-            <DateTimePicker
-              value={toDate}
-              onChange={(value) => setToDate(value || undefined)}
-              showTime={false}
-              minDate={fromDate}
-              themeVariant="mentor"
-              placeholder={t("common.comeDay", "Đến ngày")}
-            />
-          </div>
-
-          <Button variant="ghost" size="sm" className="mt-2 w-fit" onClick={resetFilters}>
-            {t("common.resetTheFilter", "Đặt lại bộ lọc")}
-          </Button>
-        </div>
-
         {/* Selected Day Agenda Items */}
         {scheduleLoading ? (
           <div className="space-y-3">

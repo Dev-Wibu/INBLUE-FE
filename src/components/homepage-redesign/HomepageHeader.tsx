@@ -106,7 +106,7 @@ export function HomepageHeader() {
             className="text-slate-600 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]"
           />
           {isLoggedIn && user ? (
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 focus-visible:ring-2 focus-visible:ring-[#0047AB] focus-visible:outline-none dark:bg-slate-800 dark:focus-visible:ring-[#66B2FF]">
                   <Avatar className="h-8 w-8">
@@ -117,7 +117,9 @@ export function HomepageHeader() {
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuContent
+                align="end"
+                className="w-52 border border-slate-200 bg-white/95 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
                 <DropdownMenuItem asChild>
                   <Link to={dashboardPath} className="cursor-pointer gap-2">
                     <LayoutDashboard className="h-4 w-4" />

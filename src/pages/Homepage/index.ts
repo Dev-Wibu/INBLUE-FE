@@ -1,7 +1,7 @@
 export { HomePage } from "./HomePage";
 
 // Questions pages
-export { InterviewTipsPage, QuestionBankPage } from "./Questions";
+export { InterviewTipsPage } from "./Questions";
 
 // Features pages
 export { AIInterviewFeaturePage, MentorInterviewFeaturePage } from "./Features";

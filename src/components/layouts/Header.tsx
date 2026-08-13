@@ -174,7 +174,9 @@ export function Header() {
                   </button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 border border-slate-200 bg-white/95 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col gap-1">
                       <p className="text-sm font-medium">{fixUtf8Mojibake(user.name)}</p>
