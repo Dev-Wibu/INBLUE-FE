@@ -340,7 +340,7 @@ export function QuestionBankEditor({
         </div>
 
         {/* Form Body Split View */}
-        <div className="flex min-h-0 flex-1 overflow-hidden bg-white dark:bg-slate-900">
+        <div className="flex min-h-0 flex-1 overflow-hidden bg-slate-50/40 dark:bg-slate-950/50">
           {/* Left Column: Live Document / Question Text Editor */}
           <div className="flex min-w-0 flex-1 flex-col overflow-y-auto p-6 [scrollbar-gutter:stable] md:p-8">
             <div className="flex w-full flex-col gap-5">
@@ -508,7 +508,7 @@ export function QuestionBankEditor({
           </div>
 
           {/* Right Column: Config Cards */}
-          <div className="flex w-[480px] flex-none flex-col border-l border-slate-200/90 bg-slate-50/30 dark:border-slate-800 dark:bg-slate-950/40">
+          <div className="flex w-[480px] flex-none flex-col border-l border-slate-200/90 dark:border-slate-800">
             <div className="flex-1 space-y-5 overflow-y-auto p-6 [scrollbar-gutter:stable]">
               {/* CARD 1: CẤU HÌNH CÂU HỎI */}
               <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
