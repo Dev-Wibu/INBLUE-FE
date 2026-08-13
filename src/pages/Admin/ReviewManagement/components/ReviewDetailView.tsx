@@ -1,10 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StarRating } from "@/components/ui/star-rating";
 import { formatDate } from "@/lib/formatting";
 import type { MentorReview } from "@/services/mentor-review.manager";
 import {
   AlertTriangle,
   ArrowLeft,
+  Calendar,
   ChevronRight,
   Lightbulb,
   MessageSquare,
@@ -15,6 +18,7 @@ import {
   Trash2,
   TrendingUp,
   User,
+  Video,
   Zap,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -87,7 +91,7 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
 
   return (
     <div className="animate-in fade-in space-y-6 duration-300">
-      {/* ── TOP SUBHEADER (CLEAN & SLEEK) ── */}
+      {/* ── TOP SUBHEADER BAR ── */}
       <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between dark:border-slate-800/80 dark:bg-slate-900">
         <div className="flex min-w-0 flex-wrap items-center gap-2.5">
           <Button
@@ -112,11 +116,6 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
           <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
             Chi tiết đánh giá #{review.id}
           </h1>
-
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200/80 bg-amber-50/80 px-2.5 py-1 text-xs font-bold text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/60 dark:text-amber-300">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            {review.rating || 0}/5 sao ({getRatingLabel(review.rating || 0)})
-          </span>
         </div>
 
         {/* Header Right Actions */}
@@ -134,10 +133,45 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
         </div>
       </div>
 
-      {/* ── MAIN CONTENT (SCALED UP 2-COLUMN DASHBOARD) ── */}
+      {/* ── MAIN CONTENT 2-COLUMN DASHBOARD ── */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* Left Column (8/12 - 66%): Timeline STAR & Detailed Feedback */}
+        {/* Left Column (8/12 - 66%): 5-Star Showcase Hero & STAR Analysis */}
         <div className="space-y-8 lg:col-span-8">
+          {/* 5-Star Rating Showcase Hero Banner */}
+          <div className="flex flex-col items-center justify-between gap-5 rounded-2xl border border-slate-200/90 bg-gradient-to-r from-slate-900 to-indigo-950 p-6 text-white shadow-sm sm:flex-row dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400 shadow-inner">
+                <Star className="h-7 w-7 fill-amber-400 text-amber-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <span className="font-mono text-3xl font-extrabold tracking-tight text-white">
+                    {review.rating || 0}.0
+                  </span>
+                  <span className="text-sm font-semibold text-slate-400">/ 5.0</span>
+                  <Badge className="border-amber-400/40 bg-amber-500/20 text-xs font-bold text-amber-300">
+                    {getRatingLabel(review.rating || 0)}
+                  </Badge>
+                </div>
+                <p className="mt-1 text-xs font-medium text-slate-300">
+                  Đánh giá vào <span className="font-semibold text-white">{formattedDate}</span> bởi
+                  Mentor{" "}
+                  <span className="font-semibold text-amber-300">
+                    {review.mentor?.name || "Mentor"}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            {/* Prominent 5 Gold Stars Display */}
+            <div className="flex flex-col items-center gap-1 sm:items-end">
+              <StarRating value={review.rating || 5} readOnly size="lg" />
+              <span className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                Xếp loại {review.rating || 5}/5 sao
+              </span>
+            </div>
+          </div>
+
           {/* STAR Timeline Section */}
           <div className="space-y-5">
             <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800/80">
@@ -145,9 +179,6 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
                 <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                 <span>Đánh giá theo mô hình STAR</span>
               </h2>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Ngày tạo: {formattedDate}
-              </span>
             </div>
 
             {starItems.length === 0 ? (
@@ -232,37 +263,41 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
           </div>
         </div>
 
-        {/* Right Column (4/12 - 34%): Rich Executive Sidebar */}
+        {/* Right Column (4/12 - 34%): Executive Sidebar */}
         <div className="space-y-6 lg:col-span-4">
           <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
-            <h3 className="mb-5 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              Thông tin phiên & Đối tượng
+            <h3 className="mb-5 flex items-center gap-2 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+              <Video className="h-4 w-4 text-indigo-500" />
+              <span>Thông tin phiên & Đối tượng</span>
             </h3>
 
             <div className="space-y-6">
               {/* Session Overview Box */}
-              <div className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-950/60">
+              <div className="space-y-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4.5 dark:border-slate-800/80 dark:bg-slate-950/60">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    Phiên phỏng vấn
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Mã phiên phỏng vấn
                   </span>
-                  <span className="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                  <span className="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 font-mono text-xs font-bold text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/60 dark:text-indigo-300">
                     #{review.session?.id || review.id}
                   </span>
                 </div>
 
                 {review.session?.roomName && (
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex flex-col gap-1 text-xs">
                     <span className="text-slate-500 dark:text-slate-400">Phòng phỏng vấn</span>
-                    <span className="font-bold text-slate-900 dark:text-white">
+                    <span className="truncate font-mono font-bold text-slate-900 dark:text-white">
                       {review.session.roomName}
                     </span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 dark:text-slate-400">Thời gian tham gia</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                    <Calendar className="h-3.5 w-3.5 text-indigo-500" />
+                    <span>Thời gian tham gia</span>
+                  </span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-200">
                     {formattedDate}
                   </span>
                 </div>
@@ -270,17 +305,22 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
 
               {/* Mentor Card */}
               <div className="space-y-2">
-                <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                  Mentor đánh giá
-                </span>
-                <div className="flex items-center gap-3 rounded-xl border border-slate-100 p-3 shadow-2xs dark:border-slate-800 dark:bg-slate-950/40">
-                  <Avatar className="h-11 w-11 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                    Mentor đánh giá
+                  </span>
+                  <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                    Người chấm
+                  </span>
+                </div>
+                <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-950/50">
+                  <Avatar className="h-11 w-11 shrink-0 rounded-[16px] border border-slate-200/90 shadow-2xs dark:border-slate-800">
                     <AvatarImage
                       src={review.mentor?.avatarUrl}
                       alt={review.mentor?.name}
                       className="object-cover"
                     />
-                    <AvatarFallback className="rounded-[14px] bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                    <AvatarFallback className="rounded-[16px] bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
                       {review.mentor?.name?.charAt(0)?.toUpperCase() || "M"}
                     </AvatarFallback>
                   </Avatar>
@@ -297,17 +337,22 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
 
               {/* Candidate Card */}
               <div className="space-y-2">
-                <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                  Ứng viên được đánh giá
-                </span>
-                <div className="flex items-center gap-3 rounded-xl border border-slate-100 p-3 shadow-2xs dark:border-slate-800 dark:bg-slate-950/40">
-                  <Avatar className="h-11 w-11 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                    Ứng viên được đánh giá
+                  </span>
+                  <span className="rounded-md bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+                    Người nhận
+                  </span>
+                </div>
+                <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-950/50">
+                  <Avatar className="h-11 w-11 shrink-0 rounded-[16px] border border-slate-200/90 shadow-2xs dark:border-slate-800">
                     <AvatarImage
                       src={review.user?.avatarUrl}
                       alt={review.user?.name}
                       className="object-cover"
                     />
-                    <AvatarFallback className="rounded-[14px] bg-sky-50 font-bold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+                    <AvatarFallback className="rounded-[16px] bg-sky-50 font-bold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
                       {review.user?.name?.charAt(0)?.toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
