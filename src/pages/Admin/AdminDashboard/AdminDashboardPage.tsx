@@ -14,7 +14,6 @@ import {
   FileCheck2,
   LayoutDashboard,
   LayoutTemplate,
-  MessageSquare,
   Newspaper,
   Star,
   UserCheck,
@@ -113,14 +112,8 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
       {
         type: "reviews",
         icon: Star,
-        label: t("common.reviewFromMentor"),
+        label: t("common.reviewAndFeedback", "Đánh giá & Phản hồi"),
         color: "text-yellow-600 dark:text-yellow-500",
-      },
-      {
-        type: "feedback",
-        icon: MessageSquare,
-        label: t("common.feedbackFromCandidates"),
-        color: "text-cyan-600 dark:text-cyan-500",
       },
       {
         type: "mentor-review-assignment",

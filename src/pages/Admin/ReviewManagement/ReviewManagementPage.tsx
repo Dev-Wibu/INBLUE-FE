@@ -20,6 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { MentorFeedback } from "@/hooks/useMentorFeedback";
+import { useMentorFeedbacks } from "@/hooks/useMentorFeedback";
 import type { MentorReview } from "@/hooks/useMentorReview";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
@@ -49,6 +51,7 @@ export function ReviewManagementPage() {
   const { id } = useParams<{ id?: string }>();
 
   const { data: reviews = [], isLoading, isRefetching, refetch } = useMentorReviews();
+  const { data: feedbacks = [] } = useMentorFeedbacks();
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
 
@@ -64,6 +67,24 @@ export function ReviewManagementPage() {
     );
   }, [id, reviews]);
 
+  // Create a candidate feedback map by session ID or mentor/user IDs
+  const candidateFeedbackMap = useMemo(() => {
+    const map = new Map<string, MentorFeedback>();
+    feedbacks.forEach((f) => {
+      const sId =
+        f.session?.id ||
+        (f as Record<string, unknown>).sessionId ||
+        (f as Record<string, unknown>).session_id;
+      if (sId != null) {
+        map.set(String(sId), f);
+      }
+      if (f.mentor?.id != null && f.user?.id != null) {
+        map.set(`${f.mentor.id}_${f.user.id}`, f);
+      }
+    });
+    return map;
+  }, [feedbacks]);
+
   // Stats calculation
   const stats = useMemo(() => {
     const total = reviews.length;
@@ -74,8 +95,7 @@ export function ReviewManagementPage() {
           )
         : 0;
     const fiveStarCount = reviews.filter((r) => r.rating === 5).length;
-    const lowRatingCount = reviews.filter((r) => (r.rating ?? 0) > 0 && r.rating! < 3).length;
-    return { total, averageRating, fiveStarCount, lowRatingCount };
+    return { total, averageRating, fiveStarCount };
   }, [reviews]);
 
   // Convert rating filter once for efficiency
@@ -107,7 +127,6 @@ export function ReviewManagementPage() {
   const { sortedData, getSortProps } = useSortable(filteredReviews);
 
   // Pagination
-
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "src_pages_admin_reviewmanagement_reviewmanagementpage_tsx_pagesize",
     defaultPageSize: 10,
@@ -162,21 +181,25 @@ export function ReviewManagementPage() {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
-            {/* Stat Summary & Control Card (matching User/Mentor pattern) */}
+            {/* Stat Summary & Control Card */}
             <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
               <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {t("common.reviewsFromMentors")}
+                    Đánh giá & Phản hồi phỏng vấn
                   </h2>
                   <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-                    {t("adminReviewmanagement.seeTheListOfMentor")}
+                    Quản lý tổng hợp đánh giá từ Mentor và phản hồi từ Ứng viên theo từng phiên
+                    phỏng vấn
                   </p>
                 </div>
                 <div className="flex items-center justify-center gap-5 sm:gap-6">
                   {[
-                    [stats.total, t("adminReviewmanagement.totalReviews", "Tổng đánh giá")],
-                    [stats.averageRating, t("adminReviewmanagement.averageRating", "Trung bình")],
+                    [stats.total, t("adminReviewmanagement.totalReviews", "Tổng phiên phỏng vấn")],
+                    [
+                      stats.averageRating,
+                      t("adminReviewmanagement.averageRating", "Trung bình Mentor chấm"),
+                    ],
                     [stats.fiveStarCount, t("common.fiveStars", "5 sao")],
                   ].map(([value, label], index) => (
                     <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
@@ -194,7 +217,7 @@ export function ReviewManagementPage() {
                 </div>
               </div>
 
-              {/* Search row (matching User/Mentor pattern) */}
+              {/* Search row */}
               <form
                 onSubmit={(event) => event.preventDefault()}
                 className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -222,12 +245,12 @@ export function ReviewManagementPage() {
                     await refetch();
                   }}
                   isLoading={isRefetching}
-                  tooltip={t("common.reloadReviewList")}
+                  tooltip={t("common.reloadTheReviewList")}
                   className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
                 />
               </form>
 
-              {/* Rating filter pills (matching User/Mentor pattern) */}
+              {/* Rating filter pills */}
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
                   {t("common.evaluate", "Đánh giá")}:
@@ -288,96 +311,131 @@ export function ReviewManagementPage() {
                         <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.id")}
                         </TableHead>
-                        <TableHead className="w-[30%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.mentorSent")}
+                        <TableHead className="w-[24%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                          Mentor phỏng vấn
                         </TableHead>
-                        <TableHead className="w-[30%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.candidatesAreEvaluated")}
+                        <TableHead className="w-[24%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                          Ứng viên tham gia
                         </TableHead>
-                        <TableHead className="w-[14%] min-w-[110px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[12%] min-w-[100px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.session")}
                         </TableHead>
-                        <TableHead className="w-[13%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[14%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("rating" as keyof MentorReview)}>
-                            {t("common.evaluate")}
+                            Mentor chấm
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[13%] min-w-[130px] pr-6 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[14%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                          Ứng viên chấm
+                        </TableHead>
+                        <TableHead className="w-[12%] min-w-[120px] pr-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {pageData.map((review: MentorReview) => (
-                        <TableRow
-                          key={review.id}
-                          onClick={() => handleViewDetail(review)}
-                          className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
-                          <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
-                            <div className="flex items-center gap-2">
-                              <span>#{review.id}</span>
-                              {/* Dummy element to force row height alignment */}
-                              <div
-                                className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
-                                aria-hidden="true">
-                                <div className="h-3.5 w-3.5"></div>
-                                <div className="h-3.5 w-3.5"></div>
+                      {pageData.map((review: MentorReview) => {
+                        const sessionId =
+                          review.session?.id ||
+                          (review as Record<string, unknown>).sessionId ||
+                          (review as Record<string, unknown>).session_id;
+                        const candidateFeedback =
+                          candidateFeedbackMap.get(String(sessionId)) ||
+                          (review.mentor?.id && review.user?.id
+                            ? candidateFeedbackMap.get(`${review.mentor.id}_${review.user.id}`)
+                            : null);
+
+                        return (
+                          <TableRow
+                            key={review.id}
+                            onClick={() => handleViewDetail(review)}
+                            className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                            <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                              <div className="flex items-center gap-2">
+                                <span>#{review.id}</span>
+                                <div
+                                  className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                                  aria-hidden="true">
+                                  <div className="h-3.5 w-3.5"></div>
+                                  <div className="h-3.5 w-3.5"></div>
+                                </div>
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="px-4 py-4">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
-                                <AvatarImage
-                                  src={review.mentor?.avatarUrl}
-                                  alt={review.mentor?.name}
-                                  className="object-cover"
-                                />
-                                <AvatarFallback className="rounded-[14px] bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
-                                  {review.mentor?.name?.charAt(0)?.toUpperCase() || "M"}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="font-semibold text-slate-900 dark:text-white">
-                                {review.mentor?.name ||
-                                  (review.mentor?.id
-                                    ? `Mentor #${review.mentor.id}`
-                                    : t("common.noDataAvailable"))}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="px-4 py-4">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
-                                <AvatarImage
-                                  src={review.user?.avatarUrl}
-                                  alt={review.user?.name}
-                                  className="object-cover"
-                                />
-                                <AvatarFallback className="rounded-[14px] bg-sky-50 font-semibold text-sky-700 dark:bg-sky-950/80 dark:text-sky-300">
-                                  {review.user?.name?.charAt(0)?.toUpperCase() || "U"}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="font-semibold text-slate-900 dark:text-white">
-                                {review.user?.name ||
-                                  (review.user?.id
-                                    ? `Candidate #${review.user.id}`
-                                    : t("common.noDataAvailable"))}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="px-4 py-4">
-                            <Badge variant="outline" className="font-mono text-xs font-semibold">
-                              #{review.session?.id}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="px-4 py-4">
-                            <StarRating value={review.rating || 0} readOnly size="sm" />
-                          </TableCell>
-                          <TableCell className="py-4 pr-6 text-sm font-medium text-slate-600 dark:text-slate-300">
-                            {getReviewDate(review)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                                  <AvatarImage
+                                    src={review.mentor?.avatarUrl}
+                                    alt={review.mentor?.name}
+                                    className="object-cover"
+                                  />
+                                  <AvatarFallback className="rounded-[14px] bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
+                                    {review.mentor?.name?.charAt(0)?.toUpperCase() || "M"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="font-semibold text-slate-900 dark:text-white">
+                                  {review.mentor?.name ||
+                                    (review.mentor?.id
+                                      ? `Mentor #${review.mentor.id}`
+                                      : t("common.noDataAvailable"))}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                                  <AvatarImage
+                                    src={review.user?.avatarUrl}
+                                    alt={review.user?.name}
+                                    className="object-cover"
+                                  />
+                                  <AvatarFallback className="rounded-[14px] bg-sky-50 font-semibold text-sky-700 dark:bg-sky-950/80 dark:text-sky-300">
+                                    {review.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="font-semibold text-slate-900 dark:text-white">
+                                  {review.user?.name ||
+                                    (review.user?.id
+                                      ? `Candidate #${review.user.id}`
+                                      : t("common.noDataAvailable"))}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
+                              <Badge variant="outline" className="font-mono text-xs font-semibold">
+                                #{review.session?.id}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
+                              <div className="flex items-center gap-1.5">
+                                <StarRating value={review.rating || 0} readOnly size="sm" />
+                                <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
+                                  {review.rating || 0}.0★
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
+                              {candidateFeedback ? (
+                                <div className="flex items-center gap-1.5">
+                                  <StarRating
+                                    value={candidateFeedback.rating || 0}
+                                    readOnly
+                                    size="sm"
+                                  />
+                                  <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
+                                    {candidateFeedback.rating || 0}.0★
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-slate-400 italic">Chưa phản hồi</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="py-4 pr-6 text-sm font-medium text-slate-600 dark:text-slate-300">
+                              {getReviewDate(review)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                   {sortedData.length > 0 && (
