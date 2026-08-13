@@ -95,16 +95,16 @@ export function QuestionBankTable({
       <Table>
         <TableHeader>
           <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-            <TableHead className="w-[90px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               #ID
             </TableHead>
-            <TableHead className="w-[360px] max-w-[360px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="min-w-[280px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminQuestionbankmanagement.questionContent", "Nội dung câu hỏi")}
             </TableHead>
-            <TableHead className="min-w-[150px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("general.category", "Danh mục")}
             </TableHead>
-            <TableHead className="w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[120px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("general.difficulty", "Độ khó")}
             </TableHead>
             <TableHead className="w-[140px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
@@ -138,18 +138,18 @@ export function QuestionBankTable({
                   </div>
                 </TableCell>
 
-                <TableCell className="w-[360px] max-w-[360px] px-4 py-4">
-                  <div className="group/scroll relative overflow-hidden">
-                    <p
-                      className="truncate text-sm font-bold text-slate-900 transition-transform duration-1000 ease-in-out group-hover/scroll:[transform:translateX(calc(-100%+320px))] group-hover/scroll:overflow-visible group-hover/scroll:whitespace-nowrap dark:text-slate-100"
-                      title={q.questionText}>
-                      {q.questionText ||
-                        t("adminQuestionbankmanagement.noContent", "Chưa có nội dung")}
-                    </p>
+                <TableCell className="max-w-[500px] min-w-[280px] px-4 py-4">
+                  <div className="group/scroll relative w-full overflow-hidden">
+                    <div className="whitespace-nowrap transition-transform duration-[3500ms] ease-linear group-hover/scroll:-translate-x-full">
+                      <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                        {q.questionText ||
+                          t("adminQuestionbankmanagement.noContent", "Chưa có nội dung")}
+                      </span>
+                    </div>
                   </div>
                 </TableCell>
 
-                <TableCell className="px-4 py-4">
+                <TableCell className="w-[160px] px-4 py-4">
                   <Badge
                     variant="outline"
                     className="border-slate-200 bg-slate-100/80 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -157,14 +157,16 @@ export function QuestionBankTable({
                   </Badge>
                 </TableCell>
 
-                <TableCell className="px-4 py-4">
+                <TableCell className="w-[120px] px-4 py-4">
                   <div className={`flex items-center gap-1.5 text-xs font-bold ${diff.cls}`}>
                     <Circle className={`h-2.5 w-2.5 ${diff.fill}`} />
                     {diff.label}
                   </div>
                 </TableCell>
 
-                <TableCell className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                <TableCell
+                  className="w-[140px] px-4 py-4 text-center"
+                  onClick={(e) => e.stopPropagation()}>
                   {isActive ? (
                     <button
                       type="button"
@@ -189,7 +191,7 @@ export function QuestionBankTable({
                   )}
                 </TableCell>
 
-                <TableCell className="py-4 pr-6 text-right text-sm font-medium text-slate-600 dark:text-slate-300">
+                <TableCell className="w-[140px] py-4 pr-6 text-right text-sm font-medium text-slate-600 dark:text-slate-300">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {(q as any).createdAt ? (
                     <span>
