@@ -19,9 +19,10 @@ import {
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { SummaryResponse } from "@/interfaces";
+import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { interviewTemplateManager } from "@/services/interview-template.manager";
-import { Eye, Layers, LayoutTemplate, PlusCircle, RotateCcw, Search, Trash2 } from "lucide-react";
+import { Layers, LayoutTemplate, PlusCircle, RotateCcw, Search, Trash2 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -213,9 +214,9 @@ export function InterviewTemplateManagementPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const extra = tpl as any;
       const count =
+        extra.totalRounds ??
         extra.rounds?.length ??
         extra.roundCount ??
-        extra.totalRounds ??
         extra.roundDetails?.length ??
         0;
 
@@ -450,7 +451,10 @@ export function InterviewTemplateManagementPage() {
                       <TableHead className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
                         {t("adminInterviewTemplate.description", "Mô tả")}
                       </TableHead>
-                      <TableHead className="w-[120px] pr-6 text-right text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                      <TableHead className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                        {t("common.createdAt", "Ngày tạo")}
+                      </TableHead>
+                      <TableHead className="w-[100px] pr-6 text-right text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
                         {t("common.action", "Thao tác")}
                       </TableHead>
                     </TableRow>
@@ -460,11 +464,12 @@ export function InterviewTemplateManagementPage() {
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       const extra = tpl as any;
                       const roundCount =
+                        extra.totalRounds ??
                         extra.rounds?.length ??
                         extra.roundCount ??
-                        extra.totalRounds ??
                         extra.roundDetails?.length ??
                         0;
+                      const createdAtStr = extra.createdAt ? formatDateTime(extra.createdAt) : "—";
 
                       return (
                         <TableRow
@@ -474,15 +479,8 @@ export function InterviewTemplateManagementPage() {
                           <TableCell className="pl-6 font-mono text-xs font-bold text-slate-600 dark:text-slate-300">
                             <span>{pagination.startIndex + idx + 1}</span>
                           </TableCell>
-                          <TableCell className="font-bold text-slate-900 dark:text-white">
-                            <div className="flex items-center gap-2.5">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600 dark:border-indigo-900/60 dark:bg-indigo-950/60 dark:text-indigo-400">
-                                <LayoutTemplate className="h-4 w-4" />
-                              </div>
-                              <span className="transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                                {tpl.name}
-                              </span>
-                            </div>
+                          <TableCell className="font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+                            {tpl.name}
                           </TableCell>
                           <TableCell>
                             <span className="inline-flex items-center rounded-md border border-indigo-200/80 bg-indigo-50/80 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
@@ -495,24 +493,16 @@ export function InterviewTemplateManagementPage() {
                               {roundCount > 0 ? `${roundCount} vòng` : "Chưa cấu hình"}
                             </span>
                           </TableCell>
-                          <TableCell className="max-w-[300px] truncate text-xs font-medium text-slate-700 dark:text-slate-300">
+                          <TableCell className="max-w-[260px] truncate text-xs font-medium text-slate-700 dark:text-slate-300">
                             {tpl.description || "—"}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs font-medium whitespace-nowrap text-slate-600 dark:text-slate-300">
+                            {createdAtStr}
                           </TableCell>
                           <TableCell
                             className="pr-6 text-right"
                             onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => navigate(`/admin/interviewTemplates/${tpl.id}`)}
-                                className="h-8 w-8 p-0 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
-                                title={t("common.viewDetails", "Xem chi tiết")}>
-                                <Eye className="h-4 w-4" />
-                                <span className="sr-only">
-                                  {t("common.viewDetails", "Xem chi tiết")}
-                                </span>
-                              </Button>
+                            <div className="flex items-center justify-end">
                               <Button
                                 variant="ghost"
                                 size="sm"
