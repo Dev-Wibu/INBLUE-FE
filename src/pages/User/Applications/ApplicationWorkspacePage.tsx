@@ -330,12 +330,39 @@ export function ApplicationWorkspacePage() {
         const adminDetailRes =
           await adminApplicationManager.getApplicationFullDetail(applicationId);
         if (adminDetailRes.success && adminDetailRes.data) {
-          const data = adminDetailRes.data;
-          setCandidateInfo({
-            name: data.candidateName,
-            email: data.candidateEmail,
-            avatarUrl: data.candidateAvatarUrl || null,
-          });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const data = adminDetailRes.data as any;
+          const cInfo = data.candidateInfo || {};
+          const name = cInfo.name || data.candidateName || cInfo.fullName || data.fullName;
+          const email = cInfo.email || data.candidateEmail;
+          const avatarUrl = cInfo.avatarUrl || cInfo.avatar || data.candidateAvatarUrl || null;
+          if (name || email || avatarUrl) {
+            setCandidateInfo({ name, email, avatarUrl });
+          }
+        }
+
+        // Additional fallback: Candidate Profile lookup
+        try {
+          const profileRes = await fetchClient.GET(
+            "/api/candidate-profiles/application/{applicationId}",
+            { params: { path: { applicationId } } }
+          );
+          if (profileRes.response?.ok && profileRes.data) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const cp = profileRes.data as any;
+            const name = cp.name || cp.fullName || cp.user?.name || cp.user?.fullName;
+            const email = cp.email || cp.user?.email;
+            const avatarUrl = cp.avatarUrl || cp.avatar || cp.user?.avatarUrl || null;
+            if (name || email || avatarUrl) {
+              setCandidateInfo((prev) => ({
+                name: prev?.name || name,
+                email: prev?.email || email,
+                avatarUrl: prev?.avatarUrl || avatarUrl,
+              }));
+            }
+          }
+        } catch {
+          // Ignore fallback error
         }
       }
 
@@ -497,19 +524,19 @@ export function ApplicationWorkspacePage() {
               </span>
             </Button>
 
-            {isAdmin && candidateInfo?.name && (
+            {isAdmin && (
               <div className="hidden items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50/80 py-1 pr-3.5 pl-1.5 shadow-2xs sm:flex dark:border-indigo-800/80 dark:bg-indigo-950/60">
                 <CandidateAvatar
-                  avatarUrl={candidateInfo.avatarUrl}
-                  name={candidateInfo.name}
+                  avatarUrl={candidateInfo?.avatarUrl}
+                  name={candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
                   className="h-7 w-7 rounded-full"
                 />
                 <div className="flex flex-col text-left">
-                  <span className="max-w-[140px] truncate text-xs leading-tight font-bold text-indigo-950 dark:text-indigo-200">
-                    {candidateInfo.name}
+                  <span className="max-w-[150px] truncate text-xs leading-tight font-bold text-indigo-950 dark:text-indigo-200">
+                    {candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
                   </span>
-                  {candidateInfo.email && (
-                    <span className="max-w-[140px] truncate text-[10px] text-indigo-600/80 dark:text-indigo-400/80">
+                  {candidateInfo?.email && (
+                    <span className="max-w-[150px] truncate text-[10px] text-indigo-600/80 dark:text-indigo-400/80">
                       {candidateInfo.email}
                     </span>
                   )}
