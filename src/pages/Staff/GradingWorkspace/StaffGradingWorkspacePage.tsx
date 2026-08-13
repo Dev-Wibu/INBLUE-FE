@@ -32,7 +32,7 @@ import {
   User,
   XCircle,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -179,6 +179,15 @@ function InlineGradingForm({
   );
   const [note, setNote] = useState(detail.hrNote ?? "");
   const [scoreError, setScoreError] = useState<string | null>(null);
+  // Track if user has made any changes to the form
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Reset unsaved changes tracking when form opens
+  useEffect(() => {
+    if (isEditing) {
+      setHasUnsavedChanges(false);
+    }
+  }, [isEditing]);
 
   const { mutate: submitScore, isPending: isSubmitting } = useHrScore({
     onSuccess: () => {
@@ -189,6 +198,7 @@ function InlineGradingForm({
 
   const handleScoreChange = (val: string) => {
     setScore(val);
+    setHasUnsavedChanges(true);
     if (val.trim() === "") {
       setScoreError(t("grading.gradingErrorEmpty", "Please enter a score"));
       return;
@@ -203,6 +213,34 @@ function InlineGradingForm({
       return;
     }
     setScoreError(null);
+  };
+
+  const handleNoteChange = (val: string) => {
+    setNote(val);
+    setHasUnsavedChanges(true);
+  };
+
+  const handlePassChange = (val: boolean) => {
+    setIsPass(val);
+    setHasUnsavedChanges(true);
+  };
+
+  // Safe cancel handler - warns if there are unsaved changes
+  const handleSafeCancel = () => {
+    if (hasUnsavedChanges) {
+      if (
+        window.confirm(
+          t(
+            "grading.unsavedChangesWarning",
+            "You have unsaved changes. Are you sure you want to close?"
+          )
+        )
+      ) {
+        onCancel();
+      }
+    } else {
+      onCancel();
+    }
   };
 
   const handleSubmit = () => {
@@ -322,7 +360,7 @@ function InlineGradingForm({
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setIsPass(true)}
+                onClick={() => handlePassChange(true)}
                 className={cn(
                   "flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold transition-all",
                   isPass
@@ -336,7 +374,7 @@ function InlineGradingForm({
               </button>
               <button
                 type="button"
-                onClick={() => setIsPass(false)}
+                onClick={() => handlePassChange(false)}
                 className={cn(
                   "flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold transition-all",
                   !isPass
@@ -357,7 +395,7 @@ function InlineGradingForm({
           </label>
           <Textarea
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={(e) => handleNoteChange(e.target.value)}
             placeholder="Add any notes about this candidate..."
             rows={2}
             className="resize-none rounded-lg border border-slate-200 text-xs dark:border-slate-700 dark:bg-slate-900"
@@ -368,7 +406,7 @@ function InlineGradingForm({
         <div className="flex justify-end gap-2 pt-1">
           <Button
             variant="outline"
-            onClick={onCancel}
+            onClick={handleSafeCancel}
             className="h-8 rounded-lg border-slate-200 px-4 text-xs font-medium dark:border-slate-700">
             Cancel
           </Button>
@@ -451,7 +489,7 @@ function InlineGradingForm({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setIsPass(true)}
+              onClick={() => handlePassChange(true)}
               className={cn(
                 "flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold transition-all",
                 isPass
@@ -465,7 +503,7 @@ function InlineGradingForm({
             </button>
             <button
               type="button"
-              onClick={() => setIsPass(false)}
+              onClick={() => handlePassChange(false)}
               className={cn(
                 "flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold transition-all",
                 !isPass
@@ -486,7 +524,7 @@ function InlineGradingForm({
         </label>
         <Textarea
           value={note}
-          onChange={(e) => setNote(e.target.value)}
+          onChange={(e) => handleNoteChange(e.target.value)}
           placeholder="Add any notes about this candidate..."
           rows={2}
           className="resize-none rounded-lg border border-slate-200 text-xs dark:border-slate-700 dark:bg-slate-900"
@@ -497,7 +535,7 @@ function InlineGradingForm({
       <div className="flex justify-end gap-2 pt-1">
         <Button
           variant="outline"
-          onClick={onCancel}
+          onClick={handleSafeCancel}
           className="h-8 rounded-lg border-slate-200 px-4 text-xs font-medium dark:border-slate-700">
           Cancel
         </Button>

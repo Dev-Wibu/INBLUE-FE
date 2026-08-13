@@ -6554,6 +6554,7 @@
   },
   "grading": {
     "gradeSuccess": "採点に成功しました！",
+    "unsavedChangesWarning": "保存されていない変更があります。閉じてもよろしいですか？",
     "assignmentSuccess": "メンターの割り当てに成功しました！",
     "details": "採点の詳細",
     "template": "採点テンプレート",

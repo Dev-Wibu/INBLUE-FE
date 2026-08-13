@@ -6629,6 +6629,7 @@
   },
   "grading": {
     "gradeSuccess": "Graded successfully!",
+    "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to close?",
     "assignmentSuccess": "Mentor assigned successfully!",
     "details": "Grading Details",
     "template": "Grading Template",

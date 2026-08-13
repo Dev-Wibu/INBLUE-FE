@@ -6630,6 +6630,7 @@
   },
   "grading": {
     "gradeSuccess": "Đã chấm điểm thành công!",
+    "unsavedChangesWarning": "Bạn có thay đổi chưa lưu. Bạn có chắc muốn đóng không?",
     "assignmentSuccess": "Đã gán mentor thành công!",
     "details": "Chi tiết chấm bài",
     "template": "Mẫu chấm điểm",
