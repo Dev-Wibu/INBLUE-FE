@@ -237,78 +237,79 @@ export function InterviewTemplateDetailPage() {
             ) : selectedTemplate ? (
               <div className="space-y-6">
                 {/* ── TOP SUBHEADER / BREADCRUMB CARD ── */}
-                <div className="flex flex-col justify-between gap-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs sm:flex-row sm:items-center sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate("/admin/interviewTemplates")}
-                      className="h-9 gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
-                      <ArrowLeft className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                      <span>{t("common.back", "Quay lại")}</span>
-                    </Button>
+                <div className="flex flex-col gap-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate("/admin/interviewTemplates")}
+                        className="h-9 gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                        <ArrowLeft className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                        <span>{t("common.back", "Quay lại")}</span>
+                      </Button>
 
-                    <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-800" />
+                      <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-800" />
 
-                    <span
-                      onClick={() => navigate("/admin/interviewTemplates")}
-                      className="cursor-pointer text-xs font-semibold text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-                      {t("adminAdmindashboard.processTemplate", "Quản lý mẫu kịch bản")}
-                    </span>
+                      <span
+                        onClick={() => navigate("/admin/interviewTemplates")}
+                        className="cursor-pointer text-xs font-semibold text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+                        {t("adminAdmindashboard.processTemplate", "Quản lý mẫu kịch bản")}
+                      </span>
 
-                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                      <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
 
-                    {selectedTemplate.category && (
-                      <>
-                        <span className="inline-flex items-center rounded-md border border-indigo-200/80 bg-indigo-50/80 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
-                          {selectedTemplate.category}
+                      {selectedTemplate.category && (
+                        <>
+                          <span className="inline-flex items-center rounded-md border border-indigo-200/80 bg-indigo-50/80 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
+                            {selectedTemplate.category}
+                          </span>
+                          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                        </>
+                      )}
+
+                      <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
+                        {selectedTemplate.name}
+                      </h1>
+
+                      <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-100/80 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200">
+                        <Layers className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                        {selectedTemplate.rounds?.length || 0} vòng
+                      </span>
+                    </div>
+
+                    {/* Header Right Actions */}
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => handleEditClick(selectedTemplate)}
+                        className="h-9 gap-1.5 rounded-xl border border-indigo-600 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-xs hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+                        <Edit3 className="h-3.5 w-3.5" />
+                        <span>{t("common.edit", "Chỉnh sửa kịch bản")}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={(e) => handleDeleteTemplate(selectedTemplate.id!, e)}
+                        disabled={isDeleting}
+                        className="h-9 gap-1.5 rounded-xl border border-rose-200 bg-white px-3.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-950/50 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/50">
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>{t("common.delete", "Xóa")}</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {selectedTemplate.description && (
+                    <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
+                      <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          {t("adminInterviewTemplate.description", "Mô tả")}:{" "}
                         </span>
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                      </>
-                    )}
-
-                    <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
-                      {selectedTemplate.name}
-                    </h1>
-
-                    <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-100/80 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200">
-                      <Layers className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
-                      {selectedTemplate.rounds?.length || 0} vòng
-                    </span>
-                  </div>
-
-                  {/* Header Right Actions */}
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Button
-                      type="button"
-                      onClick={() => handleEditClick(selectedTemplate)}
-                      className="h-9 gap-1.5 rounded-xl border border-indigo-600 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-xs hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
-                      <Edit3 className="h-3.5 w-3.5" />
-                      <span>{t("common.edit", "Chỉnh sửa kịch bản")}</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={(e) => handleDeleteTemplate(selectedTemplate.id!, e)}
-                      disabled={isDeleting}
-                      className="h-9 gap-1.5 rounded-xl border border-rose-200 bg-white px-3.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-950/50 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/50">
-                      <Trash2 className="h-3.5 w-3.5" />
-                      <span>{t("common.delete", "Xóa")}</span>
-                    </Button>
-                  </div>
+                        {selectedTemplate.description}
+                      </p>
+                    </div>
+                  )}
                 </div>
-
-                {/* Description & Overview Banner (If description exists) */}
-                {selectedTemplate.description && (
-                  <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                    <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                      {t("adminInterviewTemplate.description", "Mô tả kịch bản")}
-                    </h2>
-                    <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                      {selectedTemplate.description}
-                    </p>
-                  </div>
-                )}
 
                 {/* Rounds Timeline Content Container (Full Width) */}
                 <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
