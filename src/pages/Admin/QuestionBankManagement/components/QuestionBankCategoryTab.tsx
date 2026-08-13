@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { extractDataArray } from "@/lib/utils";
 import { questionCategoryManager } from "@/services/question-category.manager";
-import { ArrowLeft, Edit2, Folder, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit2, Folder, FolderPlus, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -108,7 +109,6 @@ export function QuestionBankCategoryTab({
       return;
     }
 
-    // Optimistic update check
     const currentCat = categories.find((c) => c.id === editingId);
     if (currentCat?.categoryName === editValue.trim()) {
       handleCancelEdit();
@@ -207,43 +207,49 @@ export function QuestionBankCategoryTab({
 
   // --- Render Drill-down View ---
   if (selectedCategory) {
-    const categoryQuestions = questions.filter(
-      (q) => q.questionCategory?.id === selectedCategory.id
-    );
+    const categoryQuestions = questions.filter((q) => {
+      const anyQ = q as unknown as { questionCategoryId?: number; categoryId?: number };
+      const catId = q.questionCategory?.id ?? anyQ.questionCategoryId ?? anyQ.categoryId;
+      return catId === selectedCategory.id;
+    });
 
     return (
-      <div className="animate-in fade-in slide-in-from-right-4 flex flex-col duration-300">
-        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-3">
+      <div className="animate-in fade-in slide-in-from-right-4 flex flex-col space-y-4 duration-300">
+        {/* Sleek 1-Line Inline Breadcrumb Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 px-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => setSelectedCategory(null)}
-              className="h-8 gap-1.5 px-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+              className="h-8 gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
               <ArrowLeft className="h-4 w-4" />
-              {t("common.back", "Quay lại")}
+              <span>Quản lý chuyên mục</span>
             </Button>
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-            <div className="flex items-center gap-2 rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
-              <Folder className="h-3.5 w-3.5" />
+            <span className="text-xs font-medium text-slate-400">/</span>
+            <span className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+              <Folder className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               {selectedCategory.categoryName}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-500">
-              {categoryQuestions.length} {t("question.questions", "Câu hỏi")}
             </span>
           </div>
+
+          <Badge
+            variant="secondary"
+            className="rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+            {categoryQuestions.length} câu hỏi
+          </Badge>
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-950">
+        {/* Questions Table inside Category */}
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {categoryQuestions.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center">
-              <Folder className="mb-3 h-10 w-10 text-slate-300" />
-              <p className="text-sm font-medium text-slate-500">
-                {t(
-                  "adminQuestionbankmanagement.noQuestionsInCategory",
-                  "Chưa có câu hỏi nào trong chuyên mục này."
-                )}
+            <div className="flex h-64 flex-col items-center justify-center gap-2 py-12 text-center">
+              <Folder className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+              <p className="text-sm font-bold text-slate-900 dark:text-white">
+                Chưa có câu hỏi nào
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Chưa có câu hỏi nào được gán cho chuyên mục này.
               </p>
             </div>
           ) : (
@@ -260,30 +266,27 @@ export function QuestionBankCategoryTab({
 
   // --- Render Folders Grid View ---
   return (
-    <div className="animate-in fade-in slide-in-from-left-4 flex h-full flex-col space-y-6 p-4 duration-300 sm:p-6">
+    <div className="animate-in fade-in slide-in-from-left-4 flex flex-col space-y-4 duration-300">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            {categories.length}{" "}
-            {t("adminQuestionbankmanagement.categoryName", "chuyên mục").toLowerCase()}
-          </h2>
-        </div>
+        <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+          Danh sách chuyên mục ({categories.length})
+        </span>
       </div>
 
       {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
+        <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {/* Ghost Card for Creating */}
           {isCreating && (
-            <div className="group relative flex h-[100px] flex-col justify-between overflow-hidden rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4 shadow-sm ring-4 ring-indigo-500/10 dark:border-indigo-900 dark:bg-indigo-950/20">
+            <div className="group relative flex h-[110px] flex-col justify-between overflow-hidden rounded-2xl border border-indigo-300 bg-indigo-50/60 p-4 shadow-sm ring-4 ring-indigo-500/10 dark:border-indigo-800 dark:bg-indigo-950/40">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
-                  <Folder className="h-5 w-5 fill-current opacity-80" />
+                  <FolderPlus className="h-5 w-5" />
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <Input
                     ref={createInputRef}
                     value={createValue}
@@ -291,8 +294,8 @@ export function QuestionBankCategoryTab({
                     onKeyDown={onCreateKeyDown}
                     onBlur={handleSaveCreate}
                     disabled={isSubmitting}
-                    placeholder="Enter name..."
-                    className="h-8 border-none bg-transparent px-1 text-sm font-semibold shadow-none focus-visible:ring-0"
+                    placeholder="Nhập tên chuyên mục..."
+                    className="h-8 border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-900 shadow-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -300,72 +303,86 @@ export function QuestionBankCategoryTab({
           )}
 
           {/* Actual Category Cards */}
-          {categories.map((cat) => (
-            <div
-              key={cat.id}
-              onClick={() => handleCardClick(cat)}
-              className={`group relative flex h-[100px] cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900/50 ${editingId === cat.id ? "border-indigo-200 ring-4 ring-indigo-500/10 dark:border-indigo-900" : "border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700"}`}>
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-700 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-indigo-900/40 dark:group-hover:text-indigo-300">
-                  <Folder className="h-5 w-5 fill-current opacity-80" />
+          {categories.map((cat) => {
+            const count = questions.filter((q) => {
+              const anyQ = q as unknown as { questionCategoryId?: number; categoryId?: number };
+              const catId = q.questionCategory?.id ?? anyQ.questionCategoryId ?? anyQ.categoryId;
+              return catId === cat.id;
+            }).length;
+
+            return (
+              <div
+                key={cat.id}
+                onClick={() => handleCardClick(cat)}
+                className={`group relative flex h-[110px] cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border bg-white p-4 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900 ${
+                  editingId === cat.id
+                    ? "border-indigo-500 ring-4 ring-indigo-500/10 dark:border-indigo-500"
+                    : "border-slate-200/90 hover:border-indigo-200 dark:border-slate-800 dark:hover:border-indigo-900"
+                }`}>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400">
+                    <Folder className="h-5 w-5" />
+                  </div>
+
+                  <div className="min-w-0 flex-1 overflow-hidden pt-0.5">
+                    {editingId === cat.id ? (
+                      <Input
+                        ref={editInputRef}
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={onEditKeyDown}
+                        onBlur={handleSaveEdit}
+                        disabled={isSubmitting}
+                        onClick={(e) => e.stopPropagation()}
+                        className="h-7 border-slate-200 bg-white px-2 text-xs font-bold text-slate-900 shadow-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                      />
+                    ) : (
+                      <h3
+                        onClick={(e) => handleStartEdit(cat, e)}
+                        className="truncate text-sm font-bold text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400"
+                        title={cat.categoryName}>
+                        {cat.categoryName}
+                      </h3>
+                    )}
+
+                    <div className="mt-2 flex items-center gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        {count} câu hỏi
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex-1 overflow-hidden pt-1">
-                  {editingId === cat.id ? (
-                    <Input
-                      ref={editInputRef}
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      onKeyDown={onEditKeyDown}
-                      onBlur={handleSaveEdit}
-                      disabled={isSubmitting}
-                      onClick={(e) => e.stopPropagation()}
-                      className="h-7 border-none bg-indigo-50 px-1 text-[15px] font-semibold text-indigo-900 shadow-none focus-visible:ring-0 dark:bg-indigo-950 dark:text-indigo-100"
-                    />
-                  ) : (
-                    <h3
+                {/* Quick Actions */}
+                {editingId !== cat.id && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={(e) => handleStartEdit(cat, e)}
-                      className="truncate px-1 text-[15px] font-semibold text-slate-900 hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400"
-                      title={t("question.editInfoInstructions", "Bấm để sửa tên")}>
-                      {cat.categoryName}
-                    </h3>
-                  )}
-                  <p className="mt-1 flex items-center gap-2 px-1 text-xs text-slate-500 dark:text-slate-400">
-                    <span>
-                      {questions.filter((q) => q.questionCategory?.id === cat.id).length}{" "}
-                      {t("question.questions", "Câu hỏi")}
-                    </span>
-                  </p>
-                </div>
+                      className="h-7 w-7 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                      <Edit2 className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => handleOpenDelete(cat, e)}
+                      className="h-7 w-7 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950 dark:hover:text-rose-400">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
-
-              {/* Action Buttons */}
-              {editingId !== cat.id && (
-                <div className="absolute top-3 right-3 flex items-center gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => handleStartEdit(cat, e)}
-                    className="h-7 w-7 text-slate-500 hover:bg-slate-200 hover:text-indigo-700 dark:text-slate-400 dark:hover:bg-slate-700">
-                    <Edit2 className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => handleOpenDelete(cat, e)}
-                    className="h-7 w-7 text-rose-500 hover:bg-rose-100 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-900/40 dark:hover:text-rose-300">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
 
           {categories.length === 0 && !isCreating && (
-            <div className="col-span-full flex h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/20">
-              <Folder className="mb-3 h-10 w-10 text-slate-400" />
-              <p className="text-sm font-medium text-slate-500">
-                {t("adminQuestionbankmanagement.noDataFound")}
+            <div className="col-span-full flex h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <Folder className="mb-2 h-10 w-10 text-slate-300 dark:text-slate-600" />
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {t("adminQuestionbankmanagement.noDataFound", "Chưa có chuyên mục nào")}
               </p>
             </div>
           )}
@@ -378,34 +395,27 @@ export function QuestionBankCategoryTab({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-rose-600">
               <Trash2 className="h-5 w-5" />
-              {t("adminQuestionbankmanagement.deleteCategory")}
+              {t("adminQuestionbankmanagement.deleteCategory", "Xóa chuyên mục")}
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p className="text-slate-600 dark:text-slate-300">
-              {t("adminQuestionbankmanagement.areYouSureDeleteCategory")}{" "}
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              {t(
+                "adminQuestionbankmanagement.areYouSureDeleteCategory",
+                "Bạn có chắc chắn muốn xóa chuyên mục"
+              )}{" "}
               <strong className="text-slate-900 dark:text-white">
                 {deletingCategory?.categoryName}
               </strong>
               ?
-              <br />
-              <span className="mt-2 block text-sm text-slate-500">
-                {t("adminQuestionbankmanagement.actionCannotBeUndone")}
-              </span>
             </p>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDeleteDialogOpen(false)}>
-              {t("adminQuestionbankmanagement.cancel")}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              {t("common.cancel", "Hủy")}
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isSubmitting}
-              className="shadow-sm">
-              {isSubmitting
-                ? t("adminQuestionbankmanagement.deleting")
-                : t("adminQuestionbankmanagement.delete")}
+            <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
+              {isSubmitting ? t("common.deleting", "Đang xóa...") : t("common.delete", "Xóa")}
             </Button>
           </DialogFooter>
         </DialogContent>
