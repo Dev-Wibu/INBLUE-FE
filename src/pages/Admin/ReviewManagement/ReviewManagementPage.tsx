@@ -41,6 +41,8 @@ import { ReviewDetailView } from "./components/ReviewDetailView";
 
 const getReviewDate = (review: MentorReview): string => {
   const dateVal =
+    review.session?.joinTime ||
+    review.session?.startTime1 ||
     (review as Record<string, unknown>).createdAt ||
     (review as Record<string, unknown>).created_at ||
     review.session?.createdAt ||
@@ -303,7 +305,7 @@ export function ReviewManagementPage() {
                           </SortButton>
                         </TableHead>
                         <TableHead className="w-[140px] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.createdDate", "Thời gian")}
+                          {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
                         </TableHead>
                         <TableHead className="w-[90px] min-w-[90px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.delete", "Xóa")}
