@@ -748,81 +748,68 @@ function AssignMentorDialog({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-h-[92vh] w-[95vw] gap-0 overflow-hidden rounded-2xl border border-slate-200/90 p-0 shadow-2xl sm:max-w-4xl dark:border-slate-800 dark:bg-slate-900">
-        {/* Modal Header */}
-        <DialogHeader className="border-b border-slate-200/80 bg-white p-5 pb-4 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-400">
-              <UserCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <DialogTitle className="text-base font-bold text-slate-900 dark:text-white">
-                {t("adminKiosk.assignMentor", "Gán Mentor Phỏng vấn")}
-              </DialogTitle>
-              <DialogDescription className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                {t(
-                  "adminMentorReviewAssignment.assignDescription",
-                  "Chọn 1 Mentor để gán chính thức hoặc chọn nhiều Mentor để đề xuất cho ứng viên."
+        {/* Unified DialogHeader with Candidate & Job Context */}
+        <DialogHeader className="border-b border-slate-200/80 bg-white p-4.5 px-5 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Left: Candidate Info */}
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 shrink-0 rounded-full border border-slate-200/90 shadow-2xs dark:border-slate-700">
+                {detail?.candidateAvatarUrl ? (
+                  <AvatarImage src={detail.candidateAvatarUrl} className="object-cover" />
+                ) : null}
+                <AvatarFallback className="bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                  {(detail?.candidateName ?? "?").charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <DialogTitle className="text-base font-bold text-slate-900 dark:text-white">
+                    {detail?.candidateName ?? "Gán Mentor"}
+                  </DialogTitle>
+                  {detail?.id && (
+                    <span className="font-mono text-xs font-semibold text-slate-400">
+                      #{detail.id}
+                    </span>
+                  )}
+                </div>
+                {detail?.candidateEmail && (
+                  <DialogDescription className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    {detail.candidateEmail}
+                  </DialogDescription>
                 )}
-              </DialogDescription>
+              </div>
             </div>
+
+            {/* Right: Company & Role Info */}
+            {detail && (
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-50 px-3 py-1.5 dark:border-slate-700/80 dark:bg-slate-800">
+                  <Avatar className="h-4.5 w-4.5 shrink-0 rounded-xs">
+                    {companyLogo ? <AvatarImage src={companyLogo} /> : null}
+                    <AvatarFallback className="bg-sky-100 text-[9px] font-bold text-sky-700">
+                      {companyName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {companyName}
+                  </span>
+                </div>
+
+                {detail.jdTitle && (
+                  <Badge
+                    variant="secondary"
+                    className="rounded-xl border border-indigo-200/80 bg-indigo-50/70 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    {detail.jdTitle}
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
         </DialogHeader>
 
         {/* Modal Main Body Canvas */}
-        <div className="flex max-h-[calc(92vh-130px)] flex-col gap-4 overflow-y-auto bg-slate-50/70 p-5 dark:bg-slate-950/50">
-          {/* Spacious Candidate & Company Context Banner */}
-          {detail && (
-            <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                {/* Candidate Info */}
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 shrink-0 rounded-full border border-slate-200/90 shadow-2xs dark:border-slate-700">
-                    {detail.candidateAvatarUrl ? (
-                      <AvatarImage src={detail.candidateAvatarUrl} className="object-cover" />
-                    ) : null}
-                    <AvatarFallback className="bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                      {(detail.candidateName ?? "?").charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-900 dark:text-white">
-                        {detail.candidateName ?? "-"}
-                      </span>
-                      <span className="font-mono text-xs text-slate-400">#{detail.id}</span>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {detail.candidateEmail ?? "-"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Company & Role Badges */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-2 rounded-lg border border-slate-200/90 bg-slate-50 px-3 py-1.5 dark:border-slate-700/80 dark:bg-slate-800">
-                    <Avatar className="h-4 w-4 shrink-0 rounded-xs">
-                      {companyLogo ? <AvatarImage src={companyLogo} /> : null}
-                      <AvatarFallback className="bg-sky-100 text-[9px] font-bold text-sky-700">
-                        {companyName.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      {companyName}
-                    </span>
-                  </div>
-
-                  {detail.jdTitle && (
-                    <Badge
-                      variant="secondary"
-                      className="rounded-lg border border-indigo-200/80 bg-indigo-50/70 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/60 dark:text-indigo-300">
-                      {detail.jdTitle}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
+        <div className="flex max-h-[calc(92vh-110px)] flex-col gap-4 overflow-y-auto bg-slate-50/70 p-5 dark:bg-slate-950/50">
           {/* 2-Column Workspace Grid */}
           <div className="grid min-h-[400px] grid-cols-1 items-start gap-4 lg:grid-cols-12">
             {/* LEFT COLUMN (5/12) - Search & Mentor List Selector */}
