@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -16,7 +16,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarDays, Clock4, Hourglass, Loader2, Sun, Sunset, Trash2 } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  ChevronDown,
+  Clock4,
+  Hourglass,
+  Loader2,
+  Sun,
+  Sunset,
+  Trash2,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -62,6 +72,96 @@ function toHms(value: string): string {
   if (!value) return "09:00:00";
   // Pad HH:mm -> HH:mm:ss
   return value.length === 5 ? `${value}:00` : value;
+}
+
+interface TimePickerFieldProps {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function TimePickerField({ id, value, onChange }: TimePickerFieldProps) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [selectedHour = "09", selectedMinute = "00"] = value.split(":");
+  const hours = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, "0"));
+  const minutes = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, "0"));
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          id={id}
+          type="button"
+          className="flex h-10.5 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 px-3 text-left text-xs font-semibold text-slate-900 transition-colors hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100 dark:hover:border-indigo-700">
+          <span className="flex items-center gap-2 font-mono">
+            <Clock4 className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+            {value}
+          </span>
+          <ChevronDown
+            className={`h-4 w-4 text-slate-400 transition-transform dark:text-slate-500 ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={6}
+        className="w-[220px] rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-slate-950">
+        <div className="mb-2 flex items-center justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+            {t("adminKioskManagement.selectTime", "Chọn thời gian")}
+          </span>
+          <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+            {value}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            {
+              label: t("adminKioskManagement.hoursShort", "Giờ"),
+              options: hours,
+              selected: selectedHour,
+              part: "hour" as const,
+            },
+            {
+              label: t("adminKioskManagement.minutesShortLabel", "Phút"),
+              options: minutes,
+              selected: selectedMinute,
+              part: "minute" as const,
+            },
+          ].map(({ label, options, selected, part }) => (
+            <div key={part}>
+              <p className="mb-1 px-1 text-[10px] font-bold tracking-wide text-slate-400 uppercase dark:text-slate-500">
+                {label}
+              </p>
+              <div className="scrollbar-thin h-44 space-y-0.5 overflow-y-auto rounded-lg bg-slate-50 p-1 dark:bg-slate-900">
+                {options.map((option) => {
+                  const isSelected = option === selected;
+                  const nextValue =
+                    part === "hour" ? `${option}:${selectedMinute}` : `${selectedHour}:${option}`;
+
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => onChange(nextValue)}
+                      className={`flex h-7 w-full items-center justify-between rounded-md px-2 font-mono text-xs transition-colors ${
+                        isSelected
+                          ? "bg-indigo-600 font-bold text-white"
+                          : "text-slate-600 hover:bg-white hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+                      }`}>
+                      {option}
+                      {isSelected && <Check className="h-3.5 w-3.5" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export function ScheduleFormDialog({
@@ -169,18 +269,13 @@ export function ScheduleFormDialog({
                 <Sun className="h-3.5 w-3.5 text-amber-500" />
                 {t("adminKioskManagement.openTimeLabel")}
               </Label>
-              <Input
+              <TimePickerField
                 id="schedule-open"
-                type="time"
-                step={60}
                 value={values.openTime}
-                onChange={(event) =>
-                  setValues((prev) => ({ ...prev, openTime: event.target.value }))
-                }
-                onBlur={() => setTouched((prev) => ({ ...prev, openTime: true }))}
-                aria-invalid={(touched.openTime && timeRangeInvalid) || undefined}
-                className="h-10.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100"
-                required
+                onChange={(openTime) => {
+                  setValues((prev) => ({ ...prev, openTime }));
+                  setTouched((prev) => ({ ...prev, openTime: true }));
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -190,18 +285,13 @@ export function ScheduleFormDialog({
                 <Sunset className="h-3.5 w-3.5 text-indigo-500" />
                 {t("adminKioskManagement.closeTimeLabel")}
               </Label>
-              <Input
+              <TimePickerField
                 id="schedule-close"
-                type="time"
-                step={60}
                 value={values.closeTime}
-                onChange={(event) =>
-                  setValues((prev) => ({ ...prev, closeTime: event.target.value }))
-                }
-                onBlur={() => setTouched((prev) => ({ ...prev, closeTime: true }))}
-                aria-invalid={(touched.closeTime && timeRangeInvalid) || undefined}
-                className="h-10.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100"
-                required
+                onChange={(closeTime) => {
+                  setValues((prev) => ({ ...prev, closeTime }));
+                  setTouched((prev) => ({ ...prev, closeTime: true }));
+                }}
               />
             </div>
           </div>
