@@ -210,12 +210,48 @@ export function QuestionBankManagementPage() {
     }
   };
 
-  const handleToggleStatus = (question: QuestionBank, isActive: boolean) => {
+  const handleToggleStatus = async (question: QuestionBank, isActive: boolean) => {
     if (!question.id) return;
-    if (!isActive) {
-      setEditingQuestion(question);
-      setIsDeleteOpen(true);
+    if (isActive) {
+      // Re-activate: optimistic update + API call to flip isDeleted=false
+      const previousState = (question as unknown as { isDeleted?: boolean }).isDeleted;
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q.id === question.id ? ({ ...q, isDeleted: false } as unknown as QuestionBank) : q
+        )
+      );
+      try {
+        const res = await questionBankManager.update(question.id, { isDeleted: false });
+        if (res.success) {
+          toast.success(
+            t("adminQuestionbankmanagement.reactivatedSuccess", "Đã kích hoạt lại câu hỏi")
+          );
+        } else {
+          // Revert optimistic update on failure
+          setQuestions((prev) =>
+            prev.map((q) =>
+              q.id === question.id
+                ? ({ ...q, isDeleted: previousState } as unknown as QuestionBank)
+                : q
+            )
+          );
+          toast.error(res.error || t("error.systemError"));
+        }
+      } catch {
+        setQuestions((prev) =>
+          prev.map((q) =>
+            q.id === question.id
+              ? ({ ...q, isDeleted: previousState } as unknown as QuestionBank)
+              : q
+          )
+        );
+        toast.error(t("error.systemError"));
+      }
+      return;
     }
+    // Deactivate path: open soft-delete confirmation dialog
+    setEditingQuestion(question);
+    setIsDeleteOpen(true);
   };
 
   const isFilterActive =
