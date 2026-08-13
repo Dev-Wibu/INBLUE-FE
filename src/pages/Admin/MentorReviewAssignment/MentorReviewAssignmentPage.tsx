@@ -70,9 +70,11 @@ function renderStatusBadge(detail: AdminDetailItem, t: (_key: string) => string)
     return (
       <Badge
         variant="outline"
-        className="gap-1 border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400">
+        className="w-fit gap-1 border-amber-200/80 bg-amber-50/80 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/60 dark:text-amber-300">
         <Clock className="h-3 w-3" />
-        {t("adminMentorReviewAssignment.statusBadge.needsAssignment")}
+        <span>
+          {t("adminMentorReviewAssignment.statusBadge.needsAssignment", "Chờ gán Mentor")}
+        </span>
       </Badge>
     );
   }
@@ -80,9 +82,9 @@ function renderStatusBadge(detail: AdminDetailItem, t: (_key: string) => string)
     return (
       <Badge
         variant="outline"
-        className="gap-1 border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400">
+        className="w-fit gap-1 border-blue-200/80 bg-blue-50/80 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/60 dark:text-blue-300">
         <Users className="h-3 w-3" />
-        {t("adminMentorReviewAssignment.statusBadge.awaitingCandidate")}
+        <span>{t("adminMentorReviewAssignment.statusBadge.awaitingCandidate", "Chờ UV chọn")}</span>
       </Badge>
     );
   }
@@ -90,13 +92,49 @@ function renderStatusBadge(detail: AdminDetailItem, t: (_key: string) => string)
     return (
       <Badge
         variant="outline"
-        className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
+        className="w-fit gap-1 border-emerald-200/80 bg-emerald-50/80 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/60 dark:text-emerald-300">
         <UserCheck className="h-3 w-3" />
-        {t("adminMentorReviewAssignment.statusBadge.assigned")}
+        <span>{t("adminMentorReviewAssignment.statusBadge.assigned", "Đã chọn lịch")}</span>
       </Badge>
     );
   }
-  return <Badge variant="outline">{status ?? "-"}</Badge>;
+  if (status === "AI_EVALUATED") {
+    return (
+      <Badge
+        variant="outline"
+        className="w-fit gap-1 border-indigo-200/80 bg-indigo-50/80 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/60 dark:text-indigo-300">
+        <Sparkles className="h-3 w-3 text-indigo-500" />
+        <span>AI đã chấm</span>
+      </Badge>
+    );
+  }
+  if (status === "SUBMITTED") {
+    return (
+      <Badge
+        variant="outline"
+        className="w-fit gap-1 border-purple-200/80 bg-purple-50/80 text-purple-700 dark:border-purple-900/50 dark:bg-purple-950/60 dark:text-purple-300">
+        <CheckCircle2 className="h-3 w-3 text-purple-500" />
+        <span>Đã nộp bài</span>
+      </Badge>
+    );
+  }
+  if (status === "COMPLETED") {
+    return (
+      <Badge
+        variant="outline"
+        className="w-fit gap-1 border-emerald-200/80 bg-emerald-50/80 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/60 dark:text-emerald-300">
+        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+        <span>Hoàn thành</span>
+      </Badge>
+    );
+  }
+  return (
+    <Badge
+      variant="outline"
+      className="w-fit border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+      {status ?? "Đang xử lý"}
+    </Badge>
+  );
 }
 
 export function MentorReviewAssignmentPage() {
