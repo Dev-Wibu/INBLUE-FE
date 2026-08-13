@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import { format } from "date-fns";
 import { Circle, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { QuestionBank, QuestionCategory } from "../types";
 
@@ -44,6 +45,47 @@ function formatDate(s?: string | Date) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Smart Component: Measures exact DOM pixel overflow (scrollWidth > clientWidth)
+ * to only enable hover text marquee scroll when text is ACTUALLY truncated on screen.
+ */
+function TruncatedScrollText({ text }: { text: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  const checkOverflow = () => {
+    if (containerRef.current && textRef.current) {
+      setIsOverflowing(textRef.current.scrollWidth > containerRef.current.clientWidth);
+    }
+  };
+
+  useEffect(() => {
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [text]);
+
+  return (
+    <div ref={containerRef} className="group/scroll relative w-full overflow-hidden">
+      <div
+        className={`whitespace-nowrap ${
+          isOverflowing
+            ? "transition-transform duration-[8000ms] ease-linear group-hover/scroll:-translate-x-full"
+            : ""
+        }`}>
+        <span
+          ref={textRef}
+          className={`text-sm font-bold text-slate-900 dark:text-slate-100 ${
+            !isOverflowing ? "block truncate" : "inline-block"
+          }`}>
+          {text}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export function QuestionBankTable({
@@ -124,7 +166,6 @@ export function QuestionBankTable({
 
             const textContent =
               q.questionText || t("adminQuestionbankmanagement.noContent", "Chưa có nội dung");
-            const isLongText = textContent.length > 45;
 
             return (
               <TableRow
@@ -144,19 +185,7 @@ export function QuestionBankTable({
                 </TableCell>
 
                 <TableCell className="max-w-[500px] min-w-[280px] px-4 py-4">
-                  {isLongText ? (
-                    <div className="group/scroll relative w-full overflow-hidden">
-                      <div className="whitespace-nowrap transition-transform duration-[8000ms] ease-linear group-hover/scroll:-translate-x-full">
-                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                          {textContent}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
-                      {textContent}
-                    </p>
-                  )}
+                  <TruncatedScrollText text={textContent} />
                 </TableCell>
 
                 <TableCell className="w-[160px] px-4 py-4">
