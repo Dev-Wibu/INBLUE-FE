@@ -156,7 +156,7 @@ export interface QuizConfig {
  * Get quiz config from JD rounds
  * Requires: jdId to fetch JD with rounds config
  */
-export function useQuizConfig(jdId: number, roundId: number) {
+export function useQuizConfig(jdId: number, roundId: number, enabled = true) {
   return useQuery({
     queryKey: ["quiz", "config", jdId, roundId],
     queryFn: async (): Promise<QuizConfig | null> => {
@@ -197,7 +197,7 @@ export function useQuizConfig(jdId: number, roundId: number) {
         questions,
       };
     },
-    enabled: jdId > 0 && roundId > 0,
+    enabled: enabled && jdId > 0 && roundId > 0,
     staleTime: 5 * 60 * 1000,
   });
 }

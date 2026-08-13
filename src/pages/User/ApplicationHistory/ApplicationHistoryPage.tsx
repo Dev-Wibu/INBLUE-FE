@@ -62,6 +62,15 @@ interface JdRound {
   roundOrder?: number;
   roundType?: RoundType | string;
   passThreshold?: number;
+  configData?: {
+    instruction?: string;
+    timeLimitMinutes?: number;
+    submissionFormat?: string;
+    evaluationCriteria?: string;
+    maxScore?: number;
+  };
+  /** Embedded round config from reviewer API response (source of truth for staff grading) */
+  roundConfig?: Record<string, unknown>;
 }
 
 interface EnrichedApplication extends Application {

@@ -75,6 +75,8 @@ interface CodeReviewModuleProps {
   applicationId: number;
   isCompleted: boolean;
   isCurrent: boolean;
+  /** When true, problems come from detail.roundConfig (staff grader API) — no additional problem-fetching calls */
+  isStaffView?: boolean;
   onSuccess?: () => void;
 }
 
@@ -205,12 +207,17 @@ export function CodeReviewModule({
   applicationId,
   isCompleted,
   isCurrent,
+  isStaffView,
   onSuccess,
 }: CodeReviewModuleProps) {
   const { t } = useTranslation();
 
-  const configData = round.configData as unknown as
-    | (typeof round.configData & {
+  // Merge roundConfig from detail (staff grader API) with round.configData (fallback for user view)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mergedConfigData = (detail as any)?.roundConfig ?? round.configData;
+
+  const configData = mergedConfigData as unknown as
+    | (typeof mergedConfigData & {
         codeReviewProblems?: CodeReviewProblemSnapshot[];
         codeReviewProblem?: CodeReviewProblemSnapshot;
         codeReviewProblemsId?: number[];
@@ -233,20 +240,24 @@ export function CodeReviewModule({
   }, [configData]);
 
   // 2. If problem IDs exist but lack full file details, fetch from API
+  //    Guard: staff view gets problems from detail.roundConfig — no additional fetching needed
   const [fetchedProblems, setFetchedProblems] = useState<CodeReviewProblemSnapshot[]>([]);
   const [isLoadingProblems, setIsLoadingProblems] = useState(false);
 
   useEffect(() => {
-    const ids = configData?.codeReviewProblemsId || [];
+    // Don't fetch problems in staff view — detail.roundConfig has everything
+    if (isStaffView) return;
+
+    const ids = (configData?.codeReviewProblemsId as number[] | undefined) || [];
     const missingIds = ids.filter(
-      (id) => !rawProblems.some((p) => p.problemId === id && (p.files?.length ?? 0) > 0)
+      (id: number) => !rawProblems.some((p) => p.problemId === id && (p.files?.length ?? 0) > 0)
     );
 
     if (missingIds.length === 0) return;
 
     let isMounted = true;
     setIsLoadingProblems(true);
-    Promise.all(missingIds.map((id) => codeReviewProblemManager.getById(id)))
+    Promise.all(missingIds.map((id: number) => codeReviewProblemManager.getById(id)))
       .then((resList) => {
         if (!isMounted) return;
         const loaded: CodeReviewProblemSnapshot[] = [];
@@ -701,7 +712,8 @@ export function CodeReviewModule({
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
                 ? t("userApplication.codeReview.codeReviewCompleted")
-                : round.configData?.instruction ||
+                : mergedConfigData?.instruction ||
+                  round.configData?.instruction ||
                   t("userApplication.codeReview.codeReviewInstructions")}
             </p>
           </div>
@@ -776,7 +788,9 @@ export function CodeReviewModule({
                   <div className="flex items-center gap-1.5 overflow-x-auto">
                     <div className="flex items-center gap-1.5 pr-2 font-mono text-xs font-bold text-slate-500 dark:text-slate-400">
                       <Layers className="h-4 w-4 text-indigo-400" />
-                      <span className="hidden sm:inline">Danh sách bài:</span>
+                      <span className="hidden sm:inline">
+                        {t("userApplication.codeReview.problemList", "Danh sách bài:")}
+                      </span>
                     </div>
                     {problems.map((p, idx) => {
                       const pId = p.problemId ?? 0;
@@ -908,7 +922,9 @@ export function CodeReviewModule({
               <div className="space-y-2">
                 <h4 className="flex items-center gap-2 text-xs font-black tracking-wider text-amber-400 uppercase">
                   <Lightbulb className="h-4 w-4 text-amber-400" />
-                  <span>Yêu cầu Code Review:</span>
+                  <span>
+                    {t("userApplication.codeReview.requirementsLabel", "Yêu cầu Code Review:")}
+                  </span>
                 </h4>
                 <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 font-sans text-sm leading-relaxed font-semibold whitespace-pre-wrap text-slate-800 shadow-inner sm:p-5 dark:border-slate-700/80 dark:bg-slate-950/80 dark:text-slate-100">
                   {activeProblem.problemStatement ||
@@ -981,11 +997,15 @@ export function CodeReviewModule({
                 {/* Meta stats right */}
                 {currentFile && (
                   <div className="flex items-center gap-3 font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                    <span>
-                      {normalizeFormattedCode(currentFile.content).split("\n").length} dòng
+                    <span className="text-slate-600 dark:text-slate-400">
+                      · {normalizeFormattedCode(currentFile.content).split("\n").length}{" "}
+                      {t("userApplication.codeReview.lines", "dòng")}
                     </span>
                     <span className="text-slate-600 dark:text-slate-600">•</span>
-                    <span>{normalizeFormattedCode(currentFile.content).length} ký tự</span>
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {normalizeFormattedCode(currentFile.content).length}{" "}
+                      {t("userApplication.codeReview.characters", "ký tự")}
+                    </span>
                   </div>
                 )}
               </div>
@@ -1016,12 +1036,16 @@ export function CodeReviewModule({
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
             {/* Left: Issues summary badges */}
             <div className="flex flex-wrap items-center gap-2.5 text-xs">
-              <span className="font-bold text-slate-700 dark:text-slate-300">Tổng kết:</span>
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {t("userApplication.codeReview.summary", "Tổng kết:")}
+              </span>
               <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200">
                 <Target className="h-3.5 w-3.5 text-indigo-400" />
                 <span>
-                  {allFlattenedIssues.length} Issues
-                  {problems.length > 1 ? ` (${problems.length} bài)` : ""}
+                  {allFlattenedIssues.length} {t("userApplication.codeReview.issues", "Issues")}
+                  {problems.length > 1
+                    ? ` (${problems.length} ${t("userApplication.codeReview.problems", "bài")})`
+                    : ""}
                 </span>
               </div>
               <SeverityBadgeMini severity="CRITICAL" count={severityCounts.CRITICAL} />
@@ -1038,7 +1062,7 @@ export function CodeReviewModule({
                   onClick={clearCurrentDraft}
                   className="h-9 gap-1.5 rounded-xl px-3 text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-300">
                   <Trash2 className="h-3.5 w-3.5" />
-                  <span>Xóa draft bài này</span>
+                  <span>{t("userApplication.codeReview.deleteDraft", "Xóa draft bài này")}</span>
                 </Button>
               )}
 
@@ -1047,7 +1071,10 @@ export function CodeReviewModule({
                   onClick={() => setConfirmOpen(true)}
                   className="h-9 gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-5 text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition-all hover:from-indigo-500 hover:to-indigo-400 active:scale-95">
                   <Send className="h-3.5 w-3.5" />
-                  <span>Nộp bài Review ({allFlattenedIssues.length})</span>
+                  <span>
+                    {t("userApplication.codeReview.submitReview", "Nộp bài Review")} (
+                    {allFlattenedIssues.length})
+                  </span>
                 </Button>
               )}
             </div>
@@ -1123,7 +1150,7 @@ export function CodeReviewModule({
               onClick={() => setConfirmOpen(false)}
               disabled={submitting}
               className="rounded-xl border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white">
-              Hủy
+              {t("userApplication.codeReview.cancel", "Hủy")}
             </Button>
             <Button
               onClick={handleConfirmSubmit}
@@ -1289,6 +1316,7 @@ function CodeViewPane({
   onDeleteIssue?: (_index: number) => void;
   editable: boolean;
 }) {
+  const { t } = useTranslation();
   const fileLines = useMemo(() => {
     const text = normalizeFormattedCode(file.content);
     return text ? text.split("\n") : [];
@@ -1394,7 +1422,8 @@ function CodeViewPane({
                                 "text-[11px] font-extrabold tracking-wider uppercase",
                                 issTok.text
                               )}>
-                              {iss.severity} · Dòng {iss.lineNumber}
+                              {iss.severity} · {t("userApplication.codeReview.line", "Dòng")}{" "}
+                              {iss.lineNumber}
                             </span>
                           </div>
 
@@ -1410,7 +1439,7 @@ function CodeViewPane({
                                 }}
                                 className="h-6 gap-1 px-2 text-[10px] font-bold text-indigo-300 hover:bg-indigo-500/20">
                                 <Pencil className="h-3 w-3" />
-                                <span>Sửa</span>
+                                <span>{t("userApplication.codeReview.edit", "Sửa")}</span>
                               </Button>
                               <Button
                                 type="button"
@@ -1422,7 +1451,7 @@ function CodeViewPane({
                                 }}
                                 className="h-6 gap-1 px-2 text-[10px] font-bold text-rose-400 hover:bg-rose-500/20">
                                 <Trash2 className="h-3 w-3" />
-                                <span>Xóa</span>
+                                <span>{t("userApplication.codeReview.delete", "Xóa")}</span>
                               </Button>
                             </div>
                           )}
@@ -1452,8 +1481,16 @@ function CodeViewPane({
                         </div>
                         <span className="text-xs font-bold text-white">
                           {inlineEditor.editingIndex !== null
-                            ? `Chỉnh sửa nhận xét trên dòng ${lineNo}`
-                            : `Thêm nhận xét trên dòng ${lineNo}`}
+                            ? t(
+                                "userApplication.codeReview.editCommentOnLine",
+                                "Chỉnh sửa nhận xét trên dòng {{line}}",
+                                { line: lineNo }
+                              )
+                            : t(
+                                "userApplication.codeReview.addCommentOnLine",
+                                "Thêm nhận xét trên dòng {{line}}",
+                                { line: lineNo }
+                              )}
                         </span>
                       </div>
 
@@ -1467,7 +1504,9 @@ function CodeViewPane({
 
                     {/* Severity Selection Pills */}
                     <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <span className="text-[11px] font-bold text-slate-400">Mức độ:</span>
+                      <span className="text-[11px] font-bold text-slate-400">
+                        {t("userApplication.codeReview.severity", "Mức độ:")}
+                      </span>
                       {(["CRITICAL", "WARNING", "INFO"] as Severity[]).map((s) => {
                         const sTok = SEVERITY_TOKENS[s];
                         const Icon = sTok.icon;
@@ -1510,7 +1549,10 @@ function CodeViewPane({
                             onSaveInlineIssue();
                           }
                         }}
-                        placeholder="Mô tả chi tiết vấn đề (ví dụ: Thiếu kiểm tra null, SQL Injection, N+1 query...)"
+                        placeholder={t(
+                          "userApplication.codeReview.descriptionPlaceholder",
+                          "Mô tả chi tiết vấn đề (ví dụ: Thiếu kiểm tra null, SQL Injection, N+1 query...)"
+                        )}
                         className="w-full resize-y rounded-xl border border-slate-700/80 bg-slate-950/90 p-3 font-sans text-xs leading-relaxed text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/25 focus:outline-hidden"
                       />
                     </div>
@@ -1518,7 +1560,10 @@ function CodeViewPane({
                     {/* Footer Actions */}
                     <div className="mt-3 flex items-center justify-between">
                       <span className="hidden font-sans text-[10px] text-slate-400 italic sm:inline">
-                        Nhấn Ctrl + Enter (hoặc ⌘ + Enter) để lưu nhanh
+                        {t(
+                          "userApplication.codeReview.saveHint",
+                          "Nhấn Ctrl + Enter (hoặc ⌘ + Enter) để lưu nhanh"
+                        )}
                       </span>
 
                       <div className="ml-auto flex items-center gap-2">
@@ -1528,7 +1573,7 @@ function CodeViewPane({
                           size="sm"
                           onClick={onCloseInlineEditor}
                           className="h-8 rounded-lg px-3 text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-white">
-                          Hủy
+                          {t("userApplication.codeReview.cancel", "Hủy")}
                         </Button>
                         <Button
                           type="button"
@@ -1538,7 +1583,9 @@ function CodeViewPane({
                           className="h-8 gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 text-xs font-bold text-white shadow-md shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-400 disabled:opacity-50">
                           <Check className="h-3.5 w-3.5" />
                           <span>
-                            {inlineEditor.editingIndex !== null ? "Lưu thay đổi" : "Thêm nhận xét"}
+                            {inlineEditor.editingIndex !== null
+                              ? t("userApplication.codeReview.saveChanges", "Lưu thay đổi")
+                              : t("userApplication.codeReview.addComment", "Thêm nhận xét")}
                           </span>
                         </Button>
                       </div>

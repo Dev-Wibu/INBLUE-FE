@@ -23,8 +23,7 @@ export function JobDescriptionDetailPage() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const jdIdNum = Number(id);
 
-  const { hasPurchased, hasApplied, applicationId, isLoadingStatus, refetchStatus } =
-    useJdPurchaseStatus(jdIdNum);
+  const { hasPurchased, hasApplied, isLoadingStatus, refetchStatus } = useJdPurchaseStatus(jdIdNum);
   const [job, setJob] = useState<JobDescription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
@@ -63,15 +62,6 @@ export function JobDescriptionDetailPage() {
       return;
     }
     if (!jdIdNum) return;
-
-    if (hasApplied) {
-      navigate(
-        applicationId
-          ? `/user?tab=applicationHistory&appId=${applicationId}`
-          : "/user?tab=applicationHistory"
-      );
-      return;
-    }
 
     setIsApplying(true);
     try {
@@ -199,13 +189,6 @@ export function JobDescriptionDetailPage() {
           hasPurchased={hasPurchased}
           hasApplied={hasApplied}
           onApplyAction={handleApply}
-          onViewApplication={() => {
-            navigate(
-              applicationId
-                ? `/user?tab=applicationHistory&appId=${applicationId}`
-                : "/user?tab=applicationHistory"
-            );
-          }}
           isLoadingAction={isApplying}
           isLoadingStatus={isLoadingStatus}
         />

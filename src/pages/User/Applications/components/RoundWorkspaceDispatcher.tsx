@@ -29,6 +29,8 @@ interface RoundWorkspaceDispatcherProps {
   jdInfo?: JdInfoPayload | null;
   currentRoundOrder: number;
   appStatus?: string;
+  /** When true, disables candidate-only features (kiosk booking) and shows staff messaging */
+  isStaffView?: boolean;
   onRefresh?: () => void;
 }
 
@@ -40,6 +42,7 @@ export function RoundWorkspaceDispatcher({
   jdInfo,
   currentRoundOrder,
   appStatus,
+  isStaffView,
   onRefresh,
 }: RoundWorkspaceDispatcherProps) {
   const roundOrder = round.roundOrder ?? 1;
@@ -88,6 +91,7 @@ export function RoundWorkspaceDispatcher({
           jdInfo={jdInfo}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
+          isStaffView={isStaffView}
           onSuccess={onRefresh}
         />
       );
@@ -101,6 +105,7 @@ export function RoundWorkspaceDispatcher({
           jdId={jdId}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
+          isStaffView={isStaffView}
           onSuccess={onRefresh}
         />
       );
@@ -125,6 +130,7 @@ export function RoundWorkspaceDispatcher({
           applicationId={applicationId}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
+          isStaffView={isStaffView}
           onSuccess={onRefresh}
         />
       );
@@ -149,6 +155,7 @@ export function RoundWorkspaceDispatcher({
           jdInfo={jdInfo}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
+          isStaffView={isStaffView}
           onSuccess={onRefresh}
         />
       );

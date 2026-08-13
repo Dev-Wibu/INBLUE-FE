@@ -43,6 +43,8 @@ interface EmailSimulatorModuleProps {
   jdInfo?: JdInfoPayload | null;
   isCompleted: boolean;
   isCurrent: boolean;
+  /** When true, useEmailSubmission hook is disabled — staff reads data from detail */
+  isStaffView?: boolean;
   onSuccess?: () => void;
 }
 
@@ -136,9 +138,12 @@ export function EmailSimulatorModule({
   jdInfo,
   isCompleted,
   isCurrent,
+  isStaffView,
   onSuccess,
 }: EmailSimulatorModuleProps) {
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detailRoundConfig = (detail as any)?.roundConfig;
 
   const [sampleBody, setSampleBody] = useState(
     "Kính gửi Anh/Chị,\n\nEm xin phép phản hồi email của Anh/Chị về vấn đề đang xảy ra...\n\nTrân trọng,\n[Tên của bạn]"
@@ -181,6 +186,9 @@ export function EmailSimulatorModule({
     null;
 
   // 2. Nếu emailSubmissionId khác null/undefined, gọi GET /api/email-submissions/{id} để lấy kết quả chi tiết
+  //    Staff view (read-only workspace) is allowed to call this API so the staff can see the
+  //    candidate's submitted email body — this is the only extra API call permitted for
+  //    the Email round on the staff detail page.
   const { data: emailSubmission } = useEmailSubmission(
     emailSubmissionId ?? 0,
     emailSubmissionId != null && emailSubmissionId > 0
@@ -286,6 +294,8 @@ export function EmailSimulatorModule({
     | undefined;
 
   const handleSubmit = () => {
+    // Guard: staff view is read-only on this page, no candidate actions allowed.
+    if (isStaffView) return;
     // Không có submit endpoint — vòng này hoàn toàn dựa vào cronjob server quét email.
     // Chỉ chuyển phase sang WAITING để app bắt đầu poll trạng thái.
     toast.success(t("userApplication.emailSimulator.confirmEmailSent"));
@@ -294,6 +304,8 @@ export function EmailSimulatorModule({
   };
 
   const openGmailPopup = () => {
+    // Guard: staff view is read-only on this page, no candidate actions allowed.
+    if (isStaffView) return;
     // Chuyển phase sang WAITING để hệ thống bắt đầu poll kết quả từ application detail
     setUserWaiting(true);
     onSuccess?.();
@@ -419,7 +431,8 @@ export function EmailSimulatorModule({
                   </span>
                 </div>
                 <h3 className="mt-1 text-sm leading-snug font-bold text-slate-900 dark:text-slate-100">
-                  {round.configData?.instruction ||
+                  {detailRoundConfig?.instruction ||
+                    round.configData?.instruction ||
                     t("userApplication.emailSimulator.emailInstructionDefault")}
                 </h3>
               </div>
@@ -432,7 +445,8 @@ export function EmailSimulatorModule({
                   </span>
                 </div>
                 <div className="text-xs leading-relaxed font-normal whitespace-pre-line text-slate-700 dark:text-slate-200">
-                  {round.configData?.evaluationCriteria ||
+                  {detailRoundConfig?.evaluationCriteria ||
+                    round.configData?.evaluationCriteria ||
                     t("userApplication.emailSimulator.emailCriteriaDefault")}
                 </div>
               </div>
@@ -553,7 +567,7 @@ export function EmailSimulatorModule({
                   rows={13}
                   value={sampleBody}
                   onChange={(e) => setSampleBody(e.target.value)}
-                  disabled={isCompleted || !isCurrent}
+                  disabled={isCompleted || !isCurrent || isStaffView}
                   className="resize-y rounded-t-none rounded-b-xl border-x border-b border-slate-200 bg-white font-sans text-xs leading-relaxed text-slate-700 shadow-inner focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
                 />
               </div>
@@ -561,7 +575,7 @@ export function EmailSimulatorModule({
               <div className="flex items-center justify-end border-t border-slate-200 pt-4 dark:border-slate-800/80">
                 <Button
                   onClick={openGmailPopup}
-                  disabled={isCompleted || !isCurrent}
+                  disabled={isCompleted || !isCurrent || isStaffView}
                   className="h-9 gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 px-6 text-xs font-bold text-white shadow-lg transition-all hover:from-indigo-500 hover:to-blue-500">
                   <Globe className="h-3.5 w-3.5" />
                   <span>{t("userApplication.emailSimulator.openGmail")}</span>
@@ -873,14 +887,16 @@ export function EmailSimulatorModule({
               </div>
               <div className="space-y-2.5">
                 <p className="text-xs leading-relaxed font-bold text-slate-900 dark:text-slate-100">
-                  {round.configData?.instruction ||
+                  {detailRoundConfig?.instruction ||
+                    round.configData?.instruction ||
                     t(
                       "userApplication.emailSimulator.emailInstructionDefault",
                       "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng."
                     )}
                 </p>
                 <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 text-xs leading-relaxed font-medium whitespace-pre-line text-slate-900 shadow-inner dark:border-indigo-500/30 dark:bg-slate-950/90 dark:text-slate-100">
-                  {round.configData?.evaluationCriteria ||
+                  {detailRoundConfig?.evaluationCriteria ||
+                    round.configData?.evaluationCriteria ||
                     t(
                       "userApplication.emailSimulator.emailCriteriaDefault",
                       "Nội dung tình huống được giao."

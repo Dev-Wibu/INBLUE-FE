@@ -1,6 +1,7 @@
 import { $api } from "@/lib/api";
 
-export const useApplications = () => $api.useQuery("get", "/api/applications");
+export const useApplications = (enabled = true) =>
+  $api.useQuery("get", "/api/applications", undefined, { enabled });
 
 export const useApplication = (id: number, enabled = true) =>
   $api.useQuery(
@@ -23,4 +24,5 @@ export const useUserById = (userId: number, enabled = true) =>
     { enabled: enabled && userId > 0 }
   );
 
-export const useUsers = () => $api.useQuery("get", "/api/users");
+export const useUsers = (enabled = true) =>
+  $api.useQuery("get", "/api/users", undefined, { enabled });
