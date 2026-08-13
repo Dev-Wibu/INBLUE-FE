@@ -17,11 +17,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Calendar,
   CalendarDays,
   Check,
   ChevronDown,
   Clock4,
   Hourglass,
+  Info,
   Loader2,
   Sun,
   Sunset,
@@ -217,8 +219,8 @@ export function ScheduleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-[680px] dark:border-slate-800 dark:bg-slate-900">
-        <div className="border-b border-slate-200/90 bg-slate-100/90 px-7 py-5 dark:border-slate-800 dark:bg-slate-950">
+      <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-[540px] dark:border-slate-800 dark:bg-slate-900">
+        <div className="border-b border-slate-200/90 bg-slate-100/90 px-6 py-5 dark:border-slate-800 dark:bg-slate-950">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
               <CalendarDays className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
@@ -226,7 +228,7 @@ export function ScheduleFormDialog({
                 ? t("adminKioskManagement.editSchedule")
                 : t("adminKioskManagement.createSchedule")}
             </DialogTitle>
-            <DialogDescription className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <DialogDescription className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {isEdit
                 ? t("adminKioskManagement.editScheduleDescription")
                 : t("adminKioskManagement.createScheduleDescription")}
@@ -234,40 +236,77 @@ export function ScheduleFormDialog({
           </DialogHeader>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid items-start gap-5 overflow-y-auto p-7 sm:grid-cols-2">
-          <div className="order-1 space-y-2">
-            <Label
-              htmlFor="schedule-day"
-              className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {t("adminKioskManagement.dayLabel")}
-            </Label>
-            <Select
-              value={values.dayOfWeek}
-              onValueChange={(value) =>
-                setValues((prev) => ({ ...prev, dayOfWeek: value as DayOfWeek }))
-              }>
-              <SelectTrigger
-                id="schedule-day"
-                className="h-11 rounded-xl border border-slate-200 bg-slate-50/50 text-sm font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100">
-                <SelectValue placeholder={t("adminKioskManagement.dayPlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {DAYS_OF_WEEK.map((day) => (
-                  <SelectItem key={day} value={day}>
-                    {t(`adminKioskManagement.days.${day}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <form onSubmit={handleSubmit} className="space-y-5 overflow-y-auto p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Day of week */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="schedule-day"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                <Calendar className="h-3.5 w-3.5 text-indigo-500" />
+                {t("adminKioskManagement.dayLabel")}
+              </Label>
+              <Select
+                value={values.dayOfWeek}
+                onValueChange={(value) =>
+                  setValues((prev) => ({ ...prev, dayOfWeek: value as DayOfWeek }))
+                }>
+                <SelectTrigger
+                  id="schedule-day"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 text-sm font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100">
+                  <SelectValue placeholder={t("adminKioskManagement.dayPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {DAYS_OF_WEEK.map((day) => (
+                    <SelectItem key={day} value={day}>
+                      {t(`adminKioskManagement.days.${day}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Slot duration */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="schedule-duration"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                <Hourglass className="h-3.5 w-3.5 text-indigo-500" />
+                {t("adminKioskManagement.slotDurationLabel")}
+              </Label>
+              <Select
+                value={String(values.slotDurationMinutes)}
+                onValueChange={(value) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    slotDurationMinutes: Number(value),
+                  }))
+                }>
+                <SelectTrigger
+                  id="schedule-duration"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 text-sm font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SLOT_DURATION_OPTIONS.map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>
+                      <span className="flex items-center gap-2">
+                        <Clock4 className="h-3.5 w-3.5" />
+                        {t("adminKioskManagement.minutesShort", { count: minutes })}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="contents">
-            <div className="order-3 space-y-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Open time */}
+            <div className="space-y-2">
               <Label
                 htmlFor="schedule-open"
-                className="flex items-center gap-1.5 text-sm font-bold text-slate-800 dark:text-slate-200">
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
                 <Sun className="h-3.5 w-3.5 text-amber-500" />
                 {t("adminKioskManagement.openTimeLabel")}
               </Label>
@@ -280,10 +319,12 @@ export function ScheduleFormDialog({
                 }}
               />
             </div>
-            <div className="order-4 space-y-2">
+
+            {/* Close time */}
+            <div className="space-y-2">
               <Label
                 htmlFor="schedule-close"
-                className="flex items-center gap-1.5 text-sm font-bold text-slate-800 dark:text-slate-200">
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
                 <Sunset className="h-3.5 w-3.5 text-indigo-500" />
                 {t("adminKioskManagement.closeTimeLabel")}
               </Label>
@@ -299,48 +340,18 @@ export function ScheduleFormDialog({
           </div>
 
           {(touched.openTime || touched.closeTime) && timeRangeInvalid && (
-            <p className="text-destructive order-4 text-xs sm:col-span-2">
-              {t("adminKioskManagement.timeRangeInvalid")}
-            </p>
+            <p className="text-destructive text-xs">{t("adminKioskManagement.timeRangeInvalid")}</p>
           )}
 
-          <div className="order-2 space-y-2">
-            <Label
-              htmlFor="schedule-duration"
-              className="flex items-center gap-1.5 text-sm font-bold text-slate-800 dark:text-slate-200">
-              <Hourglass className="h-3.5 w-3.5 text-indigo-500" />
-              {t("adminKioskManagement.slotDurationLabel")}
-            </Label>
-            <Select
-              value={String(values.slotDurationMinutes)}
-              onValueChange={(value) =>
-                setValues((prev) => ({
-                  ...prev,
-                  slotDurationMinutes: Number(value),
-                }))
-              }>
-              <SelectTrigger
-                id="schedule-duration"
-                className="h-11 rounded-xl border border-slate-200 bg-slate-50/50 text-sm font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SLOT_DURATION_OPTIONS.map((minutes) => (
-                  <SelectItem key={minutes} value={String(minutes)}>
-                    <span className="flex items-center gap-2">
-                      <Clock4 className="h-3.5 w-3.5" />
-                      {t("adminKioskManagement.minutesShort", { count: minutes })}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+          {/* Hint info box */}
+          <div className="flex items-start gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-950/50">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
               {t("adminKioskManagement.slotDurationHint")}
             </p>
           </div>
 
-          <DialogFooter className="order-5 -mx-7 mt-2 -mb-7 gap-2 border-t border-slate-200/90 bg-slate-100/90 px-7 py-4 sm:col-span-2 dark:border-slate-800 dark:bg-slate-950">
+          <DialogFooter className="-mx-6 mt-2 -mb-6 gap-2 border-t border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
             {isEdit && initialSchedule && (
               <Button
                 type="button"
