@@ -2044,7 +2044,9 @@
     "enterprise": "エンタープライズ",
     "companies": "会社",
     "companyDetails": "会社詳細",
-    "jobDetails": "求人詳細"
+    "jobDetails": "求人詳細",
+    "defaultLocation": "ホーチミン市",
+    "quickFilter": "クイックフィルター"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -7559,6 +7561,13 @@
     "exploreNow": "今すぐ探索",
     "heroTitle": "トップ企業を発見",
     "heroSubtitle": "主要な雇用主を閲覧してつながる",
-    "searchPlaceholder": "会社を検索..."
+    "searchPlaceholder": "会社を検索...",
+    "industryLabel": "業界:",
+    "industriesLabel": "業界",
+    "allIndustries": "すべて",
+    "openRolesCount": "{{count}} 件"
+  },
+  "homepageFooter": {
+    "linksCompanies": "企業"
   }
 }

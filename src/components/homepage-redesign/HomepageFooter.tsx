@@ -48,7 +48,9 @@ export function HomepageFooter() {
                   <FooterLink to="/features/mentor-interview">Mentor Interview</FooterLink>
                 </li>
                 <li>
-                  <FooterLink to="/enterprise/companies">Companies</FooterLink>
+                  <FooterLink to="/enterprise/companies">
+                    {t("homepageFooter.linksCompanies", "Companies")}
+                  </FooterLink>
                 </li>
               </ul>
             </div>

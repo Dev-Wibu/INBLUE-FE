@@ -45,7 +45,7 @@ export function CompanyCard({
   company: Company;
   onClick: () => void;
   onExplore: (_e: React.MouseEvent) => void;
-  t: (_key: string, _defaultValue?: string) => string;
+  t: (_key: string, _optionsOrDefault?: string | Record<string, unknown>) => string;
 }) {
   const openRoles = getOpenRoleCount(company);
   const logoUrl = company.logoUrl || null;
@@ -131,7 +131,7 @@ export function CompanyCard({
             <div className="flex min-w-0 items-center gap-1.5 text-[14px] font-medium text-slate-500 dark:text-slate-400">
               <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
               <span className="max-w-[150px] truncate">
-                {company.location || "TP. Hồ Chí Minh"}
+                {company.location || t("common.defaultLocation", "TP. Hồ Chí Minh")}
               </span>
             </div>
 
@@ -154,7 +154,11 @@ export function CompanyCard({
       <div className="mt-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 text-[14px] font-bold text-indigo-600 dark:text-indigo-400">
           <BriefcaseBusiness className="h-[18px] w-[18px]" />
-          {openRoles > 0 ? `${openRoles} cơ hội` : t("common.overview", "Tổng quan")}
+          {openRoles > 0
+            ? t("userCompanies.openRolesCount", {
+                count: openRoles,
+              })
+            : t("common.overview", "Tổng quan")}
         </div>
         <Button
           onClick={(e) => {
@@ -171,10 +175,19 @@ export function CompanyCard({
 
 export function UserCompaniesTab() {
   const { t: i18nT } = useTranslation();
-  const t: (key: string, defaultValue?: string) => string = useCallback(
-    (key, defaultValue) => (defaultValue ? i18nT(key, defaultValue) : i18nT(key)),
-    [i18nT]
-  );
+  const t: (key: string, optionsOrDefault?: string | Record<string, unknown>) => string =
+    useCallback(
+      (key, optionsOrDefault) => {
+        if (typeof optionsOrDefault === "string") {
+          return i18nT(key, optionsOrDefault);
+        }
+        if (optionsOrDefault && typeof optionsOrDefault === "object") {
+          return i18nT(key, optionsOrDefault);
+        }
+        return i18nT(key);
+      },
+      [i18nT]
+    );
   const [searchParams, setSearchParams] = useSearchParams();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -323,7 +336,7 @@ export function UserCompaniesTab() {
                   {industries.length || 1}
                 </span>
                 <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
-                  Lĩnh vực
+                  {t("userCompanies.industriesLabel", "Lĩnh vực")}
                 </span>
               </div>
             </div>
@@ -361,7 +374,9 @@ export function UserCompaniesTab() {
           {/* Filters */}
           <div className="mt-4 flex flex-col gap-5 xl:flex-row xl:items-center">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-2 text-[13px] font-semibold text-slate-500">Lĩnh vực:</span>
+              <span className="mr-2 text-[13px] font-semibold text-slate-500">
+                {t("userCompanies.industryLabel", "Lĩnh vực:")}
+              </span>
               <button
                 key="ALL"
                 type="button"
@@ -371,7 +386,7 @@ export function UserCompaniesTab() {
                     ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-600 dark:bg-indigo-600"
                     : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 }`}>
-                Tất cả
+                {t("userCompanies.allIndustries", "Tất cả")}
               </button>
               {industries.map((ind) => {
                 const isActive = selectedIndustry.toLowerCase() === ind.toLowerCase();

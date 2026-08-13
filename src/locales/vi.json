@@ -2094,7 +2094,9 @@
     "enterprise": "Doanh nghiệp",
     "companies": "Công ty",
     "companyDetails": "Chi tiết công ty",
-    "jobDetails": "Chi tiết công việc"
+    "jobDetails": "Chi tiết công việc",
+    "defaultLocation": "TP. Hồ Chí Minh",
+    "quickFilter": "Lọc nhanh"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -7628,6 +7630,13 @@
     "exploreNow": "Khám phá ngay",
     "heroTitle": "Khám phá các công ty hàng đầu",
     "heroSubtitle": "Duyệt và kết nối với các nhà tuyển dụng hàng đầu",
-    "searchPlaceholder": "Tìm công ty..."
+    "searchPlaceholder": "Tìm công ty...",
+    "industryLabel": "Lĩnh vực:",
+    "industriesLabel": "Lĩnh vực",
+    "allIndustries": "Tất cả",
+    "openRolesCount": "{{count}} cơ hội"
+  },
+  "homepageFooter": {
+    "linksCompanies": "Công ty"
   }
 }

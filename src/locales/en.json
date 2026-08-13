@@ -2099,7 +2099,9 @@
     "enterprise": "Enterprise",
     "companies": "Companies",
     "companyDetails": "Company details",
-    "jobDetails": "Job details"
+    "jobDetails": "Job details",
+    "defaultLocation": "Ho Chi Minh City",
+    "quickFilter": "Quick filter"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -7627,6 +7629,13 @@
     "exploreNow": "Explore now",
     "heroTitle": "Discover top companies",
     "heroSubtitle": "Browse and connect with leading employers",
-    "searchPlaceholder": "Search companies..."
+    "searchPlaceholder": "Search companies...",
+    "industryLabel": "Industry:",
+    "industriesLabel": "Industries",
+    "allIndustries": "All",
+    "openRolesCount": "{{count}} opportunities"
+  },
+  "homepageFooter": {
+    "linksCompanies": "Companies"
   }
 }
