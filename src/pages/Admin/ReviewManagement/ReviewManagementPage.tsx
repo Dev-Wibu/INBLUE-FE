@@ -147,7 +147,26 @@ export function ReviewManagementPage() {
     }
   };
 
-  if (id && activeReview) {
+  if (id) {
+    if (isLoading) {
+      return (
+        <div className="flex h-64 items-center justify-center">
+          <SpinnerBlock label={t("common.loadingData", "Đang tải dữ liệu...")} />
+        </div>
+      );
+    }
+    if (!activeReview) {
+      return (
+        <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-sm font-semibold text-slate-500">
+            {t("common.noDataAvailable", "Không tìm thấy thông tin đánh giá này.")}
+          </p>
+          <Button variant="outline" size="sm" onClick={() => navigate("/admin/reviews")}>
+            {t("common.back", "Quay lại danh sách")}
+          </Button>
+        </div>
+      );
+    }
     return (
       <ReviewDetailView
         review={activeReview}

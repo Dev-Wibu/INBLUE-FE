@@ -366,6 +366,7 @@ export function AdminDashboardPage() {
             <Route path="sessions/create" element={<SessionFormPage />} />
             <Route path="sessions/:id" element={<SessionFormPage />} />
             <Route path="reviews" element={<ReviewManagementPage />} />
+            <Route path="reviews/:id" element={<ReviewManagementPage />} />
             <Route path="feedback" element={<FeedbackManagementPage />} />
             <Route path="notifications" element={<NotificationManagementPage />} />
             <Route path="questionBanks" element={<QuestionBankManagementPage />} />
