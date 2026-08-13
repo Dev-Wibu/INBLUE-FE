@@ -1,18 +1,12 @@
 import { lazy, Suspense } from "react";
-import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
-  ScrollRestoration,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthLayout } from "@/components/layouts";
 import {
   ProtectedRoute,
   PublicOnlyRoute,
+  ScrollRestorationLegacy,
   ScrollToTop,
   SessionExpiryGuard,
 } from "@/components/shared";
@@ -136,7 +130,7 @@ function App() {
           <SessionExpiryGuard />
           <ScrollToTop />
           <PublicScrollToTopButton />
-          <ScrollRestoration getKey={(location) => location.key} />
+          <ScrollRestorationLegacy />
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<HomePage />} />
