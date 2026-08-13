@@ -503,8 +503,8 @@ export function ApplicationWorkspacePage() {
       {/* Centered application header */}
       <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1428]/95">
         <div className="mx-auto grid min-h-[76px] w-full max-w-[1700px] grid-cols-[minmax(120px,1fr)_auto_minmax(120px,1fr)] items-center gap-4 px-4 py-3 sm:grid-cols-[minmax(200px,1fr)_auto_minmax(200px,1fr)] sm:px-6 lg:px-8">
-          {/* Back navigation & Candidate Info for Admin */}
-          <div className="flex items-center gap-3">
+          {/* Back navigation & Application ID */}
+          <div className="flex items-center gap-2.5">
             <Button
               variant="outline"
               size="sm"
@@ -515,7 +515,7 @@ export function ApplicationWorkspacePage() {
                   navigate("/user?tab=applicationHistory");
                 }
               }}
-              className="group h-10 gap-1.5 rounded-xl border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:pr-3 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              className="group h-10 gap-1.5 rounded-xl border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-xs transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:pr-3 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
               <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               <span className="hidden sm:inline">
                 {isAdmin
@@ -524,71 +524,83 @@ export function ApplicationWorkspacePage() {
               </span>
             </Button>
 
-            {isAdmin && (
-              <div className="hidden h-10 items-center gap-2.5 rounded-xl border border-slate-300 bg-white px-3 py-1 text-slate-800 shadow-xs sm:flex dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-200">
-                <CandidateAvatar
-                  avatarUrl={candidateInfo?.avatarUrl}
-                  name={candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
-                  className="h-7 w-7 rounded-lg border border-slate-200/60 dark:border-slate-700/60"
-                  textClassName="text-xs font-bold"
-                />
-                <div className="flex flex-col text-left leading-tight">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] font-extrabold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
-                      Ứng viên:
-                    </span>
-                    <span className="max-w-[140px] truncate text-xs font-bold text-slate-900 dark:text-white">
-                      {candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
-                    </span>
-                  </div>
-                  {candidateInfo?.email && (
-                    <span className="max-w-[170px] truncate text-[10px] text-slate-500 dark:text-slate-400">
-                      {candidateInfo.email}
-                    </span>
-                  )}
-                </div>
-              </div>
+            {isAdmin && app?.id && (
+              <span className="hidden rounded-lg border border-slate-200/80 bg-slate-100/80 px-2.5 py-1 font-mono text-xs font-semibold text-slate-600 sm:inline dark:border-slate-800 dark:bg-slate-800/70 dark:text-slate-300">
+                #{app.id}
+              </span>
             )}
           </div>
 
           {/* Centered application identity */}
           <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
-            <CompanyAvatar
-              logoUrl={jdInfo?.logoUrl}
-              companyName={jdInfo?.companyName}
-              className="hidden h-10 w-10 rounded-xl border-indigo-500/20 bg-indigo-500/10 text-sm sm:flex"
-            />
+            {isAdmin ? (
+              <CandidateAvatar
+                avatarUrl={candidateInfo?.avatarUrl}
+                name={candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
+                className="hidden h-10 w-10 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-sm shadow-xs sm:flex"
+              />
+            ) : (
+              <CompanyAvatar
+                logoUrl={jdInfo?.logoUrl}
+                companyName={jdInfo?.companyName}
+                className="hidden h-10 w-10 rounded-xl border-indigo-500/20 bg-indigo-500/10 text-sm sm:flex"
+              />
+            )}
+
             <div className="max-w-[min(68vw,720px)] min-w-0">
-              <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
-                {jdInfo?.companyName && (
-                  <span className="text-indigo-600 dark:text-indigo-300">{jdInfo.companyName}</span>
-                )}
-                {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
-                <span>
-                  {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
-                </span>
-              </h1>
+              {isAdmin ? (
+                <>
+                  <div className="flex items-center justify-center gap-2">
+                    <h1 className="truncate text-base font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
+                      {candidateInfo?.name || `Ứng viên #${applicationId}`}
+                    </h1>
+                    <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-extrabold text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-300">
+                      Ứng viên
+                    </span>
+                  </div>
+                  <div className="mt-0.5 flex flex-wrap items-center justify-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                    {jdInfo?.companyName && (
+                      <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                        {jdInfo.companyName}
+                      </span>
+                    )}
+                    {jdInfo?.companyName && <span>·</span>}
+                    <span className="truncate">{jdInfo?.title ?? "Vị trí ứng tuyển"}</span>
+                    {candidateInfo?.email && <span className="hidden sm:inline">·</span>}
+                    {candidateInfo?.email && (
+                      <span className="hidden font-mono text-[11px] text-slate-400 sm:inline dark:text-slate-500">
+                        {candidateInfo.email}
+                      </span>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
+                  {jdInfo?.companyName && (
+                    <span className="text-indigo-600 dark:text-indigo-300">
+                      {jdInfo.companyName}
+                    </span>
+                  )}
+                  {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
+                  <span>
+                    {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+                  </span>
+                </h1>
+              )}
             </div>
           </div>
 
-          {/* Refresh action & Mobile Candidate avatar */}
-          <div className="flex min-w-0 items-center justify-end gap-2">
-            {isAdmin && candidateInfo?.name && (
-              <div className="flex items-center gap-1.5 sm:hidden">
-                <CandidateAvatar
-                  avatarUrl={candidateInfo.avatarUrl}
-                  name={candidateInfo.name}
-                  className="h-8 w-8 rounded-full"
-                />
-              </div>
-            )}
+          {/* Refresh action & Application Status */}
+          <div className="flex min-w-0 items-center justify-end gap-2.5">
+            {app?.status && <ApplicationStatusBadge status={app.status} />}
+
             <Button
               variant="outline"
               size="sm"
               onClick={loadData}
               title={t("userApplicationhistory.reload", "Làm mới")}
               aria-label={t("userApplicationhistory.reload", "Làm mới")}
-              className="group h-10 w-10 rounded-xl border-slate-300 bg-white p-0 text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              className="group h-10 w-10 rounded-xl border-slate-300 bg-white p-0 text-slate-700 shadow-xs transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
               <RotateCw className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
               <span className="sr-only">{t("userApplicationhistory.reload", "Làm mới")}</span>
             </Button>
