@@ -219,19 +219,25 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
 
   return (
     <>
-      {/* Two-column layout: media column is fixed-height (h-full, never grows
-          with the body); content column is flex-1 with internal scroll.
-          Flex (not grid) is critical here — a CSS grid would give both
-          columns the height of the taller column, which would make the
-          image column grow with the body. With flex, only the right column
-          grows. overflow-hidden on the root prevents any inner overflow
-          from leaking into the dashboard scroll.
+      {/* Two-column layout: media column is fixed-height (never grows with
+          the body); content column is flex-1 with internal scroll.
 
-          We use h-full because this page is rendered inside the dashboard
-          shell (UserDashboardPage / MentorDashboardPage / StaffDashboardPage),
-          which already sizes its main content area to the viewport minus
-          the dashboard header + sidebar. */}
-      <div className="flex h-full w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+          We use absolute inset-0 here so the page is locked to the
+          parent content area regardless of how the dashboard shell
+          computes its height. The parent (dashboard content area) is
+          already position:relative and has flex-1 in its column, so
+          absolute inset-0 fills it exactly. Without absolute, h-full
+          would inherit zero height from grandparents that have no
+          explicit height (e.g. a flex-1 column whose parent has no
+          fixed height) and the page would then be sized by its
+          content, restoring the page-level scroll.
+
+          Flex (not grid) is critical here: a CSS grid would give both
+          columns the height of the taller column, which would make the
+          image column grow with the body. With flex, only the right
+          column grows. overflow-hidden on the root prevents any inner
+          overflow from leaking into the dashboard scroll. */}
+      <div className="absolute inset-0 flex overflow-hidden bg-slate-50 dark:bg-slate-950">
         {/* LEFT — media canvas (fixed height, never scrolls).
             min-h-0 + h-full explicitly forbids growing with the body.
             w-[55%] is responsive; min-w-0 allows the section to shrink
@@ -521,7 +527,7 @@ function DetailShellSkeleton({
   backToFeedLabel: string;
 }) {
   return (
-    <div className="flex h-full w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="absolute inset-0 flex overflow-hidden bg-slate-50 dark:bg-slate-950">
       <section className="relative hidden h-full min-h-0 w-[55%] shrink-0 items-center justify-center bg-slate-950 lg:flex">
         <Skeleton className="h-3/4 w-3/4 rounded-xl bg-slate-800/60" />
         <button

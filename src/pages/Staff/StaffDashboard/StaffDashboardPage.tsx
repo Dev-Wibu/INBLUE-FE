@@ -270,10 +270,13 @@ export function StaffDashboardPage() {
         <div
           ref={handleContentRef}
           className={cn(
-            "flex-1",
+            "relative min-h-0 flex-1",
             // Home feed detail page is its own two-column layout that must
             // fill the content area edge-to-edge with no padding and no
-            // page-level scroll. h-full inside the page depends on this.
+            // page-level scroll. The page uses absolute inset-0 to lock
+            // its size to this container, so we need position:relative
+            // here and we must not let min-height:auto (default) let the
+            // page grow with content.
             location.pathname.startsWith("/staff/home/")
               ? "overflow-hidden p-0"
               : "overflow-auto p-4 md:p-6 lg:p-8"
