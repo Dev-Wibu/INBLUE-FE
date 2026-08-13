@@ -1314,7 +1314,7 @@ export function MessengerPage() {
 
         {shouldShowConversation && (
           <section
-            className="bg-background relative flex min-h-0 flex-col"
+            className="relative flex min-h-0 flex-col bg-slate-50 dark:bg-slate-900"
             onTouchStart={handleConversationTouchStart}
             onTouchEnd={handleConversationTouchEnd}>
             {selectedContact ? (

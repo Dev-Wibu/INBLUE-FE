@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, Building2, DollarSign, FileCheck, Gift, Sparkles, Tag } from "lucide-react";
+import { Briefcase, Building2, FileCheck, Gift, Sparkles, Tag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescriptionFormData, JobDescriptionLevel, JobDescriptionStatus } from "../types";
 
@@ -316,10 +316,9 @@ export function JobDescriptionFormDialog({
                 <Label
                   htmlFor="jd-salary-min"
                   className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {t("adminCompanymanagement.minimumWage", "Lương tối thiểu")}
+                  {t("adminCompanymanagement.minimumWage", "Minimum wage")}
                 </Label>
                 <div className="relative">
-                  <DollarSign className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                   <Input
                     id="jd-salary-min"
                     type="number"
@@ -332,8 +331,11 @@ export function JobDescriptionFormDialog({
                       })
                     }
                     placeholder="0"
-                    className="h-9 border-slate-200 pl-8 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
+                    className="h-9 border-slate-200 pr-12 pl-3 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
                   />
+                  <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[11px] font-semibold text-slate-400">
+                    VND
+                  </span>
                 </div>
               </div>
 
@@ -341,10 +343,9 @@ export function JobDescriptionFormDialog({
                 <Label
                   htmlFor="jd-salary-max"
                   className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {t("adminCompanymanagement.maximumSalary", "Lương tối đa")}
+                  {t("adminCompanymanagement.maximumSalary", "Maximum salary")}
                 </Label>
                 <div className="relative">
-                  <DollarSign className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                   <Input
                     id="jd-salary-max"
                     type="number"
@@ -357,8 +358,11 @@ export function JobDescriptionFormDialog({
                       })
                     }
                     placeholder="0"
-                    className="h-9 border-slate-200 pl-8 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
+                    className="h-9 border-slate-200 pr-12 pl-3 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
                   />
+                  <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[11px] font-semibold text-slate-400">
+                    VND
+                  </span>
                 </div>
               </div>
             </div>
@@ -389,7 +393,7 @@ export function JobDescriptionFormDialog({
                 <Label
                   htmlFor="jd-price"
                   className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {t("adminCompanymanagement.packagePrice", "Giá gói mua (VNĐ)")}
+                  {t("adminCompanymanagement.packagePrice", "Package price")}
                 </Label>
                 <div className="relative">
                   <Tag className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
@@ -404,9 +408,12 @@ export function JobDescriptionFormDialog({
                         price: e.target.value === "" ? undefined : Number(e.target.value),
                       })
                     }
-                    placeholder={t("adminCompanymanagement.zeroEqualsFree", "0 = Miễn phí")}
-                    className="h-9 border-slate-200 pl-8 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
+                    placeholder={t("adminCompanymanagement.zeroEqualsFree", "0 = Free")}
+                    className="h-9 border-slate-200 pr-12 pl-8 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
                   />
+                  <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[11px] font-semibold text-slate-400">
+                    VND
+                  </span>
                 </div>
               </div>
             </div>
