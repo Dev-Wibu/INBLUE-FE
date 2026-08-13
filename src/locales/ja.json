@@ -2101,7 +2101,15 @@
     "writeACommentCtrlEnter": "コメントを書いてください...（Ctrl+Enterで投稿）",
     "writeArticles": "記事を書く",
     "searchComments": "内容または投稿者名でコメントを検索...",
-    "youHaveReadTheEntire": "記事を最後まで読みました。"
+    "youHaveReadTheEntire": "記事を最後まで読みました。",
+    "feedDetail": {
+      "backToFeed": "フィードに戻る",
+      "media": "投稿メディア",
+      "postNotFound": "この投稿は見つかりませんでした。",
+      "postNotFoundHint": "削除されたか、閲覧する権限がない可能性があります。",
+      "invalidPostId": "無効な投稿IDです。",
+      "noMediaAttached": "この投稿にはメディアが添付されていません。"
+    }
   },
   "compReview": {
     "action": "アクション",

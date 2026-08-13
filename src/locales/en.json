@@ -2164,7 +2164,15 @@
     "writeACommentCtrlEnter": "Write a comment... (Ctrl+Enter to post)",
     "writeArticles": "Write articles",
     "searchComments": "Search comments by content or author name...",
-    "youHaveReadTheEntire": "You have read the entire article."
+    "youHaveReadTheEntire": "You have read the entire article.",
+    "feedDetail": {
+      "backToFeed": "Back to feed",
+      "media": "Post media",
+      "postNotFound": "This post could not be found.",
+      "postNotFoundHint": "It may have been removed or you may not have permission to view it.",
+      "invalidPostId": "Invalid post id.",
+      "noMediaAttached": "This post has no media attached."
+    }
   },
   "compReview": {
     "action": "Action",
