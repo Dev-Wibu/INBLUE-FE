@@ -274,12 +274,12 @@ export function MentorReviewAssignmentPage() {
     <div
       className={cn(
         "flex flex-col bg-slate-50 dark:bg-slate-950",
-        "-m-4 h-[calc(100%+32px)] overflow-hidden md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]"
+        "-m-4 min-h-[calc(100%+32px)] md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)]"
       )}>
       {/* Content */}
-      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
         {/* Stat Summary, Search & Tabs (fixed at top) */}
-        <div className="flex-none p-5 pb-0 sm:p-6 sm:pb-0 md:px-8 md:pb-0">
+        <div className="m-4 mb-0 sm:m-6 sm:mb-0 lg:m-8 lg:mb-0">
           <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
               <div>
@@ -462,8 +462,8 @@ export function MentorReviewAssignmentPage() {
           </div>
         </div>
 
-        {/* Table card (card sizes to content; if many rows, the inner area scrolls) */}
-        <div className="p-5 pt-4 sm:p-6 sm:pt-4 md:px-8 md:pt-4">
+        {/* Table content (sized to content; flex-1 lets it grow but pagination stays visible) */}
+        <div className="flex flex-1 flex-col overflow-auto bg-slate-50 p-5 pt-4 sm:p-6 sm:pt-4 md:px-8 dark:bg-slate-950">
           {isLoading ? (
             <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <SpinnerBlock label={t("common.loading")} />
@@ -495,9 +495,8 @@ export function MentorReviewAssignmentPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              {/* Scrollable table body */}
-              <div className="max-h-[calc(100vh-22rem)] overflow-auto">
+            <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-col duration-300">
+              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 {/* Table header */}
                 <div className="text-muted-foreground sticky top-0 z-10 hidden border-b bg-gray-100/70 px-4 py-2 text-xs font-semibold tracking-wider uppercase backdrop-blur-sm sm:grid sm:grid-cols-12 sm:gap-2 sm:px-4 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
                   <div className="sm:col-span-4">{t("adminMentorReviewAssignment.candidate")}</div>

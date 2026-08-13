@@ -5,6 +5,7 @@ import {
   type SidebarMenuGroup,
 } from "@/components/shared";
 import { useSettingsStore } from "@/stores/settingsStore";
+import type { TFunction } from "i18next";
 import {
   Bell,
   Building2,
@@ -48,8 +49,10 @@ import { SessionFormPage, SessionManagementPage } from "../SessionManagement";
 import { UserManagementPage } from "../UserManagement";
 import { AdminHeader } from "./components/AdminHeader";
 
-// Local helper accepts the i18next TFunction signature (with optional fallback)
-type TranslateFn = (key: string, fallback?: string) => string;
+// Local helper accepts the i18next TFunction. The full TFunction type has many
+// overloads (with/without default value, with/without options, key arrays, etc.)
+// so we expose only the parts the sidebar actually uses.
+type TranslateFn = TFunction;
 const getSidebarMenuGroups = (t: TranslateFn): SidebarMenuGroup[] => [
   {
     items: [
