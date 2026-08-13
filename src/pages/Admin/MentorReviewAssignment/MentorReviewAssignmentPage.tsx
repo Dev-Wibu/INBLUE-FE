@@ -55,7 +55,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-type StatusFilter = "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED";
+type StatusFilter = "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "ALL";
 
 type AdminDetailItem = AdminApplicationDetailResponse;
 
@@ -173,23 +173,29 @@ export function MentorReviewAssignmentPage() {
   const counts = useMemo(() => {
     let awaitingMentor = 0;
     let awaitingCandidateSelect = 0;
-    let slotPicked = 0;
     for (const d of applicationDetails) {
       if (d.status === "AWAITING_MENTOR") awaitingMentor++;
       else if (d.status === "AWAITING_CANDIDATE_SELECT_MENTOR") awaitingCandidateSelect++;
-      else if (d.status === "SLOT_PICKED") slotPicked++;
     }
     return {
       awaitingMentor,
       awaitingCandidateSelect,
-      slotPicked,
+      all: awaitingMentor + awaitingCandidateSelect,
     };
   }, [applicationDetails]);
 
   const filteredDetails = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
-    const byStatus = applicationDetails.filter((detail) => detail.status === statusFilter);
+    const byStatus = applicationDetails.filter((detail) => {
+      if (statusFilter === "ALL") {
+        return (
+          detail.status === "AWAITING_MENTOR" ||
+          detail.status === "AWAITING_CANDIDATE_SELECT_MENTOR"
+        );
+      }
+      return detail.status === statusFilter;
+    });
 
     if (!q) return [...byStatus].sort(sortByOldestFirst);
 
@@ -355,11 +361,7 @@ export function MentorReviewAssignmentPage() {
                 t("adminMentorReviewAssignment.filterAwaitingCandidateSelect", "Chờ UV chọn"),
                 counts.awaitingCandidateSelect,
               ],
-              [
-                "SLOT_PICKED",
-                t("adminMentorReviewAssignment.filterSlotPicked", "Đã chọn lịch"),
-                counts.slotPicked,
-              ],
+              ["ALL", t("adminMentorReviewAssignment.filterAll", "Tất cả"), counts.all],
             ].map(([value, label, count]) => (
               <button
                 key={value as string}
