@@ -48,34 +48,46 @@ function formatDate(s?: string | Date) {
 }
 
 /**
- * Smart Component: Measures exact DOM pixel overflow (scrollWidth > clientWidth)
- * to only enable hover text marquee scroll when text is ACTUALLY truncated on screen.
+ * Smart Component: Calculates exact pixel difference (scrollWidth - clientWidth)
+ * to smoothly translate 100% of the text to its very last character on hover,
+ * with uniform reading speed.
  */
 function TruncatedScrollText({ text }: { text: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   const checkOverflow = () => {
     if (containerRef.current && textRef.current) {
-      setIsOverflowing(textRef.current.scrollWidth > containerRef.current.clientWidth);
+      const diff = textRef.current.scrollWidth - containerRef.current.clientWidth;
+      setScrollOffset(diff > 0 ? diff + 16 : 0);
     }
   };
 
   useEffect(() => {
     checkOverflow();
-    window.addEventListener("resize", checkOverflow);
-    return () => window.removeEventListener("resize", checkOverflow);
+    const handleResize = () => checkOverflow();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [text]);
 
+  const isOverflowing = scrollOffset > 0;
+  const durationMs = Math.max(3000, Math.round(scrollOffset * 25));
+
   return (
-    <div ref={containerRef} className="group/scroll relative w-full overflow-hidden">
+    <div
+      ref={containerRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative w-full overflow-hidden">
       <div
-        className={`whitespace-nowrap ${
-          isOverflowing
-            ? "transition-transform duration-[8000ms] ease-linear group-hover/scroll:-translate-x-full"
-            : ""
-        }`}>
+        className="inline-block whitespace-nowrap transition-transform ease-linear"
+        style={{
+          transform:
+            isHovered && isOverflowing ? `translateX(-${scrollOffset}px)` : "translateX(0px)",
+          transitionDuration: isHovered && isOverflowing ? `${durationMs}ms` : "300ms",
+        }}>
         <span
           ref={textRef}
           className={`text-sm font-bold text-slate-900 dark:text-slate-100 ${
