@@ -33,7 +33,8 @@
       "sessionDetails": "Chi tiết phiên phỏng vấn"
     },
     "dragRoundsInstruction": "Kéo các vòng từ cột bên trái và thả vào đây để thiết lập",
-    "editRecruitmentPipeline": "Chỉnh sửa quy trình vòng tuyển dụng"
+    "editRecruitmentPipeline": "Chỉnh sửa quy trình vòng tuyển dụng",
+    "templateDetail": "Chi tiết mẫu"
   },
   "adminAccount": {
     "accountRoleAdmin": "Quản trị viên hệ thống",
@@ -223,7 +224,17 @@
     "kioskStationWithId": "Trạm Kiosk #{{id}}",
     "locationNotUpdated": "Chưa cập nhật vị trí",
     "timeSlotsCount": "{{count}} khung giờ",
-    "showingFilteredKiosks": "Hiển thị {{filtered}} / {{total}} trạm Kiosk"
+    "showingFilteredKiosks": "Hiển thị {{filtered}} / {{total}} trạm Kiosk",
+    "kioskDetail": "Chi tiết Kiosk",
+    "selectTime": "Chọn thời gian",
+    "hoursShort": "h",
+    "minutesShortLabel": "p",
+    "loadingKiosks": "Đang tải Kiosk...",
+    "weeklySchedule": "Lịch hàng tuần",
+    "weeklyScheduleDescription": "Xem và quản lý lịch hàng tuần",
+    "scheduleCount": "Số lịch",
+    "totalKiosks": "Tổng số Kiosk",
+    "activeKiosks": "Kiosk đang hoạt động"
   },
   "adminMentorReviewAssignment": {
     "pageTitle": "Phân công Mentor Review",
@@ -354,7 +365,12 @@
     "noRoundDetails": "Chưa có kết quả vòng thi chi tiết.",
     "notFound": "Không tìm thấy thông tin đơn ứng tuyển.",
     "strengths": "Điểm mạnh:",
-    "weaknesses": "Cần cải thiện:"
+    "weaknesses": "Cần cải thiện:",
+    "codeReviewSubmission": "Bài nộp Chấm điểm Code",
+    "issuesUnit": "vấn đề",
+    "mentorReview": "Đánh giá Mentor",
+    "aiScore": "Điểm AI",
+    "hrScore": "Điểm HR"
   },
   "adminCompanymanagement": {
     "addNewPartnerDescription": "Điền thông tin chi tiết để thêm đối tác doanh nghiệp mới vào hệ thống",
@@ -566,7 +582,20 @@
     "unpaidText": "Chưa thanh toán",
     "selectCompany": "Chọn công ty",
     "chooseCompany": "Chọn công ty...",
-    "price": "Giá JD"
+    "price": "Giá JD",
+    "jdDetail": "Chi tiết JD",
+    "companyDetail": "Chi tiết công ty",
+    "totalCompanies": "Tổng số công ty",
+    "activeCompanies": "Công ty đang hoạt động",
+    "totalJds": "Tổng số JD",
+    "editCompanyTitle": "Chỉnh sửa công ty",
+    "editCompanyDesc": "Cập nhật thông tin công ty",
+    "jdsCount": "Số JD",
+    "activeJds": "JD đang hoạt động",
+    "closedJds": "JD đã đóng",
+    "searchJd": "Tìm JD",
+    "totalTemplates": "Tổng số mẫu",
+    "categoryCount": "Số danh mục"
   },
   "adminDashboardoverview": {
     "companies": "Doanh nghiệp",
@@ -624,7 +653,8 @@
     "days": "ngày",
     "latestTransactionsIn": "Giao dịch mới nhất trong",
     "noTrendDataAvailable": "Không có dữ liệu xu hướng",
-    "applications": "Đơn ứng tuyển"
+    "applications": "Đơn ứng tuyển",
+    "generatedAt": "Tạo lúc"
   },
   "adminFeedbackmanagement": {
     "areYouSureYouWant": "Bạn có chắc chắn muốn xóa phản hồi #",
@@ -632,7 +662,9 @@
     "noResponsesFoundMatchingThe": "Không tìm thấy phản hồi nào phù hợp với bộ lọc.",
     "searchByCandidateNameMentor": "Tìm theo tên ứng viên, mentor, nội dung...",
     "seeTheListOfResponses": "Xem danh sách phản hồi ứng viên gửi cho mentor",
-    "thisActionIsImpossibleUndo": "? Hành động này không thể hoàn tác."
+    "thisActionIsImpossibleUndo": "? Hành động này không thể hoàn tác.",
+    "totalResponses": "Tổng phản hồi",
+    "averageRating": "Đánh giá trung bình"
   },
   "adminMentormanagement": {
     "activate": "kích hoạt",
@@ -673,7 +705,13 @@
     "confirmDisableDescription": "Bạn có chắc muốn vô hiệu hóa mentor \"{{name}}\"? Họ sẽ không thể đăng nhập hay nhận yêu cầu phỏng vấn.",
     "confirmActivateDescription": "Bạn có chắc muốn kích hoạt lại mentor \"{{name}}\"? Họ sẽ có thể đăng nhập và nhận yêu cầu phỏng vấn trở lại.",
     "confirmDisableAction": "Vô hiệu hóa",
-    "confirmActivateAction": "Kích hoạt"
+    "confirmActivateAction": "Kích hoạt",
+    "mentorDetail": "Chi tiết Mentor",
+    "mentorProfileOverview": "Tổng quan hồ sơ Mentor",
+    "overviewDescription": "Xem thông tin chi tiết về Mentor này",
+    "totalMentors": "Tổng số Mentor",
+    "activeMentors": "Mentor đang hoạt động",
+    "specialties": "Chuyên môn"
   },
   "adminNotificationmanagement": {
     "chooseFromTemplateOptional": "Chọn từ mẫu (tùy chọn)",
@@ -713,7 +751,8 @@
     "yourAccountHasBeenRecorded": "Tài khoản của bạn đã bị ghi nhận vi phạm chính sách sử dụng. Vui lòng kiểm tra và tuân thủ các quy định để tránh bị khóa tài khoản.",
     "yourInterviewSessionHasBeen": "Phiên phỏng vấn của bạn đã được xác nhận",
     "yourServicePackageWillExpire": "Gói dịch vụ của bạn sẽ hết hạn trong 3 ngày nữa. Vui lòng gia hạn để tiếp tục sử dụng đầy đủ các tính năng.",
-    "thereAreNoNotificationsMatchingThe": "Không có thông báo phù hợp"
+    "thereAreNoNotificationsMatchingThe": "Không có thông báo phù hợp",
+    "totalNotifications": "Tổng thông báo"
   },
   "adminPostmanagement": {
     "allCards": "Tất cả thẻ",
@@ -751,7 +790,8 @@
     "unableToDetermineAuthor": "Không thể xác định tác giả của bài viết hiện tại.",
     "loadingArticleList": "Đang tải danh sách bài viết",
     "noArticlesFoundMatchingTheSelected": "Không tìm thấy bài viết phù hợp",
-    "showingResultsFor": "Hiển thị kết quả cho"
+    "showingResultsFor": "Hiển thị kết quả cho",
+    "totalArticles": "Tổng bài viết"
   },
   "adminPracticequestionmanagement": {
     "addNewQuestion": "Thêm Câu Hỏi Mới",
@@ -904,7 +944,10 @@
     "weakness": "Điểm yếu",
     "starMethodEvaluation": "Đánh giá theo phương pháp STAR",
     "feedbackAndImprovement": "Phản hồi và cải thiện",
-    "showingFilteredResults": "Hiển thị {{filtered}} / {{total}} kết quả"
+    "showingFilteredResults": "Hiển thị {{filtered}} / {{total}} kết quả",
+    "reviewDetail": "Chi tiết đánh giá",
+    "totalReviews": "Tổng đánh giá",
+    "averageRating": "Đánh giá trung bình"
   },
   "adminSessionmanagement": {
     "expertise": "Chuyên môn",
@@ -1041,7 +1084,8 @@
     "lastUpdated": "Cập nhật lần cuối",
     "editCandidateProfile": "Chỉnh sửa Hồ sơ Ứng viên",
     "createCandidateProfile": "Tạo mới Hồ sơ Ứng viên",
-    "candidateProfileDescription": "Cập nhật các thông tin chi tiết về kỹ năng, dự án, học vấn..."
+    "candidateProfileDescription": "Cập nhật các thông tin chi tiết về kỹ năng, dự án, học vấn...",
+    "userDetail": "Chi tiết người dùng"
   },
   "authForgotpasswordpage": {
     "step1Badge": "Bước 1 · Nhập email",
@@ -1520,7 +1564,6 @@
     "level": "Cấp độ",
     "linkedinLink": "Đường dẫn LinkedIn",
     "linkedinProfile": "Hồ sơ LinkedIn",
-    "list": "Danh sách",
     "listOfQuestions": "Danh mục câu hỏi",
     "loadingCompanyInformation": "Đang tải thông tin công ty...",
     "localComputer": "Local (máy tính)",
@@ -1948,7 +1991,6 @@
     "difficultyHardEmoji": "🔴 Khó",
     "selectedColon": "Đã chọn:",
     "explanationShort": "Giải thích",
-    "backToList": "Quay lại danh sách",
     "problemCount": "bài",
     "description": "Mô tả",
     "orOpen": "hoặc mở",
@@ -2035,7 +2077,24 @@
     "backToTheSession": "Về session",
     "star": "Phương pháp STAR",
     "studentInformation": "Thông tin học viên / ứng viên",
-    "tryAgain": "Thử lại"
+    "tryAgain": "Thử lại",
+    "interviewTipTitle": "Mẹo phỏng vấn",
+    "interviewTipDesc": "Chuẩn bị cho buổi phỏng vấn sắp tới",
+    "reviewAndFeedback": "Đánh giá & Phản hồi",
+    "total": "Tổng",
+    "clickToDisable": "Bấm để vô hiệu hóa",
+    "clickToEnable": "Bấm để kích hoạt",
+    "yearsExp": "năm kinh nghiệm",
+    "searchJdByTitleOrCompany": "Tìm JD theo tiêu đề hoặc công ty",
+    "reloadTheReviewList": "Tải lại danh sách đánh giá",
+    "selectProfile": "Chọn hồ sơ",
+    "previousMonth": "Tháng trước",
+    "previous": "Trước",
+    "field": "Lĩnh vực",
+    "enterprise": "Doanh nghiệp",
+    "companies": "Công ty",
+    "companyDetails": "Chi tiết công ty",
+    "jobDetails": "Chi tiết công việc"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -2170,7 +2229,11 @@
       "noMediaAttached": "Bài viết này không có hình ảnh đính kèm.",
       "seeMore": "Xem thêm",
       "showLess": "Thu gọn"
-    }
+    },
+    "createNewPost": "Tạo bài viết mới",
+    "shareKnowledgeNotice": "Chia sẻ kiến thức của bạn với cộng đồng",
+    "contentPlaceholder": "Bạn đang nghĩ gì?",
+    "approvalNotice": "Bài viết của bạn sẽ được duyệt trước khi đăng"
   },
   "compReview": {
     "action": "Hành động (Action)",
@@ -2257,7 +2320,6 @@
     "insertEmojis": "Chèn emoji",
     "quickEmoji": "Emoji nhanh",
     "pageOf": "Trang {{current}}/{{total}}",
-    "go": "\u0110i",
     "nextPageTitle": "Trang sau",
     "lastPage": "Trang cuối",
     "linkCopied": "Đã sao chép liên kết",
@@ -3050,7 +3112,8 @@
     "difficulty": "Độ khó",
     "jobPosition": "Vị trí ứng tuyển",
     "optional": "[VI] general.optional",
-    "unableToGetAnalyticsData": "[VI] general.unableToGetAnalyticsData"
+    "unableToGetAnalyticsData": "[VI] general.unableToGetAnalyticsData",
+    "backToCompanyList": "Quay lại danh sách công ty"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50+ Mentor chuyên nghiệp",
@@ -3655,7 +3718,8 @@
     "unpin": "Bỏ ghim",
     "unpinnedMessage": "Đã bỏ ghim tin nhắn",
     "youCanChooseAMentor": "Bạn có thể chọn mentor để bắt đầu cuộc trò chuyện mới.",
-    "youHaveANewMessage": "Bạn có tin nhắn mới"
+    "youHaveANewMessage": "Bạn có tin nhắn mới",
+    "noContacts": "Chưa có liên hệ nào"
   },
   "sharedSpeechplaygroundpage": {
     "1ChooseVietnameseTestThe": "1. Chọn Tiếng Việt, test lại cùng 1 câu với 2 engine Web Speech/ResponsiveVoice.",
@@ -3942,7 +4006,8 @@
     "bio": "Tiểu sử",
     "socialLinks": "Liên kết mạng xã hội",
     "aiOptimizationTips": "Mẹo tối ưu từ AI",
-    "completeProfileTip": "Hoàn thiện hồ sơ để thu hút nhiều học viên hơn."
+    "completeProfileTip": "Hoàn thiện hồ sơ để thu hút nhiều học viên hơn.",
+    "editProfile": "Chỉnh sửa hồ sơ"
   },
   "userAiinterview": {
     "14Days": "14 Ngày",
@@ -4176,7 +4241,11 @@
     "youHaveDeniedCameraPermission": "Bạn đã từ chối quyền camera. Có thể tiếp tục phỏng vấn mà không bật camera.",
     "yourAnswer": "Câu trả lời của bạn",
     "yourCamera": "Camera của bạn",
-    "yourProfileIsReadyYou": "Hồ sơ của bạn đã sẵn sàng. Bạn có thể chỉnh sửa nếu cần."
+    "yourProfileIsReadyYou": "Hồ sơ của bạn đã sẵn sàng. Bạn có thể chỉnh sửa nếu cần.",
+    "aiInterviewHeading": "Phỏng vấn AI",
+    "totalSessions": "Tổng số buổi",
+    "highestScore": "Điểm cao nhất",
+    "activeSessionsCount": "Buổi đang hoạt động"
   },
   "userApplicationhistory": {
     "tableHeaderId": "#ID",
@@ -4735,7 +4804,10 @@
     "mentorSession": "[VI] userApplicationhistory.mentorSession",
     "competencyReportNode": "Báo cáo năng lực",
     "finalSummary": "Tổng kết AI",
-    "completeAllRoundsToUnlock": "Hoàn tất tất cả vòng để mở"
+    "completeAllRoundsToUnlock": "Hoàn tất tất cả vòng để mở",
+    "reportLoadError": "Không thể tải báo cáo",
+    "reportNotReadyTitle": "Báo cáo chưa sẵn sàng",
+    "reportNotReadyDesc": "Báo cáo năng lực của bạn đang được chuẩn bị"
   },
   "userApplication": {
     "applicationWorkspacePage": {
@@ -5328,7 +5400,29 @@
       "collapse": "Thu gọn",
       "totalQuestions": "Tổng số câu hỏi",
       "questionsCount": "{{count}} câu hỏi",
-      "termsCount": "{{count}} thuật ngữ"
+      "termsCount": "{{count}} thuật ngữ",
+      "resultPassed": "Đã đạt",
+      "resultConsider": "Đang xem xét",
+      "resultCompleted": "Đã hoàn thành",
+      "pinDialogNote": "Lưu mã PIN này, bạn sẽ cần nó tại kiosk",
+      "importantKeywords": "Từ khóa quan trọng",
+      "standardAnswerOutline": "Dàn ý trả lời mẫu",
+      "coreKeywords": "Từ khóa cốt lõi",
+      "totalQuestionsLabel": "Tổng số câu hỏi",
+      "questionsUnit": "câu hỏi",
+      "bookingConfirmed": "Đã xác nhận đặt lịch",
+      "copyFailed": "Sao chép thất bại",
+      "selectKiosk": "Chọn kiosk",
+      "cannotLoadKiosks": "Không thể tải kiosk",
+      "noKiosksAvailable": "Không có kiosk khả dụng",
+      "kiosksNotConfigured": "Kiosk chưa được cấu hình",
+      "kioskSchedule": "Lịch kiosk",
+      "cannotLoadSlots": "Không thể tải khung giờ",
+      "noSlotsForDay": "Không có khung giờ cho ngày này",
+      "kioskPinCode": "Mã PIN kiosk",
+      "keepPinHint": "Giữ mã PIN cẩn thận",
+      "kioskOnlyNote": "Buổi phỏng vấn này chỉ có thể thực hiện tại kiosk",
+      "confirmBooking": "Xác nhận đặt lịch"
     },
     "codeReview": {
       "roundHeader": "VÒNG {{round}}: CODE REVIEW • HƯỚNG DẪN LÀM BÀI",
@@ -5353,7 +5447,7 @@
       "severityInfo": "Thông tin",
       "severityInfoDesc": "Góp ý nhỏ (Code smell, Refactor, Naming, Format)",
       "submitting": "Đang nộp...",
-      "submitReview": "Submit Review",
+      "submitReview": "Nộp bài Review",
       "submitReviewCount": "Submit Review ({{count}} issues)",
       "problemDescription": "Problem Description",
       "examples": "Examples",
@@ -5362,10 +5456,10 @@
       "codeLine": "Code Line",
       "linesCount": "dòng",
       "charsCount": "ký tự",
-      "severity": "Severity",
+      "severity": "Mức độ:",
       "issueDescription": "Mô tả",
       "issueDescriptionPlaceholder": "e.g. SQL Injection: using Statement + string concat instead of PreparedStatement...",
-      "saveChanges": "Save changes",
+      "saveChanges": "Lưu thay đổi",
       "addIssue": "Thêm Issue",
       "emptyState": "This round has no Code Review problem",
       "noFiles": "Không có file nào được cung cấp cho bài tập này.",
@@ -5462,23 +5556,18 @@
       "criteriaAnalysisTitle": "Phân tích tiêu chí chi tiết",
       "statBarsLabel": "THÔNG SỐ",
       "requirementsLabel": "Yêu cầu Code Review:",
-      "lines": "dòng",
       "characters": "ký tự",
       "problemList": "Danh sách bài:",
       "summary": "Tổng kết:",
       "issues": "Issues",
       "problems": "bài",
       "deleteDraft": "Xóa draft bài này",
-      "submitReview": "Nộp bài Review",
       "edit": "Sửa",
       "delete": "Xóa",
       "editCommentOnLine": "Chỉnh sửa nhận xét trên dòng {{line}}",
       "addCommentOnLine": "Thêm nhận xét trên dòng {{line}}",
-      "severity": "Mức độ:",
       "descriptionPlaceholder": "Mô tả chi tiết vấn đề (ví dụ: Thiếu kiểm tra null, SQL Injection, N+1 query...)",
       "saveHint": "Nhấn Ctrl + Enter (hoặc ⌘ + Enter) để lưu nhanh",
-      "cancel": "Hủy",
-      "saveChanges": "Lưu thay đổi",
       "addComment": "Thêm nhận xét",
       "line": "Dòng"
     },
@@ -6337,7 +6426,10 @@
     "hideAiGen": "Ẩn Sinh AI",
     "createAi": "Tạo AI",
     "noQuestionsInCategory": "Chưa có câu hỏi nào trong chuyên mục này.",
-    "addCodeHereComment": "// Thêm mã nguồn tại đây"
+    "addCodeHereComment": "// Thêm mã nguồn tại đây",
+    "reactivatedSuccess": "Đã kích hoạt lại câu hỏi",
+    "totalQuestions": "Tổng số câu hỏi",
+    "categoryCount": "Số danh mục"
   },
   "adminCodingProblem": {
     "updateSuccess": "Cập nhật bài tập thành công!",
@@ -6785,7 +6877,9 @@
       "reminderTitle": "Lưu ý cho Staff",
       "reminderDesc": "Khi ứng viên hoàn tất phỏng vấn AI, hệ thống sẽ tự động chấm điểm. Kết quả (AI Score, AI Feedback) sẽ hiển thị tại đây. Bạn chỉ cần xác nhận điểm HR và đưa ra nhận xét cuối cùng.",
       "waitingForResult": "Chờ kết quả từ hệ thống AI..."
-    }
+    },
+    "gradeResult": "Kết quả chấm",
+    "gradeScore": "Điểm chấm"
   },
   "quiz": {
     "submitSuccess": "Nộp bài quiz thành công!",
@@ -7365,7 +7459,6 @@
     "jdPurchaseTransaction": "Giao dịch",
     "jdPurchaseStatus": "Trạng thái",
     "jdPurchaseTotalAmount": "Thành tiền",
-    "jdPurchaseDate": "Ngày mua",
     "jdPurchaseExpiry": "Hạn",
     "jdPurchaseHistoryDescription": "Quản lý và xem lại lịch sử các gói JD đã mua",
     "jdPurchaseTransactionsCount": "{{count}} giao dịch",
@@ -7503,5 +7596,38 @@
     "skill_Software_Security": "Bảo mật phần mềm",
     "skill_Communication_Skills": "Kỹ năng giao tiếp",
     "skill_Work_Ethic": "Tinh thần làm việc"
+  },
+  "cvViewerCollapse": "Thu gọn",
+  "cvViewerExpand": "Mở rộng",
+  "cvViewerOpenNewTab": "Mở tab mới",
+  "cvViewerCannotPreview": "Không thể xem trước tệp này",
+  "cvViewerDownloadView": "Tải về để xem",
+  "pendingAicvGrading": "Đang chờ chấm CV bằng AI",
+  "pendingAicvGradingHint": "Các đơn này đang chờ AI chấm CV",
+  "noAicvSubmissionContent": "Không có nội dung CV nộp cho AI",
+  "resultPassBadge": "ĐẠT",
+  "resultFailBadge": "KHÔNG ĐẠT",
+  "waitingForStaffGrade": "Đang chờ Staff chấm",
+  "aiReference": "Tham khảo từ AI",
+  "staffGradeResultTitle": "Kết quả chấm của Staff",
+  "staffGradeWorkspaceTitle": "Không gian chấm của Staff",
+  "staffGradeResultDesc": "Xem kết quả chấm của Staff",
+  "staffGradeWorkspaceDesc": "Chấm đơn này với vai trò Staff",
+  "staffGradeNote": "Ghi chú chấm của Staff",
+  "applicationId": "Mã đơn",
+  "roundDetailId": "Mã chi tiết vòng",
+  "submissionTime": "Thời gian nộp",
+  "resultPass": "Đạt",
+  "resultFail": "Không đạt",
+  "useAiScore": "Dùng điểm AI",
+  "adminApplicationmanagement": {
+    "title": "Quản lý đơn"
+  },
+  "userCompanies": {
+    "noDescription": "Không có mô tả",
+    "exploreNow": "Khám phá ngay",
+    "heroTitle": "Khám phá các công ty hàng đầu",
+    "heroSubtitle": "Duyệt và kết nối với các nhà tuyển dụng hàng đầu",
+    "searchPlaceholder": "Tìm công ty..."
   }
 }

@@ -35,7 +35,8 @@
       "strategy": "Strategy"
     },
     "dragRoundsInstruction": "Drag rounds from the left panel and drop here to configure",
-    "editRecruitmentPipeline": "Edit Recruitment Pipeline"
+    "editRecruitmentPipeline": "Edit Recruitment Pipeline",
+    "templateDetail": "Template detail"
   },
   "adminAccount": {
     "accountRoleAdmin": "Platform Administrator",
@@ -225,7 +226,17 @@
     "kioskStationWithId": "Kiosk Station #{{id}}",
     "locationNotUpdated": "Location not updated",
     "timeSlotsCount": "{{count}} time slots",
-    "showingFilteredKiosks": "Showing {{filtered}} / {{total}} Kiosk stations"
+    "showingFilteredKiosks": "Showing {{filtered}} / {{total}} Kiosk stations",
+    "kioskDetail": "Kiosk detail",
+    "selectTime": "Select time",
+    "hoursShort": "h",
+    "minutesShortLabel": "m",
+    "loadingKiosks": "Loading kiosks...",
+    "weeklySchedule": "Weekly schedule",
+    "weeklyScheduleDescription": "View and manage weekly schedule",
+    "scheduleCount": "Schedule count",
+    "totalKiosks": "Total kiosks",
+    "activeKiosks": "Active kiosks"
   },
   "adminMentorReviewAssignment": {
     "pageTitle": "Mentor Review Assignment",
@@ -356,7 +367,12 @@
     "noRoundDetails": "No detailed round results available yet.",
     "notFound": "Application details not found.",
     "strengths": "Strengths:",
-    "weaknesses": "Areas for Improvement:"
+    "weaknesses": "Areas for Improvement:",
+    "codeReviewSubmission": "Code Review Submission",
+    "issuesUnit": "issues",
+    "mentorReview": "Mentor Review",
+    "aiScore": "AI Score",
+    "hrScore": "HR Score"
   },
   "adminCompanymanagement": {
     "addNewPartnerDescription": "Fill in details to add a new corporate partner to the system",
@@ -568,7 +584,20 @@
     "unpaidText": "Unpaid",
     "selectCompany": "Select company",
     "chooseCompany": "Choose company...",
-    "price": "Price"
+    "price": "Price",
+    "jdDetail": "JD detail",
+    "companyDetail": "Company detail",
+    "totalCompanies": "Total companies",
+    "activeCompanies": "Active companies",
+    "totalJds": "Total JDs",
+    "editCompanyTitle": "Edit company",
+    "editCompanyDesc": "Update company information",
+    "jdsCount": "JDs count",
+    "activeJds": "Active JDs",
+    "closedJds": "Closed JDs",
+    "searchJd": "Search JD",
+    "totalTemplates": "Total templates",
+    "categoryCount": "Category count"
   },
   "adminDashboardoverview": {
     "companies": "Companies",
@@ -626,7 +655,8 @@
     "days": "days",
     "latestTransactionsIn": "Latest transactions in",
     "noTrendDataAvailable": "No trend data available",
-    "applications": "Applications"
+    "applications": "Applications",
+    "generatedAt": "Generated at"
   },
   "adminFeedbackmanagement": {
     "areYouSureYouWant": "Are you sure you want to delete response #",
@@ -634,7 +664,9 @@
     "noResponsesFoundMatchingThe": "No responses found matching the filter.",
     "searchByCandidateNameMentor": "Search by candidate name, mentor, content...",
     "seeTheListOfResponses": "See the list of responses candidates sent to mentors",
-    "thisActionIsImpossibleUndo": "? This action is impossible undo."
+    "thisActionIsImpossibleUndo": "? This action is impossible undo.",
+    "totalResponses": "Total responses",
+    "averageRating": "Average rating"
   },
   "adminMentormanagement": {
     "activate": "activate",
@@ -675,7 +707,13 @@
     "confirmDisableDescription": "Are you sure you want to disable \"{{name}}\"? They will no longer be able to log in or accept interview requests.",
     "confirmActivateDescription": "Are you sure you want to activate \"{{name}}\"? They will be able to log in and accept interview requests again.",
     "confirmDisableAction": "Disable",
-    "confirmActivateAction": "Activate"
+    "confirmActivateAction": "Activate",
+    "mentorDetail": "Mentor detail",
+    "mentorProfileOverview": "Mentor profile overview",
+    "overviewDescription": "View detailed information about this mentor",
+    "totalMentors": "Total mentors",
+    "activeMentors": "Active mentors",
+    "specialties": "Specialties"
   },
   "adminNotificationmanagement": {
     "chooseFromTemplateOptional": "Choose from template (optional)",
@@ -715,7 +753,8 @@
     "yourAccountHasBeenRecorded": "Your account has been recorded for violating the usage policy. Please check and comply with the regulations to avoid having your account locked.",
     "yourInterviewSessionHasBeen": "Your interview session has been confirmed",
     "yourServicePackageWillExpire": "Your service package will expire in 3 days. Please renew to continue using full features.",
-    "thereAreNoNotificationsMatchingThe": "There are no notifications matching"
+    "thereAreNoNotificationsMatchingThe": "There are no notifications matching",
+    "totalNotifications": "Total notifications"
   },
   "adminPostmanagement": {
     "allCards": "All cards",
@@ -753,7 +792,8 @@
     "unableToDetermineAuthor": "Unable to determine the author of the current post.",
     "loadingArticleList": "Loading article list",
     "noArticlesFoundMatchingTheSelected": "No articles found matching",
-    "showingResultsFor": "Showing results for"
+    "showingResultsFor": "Showing results for",
+    "totalArticles": "Total articles"
   },
   "adminPracticequestionmanagement": {
     "addNewQuestion": "Add New Question",
@@ -909,7 +949,10 @@
     "weakness": "Weakness",
     "starMethodEvaluation": "STAR method evaluation",
     "feedbackAndImprovement": "Feedback and improvement",
-    "showingFilteredResults": "Showing {{filtered}} / {{total}} results"
+    "showingFilteredResults": "Showing {{filtered}} / {{total}} results",
+    "reviewDetail": "Review detail",
+    "totalReviews": "Total reviews",
+    "averageRating": "Average rating"
   },
   "adminSessionmanagement": {
     "expertise": "Expertise",
@@ -1046,7 +1089,8 @@
     "lastUpdated": "Last Updated",
     "editCandidateProfile": "Edit Candidate Profile",
     "createCandidateProfile": "Create Candidate Profile",
-    "candidateProfileDescription": "Update details regarding skills, projects, education..."
+    "candidateProfileDescription": "Update details regarding skills, projects, education...",
+    "userDetail": "User detail"
   },
   "authForgotpasswordpage": {
     "step1Badge": "Step 1 · Enter email",
@@ -1525,7 +1569,6 @@
     "level": "Level",
     "linkedinLink": "LinkedIn link",
     "linkedinProfile": "LinkedIn profile",
-    "list": "List",
     "listOfQuestions": "List of questions",
     "loadingCompanyInformation": "Loading company information...",
     "localComputer": "Local (computer)",
@@ -1953,7 +1996,6 @@
     "difficultyHardEmoji": "🔴 Hard",
     "selectedColon": "Selected:",
     "explanationShort": "Explanation",
-    "backToList": "Back to list",
     "problemCount": "problem",
     "description": "Description",
     "orOpen": "or open",
@@ -2040,7 +2082,24 @@
     "backToTheSession": "Back to the session",
     "star": "STAR Method",
     "studentInformation": "Student / Candidate Information",
-    "tryAgain": "Try Again"
+    "tryAgain": "Try Again",
+    "interviewTipTitle": "Interview Tips",
+    "interviewTipDesc": "Prepare for your upcoming interview",
+    "reviewAndFeedback": "Review & Feedback",
+    "total": "Total",
+    "clickToDisable": "Click to disable",
+    "clickToEnable": "Click to enable",
+    "yearsExp": "years experience",
+    "searchJdByTitleOrCompany": "Search JD by title or company",
+    "reloadTheReviewList": "Reload review list",
+    "selectProfile": "Select profile",
+    "previousMonth": "Previous month",
+    "previous": "Previous",
+    "field": "Field",
+    "enterprise": "Enterprise",
+    "companies": "Companies",
+    "companyDetails": "Company details",
+    "jobDetails": "Job details"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -2175,7 +2234,11 @@
       "noMediaAttached": "This post has no media attached.",
       "seeMore": "See more",
       "showLess": "Show less"
-    }
+    },
+    "createNewPost": "Create new post",
+    "shareKnowledgeNotice": "Share your knowledge with the community",
+    "contentPlaceholder": "What's on your mind?",
+    "approvalNotice": "Your post will be reviewed before publishing"
   },
   "compReview": {
     "action": "Action",
@@ -2255,7 +2318,6 @@
     "go": "Go",
     "fullScreenViewerForPhotos": "Full-screen viewer for photos, PDFs, and documents (",
     "goToPage": "Go to page",
-    "go": "Go",
     "holdTheStickyPlusButton": "Hold the sticky plus button on the right edge in full mode",
     "iHaveReadAndConfirmed": "I have read and confirmed this information.",
     "iSuggestWeDiscussFurther": "I suggest we discuss further at the next suitable time frame.",
@@ -3054,7 +3116,8 @@
     "difficulty": "Difficulty",
     "jobPosition": "Job Position",
     "optional": "Optional",
-    "unableToGetAnalyticsData": "Unable to get analytics data"
+    "unableToGetAnalyticsData": "Unable to get analytics data",
+    "backToCompanyList": "Back to company list"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50+ professional Mentors",
@@ -3659,7 +3722,8 @@
     "unpin": "Unpin",
     "unpinnedMessage": "Unpinned message",
     "youCanChooseAMentor": "You can choose a mentor to start a new conversation.",
-    "youHaveANewMessage": "You have a new message"
+    "youHaveANewMessage": "You have a new message",
+    "noContacts": "No contacts yet"
   },
   "sharedSpeechplaygroundpage": {
     "1ChooseVietnameseTestThe": "1. Choose Vietnamese, test the same sentence again with 2 Web Speech/ResponsiveVoice engines.",
@@ -3946,7 +4010,8 @@
     "bio": "Bio",
     "socialLinks": "Social links",
     "aiOptimizationTips": "AI optimization tips",
-    "completeProfileTip": "Complete your profile to attract more students."
+    "completeProfileTip": "Complete your profile to attract more students.",
+    "editProfile": "Edit profile"
   },
   "userAiinterview": {
     "14Days": "14 Days",
@@ -4180,7 +4245,11 @@
     "youHaveDeniedCameraPermission": "You have denied camera permission. The interview can continue without turning on the camera.",
     "yourAnswer": "Your answer",
     "yourCamera": "Your camera",
-    "yourProfileIsReadyYou": "Your profile is ready. You can edit if needed."
+    "yourProfileIsReadyYou": "Your profile is ready. You can edit if needed.",
+    "aiInterviewHeading": "AI Interview",
+    "totalSessions": "Total sessions",
+    "highestScore": "Highest score",
+    "activeSessionsCount": "Active sessions"
   },
   "userApplicationhistory": {
     "tableHeaderId": "#ID",
@@ -4739,7 +4808,10 @@
     "mentorSession": "Mentor Session",
     "competencyReportNode": "Competency Report",
     "finalSummary": "AI Summary",
-    "completeAllRoundsToUnlock": "Complete all rounds to unlock"
+    "completeAllRoundsToUnlock": "Complete all rounds to unlock",
+    "reportLoadError": "Cannot load report",
+    "reportNotReadyTitle": "Report not ready",
+    "reportNotReadyDesc": "Your competency report is being prepared"
   },
   "userApplication": {
     "applicationWorkspacePage": {
@@ -5335,7 +5407,27 @@
       "questionsUnit": "questions",
       "coreKeywords": "Core Keywords",
       "termsCount": "{{count}} terms",
-      "termsUnit": "terms"
+      "termsUnit": "terms",
+      "resultPassed": "Passed",
+      "resultConsider": "Under consideration",
+      "resultCompleted": "Completed",
+      "pinDialogNote": "Save this PIN, you will need it at the kiosk",
+      "importantKeywords": "Important keywords",
+      "standardAnswerOutline": "Standard answer outline",
+      "totalQuestionsLabel": "Total questions",
+      "bookingConfirmed": "Booking confirmed",
+      "copyFailed": "Copy failed",
+      "selectKiosk": "Select kiosk",
+      "cannotLoadKiosks": "Cannot load kiosks",
+      "noKiosksAvailable": "No kiosks available",
+      "kiosksNotConfigured": "Kiosks not configured",
+      "kioskSchedule": "Kiosk schedule",
+      "cannotLoadSlots": "Cannot load slots",
+      "noSlotsForDay": "No slots for this day",
+      "kioskPinCode": "Kiosk PIN code",
+      "keepPinHint": "Keep this PIN safe",
+      "kioskOnlyNote": "This interview can only be done at a kiosk",
+      "confirmBooking": "Confirm booking"
     },
     "codeReview": {
       "roundHeader": "ROUND {{round}}: CODE REVIEW • EXAM INSTRUCTIONS",
@@ -5369,7 +5461,7 @@
       "codeLine": "Code Line",
       "linesCount": "lines",
       "charsCount": "chars",
-      "severity": "Severity",
+      "severity": "Severity:",
       "issueDescription": "Description",
       "issueDescriptionPlaceholder": "e.g. SQL Injection: using Statement + string concat instead of PreparedStatement...",
       "saveChanges": "Save changes",
@@ -5469,23 +5561,18 @@
       "criteriaAnalysisTitle": "Detailed Criteria Analysis",
       "statBarsLabel": "STAT BARS",
       "requirementsLabel": "Code Review Requirements:",
-      "lines": "lines",
       "characters": "characters",
       "problemList": "Problem list:",
       "summary": "Summary:",
       "issues": "Issues",
       "problems": "problems",
       "deleteDraft": "Delete this draft",
-      "submitReview": "Submit Review",
       "edit": "Edit",
       "delete": "Delete",
       "editCommentOnLine": "Edit comment on line {{line}}",
       "addCommentOnLine": "Add comment on line {{line}}",
-      "severity": "Severity:",
       "descriptionPlaceholder": "Describe the issue in detail (e.g.: Missing null check, SQL Injection, N+1 query...)",
       "saveHint": "Press Ctrl + Enter (or ⌘ + Enter) to save quickly",
-      "cancel": "Cancel",
-      "saveChanges": "Save changes",
       "addComment": "Add comment",
       "line": "Line"
     },
@@ -6341,7 +6428,10 @@
     "hideAiGen": "Hide AI Generator",
     "createAi": "Generate AI",
     "noQuestionsInCategory": "No questions in this category yet.",
-    "addCodeHereComment": "// Add source code here"
+    "addCodeHereComment": "// Add source code here",
+    "reactivatedSuccess": "Question reactivated successfully",
+    "totalQuestions": "Total questions",
+    "categoryCount": "Category count"
   },
   "adminCodingProblem": {
     "updateSuccess": "Problem updated successfully!",
@@ -6786,7 +6876,9 @@
       "reminderTitle": "Note for Staff",
       "reminderDesc": "When the candidate completes the AI interview, the system will automatically grade. The results (AI Score, AI Feedback) will be displayed here. You only need to confirm the HR score and provide your final comments.",
       "waitingForResult": "Waiting for results from AI system..."
-    }
+    },
+    "gradeResult": "Grade result",
+    "gradeScore": "Grade score"
   },
   "quiz": {
     "submitSuccess": "Quiz submitted successfully!",
@@ -7366,7 +7458,6 @@
     "jdPurchaseTransaction": "Transaction",
     "jdPurchaseStatus": "Status",
     "jdPurchaseTotalAmount": "Total Amount",
-    "jdPurchaseDate": "Purchase Date",
     "jdPurchaseExpiry": "Expires",
     "jdPurchaseHistoryDescription": "Manage and review your JD package purchase history",
     "jdPurchaseTransactionsCount": "{{count}} transactions",
@@ -7504,5 +7595,38 @@
     "skill_Software_Security": "Software Security",
     "skill_Communication_Skills": "Communication Skills",
     "skill_Work_Ethic": "Work Ethic"
+  },
+  "cvViewerCollapse": "Collapse",
+  "cvViewerExpand": "Expand",
+  "cvViewerOpenNewTab": "Open in new tab",
+  "cvViewerCannotPreview": "Cannot preview this file",
+  "cvViewerDownloadView": "Download to view",
+  "pendingAicvGrading": "Pending AI CV grading",
+  "pendingAicvGradingHint": "These applications are waiting for AI to grade their CV",
+  "noAicvSubmissionContent": "No AI CV submission content",
+  "resultPassBadge": "PASS",
+  "resultFailBadge": "FAIL",
+  "waitingForStaffGrade": "Waiting for staff grade",
+  "aiReference": "AI Reference",
+  "staffGradeResultTitle": "Staff grade result",
+  "staffGradeWorkspaceTitle": "Staff grade workspace",
+  "staffGradeResultDesc": "View staff grading results",
+  "staffGradeWorkspaceDesc": "Grade this application as staff",
+  "staffGradeNote": "Staff grade note",
+  "applicationId": "Application ID",
+  "roundDetailId": "Round detail ID",
+  "submissionTime": "Submission time",
+  "resultPass": "Pass",
+  "resultFail": "Fail",
+  "useAiScore": "Use AI score",
+  "adminApplicationmanagement": {
+    "title": "Application Management"
+  },
+  "userCompanies": {
+    "noDescription": "No description",
+    "exploreNow": "Explore now",
+    "heroTitle": "Discover top companies",
+    "heroSubtitle": "Browse and connect with leading employers",
+    "searchPlaceholder": "Search companies..."
   }
 }
