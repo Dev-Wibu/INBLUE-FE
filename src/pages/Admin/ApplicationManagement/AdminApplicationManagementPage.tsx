@@ -797,10 +797,6 @@ export function AdminApplicationManagementPage() {
                       app.candidateName ||
                       app.applicantName ||
                       t("adminApplicationManagement.anonymousCandidate", "Ứng viên ẩn danh");
-                    const email =
-                      app.candidateEmail ||
-                      app.email ||
-                      t("adminApplicationManagement.noEmail", "Chưa có email");
                     const avatarUrl = app.avatarUrl || app.applicantAvatar;
                     const companyName = app.companyName || t("common.unspecified", "Company");
                     const companyLogoUrl =
@@ -845,14 +841,9 @@ export function AdminApplicationManagementPage() {
                                 {name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div>
-                              <div className="text-xs font-semibold text-slate-900 dark:text-white">
-                                {name}
-                              </div>
-                              <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                                {email}
-                              </div>
-                            </div>
+                            <span className="text-xs font-semibold text-slate-900 dark:text-white">
+                              {name}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell className="py-4">
