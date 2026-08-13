@@ -222,27 +222,37 @@ export function QuestionBankManagementPage() {
         const res = await questionBankManager.toggleStatus(question.id, false);
         const serverState = (res.data as unknown as { isDeleted?: boolean })?.isDeleted;
         if (res.success) {
-          // Sync local state with whatever the server actually says we have.
-          const resolvedIsDeleted = typeof serverState === "boolean" ? serverState : false;
-          setQuestions((prev) =>
-            prev.map((q) =>
-              q.id === question.id ? ({ ...q, isDeleted: resolvedIsDeleted } as QuestionBank) : q
-            )
-          );
-          if (resolvedIsDeleted) {
-            // Server reported the field is still deleted - the user's intent
-            // didn't stick. Tell them, and refetch to make sure the UI matches
-            // the source of truth.
+          if (serverState === false) {
+            // The manager did its job - the server reports isDeleted=false.
+            setQuestions((prev) =>
+              prev.map((q) =>
+                q.id === question.id ? ({ ...q, isDeleted: false } as QuestionBank) : q
+              )
+            );
+            toast.success(
+              t("adminQuestionbankmanagement.reactivatedSuccess", "Đã kích hoạt lại câu hỏi")
+            );
+            return;
+          }
+          // serverState is still true: backend accepted the PUT but the
+          // field didn't change (confirmed live 2026-08 against the API).
+          // Wait a beat and refetch - sometimes a subsequent GET shows the
+          // change after the service's write-behind cache flushes.
+          await new Promise((r) => setTimeout(r, 600));
+          await fetchData();
+          // Re-read the question from the freshly fetched list and decide.
+          const refreshed = await questionBankManager.getById(question.id);
+          const finalState = (refreshed.data as unknown as { isDeleted?: boolean })?.isDeleted;
+          if (finalState === false) {
+            toast.success(
+              t("adminQuestionbankmanagement.reactivatedSuccess", "Đã kích hoạt lại câu hỏi")
+            );
+          } else {
             toast.error(
               t("adminQuestionbankmanagement.activateFailedPersist", {
                 defaultValue:
                   "Backend accepted the request but the question is still inactive. Please try again in a moment.",
               })
-            );
-            await fetchData();
-          } else {
-            toast.success(
-              t("adminQuestionbankmanagement.reactivatedSuccess", "Đã kích hoạt lại câu hỏi")
             );
           }
         } else {

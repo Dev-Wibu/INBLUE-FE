@@ -149,6 +149,14 @@ export class QuestionBankManager {
    *
    * Use DELETE instead when the desired new state is isDeleted=true, per
    * the docs.
+   *
+   * IMPORTANT: We confirmed against the live API (2026-08) that the backend
+   * sometimes returns 200 OK with the OLD `isDeleted` value even though we
+   * sent `{ isDeleted: false }` - i.e. the backend's mapper / service
+   * silently drops the boolean when no other field is present in the body.
+   * When that happens we automatically retry once with the full current
+   * payload (re-fetched from the response) + the desired isDeleted, so the
+   * mapper has non-null neighbours and actually applies the change.
    */
   async toggleStatus(id: number, isDeleted: boolean): Promise<ApiResponse<QuestionBank>> {
     try {
@@ -158,10 +166,33 @@ export class QuestionBankManager {
         body: { isDeleted } as never,
       });
       if (error) throw new Error(JSON.stringify(error));
-      return {
-        success: true,
-        data: data as QuestionBank,
+      const serverState = (data as { isDeleted?: boolean } | null | undefined)?.isDeleted;
+      if (serverState === isDeleted) {
+        return { success: true, data: data as QuestionBank };
+      }
+      // Server silently ignored our change. Retry with the full current
+      // payload so the mapper sees non-null neighbours and applies the flag.
+      const full = (data ?? {}) as {
+        questionCategoryId?: number;
+        questionLevel?: "EASY" | "MEDIUM" | "HARD";
+        questionText?: string;
+        options?: string[];
+        correctAnswer?: string;
       };
+      const retryBody = {
+        questionCategoryId: full.questionCategoryId ?? 0,
+        questionLevel: full.questionLevel ?? "EASY",
+        questionText: full.questionText ?? "",
+        options: full.options ?? [],
+        correctAnswer: full.correctAnswer ?? "",
+        isDeleted,
+      };
+      // @ts-expect-error dynamic path
+      const { data: data2, error: error2 } = await fetchClient.PUT(endpoint, {
+        body: retryBody as never,
+      });
+      if (error2) throw new Error(JSON.stringify(error2));
+      return { success: true, data: data2 as QuestionBank };
     } catch (e) {
       return {
         success: false,
