@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
 import { FinalCompetencyReportNodeView } from "./components/FinalCompetencyReportNodeView";
@@ -179,6 +179,8 @@ export function ApplicationWorkspacePage() {
   const { applicationId: appIdParam } = useParams<{ applicationId: string }>();
   const applicationId = Number(appIdParam);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith("/admin");
   const [searchParams] = useSearchParams();
   const shouldOpenCompetencyReport = searchParams.get("round") === "99";
 
@@ -329,8 +331,17 @@ export function ApplicationWorkspacePage() {
         <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
           {t("userApplicationhistory.noApplicationsYet", "Không tìm thấy đơn ứng tuyển")}
         </h2>
-        <Button onClick={() => navigate("/user?tab=applicationHistory")}>
-          {t("userApplicationhistory.allApplications", "Quay lại Lịch sử ứng tuyển")}
+        <Button
+          onClick={() => {
+            if (isAdmin) {
+              navigate("/admin/applications");
+            } else {
+              navigate("/user?tab=applicationHistory");
+            }
+          }}>
+          {isAdmin
+            ? t("adminApplicationmanagement.title", "Quản lý đơn ứng tuyển")
+            : t("userApplicationhistory.allApplications", "Quay lại Lịch sử ứng tuyển")}
         </Button>
       </div>
     );
@@ -389,11 +400,19 @@ export function ApplicationWorkspacePage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate("/user?tab=applicationHistory")}
+              onClick={() => {
+                if (isAdmin) {
+                  navigate("/admin/applications");
+                } else {
+                  navigate("/user?tab=applicationHistory");
+                }
+              }}
               className="group h-10 gap-1.5 rounded-xl border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:pr-3 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
               <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               <span className="hidden sm:inline">
-                {t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}
+                {isAdmin
+                  ? t("adminApplicationmanagement.title", "Quản lý đơn ứng tuyển")
+                  : t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}
               </span>
             </Button>
           </div>
