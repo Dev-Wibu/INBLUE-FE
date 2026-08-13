@@ -55,7 +55,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-type StatusFilter = "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "ALL";
+type StatusFilter = "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED";
 
 type AdminDetailItem = AdminApplicationDetailResponse;
 
@@ -180,7 +180,6 @@ export function MentorReviewAssignmentPage() {
       else if (d.status === "SLOT_PICKED") slotPicked++;
     }
     return {
-      all: applicationDetails.length,
       awaitingMentor,
       awaitingCandidateSelect,
       slotPicked,
@@ -190,10 +189,7 @@ export function MentorReviewAssignmentPage() {
   const filteredDetails = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
-    const byStatus = applicationDetails.filter((detail) => {
-      if (statusFilter === "ALL") return true;
-      return detail.status === statusFilter;
-    });
+    const byStatus = applicationDetails.filter((detail) => detail.status === statusFilter);
 
     if (!q) return [...byStatus].sort(sortByOldestFirst);
 
@@ -364,7 +360,6 @@ export function MentorReviewAssignmentPage() {
                 t("adminMentorReviewAssignment.filterSlotPicked", "Đã chọn lịch"),
                 counts.slotPicked,
               ],
-              ["ALL", t("adminMentorReviewAssignment.filterAll", "Tất cả đơn"), counts.all],
             ].map(([value, label, count]) => (
               <button
                 key={value as string}
