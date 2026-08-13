@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { Heart, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { components } from "../../../../schema-from-be";
 import { LikeButton } from "../LikeButton";
 import { LikeListModal } from "../LikeListModal";
@@ -21,6 +22,8 @@ interface PostFeedCardProps {
 export function PostFeedCard({ item }: PostFeedCardProps) {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
   const post = item.post;
   const postId = post?.postId ?? 0;
   const commentCount = item.commentCount ?? 0;
@@ -31,6 +34,18 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
   const likeCount = (item.likeCount ?? 0) + localLikeAdjust;
   const [modalOpen, setModalOpen] = useState(false);
   const [likeModalOpen, setLikeModalOpen] = useState(false);
+
+  // Navigate to the full-page detail view (User / Mentor / Staff).
+  // Falls back to the legacy Modal when the route segment can't be inferred.
+  const openDetailPage = () => {
+    if (!postId) return;
+    const roleSegment = location.pathname.match(/^\/(user|mentor|staff)(?:\/|$)/)?.[1];
+    if (roleSegment) {
+      navigate(`${roleSegment}/home-feed/${postId}`);
+      return;
+    }
+    setModalOpen(true);
+  };
 
   // Synchronized list of users who liked the post (excluding empty/null userNames)
   const rawLikers = (item.postLikes ?? []).filter(
@@ -91,10 +106,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
         </CardHeader>
 
         <CardContent className="space-y-3 px-5 pb-4">
-          <button
-            type="button"
-            className="block w-full text-left"
-            onClick={() => setModalOpen(true)}>
+          <button type="button" className="block w-full text-left" onClick={openDetailPage}>
             <h3 className="line-clamp-2 text-lg leading-snug font-extrabold tracking-tight text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-300">
               {post?.title}
             </h3>
@@ -131,7 +143,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
         {post?.coverImgUrl && (
           <div
             className="flex max-h-[720px] w-full cursor-pointer items-center justify-center overflow-hidden bg-slate-950/[0.04] dark:bg-black/20"
-            onClick={() => setModalOpen(true)}>
+            onClick={openDetailPage}>
             <img
               src={post.coverImgUrl}
               alt={post.title ?? ""}
@@ -181,7 +193,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
               <button
                 type="button"
                 className="text-muted-foreground ml-auto text-xs hover:underline"
-                onClick={() => setModalOpen(true)}>
+                onClick={openDetailPage}>
                 {localCommentCount} {t("general.comments")}
               </button>
             )}
@@ -208,7 +220,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
             variant="ghost"
             size="sm"
             className="flex-1 justify-center gap-1.5 rounded-xl text-sm font-semibold hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300"
-            onClick={() => setModalOpen(true)}>
+            onClick={openDetailPage}>
             <MessageCircle className="h-4 w-4" />
             <span>{t("common.comment1")}</span>
           </Button>
