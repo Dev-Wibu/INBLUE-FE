@@ -19,10 +19,10 @@ import {
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { SummaryResponse } from "@/interfaces";
-import { formatDateTime } from "@/lib/formatting";
+import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { interviewTemplateManager } from "@/services/interview-template.manager";
-import { Layers, LayoutTemplate, PlusCircle, RotateCcw, Search, Trash2 } from "lucide-react";
+import { LayoutTemplate, PlusCircle, RotateCcw, Search, Trash2 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -435,27 +435,27 @@ export function InterviewTemplateManagementPage() {
               <>
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-b border-slate-200 bg-slate-100/70 hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-800/60 dark:hover:bg-slate-800/60">
-                      <TableHead className="w-16 pl-6 text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                    <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                      <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                         {t("common.stt", "STT")}
                       </TableHead>
-                      <TableHead className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                      <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminInterviewTemplate.name", "Tên mẫu")}
                       </TableHead>
-                      <TableHead className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                      <TableHead className="w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminInterviewTemplate.category", "Danh mục")}
                       </TableHead>
-                      <TableHead className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                      <TableHead className="w-[110px] text-center font-semibold text-slate-700 dark:text-slate-200">
                         Số vòng
                       </TableHead>
-                      <TableHead className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                      <TableHead className="min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminInterviewTemplate.description", "Mô tả")}
                       </TableHead>
-                      <TableHead className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                      <TableHead className="w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                         {t("common.createdAt", "Ngày tạo")}
                       </TableHead>
-                      <TableHead className="w-[100px] pr-6 text-right text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
-                        {t("common.action", "Thao tác")}
+                      <TableHead className="w-[80px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        {t("common.delete", "Xóa")}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -469,45 +469,46 @@ export function InterviewTemplateManagementPage() {
                         extra.roundCount ??
                         extra.roundDetails?.length ??
                         0;
-                      const createdAtStr = extra.createdAt ? formatDateTime(extra.createdAt) : "—";
+                      const createdAtStr = extra.createdAt ? formatDate(extra.createdAt) : "—";
 
                       return (
                         <TableRow
                           key={tpl.id}
-                          className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-indigo-50/40 dark:border-slate-800/60 dark:hover:bg-slate-800/60"
+                          className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80"
                           onClick={() => navigate(`/admin/interviewTemplates/${tpl.id}`)}>
-                          <TableCell className="pl-6 font-mono text-xs font-bold text-slate-600 dark:text-slate-300">
-                            <span>{pagination.startIndex + idx + 1}</span>
+                          <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                            <span>#{pagination.startIndex + idx + 1}</span>
                           </TableCell>
-                          <TableCell className="font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+                          <TableCell className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-white">
                             {tpl.name}
                           </TableCell>
-                          <TableCell>
-                            <span className="inline-flex items-center rounded-md border border-indigo-200/80 bg-indigo-50/80 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
+                          <TableCell className="px-4 py-4">
+                            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-300">
                               {tpl.category || "Chung"}
                             </span>
                           </TableCell>
-                          <TableCell>
-                            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-100/80 px-2.5 py-1 text-xs font-bold text-slate-700 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200">
-                              <Layers className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
-                              {roundCount > 0 ? `${roundCount} vòng` : "Chưa cấu hình"}
+                          <TableCell className="px-4 py-4 text-center">
+                            <span className="inline-flex items-center justify-center rounded-md border border-slate-200/80 bg-slate-100/90 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-800 dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-200">
+                              {roundCount}
                             </span>
                           </TableCell>
-                          <TableCell className="max-w-[260px] truncate text-xs font-medium text-slate-700 dark:text-slate-300">
-                            {tpl.description || "—"}
+                          <TableCell className="max-w-xs px-4 py-4">
+                            <p className="line-clamp-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                              {tpl.description || "—"}
+                            </p>
                           </TableCell>
-                          <TableCell className="font-mono text-xs font-medium whitespace-nowrap text-slate-600 dark:text-slate-300">
+                          <TableCell className="px-4 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                             {createdAtStr}
                           </TableCell>
                           <TableCell
-                            className="pr-6 text-right"
+                            className="py-4 pr-6 text-center"
                             onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center justify-end">
+                            <div className="flex items-center justify-center">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={(e) => handleDeleteTemplate(tpl.id!, e)}
-                                className="h-8 w-8 p-0 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/50 dark:hover:text-rose-300"
+                                className="h-8.5 w-8.5 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/60 dark:hover:text-rose-300"
                                 title={t("common.delete", "Xóa")}>
                                 <Trash2 className="h-4 w-4" />
                                 <span className="sr-only">{t("common.delete", "Xóa")}</span>
