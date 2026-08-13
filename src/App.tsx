@@ -15,9 +15,15 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AdminDashboardPage } from "@/pages/Admin";
 import { ApplicationGradingDetailPage } from "@/pages/Admin/ApplicationGrading";
+import { AdminApplicationDetailPage } from "@/pages/Admin/ApplicationManagement/AdminApplicationDetailPage";
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage, SignupPage } from "@/pages/Auth";
 import { PlaygroundPage } from "@/pages/Dev/Playground/PlaygroundPage";
-import { CompanyDetailPage, CompanySearchPage, JobDescriptionDetailPage } from "@/pages/Enterprise";
+import {
+  CompanyDetailPage,
+  CompanySearchPage,
+  JobDescriptionDetailPage,
+  JobSearchPage,
+} from "@/pages/Enterprise";
 import {
   ForbiddenPage,
   GatewayTimeoutPage,
@@ -146,10 +152,7 @@ function App() {
             <Route path="/questions/tips" element={<InterviewTipsPage />} />
 
             {/* Enterprise Simulation pages (public) */}
-            <Route
-              path="/enterprise/jobs"
-              element={<Navigate to="/user?tab=jobSearch" replace />}
-            />
+            <Route path="/enterprise/jobs" element={<JobSearchPage />} />
             <Route path="/enterprise/companies" element={<CompanySearchPage />} />
             <Route path="/enterprise/company/:id" element={<CompanyDetailPage />} />
             <Route path="/enterprise/job/:id" element={<JobDescriptionDetailPage />} />
@@ -399,6 +402,10 @@ function App() {
 
             {/* Admin Management routes */}
             <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+              <Route
+                path="/admin/applications/:applicationId/details"
+                element={<AdminApplicationDetailPage />}
+              />
               <Route path="/admin/*" element={<AdminDashboardPage />} />
               <Route
                 path="/admin/application-grading/:appId"

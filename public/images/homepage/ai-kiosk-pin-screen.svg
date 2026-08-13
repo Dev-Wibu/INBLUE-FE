@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1918" height="934" viewBox="0 0 1918 934" role="img" aria-labelledby="title desc">
+  <title id="title">INBLUE AI kiosk PIN screen</title>
+  <desc id="desc">Dark INBLUE kiosk PIN entry screen with brand panel, constellation background, time, lock icon, six PIN circles, and numeric keypad.</desc>
+  <defs>
+    <linearGradient id="leftPanel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#06152a"/>
+      <stop offset="0.5" stop-color="#071a33"/>
+      <stop offset="1" stop-color="#030713"/>
+    </linearGradient>
+    <linearGradient id="rightPanel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#070b18"/>
+      <stop offset="1" stop-color="#030713"/>
+    </linearGradient>
+    <radialGradient id="leftGlow" cx="43%" cy="43%" r="62%">
+      <stop offset="0" stop-color="#0f3b6d" stop-opacity="0.42"/>
+      <stop offset="0.48" stop-color="#092141" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#030713" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="112" height="112" patternUnits="userSpaceOnUse">
+      <path d="M112 0H0V112" fill="none" stroke="#243653" stroke-opacity="0.24" stroke-width="1"/>
+    </pattern>
+    <style>
+      .brand { font: 900 82px Inter, Arial, sans-serif; letter-spacing: -2px; }
+      .title { font: 800 48px Inter, Arial, sans-serif; }
+      .body { font: 600 22px Inter, Arial, sans-serif; }
+      .small { font: 700 18px Inter, Arial, sans-serif; }
+      .tiny { font: 800 13px Inter, Arial, sans-serif; letter-spacing: 5px; }
+      .mono { font: 800 24px "SFMono-Regular", Consolas, monospace; letter-spacing: 5px; }
+      .key { font: 900 38px Inter, Arial, sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1918" height="934" fill="#030713"/>
+  <rect x="0" y="0" width="916" height="902" fill="url(#leftPanel)"/>
+  <rect x="0" y="0" width="916" height="902" fill="url(#leftGlow)"/>
+  <rect x="916" y="0" width="1002" height="902" fill="url(#rightPanel)"/>
+  <rect x="916" y="0" width="1002" height="902" fill="url(#grid)" opacity="0.52"/>
+  <path d="M916 0V902" stroke="#25344b" stroke-width="1.5"/>
+  <path d="M0 902H1918" stroke="#1b2a40" stroke-width="1.5"/>
+
+  <g opacity="0.42" stroke="#85bdff" stroke-width="2" fill="#85bdff">
+    <path d="M105 89 211 168 64 282" opacity="0.34"/>
+    <circle cx="105" cy="89" r="3.5"/>
+    <circle cx="211" cy="168" r="4"/>
+    <circle cx="64" cy="282" r="3.5"/>
+    <path d="M607 53 622 94 626 167 630 187" opacity="0.55"/>
+    <path d="M607 53 734 70 813 42" opacity="0.32"/>
+    <circle cx="607" cy="53" r="5"/>
+    <circle cx="622" cy="94" r="5"/>
+    <circle cx="626" cy="167" r="4"/>
+    <circle cx="630" cy="187" r="4"/>
+    <circle cx="734" cy="70" r="4"/>
+    <circle cx="813" cy="42" r="4"/>
+    <path d="M39 537 169 483 212 530" opacity="0.4"/>
+    <circle cx="39" cy="537" r="4.5"/>
+    <circle cx="169" cy="483" r="3.5"/>
+    <circle cx="212" cy="530" r="3"/>
+    <path d="M307 400 437 378 528 423 506 509 358 522" opacity="0.28"/>
+    <path d="M437 378 443 472 506 509M358 522 443 472 528 423" opacity="0.48"/>
+    <circle cx="307" cy="400" r="4"/>
+    <circle cx="437" cy="378" r="5"/>
+    <circle cx="528" cy="423" r="3"/>
+    <circle cx="506" cy="509" r="5"/>
+    <circle cx="358" cy="522" r="4"/>
+    <circle cx="364" cy="552" r="3"/>
+    <path d="M614 567 689 465 754 464 818 522 848 568 754 601 649 605Z" opacity="0.42"/>
+    <path d="M689 465 649 605 754 601 754 464M818 522 754 601" opacity="0.3"/>
+    <circle cx="614" cy="567" r="3.5"/>
+    <circle cx="689" cy="465" r="3"/>
+    <circle cx="754" cy="464" r="4"/>
+    <circle cx="818" cy="522" r="4"/>
+    <circle cx="848" cy="568" r="3"/>
+    <circle cx="754" cy="601" r="3.5"/>
+    <circle cx="649" cy="605" r="3"/>
+    <path d="M356 784 450 700 572 760" opacity="0.42"/>
+    <circle cx="356" cy="784" r="3"/>
+    <circle cx="450" cy="700" r="4.5"/>
+    <circle cx="572" cy="760" r="3"/>
+    <path d="M789 865 851 773 828 890" opacity="0.42"/>
+    <circle cx="789" cy="865" r="3"/>
+    <circle cx="851" cy="773" r="4.5"/>
+    <circle cx="828" cy="890" r="4"/>
+    <circle cx="35" cy="897" r="2"/>
+  </g>
+
+  <text x="64" y="163" class="brand" fill="#9dccff">INBLUE</text>
+  <text x="64" y="250" class="title" fill="#ffffff">Phỏng Vấn</text>
+  <text x="64" y="308" class="title" fill="#ffffff">AI Tại Kiosk</text>
+  <rect x="64" y="339" width="166" height="40" rx="20" fill="#101827" stroke="#2b3b51"/>
+  <circle cx="87" cy="359" r="5" fill="#91caff"/>
+  <text x="103" y="366" class="small" fill="#9dccff">System Online</text>
+  <text x="665" y="99" class="mono" fill="#9dccff">13-08-2026</text>
+
+  <g transform="translate(1716 61)">
+    <rect width="150" height="52" rx="18" fill="#111827" stroke="#27364b"/>
+    <circle cx="33" cy="26" r="9" fill="none" stroke="#9dccff" stroke-width="2.5"/>
+    <path d="M33 17v9l7 4" fill="none" stroke="#9dccff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="58" y="35" class="mono" fill="#f5f7fb">20:30</text>
+  </g>
+
+  <g transform="translate(1396 133)" fill="none" stroke="#9dccff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 0a19 19 0 0 1 19 19v20h-38v-20a19 19 0 0 1 19-19z"/>
+    <rect x="-10" y="38" width="58" height="46" rx="8"/>
+  </g>
+  <text x="1196" y="226" class="body" fill="#b7bdc8">Nhập mã PIN 6 số từ lịch hẹn của bạn để bắt đầu.</text>
+
+  <g transform="translate(1212 266)">
+    <circle cx="25" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
+    <circle cx="98" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
+    <circle cx="171" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
+    <circle cx="244" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
+    <circle cx="317" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
+    <circle cx="390" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
+  </g>
+
+  <g transform="translate(1222 356)">
+    <g fill="#111827" stroke="#27364b" stroke-width="1.5">
+      <rect width="113" height="89" rx="16"/>
+      <rect x="140" width="113" height="89" rx="16"/>
+      <rect x="280" width="113" height="89" rx="16"/>
+      <rect y="117" width="113" height="89" rx="16"/>
+      <rect x="140" y="117" width="113" height="89" rx="16"/>
+      <rect x="280" y="117" width="113" height="89" rx="16"/>
+      <rect y="234" width="113" height="89" rx="16"/>
+      <rect x="140" y="234" width="113" height="89" rx="16"/>
+      <rect x="280" y="234" width="113" height="89" rx="16"/>
+      <rect y="351" width="113" height="89" rx="16"/>
+      <rect x="140" y="351" width="113" height="89" rx="16"/>
+      <rect x="280" y="351" width="113" height="89" rx="16"/>
+    </g>
+    <g class="key" fill="#f4f6fb" text-anchor="middle">
+      <text x="56" y="60">1</text>
+      <text x="196" y="60">2</text>
+      <text x="336" y="60">3</text>
+      <text x="56" y="177">4</text>
+      <text x="196" y="177">5</text>
+      <text x="336" y="177">6</text>
+      <text x="56" y="294">7</text>
+      <text x="196" y="294">8</text>
+      <text x="336" y="294">9</text>
+      <text x="196" y="411">0</text>
+    </g>
+    <text x="56" y="402" class="small" fill="#c4cad6" text-anchor="middle">AC</text>
+    <g transform="translate(322 384)" fill="none" stroke="#c4cad6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-8 8h32l8 12-8 12h-32l-11-12z"/>
+      <path d="M5 14 19 28M19 14 5 28"/>
+    </g>
+  </g>
+
+  <text x="70" y="932" class="tiny" fill="#8896ab">FPT UNIVERSITY  •  SOFTWARE ENGINEERING  •  SUMMER 2026</text>
+  <text x="1574" y="932" class="tiny" fill="#8896ab">POWERED BY INBLUE PLATFORM</text>
+</svg>

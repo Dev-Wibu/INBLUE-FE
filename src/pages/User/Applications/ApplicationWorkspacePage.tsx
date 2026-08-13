@@ -7,6 +7,7 @@ import { useCurrentRound } from "@/hooks/useRound";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
+import { adminApplicationManager } from "@/services/admin-application.manager";
 import { applicationService } from "@/services/application.manager";
 import {
   ArrowLeft,
@@ -29,7 +30,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
 import { FinalCompetencyReportNodeView } from "./components/FinalCompetencyReportNodeView";
@@ -174,11 +175,55 @@ function CompanyAvatar({
   );
 }
 
+function CandidateAvatar({
+  avatarUrl,
+  name,
+  className = "h-9 w-9 rounded-full",
+  textClassName = "text-xs font-bold",
+}: {
+  avatarUrl?: string | null;
+  name?: string;
+  className?: string;
+  textClassName?: string;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const initials = name
+    ? name
+        .trim()
+        .split(/\s+/)
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "UV";
+
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center overflow-hidden border border-indigo-200 bg-indigo-100 text-indigo-700 shadow-2xs dark:border-indigo-800/80 dark:bg-indigo-950 dark:text-indigo-300",
+        className
+      )}>
+      {avatarUrl && !imgError ? (
+        <img
+          src={avatarUrl}
+          alt={name || "Avatar"}
+          onError={() => setImgError(true)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <span className={textClassName}>{initials}</span>
+      )}
+    </div>
+  );
+}
+
 export function ApplicationWorkspacePage() {
   const { t } = useTranslation();
   const { applicationId: appIdParam } = useParams<{ applicationId: string }>();
   const applicationId = Number(appIdParam);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith("/admin");
   const [searchParams] = useSearchParams();
   const shouldOpenCompetencyReport = searchParams.get("round") === "99";
 
@@ -194,6 +239,11 @@ export function ApplicationWorkspacePage() {
     rounds?: JdRound[];
   } | null>(null);
   const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
+  const [candidateInfo, setCandidateInfo] = useState<{
+    name?: string;
+    email?: string;
+    avatarUrl?: string | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Selected Round View in Workspace
@@ -226,6 +276,25 @@ export function ApplicationWorkspacePage() {
         const currentOrder = appRes.data.currentRoundOrder ?? 1;
         setSelectedRoundOrder(shouldOpenCompetencyReport ? 99 : currentOrder);
 
+        // Extract candidate info if attached to app
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const extraApp = appRes.data as any;
+        const name =
+          extraApp.candidateName ||
+          extraApp.user?.name ||
+          extraApp.user?.fullName ||
+          extraApp.fullName;
+        const email = extraApp.candidateEmail || extraApp.user?.email || extraApp.email;
+        const avatarUrl =
+          extraApp.candidateAvatarUrl ||
+          extraApp.user?.avatarUrl ||
+          extraApp.user?.avatar ||
+          extraApp.avatarUrl ||
+          null;
+        if (name || email || avatarUrl) {
+          setCandidateInfo({ name, email, avatarUrl });
+        }
+
         // 2. Fetch JD Info
         if (appRes.data.jdId) {
           const jdRes = await fetchClient.GET("/api/job-descriptions/{id}", {
@@ -256,7 +325,48 @@ export function ApplicationWorkspacePage() {
         }
       }
 
-      // 3. Fetch Details
+      // 3. If Admin, fetch full admin application detail for candidate info
+      if (isAdmin) {
+        const adminDetailRes =
+          await adminApplicationManager.getApplicationFullDetail(applicationId);
+        if (adminDetailRes.success && adminDetailRes.data) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const data = adminDetailRes.data as any;
+          const cInfo = data.candidateInfo || {};
+          const name = cInfo.name || data.candidateName || cInfo.fullName || data.fullName;
+          const email = cInfo.email || data.candidateEmail;
+          const avatarUrl = cInfo.avatarUrl || cInfo.avatar || data.candidateAvatarUrl || null;
+          if (name || email || avatarUrl) {
+            setCandidateInfo({ name, email, avatarUrl });
+          }
+        }
+
+        // Additional fallback: Candidate Profile lookup
+        try {
+          const profileRes = await fetchClient.GET(
+            "/api/candidate-profiles/application/{applicationId}",
+            { params: { path: { applicationId } } }
+          );
+          if (profileRes.response?.ok && profileRes.data) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const cp = profileRes.data as any;
+            const name = cp.name || cp.fullName || cp.user?.name || cp.user?.fullName;
+            const email = cp.email || cp.user?.email;
+            const avatarUrl = cp.avatarUrl || cp.avatar || cp.user?.avatarUrl || null;
+            if (name || email || avatarUrl) {
+              setCandidateInfo((prev) => ({
+                name: prev?.name || name,
+                email: prev?.email || email,
+                avatarUrl: prev?.avatarUrl || avatarUrl,
+              }));
+            }
+          }
+        } catch {
+          // Ignore fallback error
+        }
+      }
+
+      // 4. Fetch Details
       const detailsRes = await fetchClient.GET(
         "/api/application-details/application/{applicationId}",
         {
@@ -329,8 +439,17 @@ export function ApplicationWorkspacePage() {
         <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
           {t("userApplicationhistory.noApplicationsYet", "Không tìm thấy đơn ứng tuyển")}
         </h2>
-        <Button onClick={() => navigate("/user?tab=applicationHistory")}>
-          {t("userApplicationhistory.allApplications", "Quay lại Lịch sử ứng tuyển")}
+        <Button
+          onClick={() => {
+            if (isAdmin) {
+              navigate("/admin/applications");
+            } else {
+              navigate("/user?tab=applicationHistory");
+            }
+          }}>
+          {isAdmin
+            ? t("adminApplicationmanagement.title", "Quản lý đơn ứng tuyển")
+            : t("userApplicationhistory.allApplications", "Quay lại Lịch sử ứng tuyển")}
         </Button>
       </div>
     );
@@ -383,50 +502,97 @@ export function ApplicationWorkspacePage() {
     <div className={applicationTheme.page}>
       {/* Centered application header */}
       <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1428]/95">
-        <div className="mx-auto grid min-h-[76px] w-full max-w-[1700px] grid-cols-[minmax(120px,1fr)_auto_minmax(120px,1fr)] items-center gap-4 px-4 py-3 sm:grid-cols-[minmax(180px,1fr)_auto_minmax(180px,1fr)] sm:px-6 lg:px-8">
-          {/* Back navigation */}
-          <div className="flex items-center">
+        <div className="mx-auto grid min-h-[76px] w-full max-w-[1700px] grid-cols-[minmax(120px,1fr)_auto_minmax(120px,1fr)] items-center gap-4 px-4 py-3 sm:grid-cols-[minmax(200px,1fr)_auto_minmax(200px,1fr)] sm:px-6 lg:px-8">
+          {/* Back navigation & Application ID */}
+          <div className="flex items-center gap-2.5">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate("/user?tab=applicationHistory")}
-              className="group h-10 gap-1.5 rounded-xl border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:pr-3 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              onClick={() => {
+                if (isAdmin) {
+                  navigate("/admin/applications");
+                } else {
+                  navigate("/user?tab=applicationHistory");
+                }
+              }}
+              className="group h-10 gap-1.5 rounded-xl border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-xs transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:pr-3 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
               <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               <span className="hidden sm:inline">
-                {t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}
+                {isAdmin
+                  ? t("adminApplicationmanagement.title", "Quản lý đơn ứng tuyển")
+                  : t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}
               </span>
             </Button>
           </div>
 
-          {/* Centered application identity */}
-          <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
-            <CompanyAvatar
-              logoUrl={jdInfo?.logoUrl}
-              companyName={jdInfo?.companyName}
-              className="hidden h-10 w-10 rounded-xl border-indigo-500/20 bg-indigo-500/10 text-sm sm:flex"
-            />
-            <div className="max-w-[min(68vw,720px)] min-w-0">
-              <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
-                {jdInfo?.companyName && (
-                  <span className="text-indigo-600 dark:text-indigo-300">{jdInfo.companyName}</span>
-                )}
-                {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
-                <span>
-                  {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
-                </span>
-              </h1>
+          {/* Centered application identity: Company Info Block & Identical Candidate Info Block */}
+          <div className="flex min-w-0 items-center justify-center gap-4 text-center sm:gap-5">
+            {/* 1. Original Company Info Block */}
+            <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
+              <CompanyAvatar
+                logoUrl={jdInfo?.logoUrl}
+                companyName={jdInfo?.companyName}
+                className="hidden h-10 w-10 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-sm shadow-xs sm:flex"
+              />
+              <div className="max-w-[min(38vw,420px)] min-w-0">
+                <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
+                  {jdInfo?.companyName && (
+                    <span className="text-indigo-600 dark:text-indigo-300">
+                      {jdInfo.companyName}
+                    </span>
+                  )}
+                  {jdInfo?.companyName && (
+                    <span className="px-1.5 font-normal text-slate-400">·</span>
+                  )}
+                  <span>
+                    {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+                  </span>
+                </h1>
+              </div>
             </div>
+
+            {/* 2. Identical Candidate Info Block for Admin */}
+            {isAdmin && (
+              <>
+                <span className="hidden text-xl font-light text-slate-300 sm:inline dark:text-slate-700">
+                  |
+                </span>
+
+                <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
+                  <CandidateAvatar
+                    avatarUrl={candidateInfo?.avatarUrl}
+                    name={
+                      candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`
+                    }
+                    className="hidden h-10 w-10 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-sm shadow-xs sm:flex"
+                  />
+                  <div className="max-w-[min(32vw,340px)] min-w-0">
+                    <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
+                      <span className="text-indigo-600 dark:text-indigo-300">Ứng viên</span>
+                      <span className="px-1.5 font-normal text-slate-400">·</span>
+                      <span>
+                        {candidateInfo?.name ||
+                          candidateInfo?.email ||
+                          `Ứng viên #${applicationId}`}
+                      </span>
+                    </h1>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Refresh action */}
-          <div className="flex min-w-0 items-center justify-end">
+          {/* Refresh action & Application Status */}
+          <div className="flex min-w-0 items-center justify-end gap-2.5">
+            {app?.status && <ApplicationStatusBadge status={app.status} />}
+
             <Button
               variant="outline"
               size="sm"
               onClick={loadData}
               title={t("userApplicationhistory.reload", "Làm mới")}
               aria-label={t("userApplicationhistory.reload", "Làm mới")}
-              className="group h-10 w-10 rounded-xl border-slate-300 bg-white p-0 text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              className="group h-10 w-10 rounded-xl border-slate-300 bg-white p-0 text-slate-700 shadow-xs transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
               <RotateCw className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
               <span className="sr-only">{t("userApplicationhistory.reload", "Làm mới")}</span>
             </Button>
@@ -616,6 +782,31 @@ export function ApplicationWorkspacePage() {
               <div className="space-y-4 lg:col-span-4">
                 {/* Widget 1: Company & Application Meta */}
                 <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+                  {/* Candidate Info Card for Admin */}
+                  {isAdmin && (candidateInfo?.name || candidateInfo?.email) && (
+                    <div className="flex items-center gap-3.5 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-3.5 dark:border-indigo-900/40 dark:bg-indigo-950/40">
+                      <CandidateAvatar
+                        avatarUrl={candidateInfo.avatarUrl}
+                        name={candidateInfo.name || candidateInfo.email}
+                        className="h-11 w-11 rounded-full border border-indigo-200/80 shadow-2xs dark:border-indigo-800"
+                        textClassName="text-sm font-extrabold"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-extrabold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
+                          Ứng viên (Candidate)
+                        </span>
+                        <h4 className="truncate text-sm font-bold text-slate-900 dark:text-white">
+                          {candidateInfo.name || "Ứng viên"}
+                        </h4>
+                        {candidateInfo.email && (
+                          <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                            {candidateInfo.email}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
                     <CompanyAvatar
                       logoUrl={jdInfo?.logoUrl}

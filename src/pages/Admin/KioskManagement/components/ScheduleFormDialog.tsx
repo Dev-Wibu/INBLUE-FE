@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -17,11 +17,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Calendar,
   CalendarDays,
+  Check,
+  ChevronDown,
   Clock4,
   Hourglass,
+  Info,
   Loader2,
-  Sparkles,
   Sun,
   Sunset,
   Trash2,
@@ -71,6 +74,96 @@ function toHms(value: string): string {
   if (!value) return "09:00:00";
   // Pad HH:mm -> HH:mm:ss
   return value.length === 5 ? `${value}:00` : value;
+}
+
+interface TimePickerFieldProps {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function TimePickerField({ id, value, onChange }: TimePickerFieldProps) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [selectedHour = "09", selectedMinute = "00"] = value.split(":");
+  const hours = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, "0"));
+  const minutes = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, "0"));
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          id={id}
+          type="button"
+          className="flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 px-3 text-left text-sm font-semibold text-slate-900 transition-colors hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100 dark:hover:border-indigo-700">
+          <span className="flex items-center gap-2 font-mono text-sm">
+            <Clock4 className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+            {value}
+          </span>
+          <ChevronDown
+            className={`h-4 w-4 text-slate-400 transition-transform dark:text-slate-500 ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={6}
+        className="w-[220px] rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-slate-950">
+        <div className="mb-2 flex items-center justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+            {t("adminKioskManagement.selectTime", "Chọn thời gian")}
+          </span>
+          <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+            {value}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            {
+              label: t("adminKioskManagement.hoursShort", "Giờ"),
+              options: hours,
+              selected: selectedHour,
+              part: "hour" as const,
+            },
+            {
+              label: t("adminKioskManagement.minutesShortLabel", "Phút"),
+              options: minutes,
+              selected: selectedMinute,
+              part: "minute" as const,
+            },
+          ].map(({ label, options, selected, part }) => (
+            <div key={part}>
+              <p className="mb-1 px-1 text-[10px] font-bold tracking-wide text-slate-400 uppercase dark:text-slate-500">
+                {label}
+              </p>
+              <div className="scrollbar-thin h-44 space-y-0.5 overflow-y-auto rounded-lg bg-slate-50 p-1 dark:bg-slate-900">
+                {options.map((option) => {
+                  const isSelected = option === selected;
+                  const nextValue =
+                    part === "hour" ? `${option}:${selectedMinute}` : `${selectedHour}:${option}`;
+
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => onChange(nextValue)}
+                      className={`flex h-7 w-full items-center justify-between rounded-md px-2 font-mono text-xs transition-colors ${
+                        isSelected
+                          ? "bg-indigo-600 font-bold text-white"
+                          : "text-slate-600 hover:bg-white hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+                      }`}>
+                      {option}
+                      {isSelected && <Check className="h-3.5 w-3.5" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export function ScheduleFormDialog({
@@ -126,20 +219,16 @@ export function ScheduleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-md gap-0 overflow-hidden p-0">
-        <div className="from-primary/10 via-primary/5 relative bg-gradient-to-br to-transparent px-6 pt-6 pb-4">
+      <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-[540px] dark:border-slate-800 dark:bg-slate-900">
+        <div className="border-b border-slate-200/90 bg-slate-100/90 px-6 py-5 dark:border-slate-800 dark:bg-slate-950">
           <DialogHeader>
-            <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs font-medium tracking-wider uppercase">
-              <Sparkles className="h-3.5 w-3.5" />
-              {t("common.administration")}
-            </div>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <CalendarDays className="text-primary h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+              <CalendarDays className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               {isEdit
                 ? t("adminKioskManagement.editSchedule")
                 : t("adminKioskManagement.createSchedule")}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {isEdit
                 ? t("adminKioskManagement.editScheduleDescription")
                 : t("adminKioskManagement.createScheduleDescription")}
@@ -147,64 +236,105 @@ export function ScheduleFormDialog({
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-6 pt-5 pb-6">
-          <div className="space-y-2">
-            <Label htmlFor="schedule-day">{t("adminKioskManagement.dayLabel")}</Label>
-            <Select
-              value={values.dayOfWeek}
-              onValueChange={(value) =>
-                setValues((prev) => ({ ...prev, dayOfWeek: value as DayOfWeek }))
-              }>
-              <SelectTrigger id="schedule-day" className="w-full">
-                <SelectValue placeholder={t("adminKioskManagement.dayPlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {DAYS_OF_WEEK.map((day) => (
-                  <SelectItem key={day} value={day}>
-                    {t(`adminKioskManagement.days.${day}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <form onSubmit={handleSubmit} className="space-y-5 overflow-y-auto p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Day of week */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="schedule-day"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                <Calendar className="h-3.5 w-3.5 text-indigo-500" />
+                {t("adminKioskManagement.dayLabel")}
+              </Label>
+              <Select
+                value={values.dayOfWeek}
+                onValueChange={(value) =>
+                  setValues((prev) => ({ ...prev, dayOfWeek: value as DayOfWeek }))
+                }>
+                <SelectTrigger
+                  id="schedule-day"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 text-sm font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100">
+                  <SelectValue placeholder={t("adminKioskManagement.dayPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {DAYS_OF_WEEK.map((day) => (
+                    <SelectItem key={day} value={day}>
+                      {t(`adminKioskManagement.days.${day}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Slot duration */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="schedule-duration"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                <Hourglass className="h-3.5 w-3.5 text-indigo-500" />
+                {t("adminKioskManagement.slotDurationLabel")}
+              </Label>
+              <Select
+                value={String(values.slotDurationMinutes)}
+                onValueChange={(value) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    slotDurationMinutes: Number(value),
+                  }))
+                }>
+                <SelectTrigger
+                  id="schedule-duration"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 text-sm font-semibold dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SLOT_DURATION_OPTIONS.map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>
+                      <span className="flex items-center gap-2">
+                        <Clock4 className="h-3.5 w-3.5" />
+                        {t("adminKioskManagement.minutesShort", { count: minutes })}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Open time */}
             <div className="space-y-2">
-              <Label htmlFor="schedule-open" className="flex items-center gap-1.5">
+              <Label
+                htmlFor="schedule-open"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
                 <Sun className="h-3.5 w-3.5 text-amber-500" />
                 {t("adminKioskManagement.openTimeLabel")}
               </Label>
-              <Input
+              <TimePickerField
                 id="schedule-open"
-                type="time"
-                step={60}
                 value={values.openTime}
-                onChange={(event) =>
-                  setValues((prev) => ({ ...prev, openTime: event.target.value }))
-                }
-                onBlur={() => setTouched((prev) => ({ ...prev, openTime: true }))}
-                aria-invalid={(touched.openTime && timeRangeInvalid) || undefined}
-                className="font-mono"
-                required
+                onChange={(openTime) => {
+                  setValues((prev) => ({ ...prev, openTime }));
+                  setTouched((prev) => ({ ...prev, openTime: true }));
+                }}
               />
             </div>
+
+            {/* Close time */}
             <div className="space-y-2">
-              <Label htmlFor="schedule-close" className="flex items-center gap-1.5">
-                <Sunset className="text-primary h-3.5 w-3.5" />
+              <Label
+                htmlFor="schedule-close"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                <Sunset className="h-3.5 w-3.5 text-indigo-500" />
                 {t("adminKioskManagement.closeTimeLabel")}
               </Label>
-              <Input
+              <TimePickerField
                 id="schedule-close"
-                type="time"
-                step={60}
                 value={values.closeTime}
-                onChange={(event) =>
-                  setValues((prev) => ({ ...prev, closeTime: event.target.value }))
-                }
-                onBlur={() => setTouched((prev) => ({ ...prev, closeTime: true }))}
-                aria-invalid={(touched.closeTime && timeRangeInvalid) || undefined}
-                className="font-mono"
-                required
+                onChange={(closeTime) => {
+                  setValues((prev) => ({ ...prev, closeTime }));
+                  setTouched((prev) => ({ ...prev, closeTime: true }));
+                }}
               />
             </div>
           </div>
@@ -213,46 +343,22 @@ export function ScheduleFormDialog({
             <p className="text-destructive text-xs">{t("adminKioskManagement.timeRangeInvalid")}</p>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="schedule-duration" className="flex items-center gap-1.5">
-              <Hourglass className="text-primary h-3.5 w-3.5" />
-              {t("adminKioskManagement.slotDurationLabel")}
-            </Label>
-            <Select
-              value={String(values.slotDurationMinutes)}
-              onValueChange={(value) =>
-                setValues((prev) => ({
-                  ...prev,
-                  slotDurationMinutes: Number(value),
-                }))
-              }>
-              <SelectTrigger id="schedule-duration" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SLOT_DURATION_OPTIONS.map((minutes) => (
-                  <SelectItem key={minutes} value={String(minutes)}>
-                    <span className="flex items-center gap-2">
-                      <Clock4 className="h-3.5 w-3.5" />
-                      {t("adminKioskManagement.minutesShort", { count: minutes })}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-muted-foreground text-xs">
+          {/* Hint info box */}
+          <div className="flex items-start gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-950/50">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
               {t("adminKioskManagement.slotDurationHint")}
             </p>
           </div>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="-mx-6 mt-2 -mb-6 gap-2 border-t border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
             {isEdit && initialSchedule && (
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={isSubmitting || isDeleting}
-                className="mr-auto gap-2">
+                className="mr-auto gap-2 rounded-xl text-xs font-semibold">
                 <Trash2 className="h-4 w-4" />
                 {t("common.delete")}
               </Button>
@@ -265,7 +371,10 @@ export function ScheduleFormDialog({
                 disabled={isSubmitting}>
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" disabled={isSubmitting || isInvalid} className="min-w-32 gap-2">
+              <Button
+                type="submit"
+                disabled={isSubmitting || isInvalid}
+                className="h-9.5 min-w-32 gap-2 rounded-xl bg-indigo-600 px-6 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 hover:bg-indigo-500">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />

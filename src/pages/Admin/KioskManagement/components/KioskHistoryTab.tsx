@@ -223,29 +223,29 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
         <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                <TableHead className="w-[80px] pl-6 font-medium text-slate-500">
+              <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                   {t("common.code", "Mã")}
                 </TableHead>
-                <TableHead className="w-[220px] font-medium text-slate-500">
+                <TableHead className="w-[220px] font-semibold text-slate-700 dark:text-slate-200">
                   {t("common.candidate", "Ứng viên")}
                 </TableHead>
-                <TableHead className="w-[200px] font-medium text-slate-500">
+                <TableHead className="w-[200px] font-semibold text-slate-700 dark:text-slate-200">
                   {t("general.jobPosition", "Vị trí ứng tuyển")}
                 </TableHead>
-                <TableHead className="w-[100px] font-medium text-slate-500">
+                <TableHead className="w-[100px] font-semibold text-slate-700 dark:text-slate-200">
                   {t("general.level", "Cấp độ")}
                 </TableHead>
-                <TableHead className="w-[140px] font-medium text-slate-500">
+                <TableHead className="w-[140px] font-semibold text-slate-700 dark:text-slate-200">
                   {t("common.time", "Thời gian")}
                 </TableHead>
-                <TableHead className="w-[90px] font-medium text-slate-500">
+                <TableHead className="w-[90px] font-semibold text-slate-700 dark:text-slate-200">
                   {t("common.duration", "Thời lượng")}
                 </TableHead>
-                <TableHead className="w-[130px] font-medium text-slate-500">
+                <TableHead className="w-[130px] font-semibold text-slate-700 dark:text-slate-200">
                   {t("general.status", "Trạng thái")}
                 </TableHead>
-                <TableHead className="w-[120px] pr-6 font-medium text-slate-500">
+                <TableHead className="w-[120px] pr-6 font-semibold text-slate-700 dark:text-slate-200">
                   Session Key
                 </TableHead>
               </TableRow>
@@ -254,8 +254,8 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
               {pageData.map((item) => (
                 <TableRow
                   key={item.bookingId || Math.random()}
-                  className="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                  <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                  className="border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                  <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                     #{item.bookingId}
                   </TableCell>
                   <TableCell>
@@ -272,11 +272,11 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+                        <p className="truncate text-sm font-bold text-slate-950 dark:text-white">
                           {item.candidateInfo?.name ||
                             t("common.anonymousCandidate", "Ứng viên ẩn danh")}
                         </p>
-                        <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+                        <p className="truncate text-xs font-medium text-slate-600 dark:text-slate-300">
                           {item.candidateInfo?.email || "—"}
                         </p>
                       </div>
@@ -285,13 +285,13 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                   <TableCell>
                     <div className="min-w-0 flex-1">
                       <p
-                        className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
                         title={item.jobDescriptionInfo?.title}>
                         {item.jobDescriptionInfo?.title ||
                           item.candidateInfo?.targetRole ||
                           t("common.noPositionYet", "Chưa có vị trí")}
                       </p>
-                      <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+                      <p className="truncate text-xs font-medium text-slate-600 dark:text-slate-300">
                         {item.jobDescriptionInfo?.companyName || "—"}
                       </p>
                     </div>
@@ -304,7 +304,7 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                         {formatDateOnly(item.scheduledStart)}
                       </span>
                       <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
@@ -344,7 +344,7 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
             </TableBody>
           </Table>
           {filteredHistory.length > 0 && (
-            <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+            <div className="flex items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
               <PaginationControl
                 pagination={pagination}
                 onPageSizeChange={(nextPageSize) => {

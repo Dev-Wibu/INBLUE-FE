@@ -513,7 +513,7 @@
     "unpaidText": "未払い",
     "selectCompany": "会社を選択",
     "chooseCompany": "会社を選択してください...",
-    "price": "[JA] adminCompanymanagement.price"
+    "price": "JD価格"
   },
   "adminDashboardoverview": {
     "companies": "企業",
@@ -6948,6 +6948,8 @@
   },
   "landingNew": {
     "headerExplore": "職種を見る",
+    "headerExploreCompanies": "Explore companies",
+    "headerExploreJobs": "Explore jobs",
     "headerHowItWorks": "仕組み",
     "headerCta": "練習を始める",
     "headerNavLabel": "メインナビゲーション",
@@ -7032,6 +7034,19 @@
         "description": "次の準備に合う選考またはスキルを提案します。"
       }
     },
+    "holoboxKicker": "Holobox 体験",
+    "holoboxTitle": "コンピテンシー要約をロボットのガイド付きプレゼンに変える。",
+    "holoboxDescription": "Holobox は、AI オペレーターが要約を読み上げ、音声に合わせて動き、結果に集中できるキオスク画面を提供します。",
+    "holoboxCta": "Explore",
+    "holoboxNote": "コンピテンシー Holobox 画面を開きます",
+    "holoboxPreviewTitle": "コンピテンシー配信",
+    "holoboxCandidateLabel": "候補者サマリー",
+    "holoboxRoleLabel": "Technician",
+    "holoboxDimensionLabel": "Core dimension",
+    "holoboxScoreLabel": "スコア",
+    "holoboxAudioLabel": "音声ナレーション準備完了",
+    "holoboxAudioMeta": "ロボットをタップして要約を再生",
+    "holoboxRobotAlt": "オレンジと白の Holobox プレゼンテーションロボット",
     "startTitle": "どこから始めますか？",
     "start": {
       "first": {

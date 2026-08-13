@@ -1,25 +1,13 @@
 import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { useSortable } from "@/hooks/useSortable";
-import type { SummaryResponse } from "@/interfaces";
-import { cn } from "@/lib/utils";
-import { interviewTemplateManager } from "@/services/interview-template.manager";
-import { Eye, LayoutTemplate, MoreHorizontal, PlusCircle, Search, Trash2 } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-import type { UIRound } from "@/components/shared/RoundCanvasEditor";
-import { RoundCanvasEditorWorkspace } from "@/components/shared/RoundCanvasEditor";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -28,6 +16,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
+import { useSortable } from "@/hooks/useSortable";
+import type { SummaryResponse } from "@/interfaces";
+import { formatDate } from "@/lib/formatting";
+import { cn } from "@/lib/utils";
+import { interviewTemplateManager } from "@/services/interview-template.manager";
+import { LayoutTemplate, PlusCircle, RotateCcw, Search, Trash2 } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import type { UIRound } from "@/components/shared/RoundCanvasEditor";
+import { RoundCanvasEditorWorkspace } from "@/components/shared/RoundCanvasEditor";
 
 export function InterviewTemplateManagementPage() {
   const { t } = useTranslation();
@@ -35,6 +37,8 @@ export function InterviewTemplateManagementPage() {
 
   const [templates, setTemplates] = useState<SummaryResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [roundFilter, setRoundFilter] = useState<string>("ALL");
+  const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [isLoadingList, setIsLoadingList] = useState(false);
 
   // Editor states (only for creating)
@@ -167,8 +171,6 @@ export function InterviewTemplateManagementPage() {
       if (res.success) {
         toast.success(t("template.createSuccess"));
         loadTemplates();
-        // Only close the editor on full-template saves; saving an individual
-        // round should leave the user inside the workspace.
         if (options?.closeEditorAfter !== false) {
           setIsEditorOpen(false);
         }
@@ -185,13 +187,48 @@ export function InterviewTemplateManagementPage() {
     }
   };
 
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    templates.forEach((tpl) => {
+      if (tpl.category?.trim()) set.add(tpl.category.trim());
+    });
+    return Array.from(set);
+  }, [templates]);
+
   const filteredTemplates = useMemo(() => {
-    return templates.filter(
-      (tpl) =>
-        tpl.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tpl.category?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [templates, searchQuery]);
+    return templates.filter((tpl) => {
+      // 1. Search Query
+      const query = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        !query ||
+        tpl.name?.toLowerCase().includes(query) ||
+        tpl.category?.toLowerCase().includes(query) ||
+        tpl.description?.toLowerCase().includes(query);
+
+      // 2. Category Filter
+      const matchesCategory =
+        categoryFilter === "ALL" ||
+        tpl.category?.trim().toLowerCase() === categoryFilter.trim().toLowerCase();
+
+      // 3. Round Count Filter
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const extra = tpl as any;
+      const count =
+        extra.totalRounds ??
+        extra.rounds?.length ??
+        extra.roundCount ??
+        extra.roundDetails?.length ??
+        0;
+
+      let matchesRound = true;
+      if (roundFilter === "1") matchesRound = count === 1;
+      else if (roundFilter === "2") matchesRound = count === 2;
+      else if (roundFilter === "3") matchesRound = count === 3;
+      else if (roundFilter === "4+") matchesRound = count >= 4;
+
+      return matchesSearch && matchesCategory && matchesRound;
+    });
+  }, [templates, searchQuery, categoryFilter, roundFilter]);
 
   // Stats calculation
   const stats = useMemo(() => {
@@ -246,7 +283,7 @@ export function InterviewTemplateManagementPage() {
       )}>
       <div className={cn("flex flex-col bg-slate-50 dark:bg-slate-950", "flex-1 overflow-hidden")}>
         <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
-          {/* Stat Summary & Control Card (matching User/Mentor pattern) */}
+          {/* Stat Summary & Control Card */}
           <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
               <div>
@@ -308,6 +345,72 @@ export function InterviewTemplateManagementPage() {
                 {t("general.createTemplate")}
               </Button>
             </form>
+
+            {/* Subheader Filter Controls Row */}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  Lọc số vòng:
+                </span>
+                <Select
+                  value={roundFilter}
+                  onValueChange={(val) => {
+                    setRoundFilter(val);
+                    pagination.goToFirstPage();
+                  }}>
+                  <SelectTrigger className="h-9 w-[160px] rounded-xl border border-slate-200/90 bg-white text-xs font-semibold text-slate-800 shadow-2xs focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                    <SelectValue placeholder="Tất cả số vòng" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">Tất cả số vòng</SelectItem>
+                    <SelectItem value="1">1 vòng phỏng vấn</SelectItem>
+                    <SelectItem value="2">2 vòng phỏng vấn</SelectItem>
+                    <SelectItem value="3">3 vòng phỏng vấn</SelectItem>
+                    <SelectItem value="4+">4+ vòng phỏng vấn</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  Danh mục:
+                </span>
+                <Select
+                  value={categoryFilter}
+                  onValueChange={(val) => {
+                    setCategoryFilter(val);
+                    pagination.goToFirstPage();
+                  }}>
+                  <SelectTrigger className="h-9 w-[170px] rounded-xl border border-slate-200/90 bg-white text-xs font-semibold text-slate-800 shadow-2xs focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                    <SelectValue placeholder="Tất cả danh mục" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">Tất cả danh mục</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(roundFilter !== "ALL" || categoryFilter !== "ALL" || searchQuery) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setRoundFilter("ALL");
+                    setCategoryFilter("ALL");
+                    setSearchQuery("");
+                    pagination.goToFirstPage();
+                  }}
+                  className="h-9 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">
+                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                  Đặt lại bộ lọc
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Table Card Container */}
@@ -332,87 +435,89 @@ export function InterviewTemplateManagementPage() {
               <>
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                      <TableHead className="w-16 pl-6 font-medium text-slate-500">
+                    <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                      <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                         {t("common.stt", "STT")}
                       </TableHead>
-                      <TableHead className="font-medium text-slate-500">
+                      <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminInterviewTemplate.name", "Tên mẫu")}
                       </TableHead>
-                      <TableHead className="font-medium text-slate-500">
+                      <TableHead className="w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminInterviewTemplate.category", "Danh mục")}
                       </TableHead>
-                      <TableHead className="font-medium text-slate-500">
+                      <TableHead className="w-[110px] text-center font-semibold text-slate-700 dark:text-slate-200">
+                        Số vòng
+                      </TableHead>
+                      <TableHead className="min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminInterviewTemplate.description", "Mô tả")}
                       </TableHead>
-                      <TableHead className="w-[100px] pr-6 text-right font-medium text-slate-500">
-                        {t("common.action", "Thao tác")}
+                      <TableHead className="w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        {t("common.createdAt", "Ngày tạo")}
+                      </TableHead>
+                      <TableHead className="w-[80px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        {t("common.delete", "Xóa")}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {pageData.map((tpl, idx) => (
-                      <TableRow
-                        key={tpl.id}
-                        className="cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80"
-                        onClick={() => navigate(`/admin/interviewTemplates/${tpl.id}`)}>
-                        <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                          <div className="flex items-center gap-2">
-                            <span>{pagination.startIndex + idx + 1}</span>
-                            {/* Dummy element to force row height alignment */}
-                            <div
-                              className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
-                              aria-hidden="true">
-                              <div className="h-3.5 w-3.5"></div>
-                              <div className="h-3.5 w-3.5"></div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium text-slate-900 dark:text-slate-100">
-                          {tpl.name}
-                        </TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-300">
-                            {tpl.category}
-                          </span>
-                        </TableCell>
-                        <TableCell className="max-w-[260px] truncate text-slate-500 dark:text-slate-400">
-                          {tpl.description || "—"}
-                        </TableCell>
-                        <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                    {pageData.map((tpl, idx) => {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const extra = tpl as any;
+                      const roundCount =
+                        extra.totalRounds ??
+                        extra.rounds?.length ??
+                        extra.roundCount ??
+                        extra.roundDetails?.length ??
+                        0;
+                      const createdAtStr = extra.createdAt ? formatDate(extra.createdAt) : "—";
+
+                      return (
+                        <TableRow
+                          key={tpl.id}
+                          className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80"
+                          onClick={() => navigate(`/admin/interviewTemplates/${tpl.id}`)}>
+                          <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                            <span>#{pagination.startIndex + idx + 1}</span>
+                          </TableCell>
+                          <TableCell className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-white">
+                            {tpl.name}
+                          </TableCell>
+                          <TableCell className="px-4 py-4">
+                            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                              {tpl.category || "Chung"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="px-4 py-4 text-center">
+                            <span className="inline-flex items-center justify-center rounded-md border border-slate-200/80 bg-slate-100/90 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-800 dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-200">
+                              {roundCount}
+                            </span>
+                          </TableCell>
+                          <TableCell className="max-w-xs px-4 py-4">
+                            <p className="line-clamp-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                              {tpl.description || "—"}
+                            </p>
+                          </TableCell>
+                          <TableCell className="px-4 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                            {createdAtStr}
+                          </TableCell>
+                          <TableCell
+                            className="py-4 pr-6 text-center"
+                            onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-center">
                               <Button
                                 variant="ghost"
-                                className="h-8 w-8 p-0"
-                                onClick={(e) => e.stopPropagation()}>
-                                <span className="sr-only">{t("common.openMenu", "Mở menu")}</span>
-                                <MoreHorizontal className="h-4 w-4" />
+                                size="sm"
+                                onClick={(e) => handleDeleteTemplate(tpl.id!, e)}
+                                className="h-8.5 w-8.5 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/60 dark:hover:text-rose-300"
+                                title={t("common.delete", "Xóa")}>
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">{t("common.delete", "Xóa")}</span>
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/admin/interviewTemplates/${tpl.id}`);
-                                }}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                <span>{t("common.viewDetails", "Xem chi tiết")}</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-600 focus:bg-red-50 focus:text-red-600 dark:focus:bg-red-950/50 dark:focus:text-red-400"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteTemplate(tpl.id!, e);
-                                }}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>{t("common.delete")}</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
                 {sortedData.length > 0 && (

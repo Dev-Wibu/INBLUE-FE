@@ -566,7 +566,7 @@
     "unpaidText": "Chưa thanh toán",
     "selectCompany": "Chọn công ty",
     "chooseCompany": "Chọn công ty...",
-    "price": "[VI] adminCompanymanagement.price"
+    "price": "Giá JD"
   },
   "adminDashboardoverview": {
     "companies": "Doanh nghiệp",
@@ -2257,6 +2257,7 @@
     "insertEmojis": "Chèn emoji",
     "quickEmoji": "Emoji nhanh",
     "pageOf": "Trang {{current}}/{{total}}",
+    "go": "\u0110i",
     "nextPageTitle": "Trang sau",
     "lastPage": "Trang cuối",
     "linkCopied": "Đã sao chép liên kết",
@@ -7018,6 +7019,8 @@
   },
   "landingNew": {
     "headerExplore": "Khám phá vị trí",
+    "headerExploreCompanies": "Khám phá công ty",
+    "headerExploreJobs": "Khám phá việc làm",
     "headerHowItWorks": "Cách hoạt động",
     "headerCta": "Bắt đầu luyện",
     "headerNavLabel": "Điều hướng chính",
@@ -7114,6 +7117,19 @@
         "description": "Gợi ý vòng hoặc kỹ năng phù hợp cho bước chuẩn bị kế tiếp."
       }
     },
+    "holoboxKicker": "Trải nghiệm Holobox",
+    "holoboxTitle": "Biến bản tổng hợp năng lực thành phần thuyết trình bằng robot.",
+    "holoboxDescription": "Holobox cho ứng viên một màn hình kiosk tập trung, nơi AI operator đọc phần tổng hợp, cử động theo giọng nói và giữ sự chú ý vào kết quả.",
+    "holoboxCta": "Explore",
+    "holoboxNote": "Mở màn hình holobox competency",
+    "holoboxPreviewTitle": "Phát sóng năng lực",
+    "holoboxCandidateLabel": "Tóm tắt ứng viên",
+    "holoboxRoleLabel": "Technician",
+    "holoboxDimensionLabel": "Core dimension",
+    "holoboxScoreLabel": "Điểm",
+    "holoboxAudioLabel": "Audio narration sẵn sàng",
+    "holoboxAudioMeta": "Bấm vào robot để nghe phần tổng hợp",
+    "holoboxRobotAlt": "Robot thuyết trình Holobox màu cam trắng",
     "startTitle": "Bạn muốn bắt đầu từ đâu?",
     "start": {
       "first": {
@@ -7357,6 +7373,24 @@
     "applicationFee": "Lệ phí ứng tuyển"
   },
   "enterpriseJobsearchpage": {
+    "badgeLabel": "VỊ TRÍ TUYỂN DỤNG & LỘ TRÌNH PHỎNG VẤN",
+    "heroTitle": "Khám phá các Job Description nổi bật",
+    "heroSubtitle": "Chọn bất kỳ vị trí tuyển dụng nào để xem lộ trình phỏng vấn chi tiết, thực hành câu hỏi trắc nghiệm, bài tập lập trình và phỏng vấn AI thực tế.",
+    "searchPlaceholder": "Tìm vị trí theo tên công việc, kỹ năng (React, Java...), hoặc tên công ty...",
+    "searchButton": "Tìm kiếm",
+    "levelLabel": "Cấp bậc:",
+    "allLevels": "Tất cả",
+    "locationLabel": "Địa điểm:",
+    "showingJobsPrefix": "Hiển thị",
+    "showingJobsSuffix": "vị trí tuyển dụng",
+    "clearFilter": "Xóa bộ lọc",
+    "viewDetails": "Xem chi tiết",
+    "cannotLoadJobs": "Không thể tải danh sách vị trí",
+    "noMatchingJobs": "Không tìm thấy vị trí tuyển dụng phù hợp",
+    "loadErrorDescription": "Đã xảy ra lỗi khi tải danh sách công việc. Vui lòng thử lại sau.",
+    "noQueryMatchDescription": "Không có kết quả nào phù hợp với từ khóa \"{{query}}\".",
+    "noFilterMatchDescription": "Không có vị trí nào khớp với bộ lọc hiện tại của bạn.",
+    "viewAllJobsButton": "Xem tất cả vị trí tuyển dụng",
     "noJobsFound": "Không tìm thấy công việc phù hợp",
     "emptySearchDescription": "Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc",
     "emptyDescription": "Hiện tại chưa có bài tuyển dụng nào",
@@ -7365,11 +7399,6 @@
     "closed": "Đã đóng",
     "untitledJob": "Chưa có tiêu đề",
     "negotiable": "Thỏa thuận",
-    "viewDetails": "Xem chi tiết",
-    "heroTitle": "Tìm Kiếm Cơ Hội Nghề Nghiệp",
-    "heroSubtitle": "Khám phá hàng ngàn công việc hấp dẫn phù hợp với bạn",
-    "searchPlaceholder": "Tìm theo vị trí, kỹ năng...",
-    "searchButton": "Tìm kiếm",
     "allJobs": "Tất cả công việc",
     "showingResults": "Hiển thị {{count}} kết quả",
     "applyNow": "Ứng tuyển ngay"

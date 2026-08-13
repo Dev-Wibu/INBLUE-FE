@@ -70,13 +70,15 @@ export function JobSearchSection() {
     if (e.key === "Enter") handleSearch();
   };
 
-  const formatSalary = (min?: number, max?: number, currency?: string) => {
-    const fmt = (num: number) =>
-      num >= 1000000 ? `${(num / 1000000).toFixed(0)}M` : `${(num / 1000).toFixed(0)}K`;
-    if (min && max) return `${fmt(min)} - ${fmt(max)} ${currency || "VND"}`;
-    if (min) return t("common.fromVar0Var1", { var_0: fmt(min), var_1: currency || "VND" });
-    if (max) return t("common.toVar0Var1", { var_0: fmt(max), var_1: currency || "VND" });
-    return t("common.agree");
+  const formatSalaryVND = (min?: number, max?: number): { text: string; hasIcon: boolean } => {
+    if (!min && !max) {
+      return { text: t("common.agree", "Thỏa thuận"), hasIcon: false };
+    }
+    const fmt = (num: number): string => num.toLocaleString("en-US");
+    if (min && max) return { text: `${fmt(min)} - ${fmt(max)} VND`, hasIcon: false };
+    if (min) return { text: `${fmt(min)}+ VND`, hasIcon: false };
+    if (max) return { text: `Tối đa ${fmt(max)} VND`, hasIcon: false };
+    return { text: t("common.agree", "Thỏa thuận"), hasIcon: false };
   };
 
   const getLevelBadgeColor = (jobLevel?: string) => {
@@ -207,10 +209,15 @@ export function JobSearchSection() {
                           </div>
                         </div>
                         <div className="mb-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                          <p className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-slate-400" />
-                            {formatSalary(job.salaryMin, job.salaryMax, job.currency)}
-                          </p>
+                          {(() => {
+                            const sal = formatSalaryVND(job.salaryMin, job.salaryMax);
+                            return (
+                              <p className="flex items-center gap-2">
+                                {sal.hasIcon && <DollarSign className="h-4 w-4 text-slate-400" />}
+                                {sal.text}
+                              </p>
+                            );
+                          })()}
                           <p className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-slate-400" />
                             {job.location || t("common.hoChiMinh")}

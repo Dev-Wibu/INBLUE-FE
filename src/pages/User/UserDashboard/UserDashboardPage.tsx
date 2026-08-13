@@ -65,6 +65,10 @@ const getAvailableTabs = (
   label: string;
 }> => [
   {
+    type: "overview",
+    label: t("common.overview"),
+  },
+  {
     type: "homeFeed",
     label: t("common.home"),
   },
@@ -75,10 +79,6 @@ const getAvailableTabs = (
   {
     type: "companies",
     label: t("common.companies", { defaultValue: "Công ty" }),
-  },
-  {
-    type: "overview",
-    label: t("common.overview"),
   },
   {
     type: "mentors",
@@ -107,6 +107,12 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
     label: t("common.home"),
     items: [
       {
+        type: "overview",
+        icon: LayoutDashboard,
+        label: t("common.overview"),
+        color: "text-blue-600 dark:text-blue-500",
+      },
+      {
         type: "homeFeed",
         icon: Newspaper,
         label: t("common.home"),
@@ -129,12 +135,6 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
   {
     label: t("common.interview"),
     items: [
-      {
-        type: "overview",
-        icon: LayoutDashboard,
-        label: t("common.overview"),
-        color: "text-blue-600 dark:text-blue-500",
-      },
       {
         type: "applicationHistory",
         icon: Briefcase,

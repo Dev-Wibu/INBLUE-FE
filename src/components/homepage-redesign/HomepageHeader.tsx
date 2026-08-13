@@ -46,15 +46,14 @@ export function HomepageHeader() {
 
   const navLinks = [
     {
-      label: t("landingNew.headerExplore"),
+      label: t("landingNew.headerExploreCompanies"),
       href: "/enterprise/companies",
       matchPrefix: "/enterprise/companies",
     },
     {
-      label: t("landingNew.headerHowItWorks"),
-      href: "/#interview-map",
-      // Anchor on home page — active only when user is on `/` and hash may be empty
-      isActive: () => location.pathname === "/" && !location.hash,
+      label: t("landingNew.headerExploreJobs"),
+      href: "/enterprise/jobs",
+      matchPrefix: "/enterprise/jobs",
     },
   ];
 
@@ -84,9 +83,9 @@ export function HomepageHeader() {
           {navLinks.map((link) => {
             const active = isLinkActive(link);
             return (
-              <a
+              <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200",
@@ -95,7 +94,7 @@ export function HomepageHeader() {
                     : "text-slate-600 hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-[#66B2FF]"
                 )}>
                 {link.label}
-              </a>
+              </Link>
             );
           })}
         </nav>

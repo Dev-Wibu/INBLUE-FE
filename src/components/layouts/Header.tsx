@@ -16,6 +16,7 @@ import { fixUtf8Mojibake } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { getAccountPath, getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
+  BriefcaseBusiness,
   Building2,
   HelpCircle,
   LayoutDashboard,
@@ -97,14 +98,25 @@ export function Header() {
 
         {/* Navigation */}
         <nav className="hidden items-center gap-1 lg:flex">
-          {/* Enterprise - Link to company search */}
+          {/* Explore Companies */}
           <Button
             variant="ghost"
             asChild
             className={`text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
             <Link to="/enterprise/companies">
               <Building2 className="mr-2 h-4 w-4" />
-              {t("common.company")}
+              {t("landingNew.headerExploreCompanies")}
+            </Link>
+          </Button>
+
+          {/* Explore Jobs */}
+          <Button
+            variant="ghost"
+            asChild
+            className={`text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
+            <Link to="/enterprise/jobs">
+              <BriefcaseBusiness className="mr-2 h-4 w-4" />
+              {t("landingNew.headerExploreJobs")}
             </Link>
           </Button>
 
