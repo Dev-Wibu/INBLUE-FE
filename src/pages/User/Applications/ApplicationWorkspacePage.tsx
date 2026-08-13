@@ -525,18 +525,24 @@ export function ApplicationWorkspacePage() {
             </Button>
 
             {isAdmin && (
-              <div className="hidden items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50/80 py-1 pr-3.5 pl-1.5 shadow-2xs sm:flex dark:border-indigo-800/80 dark:bg-indigo-950/60">
+              <div className="hidden h-10 items-center gap-2.5 rounded-xl border border-slate-300 bg-white px-3 py-1 text-slate-800 shadow-xs sm:flex dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-200">
                 <CandidateAvatar
                   avatarUrl={candidateInfo?.avatarUrl}
                   name={candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
-                  className="h-7 w-7 rounded-full"
+                  className="h-7 w-7 rounded-lg border border-slate-200/60 dark:border-slate-700/60"
+                  textClassName="text-xs font-bold"
                 />
-                <div className="flex flex-col text-left">
-                  <span className="max-w-[150px] truncate text-xs leading-tight font-bold text-indigo-950 dark:text-indigo-200">
-                    {candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
-                  </span>
+                <div className="flex flex-col text-left leading-tight">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] font-extrabold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
+                      Ứng viên:
+                    </span>
+                    <span className="max-w-[140px] truncate text-xs font-bold text-slate-900 dark:text-white">
+                      {candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
+                    </span>
+                  </div>
                   {candidateInfo?.email && (
-                    <span className="max-w-[150px] truncate text-[10px] text-indigo-600/80 dark:text-indigo-400/80">
+                    <span className="max-w-[170px] truncate text-[10px] text-slate-500 dark:text-slate-400">
                       {candidateInfo.email}
                     </span>
                   )}
