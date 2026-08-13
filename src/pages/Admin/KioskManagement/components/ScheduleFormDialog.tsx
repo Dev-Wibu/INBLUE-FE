@@ -261,8 +261,8 @@ export function ScheduleFormDialog({
             </Select>
           </div>
 
-          <div className="order-3 grid grid-cols-2 gap-4 sm:col-span-2">
-            <div className="space-y-2">
+          <div className="contents">
+            <div className="order-3 space-y-2">
               <Label
                 htmlFor="schedule-open"
                 className="flex items-center gap-1.5 text-sm font-bold text-slate-800 dark:text-slate-200">
@@ -278,7 +278,7 @@ export function ScheduleFormDialog({
                 }}
               />
             </div>
-            <div className="space-y-2">
+            <div className="order-4 space-y-2">
               <Label
                 htmlFor="schedule-close"
                 className="flex items-center gap-1.5 text-sm font-bold text-slate-800 dark:text-slate-200">
