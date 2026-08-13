@@ -313,16 +313,13 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
               )}
 
               {post.content && (
-                // Content block has a fixed max-height with internal scroll so
-                // long posts never push the reactions / comments / composer
-                // out of the viewport (mirrors Facebook's post detail). When
-                // collapsed we use a 5-line clamp; expanded content scrolls
-                // inside the same block.
-                <div
-                  className={cn(
-                    "rounded-xl",
-                    bodyExpanded && bodyIsLong && "max-h-[55vh] overflow-y-auto pr-1"
-                  )}>
+                // Collapsed by default to 5 lines with a See more toggle. When
+                // expanded, the body simply grows inside the article; the
+                // right column scrolls internally so reactions / comments /
+                // composer remain reachable. The media column is fixed by the
+                // outer h-screen + overflow-hidden grid, so expanding the body
+                // never moves the image.
+                <div>
                   <p
                     ref={bodyRef}
                     className={cn(
