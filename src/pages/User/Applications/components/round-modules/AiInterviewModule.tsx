@@ -519,8 +519,8 @@ function KioskPinDialog({
                   : t("userApplication.aiInterview.noData")}
               </p>
               <p className="mt-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-                {duration
-                  ? `${duration} ${t("userApplication.aiInterview.minutes", "minutes")}`
+                {duration != null
+                  ? t("userApplication.aiInterview.minutes", { minutes: duration })
                   : t("userApplication.aiInterview.perSlot")}
               </p>
             </div>
