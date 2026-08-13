@@ -141,6 +141,22 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
     setBodyExpanded(false);
   }, [post?.content]);
 
+  // Lock the document scrollbar while the detail page is mounted. Even with
+  // overflow-hidden on every nested container, the dashboard shell can still
+  // let the window scroll if it uses a sticky header that contributes a
+  // scroll-driven layout shift. Locking the document guarantees the only
+  // thing that scrolls on the page is the right column's inner scroll area.
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, []);
+
   const handleCommentSubmit = () => {
     const content = newComment.trim();
     const numericUserId = typeof user?.id === "string" ? parseInt(user.id, 10) : user?.id;
@@ -219,22 +235,18 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
 
   return (
     <>
-      {/* Two-column layout that fills the parent exactly. We deliberately use
-          h-full (not h-screen) because this page is rendered inside the
-          dashboard shell (UserDashboardPage / MentorDashboardPage / etc.),
-          which already sizes its main content area to the viewport minus
-          the dashboard header + sidebar. h-screen here would mis-compute
-          the height and let content spill past the composer.
-
-          overflow-hidden is the root guarantee that:
-          - the media column never scrolls,
-          - the right column is the only thing that scrolls,
-          - and the composer stays pinned. */}
-      <div className="grid h-full w-full overflow-hidden bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
-        {/* LEFT — media canvas (fills viewport height) */}
+      {/* Two-column layout. We use flex (not grid) so each column's height is
+          independent: the left column is locked to the parent height by
+          h-full + w-[58%] + shrink-0, the right column fills the
+          remainder with flex-1 and scrolls internally. The outer
+          h-full + overflow-hidden guarantees that nothing leaks above or
+          below — the image stays exactly where it is no matter how long
+          the body becomes. */}
+      <div className="flex h-full w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+        {/* LEFT — media canvas (fills its column exactly, never scrolls) */}
         <section
           aria-label={t("compPost.feedDetail.media", "Post media")}
-          className="relative flex h-full w-full items-center justify-center overflow-hidden bg-slate-950">
+          className="relative hidden h-full w-[58%] shrink-0 overflow-hidden bg-slate-950 lg:flex lg:items-center lg:justify-center">
           {post.coverImgUrl ? (
             <button
               type="button"
@@ -272,8 +284,11 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
           </button>
         </section>
 
-        {/* RIGHT — content / comments (scrolls internally) */}
-        <section className="flex h-full min-w-0 flex-col border-l border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        {/* RIGHT — content / comments (scrolls internally). flex-1 fills the
+          remaining width after the fixed 58% media column; flex-col +
+          min-w-0 lets the inner scroll area use min-h-0 flex-1
+          overflow-y-auto to own the only scrollbar on the page. */}
+        <section className="flex h-full min-w-0 flex-1 flex-col border-l border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
           {/* Author header */}
           <header className="flex shrink-0 items-start gap-3 border-b border-slate-100 px-5 py-4 sm:px-6 dark:border-slate-800">
             <Avatar className="h-11 w-11 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
@@ -490,7 +505,7 @@ function EmptyState({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="grid h-full w-full place-items-center bg-slate-50 px-6 dark:bg-slate-950">
+    <div className="flex h-full w-full place-items-center bg-slate-50 px-6 dark:bg-slate-950">
       <div className="relative flex max-w-md flex-col items-center gap-3 text-center">
         <button
           type="button"
@@ -515,7 +530,7 @@ function DetailShellSkeleton({
   backToFeedLabel: string;
 }) {
   return (
-    <div className="grid h-full w-full overflow-hidden bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
+    <div className="flex h-full w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
       <section className="relative flex h-full items-center justify-center bg-slate-950">
         <Skeleton className="h-3/4 w-3/4 rounded-xl bg-slate-800/60" />
         <button
