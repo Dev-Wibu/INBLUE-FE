@@ -9,14 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
@@ -29,15 +21,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { MentorReview } from "@/hooks/useMentorReview";
-import { useDeleteMentorReview, useMentorReviews } from "@/hooks/useMentorReview";
+import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
-import { Search, Star, Trash2 } from "lucide-react";
+import { Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
 import { ReviewDetailView } from "./components/ReviewDetailView";
 
 const getReviewDate = (review: MentorReview): string => {
@@ -58,11 +49,8 @@ export function ReviewManagementPage() {
   const { id } = useParams<{ id?: string }>();
 
   const { data: reviews = [], isLoading, isRefetching, refetch } = useMentorReviews();
-  const { mutate: deleteReview, isPending: isDeleting } = useDeleteMentorReview();
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
-  const [selectedReview, setSelectedReview] = useState<MentorReview | null>(null);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const activeReview = useMemo(() => {
     if (!id) return null;
@@ -130,22 +118,6 @@ export function ReviewManagementPage() {
   const handleViewDetail = (review: MentorReview) => {
     navigate(`/admin/reviews/${review.id}`);
   };
-  const handleDeleteClick = (review: MentorReview) => {
-    setSelectedReview(review);
-    setIsDeleteOpen(true);
-  };
-  const handleDeleteConfirm = () => {
-    if (selectedReview?.id) {
-      deleteReview(selectedReview.id, {
-        onSuccess: () => {
-          setIsDeleteOpen(false);
-          setSelectedReview(null);
-          toast.success(t("common.reviewRemoved"));
-          if (id) navigate("/admin/reviews");
-        },
-      });
-    }
-  };
 
   if (id) {
     if (isLoading) {
@@ -167,13 +139,7 @@ export function ReviewManagementPage() {
         </div>
       );
     }
-    return (
-      <ReviewDetailView
-        review={activeReview}
-        onBack={() => navigate("/admin/reviews")}
-        onDelete={() => handleDeleteClick(activeReview)}
-      />
-    );
+    return <ReviewDetailView review={activeReview} onBack={() => navigate("/admin/reviews")} />;
   }
 
   return (
@@ -315,25 +281,22 @@ export function ReviewManagementPage() {
                         <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.id")}
                         </TableHead>
-                        <TableHead className="w-[28%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[30%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.mentorSent")}
                         </TableHead>
-                        <TableHead className="w-[28%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[30%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.candidatesAreEvaluated")}
                         </TableHead>
                         <TableHead className="w-[14%] min-w-[110px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.session")}
                         </TableHead>
-                        <TableHead className="w-[15%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[13%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("rating" as keyof MentorReview)}>
                             {t("common.evaluate")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[15%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[13%] min-w-[130px] pr-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
-                        </TableHead>
-                        <TableHead className="w-[80px] min-w-[80px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.delete", "Xóa")}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -403,20 +366,8 @@ export function ReviewManagementPage() {
                           <TableCell className="px-4 py-4">
                             <StarRating value={review.rating || 0} readOnly size="sm" />
                           </TableCell>
-                          <TableCell className="px-4 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                          <TableCell className="py-4 pr-6 text-sm font-medium text-slate-600 dark:text-slate-300">
                             {getReviewDate(review)}
-                          </TableCell>
-                          <TableCell
-                            className="pr-6 text-center"
-                            onClick={(e) => e.stopPropagation()}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/50 dark:hover:text-rose-400"
-                              onClick={() => handleDeleteClick(review)}
-                              title={t("common.delete", "Xóa")}>
-                              <Trash2 className="h-4 w-4 text-rose-500" />
-                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -441,28 +392,6 @@ export function ReviewManagementPage() {
           </div>
         )}
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("common.confirmDeletion")}</DialogTitle>
-            <DialogDescription>
-              {t("adminReviewmanagement.areYouSureYouWant")}
-              {selectedReview?.id}
-              {t("adminReviewmanagement.thisActionCannotBeUndone")}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} disabled={isDeleting}>
-              {t("general.cancel")}
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
-              {isDeleting ? t("common.deleting") : t("general.delete")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

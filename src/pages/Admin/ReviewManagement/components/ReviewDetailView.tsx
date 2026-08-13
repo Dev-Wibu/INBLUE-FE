@@ -15,7 +15,6 @@ import {
   Star,
   Target,
   ThumbsUp,
-  Trash2,
   TrendingUp,
   User,
   Video,
@@ -26,7 +25,6 @@ import { useTranslation } from "react-i18next";
 interface ReviewDetailViewProps {
   review: MentorReview;
   onBack: () => void;
-  onDelete?: () => void;
 }
 
 const getRatingLabel = (rating: number) => {
@@ -37,7 +35,7 @@ const getRatingLabel = (rating: number) => {
   return "Chưa đạt";
 };
 
-export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewProps) {
+export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
   const { t } = useTranslation();
 
   const joinDate =
@@ -116,20 +114,6 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
           <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
             Chi tiết đánh giá #{review.id}
           </h1>
-        </div>
-
-        {/* Header Right Actions */}
-        <div className="flex shrink-0 items-center gap-2">
-          {onDelete && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onDelete}
-              className="h-9 gap-1.5 rounded-xl border border-rose-200 bg-white px-3.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-950/50 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/50">
-              <Trash2 className="h-3.5 w-3.5" />
-              <span>{t("common.delete", "Xóa")}</span>
-            </Button>
-          )}
         </div>
       </div>
 
