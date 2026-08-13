@@ -1,11 +1,25 @@
 /**
  * HomeFeedDetailPage — full-page post detail view (User / Mentor / Staff).
  *
- * Mirrors the existing PostFeedModal but as a standalone route so that:
- *   - The URL is shareable (e.g. /user/home-feed/123).
- *   - Browser back / X button returns the user to the Home Feed with
- *     their previous scroll position intact (handled by ScrollRestoration).
- *   - There is no longer a Dialog wrapper — the page itself is the detail.
+ * Layout (Facebook-style 2-column post detail):
+ *   ┌──────────────────────────────────────────────────────┐
+ *   │ [X]                                                  │
+ *   │                                                      │
+ *   │  ┌────────────────────────┐  ┌─────────────────────┐ │
+ *   │  │                        │  │ Author              │ │
+ *   │  │       MEDIA (~58%)     │  │ Title               │ │
+ *   │  │       h-screen         │  │ Summary / Body      │ │
+ *   │  │       object-contain   │  │ Tags                │ │
+ *   │  │       dark bg          │  │ Reactions bar       │ │
+ *   │  │                        │  │ Comment list        │ │
+ *   │  │                        │  │ Comment composer    │ │
+ *   │  └────────────────────────┘  └─────────────────────┘ │
+ *   └──────────────────────────────────────────────────────┘
+ *
+ * The X button is floating (top-left, outside the grid) so it is always
+ * reachable regardless of which column the user is interacting with.
+ * The right column scrolls internally so the comment composer can stay
+ * pinned at the bottom of the column (Facebook style).
  *
  * No business logic / API changes were introduced. The page reuses
  * LikeButton, CommentSection, MediaLightboxDialog, LikeListModal, and the
@@ -22,10 +36,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTime } from "@/lib/formatting";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
+import { cn } from "@/lib/utils";
 import { useCheckLiked, useCreateComment, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { Heart, MessageCircle, Send, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -44,6 +59,8 @@ interface HomeFeedDetailPageProps {
   backTo?: string;
 }
 
+const BODY_COLLAPSE_LINE_CLAMP = 5;
+
 export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
   const { t } = useTranslation();
   const { postId: rawPostId } = useParams<{ postId: string }>();
@@ -54,6 +71,9 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
   const [newComment, setNewComment] = useState("");
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [likeModalOpen, setLikeModalOpen] = useState(false);
+  const [bodyExpanded, setBodyExpanded] = useState(false);
+  const [bodyIsLong, setBodyIsLong] = useState(false);
+  const bodyRef = useRef<HTMLParagraphElement | null>(null);
 
   const shouldFetchLive = !!user?.id && postId > 0;
   const { data: liveRaw, isLoading } = usePostById(postId, shouldFetchLive);
@@ -106,6 +126,16 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
     return `${likeCount}`;
   })();
 
+  // Detect whether the body is long enough to warrant the See-more toggle.
+  // We measure after render (clientHeight vs lineHeight * threshold).
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 24;
+    const threshold = BODY_COLLAPSE_LINE_CLAMP + 0.5;
+    setBodyIsLong(el.scrollHeight > lineHeight * threshold);
+  }, [post?.content]);
+
   const invalidate = () => invalidatePostFeedQueries(postId);
 
   const handleCommentSubmit = () => {
@@ -142,65 +172,32 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
 
   if (!postId) {
     return (
-      <DetailShell>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClose}
-          className="gap-1.5 self-start text-slate-600 dark:text-slate-300">
-          <X className="h-4 w-4" aria-hidden />
-          {t("compPost.feedDetail.backToFeed", "Back to feed")}
-        </Button>
-        <div className="flex flex-col items-center gap-3 py-24 text-center">
-          <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-            {t("compPost.feedDetail.invalidPostId", "Invalid post id.")}
-          </p>
-        </div>
-      </DetailShell>
+      <EmptyState
+        onClose={handleClose}
+        title={t("compPost.feedDetail.invalidPostId", "Invalid post id.")}
+      />
     );
   }
 
   if (isLoading) {
     return (
-      <DetailShell>
-        <Skeleton className="h-9 w-40" />
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-          <Skeleton className="h-[420px] w-full rounded-xl" />
-          <div className="space-y-3">
-            <Skeleton className="h-10 w-3/4" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-2/3" />
-          </div>
-        </div>
-      </DetailShell>
+      <DetailShellSkeleton
+        backToFeedLabel={t("compPost.feedDetail.backToFeed", "Back to feed")}
+        onClose={handleClose}
+      />
     );
   }
 
   if (!post) {
     return (
-      <DetailShell>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClose}
-          className="gap-1.5 self-start text-slate-600 dark:text-slate-300">
-          <X className="h-4 w-4" aria-hidden />
-          {t("compPost.feedDetail.backToFeed", "Back to feed")}
-        </Button>
-        <div className="flex flex-col items-center gap-3 py-24 text-center">
-          <MessageCircle className="h-12 w-12 text-slate-400" aria-hidden />
-          <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-            {t("compPost.feedDetail.postNotFound", "This post could not be found.")}
-          </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {t(
-              "compPost.feedDetail.postNotFoundHint",
-              "It may have been removed or you may not have permission to view it."
-            )}
-          </p>
-        </div>
-      </DetailShell>
+      <EmptyState
+        onClose={handleClose}
+        title={t("compPost.feedDetail.postNotFound", "This post could not be found.")}
+        description={t(
+          "compPost.feedDetail.postNotFoundHint",
+          "It may have been removed or you may not have permission to view it."
+        )}
+      />
     );
   }
 
@@ -219,95 +216,90 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
 
   return (
     <>
-      <DetailShell>
-        {/* Top action bar — X back button + breadcrumbs */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClose}
+      {/* Full-viewport 2-column layout. h-screen keeps both columns anchored
+          to the visible viewport on desktop so the user never needs to scroll
+          the page itself to find the composer / comments. */}
+      <div className="grid h-screen w-full bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
+        {/* LEFT — media canvas (fills viewport height) */}
+        <section
+          aria-label={t("compPost.feedDetail.media", "Post media")}
+          className="relative flex h-full w-full items-center justify-center overflow-hidden bg-slate-950">
+          {post.coverImgUrl ? (
+            <button
+              type="button"
+              aria-label={t("common.clickToEnlarge", "Click to enlarge")}
+              onClick={() => setImageViewerOpen(true)}
+              className="group flex h-full w-full items-center justify-center">
+              <img
+                src={post.coverImgUrl}
+                alt={post.title ?? ""}
+                className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-[1.005]"
+              />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-end bg-gradient-to-t from-black/50 via-transparent to-transparent p-5 opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="rounded-full bg-slate-950/70 px-3 py-1.5 text-xs font-medium text-white backdrop-blur">
+                  {t("common.clickToEnlarge", "Click to enlarge")}
+                </span>
+              </div>
+            </button>
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-10 text-center">
+              <MessageCircle className="h-12 w-12 text-slate-500" aria-hidden />
+              <p className="text-sm font-medium text-slate-400">
+                {t("compPost.feedDetail.noMediaAttached", "This post has no media attached.")}
+              </p>
+            </div>
+          )}
+
+          {/* Floating X close — top-left of the media column. Always visible
+              and unmistakable so the user can return to the feed at any time. */}
+          <button
+            type="button"
             aria-label={t("compPost.feedDetail.backToFeed", "Back to feed")}
-            className="gap-1.5 text-slate-600 dark:text-slate-300">
-            <X className="h-4 w-4" aria-hidden />
-            <span className="hidden sm:inline">
-              {t("compPost.feedDetail.backToFeed", "Back to feed")}
-            </span>
-          </Button>
-          <span className="text-xs font-medium text-slate-400 dark:text-slate-500">#{postId}</span>
-        </div>
+            onClick={handleClose}
+            className="absolute top-4 left-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/80 text-white shadow-lg ring-1 ring-white/10 backdrop-blur-md transition-all hover:bg-slate-900 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none">
+            <X className="h-5 w-5" aria-hidden />
+          </button>
+        </section>
 
-        {/* 2-column body (Facebook-style) */}
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-          {/* LEFT — media canvas */}
-          <section
-            aria-label={t("compPost.feedDetail.media", "Post media")}
-            className="flex min-h-[320px] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start dark:border-slate-800 dark:bg-slate-950/60">
-            {post.coverImgUrl ? (
-              <button
-                type="button"
-                aria-label={t("common.clickToEnlarge", "Click to enlarge")}
-                onClick={() => setImageViewerOpen(true)}
-                className="group relative flex h-full w-full items-center justify-center">
-                <img
-                  src={post.coverImgUrl}
-                  alt={post.title ?? ""}
-                  className="max-h-[calc(100vh-3rem)] w-full object-contain transition-transform duration-300 group-hover:scale-[1.005]"
-                />
-                <div className="absolute inset-0 flex items-end justify-end bg-gradient-to-t from-black/30 via-transparent to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
-                  <span className="rounded-full bg-slate-950/70 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-                    {t("common.clickToEnlarge", "Click to enlarge")}
-                  </span>
-                </div>
-              </button>
-            ) : (
-              <div className="flex h-full min-h-[320px] w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 p-10 text-center dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
-                <MessageCircle
-                  className="h-10 w-10 text-slate-400 dark:text-slate-600"
-                  aria-hidden
-                />
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                  {t("compPost.feedDetail.noMediaAttached", "This post has no media attached.")}
-                </p>
+        {/* RIGHT — content / comments (scrolls internally) */}
+        <section className="flex h-full min-w-0 flex-col border-l border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          {/* Author header */}
+          <header className="flex shrink-0 items-start gap-3 border-b border-slate-100 px-5 py-4 sm:px-6 dark:border-slate-800">
+            <Avatar className="h-11 w-11 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
+              <AvatarImage src={post.author?.avatar} alt={authorName} />
+              <AvatarFallback className="bg-indigo-500/10 text-sm font-semibold text-indigo-600 dark:text-indigo-300">
+                {authorInitials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
+                  {authorName}
+                </h2>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {(post as any)?.majorName && (
+                  <Badge
+                    variant="secondary"
+                    className="border-0 bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-300">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {(post as any).majorName}
+                  </Badge>
+                )}
               </div>
-            )}
-          </section>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                {formatDateTime(post.creationDate)} · #{postId}
+              </p>
+            </div>
+          </header>
 
-          {/* RIGHT — author / title / body / comments */}
-          <section className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            {/* Author header */}
-            <header className="flex items-start gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-800">
-              <Avatar className="h-11 w-11 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
-                <AvatarImage src={post.author?.avatar} alt={authorName} />
-                <AvatarFallback className="bg-indigo-500/10 text-sm font-semibold text-indigo-600 dark:text-indigo-300">
-                  {authorInitials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
-                    {authorName}
-                  </h2>
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {(post as any)?.majorName && (
-                    <Badge
-                      variant="secondary"
-                      className="border-0 bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-300">
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      {(post as any).majorName}
-                    </Badge>
-                  )}
-                </div>
-                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                  {formatDateTime(post.creationDate)}
-                </p>
-              </div>
-            </header>
-
-            {/* Article body — scrolls independently on long content */}
-            <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
-              <h1 className="text-2xl leading-snug font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-                {post.title}
-              </h1>
+          {/* Scrollable body — header + composer remain pinned. */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <article className="space-y-4 px-5 py-5 sm:px-6 sm:py-6">
+              {post.title && (
+                <h1 className="text-2xl leading-snug font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+                  {post.title}
+                </h1>
+              )}
 
               {post.summary && (
                 <div className="rounded-xl border-l-4 border-indigo-500 bg-indigo-50/50 px-4 py-3 dark:border-indigo-500 dark:bg-indigo-950/30">
@@ -318,13 +310,30 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
               )}
 
               {post.content && (
-                <p className="text-base leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                  {post.content}
-                </p>
+                <div>
+                  <p
+                    ref={bodyRef}
+                    className={cn(
+                      "text-[15px] leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200",
+                      !bodyExpanded && bodyIsLong && "line-clamp-5"
+                    )}>
+                    {post.content}
+                  </p>
+                  {bodyIsLong && (
+                    <button
+                      type="button"
+                      onClick={() => setBodyExpanded((v) => !v)}
+                      className="mt-1 text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-300">
+                      {bodyExpanded
+                        ? t("compPost.feedDetail.showLess", "Show less")
+                        : t("compPost.feedDetail.seeMore", "See more")}
+                    </button>
+                  )}
+                </div>
               )}
 
               {(post.tags?.length ?? 0) > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
+                <div className="flex flex-wrap gap-1.5">
                   {post.tags!.map((tag) => (
                     <Badge
                       key={tag}
@@ -336,22 +345,22 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
                 </div>
               )}
 
-              {/* Like / comment counts */}
+              {/* Reactions summary */}
               {(likeLabel || liveCommentCount > 0) && (
-                <div className="flex items-center justify-between border-t border-b border-slate-100 py-2.5 dark:border-slate-800">
+                <div className="flex items-center justify-between border-t border-b border-slate-100 py-2.5 text-xs dark:border-slate-800">
                   {likeLabel ? (
                     <button
                       type="button"
                       onClick={() => setLikeModalOpen(true)}
-                      className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:underline dark:text-slate-400 dark:hover:text-slate-200">
+                      className="flex items-center gap-1.5 font-medium text-slate-600 hover:text-slate-900 hover:underline dark:text-slate-400 dark:hover:text-slate-200">
                       <Heart className="h-4 w-4 fill-rose-500 text-rose-500" aria-hidden />
                       <span>{likeLabel}</span>
                     </button>
                   ) : (
-                    <div />
+                    <span />
                   )}
                   {liveCommentCount > 0 && (
-                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <span className="font-medium text-slate-500 dark:text-slate-400">
                       {liveCommentCount} {t("general.comments", "comments")}
                     </span>
                   )}
@@ -359,7 +368,7 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
               )}
 
               {/* Action bar */}
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2">
                 {user?.id && postId > 0 ? (
                   <LikeButton
                     postId={postId}
@@ -385,9 +394,9 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
                 </Button>
               </div>
 
-              {/* Comment list */}
+              {/* Comments */}
               {postId > 0 && (
-                <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+                <div className="pt-2">
                   <CommentSection
                     key={postId}
                     postId={postId}
@@ -397,44 +406,44 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
                   />
                 </div>
               )}
-            </div>
+            </article>
+          </div>
 
-            {/* Sticky bottom composer */}
-            {postId > 0 && user?.id && (
-              <div className="flex shrink-0 items-center gap-3 border-t border-slate-100 bg-slate-50/60 px-5 py-3.5 dark:border-slate-800 dark:bg-slate-900">
-                <Avatar className="h-9 w-9 shrink-0">
-                  <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? ""} />
-                  <AvatarFallback className="bg-indigo-500/10 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
-                    {(user.name ?? "?").slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <textarea
-                  id={`home-feed-detail-comment-input-${postId}`}
-                  rows={1}
-                  placeholder={t(
-                    "compPost.writeACommentCtrlEnter",
-                    "Write a comment... (Ctrl+Enter to post)"
-                  )}
-                  value={newComment}
-                  className="max-h-24 flex-1 resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.ctrlKey) handleCommentSubmit();
-                  }}
-                />
-                <Button
-                  size="sm"
-                  className="h-9 w-9 shrink-0 rounded-xl bg-indigo-600 p-0 text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
-                  onClick={handleCommentSubmit}
-                  disabled={!newComment.trim() || createComment.isPending}
-                  aria-label={t("compPost.send", "Send")}>
-                  <Send className="h-4 w-4" aria-hidden />
-                </Button>
-              </div>
-            )}
-          </section>
-        </div>
-      </DetailShell>
+          {/* Sticky bottom composer */}
+          {postId > 0 && user?.id && (
+            <div className="flex shrink-0 items-center gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-3.5 sm:px-6 dark:border-slate-800 dark:bg-slate-900/80">
+              <Avatar className="h-9 w-9 shrink-0">
+                <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? ""} />
+                <AvatarFallback className="bg-indigo-500/10 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
+                  {(user.name ?? "?").slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <textarea
+                id={`home-feed-detail-comment-input-${postId}`}
+                rows={1}
+                placeholder={t(
+                  "compPost.writeACommentCtrlEnter",
+                  "Write a comment... (Ctrl+Enter to post)"
+                )}
+                value={newComment}
+                className="max-h-24 flex-1 resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && e.ctrlKey) handleCommentSubmit();
+                }}
+              />
+              <Button
+                size="sm"
+                className="h-9 w-9 shrink-0 rounded-xl bg-indigo-600 p-0 text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+                onClick={handleCommentSubmit}
+                disabled={!newComment.trim() || createComment.isPending}
+                aria-label={t("compPost.send", "Send")}>
+                <Send className="h-4 w-4" aria-hidden />
+              </Button>
+            </div>
+          )}
+        </section>
+      </div>
 
       {coverMediaItems.length > 0 && (
         <MediaLightboxDialog
@@ -449,15 +458,74 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
   );
 }
 
-/**
- * Consistent outer shell so every state (loading, empty, content) shares the
- * same width, gutter, and background treatment — which keeps the dark theme
- * aligned with the rest of the app's home feed surface.
- */
-function DetailShell({ children }: { children: React.ReactNode }) {
+/* -------------------------------------------------------------------------- */
+/* Loading / empty / error shells                                             */
+/* -------------------------------------------------------------------------- */
+
+function EmptyState({
+  onClose,
+  title,
+  description,
+}: {
+  onClose: () => void;
+  title: string;
+  description?: string;
+}) {
+  const { t } = useTranslation();
   return (
-    <div className="-m-4 min-h-full bg-slate-50/70 px-4 py-5 sm:-m-6 sm:px-6 lg:-m-8 lg:px-8 dark:bg-slate-950">
-      <div className="mx-auto flex w-full max-w-[1140px] flex-col gap-4">{children}</div>
+    <div className="grid h-screen w-full place-items-center bg-slate-50 px-6 dark:bg-slate-950">
+      <div className="relative flex max-w-md flex-col items-center gap-3 text-center">
+        <button
+          type="button"
+          aria-label={t("compPost.feedDetail.backToFeed", "Back to feed")}
+          onClick={onClose}
+          className="absolute -top-12 -left-12 inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg ring-1 ring-white/10 hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none dark:bg-slate-800 dark:hover:bg-slate-700">
+          <X className="h-5 w-5" aria-hidden />
+        </button>
+        <MessageCircle className="h-10 w-10 text-slate-400" aria-hidden />
+        <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</p>
+        {description && <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>}
+      </div>
+    </div>
+  );
+}
+
+function DetailShellSkeleton({
+  onClose,
+  backToFeedLabel,
+}: {
+  onClose: () => void;
+  backToFeedLabel: string;
+}) {
+  return (
+    <div className="grid h-screen w-full bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
+      <section className="relative flex h-full items-center justify-center bg-slate-950">
+        <Skeleton className="h-3/4 w-3/4 rounded-xl bg-slate-800/60" />
+        <button
+          type="button"
+          aria-label={backToFeedLabel}
+          onClick={onClose}
+          className="absolute top-4 left-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/80 text-white shadow-lg ring-1 ring-white/10 hover:bg-slate-900">
+          <X className="h-5 w-5" aria-hidden />
+        </button>
+      </section>
+      <section className="flex h-full flex-col border-l border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="space-y-3 border-b border-slate-100 px-5 py-4 sm:px-6 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-11 w-11 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-3 w-28" />
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4 px-5 py-5 sm:px-6 sm:py-6">
+          <Skeleton className="h-7 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      </section>
     </div>
   );
 }

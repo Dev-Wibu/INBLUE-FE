@@ -2109,7 +2109,9 @@
       "postNotFound": "この投稿は見つかりませんでした。",
       "postNotFoundHint": "削除されたか、閲覧する権限がない可能性があります。",
       "invalidPostId": "無効な投稿IDです。",
-      "noMediaAttached": "この投稿にはメディアが添付されていません。"
+      "noMediaAttached": "この投稿にはメディアが添付されていません。",
+      "seeMore": "もっと見る",
+      "showLess": "折りたたむ"
     }
   },
   "compReview": {

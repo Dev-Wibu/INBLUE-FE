@@ -2167,7 +2167,9 @@
       "postNotFound": "Không tìm thấy bài viết này.",
       "postNotFoundHint": "Bài viết có thể đã bị xoá hoặc bạn không có quyền xem.",
       "invalidPostId": "Mã bài viết không hợp lệ.",
-      "noMediaAttached": "Bài viết này không có hình ảnh đính kèm."
+      "noMediaAttached": "Bài viết này không có hình ảnh đính kèm.",
+      "seeMore": "Xem thêm",
+      "showLess": "Thu gọn"
     }
   },
   "compReview": {
