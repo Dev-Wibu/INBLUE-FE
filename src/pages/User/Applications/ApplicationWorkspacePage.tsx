@@ -531,47 +531,53 @@ export function ApplicationWorkspacePage() {
             )}
           </div>
 
-          {/* Centered application identity */}
-          <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
-            <CompanyAvatar
-              logoUrl={jdInfo?.logoUrl}
-              companyName={jdInfo?.companyName}
-              className="hidden h-10 w-10 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-sm shadow-xs sm:flex"
-            />
-
-            <div className="max-w-[min(68vw,720px)] min-w-0">
-              <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
-                {jdInfo?.companyName && (
-                  <span className="text-indigo-600 dark:text-indigo-300">{jdInfo.companyName}</span>
-                )}
-                {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
-                <span>
-                  {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+          {/* Centered dual identity: Company Info Block & Candidate Info Block */}
+          <div className="flex min-w-0 items-center justify-center gap-3 text-center sm:gap-4">
+            {/* Company / Job Block */}
+            <div className="flex h-10 items-center gap-2.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1 text-slate-800 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/70 dark:text-slate-200">
+              <CompanyAvatar
+                logoUrl={jdInfo?.logoUrl}
+                companyName={jdInfo?.companyName}
+                className="h-7 w-7 rounded-lg border border-slate-200/60 dark:border-slate-700/60"
+                textClassName="text-xs font-bold"
+              />
+              <div className="flex flex-col text-left leading-tight">
+                <span className="max-w-[150px] truncate text-xs font-extrabold text-indigo-600 dark:text-indigo-300">
+                  {jdInfo?.companyName || "Công ty"}
                 </span>
-              </h1>
-
-              {isAdmin && (candidateInfo?.name || candidateInfo?.email) && (
-                <div className="mt-1 flex flex-wrap items-center justify-center gap-2 text-xs">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/80 bg-indigo-50/80 py-0.5 pr-2.5 pl-1 dark:border-indigo-900/60 dark:bg-indigo-950/60">
-                    <CandidateAvatar
-                      avatarUrl={candidateInfo.avatarUrl}
-                      name={candidateInfo.name || candidateInfo.email}
-                      className="h-4.5 w-4.5 rounded-full"
-                      textClassName="text-[9px] font-bold"
-                    />
-                    <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
-                      Ứng viên: {candidateInfo.name || "Ứng viên"}
-                    </span>
-                  </span>
-
-                  {candidateInfo.email && (
-                    <span className="hidden font-mono text-[11px] text-slate-400 sm:inline dark:text-slate-500">
-                      ({candidateInfo.email})
-                    </span>
-                  )}
-                </div>
-              )}
+                <span className="max-w-[150px] truncate text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                  {jdInfo?.title || "Vị trí ứng tuyển"}
+                </span>
+              </div>
             </div>
+
+            {isAdmin && (
+              <>
+                <span className="hidden font-bold text-slate-300 sm:inline dark:text-slate-700">
+                  ·
+                </span>
+
+                {/* Candidate Info Block (Identical Style!) */}
+                <div className="flex h-10 items-center gap-2.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1 text-slate-800 shadow-2xs dark:border-slate-800/80 dark:bg-slate-900/70 dark:text-slate-200">
+                  <CandidateAvatar
+                    avatarUrl={candidateInfo?.avatarUrl}
+                    name={
+                      candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`
+                    }
+                    className="h-7 w-7 rounded-full border border-slate-200/60 dark:border-slate-700/60"
+                    textClassName="text-xs font-bold"
+                  />
+                  <div className="flex flex-col text-left leading-tight">
+                    <span className="max-w-[150px] truncate text-xs font-extrabold text-slate-900 dark:text-white">
+                      {candidateInfo?.name || `Ứng viên #${applicationId}`}
+                    </span>
+                    <span className="max-w-[150px] truncate text-[10px] font-medium text-indigo-600/90 dark:text-indigo-400">
+                      {candidateInfo?.email || "Ứng viên"}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Refresh action & Application Status */}
