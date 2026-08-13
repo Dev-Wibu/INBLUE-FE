@@ -513,7 +513,7 @@
     "unpaidText": "未払い",
     "selectCompany": "会社を選択",
     "chooseCompany": "会社を選択してください...",
-    "price": "[JA] adminCompanymanagement.price"
+    "price": "JD価格"
   },
   "adminDashboardoverview": {
     "companies": "企業",
