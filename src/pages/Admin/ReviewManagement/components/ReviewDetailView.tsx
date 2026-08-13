@@ -12,6 +12,7 @@ import {
   Lightbulb,
   MessageSquare,
   Sparkles,
+  Star,
   Target,
   ThumbsUp,
   Trash2,
