@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AdminDashboardPage } from "@/pages/Admin";
 import { ApplicationGradingDetailPage } from "@/pages/Admin/ApplicationGrading";
+import { AdminApplicationDetailPage } from "@/pages/Admin/ApplicationManagement/AdminApplicationDetailPage";
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage, SignupPage } from "@/pages/Auth";
 import { PlaygroundPage } from "@/pages/Dev/Playground/PlaygroundPage";
 import {
@@ -376,6 +377,10 @@ function App() {
 
             {/* Admin Management routes */}
             <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+              <Route
+                path="/admin/applications/:applicationId/details"
+                element={<AdminApplicationDetailPage />}
+              />
               <Route path="/admin/*" element={<AdminDashboardPage />} />
               <Route
                 path="/admin/application-grading/:appId"

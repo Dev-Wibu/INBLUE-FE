@@ -394,9 +394,14 @@ export function ApplicationWorkspacePage() {
     <div className={applicationTheme.page}>
       {/* Centered application header */}
       <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1428]/95">
-        <div className="mx-auto grid min-h-[76px] w-full max-w-[1700px] grid-cols-[minmax(120px,1fr)_auto_minmax(120px,1fr)] items-center gap-4 px-4 py-3 sm:grid-cols-[minmax(180px,1fr)_auto_minmax(180px,1fr)] sm:px-6 lg:px-8">
+        <div
+          className={cn(
+            "mx-auto flex min-h-[56px] w-full max-w-[1700px] items-center justify-between gap-4 px-4 py-2.5 sm:px-6 lg:px-8",
+            !isAdmin &&
+              "grid min-h-[76px] grid-cols-[minmax(120px,1fr)_auto_minmax(120px,1fr)] py-3 sm:grid-cols-[minmax(180px,1fr)_auto_minmax(180px,1fr)]"
+          )}>
           {/* Back navigation */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -407,35 +412,45 @@ export function ApplicationWorkspacePage() {
                   navigate("/user?tab=applicationHistory");
                 }
               }}
-              className="group h-10 gap-1.5 rounded-xl border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:pr-3 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              className="group h-9 gap-1.5 rounded-xl border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-xs transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:pr-3 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
               <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
-              <span className="hidden sm:inline">
+              <span>
                 {isAdmin
                   ? t("adminApplicationmanagement.title", "Quản lý đơn ứng tuyển")
                   : t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}
               </span>
             </Button>
+
+            {isAdmin && app && (
+              <span className="rounded-md bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
+                Đơn #{app.id}
+              </span>
+            )}
           </div>
 
-          {/* Centered application identity */}
-          <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
-            <CompanyAvatar
-              logoUrl={jdInfo?.logoUrl}
-              companyName={jdInfo?.companyName}
-              className="hidden h-10 w-10 rounded-xl border-indigo-500/20 bg-indigo-500/10 text-sm sm:flex"
-            />
-            <div className="max-w-[min(68vw,720px)] min-w-0">
-              <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
-                {jdInfo?.companyName && (
-                  <span className="text-indigo-600 dark:text-indigo-300">{jdInfo.companyName}</span>
-                )}
-                {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
-                <span>
-                  {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
-                </span>
-              </h1>
+          {/* Centered application identity (User view only) */}
+          {!isAdmin && (
+            <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
+              <CompanyAvatar
+                logoUrl={jdInfo?.logoUrl}
+                companyName={jdInfo?.companyName}
+                className="hidden h-10 w-10 rounded-xl border-indigo-500/20 bg-indigo-500/10 text-sm sm:flex"
+              />
+              <div className="max-w-[min(68vw,720px)] min-w-0">
+                <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
+                  {jdInfo?.companyName && (
+                    <span className="text-indigo-600 dark:text-indigo-300">
+                      {jdInfo.companyName}
+                    </span>
+                  )}
+                  {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
+                  <span>
+                    {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+                  </span>
+                </h1>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Refresh action */}
           <div className="flex min-w-0 items-center justify-end">
@@ -445,7 +460,7 @@ export function ApplicationWorkspacePage() {
               onClick={loadData}
               title={t("userApplicationhistory.reload", "Làm mới")}
               aria-label={t("userApplicationhistory.reload", "Làm mới")}
-              className="group h-10 w-10 rounded-xl border-slate-300 bg-white p-0 text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.1)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:shadow-[0_2px_10px_rgba(0,0,0,0.24)] dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200">
+              className="group h-9 w-9 rounded-xl border-slate-300 bg-white p-0 text-slate-700 shadow-xs transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200">
               <RotateCw className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
               <span className="sr-only">{t("userApplicationhistory.reload", "Làm mới")}</span>
             </Button>
