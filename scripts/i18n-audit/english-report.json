@@ -49,15 +49,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 51,
-    "character": 58,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Companies"
-  },
-  {
-    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 57,
+    "line": 59,
     "character": 85,
     "type": "JsxText",
     "category": "english",
@@ -65,7 +57,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 60,
+    "line": 62,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -73,7 +65,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 63,
+    "line": 65,
     "character": 51,
     "type": "JsxText",
     "category": "english",
@@ -81,7 +73,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 66,
+    "line": 68,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -89,7 +81,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 69,
+    "line": 71,
     "character": 59,
     "type": "JsxText",
     "category": "english",
@@ -97,7 +89,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 75,
+    "line": 77,
     "character": 85,
     "type": "JsxText",
     "category": "english",
@@ -105,7 +97,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 93,
+    "line": 95,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -113,7 +105,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 93,
+    "line": 95,
     "character": 47,
     "type": "JsxText",
     "category": "english",
@@ -2209,7 +2201,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
-    "line": 154,
+    "line": 155,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -2217,7 +2209,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
-    "line": 194,
+    "line": 195,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -2225,7 +2217,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
-    "line": 195,
+    "line": 196,
     "character": 53,
     "type": "JsxText",
     "category": "english",

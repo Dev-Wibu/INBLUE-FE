@@ -2937,47 +2937,7 @@
   },
   {
     "file": "src/pages/User/Companies/UserCompaniesTab.tsx",
-    "line": 134,
-    "character": 38,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "TP. Hồ Chí Minh"
-  },
-  {
-    "file": "src/pages/User/Companies/UserCompaniesTab.tsx",
-    "line": 157,
-    "character": 40,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "cơ hội"
-  },
-  {
-    "file": "src/pages/User/Companies/UserCompaniesTab.tsx",
-    "line": 326,
-    "character": 19,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Lĩnh vực"
-  },
-  {
-    "file": "src/pages/User/Companies/UserCompaniesTab.tsx",
-    "line": 364,
-    "character": 79,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Lĩnh vực:"
-  },
-  {
-    "file": "src/pages/User/Companies/UserCompaniesTab.tsx",
-    "line": 374,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tất cả"
-  },
-  {
-    "file": "src/pages/User/Companies/UserCompaniesTab.tsx",
-    "line": 424,
+    "line": 439,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2985,7 +2945,7 @@
   },
   {
     "file": "src/pages/User/Companies/UserCompaniesTab.tsx",
-    "line": 427,
+    "line": 442,
     "character": 17,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2993,7 +2953,7 @@
   },
   {
     "file": "src/pages/User/Companies/UserCompaniesTab.tsx",
-    "line": 437,
+    "line": 452,
     "character": 15,
     "type": "JsxText",
     "category": "vietnamese",
