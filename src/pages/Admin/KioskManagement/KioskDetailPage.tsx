@@ -393,7 +393,7 @@ export function KioskDetailPage() {
                 <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                   {t("adminKioskManagement.kioskName", "Tên trạm Kiosk")}
                 </p>
-                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                <p className="mt-1 text-base leading-tight font-extrabold tracking-tight text-slate-950 sm:text-lg dark:text-white">
                   {kiosk?.name || `Kiosk #${kioskId}`}
                 </p>
               </div>
