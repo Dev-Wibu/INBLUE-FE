@@ -1,11 +1,4 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -15,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import { Circle, Edit3, MoreHorizontal, Search } from "lucide-react";
+import { Circle, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { QuestionBank, QuestionCategory } from "../types";
 
@@ -47,7 +40,7 @@ const DIFF_CONFIG = {
 function formatDate(s?: string | Date) {
   if (!s) return null;
   try {
-    return format(new Date(s), "dd/MM/yyyy HH:mm");
+    return format(new Date(s), "dd/MM/yyyy");
   } catch {
     return null;
   }
@@ -102,26 +95,23 @@ export function QuestionBankTable({
       <Table>
         <TableHeader>
           <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[90px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               #ID
             </TableHead>
-            <TableHead className="min-w-[280px] font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="max-w-[380px] min-w-[240px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminQuestionbankmanagement.questionContent", "Nội dung câu hỏi")}
             </TableHead>
-            <TableHead className="w-[160px] font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="min-w-[150px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("general.category", "Danh mục")}
             </TableHead>
-            <TableHead className="w-[120px] font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("general.difficulty", "Độ khó")}
             </TableHead>
-            <TableHead className="w-[100px] text-center font-semibold text-slate-700 dark:text-slate-200">
-              {t("adminCodingProblem.columnToggle", "Bật/Tắt")}
+            <TableHead className="w-[140px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
+              {t("common.status", "Trạng thái")}
             </TableHead>
-            <TableHead className="w-[140px] font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[140px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
               {t("common.createdDate", "Ngày tạo")}
-            </TableHead>
-            <TableHead className="w-[80px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
-              Thao tác
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -148,7 +138,7 @@ export function QuestionBankTable({
                   </div>
                 </TableCell>
 
-                <TableCell className="max-w-md py-4">
+                <TableCell className="max-w-[380px] px-4 py-4">
                   <p
                     className="truncate text-sm font-bold text-slate-900 dark:text-slate-100"
                     title={q.questionText}>
@@ -157,36 +147,47 @@ export function QuestionBankTable({
                   </p>
                 </TableCell>
 
-                <TableCell className="py-4">
-                  <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                <TableCell className="px-4 py-4">
+                  <Badge
+                    variant="outline"
+                    className="border-slate-200 bg-slate-100/80 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     {getCategoryName(q)}
-                  </span>
+                  </Badge>
                 </TableCell>
 
-                <TableCell className="py-4">
+                <TableCell className="px-4 py-4">
                   <div className={`flex items-center gap-1.5 text-xs font-bold ${diff.cls}`}>
                     <Circle className={`h-2.5 w-2.5 ${diff.fill}`} />
                     {diff.label}
                   </div>
                 </TableCell>
 
-                <TableCell className="py-4 text-center" onClick={(e) => e.stopPropagation()}>
-                  {onToggleStatus ? (
-                    <Switch
-                      checked={isActive}
-                      disabled={!isActive}
-                      onCheckedChange={(val) => onToggleStatus(q, val)}
-                      className="shadow-sm data-[state=checked]:bg-emerald-500"
-                    />
+                <TableCell className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                  {isActive ? (
+                    <button
+                      type="button"
+                      onClick={() => onToggleStatus?.(q, false)}
+                      title={t("common.clickToDisable", "Nhấp để tắt")}
+                      className="group/status inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-50/80 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-2xs transition-all hover:bg-emerald-100/90 dark:border-emerald-500/30 dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-950/90">
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                      </span>
+                      <span>{t("common.active", "Hoạt động")}</span>
+                    </button>
                   ) : (
-                    <span
-                      className={`text-xs font-semibold ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
-                      {isActive ? t("common.active", "Bật") : t("common.inactive", "Tắt")}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onToggleStatus?.(q, true)}
+                      title={t("common.clickToEnable", "Nhấp me để bật")}
+                      className="group/status inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/80 px-3 py-1 text-xs font-semibold text-slate-600 transition-all hover:bg-slate-200/80 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                      <span className="h-2 w-2 rounded-full bg-slate-400 dark:bg-slate-500"></span>
+                      <span>{t("common.shutDown", "Đã tắt")}</span>
+                    </button>
                   )}
                 </TableCell>
 
-                <TableCell className="py-4">
+                <TableCell className="py-4 pr-6 text-right">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {(q as any).createdAt ? (
                     <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -196,27 +197,6 @@ export function QuestionBankTable({
                   ) : (
                     <span className="text-xs text-slate-400">—</span>
                   )}
-                </TableCell>
-
-                <TableCell className="py-4 pr-6 text-right" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40 rounded-xl">
-                      <DropdownMenuItem
-                        onClick={() => onEdit(q)}
-                        className="cursor-pointer gap-2 text-xs font-medium">
-                        <Edit3 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                        Chỉnh sửa
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             );
