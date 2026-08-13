@@ -355,10 +355,10 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
               <button
                 type="button"
                 onClick={() => setActiveView("mentor")}
-                className={`flex w-full cursor-pointer items-center justify-between rounded-2xl border p-3.5 text-left transition-all ${
+                className={`flex w-full cursor-pointer items-center justify-between rounded-2xl p-3.5 text-left transition-all ${
                   activeView === "mentor"
-                    ? "border-amber-400 bg-amber-50/60 shadow-xs ring-2 ring-amber-400/20 dark:border-amber-500/80 dark:bg-amber-950/40"
-                    : "border-slate-100 bg-slate-50/60 hover:border-amber-300 hover:bg-amber-50/30 dark:border-slate-800/60 dark:bg-slate-950/40"
+                    ? "border-2 border-amber-500 bg-white shadow-xs ring-2 ring-amber-400/25 dark:border-amber-400 dark:bg-slate-900 dark:ring-amber-400/20"
+                    : "border border-slate-200/90 bg-slate-50/60 hover:border-amber-300 dark:border-slate-800/80 dark:bg-slate-950/40 dark:hover:border-amber-500/50"
                 }`}>
                 <div className="space-y-1">
                   <p className="text-[11px] font-extrabold text-amber-700 uppercase dark:text-amber-400">
@@ -382,10 +382,10 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
               <button
                 type="button"
                 onClick={() => setActiveView("candidate")}
-                className={`flex w-full cursor-pointer items-center justify-between rounded-2xl border p-3.5 text-left transition-all ${
+                className={`flex w-full cursor-pointer items-center justify-between rounded-2xl p-3.5 text-left transition-all ${
                   activeView === "candidate"
-                    ? "border-sky-400 bg-sky-50/60 shadow-xs ring-2 ring-sky-400/20 dark:border-sky-500/80 dark:bg-sky-950/40"
-                    : "border-slate-100 bg-slate-50/60 hover:border-sky-300 hover:bg-sky-50/30 dark:border-slate-800/60 dark:bg-slate-950/40"
+                    ? "border-2 border-sky-500 bg-white shadow-xs ring-2 ring-sky-400/25 dark:border-sky-400 dark:bg-slate-900 dark:ring-sky-400/20"
+                    : "border border-slate-200/90 bg-slate-50/60 hover:border-sky-300 dark:border-slate-800/80 dark:bg-slate-950/40 dark:hover:border-sky-500/50"
                 }`}>
                 <div className="space-y-1">
                   <p className="text-[11px] font-extrabold text-sky-700 uppercase dark:text-sky-400">
