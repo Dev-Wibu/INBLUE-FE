@@ -388,7 +388,7 @@ export function KioskDetailPage() {
         </div>
         <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.7fr_1.6fr_1fr_auto] lg:items-center">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.7fr_1.6fr_1fr_auto] lg:items-center [&_p:first-child]:hidden [&>div:nth-child(2)]:hidden">
               <div>
                 <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                   {t("adminKioskManagement.kioskName", "Tên trạm Kiosk")}
@@ -439,7 +439,7 @@ export function KioskDetailPage() {
                 {t("common.edit", "Chỉnh sửa")}
               </Button>
             </div>
-            <div className="mt-4 flex items-center justify-between border-t border-slate-200/80 pt-3 dark:border-slate-800/80">
+            <div className="hidden">
               <div className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white">
