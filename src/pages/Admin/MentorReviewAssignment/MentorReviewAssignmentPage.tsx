@@ -61,7 +61,9 @@ function sortByOldestFirst(a: AdminDetailItem, b: AdminDetailItem): number {
   return aTime - bTime;
 }
 
-function renderStatusBadge(detail: AdminDetailItem, t: (_key: string) => string) {
+// Use i18next TFunction so it accepts both single-arg and (key, fallback) calls.
+type TranslateFn = import("i18next").TFunction;
+function renderStatusBadge(detail: AdminDetailItem, t: TranslateFn) {
   const status = detail.status;
   if (status === "AWAITING_MENTOR") {
     return (
