@@ -14,7 +14,7 @@ import type { ApiResponse } from "@/interfaces";
 import { cn, extractDataArray } from "@/lib/utils";
 import { questionBankManager } from "@/services/question-bank.manager";
 import { questionCategoryManager } from "@/services/question-category.manager";
-import { Plus, Search } from "lucide-react";
+import { ArrowLeft, Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -33,6 +33,10 @@ export function QuestionBankManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
+  // Category Drill-down State (matching Company Management drill-down behavior)
+  const [selectedCategoryForDrilldown, setSelectedCategoryForDrilldown] =
+    useState<QuestionCategory | null>(null);
+
   // Filters State
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("ALL");
@@ -46,16 +50,18 @@ export function QuestionBankManagementPage() {
   // Filter questions
   const filteredQuestions = useMemo(() => {
     let list = [...questions];
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (item) => item.questionText?.toLowerCase().includes(q) || item.id?.toString().includes(q)
-      );
-    }
-    if (selectedDifficulty !== "ALL") {
-      list = list.filter((item) => item.questionLevel === selectedDifficulty);
-    }
-    if (selectedCategory !== "ALL") {
+
+    // If drilling down into a category
+    if (selectedCategoryForDrilldown) {
+      list = list.filter((item) => {
+        const anyQ = item as unknown as {
+          questionCategoryId?: number | string;
+          categoryId?: number | string;
+        };
+        const catId = item.questionCategory?.id ?? anyQ.questionCategoryId ?? anyQ.categoryId;
+        return String(catId) === String(selectedCategoryForDrilldown.id);
+      });
+    } else if (selectedCategory !== "ALL") {
       list = list.filter((item) => {
         const anyQ = item as unknown as {
           questionCategoryId?: number | string;
@@ -65,8 +71,20 @@ export function QuestionBankManagementPage() {
         return String(catId) === selectedCategory;
       });
     }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (item) => item.questionText?.toLowerCase().includes(q) || item.id?.toString().includes(q)
+      );
+    }
+
+    if (selectedDifficulty !== "ALL") {
+      list = list.filter((item) => item.questionLevel === selectedDifficulty);
+    }
+
     return list;
-  }, [questions, searchQuery, selectedDifficulty, selectedCategory]);
+  }, [questions, selectedCategoryForDrilldown, selectedCategory, searchQuery, selectedDifficulty]);
 
   const pagination = usePagination({
     totalCount: filteredQuestions.length,
@@ -84,6 +102,23 @@ export function QuestionBankManagementPage() {
 
   // Stats calculation
   const stats = useMemo(() => {
+    if (selectedCategoryForDrilldown) {
+      const catQuestions = questions.filter((q) => {
+        const anyQ = q as unknown as {
+          questionCategoryId?: number | string;
+          categoryId?: number | string;
+        };
+        const catId = q.questionCategory?.id ?? anyQ.questionCategoryId ?? anyQ.categoryId;
+        return String(catId) === String(selectedCategoryForDrilldown.id);
+      });
+      const activeCount = catQuestions.filter(
+        (q) =>
+          (q as unknown as { isDeleted?: boolean }).isDeleted === false ||
+          (q as unknown as { isDeleted?: boolean }).isDeleted === undefined
+      ).length;
+      return { total: catQuestions.length, activeCount, categoryCount: 1 };
+    }
+
     const total = questions.length;
     const activeCount = questions.filter(
       (q) =>
@@ -105,7 +140,7 @@ export function QuestionBankManagementPage() {
         .filter(Boolean)
     ).size;
     return { total, activeCount, categoryCount };
-  }, [questions]);
+  }, [questions, selectedCategoryForDrilldown]);
 
   useEffect(() => {
     fetchData();
@@ -199,20 +234,53 @@ export function QuestionBankManagementPage() {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
-            {/* Main Top Header Card (100% matching Company Management Page layout) */}
+            {/* Main Top Header Card (100% matching Company Management Page drill-down layout) */}
             <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
               <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {t("adminQuestionbankmanagement.title", "Ngân hàng câu hỏi")}
-                  </h2>
-                  <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-                    {t(
-                      "adminQuestionbankmanagement.subtitle",
-                      "Quản lý danh sách câu hỏi trắc nghiệm và chuyên mục phỏng vấn"
-                    )}
-                  </p>
-                </div>
+                {selectedCategoryForDrilldown ? (
+                  <div className="flex items-start gap-3">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setSelectedCategoryForDrilldown(null)}
+                      className="mt-0.5 h-9 w-9 shrink-0 rounded-xl border-slate-200 hover:bg-slate-100 hover:text-indigo-600 dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                      <ArrowLeft className="h-4.5 w-4.5" />
+                    </Button>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCategoryForDrilldown(null)}
+                          className="text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+                          {t(
+                            "adminQuestionbankmanagement.categoryManagement",
+                            "Quản lý chuyên mục"
+                          )}
+                        </button>
+                        <span className="text-xs font-medium text-slate-400">/</span>
+                        <span className="text-base font-bold text-slate-900 dark:text-white">
+                          {selectedCategoryForDrilldown.categoryName}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                        Danh sách câu hỏi phỏng vấn thuộc chuyên mục{" "}
+                        {selectedCategoryForDrilldown.categoryName}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                      {t("adminQuestionbankmanagement.title", "Ngân hàng câu hỏi")}
+                    </h2>
+                    <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                      {t(
+                        "adminQuestionbankmanagement.subtitle",
+                        "Quản lý danh sách câu hỏi trắc nghiệm và chuyên mục phỏng vấn"
+                      )}
+                    </p>
+                  </div>
+                )}
 
                 {/* Stats Counters */}
                 <div className="flex items-center justify-center gap-5 sm:gap-6">
@@ -244,28 +312,30 @@ export function QuestionBankManagementPage() {
                 onSubmit={(e) => e.preventDefault()}
                 className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                 {/* Inline Tab Switcher Pills */}
-                <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-200/90 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-950/70">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("questions")}
-                    className={`rounded-lg px-3.5 py-2 text-[13.5px] font-semibold transition-all ${
-                      activeTab === "questions"
-                        ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-900 dark:text-indigo-400"
-                        : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                    }`}>
-                    {t("adminQuestionbankmanagement.questionList", "Danh sách câu hỏi")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("categories")}
-                    className={`rounded-lg px-3.5 py-2 text-[13.5px] font-semibold transition-all ${
-                      activeTab === "categories"
-                        ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-900 dark:text-indigo-400"
-                        : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                    }`}>
-                    {t("adminQuestionbankmanagement.categoryManagement", "Quản lý chuyên mục")}
-                  </button>
-                </div>
+                {!selectedCategoryForDrilldown && (
+                  <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-200/90 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-950/70">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("questions")}
+                      className={`rounded-lg px-3.5 py-2 text-[13.5px] font-semibold transition-all ${
+                        activeTab === "questions"
+                          ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-900 dark:text-indigo-400"
+                          : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                      }`}>
+                      {t("adminQuestionbankmanagement.questionList", "Danh sách câu hỏi")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("categories")}
+                      className={`rounded-lg px-3.5 py-2 text-[13.5px] font-semibold transition-all ${
+                        activeTab === "categories"
+                          ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-900 dark:text-indigo-400"
+                          : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                      }`}>
+                      {t("adminQuestionbankmanagement.categoryManagement", "Quản lý chuyên mục")}
+                    </button>
+                  </div>
+                )}
 
                 {/* Search Input */}
                 <div className="relative flex-1">
@@ -289,7 +359,7 @@ export function QuestionBankManagementPage() {
                   {t("common.search", "Tìm kiếm")}
                 </Button>
 
-                {activeTab === "questions" ? (
+                {activeTab === "questions" || selectedCategoryForDrilldown ? (
                   <Button
                     type="button"
                     onClick={handleCreate}
@@ -312,8 +382,8 @@ export function QuestionBankManagementPage() {
                 )}
               </form>
 
-              {/* Status & Filter Pills Row BELOW Search Bar (100% matching Company & User Management) */}
-              {activeTab === "questions" && (
+              {/* Status & Filter Pills Row BELOW Search Bar */}
+              {(activeTab === "questions" || selectedCategoryForDrilldown) && (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <span className="mr-1 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
                     Mức độ:
@@ -340,29 +410,32 @@ export function QuestionBankManagementPage() {
                     </button>
                   ))}
 
-                  <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-800" />
-
-                  <span className="mr-1 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
-                    Chuyên mục:
-                  </span>
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={(val) => {
-                      setSelectedCategory(val);
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger className="h-[36px] min-w-[170px] rounded-full border border-slate-200/90 bg-white text-[13.5px] font-medium shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-                      <SelectValue placeholder="Tất cả chuyên mục" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="ALL">Tất cả chuyên mục</SelectItem>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={String(cat.id)}>
-                          {cat.categoryName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {!selectedCategoryForDrilldown && (
+                    <>
+                      <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-800" />
+                      <span className="mr-1 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                        Chuyên mục:
+                      </span>
+                      <Select
+                        value={selectedCategory}
+                        onValueChange={(val) => {
+                          setSelectedCategory(val);
+                          pagination.goToFirstPage();
+                        }}>
+                        <SelectTrigger className="h-[36px] min-w-[170px] rounded-full border border-slate-200/90 bg-white text-[13.5px] font-medium shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                          <SelectValue placeholder="Tất cả chuyên mục" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value="ALL">Tất cả chuyên mục</SelectItem>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={String(cat.id)}>
+                              {cat.categoryName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </>
+                  )}
 
                   {isFilterActive && (
                     <span className="ml-auto text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -373,8 +446,8 @@ export function QuestionBankManagementPage() {
               )}
             </div>
 
-            {/* Table Container Card (Matching Company Management style) */}
-            {activeTab === "questions" ? (
+            {/* Table Container Card (Matching Company Management drill-down style) */}
+            {activeTab === "questions" || selectedCategoryForDrilldown ? (
               <div className="flex-1 overflow-auto rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <QuestionBankTable
                   questions={pageItems}
@@ -399,9 +472,10 @@ export function QuestionBankManagementPage() {
             ) : (
               <QuestionBankCategoryTab
                 questions={questions}
-                onEditQuestion={handleEdit}
+                onSelectCategory={(cat) => setSelectedCategoryForDrilldown(cat)}
                 isCreatingExternally={isCreatingCategory}
                 onCancelCreateExternally={() => setIsCreatingCategory(false)}
+                onCategoryUpdate={fetchData}
               />
             )}
           </div>
@@ -418,7 +492,12 @@ export function QuestionBankManagementPage() {
       {/* Editor Modal */}
       {isAuthoring && (
         <QuestionBankEditor
-          initialData={editingQuestion}
+          initialData={
+            editingQuestion ||
+            (selectedCategoryForDrilldown
+              ? ({ questionCategory: selectedCategoryForDrilldown } as QuestionBank)
+              : null)
+          }
           categories={categories}
           isOpen={isAuthoring}
           onOpenChange={setIsAuthoring}

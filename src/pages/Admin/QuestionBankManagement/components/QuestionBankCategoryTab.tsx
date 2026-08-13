@@ -10,32 +10,30 @@ import {
 import { Input } from "@/components/ui/input";
 import { extractDataArray } from "@/lib/utils";
 import { questionCategoryManager } from "@/services/question-category.manager";
-import { ArrowLeft, Edit2, Folder, FolderPlus, Trash2 } from "lucide-react";
+import { Edit2, Folder, FolderPlus, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { QuestionBank, QuestionCategory } from "../types";
-import { QuestionBankTable } from "./QuestionBankTable";
 
 interface QuestionBankCategoryTabProps {
   questions?: QuestionBank[];
-  onEditQuestion?: (q: QuestionBank) => void;
+  onSelectCategory: (cat: QuestionCategory) => void;
   isCreatingExternally?: boolean;
   onCancelCreateExternally?: () => void;
+  onCategoryUpdate?: () => void;
 }
 
 export function QuestionBankCategoryTab({
   questions = [],
-  onEditQuestion,
+  onSelectCategory,
   isCreatingExternally,
   onCancelCreateExternally,
+  onCategoryUpdate,
 }: QuestionBankCategoryTabProps) {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Drill-down state
-  const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | null>(null);
 
   // Inline Edit states
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -124,6 +122,7 @@ export function QuestionBankCategoryTab({
         toast.success(t("general.updateSuccess"));
         handleCancelEdit();
         fetchCategories();
+        onCategoryUpdate?.();
       } else {
         toast.error(res.error || t("general.updateFailed"));
       }
@@ -155,6 +154,7 @@ export function QuestionBankCategoryTab({
         toast.success(t("general.addSuccess"));
         handleCancelCreate();
         fetchCategories();
+        onCategoryUpdate?.();
       } else {
         toast.error(res.error || t("general.addFailed"));
       }
@@ -180,6 +180,7 @@ export function QuestionBankCategoryTab({
         toast.success(t("general.deleteSuccess"));
         setIsDeleteDialogOpen(false);
         fetchCategories();
+        onCategoryUpdate?.();
       } else {
         toast.error(res.error || t("general.deleteFailed"));
       }
@@ -202,69 +203,9 @@ export function QuestionBankCategoryTab({
 
   const handleCardClick = (cat: QuestionCategory) => {
     if (editingId === cat.id) return;
-    setSelectedCategory(cat);
+    onSelectCategory(cat);
   };
 
-  // --- Render Drill-down View ---
-  if (selectedCategory) {
-    const categoryQuestions = questions.filter((q) => {
-      const anyQ = q as unknown as { questionCategoryId?: number; categoryId?: number };
-      const catId = q.questionCategory?.id ?? anyQ.questionCategoryId ?? anyQ.categoryId;
-      return catId === selectedCategory.id;
-    });
-
-    return (
-      <div className="animate-in fade-in slide-in-from-right-4 flex flex-col space-y-4 duration-300">
-        {/* Sleek 1-Line Inline Breadcrumb Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 px-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedCategory(null)}
-              className="h-8 gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-              <ArrowLeft className="h-4 w-4" />
-              <span>Quản lý chuyên mục</span>
-            </Button>
-            <span className="text-xs font-medium text-slate-400">/</span>
-            <span className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
-              <Folder className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              {selectedCategory.categoryName}
-            </span>
-          </div>
-
-          <Badge
-            variant="secondary"
-            className="rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-            {categoryQuestions.length} câu hỏi
-          </Badge>
-        </div>
-
-        {/* Questions Table inside Category */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          {categoryQuestions.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center gap-2 py-12 text-center">
-              <Folder className="h-10 w-10 text-slate-300 dark:text-slate-600" />
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
-                Chưa có câu hỏi nào
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Chưa có câu hỏi nào được gán cho chuyên mục này.
-              </p>
-            </div>
-          ) : (
-            <QuestionBankTable
-              questions={categoryQuestions}
-              categories={categories}
-              onEdit={onEditQuestion || (() => {})}
-            />
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // --- Render Folders Grid View ---
   return (
     <div className="animate-in fade-in slide-in-from-left-4 flex flex-col space-y-4 duration-300">
       <div className="flex items-center justify-between">
