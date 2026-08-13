@@ -287,12 +287,15 @@ export function MentorReviewAssignmentPage() {
             </div>
             <div className="flex items-center justify-center gap-5 sm:gap-6">
               {[
-                [counts.awaitingMentor, t("adminMentorReviewAssignment.filterAwaitingMentor")],
+                [
+                  counts.awaitingMentor,
+                  t("adminMentorReviewAssignment.filterAwaitingMentor", "Chờ gán"),
+                ],
                 [
                   counts.awaitingCandidateSelect,
-                  t("adminMentorReviewAssignment.filterAwaitingCandidateSelect"),
+                  t("adminMentorReviewAssignment.filterAwaitingCandidateSelect", "Chờ UV chọn"),
                 ],
-                [counts.slotPicked, t("adminMentorReviewAssignment.filterSlotPicked")],
+                [counts.all, t("common.total", "Tổng cộng")],
               ].map(([value, label], index) => (
                 <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
                   {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
