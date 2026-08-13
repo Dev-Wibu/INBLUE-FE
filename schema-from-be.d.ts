@@ -4149,8 +4149,6 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
             /** Format: int32 */
@@ -4159,22 +4157,24 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            first?: boolean;
+            last?: boolean;
             empty?: boolean;
         };
         PageableObject: {
             /** Format: int32 */
             pageNumber?: number;
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -4504,19 +4504,19 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            trimDirectiveWhitespaces?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
-            includePreludes?: string[];
-            includeCodas?: string[];
             errorOnELNotFound?: string;
-            elIgnored?: string;
-            trimDirectiveWhitespaces?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
+            includePreludes?: string[];
+            includeCodas?: string[];
+            isXml?: string;
+            elIgnored?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
             buffer?: string;
-            isXml?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -4550,7 +4550,9 @@ export interface components {
             };
         };
         ServletContext: {
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
             /** Format: int32 */
             sessionTimeout?: number;
             requestCharacterEncoding?: string;
@@ -4559,9 +4561,6 @@ export interface components {
             effectiveMajorVersion?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
-            serverInfo?: string;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             servletContextName?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
@@ -4572,6 +4571,7 @@ export interface components {
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -4652,9 +4652,9 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
+            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -4888,6 +4888,8 @@ export interface components {
             candidateName?: string;
             candidateEmail?: string;
             candidateAvatarUrl?: string;
+            companyName?: string;
+            companyLogo?: string;
         };
         ActiveInterviewItem: {
             /** Format: int64 */

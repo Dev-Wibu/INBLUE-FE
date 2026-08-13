@@ -24,13 +24,20 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SpinnerBlock } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAdminApplicationDetails } from "@/hooks/useAdminApplicationDetails";
 import { useAssignMentor, useAssignMentors } from "@/hooks/useApplicationDetails";
 import { useMentors } from "@/hooks/useMentor";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import type { AdminApplicationDetailResponse } from "@/services/admin-application.manager";
 import {
@@ -109,24 +116,6 @@ function renderStatusBadge(detail: AdminDetailItem, t: (_key: string) => string)
     );
   }
   return <Badge variant="outline">{status ?? "-"}</Badge>;
-}
-
-function renderRowAvatar(detail: AdminDetailItem) {
-  const name = detail.candidateName ?? detail.candidateEmail ?? "#";
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase() ?? "")
-    .join("");
-  return (
-    <Avatar className="h-10 w-10">
-      {detail.candidateAvatarUrl ? (
-        <AvatarImage src={detail.candidateAvatarUrl} alt={name} />
-      ) : null}
-      <AvatarFallback className="text-xs font-medium">{initials || "?"}</AvatarFallback>
-    </Avatar>
-  );
 }
 
 export function MentorReviewAssignmentPage() {
@@ -489,191 +478,209 @@ export function MentorReviewAssignmentPage() {
           </div>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            {/* Table header */}
-            <div className="text-muted-foreground hidden border-b bg-gray-100/70 px-4 py-2 text-xs font-semibold tracking-wider uppercase sm:grid sm:grid-cols-12 sm:gap-2 sm:px-4 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
-              <div className="sm:col-span-4">{t("adminMentorReviewAssignment.candidate")}</div>
-              <div className="sm:col-span-3">{t("adminMentorReviewAssignment.jobDescription")}</div>
-              <div className="sm:col-span-2">{t("adminMentorReviewAssignment.roundName")}</div>
-              <div className="text-center sm:col-span-1">
-                {t("adminMentorReviewAssignment.aiScore")}
-              </div>
-              <div className="text-right sm:col-span-2">
-                {t("adminMentorReviewAssignment.action")}
-              </div>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                  <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                    {t("common.id", "ID")}
+                  </TableHead>
+                  <TableHead className="w-[22%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {t("adminMentorReviewAssignment.candidate", "Ứng viên")}
+                  </TableHead>
+                  <TableHead className="w-[26%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                    Công ty & Vị trí tuyển dụng
+                  </TableHead>
+                  <TableHead className="w-[16%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {t("adminMentorReviewAssignment.roundName", "Vòng & Điểm AI")}
+                  </TableHead>
+                  <TableHead className="w-[15%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {t("common.status", "Trạng thái")}
+                  </TableHead>
+                  <TableHead className="w-[15%] min-w-[140px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
+                    {t("adminMentorReviewAssignment.action", "Thao tác")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageData.map((detail) => {
+                  const status = detail.status;
+                  const isAwaitingMentor = status === "AWAITING_MENTOR";
+                  const isAwaitingCandidate = status === "AWAITING_CANDIDATE_SELECT_MENTOR";
+                  const hasRoom = status === "PENDING" && detail.sessionId != null;
 
-            {pageData.map((detail) => {
-              // BE rule (mentor-review-assignment API doc):
-              //   AWAITING_MENTOR              -> assign single -> status -> PENDING (gone from this view)
-              //   AWAITING_CANDIDATE_SELECT    -> admin can REASSIGN suggested mentors while UV picks
-              //   PENDING (with session)       -> room already created, READ-ONLY
-              //   Anything else (SUBMITTED/AI_EVALUATED/COMPLETED/SLOT_PICKED) -> READ-ONLY
-              const status = detail.status;
-              const isAwaitingMentor = status === "AWAITING_MENTOR";
-              const isAwaitingCandidate = status === "AWAITING_CANDIDATE_SELECT_MENTOR";
-              const hasSuggestedMentors =
-                (detail.assignedMentorIds?.length ?? 0) > 0 ||
-                (detail.assignedMentors?.length ?? 0) > 0;
-              const hasRoom = status === "PENDING" && detail.sessionId != null;
+                  const companyName =
+                    ((detail as Record<string, unknown>).companyName as string) ||
+                    ((detail as Record<string, unknown>).company_name as string) ||
+                    ((detail as Record<string, unknown>).company as string) ||
+                    "Công ty tuyển dụng";
 
-              return (
-                <div
-                  key={detail.id}
-                  className="border-border/60 hover:bg-muted/40 border-b transition-colors last:border-b-0 dark:hover:bg-slate-800/40">
-                  <div className="grid grid-cols-1 gap-3 px-4 py-3 sm:grid sm:grid-cols-12 sm:items-center sm:gap-2">
-                    {/* Candidate */}
-                    <div className="flex items-center gap-3 sm:col-span-4">
-                      {renderRowAvatar(detail)}
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold">
-                          {detail.candidateName ?? "-"}
-                        </div>
-                        {detail.candidateEmail && (
-                          <div className="text-muted-foreground truncate text-xs">
-                            {detail.candidateEmail}
+                  const companyLogo =
+                    ((detail as Record<string, unknown>).companyLogoUrl as string) ||
+                    ((detail as Record<string, unknown>).companyLogo as string) ||
+                    ((detail as Record<string, unknown>).company_logo_url as string) ||
+                    ((detail as Record<string, unknown>).company_logo as string);
+
+                  return (
+                    <TableRow
+                      key={detail.id}
+                      className="group border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                      {/* ID */}
+                      <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                        <div className="flex items-center gap-2">
+                          <span>#{detail.id}</span>
+                          <div
+                            className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                            aria-hidden="true">
+                            <div className="h-3.5 w-3.5"></div>
+                            <div className="h-3.5 w-3.5"></div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* JD */}
-                    <div className="sm:col-span-3">
-                      <div className="line-clamp-2 text-sm">{detail.jdTitle ?? "-"}</div>
-                      <div className="text-muted-foreground text-xs">
-                        {t("adminMentorReviewAssignment.application")} #{detail.applicationId} ·{" "}
-                        {t("adminMentorReviewAssignment.detailId")} #{detail.id}
-                      </div>
-                    </div>
-
-                    {/* Round */}
-                    <div className="sm:col-span-2">
-                      <div className="text-sm font-medium">{detail.roundName ?? "-"}</div>
-                      {detail.roundOrder && (
-                        <div className="text-muted-foreground text-xs">
-                          {t("adminMentorReviewAssignment.round")} {detail.roundOrder}
                         </div>
-                      )}
-                    </div>
+                      </TableCell>
 
-                    {/* AI score */}
-                    <div className="text-center sm:col-span-1">
-                      {detail.aiScore != null ? (
-                        <Badge variant="secondary" className="font-mono text-xs tabular-nums">
-                          {detail.aiScore.toFixed(1)}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">-</span>
-                      )}
-                    </div>
+                      {/* Candidate */}
+                      <TableCell className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                            {detail.candidateAvatarUrl ? (
+                              <AvatarImage
+                                src={detail.candidateAvatarUrl}
+                                alt={detail.candidateName || ""}
+                                className="object-cover"
+                              />
+                            ) : null}
+                            <AvatarFallback className="rounded-[14px] bg-indigo-50 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
+                              {(detail.candidateName ?? detail.candidateEmail ?? "?")
+                                .charAt(0)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-semibold text-slate-900 dark:text-white">
+                              {detail.candidateName ?? "-"}
+                            </div>
+                            {detail.candidateEmail && (
+                              <div className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                {detail.candidateEmail}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
 
-                    {/* Action */}
-                    <div className="flex flex-col items-stretch justify-end gap-1 sm:col-span-2 sm:items-end">
-                      {isAwaitingMentor && (
-                        <Button
-                          size="sm"
-                          onClick={() => openAssignDialog(detail)}
-                          className="gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700">
-                          <UserPlus className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">{t("adminKiosk.assignMentor")}</span>
-                          <span className="sm:hidden">
-                            {t("adminMentorReviewAssignment.actionAssign")}
-                          </span>
-                        </Button>
-                      )}
-                      {isAwaitingCandidate && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openAssignDialog(detail)}
-                            className="gap-1.5 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-900/30">
-                            <RefreshCw className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">
-                              {t("adminMentorReviewAssignment.reassign")}
-                            </span>
-                            <span className="sm:hidden">
-                              {t("adminMentorReviewAssignment.actionAssign")}
-                            </span>
-                          </Button>
-                          {hasSuggestedMentors &&
-                            detail.assignedMentors?.slice(0, 3).map((m) => (
-                              <span
-                                key={m.id}
-                                className="text-muted-foreground truncate text-[11px]">
-                                • {m.name}
+                      {/* Company & Job Description */}
+                      <TableCell className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                            {companyLogo ? (
+                              <AvatarImage
+                                src={companyLogo}
+                                alt={companyName}
+                                className="object-cover"
+                              />
+                            ) : null}
+                            <AvatarFallback className="rounded-[14px] bg-sky-50 text-xs font-semibold text-sky-700 dark:bg-sky-950/80 dark:text-sky-300">
+                              {companyName.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-semibold text-slate-900 dark:text-white">
+                              {companyName}
+                            </div>
+                            <div className="line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
+                              {detail.jdTitle ?? "-"}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      {/* Round & AI Score */}
+                      <TableCell className="px-4 py-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {detail.roundName ?? "-"}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {detail.roundOrder && (
+                              <span className="text-xs text-slate-500 dark:text-slate-400">
+                                Vòng {detail.roundOrder}
                               </span>
-                            ))}
-                        </>
-                      )}
-                      {!isAwaitingMentor && !isAwaitingCandidate && hasRoom && (
-                        <Badge
-                          variant="outline"
-                          className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
-                          <CheckCircle2 className="h-3 w-3" />
-                          {t("adminMentorReviewAssignment.roomCreated")}
-                        </Badge>
-                      )}
-                      {!isAwaitingMentor &&
-                        !isAwaitingCandidate &&
-                        !hasRoom &&
-                        renderStatusBadge(detail, t)}
-                    </div>
+                            )}
+                            {detail.aiScore != null && (
+                              <Badge
+                                variant="outline"
+                                className="border-indigo-200 bg-indigo-50/70 font-mono text-[11px] font-bold text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/60 dark:text-indigo-300">
+                                AI: {detail.aiScore.toFixed(1)}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
 
-                    {/* Mobile-only metadata */}
-                    <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs sm:hidden">
-                      {renderStatusBadge(detail, t)}
-                      {hasRoom && (
-                        <Badge
-                          variant="outline"
-                          className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
-                          <CheckCircle2 className="h-3 w-3" />
-                          {t("adminMentorReviewAssignment.roomCreated")}
-                        </Badge>
-                      )}
-                      {detail.createdAt && (
-                        <span>
-                          {t("adminMentorReviewAssignment.createdAt")}:{" "}
-                          {formatDateTime(treatZuluAsVietnamLocal(detail.createdAt))}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                      {/* Status */}
+                      <TableCell className="px-4 py-4">
+                        <div className="flex flex-col gap-1">
+                          {renderStatusBadge(detail, t)}
+                          {hasRoom && (
+                            <Badge
+                              variant="outline"
+                              className="w-fit gap-1 border-emerald-200 bg-emerald-50/70 text-[10px] font-bold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
+                              <CheckCircle2 className="h-3 w-3" />
+                              {t("adminMentorReviewAssignment.roomCreated", "Phòng đã tạo")}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
 
-                  {/* Expanded metadata on desktop */}
-                  <div className="text-muted-foreground hidden gap-4 px-4 pb-3 text-xs sm:flex">
-                    {renderStatusBadge(detail, t)}
-                    {hasRoom && (
-                      <Badge
-                        variant="outline"
-                        className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
-                        <CheckCircle2 className="h-3 w-3" />
-                        {t("adminMentorReviewAssignment.roomCreated")}
-                      </Badge>
-                    )}
-                    {detail.createdAt && (
-                      <span>
-                        {t("adminMentorReviewAssignment.createdAt")}:{" "}
-                        {formatDateTime(treatZuluAsVietnamLocal(detail.createdAt))}
-                      </span>
-                    )}
-                    {detail.sessionId != null && (
-                      <span>
-                        Session #{detail.sessionId}
-                        {detail.aiInterviewSessionId != null &&
-                          ` · AI #${detail.aiInterviewSessionId}`}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-            {pageData.length > 0 && (
-              <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800 dark:bg-slate-900">
+                      {/* Action */}
+                      <TableCell className="py-4 pr-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {isAwaitingMentor && (
+                            <Button
+                              size="sm"
+                              onClick={() => openAssignDialog(detail)}
+                              className="h-8 gap-1.5 rounded-xl bg-indigo-600 px-3 text-xs font-semibold text-white shadow-2xs hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700">
+                              <UserPlus className="h-3.5 w-3.5" />
+                              <span>{t("adminKiosk.assignMentor", "Gán Mentor")}</span>
+                            </Button>
+                          )}
+                          {isAwaitingCandidate && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openAssignDialog(detail)}
+                              className="h-8 gap-1.5 rounded-xl border-amber-300 bg-amber-50 px-3 text-xs font-semibold text-amber-800 shadow-2xs hover:bg-amber-100 dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-300">
+                              <RefreshCw className="h-3.5 w-3.5" />
+                              <span>{t("adminMentorReviewAssignment.reassign", "Đổi Mentor")}</span>
+                            </Button>
+                          )}
+                          {!isAwaitingMentor && !isAwaitingCandidate && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => openAssignDialog(detail)}
+                              className="h-8 gap-1 rounded-xl px-2.5 text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+                              <Eye className="h-3.5 w-3.5" />
+                              <span>Xem</span>
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+
+            {filteredDetails.length > 0 && (
+              <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800 dark:bg-slate-900">
                 <PaginationControl
                   pagination={pagination}
-                  onPageSizeChange={setPageSize}
                   showBoundaryButtons={false}
                   showPageJump={false}
+                  onPageSizeChange={(nextPageSize) => {
+                    setPageSize(nextPageSize);
+                    pagination.goToFirstPage();
+                  }}
                 />
               </div>
             )}
@@ -852,15 +859,27 @@ function AssignMentorDialog({
                   <p className="truncate text-sm text-slate-500 dark:text-slate-400">
                     {detail.candidateEmail ?? "-"}
                   </p>
-                  {(detail.jdTitle || detail.roundName) && (
+                  {((detail as Record<string, unknown>).companyName ||
+                    (detail as Record<string, unknown>).company_name ||
+                    detail.jdTitle ||
+                    detail.roundName) && (
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      {((detail as Record<string, unknown>).companyName ||
+                        (detail as Record<string, unknown>).company_name) && (
+                        <span className="flex items-center gap-1 rounded bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
+                          {
+                            ((detail as Record<string, unknown>).companyName ||
+                              (detail as Record<string, unknown>).company_name) as string
+                          }
+                        </span>
+                      )}
                       {detail.jdTitle && (
                         <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                           {detail.jdTitle}
                         </span>
                       )}
                       {detail.roundName && (
-                        <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                        <span className="rounded bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
                           {detail.roundName}
                         </span>
                       )}
