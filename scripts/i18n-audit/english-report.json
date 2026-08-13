@@ -57,15 +57,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 54,
-    "character": 52,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Question Bank"
-  },
-  {
-    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 60,
+    "line": 57,
     "character": 85,
     "type": "JsxText",
     "category": "english",
@@ -73,7 +65,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 63,
+    "line": 60,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -81,7 +73,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 66,
+    "line": 63,
     "character": 51,
     "type": "JsxText",
     "category": "english",
@@ -89,7 +81,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 69,
+    "line": 66,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -97,7 +89,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 72,
+    "line": 69,
     "character": 59,
     "type": "JsxText",
     "category": "english",
@@ -105,7 +97,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 78,
+    "line": 75,
     "character": 85,
     "type": "JsxText",
     "category": "english",
@@ -113,7 +105,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 96,
+    "line": 93,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -121,7 +113,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 96,
+    "line": 93,
     "character": 47,
     "type": "JsxText",
     "category": "english",
@@ -129,7 +121,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 77,
+    "line": 76,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -137,7 +129,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 180,
+    "line": 181,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -145,7 +137,7 @@
   },
   {
     "file": "src/components/homepage-redesign/JobSearchSection.tsx",
-    "line": 135,
+    "line": 137,
     "character": 44,
     "type": "JsxText",
     "category": "english",
@@ -153,7 +145,7 @@
   },
   {
     "file": "src/components/homepage-redesign/JobSearchSection.tsx",
-    "line": 136,
+    "line": 138,
     "character": 45,
     "type": "JsxText",
     "category": "english",
@@ -161,7 +153,7 @@
   },
   {
     "file": "src/components/homepage-redesign/JobSearchSection.tsx",
-    "line": 137,
+    "line": 139,
     "character": 44,
     "type": "JsxText",
     "category": "english",
@@ -169,15 +161,399 @@
   },
   {
     "file": "src/components/homepage-redesign/JobSearchSection.tsx",
-    "line": 138,
+    "line": 140,
     "character": 44,
     "type": "JsxText",
     "category": "english",
     "text": "Middle"
   },
   {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 108,
+    "character": 78,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 110,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI KIOSK MODE"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 122,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "System Online"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 194,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "VOICE READY"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 216,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 222,
+    "character": 87,
+    "type": "JsxText",
+    "category": "english",
+    "text": "02:09 PM"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 226,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "THANH LAN IS TYPING..."
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 247,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Hints"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 251,
+    "character": 11,
+    "type": "JsxText",
+    "category": "english",
+    "text": "POWERED BY INBLUE PLATFORM"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 273,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI Interview Studio"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 283,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "LIVE SESSION"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 301,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Interviewer • Tech Lead"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 303,
+    "character": 72,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Round"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 306,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "\"How do you optimize component re-renders in a large React application handling\r\n              high-frequency WebSocket streams?\""
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 317,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ME"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 320,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Your Answer (Voice Input)"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 347,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "\"I leverage"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 349,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "React.memo"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 351,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "with custom equality checks, paired with"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 353,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "virtualized lists"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 355,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "to ensure DOM updates remain decoupled from state updates...\""
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 363,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Clarity"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 370,
+    "character": 89,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Pacing"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 372,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "140 wpm"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 377,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Keywords"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 401,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Hints"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 404,
+    "character": 66,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE Engine"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 943,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "HOLOBOX STUDIO"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 951,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "LIVE"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 972,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Nguyen Pham Thu Ha"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1065,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Final Application Summary"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1068,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "JD #APP-9824"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1072,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Frontend Engineer • 4-Round Assessment"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1080,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Passed 94 / 100"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1090,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Rounds Progress"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1091,
+    "character": 70,
+    "type": "JsxText",
+    "category": "english",
+    "text": "4/4 Completed"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1098,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Round 1: CV"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1101,
+    "character": 51,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Matched"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1108,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Round 2: Quiz"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1118,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Round 3: AI Stream"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1128,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Round 4: Mentor"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1146,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Keep (Application Strengths)"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1149,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Solid algorithm fundamentals, confident AI interview posture, and positive mentor\r\n                review."
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1162,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Improve (Enhancement Area)"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1165,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Add quantified metrics from past projects (e.g., \"reduced render latency by 35%\")\r\n                for impact."
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1178,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Next Step (Final Verdict)"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1181,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Application status:"
+  },
+  {
+    "file": "src/components/homepage-redesign/NewLandingSections.tsx",
+    "line": 1183,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Ready for Official Enterprise Referral & Submission"
+  },
+  {
     "file": "src/components/layouts/Header.tsx",
-    "line": 92,
+    "line": 93,
     "character": 28,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -185,7 +561,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 94,
+    "line": 95,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -193,7 +569,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 129,
+    "line": 141,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -201,7 +577,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 240,
+    "line": 254,
     "character": 38,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -209,7 +585,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 241,
+    "line": 255,
     "character": 84,
     "type": "JsxText",
     "category": "english",
@@ -217,7 +593,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 274,
+    "line": 288,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -225,7 +601,7 @@
   },
   {
     "file": "src/components/shared/JobDetailView.tsx",
-    "line": 325,
+    "line": 311,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -1073,7 +1449,7 @@
   },
   {
     "file": "src/pages/Admin/AdminDashboard/AdminDashboardPage.tsx",
-    "line": 226,
+    "line": 281,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -1081,7 +1457,7 @@
   },
   {
     "file": "src/pages/Admin/AdminDashboard/AdminDashboardPage.tsx",
-    "line": 228,
+    "line": 283,
     "character": 11,
     "type": "JsxText",
     "category": "english",
@@ -1089,7 +1465,7 @@
   },
   {
     "file": "src/pages/Admin/AdminDashboard/AdminDashboardPage.tsx",
-    "line": 238,
+    "line": 293,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -1105,7 +1481,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 178,
+    "line": 179,
     "character": 39,
     "type": "JsxText",
     "category": "english",
@@ -1113,7 +1489,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 485,
+    "line": 580,
     "character": 63,
     "type": "JsxText",
     "category": "english",
@@ -1121,7 +1497,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 493,
+    "line": 588,
     "character": 63,
     "type": "JsxText",
     "category": "english",
@@ -1129,7 +1505,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 501,
+    "line": 596,
     "character": 63,
     "type": "JsxText",
     "category": "english",
@@ -1137,7 +1513,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 509,
+    "line": 604,
     "character": 63,
     "type": "JsxText",
     "category": "english",
@@ -1145,7 +1521,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 517,
+    "line": 612,
     "character": 63,
     "type": "JsxText",
     "category": "english",
@@ -1153,7 +1529,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 748,
+    "line": 854,
     "character": 27,
     "type": "JsxText",
     "category": "english",
@@ -1161,7 +1537,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 756,
+    "line": 862,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -1169,7 +1545,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1291,
+    "line": 1395,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -1177,7 +1553,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1597,
+    "line": 1709,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -1185,7 +1561,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1869,
+    "line": 1985,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -1193,15 +1569,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1986,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Max Score: 100"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2020,
+    "line": 2135,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -1209,7 +1577,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2148,
+    "line": 2263,
     "character": 67,
     "type": "JsxText",
     "category": "english",
@@ -1217,391 +1585,23 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2206,
+    "line": 2321,
     "character": 40,
     "type": "JsxText",
     "category": "english",
     "text": "HR"
   },
   {
-    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 2285,
+    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationManagementPage.tsx",
+    "line": 737,
     "character": 21,
     "type": "JsxText",
     "category": "english",
-    "text": "Use AI Score ("
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 94,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Strengths:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 99,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Areas for Improvement:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 150,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "ApplicationDetail #"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 150,
-    "character": 82,
-    "type": "JsxText",
-    "category": "english",
-    "text": "· Round #"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 159,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Final"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 164,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "AI"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 169,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "HR"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 183,
-    "character": 23,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Pass threshold"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 185,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Reviewer"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 197,
-    "character": 13,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Mentor"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 210,
-    "character": 20,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "Instruction"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 214,
-    "character": 20,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "Evaluation criteria"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 220,
-    "character": 20,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "AI feedback"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 222,
-    "character": 20,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "HR note"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 226,
-    "character": 20,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "Mentor review"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 230,
-    "character": 46,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Rating:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 232,
-    "character": 49,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Situation:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 233,
-    "character": 44,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Task:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 234,
-    "character": 46,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Action:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 235,
-    "character": 46,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Result:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 236,
-    "character": 44,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Strength:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 237,
-    "character": 44,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Weakness:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 238,
-    "character": 43,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Improve:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 269,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Application Pipeline ("
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 269,
-    "character": 49,
-    "type": "JsxText",
-    "category": "english",
-    "text": "rounds)"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 272,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Progress: Round"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 341,
-    "character": 25,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Score:"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 502,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Invalid application id."
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 524,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Application #"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 545,
-    "character": 25,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Candidate"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 546,
-    "character": 25,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Email"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 547,
-    "character": 25,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Company"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 549,
-    "character": 15,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "Overall score"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 560,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Loading application detail..."
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 595,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "No round selected."
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 605,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Application Meta"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 610,
-    "character": 76,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Candidate"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 616,
-    "character": 76,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Email"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 622,
-    "character": 76,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Company"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 628,
-    "character": 76,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Status"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 641,
-    "character": 25,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Round Standard"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 646,
-    "character": 78,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Round"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 652,
-    "character": 78,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Type"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 658,
-    "character": 78,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Pass threshold"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationDetailPage.tsx",
-    "line": 664,
-    "character": 78,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Score"
+    "text": "ID"
   },
   {
     "file": "src/pages/Admin/ApplicationManagement/AdminApplicationManagementPage.tsx",
-    "line": 607,
-    "character": 83,
-    "type": "JsxText",
-    "category": "english",
-    "text": "#ID"
-  },
-  {
-    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationManagementPage.tsx",
-    "line": 686,
+    "line": 827,
     "character": 39,
     "type": "JsxText",
     "category": "english",
@@ -1609,7 +1609,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationManagement/AdminApplicationManagementPage.tsx",
-    "line": 690,
+    "line": 831,
     "character": 39,
     "type": "JsxText",
     "category": "english",
@@ -1825,40 +1825,40 @@
   },
   {
     "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemTable.tsx",
-    "line": 73,
-    "character": 77,
+    "line": 72,
+    "character": 75,
     "type": "JsxText",
     "category": "english",
     "text": "ID"
   },
   {
     "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemTable.tsx",
-    "line": 134,
-    "character": 52,
+    "line": 133,
+    "character": 50,
     "type": "JsxText",
     "category": "english",
     "text": "file"
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/CodingProblemTable.tsx",
-    "line": 70,
-    "character": 77,
+    "line": 69,
+    "character": 75,
     "type": "JsxText",
     "category": "english",
     "text": "ID"
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/CodingProblemTable.tsx",
-    "line": 152,
-    "character": 59,
+    "line": 148,
+    "character": 57,
     "type": "JsxText",
     "category": "english",
     "text": "ms"
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/CodingProblemTable.tsx",
-    "line": 158,
-    "character": 51,
+    "line": 154,
+    "character": 49,
     "type": "JsxText",
     "category": "english",
     "text": "M"
@@ -1968,24 +1968,24 @@
     "text": "Output..."
   },
   {
-    "file": "src/pages/Admin/CompanyManagement/components/CompanyTable.tsx",
-    "line": 96,
-    "character": 31,
-    "type": "JsxText",
+    "file": "src/pages/Admin/CompanyManagement/components/CompanyFormDialog.tsx",
+    "line": 189,
+    "character": 19,
+    "type": "JsxAttribute[alt]",
     "category": "english",
-    "text": "dummy"
+    "text": "Company Banner"
   },
   {
-    "file": "src/pages/Admin/CompanyManagement/components/CompanyTable.tsx",
-    "line": 100,
-    "character": 31,
-    "type": "JsxText",
+    "file": "src/pages/Admin/CompanyManagement/components/CompanyFormDialog.tsx",
+    "line": 250,
+    "character": 25,
+    "type": "JsxAttribute[alt]",
     "category": "english",
-    "text": "sample"
+    "text": "Company Logo"
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 981,
+    "line": 1047,
     "character": 21,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1993,7 +1993,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 1008,
+    "line": 1074,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -2001,7 +2001,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 1021,
+    "line": 1087,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -2009,7 +2009,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 1029,
+    "line": 1095,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -2017,7 +2017,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 1170,
+    "line": 1236,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -2025,31 +2025,39 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionFormDialog.tsx",
-    "line": 383,
+    "line": 337,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "VND"
+  },
+  {
+    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionFormDialog.tsx",
+    "line": 364,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "VND"
+  },
+  {
+    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionFormDialog.tsx",
+    "line": 387,
     "character": 19,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
     "text": "USD"
   },
   {
-    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionTable.tsx",
-    "line": 168,
-    "character": 31,
+    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionFormDialog.tsx",
+    "line": 415,
+    "character": 21,
     "type": "JsxText",
     "category": "english",
-    "text": "dummy"
-  },
-  {
-    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionTable.tsx",
-    "line": 172,
-    "character": 31,
-    "type": "JsxText",
-    "category": "english",
-    "text": "sample"
+    "text": "VND"
   },
   {
     "file": "src/pages/Admin/FeedbackManagement/FeedbackManagementPage.tsx",
-    "line": 198,
+    "line": 236,
     "character": 85,
     "type": "JsxText",
     "category": "english",
@@ -2057,11 +2065,19 @@
   },
   {
     "file": "src/pages/Admin/FeedbackManagement/FeedbackManagementPage.tsx",
-    "line": 202,
+    "line": 240,
     "character": 75,
     "type": "JsxText",
     "category": "english",
     "text": "Mentor"
+  },
+  {
+    "file": "src/pages/Admin/InterviewTemplateManagement/InterviewTemplateDetailPage.tsx",
+    "line": 489,
+    "character": 35,
+    "type": "JsxText",
+    "category": "english",
+    "text": "x"
   },
   {
     "file": "src/pages/Admin/KioskBookingManagement/components/BookingTable.tsx",
@@ -2090,14 +2106,14 @@
   {
     "file": "src/pages/Admin/KioskManagement/components/KioskTable.tsx",
     "line": 90,
-    "character": 77,
+    "character": 15,
     "type": "JsxText",
     "category": "english",
     "text": "ID"
   },
   {
     "file": "src/pages/Admin/KioskManagement/components/KioskTable.tsx",
-    "line": 134,
+    "line": 135,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -2105,7 +2121,7 @@
   },
   {
     "file": "src/pages/Admin/KioskManagement/components/KioskTable.tsx",
-    "line": 138,
+    "line": 139,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -2113,7 +2129,7 @@
   },
   {
     "file": "src/pages/Admin/MentorManagement/components/MentorTable.tsx",
-    "line": 96,
+    "line": 98,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -2121,7 +2137,7 @@
   },
   {
     "file": "src/pages/Admin/MentorManagement/components/MentorTable.tsx",
-    "line": 100,
+    "line": 102,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -2129,27 +2145,27 @@
   },
   {
     "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
-    "line": 627,
-    "character": 27,
+    "line": 550,
+    "character": 33,
     "type": "JsxText",
     "category": "english",
-    "text": "Session #"
+    "text": "AI:"
   },
   {
     "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
-    "line": 1004,
-    "character": 35,
+    "line": 601,
+    "character": 37,
     "type": "JsxText",
     "category": "english",
-    "text": "Mentor"
+    "text": "Xem"
   },
   {
     "file": "src/pages/Admin/MentorReviewAssignment/MentorReviewAssignmentPage.tsx",
-    "line": 1252,
-    "character": 35,
+    "line": 1119,
+    "character": 63,
     "type": "JsxText",
     "category": "english",
-    "text": "Mentor"
+    "text": "Mentor)"
   },
   {
     "file": "src/pages/Admin/PracticeSetManagement/components/PracticeSetFormDialog.tsx",
@@ -2168,44 +2184,52 @@
     "text": "Fresher"
   },
   {
-    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
-    "line": 294,
-    "character": 21,
-    "type": "JsxAttribute[placeholder]",
-    "category": "english",
-    "text": "Enter name..."
-  },
-  {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankEditor.tsx",
-    "line": 427,
-    "character": 27,
+    "line": 390,
+    "character": 25,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
     "text": "VD: Spring Boot, AOP, Transactional..."
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankEditor.tsx",
-    "line": 493,
-    "character": 35,
+    "line": 456,
+    "character": 33,
     "type": "JsxText",
     "category": "english",
     "text": "CODE BLOCK"
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankEditor.tsx",
-    "line": 563,
-    "character": 25,
+    "line": 526,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "ID: #"
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
-    "line": 95,
-    "character": 77,
+    "line": 154,
+    "character": 15,
     "type": "JsxText",
     "category": "english",
-    "text": "ID"
+    "text": "#ID"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
+    "line": 194,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "&nbsp;"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
+    "line": 195,
+    "character": 53,
+    "type": "JsxText",
+    "category": "english",
+    "text": "&nbsp;"
   },
   {
     "file": "src/pages/Admin/SessionManagement/SessionFormPage.tsx",
@@ -2385,7 +2409,7 @@
   },
   {
     "file": "src/pages/Enterprise/CompanyDetail/components/JobDetailPane.tsx",
-    "line": 233,
+    "line": 228,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -2393,7 +2417,7 @@
   },
   {
     "file": "src/pages/Enterprise/CompanyDetail/components/JobDetailPane.tsx",
-    "line": 242,
+    "line": 237,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2545,31 +2569,175 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 529,
-    "character": 27,
+    "line": 351,
+    "character": 76,
     "type": "JsxText",
     "category": "english",
-    "text": "GO!"
+    "text": "Edit Evaluation"
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 540,
-    "character": 25,
+    "line": 359,
+    "character": 15,
     "type": "JsxText",
     "category": "english",
-    "text": "OR"
+    "text": "Overall Score"
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 585,
-    "character": 27,
+    "line": 370,
+    "character": 15,
     "type": "JsxText",
     "category": "english",
-    "text": "STOP!"
+    "text": "Recommendation"
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 940,
+    "line": 385,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Pass"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 397,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Reject"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 406,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Comments & Notes"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 412,
+    "character": 13,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Add any notes about this candidate..."
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 424,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Cancel"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 436,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Saving..."
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 441,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Save Changes"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 456,
+    "character": 74,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Staff Evaluation"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 464,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Overall Score"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 493,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI:"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 501,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Recommendation"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 516,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Pass"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 528,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Reject"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 537,
+    "character": 11,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Comments & Notes"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 543,
+    "character": 11,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Add any notes about this candidate..."
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 555,
+    "character": 11,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Cancel"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 567,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Saving..."
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 572,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Save Evaluation"
+  },
+  {
+    "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
+    "line": 814,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2577,7 +2745,7 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1550,
+    "line": 1464,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2585,7 +2753,7 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1553,
+    "line": 1467,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2593,7 +2761,7 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1556,
+    "line": 1470,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2601,7 +2769,7 @@
   },
   {
     "file": "src/pages/Staff/GradingWorkspace/StaffGradingWorkspacePage.tsx",
-    "line": 1559,
+    "line": 1473,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2617,7 +2785,7 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
-    "line": 94,
+    "line": 96,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -2625,7 +2793,7 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
-    "line": 96,
+    "line": 98,
     "character": 11,
     "type": "JsxText",
     "category": "english",
@@ -2633,7 +2801,7 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
-    "line": 105,
+    "line": 107,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -2641,11 +2809,19 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffOverviewPage.tsx",
-    "line": 220,
-    "character": 63,
+    "line": 183,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
-    "text": "• Round"
+    "text": "Priority"
+  },
+  {
+    "file": "src/pages/Staff/StaffDashboard/StaffOverviewPage.tsx",
+    "line": 352,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI:"
   },
   {
     "file": "src/pages/User/Account/AccountPage.tsx",
@@ -2745,7 +2921,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 692,
+    "line": 883,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2753,7 +2929,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 695,
+    "line": 886,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2761,7 +2937,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 698,
+    "line": 889,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2769,7 +2945,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 701,
+    "line": 892,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2777,7 +2953,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 809,
+    "line": 811,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2785,7 +2961,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 1405,
+    "line": 1407,
     "character": 74,
     "type": "JsxText",
     "category": "english",
@@ -2793,15 +2969,23 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 1901,
+    "line": 1903,
     "character": 21,
     "type": "JsxText",
     "category": "english",
     "text": "INBLUE AI Evaluator"
   },
   {
+    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
+    "line": 2212,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Session ID:"
+  },
+  {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 666,
+    "line": 677,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2809,15 +2993,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1023,
-    "character": 47,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Issues"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1095,
+    "line": 1122,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2825,7 +3001,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1103,
+    "line": 1130,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2833,7 +3009,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1111,
+    "line": 1138,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2841,7 +3017,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1928,
+    "line": 1975,
     "character": 74,
     "type": "JsxText",
     "category": "english",
@@ -2849,7 +3025,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1932,
+    "line": 1979,
     "character": 52,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2857,7 +3033,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1935,
+    "line": 1982,
     "character": 17,
     "type": "JsxAttribute[label]",
     "category": "english",
@@ -2865,7 +3041,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 832,
+    "line": 835,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -2873,7 +3049,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 866,
+    "line": 869,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2881,7 +3057,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 929,
+    "line": 932,
     "character": 58,
     "type": "JsxText",
     "category": "english",
@@ -2889,7 +3065,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1277,
+    "line": 1280,
     "character": 80,
     "type": "JsxText",
     "category": "english",
@@ -2897,7 +3073,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1283,
+    "line": 1286,
     "character": 80,
     "type": "JsxText",
     "category": "english",
@@ -2905,7 +3081,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1474,
+    "line": 1477,
     "character": 51,
     "type": "JsxText",
     "category": "english",
@@ -2913,7 +3089,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1480,
+    "line": 1483,
     "character": 44,
     "type": "JsxText",
     "category": "english",
@@ -2921,7 +3097,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1665,
+    "line": 1668,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2929,7 +3105,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1674,
+    "line": 1677,
     "character": 48,
     "type": "JsxText",
     "category": "english",
@@ -2937,7 +3113,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1674,
+    "line": 1677,
     "character": 77,
     "type": "JsxText",
     "category": "english",
@@ -2945,7 +3121,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2003,
+    "line": 2006,
     "character": 46,
     "type": "JsxText",
     "category": "english",
@@ -2953,7 +3129,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2054,
+    "line": 2057,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -2961,7 +3137,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2057,
+    "line": 2060,
     "character": 43,
     "type": "JsxText",
     "category": "english",
@@ -2969,7 +3145,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2072,
+    "line": 2075,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2977,7 +3153,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2084,
+    "line": 2087,
     "character": 73,
     "type": "JsxText",
     "category": "english",
@@ -2985,7 +3161,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 431,
+    "line": 437,
     "character": 21,
     "type": "JsxAttribute[title]",
     "category": "english",
@@ -2993,7 +3169,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 412,
+    "line": 424,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -3001,7 +3177,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 460,
+    "line": 474,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -3009,7 +3185,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 504,
+    "line": 518,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -3017,7 +3193,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 540,
+    "line": 554,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -3025,7 +3201,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 549,
+    "line": 563,
     "character": 74,
     "type": "JsxText",
     "category": "english",
@@ -3033,7 +3209,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 582,
+    "line": 596,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -3041,7 +3217,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 962,
+    "line": 978,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -3049,7 +3225,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 978,
+    "line": 994,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -3121,7 +3297,7 @@
   },
   {
     "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
-    "line": 431,
+    "line": 414,
     "character": 27,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -3129,7 +3305,7 @@
   },
   {
     "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
-    "line": 497,
+    "line": 480,
     "character": 89,
     "type": "JsxText",
     "category": "english",
@@ -3137,7 +3313,7 @@
   },
   {
     "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
-    "line": 586,
+    "line": 569,
     "character": 21,
     "type": "JsxAttribute[title]",
     "category": "english",

@@ -49,10 +49,11 @@ function formatPurchaseDate(dateStr?: string | null): string {
 function resolvePaymentMethodLabel(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payment: any,
-  t: (key: string, fallback?: string) => string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: any
 ): { label: string; isFree: boolean } {
   if (!payment) {
-    return { label: t("payment.jdPurchaseMethodFree", "Miễn phí"), isFree: true };
+    return { label: t("payment.jdPurchaseMethodFree", "Free"), isFree: true };
   }
   const raw = (payment.method ?? "").toString().trim().toUpperCase();
   if (raw === "BANKING" || raw === "BANK_TRANSFER" || raw === "ATM" || raw === "CARD") {
@@ -65,7 +66,7 @@ function resolvePaymentMethodLabel(
     return { label: "PayOS", isFree: false };
   }
   if (raw === "WALLET" || raw === "EWALLET") {
-    return { label: t("payment.jdPurchaseMethodWallet", "Ví điện tử"), isFree: false };
+    return { label: t("payment.jdPurchaseMethodWallet", "E-Wallet"), isFree: false };
   }
   // No method set or unknown value → assume PayOS (current default provider).
   return { label: "PayOS", isFree: false };
