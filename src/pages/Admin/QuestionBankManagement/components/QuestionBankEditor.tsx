@@ -320,7 +320,7 @@ export function QuestionBankEditor({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[90vh] max-h-[880px] w-[98vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-[1360px] dark:border-slate-800 dark:bg-slate-900">
+      <DialogContent className="flex h-[92vh] max-h-[920px] w-[98vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-[1560px] dark:border-slate-800 dark:bg-slate-900">
         {/* Top Header matching KioskFormDialog format */}
         <div className="border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
           <DialogHeader>
@@ -343,7 +343,7 @@ export function QuestionBankEditor({
         <div className="flex min-h-0 flex-1 overflow-hidden bg-white dark:bg-slate-900">
           {/* Left Column: Live Document / Question Text Editor */}
           <div className="flex min-w-0 flex-1 flex-col overflow-y-auto p-6 [scrollbar-gutter:stable] md:p-8">
-            <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
                   {t("adminQuestionbankmanagement.liveDocTitle", "Nội dung câu hỏi")}
