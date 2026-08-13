@@ -54,7 +54,14 @@ export function ReviewManagementPage() {
 
   const activeReview = useMemo(() => {
     if (!id) return null;
-    return reviews.find((r) => String(r.id) === id) || null;
+    return (
+      reviews.find(
+        (r) =>
+          String(r.id) === id ||
+          String(r.session?.id) === id ||
+          String((r as Record<string, unknown>).sessionId) === id
+      ) || null
+    );
   }, [id, reviews]);
 
   // Stats calculation
