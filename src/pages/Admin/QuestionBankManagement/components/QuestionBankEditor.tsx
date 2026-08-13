@@ -1,4 +1,12 @@
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,20 +28,11 @@ import {
   Sparkles,
   Trash2,
   Wand2,
-  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { QuestionBank, QuestionBankFormData, QuestionCategory } from "../types";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 interface QuestionBankEditorProps {
   initialData: QuestionBank | null;
@@ -69,12 +68,14 @@ export function QuestionBankEditor({
   onCreateCategory,
 }: QuestionBankEditorProps) {
   const { t } = useTranslation();
+  const isEdit = !!initialData?.id;
 
   const [formData, setFormData] = useState<Partial<QuestionBankFormData>>({
     options: ["", "", "", ""],
     questionLevel: "EASY",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Category creation
   const [newCategoryName, setNewCategoryName] = useState("");
   const [isSubmittingCategory, setIsSubmittingCategory] = useState(false);
@@ -319,428 +320,415 @@ export function QuestionBankEditor({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[88vh] max-h-[840px] w-[98vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200 bg-white p-0 shadow-2xl sm:max-w-[1240px] dark:border-slate-800 dark:bg-slate-900 [&>button]:hidden">
-        <DialogHeader className="hidden">
-          <DialogTitle>
-            {initialData?.id
-              ? t("adminQuestionbankmanagement.questionDetails", "Chi tiết câu hỏi")
-              : t("adminQuestionbankmanagement.createQuestion", "Tạo câu hỏi mới")}
-          </DialogTitle>
-          <DialogDescription>
-            {t(
-              "adminQuestionbankmanagement.createOrEditDesc",
-              "Tạo hoặc chỉnh sửa câu hỏi trắc nghiệm"
-            )}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="flex h-[90vh] max-h-[880px] w-[98vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-[1360px] dark:border-slate-800 dark:bg-slate-900">
+        {/* Top Header matching KioskFormDialog format */}
+        <div className="border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2.5 text-base font-bold text-slate-900 dark:text-white">
+              <FileText className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              {isEdit
+                ? t("adminQuestionbankmanagement.questionDetails", "Chi tiết câu hỏi")
+                : t("adminQuestionbankmanagement.createQuestion", "Tạo câu hỏi mới")}
+            </DialogTitle>
+            <DialogDescription className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              {t(
+                "adminQuestionbankmanagement.createOrEditDesc",
+                "Quản lý thông tin câu hỏi trắc nghiệm và các lựa chọn đáp án"
+              )}
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-          {/* ── TOP BAR HEADER ──────────────────────────────────────────────────────────── */}
-          <div className="flex flex-none items-center justify-between border-b border-slate-200/80 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400">
-                <FileText className="h-5 w-5" />
+        {/* Form Body Split View */}
+        <div className="flex min-h-0 flex-1 overflow-hidden bg-white dark:bg-slate-900">
+          {/* Left Column: Live Document / Question Text Editor */}
+          <div className="flex min-w-0 flex-1 flex-col overflow-y-auto p-6 [scrollbar-gutter:stable] md:p-8">
+            <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                  {t("adminQuestionbankmanagement.liveDocTitle", "Nội dung câu hỏi")}
+                </span>
+                {!showAI && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 rounded-xl border-slate-200 px-3 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:border-slate-800 dark:text-indigo-400 dark:hover:bg-indigo-950/30"
+                    onClick={() => {
+                      const blocks = parseBlocks(formData.questionText || "");
+                      blocks.push({
+                        id: `b-${Date.now()}`,
+                        type: "code",
+                        lang: "javascript",
+                        content: `${t("adminQuestionbankmanagement.addCodeHereComment", "// Thêm mã nguồn tại đây")}\n`,
+                      });
+                      patch({ questionText: serializeBlocks(blocks) });
+                    }}>
+                    <Plus className="h-3.5 w-3.5" />{" "}
+                    {t("adminQuestionbankmanagement.insertCodeBlock", "Chèn Code Block")}
+                  </Button>
+                )}
               </div>
-              <div>
-                <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                  {initialData?.id
-                    ? t("adminQuestionbankmanagement.questionDetails", "Chi tiết câu hỏi")
-                    : t("adminQuestionbankmanagement.createQuestion", "Tạo câu hỏi mới")}
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {t(
-                    "adminQuestionbankmanagement.createOrEditDesc",
-                    "Quản lý thông tin câu hỏi trắc nghiệm và các lựa chọn đáp án"
-                  )}
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onOpenChange(false)}
-              className="h-8 w-8 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
 
-          {/* ── MAIN CONTENT (SPLIT PANE) ────────────────────────────────────────── */}
-          <div className="flex min-h-0 flex-1 overflow-hidden bg-slate-50/60 dark:bg-slate-950/60">
-            {/* LEFT COLUMN: Question Text & AI Editor */}
-            <div className="flex min-w-0 flex-1 flex-col overflow-y-auto p-6 [scrollbar-gutter:stable] md:p-8">
-              <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
-                      {t("adminQuestionbankmanagement.liveDocTitle", "Nội dung câu hỏi")}
-                    </span>
-                  </div>
-                  {!showAI && (
+              {showAI && (
+                <div className="animate-in slide-in-from-top-2 fade-in rounded-xl border border-indigo-200 bg-indigo-50/40 p-6 shadow-2xs dark:border-indigo-900/50 dark:bg-slate-950/80">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 border-b border-indigo-200/80 pb-3 dark:border-indigo-950">
+                      <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                      <h3 className="text-xs font-bold tracking-wider text-indigo-900 uppercase dark:text-indigo-200">
+                        {t(
+                          "adminQuestionbankmanagement.aiGenTitle",
+                          "Sinh câu hỏi thông minh bằng AI"
+                        )}
+                      </h3>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        {t("question.relatedTopics")}
+                      </Label>
+                      <Input
+                        placeholder="VD: Spring Boot, AOP, Transactional..."
+                        value={aiTopics}
+                        onChange={(e) => setAiTopics(e.target.value)}
+                        className="h-10 rounded-xl bg-white focus-visible:ring-indigo-500 dark:bg-slate-900"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        {t("question.additionalPrompt")}
+                      </Label>
+                      <Textarea
+                        placeholder={t("question.promptExample")}
+                        rows={3}
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        className="resize-none rounded-xl bg-white focus-visible:ring-indigo-500 dark:bg-slate-900"
+                      />
+                    </div>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-8 gap-1.5 rounded-xl border-slate-200 px-3 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:border-slate-800 dark:text-indigo-400 dark:hover:bg-indigo-950/30"
-                      onClick={() => {
-                        const blocks = parseBlocks(formData.questionText || "");
-                        blocks.push({
-                          id: `b-${Date.now()}`,
-                          type: "code",
-                          lang: "javascript",
-                          content: `${t("adminQuestionbankmanagement.addCodeHereComment", "// Thêm mã nguồn tại đây")}\n`,
-                        });
-                        patch({ questionText: serializeBlocks(blocks) });
-                      }}>
-                      <Plus className="h-3.5 w-3.5" />{" "}
-                      {t("adminQuestionbankmanagement.insertCodeBlock", "Chèn Code Block")}
+                      className="h-10 w-full rounded-xl bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+                      onClick={handleGenerate}
+                      disabled={aiLoading}>
+                      {aiLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="mr-2 h-4 w-4" />
+                      )}
+                      {aiLoading ? t("ai.generatingQuestion") : t("ai.startGenerating")}
                     </Button>
-                  )}
-                </div>
-
-                {showAI && (
-                  <div className="animate-in slide-in-from-top-2 fade-in rounded-2xl border border-indigo-100 bg-white p-6 shadow-sm dark:border-indigo-900/50 dark:bg-slate-900">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 border-b border-indigo-50 pb-3 dark:border-indigo-950">
-                        <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                        <h3 className="text-xs font-bold tracking-wider text-indigo-900 uppercase dark:text-indigo-200">
-                          {t(
-                            "adminQuestionbankmanagement.aiGenTitle",
-                            "Sinh câu hỏi thông minh bằng AI"
-                          )}
-                        </h3>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {t("question.relatedTopics")}
-                        </Label>
-                        <Input
-                          placeholder="VD: Spring Boot, AOP, Transactional..."
-                          value={aiTopics}
-                          onChange={(e) => setAiTopics(e.target.value)}
-                          className="h-10 rounded-xl focus-visible:ring-indigo-500"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {t("question.additionalPrompt")}
-                        </Label>
-                        <Textarea
-                          placeholder={t("question.promptExample")}
-                          rows={3}
-                          value={aiPrompt}
-                          onChange={(e) => setAiPrompt(e.target.value)}
-                          className="resize-none rounded-xl focus-visible:ring-indigo-500"
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        className="h-10 w-full rounded-xl bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
-                        onClick={handleGenerate}
-                        disabled={aiLoading}>
-                        {aiLoading ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Wand2 className="mr-2 h-4 w-4" />
-                        )}
-                        {aiLoading ? t("ai.generatingQuestion") : t("ai.startGenerating")}
-                      </Button>
-                    </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {!showAI && (
-                  <div className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                    {parseBlocks(formData.questionText || "").map((block, index, allBlocks) => {
-                      if (block.type === "code") {
-                        return (
-                          <div
-                            key={block.id}
-                            className="relative my-3 overflow-hidden rounded-xl border border-slate-800 bg-[#0f172a] shadow-md">
-                            <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-3.5 py-1.5 text-xs text-slate-400">
-                              <div className="flex items-center gap-2">
-                                <Select
-                                  value={block.lang || "javascript"}
-                                  onValueChange={(val) => {
-                                    const nextBlocks = [...allBlocks];
-                                    nextBlocks[index] = { ...block, lang: val };
-                                    patch({ questionText: serializeBlocks(nextBlocks) });
-                                  }}>
-                                  <SelectTrigger className="h-6 w-32 border-slate-700 bg-slate-900 font-mono text-xs font-bold text-emerald-400 focus:ring-0 dark:border-slate-700 dark:bg-slate-900">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent className="dark border-slate-800 bg-slate-900 text-slate-200">
-                                    {SUPPORTED_LANGUAGES.map((l) => (
-                                      <SelectItem
-                                        key={l.value}
-                                        value={l.value}
-                                        className="font-mono text-xs">
-                                        {l.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <span className="font-mono text-[10px] text-slate-500 uppercase">
-                                  CODE BLOCK
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const nextBlocks = allBlocks.filter((_, i) => i !== index);
+              {!showAI && (
+                <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-950/80">
+                  {parseBlocks(formData.questionText || "").map((block, index, allBlocks) => {
+                    if (block.type === "code") {
+                      return (
+                        <div
+                          key={block.id}
+                          className="relative my-3 overflow-hidden rounded-xl border border-slate-800 bg-[#0f172a] shadow-md">
+                          <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-3.5 py-1.5 text-xs text-slate-400">
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={block.lang || "javascript"}
+                                onValueChange={(val) => {
+                                  const nextBlocks = [...allBlocks];
+                                  nextBlocks[index] = { ...block, lang: val };
                                   patch({ questionText: serializeBlocks(nextBlocks) });
-                                }}
-                                className="text-xs text-slate-500 transition-colors hover:text-rose-400">
-                                {t("adminQuestionbankmanagement.deleteCodeBlock", "Xóa Code Block")}
-                              </button>
+                                }}>
+                                <SelectTrigger className="h-6 w-32 border-slate-700 bg-slate-900 font-mono text-xs font-bold text-emerald-400 focus:ring-0 dark:border-slate-700 dark:bg-slate-900">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="dark border-slate-800 bg-slate-900 text-slate-200">
+                                  {SUPPORTED_LANGUAGES.map((l) => (
+                                    <SelectItem
+                                      key={l.value}
+                                      value={l.value}
+                                      className="font-mono text-xs">
+                                      {l.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <span className="font-mono text-[10px] text-slate-500 uppercase">
+                                CODE BLOCK
+                              </span>
                             </div>
-                            <Textarea
-                              value={block.content}
-                              onChange={(e) => {
-                                const nextBlocks = [...allBlocks];
-                                nextBlocks[index] = { ...block, content: e.target.value };
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextBlocks = allBlocks.filter((_, i) => i !== index);
                                 patch({ questionText: serializeBlocks(nextBlocks) });
                               }}
-                              rows={Math.max(4, block.content.split("\n").length)}
-                              placeholder={t(
-                                "adminQuestionbankmanagement.enterSourceCode",
-                                "Nhập mã nguồn..."
-                              )}
-                              className="w-full resize-y border-0 bg-transparent p-4 font-mono text-[13px] leading-relaxed text-emerald-400 focus:outline-none focus-visible:ring-0 dark:text-emerald-300"
-                            />
+                              className="text-xs text-slate-500 transition-colors hover:text-rose-400">
+                              {t("adminQuestionbankmanagement.deleteCodeBlock", "Xóa Code Block")}
+                            </button>
                           </div>
-                        );
-                      }
-
-                      return (
-                        <Textarea
-                          key={block.id}
-                          value={block.content}
-                          onChange={(e) => {
-                            const nextBlocks = [...allBlocks];
-                            nextBlocks[index] = { ...block, content: e.target.value };
-                            patch({ questionText: serializeBlocks(nextBlocks) });
-                          }}
-                          rows={Math.max(4, block.content.split("\n").length)}
-                          placeholder={t(
-                            "adminQuestionbankmanagement.enterTextContent",
-                            "Nhập nội dung câu hỏi phỏng vấn tại đây..."
-                          )}
-                          className="w-full resize-y rounded-xl border-slate-200 bg-slate-50/50 p-4 text-[14.5px] leading-relaxed text-slate-900 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN: Config Cards & Actions Footer */}
-            <div className="flex w-[460px] flex-none flex-col border-l border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex-1 space-y-5 overflow-y-auto p-6 [scrollbar-gutter:stable]">
-                {/* CARD 1: CẤU HÌNH CÂU HỎI */}
-                <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-950/50">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
-                        <FolderTree className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="text-[11px] font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
-                        {t("adminQuestionbankmanagement.questionConfig", "Cấu Hình Câu Hỏi")}
-                      </span>
-                    </div>
-                    {initialData?.id && (
-                      <span className="rounded-md border border-indigo-100/50 bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:border-indigo-800/30 dark:bg-indigo-900/30 dark:text-indigo-400">
-                        ID: #{initialData.id}
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-4 p-5">
-                    {/* Chuyên mục */}
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {t("general.category")}
-                      </Label>
-                      <Select
-                        value={formData.questionCategoryId?.toString() || ""}
-                        onValueChange={(val) => patch({ questionCategoryId: parseInt(val) })}>
-                        <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50/50 text-xs font-semibold focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50">
-                          <SelectValue placeholder={t("category.selectCategory")} />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                          {categories.map((c) => (
-                            <SelectItem key={c.id} value={c.id!.toString()} className="text-xs">
-                              {c.categoryName}
-                            </SelectItem>
-                          ))}
-                          <div className="mt-1 flex items-center gap-2 border-t border-slate-100 p-2 dark:border-slate-800">
-                            <Input
-                              placeholder={t("category.enterCategoryName2")}
-                              value={newCategoryName}
-                              onChange={(e) => setNewCategoryName(e.target.value)}
-                              onKeyDown={(e) => {
-                                e.stopPropagation();
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  handleCreateCategorySubmit();
-                                }
-                              }}
-                              className="h-8 rounded-lg text-xs focus-visible:ring-indigo-500"
-                            />
-                            <Button
-                              type="button"
-                              size="sm"
-                              className="h-8 rounded-lg bg-indigo-600 px-3 text-white"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCreateCategorySubmit();
-                              }}
-                              disabled={!newCategoryName.trim() || isSubmittingCategory}>
-                              {isSubmittingCategory ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                              ) : (
-                                <Plus className="h-3 w-3" />
-                              )}
-                            </Button>
-                          </div>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Độ khó */}
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {t("common.difficulty")}
-                      </Label>
-                      <ToggleGroup
-                        type="single"
-                        value={formData.questionLevel ?? "EASY"}
-                        onValueChange={(val: "EASY" | "MEDIUM" | "HARD") => {
-                          if (val) patch({ questionLevel: val });
-                        }}
-                        className="justify-start gap-2">
-                        <ToggleGroupItem
-                          value="EASY"
-                          aria-label="easy"
-                          className="flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all data-[state=on]:border-emerald-500 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-700 dark:data-[state=on]:border-emerald-600 dark:data-[state=on]:bg-emerald-950/40 dark:data-[state=on]:text-emerald-400">
-                          {t("adminQuestionbankmanagement.easy", "Dễ")}
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                          value="MEDIUM"
-                          aria-label="medium"
-                          className="flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all data-[state=on]:border-amber-500 data-[state=on]:bg-amber-50 data-[state=on]:text-amber-700 dark:data-[state=on]:border-amber-600 dark:data-[state=on]:bg-amber-950/40 dark:data-[state=on]:text-amber-400">
-                          {t("adminQuestionbankmanagement.medium", "TB")}
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                          value="HARD"
-                          aria-label="hard"
-                          className="flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all data-[state=on]:border-rose-500 data-[state=on]:bg-rose-50 data-[state=on]:text-rose-700 dark:data-[state=on]:border-rose-600 dark:data-[state=on]:bg-rose-950/40 dark:data-[state=on]:text-rose-400">
-                          {t("adminQuestionbankmanagement.hard", "Khó")}
-                        </ToggleGroupItem>
-                      </ToggleGroup>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CARD 2: CÁC ĐÁP ÁN */}
-                <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-950/50">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
-                        <CheckSquare className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="text-[11px] font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
-                        {t("question.answers")}
-                      </span>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={addOption}
-                      className="h-7 gap-1 px-2.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/30">
-                      <Plus className="h-3.5 w-3.5" /> {t("question.addAnswer")}
-                    </Button>
-                  </div>
-                  <div className="space-y-3 p-5">
-                    {(formData.options || []).map((opt, idx) => {
-                      const optLetter = String.fromCharCode(65 + idx);
-                      const isCorrect =
-                        (formData.correctAnswer != null &&
-                          formData.correctAnswer !== "" &&
-                          (formData.correctAnswer === opt ||
-                            formData.correctAnswer.toUpperCase() === optLetter)) ||
-                        false;
-
-                      return (
-                        <div key={idx} className="group relative">
-                          <button
-                            type="button"
-                            onClick={() => toggleCorrectAnswer(idx)}
-                            title={t("question.markAsCorrect")}
-                            className={`absolute top-1/2 left-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-[11px] font-bold transition-all ${
-                              isCorrect
-                                ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
-                                : "bg-slate-100 text-slate-600 hover:bg-emerald-100 hover:text-emerald-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300"
-                            }`}>
-                            {optLetter}
-                          </button>
-                          <Input
-                            value={opt}
-                            onChange={(e) => updateOption(idx, e.target.value)}
+                          <Textarea
+                            value={block.content}
+                            onChange={(e) => {
+                              const nextBlocks = [...allBlocks];
+                              nextBlocks[index] = { ...block, content: e.target.value };
+                              patch({ questionText: serializeBlocks(nextBlocks) });
+                            }}
+                            rows={Math.max(4, block.content.split("\n").length)}
                             placeholder={t(
-                              "adminQuestionbankmanagement.enterAnswerPlaceholder",
-                              "Nhập đáp án..."
+                              "adminQuestionbankmanagement.enterSourceCode",
+                              "Nhập mã nguồn..."
                             )}
-                            className={`h-10 rounded-xl pr-9 pl-10 text-[13px] shadow-none transition-colors focus-visible:ring-indigo-500 ${
-                              isCorrect
-                                ? "border-emerald-500/80 bg-emerald-50/50 font-medium text-emerald-950 dark:border-emerald-500/50 dark:bg-emerald-950/20 dark:text-emerald-50"
-                                : "border-slate-200 bg-slate-50/30 text-slate-900 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-100"
-                            }`}
+                            className="w-full resize-y border-0 bg-transparent p-4 font-mono text-[13px] leading-relaxed text-emerald-400 focus:outline-none focus-visible:ring-0 dark:text-emerald-300"
+                          />
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <Textarea
+                        key={block.id}
+                        value={block.content}
+                        onChange={(e) => {
+                          const nextBlocks = [...allBlocks];
+                          nextBlocks[index] = { ...block, content: e.target.value };
+                          patch({ questionText: serializeBlocks(nextBlocks) });
+                        }}
+                        rows={Math.max(4, block.content.split("\n").length)}
+                        placeholder={t(
+                          "adminQuestionbankmanagement.enterTextContent",
+                          "Nhập nội dung câu hỏi phỏng vấn tại đây..."
+                        )}
+                        className="w-full resize-y rounded-xl border-slate-200 bg-white p-4 text-[14.5px] leading-relaxed text-slate-900 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column: Config Cards */}
+          <div className="flex w-[480px] flex-none flex-col border-l border-slate-200/90 bg-slate-50/30 dark:border-slate-800 dark:bg-slate-950/40">
+            <div className="flex-1 space-y-5 overflow-y-auto p-6 [scrollbar-gutter:stable]">
+              {/* CARD 1: CẤU HÌNH CÂU HỎI */}
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-950/50">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                      <FolderTree className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="text-[11px] font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
+                      {t("adminQuestionbankmanagement.questionConfig", "Cấu Hình Câu Hỏi")}
+                    </span>
+                  </div>
+                  {initialData?.id && (
+                    <span className="rounded-md border border-indigo-100/50 bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:border-indigo-800/30 dark:bg-indigo-900/30 dark:text-indigo-400">
+                      ID: #{initialData.id}
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-4 p-5">
+                  {/* Chuyên mục */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {t("general.category")}
+                    </Label>
+                    <Select
+                      value={formData.questionCategoryId?.toString() || ""}
+                      onValueChange={(val) => patch({ questionCategoryId: parseInt(val) })}>
+                      <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50/50 text-xs font-semibold focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50">
+                        <SelectValue placeholder={t("category.selectCategory")} />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {categories.map((c) => (
+                          <SelectItem key={c.id} value={c.id!.toString()} className="text-xs">
+                            {c.categoryName}
+                          </SelectItem>
+                        ))}
+                        <div className="mt-1 flex items-center gap-2 border-t border-slate-100 p-2 dark:border-slate-800">
+                          <Input
+                            placeholder={t("category.enterCategoryName2")}
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                            onKeyDown={(e) => {
+                              e.stopPropagation();
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleCreateCategorySubmit();
+                              }
+                            }}
+                            className="h-8 rounded-lg text-xs focus-visible:ring-indigo-500"
                           />
                           <Button
                             type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 text-slate-400 opacity-100 focus-within:opacity-100 hover:text-rose-600 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 dark:text-slate-500 dark:hover:text-rose-500"
-                            onClick={() => removeOption(idx)}>
-                            <Trash2 className="h-4 w-4" />
+                            size="sm"
+                            className="h-8 rounded-lg bg-indigo-600 px-3 text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCreateCategorySubmit();
+                            }}
+                            disabled={!newCategoryName.trim() || isSubmittingCategory}>
+                            {isSubmittingCategory ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Plus className="h-3 w-3" />
+                            )}
                           </Button>
                         </div>
-                      );
-                    })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Độ khó */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {t("common.difficulty")}
+                    </Label>
+                    <ToggleGroup
+                      type="single"
+                      value={formData.questionLevel ?? "EASY"}
+                      onValueChange={(val: "EASY" | "MEDIUM" | "HARD") => {
+                        if (val) patch({ questionLevel: val });
+                      }}
+                      className="justify-start gap-2">
+                      <ToggleGroupItem
+                        value="EASY"
+                        aria-label="easy"
+                        className="flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all data-[state=on]:border-emerald-500 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-700 dark:data-[state=on]:border-emerald-600 dark:data-[state=on]:bg-emerald-950/40 dark:data-[state=on]:text-emerald-400">
+                        {t("adminQuestionbankmanagement.easy", "Dễ")}
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        value="MEDIUM"
+                        aria-label="medium"
+                        className="flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all data-[state=on]:border-amber-500 data-[state=on]:bg-amber-50 data-[state=on]:text-amber-700 dark:data-[state=on]:border-amber-600 dark:data-[state=on]:bg-amber-950/40 dark:data-[state=on]:text-amber-400">
+                        {t("adminQuestionbankmanagement.medium", "TB")}
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        value="HARD"
+                        aria-label="hard"
+                        className="flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all data-[state=on]:border-rose-500 data-[state=on]:bg-rose-50 data-[state=on]:text-rose-700 dark:data-[state=on]:border-rose-600 dark:data-[state=on]:bg-rose-950/40 dark:data-[state=on]:text-rose-400">
+                        {t("adminQuestionbankmanagement.hard", "Khó")}
+                      </ToggleGroupItem>
+                    </ToggleGroup>
                   </div>
                 </div>
               </div>
 
-              {/* FOOTER ACTIONS */}
-              <div className="grid grid-cols-2 gap-3 border-t border-slate-200/80 bg-white p-4 dark:border-slate-800/80 dark:bg-slate-900">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowAI((p) => !p)}
-                  className={`h-10 w-full rounded-xl border-indigo-200 bg-white text-xs font-bold transition-all dark:border-indigo-800 dark:bg-slate-900 dark:hover:bg-indigo-900/40 ${
-                    showAI
-                      ? "border-indigo-300 bg-indigo-50 text-indigo-700 shadow-inner dark:bg-indigo-950/60 dark:text-indigo-200"
-                      : "text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-300"
-                  }`}>
-                  <Sparkles className="mr-1.5 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  {showAI
-                    ? t("adminQuestionbankmanagement.hideAiGen", "Ẩn Sinh AI")
-                    : t("adminQuestionbankmanagement.createAi", "Tạo AI")}
-                </Button>
+              {/* CARD 2: CÁC ĐÁP ÁN */}
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-950/50">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
+                      <CheckSquare className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="text-[11px] font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
+                      {t("question.answers")}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addOption}
+                    className="h-7 gap-1 px-2.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/30">
+                    <Plus className="h-3.5 w-3.5" /> {t("question.addAnswer")}
+                  </Button>
+                </div>
+                <div className="space-y-3 p-5">
+                  {(formData.options || []).map((opt, idx) => {
+                    const optLetter = String.fromCharCode(65 + idx);
+                    const isCorrect =
+                      (formData.correctAnswer != null &&
+                        formData.correctAnswer !== "" &&
+                        (formData.correctAnswer === opt ||
+                          formData.correctAnswer.toUpperCase() === optLetter)) ||
+                      false;
 
-                <Button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting || aiLoading}
-                  className="h-10 w-full rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm shadow-indigo-500/20 transition-all hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500">
-                  {isSubmitting ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-                  {initialData ? t("general.update", "Cập nhật") : t("general.save", "Tạo câu hỏi")}
-                </Button>
+                    return (
+                      <div key={idx} className="group relative">
+                        <button
+                          type="button"
+                          onClick={() => toggleCorrectAnswer(idx)}
+                          title={t("question.markAsCorrect")}
+                          className={`absolute top-1/2 left-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-[11px] font-bold transition-all ${
+                            isCorrect
+                              ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                              : "bg-slate-100 text-slate-600 hover:bg-emerald-100 hover:text-emerald-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300"
+                          }`}>
+                          {optLetter}
+                        </button>
+                        <Input
+                          value={opt}
+                          onChange={(e) => updateOption(idx, e.target.value)}
+                          placeholder={t(
+                            "adminQuestionbankmanagement.enterAnswerPlaceholder",
+                            "Nhập đáp án..."
+                          )}
+                          className={`h-10 rounded-xl pr-9 pl-10 text-[13px] shadow-none transition-colors focus-visible:ring-indigo-500 ${
+                            isCorrect
+                              ? "border-emerald-500/80 bg-emerald-50/50 font-medium text-emerald-950 dark:border-emerald-500/50 dark:bg-emerald-950/20 dark:text-emerald-50"
+                              : "border-slate-200 bg-slate-50/30 text-slate-900 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-100"
+                          }`}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 text-slate-400 opacity-100 focus-within:opacity-100 hover:text-rose-600 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 dark:text-slate-500 dark:hover:text-rose-500"
+                          onClick={() => removeOption(idx)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* DialogFooter matching KioskFormDialog format */}
+        <DialogFooter className="gap-2 border-t border-slate-200/90 bg-slate-100/90 px-6 py-3.5 dark:border-slate-800 dark:bg-slate-950">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowAI((p) => !p)}
+            className={`h-9.5 rounded-xl border-indigo-200 bg-white px-4 text-xs font-bold transition-all dark:border-indigo-800 dark:bg-slate-900 dark:hover:bg-indigo-900/40 ${
+              showAI
+                ? "border-indigo-300 bg-indigo-50 text-indigo-700 shadow-inner dark:bg-indigo-950/60 dark:text-indigo-200"
+                : "text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-300"
+            }`}>
+            <Sparkles className="mr-1.5 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            {showAI
+              ? t("adminQuestionbankmanagement.hideAiGen", "Ẩn Sinh AI")
+              : t("adminQuestionbankmanagement.createAi", "Tạo AI")}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}>
+            {t("common.cancel", "Hủy")}
+          </Button>
+
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting || aiLoading}
+            className="h-9.5 min-w-32 gap-2 rounded-xl bg-indigo-600 px-6 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 hover:bg-indigo-500">
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t("common.saving", "Đang lưu...")}
+              </>
+            ) : isEdit ? (
+              t("general.update", "Cập nhật")
+            ) : (
+              t("general.save", "Tạo câu hỏi")
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
