@@ -317,33 +317,79 @@ export function KioskDetailPage() {
       )}
 
       {/* ── SCROLLABLE CONTENT ───────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-900/20">
-        {/* ── SCHEDULE GRID SECTION ────────────────────────────────── */}
-        <div className="px-6 py-6">
-          <div className="mb-4 flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-              {t("adminKioskManagement.scheduleGridTitle")}
-            </h2>
+      <div className="flex-1 overflow-auto bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
+        <div className="mb-6 flex flex-col justify-between gap-4 rounded-[20px] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="truncate text-lg font-bold text-slate-950 dark:text-white">
+                {isLoading
+                  ? t("adminKioskManagement.loadingKiosks", "Đang tải Kiosk...")
+                  : kiosk?.name || `Kiosk #${kioskId}`}
+              </h1>
+              <span className="font-mono text-xs font-semibold text-slate-400">#{kioskId}</span>
+              <span
+                className={
+                  kioskStatus
+                    ? "inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-50/80 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/60 dark:text-emerald-400"
+                    : "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/80 px-3 py-1 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400"
+                }>
+                <span
+                  className={
+                    kioskStatus
+                      ? "h-2 w-2 rounded-full bg-emerald-500"
+                      : "h-2 w-2 rounded-full bg-slate-400"
+                  }
+                />
+                {kioskStatus
+                  ? t("adminKioskManagement.active", "Hoạt động")
+                  : t("adminKioskManagement.inactive", "Đã tắt")}
+              </span>
+            </div>
+            <div className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-300">
+              <MapPin className="h-3.5 w-3.5 text-indigo-500" />
+              {kiosk?.location || t("adminKioskManagement.noLocation", "Chưa cập nhật vị trí")}
+            </div>
           </div>
-
-          <KioskScheduleGrid
-            kioskId={kioskId}
-            schedules={sortedSchedules}
-            isLoading={isLoading}
-            onCreateSchedule={openCreateSchedule}
-            onEditSchedule={openEditSchedule}
-            onToggleStatus={handleToggleScheduleStatus}
-          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setEditOpen(true)}
+            disabled={!kiosk || isLoading}
+            className="group/btn h-8.5 shrink-0 gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-700 shadow-2xs transition-all hover:border-indigo-300 hover:bg-indigo-50/70 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-400">
+            <Pencil className="h-3.5 w-3.5 text-slate-400 transition-colors group-hover/btn:text-indigo-500" />
+            {t("common.edit", "Chỉnh sửa")}
+          </Button>
+        </div>
+        {/* ── SCHEDULE GRID SECTION ────────────────────────────────── */}
+        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-5 py-3 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                {t("adminKioskManagement.scheduleGridTitle")}
+              </h2>
+            </div>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {sortedSchedules.length} {t("adminKioskManagement.scheduleCount", "khung giờ")}
+            </span>
+          </div>
+          <div className="p-5">
+            <KioskScheduleGrid
+              kioskId={kioskId}
+              schedules={sortedSchedules}
+              isLoading={isLoading}
+              onCreateSchedule={openCreateSchedule}
+              onEditSchedule={openEditSchedule}
+              onToggleStatus={handleToggleScheduleStatus}
+            />
+          </div>
         </div>
 
-        <div className="h-px w-full bg-slate-200/60 dark:bg-slate-800/60" />
-
         {/* ── HISTORY SECTION ──────────────────────────────────────── */}
-        <div className="pb-6">
-          <div className="flex items-center gap-2 px-6 pt-6 pb-3">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3 dark:border-slate-800 dark:bg-slate-900">
             <History className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
               {t("adminKioskManagement.historyTitle")}
             </h2>
           </div>
