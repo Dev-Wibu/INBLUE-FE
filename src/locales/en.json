@@ -6722,7 +6722,23 @@
     "submitFail": "Confirm & Reject",
     "submitHint": "Your decision will be recorded and visible to the candidate.",
     "useAi": "Use AI",
-    "useAiScore": "Use AI Score"
+    "useAiScore": "Use AI Score",
+    "instruction": "Instruction",
+    "maxScore": "Max Score",
+    "currentStatus": "Current Status",
+    "detailStatus": "Status",
+    "hrScore": "HR Score",
+    "finalResult": "Final Result",
+    "aiInterview": {
+      "pendingTitle": "Candidate waiting for AI interview schedule",
+      "slotPickedTitle": "Candidate has scheduled AI interview",
+      "pendingDesc": "The candidate has not yet scheduled an AI interview. Please wait for the candidate to complete the slot selection before you can evaluate.",
+      "slotPickedDesc": "The candidate has selected an interview slot. The AI system will conduct the interview. You can review the results after the candidate completes.",
+      "roundConfig": "AI Interview Round Configuration",
+      "reminderTitle": "Note for Staff",
+      "reminderDesc": "When the candidate completes the AI interview, the system will automatically grade. The results (AI Score, AI Feedback) will be displayed here. You only need to confirm the HR score and provide your final comments.",
+      "waitingForResult": "Waiting for results from AI system..."
+    }
   },
   "quiz": {
     "submitSuccess": "Quiz submitted successfully!",

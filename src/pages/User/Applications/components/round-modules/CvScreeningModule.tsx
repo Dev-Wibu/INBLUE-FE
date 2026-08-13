@@ -196,6 +196,8 @@ export function CvScreeningModule({
   // Extract Cloudinary / Submission File URL
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const submissionData = detail?.submissionData as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detailRoundConfig = (detail as any)?.roundConfig;
   const fileUrl = submissionData?.fileUrl || submissionData?.url || null;
   const isAlreadySubmitted =
     hasSubmitted ||
@@ -340,7 +342,8 @@ export function CvScreeningModule({
                 ? detail?.finalResult === "PASSED" || isCompleted
                   ? t("userApplication.cvScreening.passedMessage")
                   : t("userApplication.cvScreening.submittedMessage")
-                : round.configData?.instruction ||
+                : detailRoundConfig?.instruction ||
+                  round.configData?.instruction ||
                   t(
                     "userApplicationhistory.cvInstructionDefault",
                     "Please upload your CV in PDF format. The AI system will automatically analyze your profile and compare your Match Score with the recruitment requirements."

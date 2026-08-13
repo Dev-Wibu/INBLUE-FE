@@ -6647,7 +6647,23 @@
     "submitFail": "確認して却下",
     "submitHint": "あなたの決定は記録され、候補者に表示されます。",
     "useAi": "AI を使う",
-    "useAiScore": "AIスコアを使用"
+    "useAiScore": "AIスコアを使用",
+    "instruction": "指示",
+    "maxScore": "最高点",
+    "currentStatus": "現在のステータス",
+    "detailStatus": "ステータス",
+    "hrScore": "人事スコア",
+    "finalResult": "最終結果",
+    "aiInterview": {
+      "pendingTitle": "候補者はAI面接の予約を待っています",
+      "slotPickedTitle": "候補者はAI面接を予約しました",
+      "pendingDesc": "候補者はまだAI面接を予約していません。評価の前に候補者がスロット選択を完了するのを待ってください。",
+      "slotPickedDesc": "候補者は面接スロットを選択しました。AIシステムが面接を行います。候補者の完了後に結果を確認できます。",
+      "roundConfig": "AI面接ラウンド設定",
+      "reminderTitle": "スタッフへの注意",
+      "reminderDesc": "候補者がAI面接を完了すると、システムは自動的に採点します。結果はここに表示されます。人事スコアを確認し、最終コメントを入力してください。",
+      "waitingForResult": "AIシステムからの結果を待っています..."
+    }
   },
   "quiz": {
     "submitSuccess": "クイズの提出に成功しました！",

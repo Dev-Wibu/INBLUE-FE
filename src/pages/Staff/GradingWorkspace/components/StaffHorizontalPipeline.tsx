@@ -18,6 +18,8 @@ export interface JdRound {
     evaluationCriteria?: string;
     maxScore?: number;
   };
+  /** Embedded round config from reviewer API response (source of truth for staff grading) */
+  roundConfig?: Record<string, unknown>;
 }
 
 interface StaffHorizontalPipelineProps {

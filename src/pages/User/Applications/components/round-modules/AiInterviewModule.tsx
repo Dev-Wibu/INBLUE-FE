@@ -74,6 +74,8 @@ interface AiInterviewModuleProps {
   jdInfo?: JdInfoPayload | null;
   isCompleted: boolean;
   isCurrent: boolean;
+  /** When true, kiosk booking hooks are disabled and staff-only status messaging is shown */
+  isStaffView?: boolean;
   onSuccess?: () => void;
 }
 
@@ -2109,12 +2111,226 @@ function AiInterviewResultView({
   );
 }
 
+/** Staff-only view: shows messaging when AI interview is PENDING or SLOT_PICKED */
+function StaffAiInterviewWaitingView({
+  detail,
+  round,
+}: {
+  detail?: ApplicationDetail;
+  round: JdRound;
+}) {
+  const { t } = useTranslation();
+  const statusStr = detail?.status as string | undefined;
+  const isPending = statusStr === "PENDING";
+
+  // Get instruction from roundConfig (staff grader API) or round.configData fallback
+
+  const configData = (round.roundConfig as any) ?? round.configData;
+  const instruction = configData?.instruction ?? round.configData?.instruction;
+  const timeLimitMinutes = configData?.timeLimitMinutes ?? round.configData?.timeLimitMinutes;
+  const maxScore = configData?.maxScore ?? round.configData?.maxScore;
+
+  return (
+    <div className="grid items-start gap-6 lg:grid-cols-12">
+      {/* Left column: status info */}
+      <div className="space-y-5 lg:col-span-8">
+        {/* Status Banner */}
+        <Card
+          className={cn(
+            "overflow-hidden rounded-2xl border p-6 shadow-sm",
+            isPending
+              ? "border-amber-300 bg-amber-50/70 dark:border-amber-500/30 dark:bg-amber-950/20"
+              : "border-indigo-300 bg-indigo-50/70 dark:border-indigo-500/30 dark:bg-indigo-950/20"
+          )}>
+          <div className="flex items-start gap-4">
+            <div
+              className={cn(
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
+                isPending
+                  ? "border border-amber-300 bg-amber-100 text-amber-600 dark:border-amber-500/40 dark:bg-amber-500/20 dark:text-amber-300"
+                  : "border border-indigo-300 bg-indigo-100 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-300"
+              )}>
+              {isPending ? (
+                <Clock3 className="h-6 w-6 animate-pulse" />
+              ) : (
+                <CalendarClock className="h-6 w-6" />
+              )}
+            </div>
+            <div className="flex-1">
+              <h3
+                className={cn(
+                  "text-lg font-black",
+                  isPending
+                    ? "text-amber-900 dark:text-amber-100"
+                    : "text-indigo-900 dark:text-indigo-100"
+                )}>
+                {isPending ? (
+                  <>
+                    {t(
+                      "staffGrading.aiInterview.pendingTitle",
+                      "Ứng viên đang chờ lịch phỏng vấn AI"
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {t(
+                      "staffGrading.aiInterview.slotPickedTitle",
+                      "Ứng viên đã đặt lịch phỏng vấn AI"
+                    )}
+                  </>
+                )}
+              </h3>
+              <p
+                className={cn(
+                  "mt-1 text-sm leading-relaxed",
+                  isPending
+                    ? "text-amber-700 dark:text-amber-300"
+                    : "text-indigo-700 dark:text-indigo-300"
+                )}>
+                {isPending ? (
+                  <>
+                    {t(
+                      "staffGrading.aiInterview.pendingDesc",
+                      "Ứng viên chưa đặt lịch phỏng vấn AI. Vui lòng chờ ứng viên hoàn tất việc chọn slot trước khi bạn có thể đánh giá."
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {t(
+                      "staffGrading.aiInterview.slotPickedDesc",
+                      "Ứng viên đã chọn slot phỏng vấn. Hệ thống AI sẽ tiến hành phỏng vấn. Bạn có thể xem lại kết quả sau khi ứng viên hoàn tất."
+                    )}
+                  </>
+                )}
+              </p>
+              {detail?.aiInterviewSessionId && (
+                <p
+                  className={cn(
+                    "mt-2 font-mono text-xs font-semibold",
+                    isPending
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-indigo-600 dark:text-indigo-400"
+                  )}>
+                  Session ID: {detail.aiInterviewSessionId}
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        {/* Round Config Info */}
+        <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+            <Bot className="h-4 w-4 text-indigo-500" />
+            {t("staffGrading.aiInterview.roundConfig", "Cấu hình vòng AI Interview")}
+          </h4>
+          <div className="space-y-3 text-xs">
+            {instruction && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/40">
+                <span className="mb-1 block font-bold text-slate-500 uppercase dark:text-slate-400">
+                  {t("staffGrading.instruction", "Hướng dẫn")}:
+                </span>
+                <p className="leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                  {instruction}
+                </p>
+              </div>
+            )}
+            {timeLimitMinutes != null && (
+              <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/40">
+                <span className="font-semibold text-slate-500 dark:text-slate-400">
+                  {t("staffGrading.timeLimit", "Thời gian quy định")}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {timeLimitMinutes} {t("staffGrading.minutes", "phút")}
+                </span>
+              </div>
+            )}
+            {maxScore != null && (
+              <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/40">
+                <span className="font-semibold text-slate-500 dark:text-slate-400">
+                  {t("staffGrading.maxScore", "Điểm tối đa")}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">{maxScore}</span>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Reminder for staff */}
+        <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-blue-500 dark:text-blue-400" />
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                {t("staffGrading.aiInterview.reminderTitle", "Lưu ý cho Staff")}
+              </h4>
+              <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                {t(
+                  "staffGrading.aiInterview.reminderDesc",
+                  "Khi ứng viên hoàn tất phỏng vấn AI, hệ thống sẽ tự động chấm điểm. Kết quả (AI Score, AI Feedback) sẽ hiển thị tại đây. Bạn chỉ cần xác nhận điểm HR và đưa ra nhận xét cuối cùng."
+                )}
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Right sidebar */}
+      <div className="space-y-4 lg:col-span-4">
+        <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          <h4 className="mb-3 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            {t("staffGrading.currentStatus", "Trạng thái hiện tại")}
+          </h4>
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-500 dark:text-slate-400">
+                {t("staffGrading.detailStatus", "Status")}:
+              </span>
+              <span
+                className={cn(
+                  "rounded-full border px-2 py-0.5 font-bold",
+                  isPending
+                    ? "border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/20 dark:text-amber-300"
+                    : "border-indigo-300 bg-indigo-100 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-300"
+                )}>
+                {statusStr}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-500 dark:text-slate-400">
+                {t("staffGrading.hrScore", "HR Score")}:
+              </span>
+              <span className="font-bold text-slate-400">--</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-500 dark:text-slate-400">
+                {t("staffGrading.aiScore", "AI Score")}:
+              </span>
+              <span className="font-bold text-slate-400">--</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-500 dark:text-slate-400">
+                {t("staffGrading.finalResult", "Kết quả")}:
+              </span>
+              <span className="font-bold text-slate-400">--</span>
+            </div>
+          </div>
+          <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3 text-center text-xs font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-950/20 dark:text-indigo-300">
+            {t("staffGrading.aiInterview.waitingForResult", "Chờ kết quả từ hệ thống AI...")}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export function AiInterviewModule({
   round,
   detail,
   jdInfo,
   isCompleted,
   isCurrent,
+  isStaffView,
   onSuccess,
 }: AiInterviewModuleProps) {
   const { t } = useTranslation();
@@ -2136,15 +2352,23 @@ export function AiInterviewModule({
     statusStr === "PASSED" ||
     statusStr === "FAILED";
 
+  // Staff view: the round is "in progress" for staff when the detail status is PENDING or SLOT_PICKED
+  // (candidate is scheduling/doing AI interview)
+  const isStaffInProgress =
+    isStaffView &&
+    !isCompletedEffective &&
+    (statusStr === "PENDING" || statusStr === "SLOT_PICKED");
+
   const aiScore = detail?.aiScore;
   const hrScore = detail?.hrScore;
   const finalScore = detail?.finalScore ?? detail?.aiScore;
   const applicationDetailId = detail?.id ?? null;
   const selectedDateString = useMemo(() => toYmd(selectedDate), [selectedDate]);
 
+  // Guard kiosk API calls behind !isStaffView — staff just reads status from detail
   const bookingQuery = useKioskBookingByApplicationDetail(
     applicationDetailId,
-    !isCompletedEffective
+    !isCompletedEffective && !isStaffView
   );
   const activeBooking = createdBooking ?? bookingQuery.data ?? null;
   const hasBookedSlot = Boolean(
@@ -2156,7 +2380,7 @@ export function AiInterviewModule({
     isLoading: kiosksLoading,
     error: kiosksError,
     refetch: refetchKiosks,
-  } = useActiveKiosks(isCurrent && !isCompleted);
+  } = useActiveKiosks(isCurrent && !isCompleted && !isStaffView);
 
   useEffect(() => {
     if (activeBooking?.kioskId && selectedKioskId !== activeBooking.kioskId) {
@@ -2197,7 +2421,7 @@ export function AiInterviewModule({
       if (!result.success) throw new Error(result.error);
       return result.data ?? [];
     },
-    enabled: Boolean(selectedKioskId) && isCurrent && !isCompleted,
+    enabled: Boolean(selectedKioskId) && isCurrent && !isCompleted && !isStaffView,
     staleTime: 60_000,
   });
 
@@ -2208,7 +2432,7 @@ export function AiInterviewModule({
   } = useKioskSlots(
     selectedKioskId ?? 0,
     selectedDateString,
-    Boolean(selectedKioskId) && !hasBookedSlot
+    Boolean(selectedKioskId) && !hasBookedSlot && !isStaffView
   );
 
   const availableSlots = useMemo<SlotCalendarSlot[]>(
@@ -2231,6 +2455,7 @@ export function AiInterviewModule({
   const canBook =
     isCurrent &&
     !isCompleted &&
+    !isStaffView &&
     Boolean(applicationDetailId) &&
     Boolean(selectedKioskId) &&
     Boolean(selectedSlot) &&
@@ -2349,6 +2574,8 @@ export function AiInterviewModule({
           jdInfo={jdInfo}
           onSuccess={onSuccess}
         />
+      ) : isStaffInProgress ? (
+        <StaffAiInterviewWaitingView detail={detail} round={round} />
       ) : (
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
           <div className="space-y-6">

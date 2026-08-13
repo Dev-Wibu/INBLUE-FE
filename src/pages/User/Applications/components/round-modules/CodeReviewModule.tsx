@@ -75,6 +75,8 @@ interface CodeReviewModuleProps {
   applicationId: number;
   isCompleted: boolean;
   isCurrent: boolean;
+  /** When true, problems come from detail.roundConfig (staff grader API) — no additional problem-fetching calls */
+  isStaffView?: boolean;
   onSuccess?: () => void;
 }
 
@@ -205,12 +207,17 @@ export function CodeReviewModule({
   applicationId,
   isCompleted,
   isCurrent,
+  isStaffView,
   onSuccess,
 }: CodeReviewModuleProps) {
   const { t } = useTranslation();
 
-  const configData = round.configData as unknown as
-    | (typeof round.configData & {
+  // Merge roundConfig from detail (staff grader API) with round.configData (fallback for user view)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mergedConfigData = (detail as any)?.roundConfig ?? round.configData;
+
+  const configData = mergedConfigData as unknown as
+    | (typeof mergedConfigData & {
         codeReviewProblems?: CodeReviewProblemSnapshot[];
         codeReviewProblem?: CodeReviewProblemSnapshot;
         codeReviewProblemsId?: number[];
@@ -233,20 +240,24 @@ export function CodeReviewModule({
   }, [configData]);
 
   // 2. If problem IDs exist but lack full file details, fetch from API
+  //    Guard: staff view gets problems from detail.roundConfig — no additional fetching needed
   const [fetchedProblems, setFetchedProblems] = useState<CodeReviewProblemSnapshot[]>([]);
   const [isLoadingProblems, setIsLoadingProblems] = useState(false);
 
   useEffect(() => {
-    const ids = configData?.codeReviewProblemsId || [];
+    // Don't fetch problems in staff view — detail.roundConfig has everything
+    if (isStaffView) return;
+
+    const ids = (configData?.codeReviewProblemsId as number[] | undefined) || [];
     const missingIds = ids.filter(
-      (id) => !rawProblems.some((p) => p.problemId === id && (p.files?.length ?? 0) > 0)
+      (id: number) => !rawProblems.some((p) => p.problemId === id && (p.files?.length ?? 0) > 0)
     );
 
     if (missingIds.length === 0) return;
 
     let isMounted = true;
     setIsLoadingProblems(true);
-    Promise.all(missingIds.map((id) => codeReviewProblemManager.getById(id)))
+    Promise.all(missingIds.map((id: number) => codeReviewProblemManager.getById(id)))
       .then((resList) => {
         if (!isMounted) return;
         const loaded: CodeReviewProblemSnapshot[] = [];
@@ -701,7 +712,8 @@ export function CodeReviewModule({
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
                 ? t("userApplication.codeReview.codeReviewCompleted")
-                : round.configData?.instruction ||
+                : mergedConfigData?.instruction ||
+                  round.configData?.instruction ||
                   t("userApplication.codeReview.codeReviewInstructions")}
             </p>
           </div>

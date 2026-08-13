@@ -6723,7 +6723,23 @@
     "submitFail": "Xác nhận & Từ chối",
     "submitHint": "Quyết định của bạn sẽ được ghi nhận và hiển thị cho ứng viên.",
     "useAi": "Dùng AI",
-    "useAiScore": "Dùng điểm AI"
+    "useAiScore": "Dùng điểm AI",
+    "instruction": "Hướng dẫn",
+    "maxScore": "Điểm tối đa",
+    "currentStatus": "Trạng thái hiện tại",
+    "detailStatus": "Status",
+    "hrScore": "Điểm HR",
+    "finalResult": "Kết quả",
+    "aiInterview": {
+      "pendingTitle": "Ứng viên đang chờ lịch phỏng vấn AI",
+      "slotPickedTitle": "Ứng viên đã đặt lịch phỏng vấn AI",
+      "pendingDesc": "Ứng viên chưa đặt lịch phỏng vấn AI. Vui lòng chờ ứng viên hoàn tất việc chọn slot trước khi bạn có thể đánh giá.",
+      "slotPickedDesc": "Ứng viên đã chọn slot phỏng vấn. Hệ thống AI sẽ tiến hành phỏng vấn. Bạn có thể xem lại kết quả sau khi ứng viên hoàn tất.",
+      "roundConfig": "Cấu hình vòng AI Interview",
+      "reminderTitle": "Lưu ý cho Staff",
+      "reminderDesc": "Khi ứng viên hoàn tất phỏng vấn AI, hệ thống sẽ tự động chấm điểm. Kết quả (AI Score, AI Feedback) sẽ hiển thị tại đây. Bạn chỉ cần xác nhận điểm HR và đưa ra nhận xét cuối cùng.",
+      "waitingForResult": "Chờ kết quả từ hệ thống AI..."
+    }
   },
   "quiz": {
     "submitSuccess": "Nộp bài quiz thành công!",

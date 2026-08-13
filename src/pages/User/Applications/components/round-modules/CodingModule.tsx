@@ -349,6 +349,8 @@ export function CodingModule({
   onSuccess,
 }: CodingModuleProps) {
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detailRoundConfig = (initialDetail as any)?.roundConfig;
   const [submittedDetail, setSubmittedDetail] = useState<ApplicationDetail | null>(null);
   const detail = submittedDetail ?? initialDetail;
   const problems = useMemo(() => getProblems(round), [round]);
@@ -692,7 +694,8 @@ export function CodingModule({
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
                 ? t("userApplication.coding.examCompletedStatus")
-                : round.configData?.instruction || t("userApplication.coding.examInstructions")}
+                : (detailRoundConfig ?? round.configData)?.instruction ||
+                  t("userApplication.coding.examInstructions")}
             </p>
           </div>
         </div>

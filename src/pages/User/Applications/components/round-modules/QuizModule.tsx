@@ -50,6 +50,8 @@ interface QuizModuleProps {
   jdId?: number;
   isCompleted: boolean;
   isCurrent: boolean;
+  /** When true, useQuizConfig (JD API call) is disabled — questions come from detail.roundConfig */
+  isStaffView?: boolean;
   onSuccess?: () => void;
 }
 
@@ -403,24 +405,29 @@ export function QuizModule({
   jdId,
   isCompleted,
   isCurrent,
+  isStaffView,
   onSuccess,
 }: QuizModuleProps) {
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detailRoundConfig = (detail as any)?.roundConfig;
 
   // Fetch quiz questions from JD configuration if available
-  const { data: quizConfig } = useQuizConfig(jdId ?? 0, round.id ?? 0);
+  // Guard: staff view gets quiz questions from detail.roundConfig — no JD API call needed
+  const { data: quizConfig } = useQuizConfig(jdId ?? 0, round.id ?? 0, !isStaffView);
 
-  // Resolved list of questions
+  // Resolved list of questions — priority: quizConfig (JD API) > detail.roundConfig (reviewer API) > round.configData > DEFAULT
   const questions: QuizQuestion[] = useMemo(() => {
-    if (quizConfig?.questions && quizConfig.questions.length > 0) {
-      return quizConfig.questions;
-    }
+    // Staff view: questions come from detail.roundConfig (no JD API needed)
+    const detailQuestions = (detailRoundConfig as { quizQuestions?: QuizQuestion[] })
+      ?.quizQuestions;
+    if (detailQuestions?.length) return detailQuestions;
+
+    if (quizConfig?.questions?.length) return quizConfig.questions;
     const configQuestions = (round.configData as { quizQuestions?: QuizQuestion[] })?.quizQuestions;
-    if (configQuestions && configQuestions.length > 0) {
-      return configQuestions;
-    }
+    if (configQuestions?.length) return configQuestions;
     return DEFAULT_QUESTIONS;
-  }, [quizConfig, round.configData]);
+  }, [detail, quizConfig, round.configData]);
 
   // Quiz result breakdown hook (parsed from ApplicationDetail)
   const quizResultData = useQuizResult(detail);
@@ -568,7 +575,9 @@ export function QuizModule({
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
                 ? t("userApplication.quiz.examCompletedMessage")
-                : round.configData?.instruction ||
+                : detailRoundConfig?.instruction ||
+                  quizConfig?.instruction ||
+                  round.configData?.instruction ||
                   t("userApplication.quiz.examInstructionsDefault")}
             </p>
           </div>
@@ -801,7 +810,9 @@ export function QuizModule({
                       {t("userApplication.quiz.confirmStartExamTitle")}
                     </h3>
                     <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                      {round.configData?.instruction ||
+                      {detailRoundConfig?.instruction ||
+                        quizConfig?.instruction ||
+                        round.configData?.instruction ||
                         t("userApplication.quiz.confirmStartExamHint")}
                     </p>
                   </div>

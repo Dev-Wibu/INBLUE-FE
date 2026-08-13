@@ -43,6 +43,8 @@ interface EmailSimulatorModuleProps {
   jdInfo?: JdInfoPayload | null;
   isCompleted: boolean;
   isCurrent: boolean;
+  /** When true, useEmailSubmission hook is disabled — staff reads data from detail */
+  isStaffView?: boolean;
   onSuccess?: () => void;
 }
 
@@ -136,9 +138,12 @@ export function EmailSimulatorModule({
   jdInfo,
   isCompleted,
   isCurrent,
+  isStaffView,
   onSuccess,
 }: EmailSimulatorModuleProps) {
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detailRoundConfig = (detail as any)?.roundConfig;
 
   const [sampleBody, setSampleBody] = useState(
     "Kính gửi Anh/Chị,\n\nEm xin phép phản hồi email của Anh/Chị về vấn đề đang xảy ra...\n\nTrân trọng,\n[Tên của bạn]"
@@ -181,13 +186,14 @@ export function EmailSimulatorModule({
     null;
 
   // 2. Nếu emailSubmissionId khác null/undefined, gọi GET /api/email-submissions/{id} để lấy kết quả chi tiết
+  //    Guard: staff view reads email data from detail.submissionData instead
   const { data: emailSubmission } = useEmailSubmission(
     emailSubmissionId ?? 0,
-    emailSubmissionId != null && emailSubmissionId > 0
+    emailSubmissionId != null && emailSubmissionId > 0 && !isStaffView
   );
 
   // Auto-fetch email submission for preview modal when opened
-  useEmailSubmission(previewEmailId ?? 0, previewOpen && previewEmailId != null);
+  useEmailSubmission(previewEmailId ?? 0, previewOpen && previewEmailId != null && !isStaffView);
 
   // 3. Tính toán Phase thuần túy (Derived State) dựa trên emailSubmissionId, emailSubmission và detail status
   const phase = useMemo<Phase>(() => {
@@ -419,7 +425,8 @@ export function EmailSimulatorModule({
                   </span>
                 </div>
                 <h3 className="mt-1 text-sm leading-snug font-bold text-slate-900 dark:text-slate-100">
-                  {round.configData?.instruction ||
+                  {detailRoundConfig?.instruction ||
+                    round.configData?.instruction ||
                     t("userApplication.emailSimulator.emailInstructionDefault")}
                 </h3>
               </div>
@@ -432,7 +439,8 @@ export function EmailSimulatorModule({
                   </span>
                 </div>
                 <div className="text-xs leading-relaxed font-normal whitespace-pre-line text-slate-700 dark:text-slate-200">
-                  {round.configData?.evaluationCriteria ||
+                  {detailRoundConfig?.evaluationCriteria ||
+                    round.configData?.evaluationCriteria ||
                     t("userApplication.emailSimulator.emailCriteriaDefault")}
                 </div>
               </div>
@@ -873,14 +881,16 @@ export function EmailSimulatorModule({
               </div>
               <div className="space-y-2.5">
                 <p className="text-xs leading-relaxed font-bold text-slate-900 dark:text-slate-100">
-                  {round.configData?.instruction ||
+                  {detailRoundConfig?.instruction ||
+                    round.configData?.instruction ||
                     t(
                       "userApplication.emailSimulator.emailInstructionDefault",
                       "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng."
                     )}
                 </p>
                 <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 text-xs leading-relaxed font-medium whitespace-pre-line text-slate-900 shadow-inner dark:border-indigo-500/30 dark:bg-slate-950/90 dark:text-slate-100">
-                  {round.configData?.evaluationCriteria ||
+                  {detailRoundConfig?.evaluationCriteria ||
+                    round.configData?.evaluationCriteria ||
                     t(
                       "userApplication.emailSimulator.emailCriteriaDefault",
                       "Nội dung tình huống được giao."

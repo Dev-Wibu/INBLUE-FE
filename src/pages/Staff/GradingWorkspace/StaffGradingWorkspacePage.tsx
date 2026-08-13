@@ -960,6 +960,8 @@ export function StaffGradingWorkspacePage() {
         roundOrder: detailAny.roundOrder ?? 1,
         passThreshold: detailAny.passThreshold,
         description: detailAny.roundDescription,
+
+        roundConfig: detailAny.roundConfig,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
     }
@@ -983,6 +985,8 @@ export function StaffGradingWorkspacePage() {
         roundOrder: detailAny?.roundOrder ?? 1,
         passThreshold: detailAny?.passThreshold,
         description: detailAny?.roundDescription,
+
+        roundConfig: detailAny?.roundConfig,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
     }
@@ -1201,6 +1205,7 @@ export function StaffGradingWorkspacePage() {
               jdInfo={jdInfo}
               currentRoundOrder={apiCurrentRoundOrder ?? 1}
               appStatus={apiAppStatus}
+              isStaffView={true}
               onRefresh={() => {
                 void refetchReviewer();
               }}
@@ -1219,6 +1224,7 @@ export function StaffGradingWorkspacePage() {
                     jdInfo={jdInfo}
                     currentRoundOrder={apiCurrentRoundOrder ?? 1}
                     appStatus={apiAppStatus}
+                    isStaffView={true}
                     onRefresh={() => {
                       void refetchReviewer();
                     }}
@@ -1281,6 +1287,7 @@ export function StaffGradingWorkspacePage() {
                       jdInfo={jdInfo}
                       currentRoundOrder={apiCurrentRoundOrder ?? 1}
                       appStatus={apiAppStatus}
+                      isStaffView={true}
                       onRefresh={() => {
                         void refetchReviewer();
                       }}
