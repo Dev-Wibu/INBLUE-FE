@@ -337,6 +337,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                         value={matchingCandidateFeedback.rating || 0}
                         readOnly
                         size="md"
+                        color="sky"
                       />
                     </div>
                   </div>
@@ -396,7 +397,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                     Mentor chấm Ứng viên
                   </p>
                   <div className="mt-1 flex items-center gap-2">
-                    <StarRating value={review.rating || 5} readOnly size="sm" />
+                    <StarRating value={review.rating || 5} readOnly size="sm" color="amber" />
                     <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
                       {review.rating || 0}.0/5
                     </span>
@@ -422,6 +423,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                           value={matchingCandidateFeedback.rating || 0}
                           readOnly
                           size="sm"
+                          color="sky"
                         />
                         <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
                           {matchingCandidateFeedback.rating || 0}.0/5

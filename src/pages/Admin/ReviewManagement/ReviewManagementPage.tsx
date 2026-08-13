@@ -407,25 +407,21 @@ export function ReviewManagementPage() {
                               </Badge>
                             </TableCell>
                             <TableCell className="px-4 py-4">
-                              <div className="flex items-center gap-1.5">
-                                <StarRating value={review.rating || 0} readOnly size="sm" />
-                                <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
-                                  {review.rating || 0}.0★
-                                </span>
-                              </div>
+                              <StarRating
+                                value={review.rating || 0}
+                                readOnly
+                                size="sm"
+                                color="amber"
+                              />
                             </TableCell>
                             <TableCell className="px-4 py-4">
                               {candidateFeedback ? (
-                                <div className="flex items-center gap-1.5">
-                                  <StarRating
-                                    value={candidateFeedback.rating || 0}
-                                    readOnly
-                                    size="sm"
-                                  />
-                                  <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
-                                    {candidateFeedback.rating || 0}.0★
-                                  </span>
-                                </div>
+                                <StarRating
+                                  value={candidateFeedback.rating || 0}
+                                  readOnly
+                                  size="sm"
+                                  color="sky"
+                                />
                               ) : (
                                 <span className="text-xs text-slate-400 italic">Chưa phản hồi</span>
                               )}

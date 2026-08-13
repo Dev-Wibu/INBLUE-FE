@@ -19,6 +19,7 @@ interface StarRatingProps {
   readOnly?: boolean;
   size?: "sm" | "md" | "lg" | "xl" | "2xl";
   showValue?: boolean;
+  color?: "amber" | "sky" | "indigo";
   className?: string;
 }
 
@@ -38,12 +39,19 @@ const gapClasses = {
   "2xl": "gap-2.5 sm:gap-3",
 };
 
+const filledColorClasses = {
+  amber: "fill-amber-400 text-amber-500 drop-shadow-[0_2px_6px_rgba(245,158,11,0.35)]",
+  sky: "fill-sky-400 text-sky-500 drop-shadow-[0_2px_6px_rgba(56,189,248,0.35)]",
+  indigo: "fill-indigo-400 text-indigo-500 drop-shadow-[0_2px_6px_rgba(99,102,241,0.35)]",
+};
+
 export function StarRating({
   value,
   onChange,
   readOnly = false,
   size = "md",
   showValue = false,
+  color = "amber",
   className,
 }: StarRatingProps) {
   const [hoverValue, setHoverValue] = useState(0);
@@ -87,7 +95,7 @@ export function StarRating({
                   sizeClasses[size],
                   "transition-colors duration-200",
                   isFilled || isHalf
-                    ? "fill-amber-400 text-amber-500 drop-shadow-[0_2px_6px_rgba(245,158,11,0.35)]"
+                    ? filledColorClasses[color]
                     : "fill-transparent text-slate-300 dark:text-slate-600"
                 )}
               />
@@ -117,7 +125,7 @@ export function StarRating({
               sizeClasses[size],
               "transition-colors duration-200",
               isFilled || isHalf
-                ? "fill-amber-400 text-amber-500 drop-shadow-[0_2px_6px_rgba(245,158,11,0.35)]"
+                ? filledColorClasses[color]
                 : "fill-transparent text-slate-300 dark:text-slate-600"
             )}
           />
