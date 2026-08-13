@@ -174,13 +174,19 @@ export class QuestionBankManager {
       // payload so the mapper sees non-null neighbours and applies the flag.
       const full = (data ?? {}) as {
         questionCategoryId?: number;
+        questionCategory?: { id?: number };
         questionLevel?: "EASY" | "MEDIUM" | "HARD";
         questionText?: string;
         options?: string[];
         correctAnswer?: string;
       };
+      // The QuestionBank wire shape returns questionCategoryId EMBEDDED inside
+      // `questionCategory: { id }`. Top-level `questionCategoryId` is missing
+      // on the response, so chaining the two sources is required - otherwise we
+      // send 0 and the backend returns 404 "Question category not found with id: 0".
+      const categoryId = full.questionCategoryId ?? full.questionCategory?.id ?? 0;
       const retryBody = {
-        questionCategoryId: full.questionCategoryId ?? 0,
+        questionCategoryId: categoryId,
         questionLevel: full.questionLevel ?? "EASY",
         questionText: full.questionText ?? "",
         options: full.options ?? [],
