@@ -462,13 +462,11 @@ export function MentorReviewAssignmentPage() {
           </div>
         </div>
 
-        {/* Table card (scrollable area, pagination pinned at bottom) */}
-        <div className="flex flex-1 flex-col overflow-hidden p-5 pt-4 sm:p-6 sm:pt-4 md:px-8 md:pt-4">
+        {/* Table card (card sizes to content; if many rows, the inner area scrolls) */}
+        <div className="p-5 pt-4 sm:p-6 sm:pt-4 md:px-8 md:pt-4">
           {isLoading ? (
-            <div className="flex flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex w-full items-center justify-center">
-                <SpinnerBlock label={t("common.loading")} />
-              </div>
+            <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <SpinnerBlock label={t("common.loading")} />
             </div>
           ) : error ? (
             <Card className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30">
@@ -490,16 +488,16 @@ export function MentorReviewAssignmentPage() {
               </CardContent>
             </Card>
           ) : filteredDetails.length === 0 ? (
-            <div className="border-border flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed bg-white dark:border-slate-700 dark:bg-slate-900/50">
+            <div className="border-border flex h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed bg-white dark:border-slate-700 dark:bg-slate-900/50">
               <Inbox className="text-muted-foreground h-12 w-12" />
               <p className="text-muted-foreground text-sm font-medium">
                 {t("adminMentorReviewAssignment.noPendingAssignments")}
               </p>
             </div>
           ) : (
-            <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               {/* Scrollable table body */}
-              <div className="flex-1 overflow-auto">
+              <div className="max-h-[calc(100vh-22rem)] overflow-auto">
                 {/* Table header */}
                 <div className="text-muted-foreground sticky top-0 z-10 hidden border-b bg-gray-100/70 px-4 py-2 text-xs font-semibold tracking-wider uppercase backdrop-blur-sm sm:grid sm:grid-cols-12 sm:gap-2 sm:px-4 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
                   <div className="sm:col-span-4">{t("adminMentorReviewAssignment.candidate")}</div>
