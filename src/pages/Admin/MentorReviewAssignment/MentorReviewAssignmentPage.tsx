@@ -748,7 +748,7 @@ function AssignMentorDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="flex h-[88vh] max-h-[820px] w-[96vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-6xl dark:border-slate-800 dark:bg-slate-900">
+      <DialogContent className="flex h-[88vh] max-h-[840px] w-[98vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-[1280px] dark:border-slate-800 dark:bg-slate-900">
         {/* Fixed Header Block: Candidate Avatar/Name/Email + Company Logo/Name/JD Title */}
         <div className="shrink-0 border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
           <DialogHeader className="flex flex-col gap-4 space-y-0 sm:flex-row sm:items-center sm:justify-between">
@@ -840,7 +840,7 @@ function AssignMentorDialog({
               </div>
 
               {/* Scrollable Mentor List */}
-              <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1">
+              <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1 [scrollbar-gutter:stable]">
                 {filteredMentors.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
@@ -903,7 +903,7 @@ function AssignMentorDialog({
             </div>
 
             {/* RIGHT COLUMN (7/12) - Selected Mentor Dossier Panel */}
-            <div className="flex h-full flex-col gap-4 overflow-y-auto rounded-xl border border-slate-200/80 bg-white p-5 shadow-2xs lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex h-full flex-col gap-4 overflow-y-auto rounded-xl border border-slate-200/80 bg-white p-5 shadow-2xs [scrollbar-gutter:stable] lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
               {previewMentor ? (
                 <div className="flex flex-1 flex-col gap-4">
                   {/* Multiple Selected Mentor Chips */}
