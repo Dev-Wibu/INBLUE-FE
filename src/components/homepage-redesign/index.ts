@@ -8,6 +8,7 @@ export {
   AnxietyReliefStrip,
   FeedbackActionSection,
   FinalLandingCta,
+  HoloboxPromoSection,
   InterviewMapSection,
   JobDescriptionSlice,
   NewHomepageHero,

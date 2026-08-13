@@ -183,12 +183,12 @@ function createPresentationSkeleton(mesh: THREE.SkinnedMesh): PresentationBones 
   const hip = createBone("Presentation_Hip", fromCanonical(0, 0.43, 0), root);
   const leftFoot = createBone(
     "Presentation_L_Foot",
-    new THREE.Vector3(0, -0.17 * sourceHeight, 0),
+    new THREE.Vector3(0, -0.08 * sourceHeight, 0),
     leftLowerLeg
   );
   const rightFoot = createBone(
     "Presentation_R_Foot",
-    new THREE.Vector3(0, -0.17 * sourceHeight, 0),
+    new THREE.Vector3(0, -0.08 * sourceHeight, 0),
     rightLowerLeg
   );
 
@@ -224,16 +224,17 @@ function createPresentationSkeleton(mesh: THREE.SkinnedMesh): PresentationBones 
       continue;
     }
 
-    if (y < 0.46 && absoluteX > 0.045 && absoluteX < 0.215) {
+    // Keep every shoe panel on one rigid foot bone. Blending the sole with the
+    // lower leg makes separate hard-surface pieces slide apart when the ankle bends.
+    if (y < 0.2) {
+      assignSkinWeight(skinIndices, skinWeights, vertexIndex, x < 0 ? 14 : 15);
+      continue;
+    }
+
+    if (y < 0.46 && absoluteX > 0.035 && absoluteX < 0.25) {
       const upperLeg = x < 0 ? 8 : 10;
       const lowerLeg = x < 0 ? 9 : 11;
-      const foot = x < 0 ? 14 : 15;
-      if (y < 0.2) {
-        const footWeight = 1 - smoothstep(0.14, 0.2, y);
-        assignSkinWeight(skinIndices, skinWeights, vertexIndex, foot, lowerLeg, footWeight);
-      } else {
-        assignSkinWeight(skinIndices, skinWeights, vertexIndex, y < 0.265 ? lowerLeg : upperLeg);
-      }
+      assignSkinWeight(skinIndices, skinWeights, vertexIndex, y < 0.265 ? lowerLeg : upperLeg);
       continue;
     }
 

@@ -7107,6 +7107,19 @@
         "description": "A suggested round or skill for your next preparation step."
       }
     },
+    "holoboxKicker": "Holobox experience",
+    "holoboxTitle": "Turn the competency summary into a guided robot presentation.",
+    "holoboxDescription": "Holobox gives candidates a focused kiosk view where the AI operator reads the summary aloud, moves with the voice, and keeps attention on the result.",
+    "holoboxCta": "Explore",
+    "holoboxNote": "Opens the competency holobox view",
+    "holoboxPreviewTitle": "Competency broadcast",
+    "holoboxCandidateLabel": "Candidate summary",
+    "holoboxRoleLabel": "Technician",
+    "holoboxDimensionLabel": "Core dimension",
+    "holoboxScoreLabel": "Score",
+    "holoboxAudioLabel": "Audio narration ready",
+    "holoboxAudioMeta": "Tap the robot to play the summary",
+    "holoboxRobotAlt": "Orange and white Holobox presentation robot",
     "startTitle": "Where would you like to start?",
     "start": {
       "first": {

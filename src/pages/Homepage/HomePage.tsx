@@ -2,6 +2,7 @@ import {
   AnxietyReliefStrip,
   FeedbackActionSection,
   FinalLandingCta,
+  HoloboxPromoSection,
   HomepageFooter,
   HomepageHeader,
   InterviewMapSection,
@@ -21,6 +22,7 @@ export function HomePage() {
         <InterviewMapSection />
         <PracticeBeforePressureSection />
         <FeedbackActionSection />
+        <HoloboxPromoSection />
         <StartingPointSection />
         <SimpleTestimonials />
         <FinalLandingCta />

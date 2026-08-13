@@ -7106,6 +7106,19 @@
         "description": "Gợi ý vòng hoặc kỹ năng phù hợp cho bước chuẩn bị kế tiếp."
       }
     },
+    "holoboxKicker": "Trải nghiệm Holobox",
+    "holoboxTitle": "Biến bản tổng hợp năng lực thành phần thuyết trình bằng robot.",
+    "holoboxDescription": "Holobox cho ứng viên một màn hình kiosk tập trung, nơi AI operator đọc phần tổng hợp, cử động theo giọng nói và giữ sự chú ý vào kết quả.",
+    "holoboxCta": "Explore",
+    "holoboxNote": "Mở màn hình holobox competency",
+    "holoboxPreviewTitle": "Phát sóng năng lực",
+    "holoboxCandidateLabel": "Tóm tắt ứng viên",
+    "holoboxRoleLabel": "Technician",
+    "holoboxDimensionLabel": "Core dimension",
+    "holoboxScoreLabel": "Điểm",
+    "holoboxAudioLabel": "Audio narration sẵn sàng",
+    "holoboxAudioMeta": "Bấm vào robot để nghe phần tổng hợp",
+    "holoboxRobotAlt": "Robot thuyết trình Holobox màu cam trắng",
     "startTitle": "Bạn muốn bắt đầu từ đâu?",
     "start": {
       "first": {
