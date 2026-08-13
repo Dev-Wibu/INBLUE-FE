@@ -230,40 +230,24 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
 
         {/* Right Column (4/12 - 34%): Rating Banner & Executive Sidebar */}
         <div className="space-y-6 lg:col-span-4">
-          {/* 5-Star Rating Showcase Card (With Clear Header & Metadata) */}
-          <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/60">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                Đánh giá tổng quan
-              </h3>
+          {/* 5-Star Rating Showcase Card (Clean Title + Badge + 5 Gold Stars) */}
+          <div className="flex flex-col gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/60">
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  Đánh giá tổng quan
+                </h3>
+              </div>
+              <Badge
+                variant="outline"
+                className="border-amber-200/80 bg-amber-50/80 text-xs font-bold text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/60 dark:text-amber-300">
+                {getRatingLabel(review.rating || 0)}
+              </Badge>
             </div>
 
-            <div className="flex flex-col items-center justify-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-3xl font-extrabold text-slate-900 dark:text-white">
-                  {review.rating || 0}.0
-                </span>
-                <span className="text-sm font-semibold text-slate-400">/ 5.0</span>
-                <Badge
-                  variant="outline"
-                  className="border-amber-200/80 bg-amber-50/80 text-xs font-bold text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/60 dark:text-amber-300">
-                  {getRatingLabel(review.rating || 0)}
-                </Badge>
-              </div>
-
+            <div className="flex justify-center py-1">
               <StarRating value={review.rating || 5} readOnly size="lg" />
-
-              <p className="mt-1 text-center text-xs font-medium text-slate-500 dark:text-slate-400">
-                Mentor{" "}
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {review.mentor?.name || "Mentor"}
-                </span>{" "}
-                đã xếp loại ứng viên{" "}
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {review.user?.name || "Ứng viên"}
-                </span>
-              </p>
             </div>
           </div>
 
