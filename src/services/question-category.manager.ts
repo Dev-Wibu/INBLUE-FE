@@ -17,6 +17,9 @@ import { fetchClient } from "@/lib/api";
 export interface QuestionCategory {
   id?: number;
   categoryName?: string;
+  // Backend also returns `name` on QuestionBank.questionCategory (legacy shape).
+  // Accept it so callers can read either field without a cast.
+  name?: string;
 }
 
 export interface QuestionCategoryFormData {

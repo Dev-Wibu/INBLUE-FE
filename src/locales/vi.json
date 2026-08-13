@@ -6434,7 +6434,8 @@
     "categoryCount": "Số danh mục",
     "inactiveConfirmTitle": "Inactive câu hỏi này?",
     "inactiveConfirmDescription": "Câu hỏi sẽ bị ẩn khỏi các bộ đề và quiz. Bạn có thể kích hoạt lại bất cứ lúc nào.",
-    "inactiveAction": "Inactive"
+    "inactiveAction": "Inactive",
+    "activateFailedPersist": "Server đã nhận yêu cầu nhưng câu hỏi vẫn ở trạng thái inactive. Vui lòng thử lại sau ít giây."
   },
   "adminCodingProblem": {
     "updateSuccess": "Cập nhật bài tập thành công!",
@@ -6884,7 +6885,8 @@
       "waitingForResult": "Chờ kết quả từ hệ thống AI..."
     },
     "gradeResult": "Kết quả chấm",
-    "gradeScore": "Điểm chấm"
+    "gradeScore": "Điểm chấm",
+    "aiScoreLabel": "AI Score"
   },
   "quiz": {
     "submitSuccess": "Nộp bài quiz thành công!",

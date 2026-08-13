@@ -131,9 +131,8 @@ export function QuizEditor({
     // Fallback: derive names from the questions themselves (older behaviour).
     const set = new Set<string>();
     bankQuestions.forEach((q) => {
-      if (q.questionCategory?.categoryName) {
-        set.add(q.questionCategory.categoryName);
-      }
+      const name = q.questionCategory?.name ?? q.questionCategory?.categoryName;
+      if (name) set.add(name);
     });
     return ["All", ...Array.from(set)];
   }, [bankCategories, bankQuestions]);
@@ -225,8 +224,12 @@ export function QuizEditor({
   const filteredBank = React.useMemo(() => {
     return bankQuestions.filter((q) => {
       const matchesSearch = (q.questionText || "").toLowerCase().includes(bankSearch.toLowerCase());
-      const matchesCategory =
-        bankCategory === "All" || q.questionCategory?.categoryName === bankCategory;
+      // NOTE: the backend returns questionCategory as { id, name } (legacy shape),
+      // not { id, categoryName } (the QuestionCategory service manager uses the
+      // latter). Older code compared against categoryName, so the filter silently
+      // matched nothing. Use `name` as the canonical category label.
+      const qCategoryName = q.questionCategory?.name ?? q.questionCategory?.categoryName;
+      const matchesCategory = bankCategory === "All" || qCategoryName === bankCategory;
       const matchesLevel = bankLevel === "All" || q.questionLevel === bankLevel;
       return matchesSearch && matchesCategory && matchesLevel;
     });
@@ -802,7 +805,8 @@ export function QuizEditor({
                     const originalIndex = bankQuestions.findIndex((bq) => bq === q);
                     const isSelected = selectedBankIndexes.includes(originalIndex);
                     const qText = q.questionText || "";
-                    const categoryName = q.questionCategory?.categoryName;
+                    const categoryName =
+                      q.questionCategory?.name ?? q.questionCategory?.categoryName;
                     const difficultyLabel =
                       q.questionLevel === "EASY"
                         ? t("common.difficultyEasy")

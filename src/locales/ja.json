@@ -6335,7 +6335,8 @@
     "categoryCount": "カテゴリ数",
     "inactiveConfirmTitle": "この問題を無効化しますか?",
     "inactiveConfirmDescription": "この問題はクイズや試験から非表示になります。いつでも再有効化できます。",
-    "inactiveAction": "無効化"
+    "inactiveAction": "無効化",
+    "activateFailedPersist": "サーバーはリクエストを受け付けましたが、問題はまだ非アクティブです。少し経ってからもう一度お試しください。"
   },
   "adminCodingProblem": {
     "updateSuccess": "Problem updated successfully!",
@@ -6823,7 +6824,8 @@
       "waitingForResult": "AIシステムからの結果を待っています..."
     },
     "gradeResult": "採点結果",
-    "gradeScore": "採点スコア"
+    "gradeScore": "採点スコア",
+    "aiScoreLabel": "AI スコア"
   },
   "quiz": {
     "submitSuccess": "クイズの提出に成功しました！",

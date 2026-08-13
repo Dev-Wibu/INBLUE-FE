@@ -111,12 +111,17 @@ export function QuestionBankTable({
   const { t } = useTranslation();
 
   const getCategoryName = (q: QuestionBank) => {
-    if (q.questionCategory?.categoryName) return q.questionCategory.categoryName;
+    // Backend returns `questionCategory: { id, name }` (legacy shape) even
+    // though the QuestionCategory service manager uses `categoryName`. Try
+    // both so the table shows the category name in either case.
+    const directName = q.questionCategory?.name ?? q.questionCategory?.categoryName;
+    if (directName) return directName;
     const anyQ = q as unknown as {
-      category?: { categoryName?: string; id?: string };
+      category?: { categoryName?: string; name?: string; id?: string };
       questionCategoryId?: string;
     };
     if (anyQ.category?.categoryName) return anyQ.category.categoryName;
+    if (anyQ.category?.name) return anyQ.category.name;
     const id = anyQ.questionCategoryId || q.questionCategory?.id || anyQ.category?.id;
     const found = categories.find((c) => c.id === id);
     return found?.categoryName || t("adminQuestionbankmanagement.uncategorized", "Chưa phân loại");

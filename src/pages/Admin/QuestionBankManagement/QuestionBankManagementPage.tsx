@@ -213,43 +213,45 @@ export function QuestionBankManagementPage() {
   const handleToggleStatus = async (question: QuestionBank, isActive: boolean) => {
     if (!question.id) return;
     if (isActive) {
-      // Re-activate: optimistic update + API call to flip isDeleted=false
-      const previousState = (question as unknown as { isDeleted?: boolean }).isDeleted;
-      setQuestions((prev) =>
-        prev.map((q) =>
-          q.id === question.id ? ({ ...q, isDeleted: false } as unknown as QuestionBank) : q
-        )
-      );
+      // Re-activate. We previously did an optimistic update, but the backend
+      // sometimes returns 200 OK with the old `isDeleted: true` value (it
+      // accepts the PUT but doesn't actually persist the change), which then
+      // gets overwritten on F5 by the next refetch. So now we trust the server
+      // response instead of guessing the UI state.
       try {
-        // IMPORTANT: use toggleStatus, NOT update - update sends the full payload and
-        // triggers 400 Bad Request because the backend validates @Size(min=1) on
-        // questionText and requires a non-empty options array. toggleStatus sends
-        // only `{ isDeleted }`, matching the docs' "PUT với { isDeleted: false }".
         const res = await questionBankManager.toggleStatus(question.id, false);
+        const serverState = (res.data as unknown as { isDeleted?: boolean })?.isDeleted;
         if (res.success) {
-          toast.success(
-            t("adminQuestionbankmanagement.reactivatedSuccess", "Đã kích hoạt lại câu hỏi")
-          );
-        } else {
-          // Revert optimistic update on failure
+          // Sync local state with whatever the server actually says we have.
+          const resolvedIsDeleted = typeof serverState === "boolean" ? serverState : false;
           setQuestions((prev) =>
             prev.map((q) =>
-              q.id === question.id
-                ? ({ ...q, isDeleted: previousState } as unknown as QuestionBank)
-                : q
+              q.id === question.id ? ({ ...q, isDeleted: resolvedIsDeleted } as QuestionBank) : q
             )
           );
+          if (resolvedIsDeleted) {
+            // Server reported the field is still deleted - the user's intent
+            // didn't stick. Tell them, and refetch to make sure the UI matches
+            // the source of truth.
+            toast.error(
+              t("adminQuestionbankmanagement.activateFailedPersist", {
+                defaultValue:
+                  "Backend accepted the request but the question is still inactive. Please try again in a moment.",
+              })
+            );
+            await fetchData();
+          } else {
+            toast.success(
+              t("adminQuestionbankmanagement.reactivatedSuccess", "Đã kích hoạt lại câu hỏi")
+            );
+          }
+        } else {
           toast.error(res.error || t("error.systemError"));
+          await fetchData();
         }
       } catch {
-        setQuestions((prev) =>
-          prev.map((q) =>
-            q.id === question.id
-              ? ({ ...q, isDeleted: previousState } as unknown as QuestionBank)
-              : q
-          )
-        );
         toast.error(t("error.systemError"));
+        await fetchData();
       }
       return;
     }

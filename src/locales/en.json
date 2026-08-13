@@ -6436,7 +6436,8 @@
     "categoryCount": "Category count",
     "inactiveConfirmTitle": "Inactive this question?",
     "inactiveConfirmDescription": "This question will be hidden from quizzes and exams. You can re-activate it at any time.",
-    "inactiveAction": "Inactive"
+    "inactiveAction": "Inactive",
+    "activateFailedPersist": "Backend accepted the request but the question is still inactive. Please try again in a moment."
   },
   "adminCodingProblem": {
     "updateSuccess": "Problem updated successfully!",
@@ -6883,7 +6884,8 @@
       "waitingForResult": "Waiting for results from AI system..."
     },
     "gradeResult": "Grade result",
-    "gradeScore": "Grade score"
+    "gradeScore": "Grade score",
+    "aiScoreLabel": "AI Score"
   },
   "quiz": {
     "submitSuccess": "Quiz submitted successfully!",
