@@ -109,6 +109,14 @@ export function useDashboardScrollRestoration(
 
     if (shouldRestoreFromPop) {
       container.scrollTop = positionsRef.current.get(entryKey) ?? 0;
+    } else if (didLocationChange) {
+      // For a PUSH / REPLACE to a route the user has visited before in this
+      // session, restore the saved position. This is what makes the home
+      // feed "remember" where the user left off after they opened a post
+      // detail and came back via the close button (X is a PUSH, not a POP).
+      // First-visit PUSH still scrolls to top.
+      const savedForRoute = positionsRef.current.get(routeKey);
+      container.scrollTop = savedForRoute ?? 0;
     } else {
       container.scrollTop = 0;
     }
@@ -121,6 +129,11 @@ export function useDashboardScrollRestoration(
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     const saveCurrentPosition = () => {
+      // Save under BOTH the route key (pathname+search+hash, stable across
+      // visits) and the history entry key (location.key, unique per entry).
+      // The route key drives the "go back to the same feed" restore; the
+      // history entry key drives browser back/forward restoration.
+      upsertPosition(positionsRef.current, routeKey, container.scrollTop, maxEntriesLimit);
       upsertPosition(positionsRef.current, entryKey, container.scrollTop, maxEntriesLimit);
       writeStoredPositions(positionsRef.current);
     };
@@ -145,5 +158,13 @@ export function useDashboardScrollRestoration(
 
       saveCurrentPosition();
     };
-  }, [containerRef, enabled, entryKey, locationSignature, maxEntriesLimit, navigationType]);
+  }, [
+    containerRef,
+    enabled,
+    entryKey,
+    locationSignature,
+    maxEntriesLimit,
+    navigationType,
+    routeKey,
+  ]);
 }

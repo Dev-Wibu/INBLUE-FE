@@ -483,15 +483,15 @@ export function UserDashboardPage() {
         <div
           ref={handleContentRef}
           className={cn(
-            "relative min-h-0 flex-1 overflow-hidden",
-            // Home feed detail page is its own two-column layout that must
-            // fill the content area edge-to-edge with no padding and no
-            // page-level scroll. The page uses absolute inset-0 to lock
-            // its size to this container, so we need position:relative
-            // here and we must not let min-height:auto (default) let the
-            // page grow with content.
+            "relative min-h-0 flex-1",
+            // Home feed detail page overlays the feed container with
+            // absolute inset-0, so we need overflow-hidden + p-0 only for
+            // the detail sub-route. The bare feed tab keeps overflow-auto
+            // so useDashboardScrollRestoration can track the user's
+            // scroll position and restore it when they return from a
+            // post detail.
             location.pathname.startsWith("/user/home-feed/")
-              ? "p-0"
+              ? "overflow-hidden p-0"
               : typedActiveTab === "overview"
                 ? "overflow-auto"
                 : typedActiveTab === "messenger" ||

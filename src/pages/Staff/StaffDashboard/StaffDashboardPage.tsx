@@ -2,6 +2,7 @@ import icon2 from "@/assets/icon2.svg";
 import type { SidebarMenuGroup } from "@/components/shared";
 import { DashboardSidebar, getInitialSidebarCollapsed } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
+import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -211,6 +212,8 @@ export function StaffDashboardPage() {
   const handleContentRef = useCallback((node: HTMLDivElement | null) => {
     contentRef.current = node;
   }, []);
+
+  useDashboardScrollRestoration(contentRef);
 
   return (
     <div className="isolate flex h-screen bg-slate-50 dark:bg-slate-950">
