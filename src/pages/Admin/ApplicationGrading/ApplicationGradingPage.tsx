@@ -188,7 +188,7 @@ function EmbeddedCVViewer({ fileUrl }: { fileUrl: string }) {
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
             className="h-8 gap-1.5 rounded-lg border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-            {isExpanded ? "Thu gọn" : "Mở rộng chiều cao"}
+            {isExpanded ? t("cvViewerCollapse") : t("cvViewerExpand")}
           </Button>
           <a
             href={fileUrl}
@@ -196,7 +196,7 @@ function EmbeddedCVViewer({ fileUrl }: { fileUrl: string }) {
             rel="noopener noreferrer"
             className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700">
             <ExternalLink className="h-3.5 w-3.5" />
-            Mở tab mới
+            {t("cvViewerOpenNewTab")}
           </a>
         </div>
       </div>
@@ -226,7 +226,7 @@ function EmbeddedCVViewer({ fileUrl }: { fileUrl: string }) {
           <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
             <FileText className="h-12 w-12 text-slate-400" />
             <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-              Không thể tải bản xem trước CV trực tiếp.
+              {t("cvViewerCannotPreview")}
             </p>
             <a
               href={fileUrl}
@@ -234,7 +234,7 @@ function EmbeddedCVViewer({ fileUrl }: { fileUrl: string }) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md">
               <ExternalLink className="h-4 w-4" />
-              Tải / Xem file CV trong tab mới
+              {t("cvViewerDownloadView")}
             </a>
           </div>
         )}
@@ -491,16 +491,18 @@ function SubmissionPreview({ detail, onViewEmailSubmission }: SubmissionPreviewP
               <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
               <div>
                 <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                  Đang chờ candidate hoàn thành vòng phỏng vấn
+                  {t("pendingAicvGrading")}
                 </p>
                 <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                  Candidate đang chọn lịch hoặc đang trong quá trình phỏng vấn với AI.
+                  {t("pendingAicvGradingHint")}
                 </p>
               </div>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-slate-500 dark:text-slate-400">Chưa có nội dung submission.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t("noAicvSubmissionContent")}
+          </p>
         )}
       </div>
     );
@@ -810,7 +812,9 @@ function ApplicationGradingTable({
                   <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     <Briefcase className="h-3 w-3 shrink-0 text-indigo-500" />
                     {item.applicationName ??
-                      (jdId != null ? (jdMap?.get(jdId) ?? `Vị trí #${jdId}`) : "Chưa gắn JD")}
+                      (jdId != null
+                        ? (jdMap?.get(jdId) ?? t("grading.noJobAttached"))
+                        : t("grading.noJobAttached"))}
                   </span>
                 </TableCell>
 
@@ -1531,7 +1535,7 @@ function StaffGradingHeaderCard({
       {!isStaff && displayDetails.length > 1 && (
         <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/80 px-6 py-2.5 dark:border-slate-800 dark:bg-slate-800/50">
           <span className="text-xs font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-            Các vòng chấm ({displayDetails.length}):
+            {t("grading.roundsToGrade", { count: displayDetails.length })}
           </span>
           <div className="scrollbar-none flex items-center gap-2 overflow-x-auto">
             {displayDetails.map((d, idx) => (
@@ -1604,12 +1608,12 @@ function StaffGradingHeaderCard({
                     : "bg-rose-500/15 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
                 )}>
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                {isPass ? "ĐÃ ĐẠT (PASSED)" : "CHƯA ĐẠT (FAILED)"}
+                {isPass ? t("resultPassBadge") : t("resultFailBadge")}
               </span>
             ) : needsGrading ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-extrabold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
                 <AlertTriangle className="h-3.5 w-3.5 animate-pulse text-amber-500" />
-                CHỜ STAFF ĐÁNH GIÁ & CHẤM ĐIỂM
+                {t("waitingForStaffGrade")}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
@@ -1620,7 +1624,7 @@ function StaffGradingHeaderCard({
             {aiScore !== undefined && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/15 px-3 py-1 text-xs font-bold text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">
                 <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-                Tham chiếu AI: {Math.round(aiScore)}/100
+                {t("aiReference", { score: Math.round(aiScore) })}
               </span>
             )}
           </div>
@@ -1628,14 +1632,10 @@ function StaffGradingHeaderCard({
           {/* Header Title */}
           <div>
             <h2 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">
-              {hasHrScore
-                ? "Kết Quả Đánh Giá Bài Chấm Staff"
-                : "Không Gian Đánh Giá & Chấm Điểm Staff"}
+              {hasHrScore ? t("staffGradeResultTitle") : t("staffGradeWorkspaceTitle")}
             </h2>
             <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-              {hasHrScore
-                ? "Thông tin điểm số và nhận xét chi tiết đã được Staff thẩm định và ghi nhận trên hệ thống."
-                : "Xem bài làm của ứng viên bên dưới và tiến hành nhập điểm số & nhận xét HR ở bảng bên phải."}
+              {hasHrScore ? t("staffGradeResultDesc") : t("staffGradeWorkspaceDesc")}
             </p>
           </div>
 
@@ -1644,7 +1644,7 @@ function StaffGradingHeaderCard({
             <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-900/30 dark:bg-indigo-950/30">
               <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
                 <FileText className="h-3.5 w-3.5" />
-                Ghi chú & Nhận xét của Staff:
+                {t("staffGradeNote")}
               </div>
               <p className="text-xs whitespace-pre-wrap text-slate-700 italic dark:text-slate-300">
                 "{detail.hrNote}"
@@ -1656,16 +1656,16 @@ function StaffGradingHeaderCard({
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1.5 font-medium">
               <User className="h-3.5 w-3.5 text-indigo-500" />
-              Đơn nộp #{detail.applicationId}
+              {t("applicationId", { id: detail.applicationId })}
             </span>
             <span className="flex items-center gap-1.5 font-medium">
               <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
-              Chi tiết vòng #{detail.id}
+              {t("roundDetailId", { id: detail.id })}
             </span>
             {detail.completedAt && (
               <span className="flex items-center gap-1.5 font-medium">
                 <Clock className="h-3.5 w-3.5 text-indigo-500" />
-                Thời gian nộp: {formatDateTime(detail.completedAt)}
+                {t("submissionTime", { time: formatDateTime(detail.completedAt) })}
               </span>
             )}
           </div>
@@ -1703,7 +1703,7 @@ function StaffGradingHeaderCard({
               <div className="flex items-center justify-between border-b border-white/15 pb-1.5">
                 <span className="flex items-center gap-1 text-[10px] font-black tracking-widest text-white/80 uppercase">
                   <Sparkles className="h-3 w-3 text-amber-300" />
-                  {hasHrScore ? "KẾT QUẢ CHẤM" : "ĐIỂM ĐÁNH GIÁ"}
+                  {hasHrScore ? t("staffGrading.gradeResult") : t("staffGrading.gradeScore")}
                 </span>
                 <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[9px] font-extrabold text-white/90 uppercase">
                   STAFF
@@ -1743,7 +1743,11 @@ function StaffGradingHeaderCard({
               <div className="flex items-center justify-between border-t border-white/15 pt-1.5">
                 <span className="flex items-center gap-1 text-[10px] font-bold text-white/80">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  {hasHrScore ? (isPass ? "ĐẠT YÊU CẦU" : "KHÔNG ĐẠT") : "CHỜ CHẤM"}
+                  {hasHrScore
+                    ? isPass
+                      ? t("resultPass")
+                      : t("resultFail")
+                    : t("grading.gradingInProgress")}
                 </span>
                 {hasHrScore && (
                   <span
@@ -2095,7 +2099,7 @@ export function ApplicationGradingDetailPage({
                   <Badge
                     variant="outline"
                     className="border-indigo-200 bg-indigo-50 text-xs font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
-                    Max Score: 100
+                    {t("grading.maxScore", { max: 100 })}
                   </Badge>
                 </div>
 
@@ -2201,11 +2205,11 @@ function ActiveRoundGradingPanel({
     }
     const num = parseFloat(val);
     if (isNaN(num)) {
-      setScoreError("Điểm số phải là số hợp lệ");
+      setScoreError(t("grading.gradingErrorInvalidNumber"));
       return;
     }
     if (num < 0 || num > 100) {
-      setScoreError("Điểm số phải nằm trong khoảng từ 0 đến 100");
+      setScoreError(t("grading.gradingErrorScoreRange"));
       return;
     }
     setScoreError(null);
@@ -2219,7 +2223,7 @@ function ActiveRoundGradingPanel({
       return;
     }
     if (scoreNum < 0 || scoreNum > 100) {
-      setScoreError("Điểm số phải nằm trong khoảng từ 0 đến 100");
+      setScoreError(t("grading.gradingErrorScoreRange"));
       toast.error(t("grading.invalidScore"));
       return;
     }
@@ -2393,7 +2397,7 @@ function ActiveRoundGradingPanel({
                     type="button"
                     onClick={() => handleScoreChange(String(Math.round(detail.aiScore!)))}
                     className="text-[11px] font-semibold text-purple-600 hover:underline dark:text-purple-400">
-                    Use AI Score ({Math.round(detail.aiScore)})
+                    {t("useAiScore", { score: Math.round(detail.aiScore) })}
                   </button>
                 )}
               </div>
