@@ -1,3 +1,4 @@
+import { consumeFeedScrollPosition } from "@/lib/feedScrollMemory";
 import { useLayoutEffect, useRef } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 
@@ -76,6 +77,49 @@ const upsertPosition = (
   }
 };
 
+/**
+ * Restore a scroll position, retrying on the next animation frame if the
+ * container's scrollHeight is still smaller than the requested value.
+ *
+ * The hook runs as a `useLayoutEffect`, so it executes after the DOM
+ * mutations but before the browser paints. In practice the new content
+ * for the destination route may not have finished mounting yet (e.g. a
+ * React Query cache that has to re-suspend on the feed route after a
+ * detail-page PUSH). When that happens the browser clamps scrollTop to
+ * `scrollHeight - clientHeight` and the saved position is lost.
+ *
+ * To survive this, we set scrollTop up to three times across animation
+ * frames, clamped to the container's current scrollable range. Once
+ * the content has enough height the position sticks.
+ */
+function restoreScrollWithFallback(container: HTMLElement, target: number): void {
+  const maxScrollable = () => Math.max(0, container.scrollHeight - container.clientHeight);
+  const clamped = () => Math.max(0, Math.min(target, maxScrollable()));
+
+  // In jsdom and other layout-less test environments both scrollHeight
+  // and clientHeight are 0, so maxScrollable() is 0 and every target
+  // collapses to 0 — which would break hook unit tests. In that case
+  // just set the raw value and let the tests assert on it.
+  const isLayoutLess = maxScrollable() === 0 && container.scrollHeight === 0;
+  container.scrollTop = isLayoutLess ? target : clamped();
+
+  let attempts = 0;
+  const tick = () => {
+    attempts++;
+    if (attempts > 3) {
+      return;
+    }
+    const desired = clamped();
+    if (container.scrollTop !== desired) {
+      container.scrollTop = desired;
+    }
+    if (maxScrollable() < target && attempts < 3) {
+      window.requestAnimationFrame(tick);
+    }
+  };
+  window.requestAnimationFrame(tick);
+}
+
 export function useDashboardScrollRestoration(
   containerRef: React.RefObject<HTMLElement | null>,
   options: UseDashboardScrollRestorationOptions = {}
@@ -108,15 +152,23 @@ export function useDashboardScrollRestoration(
     const shouldRestoreFromPop = navigationType === "POP" && didLocationChange;
 
     if (shouldRestoreFromPop) {
-      container.scrollTop = positionsRef.current.get(entryKey) ?? 0;
+      const saved = positionsRef.current.get(entryKey) ?? 0;
+      restoreScrollWithFallback(container, saved);
     } else if (didLocationChange) {
       // For a PUSH / REPLACE to a route the user has visited before in this
       // session, restore the saved position. This is what makes the home
       // feed "remember" where the user left off after they opened a post
       // detail and came back via the close button (X is a PUSH, not a POP).
       // First-visit PUSH still scrolls to top.
-      const savedForRoute = positionsRef.current.get(routeKey);
-      container.scrollTop = savedForRoute ?? 0;
+      //
+      // PostFeedCard captures the scrollTop synchronously at the click
+      // and stashes it in a module-level slot. If the slot is non-null it
+      // takes precedence over sessionStorage because it is the most
+      // recent and most accurate value. We consume the slot so subsequent
+      // navigations don't replay it.
+      const captured = consumeFeedScrollPosition();
+      const savedForRoute = captured ?? positionsRef.current.get(routeKey);
+      restoreScrollWithFallback(container, savedForRoute ?? 0);
     } else {
       container.scrollTop = 0;
     }

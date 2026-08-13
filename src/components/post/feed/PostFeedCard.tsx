@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { captureFeedScrollPosition } from "@/lib/feedScrollMemory";
 import { formatDateTime } from "@/lib/formatting";
 import { useCheckLiked } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -41,8 +42,20 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
     if (!postId) return;
     const roleSegment = location.pathname.match(/^\/(user|mentor|staff)(?:\/|$)/)?.[1];
     if (roleSegment) {
-      // Use an absolute path so the navigate doesn't double-prefix when
-      // the dashboard URL has its own segment (e.g. /user?tab=homeFeed).
+      // Capture the dashboard content area's current scroll position
+      // *just before* navigating. The dashboard's
+      // useDashboardScrollRestoration hook will read this on the way back
+      // and restore the feed to where the user left off. We do this
+      // explicitly (rather than relying on the hook's cleanup-time save)
+      // because the cleanup can race with route changes — the user has
+      // already committed to "I want to read this post" at the moment of
+      // click, so the position should be captured synchronously.
+      const scrollContainer = document.querySelector(
+        '[data-dashboard-content-scroll="true"]'
+      ) as HTMLElement | null;
+      if (scrollContainer) {
+        captureFeedScrollPosition(scrollContainer.scrollTop);
+      }
       navigate(`/${roleSegment}/home-feed/${postId}`);
       return;
     }

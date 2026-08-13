@@ -482,6 +482,7 @@ export function UserDashboardPage() {
 
         <div
           ref={handleContentRef}
+          data-dashboard-content-scroll="true"
           className={cn(
             "relative min-h-0 flex-1",
             // Home feed detail page overlays the feed container with

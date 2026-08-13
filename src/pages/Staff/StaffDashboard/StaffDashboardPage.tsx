@@ -272,6 +272,7 @@ export function StaffDashboardPage() {
 
         <div
           ref={handleContentRef}
+          data-dashboard-content-scroll="true"
           className={cn(
             "relative min-h-0 flex-1",
             // Home feed detail page is its own two-column layout that must
