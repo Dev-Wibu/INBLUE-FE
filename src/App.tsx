@@ -39,7 +39,6 @@ import {
   HomePage,
   InterviewTipsPage,
   MentorInterviewFeaturePage,
-  QuestionBankPage,
 } from "@/pages/Homepage";
 import {
   MentorDashboardPage,
@@ -148,7 +147,6 @@ function App() {
             <Route path="/oauth2/callback" element={<QueryHashRedirect to="/login" />} />
 
             {/* Questions pages (public) */}
-            <Route path="/questions/bank" element={<QuestionBankPage />} />
             <Route path="/questions/tips" element={<InterviewTipsPage />} />
 
             {/* Enterprise Simulation pages (public) */}

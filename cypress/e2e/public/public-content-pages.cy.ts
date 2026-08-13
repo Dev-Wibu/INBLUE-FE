@@ -8,11 +8,6 @@ describe("Public Content Pages", () => {
 
   const publicPages = [
     {
-      path: "/questions/bank",
-      description: "Question Bank",
-      content: /question|câu hỏi/i,
-    },
-    {
       path: "/questions/tips",
       description: "Interview Tips",
       content: /tip|mẹo|interview|phỏng vấn/i,

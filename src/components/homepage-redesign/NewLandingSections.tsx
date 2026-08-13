@@ -1196,7 +1196,6 @@ export function StartingPointSection() {
   const { t } = useTranslation();
   const entries = [
     { id: "first", icon: BriefcaseBusiness, to: "/enterprise/companies" },
-    { id: "code", icon: Code2, to: "/questions/bank" },
     { id: "communication", icon: Mic2, to: "/features/ai-interview" },
   ];
 

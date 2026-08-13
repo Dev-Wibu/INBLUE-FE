@@ -47,7 +47,6 @@ The entire routing configuration lives in a single `App.tsx` file using React Ro
 
 | Path                         | Component                    | Section    |
 | ---------------------------- | ---------------------------- | ---------- |
-| `/questions/bank`            | `QuestionBankPage`           | Questions  |
 | `/questions/tips`            | `InterviewTipsPage`          | Questions  |
 | `/enterprise/companies`      | `CompanySearchPage`          | Enterprise |
 | `/enterprise/company/:id`    | `CompanyDetailPage`          | Enterprise |

@@ -50,9 +50,6 @@ export function HomepageFooter() {
                 <li>
                   <FooterLink to="/enterprise/companies">Companies</FooterLink>
                 </li>
-                <li>
-                  <FooterLink to="/questions/bank">Question Bank</FooterLink>
-                </li>
               </ul>
             </div>
 
