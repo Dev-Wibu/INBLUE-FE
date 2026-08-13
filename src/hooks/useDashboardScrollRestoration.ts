@@ -221,12 +221,16 @@ export function useDashboardScrollRestoration(
       restoreScrollWithFallback(container, saved);
     } else if (didLocationChange) {
       // For a PUSH / REPLACE to a route the user has visited before in
-      // this session, restore the saved position. First-visit PUSH still
-      // scrolls to top. The home feed has its own scroll-restoration
-      // path (CommunityFeedPage reads sessionStorage on mount), so we
-      // only handle general-purpose PUSH restoration for other tabs.
+      // this session, restore the saved position. First-visit PUSH
+      // leaves scrollTop alone — many child components handle their
+      // own restoration (e.g. the home feed reads sessionStorage on
+      // mount to put the user back where they were before opening a
+      // post detail). Clobbering it to 0 here would race and undo
+      // that work.
       const savedForRoute = positionsRef.current.get(routeKey);
-      restoreScrollWithFallback(container, savedForRoute ?? 0);
+      if (typeof savedForRoute === "number" && savedForRoute > 0) {
+        restoreScrollWithFallback(container, savedForRoute);
+      }
     } else {
       container.scrollTop = 0;
     }

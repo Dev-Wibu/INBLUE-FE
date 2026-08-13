@@ -99,44 +99,92 @@ export function CommunityFeedPage() {
     if (!saved) {
       return;
     }
-    // The feed might have grown or shrunk while the user was reading
-    // the detail page (new posts fetched in the background, deletions,
-    // re-sorting). Clamp the saved position to the current scrollable
-    // range so the browser never snaps back to 0 on its own.
     const container = document.querySelector(
       '[data-dashboard-content-scroll="true"]'
     ) as HTMLElement | null;
     if (!container) {
       return;
     }
-    const maxScrollable = Math.max(0, container.scrollHeight - container.clientHeight);
-    const target = Math.max(0, Math.min(saved.scrollTop, maxScrollable));
-    if (target === 0 && saved.scrollTop > 0) {
-      // Content isn't tall enough yet — try again on the next frame a
-      // few times. This handles the case where usePostFeed is mid-fetch.
-      let attempts = 0;
-      const tick = () => {
-        attempts++;
-        const scrollable = Math.max(0, container.scrollHeight - container.clientHeight);
-        const next = Math.max(0, Math.min(saved.scrollTop, scrollable));
-        if (next > 0) {
-          container.scrollTop = next;
-          if (container.scrollTop >= next - 1) {
-            clearFeedScrollPosition();
-            return;
-          }
-        }
-        if (attempts < 10 && next < saved.scrollTop) {
-          window.requestAnimationFrame(tick);
-        } else {
-          clearFeedScrollPosition();
-        }
-      };
-      window.requestAnimationFrame(tick);
-      return;
+
+    // The trick: a single scrollTop assignment is not reliable here.
+    // The container may have just had its overflow className change
+    // (from overflow-hidden back to overflow-auto), or images in the
+    // freshly-mounted post cards may not have loaded yet, or React
+    // Query might be re-hydrating. In each case the browser will clamp
+    // scrollTop to (scrollHeight - clientHeight) which is small, then
+    // later layout shifts grow the container. We keep applying the
+    // saved position across animation frames AND watch for layout
+    // changes via a ResizeObserver. The restore stops once the target
+    // sticks or we hit the safety-net timeout.
+    const maxScrollable = () => Math.max(0, container.scrollHeight - container.clientHeight);
+    const desired = () => Math.max(0, Math.min(saved.scrollTop, maxScrollable()));
+
+    let rafHandle: number | null = null;
+    let resizeObserver: ResizeObserver | null = null;
+    let stopTimeout: number | null = null;
+    let attempts = 0;
+    let stopped = false;
+
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      if (rafHandle !== null) {
+        window.cancelAnimationFrame(rafHandle);
+        rafHandle = null;
+      }
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+        resizeObserver = null;
+      }
+      if (stopTimeout !== null) {
+        window.clearTimeout(stopTimeout);
+        stopTimeout = null;
+      }
+      clearFeedScrollPosition();
+    };
+
+    const apply = () => {
+      if (stopped) return;
+      const d = desired();
+      // Only assign if it would actually move the scroll. Assigning the
+      // same value is harmless; assigning 0 when nothing is scrollable
+      // is fine.
+      if (container.scrollTop !== d) {
+        container.scrollTop = d;
+      }
+      if (container.scrollTop >= saved.scrollTop - 1) {
+        // Reached the target — stop.
+        stop();
+      }
+    };
+
+    const tick = () => {
+      if (stopped) return;
+      attempts++;
+      apply();
+      if (attempts < 60 && container.scrollTop < saved.scrollTop - 1) {
+        rafHandle = window.requestAnimationFrame(tick);
+      } else {
+        stop();
+      }
+    };
+
+    rafHandle = window.requestAnimationFrame(tick);
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        // Content size changed — try to apply the saved position again.
+        apply();
+      });
+      resizeObserver.observe(container);
     }
-    container.scrollTop = target;
-    clearFeedScrollPosition();
+
+    // Safety net: stop after ~1.5s regardless. The saved slot is
+    // cleared on stop so the next visit to the feed won't replay.
+    stopTimeout = window.setTimeout(stop, 1500);
+
+    return () => {
+      stop();
+    };
   }, [isLoading, filtered.length]);
   return (
     <div className="-m-4 min-h-full bg-slate-50/70 px-4 py-5 sm:-m-6 sm:px-6 lg:-m-8 lg:px-8 dark:bg-slate-950">

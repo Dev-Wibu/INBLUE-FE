@@ -63,7 +63,7 @@ describe("useDashboardScrollRestoration", () => {
     window.sessionStorage.clear();
   });
 
-  it("resets scroll on push and restores on pop", async () => {
+  it("does not reset scroll on first push and restores on pop", async () => {
     render(
       <MemoryRouter initialEntries={["/dashboard?tab=a"]}>
         <ScrollHarness />
@@ -73,10 +73,15 @@ describe("useDashboardScrollRestoration", () => {
     const scrollContainer = screen.getByTestId("scroll-container");
     scrollContainer.scrollTop = 320;
 
+    // First visit to /dashboard?tab=b (PUSH). With no saved position
+    // for this route the hook deliberately does NOT touch scrollTop,
+    // so child components (e.g. CommunityFeedPage reading from
+    // sessionStorage) own the restore. The previous behaviour of
+    // clobbering to 0 raced with the child restore and was wrong.
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
 
     await waitFor(() => {
-      expect(scrollContainer.scrollTop).toBe(0);
+      expect(scrollContainer.scrollTop).toBe(320);
     });
 
     scrollContainer.scrollTop = 140;
@@ -161,11 +166,12 @@ describe("useDashboardScrollRestoration", () => {
     const scrollContainer = screen.getByTestId("scroll-container");
     scrollContainer.scrollTop = 100;
 
-    // Should not throw — corrupt data is ignored
+    // Corrupt data is ignored; PUSH with no usable saved value leaves
+    // scrollTop alone so child components can own restoration.
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
 
     await waitFor(() => {
-      expect(scrollContainer.scrollTop).toBe(0);
+      expect(scrollContainer.scrollTop).toBe(100);
     });
   });
 
@@ -179,6 +185,7 @@ describe("useDashboardScrollRestoration", () => {
     );
 
     const scrollContainer = screen.getByTestId("scroll-container");
+    scrollContainer.scrollTop = 0;
 
     // Should not crash — valid JSON but not an object → starts fresh
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
@@ -202,16 +209,16 @@ describe("useDashboardScrollRestoration", () => {
     // can keep one full round of positions before eviction kicks in.
     scrollContainer.scrollTop = 100;
 
-    // Navigate to tab=b → saves tab=a entry (route + entry), resets to 0
+    // Navigate to tab=b → saves tab=a entry (route + entry). PUSH with
+    // no saved value leaves scrollTop untouched.
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
-    await waitFor(() => expect(scrollContainer.scrollTop).toBe(0));
+    await waitFor(() => expect(scrollContainer.scrollTop).toBe(100));
 
     scrollContainer.scrollTop = 200;
 
-    // Navigate to tab=c → saves tab=b entry, resets to 0. Now we are
-    // at 4 entries total (a route, a entry, b route, b entry).
+    // Navigate to tab=c → saves tab=b entry.
     fireEvent.click(screen.getByRole("button", { name: "Go C" }));
-    await waitFor(() => expect(scrollContainer.scrollTop).toBe(0));
+    await waitFor(() => expect(scrollContainer.scrollTop).toBe(200));
 
     scrollContainer.scrollTop = 300;
 
@@ -311,12 +318,12 @@ describe("useDashboardScrollRestoration", () => {
     // Save position for tab=a
     scrollContainer.scrollTop = 50;
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
-    await waitFor(() => expect(scrollContainer.scrollTop).toBe(0));
+    await waitFor(() => expect(scrollContainer.scrollTop).toBe(50));
 
     // Save position for tab=b
     scrollContainer.scrollTop = 100;
     fireEvent.click(screen.getByRole("button", { name: "Go C" }));
-    await waitFor(() => expect(scrollContainer.scrollTop).toBe(0));
+    await waitFor(() => expect(scrollContainer.scrollTop).toBe(100));
 
     const stored = JSON.parse(
       window.sessionStorage.getItem("dashboard_scroll_positions_v1") || "{}"
@@ -337,11 +344,12 @@ describe("useDashboardScrollRestoration", () => {
     const scrollContainer = screen.getByTestId("scroll-container");
     scrollContainer.scrollTop = 480;
 
-    // First visit to /dashboard?tab=b (PUSH). No saved position for this
-    // route yet, so we expect to land at the top.
+    // First visit to /dashboard?tab=b (PUSH). With no saved position
+    // for this route yet the hook leaves scrollTop alone — child
+    // components own the restoration. The /a value (480) stays.
     fireEvent.click(screen.getByRole("button", { name: "Go B" }));
     await waitFor(() => {
-      expect(scrollContainer.scrollTop).toBe(0);
+      expect(scrollContainer.scrollTop).toBe(480);
     });
 
     // Scroll the b page, then go back to a.
