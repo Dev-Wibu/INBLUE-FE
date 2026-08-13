@@ -32,7 +32,6 @@ import {
   useApplicationDetailsForReviewer,
   useHrScore,
 } from "@/hooks/useApplicationDetails";
-import { useCodeReviewProblems } from "@/hooks/useCodeReviewProblems";
 import { useEmailSubmission } from "@/hooks/useEmailSubmission";
 import { useJobDescription, useJobDescriptions } from "@/hooks/useJobDescription";
 import { usePagination } from "@/hooks/usePagination";
@@ -49,6 +48,7 @@ import { useAuthStore } from "@/stores/authStore";
 import {
   AlertTriangle,
   ArrowRight,
+  Bot,
   Briefcase,
   Check,
   CheckCircle2,
@@ -96,6 +96,7 @@ interface GradingListItem {
   detailId?: number;
   detailStatus?: string;
   detail?: ApplicationDetail;
+  roundName?: string;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; className: string; dot?: string }> = {
@@ -248,19 +249,12 @@ function EmbeddedCVViewer({ fileUrl }: { fileUrl: string }) {
 
 interface SubmissionPreviewProps {
   detail: ApplicationDetail;
-  jdId?: number;
   onViewEmailSubmission?: (_emailSubmissionId: number) => void;
 }
 
-function SubmissionPreview({ detail, jdId, onViewEmailSubmission }: SubmissionPreviewProps) {
+function SubmissionPreview({ detail, onViewEmailSubmission }: SubmissionPreviewProps) {
   const data = detail.submissionData as SubmissionData | undefined;
   const [localExpanded, setLocalExpanded] = useState(false);
-
-  // Fetch code review problems for CODE_REVIEW round
-  const { data: codeReviewProblems = [], isLoading: isLoadingCodeReview } = useCodeReviewProblems(
-    jdId ?? 0,
-    detail.roundId
-  );
 
   const emailSubmissionId = data?.emailSubmissionId;
 
@@ -269,6 +263,62 @@ function SubmissionPreview({ detail, jdId, onViewEmailSubmission }: SubmissionPr
     emailSubmissionId ?? 0,
     Boolean(emailSubmissionId && emailSubmissionId > 0 && !data?.textContent)
   );
+
+  // Get code review problems directly from detail.roundConfig (from API reviewer)
+  const codeReviewProblemsFromConfig = useMemo(() => {
+    const detailWithConfig = detail as typeof detail & {
+      roundConfig?: {
+        codeReviewProblems?: Array<{
+          problemId?: number;
+          title?: string;
+          difficulty?: string;
+          language?: string;
+          problemStatement?: string;
+          files?: Array<{ filename?: string; content?: string; language?: string }>;
+          expectedIssues?: Array<{
+            filename?: string;
+            lineNumber?: number;
+            severity?: string;
+            description?: string;
+          }>;
+        }>;
+      };
+    };
+    const rawProblems = detailWithConfig.roundConfig?.codeReviewProblems;
+    if (!rawProblems || rawProblems.length === 0) return [];
+
+    return rawProblems.map((problem) => {
+      // Normalize code content (handle escaped newlines)
+      const normalizeCode = (content?: string | null) => {
+        if (!content) return "";
+        let text = String(content);
+        if (text.includes("\\n") && !text.includes("\n")) {
+          text = text
+            .replace(/\\r\\n/g, "\n")
+            .replace(/\\n/g, "\n")
+            .replace(/\\t/g, "    ")
+            .replace(/\\"/g, '"');
+        }
+        return text;
+      };
+
+      return {
+        problemId: problem.problemId ?? 0,
+        title: problem.title ?? "Code Review Problem",
+        difficulty: (problem.difficulty as "EASY" | "MEDIUM" | "HARD") ?? "MEDIUM",
+        language: problem.language,
+        problemStatement: normalizeCode(problem.problemStatement),
+        files: (problem.files ?? []).map((f) => ({
+          ...f,
+          content: normalizeCode(f.content),
+        })),
+        expectedIssues: (problem.expectedIssues ?? []).map((issue) => ({
+          ...issue,
+          severity: issue.severity as "CRITICAL" | "WARNING" | "INFO" | undefined,
+        })),
+      };
+    });
+  }, [detail]);
 
   if (!data) return null;
 
@@ -405,11 +455,54 @@ function SubmissionPreview({ detail, jdId, onViewEmailSubmission }: SubmissionPr
   // Code review submissions — use CodeReviewGrader component
   if (data.codeReviewSubmissions && data.codeReviewSubmissions.length > 0) {
     return (
-      <CodeReviewGrader
-        detail={detail}
-        problems={codeReviewProblems}
-        isLoading={isLoadingCodeReview}
-      />
+      <CodeReviewGrader detail={detail} problems={codeReviewProblemsFromConfig} isLoading={false} />
+    );
+  }
+
+  // AI Interview: chỉ hiển thị dựa trên roundName từ API reviewer, không gọi API thêm
+  const roundName = (detail as { roundName?: string }).roundName;
+  const isAiInterview = roundName?.toLowerCase().includes("interview");
+  const detailStatus = detail.status;
+
+  // Chỉ xử lý AI Interview round
+  if (isAiInterview) {
+    const isPending =
+      detailStatus === "PENDING" ||
+      detailStatus === "SLOT_PICKED" ||
+      detailStatus === "AWAITING_CANDIDATE_SELECT_MENTOR";
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Bot className="h-5 w-5 text-indigo-500" />
+          <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+            {roundName}
+          </span>
+          {detailStatus && (
+            <Badge variant="outline" className="text-xs">
+              {detailStatus}
+            </Badge>
+          )}
+        </div>
+
+        {isPending ? (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+            <div className="flex items-start gap-3">
+              <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+              <div>
+                <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                  Đang chờ candidate hoàn thành vòng phỏng vấn
+                </p>
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                  Candidate đang chọn lịch hoặc đang trong quá trình phỏng vấn với AI.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500 dark:text-slate-400">Chưa có nội dung submission.</p>
+        )}
+      </div>
     );
   }
 
@@ -659,22 +752,31 @@ function ApplicationGradingTable({
               dot: "bg-slate-400",
             };
 
+            // Ưu tiên roundName từ reviewer API (BE trả đủ), fallback sang JD API
             const detailRoundId = item.detail?.roundId;
             const roundMeta = detailRoundId != null ? roundMap?.get(detailRoundId) : undefined;
+            const roundNameFromReviewer = item.detail?.roundName;
+            const roundNameFromJd = roundMeta?.name;
+            const roundOrder = roundMeta?.roundOrder ?? item.currentRoundOrder ?? 1;
 
             let roundTypeInferred = item.detail ? inferRoundType(item.detail) : null;
             if (!roundTypeInferred && roundMeta?.roundType) {
               roundTypeInferred = roundMeta.roundType;
             }
 
-            const roundOrder = roundMeta?.roundOrder ?? item.currentRoundOrder ?? 1;
             const roundTypeLabel = roundTypeInferred
               ? i18n.t(`common.roundType.${roundTypeInferred}`, roundTypeInferred)
               : null;
-            const roundNameFromJd = roundMeta?.name;
 
-            const finalRoundName = roundNameFromJd || roundTypeLabel || `Vòng ${roundOrder}`;
-            const roundDisplay = `Vòng ${roundOrder}: ${finalRoundName}`;
+            // Staff mode: ưu tiên dùng roundName từ reviewer API
+            // Nếu roundName có sẵn thì chỉ hiển thị tên, không cần prefix roundId
+            const finalRoundName =
+              roundNameFromReviewer || roundNameFromJd || roundTypeLabel || `Vòng ${roundOrder}`;
+            // Nếu có roundName từ API thì hiển thị trực tiếp, không cần thêm "Vòng X:"
+            const roundDisplay =
+              roundNameFromReviewer || roundNameFromJd
+                ? finalRoundName
+                : `Vòng ${roundOrder}: ${finalRoundName}`;
 
             return (
               <TableRow
@@ -807,11 +909,12 @@ export function ApplicationGradingPage({
   // View mode state: default to "table" (List View as requested)
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
-  // Staff & Admin: lấy tất cả applications (chỉ dùng cho Admin để hiển thị danh sách)
-  const { data: rawApps, refetch: refetchApps } = useApplications();
+  // Staff & Admin: lấy tất cả applications
+  // Staff mode: dùng để map applicationId -> userId (vì API reviewer không trả userName)
+  const { data: rawApps, refetch: refetchApps } = useApplications(true);
 
   // Staff: lấy các application-detail được gán cho STAFF hiện tại
-  // (đúng API: GET /api/application-details/reviewer — không phải workaround quét tất cả applications)
+  // (đúng API: GET /api/application-details/reviewer)
   const { data: reviewerDetails = [], refetch: refetchReviewer } =
     useApplicationDetailsForReviewer(isStaff);
 
@@ -831,7 +934,8 @@ export function ApplicationGradingPage({
     scoreSortValue: number;
   };
 
-  const { data: allUsers } = useUsers();
+  // Users: dùng cho cả Admin và Staff (Staff cần userName, Admin cần userName + avatar)
+  const { data: allUsers } = useUsers(true);
   const userMap = useMemo(() => {
     const map = new Map<number, string>();
     if (allUsers) {
@@ -858,7 +962,21 @@ export function ApplicationGradingPage({
     return map;
   }, [allUsers]);
 
-  const { data: rawJds } = useJobDescriptions();
+  // Application map for Staff: applicationId -> userId (to get userName from userMap)
+  const applicationUserMap = useMemo(() => {
+    const map = new Map<number, number>();
+    if (applications && isStaff) {
+      applications.forEach((app: { id?: number; userId?: number }) => {
+        if (app.id != null && app.userId != null) {
+          map.set(app.id, app.userId);
+        }
+      });
+    }
+    return map;
+  }, [applications, isStaff]);
+
+  // Job descriptions: chỉ dùng cho Admin
+  const { data: rawJds } = useJobDescriptions(!isStaff);
   const jdMap = useMemo(() => {
     const map = new Map<number, string>();
     if (rawJds) {
@@ -874,7 +992,7 @@ export function ApplicationGradingPage({
 
   const roundMap = useMemo(() => {
     const map = new Map<number, { name?: string; roundType?: string; roundOrder?: number }>();
-    if (rawJds) {
+    if (rawJds && !isStaff) {
       const jdList = (Array.isArray(rawJds) ? rawJds : []) as Array<{
         rounds?: Array<{ id?: number; name?: string; roundType?: string; roundOrder?: number }>;
       }>;
@@ -889,70 +1007,52 @@ export function ApplicationGradingPage({
       });
     }
     return map;
-  }, [rawJds]);
-
-  // Map of applicationId -> { userId, jdId } (dùng cho Staff để join từ
-  // reviewerDetails, vì schema ApplicationDetail không chứa 2 field này).
-  const applicationMap = useMemo(() => {
-    const map = new Map<number, { userId?: number; jdId?: number }>();
-    applications.forEach((app) => {
-      if (app.id != null) {
-        map.set(app.id, { userId: app.userId, jdId: app.jdId });
-      }
-    });
-    return map;
-  }, [applications]);
+  }, [rawJds, isStaff]);
 
   // Staff: lấy thẳng các detail từ API /reviewer.
   // API này đã được backend filter:
   //   - chỉ những round `isAuto = false`
   //   - reviewerId = userId của staff hiện tại
   // ⇒ FE render theo đúng status (AI_EVALUATED / COMPLETED).
-  // userId/jdId lấy từ `applicationMap` (lookup qua applicationId) vì
-  // `ApplicationDetail` schema không chứa 2 field này.
+  // Lấy jobTitle, roundName từ API reviewer; userName qua applicationUserMap + userMap.
   const staffItems = useMemo((): GradingListItem[] => {
     if (!isStaff) return [];
-    return reviewerDetails.map((detail) => {
-      const appMeta =
-        detail.applicationId != null ? applicationMap.get(detail.applicationId) : undefined;
-      const userId = appMeta?.userId;
-      const jdId = appMeta?.jdId;
-      // Prefer applicationName / userName returned by the BE on the list item
-      // (newly-added fields). Fall back to the lookups if the BE hasn't
-      // returned them yet (e.g. older deployment).
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const d = detail as any;
-      const applicationName = d.applicationName ?? (jdId != null ? jdMap.get(jdId) : undefined);
-      const userName =
-        d.userName ?? (userId != null ? (userMap.get(userId) ?? `User #${userId}`) : undefined);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return reviewerDetails.map((detail: any) => {
+      const applicationId = detail.applicationId;
+      const userId = applicationId != null ? applicationUserMap.get(applicationId) : undefined;
+      const userName = userId != null ? userMap.get(userId) : undefined;
       return {
-        id: detail.applicationId!,
+        id: applicationId!,
         status: detail.status ?? "PENDING",
         overallScore: detail.finalScore ?? undefined,
         userId,
         userName,
         userAvatar: userId != null ? userAvatarMap.get(userId) : undefined,
-        applicationName,
-        jdId,
+        applicationName: detail.jobTitle,
+        jdId: undefined,
         detailId: detail.id,
         detailStatus: detail.status,
         detail,
+        roundName: detail.roundName,
       };
     });
-  }, [isStaff, reviewerDetails, applicationMap, userMap, userAvatarMap, jdMap]);
+  }, [isStaff, reviewerDetails, applicationUserMap, userMap, userAvatarMap]);
 
   const filteredApplications = useMemo((): GradingListItem[] => {
     if (isStaff) {
       return staffItems
         .filter((item) => {
-          // Search filter
+          // Search filter - userName is directly on item for Staff
           if (searchQuery) {
             const q = searchQuery.toLowerCase();
-            const userName = userMap.get(item.userId!) ?? "";
+            const userName = item.userName?.toLowerCase() ?? "";
+            const applicationName = item.applicationName?.toLowerCase() ?? "";
             if (
               !String(item.id).includes(q) &&
               !String(item.detailId).includes(q) &&
-              !userName.toLowerCase().includes(q)
+              !userName.includes(q) &&
+              !applicationName.includes(q)
             )
               return false;
           }
@@ -1445,6 +1545,12 @@ function StaffGradingHeaderCard({
                     : "bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300"
                 )}>
                 {(() => {
+                  // Ưu tiên dùng roundName từ API (BE trả đầy đủ)
+                  const apiRoundName = (d as { roundName?: string }).roundName;
+                  if (apiRoundName) {
+                    return apiRoundName;
+                  }
+                  // Fallback: infer từ submission data
                   let dType = inferRoundType(d);
                   const order = d.roundId ?? idx + 1;
                   if (!dType) {
@@ -1470,6 +1576,12 @@ function StaffGradingHeaderCard({
             <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-extrabold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
               <Clock className="h-3.5 w-3.5 text-indigo-500" />
               {(() => {
+                // Ưu tiên dùng roundName từ API (BE trả đầy đủ)
+                const apiRoundName = (detail as { roundName?: string }).roundName;
+                if (apiRoundName) {
+                  return apiRoundName;
+                }
+                // Fallback: infer từ submission data
                 let dType = inferRoundType(detail);
                 const order = detail.roundId ?? 1;
                 if (!dType) {
@@ -1990,7 +2102,6 @@ export function ApplicationGradingDetailPage({
                 <div className="p-6">
                   <SubmissionPreview
                     detail={activeDetail}
-                    jdId={jdId}
                     onViewEmailSubmission={handleViewEmailSubmission}
                   />
                 </div>
