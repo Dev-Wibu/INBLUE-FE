@@ -748,53 +748,45 @@ function AssignMentorDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-4xl dark:border-slate-800 dark:bg-slate-900">
-        {/* Header Block matching KioskFormDialog */}
+      <DialogContent className="flex max-h-[92vh] w-[96vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl sm:max-w-5xl dark:border-slate-800 dark:bg-slate-900">
+        {/* Header Block: Candidate Avatar/Name/Email + Company Logo/Name/JD Title as DialogHeader */}
         <div className="border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-              <UserCheck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-              {t("adminKiosk.assignMentor", "Gán Mentor Phỏng vấn")}
-            </DialogTitle>
-            <DialogDescription className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              {t(
-                "adminMentorReviewAssignment.assignDescription",
-                "Chọn 1 Mentor để gán chính thức hoặc chọn nhiều Mentor để đề xuất cho ứng viên."
-              )}
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+          <DialogHeader className="flex flex-col gap-4 space-y-0 sm:flex-row sm:items-center sm:justify-between">
+            {/* Left: Candidate Info */}
+            <div className="flex min-w-0 items-center gap-3">
+              <Avatar className="h-10 w-10 shrink-0 rounded-full border border-slate-200/90 shadow-2xs dark:border-slate-700">
+                {detail?.candidateAvatarUrl ? (
+                  <AvatarImage src={detail.candidateAvatarUrl} className="object-cover" />
+                ) : null}
+                <AvatarFallback className="bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                  {(detail?.candidateName ?? "?").charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
-        {/* Modal Main Body */}
-        <div className="max-h-[calc(90vh-140px)] space-y-4 overflow-y-auto p-6">
-          {/* Candidate & Company Context Strip */}
-          {detail && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-950/60">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-9 w-9 shrink-0 rounded-full border border-slate-200 dark:border-slate-700">
-                  {detail.candidateAvatarUrl ? (
-                    <AvatarImage src={detail.candidateAvatarUrl} className="object-cover" />
-                  ) : null}
-                  <AvatarFallback className="bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                    {(detail.candidateName ?? "?").charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">
-                      {detail.candidateName ?? "-"}
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <DialogTitle className="truncate text-base font-bold text-slate-900 dark:text-white">
+                    {detail?.candidateName ?? "Ứng viên"}
+                  </DialogTitle>
+                  {detail?.id && (
+                    <span className="font-mono text-xs font-semibold text-slate-400">
+                      #{detail.id}
                     </span>
-                    <span className="font-mono text-xs text-slate-400">#{detail.id}</span>
-                  </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {detail.candidateEmail ?? "-"}
-                  </p>
+                  )}
                 </div>
+                {detail?.candidateEmail && (
+                  <DialogDescription className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                    {detail.candidateEmail}
+                  </DialogDescription>
+                )}
               </div>
+            </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-2 rounded-lg border border-slate-200/80 bg-white px-2.5 py-1 dark:border-slate-800 dark:bg-slate-900">
-                  <Avatar className="h-4 w-4 shrink-0 rounded-xs">
+            {/* Right: Company Logo & JD Title */}
+            {detail && (
+              <div className="flex flex-wrap items-center gap-2 pr-6">
+                <div className="flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 dark:border-slate-800 dark:bg-slate-900">
+                  <Avatar className="h-4.5 w-4.5 shrink-0 rounded-xs">
                     {companyLogo ? <AvatarImage src={companyLogo} /> : null}
                     <AvatarFallback className="bg-sky-100 text-[9px] font-bold text-sky-700">
                       {companyName.charAt(0).toUpperCase()}
@@ -808,16 +800,19 @@ function AssignMentorDialog({
                 {detail.jdTitle && (
                   <Badge
                     variant="secondary"
-                    className="rounded-lg border border-indigo-200/80 bg-indigo-50/70 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    className="rounded-xl border border-indigo-200/80 bg-indigo-50/70 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/60 dark:text-indigo-300">
                     {detail.jdTitle}
                   </Badge>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </DialogHeader>
+        </div>
 
+        {/* Modal Main Body */}
+        <div className="max-h-[calc(92vh-130px)] space-y-4 overflow-y-auto p-6">
           {/* 2-Column Workspace Grid */}
-          <div className="grid min-h-[380px] grid-cols-1 items-start gap-4 lg:grid-cols-12">
+          <div className="grid min-h-[420px] grid-cols-1 items-start gap-5 lg:grid-cols-12">
             {/* LEFT COLUMN (5/12) - Search & Scrollable Mentor List */}
             <div className="flex max-h-[440px] flex-col gap-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 lg:col-span-5 dark:border-slate-800 dark:bg-slate-950/40">
               <div className="flex items-center justify-between">
