@@ -41,7 +41,9 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
     if (!postId) return;
     const roleSegment = location.pathname.match(/^\/(user|mentor|staff)(?:\/|$)/)?.[1];
     if (roleSegment) {
-      navigate(`${roleSegment}/home-feed/${postId}`);
+      // Use an absolute path so the navigate doesn't double-prefix when
+      // the dashboard URL has its own segment (e.g. /user?tab=homeFeed).
+      navigate(`/${roleSegment}/home-feed/${postId}`);
       return;
     }
     setModalOpen(true);
