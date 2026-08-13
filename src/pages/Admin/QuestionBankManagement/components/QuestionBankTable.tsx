@@ -187,15 +187,15 @@ export function QuestionBankTable({
                   )}
                 </TableCell>
 
-                <TableCell className="py-4 pr-6 text-right">
+                <TableCell className="py-4 pr-6 text-right text-sm font-medium text-slate-600 dark:text-slate-300">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {(q as any).createdAt ? (
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                    <span>
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {formatDate((q as any).createdAt)}
                     </span>
                   ) : (
-                    <span className="text-xs text-slate-400">—</span>
+                    <span className="text-slate-400">—</span>
                   )}
                 </TableCell>
               </TableRow>
