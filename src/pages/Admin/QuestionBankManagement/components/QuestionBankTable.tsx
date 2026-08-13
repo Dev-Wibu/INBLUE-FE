@@ -98,27 +98,29 @@ export function QuestionBankTable({
   }
 
   return (
-    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
-            <TableHead className="min-w-[280px] font-medium text-slate-500">
+          <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+              #ID
+            </TableHead>
+            <TableHead className="min-w-[280px] font-semibold text-slate-700 dark:text-slate-200">
               {t("adminQuestionbankmanagement.questionContent", "Nội dung câu hỏi")}
             </TableHead>
-            <TableHead className="w-[160px] font-medium text-slate-500">
+            <TableHead className="w-[160px] font-semibold text-slate-700 dark:text-slate-200">
               {t("general.category", "Danh mục")}
             </TableHead>
-            <TableHead className="w-[120px] font-medium text-slate-500">
+            <TableHead className="w-[120px] font-semibold text-slate-700 dark:text-slate-200">
               {t("general.difficulty", "Độ khó")}
             </TableHead>
-            <TableHead className="w-[100px] text-center font-medium text-slate-500">
+            <TableHead className="w-[100px] text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCodingProblem.columnToggle", "Bật/Tắt")}
             </TableHead>
-            <TableHead className="w-[140px] font-medium text-slate-500">
+            <TableHead className="w-[140px] font-semibold text-slate-700 dark:text-slate-200">
               {t("common.createdDate", "Ngày tạo")}
             </TableHead>
-            <TableHead className="w-[80px] pr-6 text-right font-medium text-slate-500">
+            <TableHead className="w-[80px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
               Thao tác
             </TableHead>
           </TableRow>
@@ -133,14 +135,20 @@ export function QuestionBankTable({
               <TableRow
                 key={q.id}
                 onClick={() => onEdit(q)}
-                className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                className={`group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80 ${
                   !isActive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
-                <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                  #{q.id}
+                <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                  <div className="flex items-center gap-2">
+                    <span>#{q.id}</span>
+                    <div className="invisible flex flex-col text-xs leading-tight font-medium opacity-0 select-none">
+                      <span>&nbsp;</span>
+                      <span className="text-[11px]">&nbsp;</span>
+                    </div>
+                  </div>
                 </TableCell>
 
-                <TableCell className="max-w-md">
+                <TableCell className="max-w-md py-4">
                   <p
                     className="truncate text-sm font-bold text-slate-900 dark:text-slate-100"
                     title={q.questionText}>
@@ -149,20 +157,20 @@ export function QuestionBankTable({
                   </p>
                 </TableCell>
 
-                <TableCell>
+                <TableCell className="py-4">
                   <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     {getCategoryName(q)}
                   </span>
                 </TableCell>
 
-                <TableCell>
+                <TableCell className="py-4">
                   <div className={`flex items-center gap-1.5 text-xs font-bold ${diff.cls}`}>
                     <Circle className={`h-2.5 w-2.5 ${diff.fill}`} />
                     {diff.label}
                   </div>
                 </TableCell>
 
-                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="py-4 text-center" onClick={(e) => e.stopPropagation()}>
                   {onToggleStatus ? (
                     <Switch
                       checked={isActive}
@@ -178,7 +186,7 @@ export function QuestionBankTable({
                   )}
                 </TableCell>
 
-                <TableCell>
+                <TableCell className="py-4">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {(q as any).createdAt ? (
                     <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -190,7 +198,7 @@ export function QuestionBankTable({
                   )}
                 </TableCell>
 
-                <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="py-4 pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
