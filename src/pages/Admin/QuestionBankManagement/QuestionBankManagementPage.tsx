@@ -199,7 +199,7 @@ export function QuestionBankManagementPage() {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
-            {/* Stat Summary & Control Card (100% matching Company Management Page layout) */}
+            {/* Main Top Header Card (100% matching Company Management Page layout) */}
             <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
               <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
                 <div>
@@ -282,52 +282,6 @@ export function QuestionBankManagementPage() {
                   />
                 </div>
 
-                {activeTab === "questions" && (
-                  <>
-                    <Select
-                      value={selectedDifficulty}
-                      onValueChange={(val) => {
-                        setSelectedDifficulty(val);
-                        pagination.goToFirstPage();
-                      }}>
-                      <SelectTrigger className="h-[46px] w-[140px] shrink-0 rounded-xl border border-slate-200/90 bg-slate-50/70 text-[14.5px] font-medium dark:border-slate-800 dark:bg-slate-950/70">
-                        <SelectValue placeholder="Mức độ" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        <SelectItem value="ALL">Tất cả mức độ</SelectItem>
-                        <SelectItem value="EASY" className="font-semibold text-emerald-600">
-                          Dễ (Easy)
-                        </SelectItem>
-                        <SelectItem value="MEDIUM" className="font-semibold text-amber-600">
-                          Trung bình
-                        </SelectItem>
-                        <SelectItem value="HARD" className="font-semibold text-rose-600">
-                          Khó (Hard)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Select
-                      value={selectedCategory}
-                      onValueChange={(val) => {
-                        setSelectedCategory(val);
-                        pagination.goToFirstPage();
-                      }}>
-                      <SelectTrigger className="h-[46px] w-[160px] shrink-0 rounded-xl border border-slate-200/90 bg-slate-50/70 text-[14.5px] font-medium dark:border-slate-800 dark:bg-slate-950/70">
-                        <SelectValue placeholder="Chuyên mục" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        <SelectItem value="ALL">Tất cả chuyên mục</SelectItem>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={String(cat.id)}>
-                            {cat.categoryName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </>
-                )}
-
                 <Button
                   type="submit"
                   className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
@@ -339,24 +293,82 @@ export function QuestionBankManagementPage() {
                   <Button
                     type="button"
                     onClick={handleCreate}
-                    className="h-[46px] shrink-0 rounded-xl border border-indigo-600 bg-indigo-600 px-6 text-[14.5px] font-semibold text-white shadow-xs shadow-indigo-500/20 hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
-                    <Plus className="mr-2 h-[18px] w-[18px]" />
-                    {t("adminQuestionbankmanagement.addQuestion", "Thêm câu hỏi")}
+                    className="h-[46px] w-[165px] shrink-0 justify-center rounded-xl border border-indigo-600 bg-indigo-600 text-[14.5px] font-semibold text-white shadow-xs shadow-indigo-500/20 hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+                    <Plus className="mr-1.5 h-[18px] w-[18px] shrink-0" />
+                    <span className="truncate">
+                      {t("adminQuestionbankmanagement.addQuestion", "Thêm câu hỏi")}
+                    </span>
                   </Button>
                 ) : (
                   <Button
                     type="button"
                     onClick={() => setIsCreatingCategory(true)}
-                    className="h-[46px] shrink-0 rounded-xl border border-indigo-600 bg-indigo-600 px-6 text-[14.5px] font-semibold text-white shadow-xs shadow-indigo-500/20 hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
-                    <Plus className="mr-2 h-[18px] w-[18px]" />
-                    {t("adminQuestionbankmanagement.addCategory", "Thêm chuyên mục")}
+                    className="h-[46px] w-[165px] shrink-0 justify-center rounded-xl border border-indigo-600 bg-indigo-600 text-[14.5px] font-semibold text-white shadow-xs shadow-indigo-500/20 hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+                    <Plus className="mr-1.5 h-[18px] w-[18px] shrink-0" />
+                    <span className="truncate">
+                      {t("adminQuestionbankmanagement.addCategory", "Thêm chuyên mục")}
+                    </span>
                   </Button>
                 )}
               </form>
 
-              {isFilterActive && activeTab === "questions" && (
-                <div className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Hiển thị {pageItems.length}/{filteredQuestions.length} kết quả
+              {/* Status & Filter Pills Row BELOW Search Bar (100% matching Company & User Management) */}
+              {activeTab === "questions" && (
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <span className="mr-1 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                    Mức độ:
+                  </span>
+                  {[
+                    ["ALL", "Tất cả mức độ"],
+                    ["EASY", "Dễ (Easy)"],
+                    ["MEDIUM", "Trung bình"],
+                    ["HARD", "Khó (Hard)"],
+                  ].map(([val, label]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDifficulty(val);
+                        pagination.goToFirstPage();
+                      }}
+                      className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                        selectedDifficulty === val
+                          ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90 dark:text-white"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800"
+                      }`}>
+                      {label}
+                    </button>
+                  ))}
+
+                  <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-800" />
+
+                  <span className="mr-1 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                    Chuyên mục:
+                  </span>
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={(val) => {
+                      setSelectedCategory(val);
+                      pagination.goToFirstPage();
+                    }}>
+                    <SelectTrigger className="h-[36px] min-w-[170px] rounded-full border border-slate-200/90 bg-white text-[13.5px] font-medium shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                      <SelectValue placeholder="Tất cả chuyên mục" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="ALL">Tất cả chuyên mục</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={String(cat.id)}>
+                          {cat.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {isFilterActive && (
+                    <span className="ml-auto text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      Hiển thị {pageItems.length}/{filteredQuestions.length} kết quả
+                    </span>
+                  )}
                 </div>
               )}
             </div>
