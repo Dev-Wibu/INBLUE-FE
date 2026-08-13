@@ -1745,6 +1745,7 @@
     "theSystemIsGeneratingAPaymentLink": "システムが支払いリンクを生成しています。少々お待ちください。",
     "thereAreNoAppointmentsAvailableFor": "選択した日付に利用可能なアポイントメントはありません",
     "clickOnTheDateToSeeDetails": "日付をクリックして面接スケジュールの詳細を表示",
+    "clickToEnlarge": "クリックで拡大",
     "selectAnotherDateOnCalendar": "カレンダーの別の日付をクリックして情報を表示します。",
     "thereAreNoCandidateProfilesYet": "候補者プロフィールがまだありません",
     "thereAreNoDetailedComments": "詳細なコメントはありません。",
