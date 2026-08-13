@@ -4713,6 +4713,7 @@
     "codeReviewAiEvaluated": "AI EVALUATED",
     "codeReviewHrCommentTitle": "NHẬN XÉT TỪ HỘI ĐỒNG HR",
     "codeReviewHrEvaluationLabel": "HR ĐÁNH GIÁ",
+    "codeReviewNoHrNotePending": "Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi HR hoàn tất rà soát).",
     "codeReviewSubmittedSourceTitle": "Mã nguồn & ghi chú bạn đã nộp",
     "codeReviewIssueDeleted": "[VI] userApplicationhistory.codeReviewIssueDeleted",
     "codeReviewSubmittingTitle": "[VI] userApplicationhistory.codeReviewSubmittingTitle",

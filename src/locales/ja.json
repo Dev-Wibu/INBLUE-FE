@@ -4632,6 +4632,7 @@
     "codeReviewAiEvaluated": "AI EVALUATED",
     "codeReviewHrCommentTitle": "HR 委員会からのコメント",
     "codeReviewHrEvaluationLabel": "HR 評価",
+    "codeReviewNoHrNotePending": "HR 採用委員会からの直接的な所見はまだありません。(HR のレビューが完了次第、システムがすぐに更新します)。",
     "codeReviewSubmittedSourceTitle": "提出済みのソースコードとメモ",
     "codeReviewIssueDeleted": "[JA] userApplicationhistory.codeReviewIssueDeleted",
     "codeReviewSubmittingTitle": "[JA] userApplicationhistory.codeReviewSubmittingTitle",

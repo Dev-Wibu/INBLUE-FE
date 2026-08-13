@@ -2053,8 +2053,10 @@ function GradedResultView({
               </div>
             ) : (
               <p className="text-xs leading-relaxed text-slate-500 italic dark:text-slate-400">
-                Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi
-                HR hoàn tất rà soát).
+                {t(
+                  "userApplicationhistory.codeReviewNoHrNotePending",
+                  "Chưa có ghi chú trực tiếp từ Hội đồng tuyển dụng HR. (Hệ thống sẽ cập nhật ngay khi HR hoàn tất rà soát)."
+                )}
               </p>
             )}
           </Card>

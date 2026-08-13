@@ -4717,6 +4717,7 @@
     "codeReviewAiEvaluated": "AI EVALUATED",
     "codeReviewHrCommentTitle": "DIRECT COMMENT FROM HR COMMITTEE",
     "codeReviewHrEvaluationLabel": "HR EVALUATION",
+    "codeReviewNoHrNotePending": "No direct notes from the HR recruitment committee yet. (The system will update as soon as HR completes the review).",
     "codeReviewSubmittedSourceTitle": "Your submitted source code & notes",
     "codeReviewIssueDeleted": "Issue deleted",
     "codeReviewSubmittingTitle": "Submitting Code Review",
