@@ -396,6 +396,7 @@ function InlineGradingForm({
           <Textarea
             value={note}
             onChange={(e) => handleNoteChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
             placeholder="Add any notes about this candidate..."
             rows={2}
             className="resize-none rounded-lg border border-slate-200 text-xs dark:border-slate-700 dark:bg-slate-900"
@@ -456,6 +457,7 @@ function InlineGradingForm({
             max="100"
             value={score}
             onChange={(e) => handleScoreChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
             placeholder="0"
             className={cn(
               "h-9 rounded-lg border-2 text-center text-base font-bold",
@@ -525,6 +527,7 @@ function InlineGradingForm({
         <Textarea
           value={note}
           onChange={(e) => handleNoteChange(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
           placeholder="Add any notes about this candidate..."
           rows={2}
           className="resize-none rounded-lg border border-slate-200 text-xs dark:border-slate-700 dark:bg-slate-900"
