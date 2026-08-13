@@ -534,11 +534,18 @@ export function ApplicationWorkspacePage() {
           {/* Centered application identity */}
           <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
             {isAdmin ? (
-              <CandidateAvatar
-                avatarUrl={candidateInfo?.avatarUrl}
-                name={candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
-                className="hidden h-10 w-10 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-sm shadow-xs sm:flex"
-              />
+              <div className="hidden items-center -space-x-2.5 sm:flex">
+                <CandidateAvatar
+                  avatarUrl={candidateInfo?.avatarUrl}
+                  name={candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
+                  className="z-10 h-10 w-10 rounded-full border-2 border-white shadow-xs dark:border-[#0b1428]"
+                />
+                <CompanyAvatar
+                  logoUrl={jdInfo?.logoUrl}
+                  companyName={jdInfo?.companyName}
+                  className="h-10 w-10 rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-700 dark:bg-slate-900"
+                />
+              </div>
             ) : (
               <CompanyAvatar
                 logoUrl={jdInfo?.logoUrl}
