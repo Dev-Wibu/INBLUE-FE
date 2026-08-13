@@ -50,7 +50,7 @@ function formatDate(s?: string | Date) {
 /**
  * Smart Component: Calculates exact pixel difference (scrollWidth - clientWidth)
  * to smoothly translate 100% of the text to its very last character on hover,
- * with uniform reading speed.
+ * with fast & sleek speed.
  */
 function TruncatedScrollText({ text }: { text: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,7 +73,8 @@ function TruncatedScrollText({ text }: { text: string }) {
   }, [text]);
 
   const isOverflowing = scrollOffset > 0;
-  const durationMs = Math.max(3000, Math.round(scrollOffset * 25));
+  // Sleek & faster speed calculation
+  const durationMs = Math.max(1200, Math.round(scrollOffset * 10));
 
   return (
     <div
@@ -86,7 +87,7 @@ function TruncatedScrollText({ text }: { text: string }) {
         style={{
           transform:
             isHovered && isOverflowing ? `translateX(-${scrollOffset}px)` : "translateX(0px)",
-          transitionDuration: isHovered && isOverflowing ? `${durationMs}ms` : "300ms",
+          transitionDuration: isHovered && isOverflowing ? `${durationMs}ms` : "250ms",
         }}>
         <span
           ref={textRef}
