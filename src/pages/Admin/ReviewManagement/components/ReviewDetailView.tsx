@@ -12,7 +12,6 @@ import {
   Lightbulb,
   MessageSquare,
   Sparkles,
-  Star,
   Target,
   ThumbsUp,
   Trash2,
@@ -135,43 +134,8 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
 
       {/* ── MAIN CONTENT 2-COLUMN DASHBOARD ── */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* Left Column (8/12 - 66%): 5-Star Showcase Hero & STAR Analysis */}
+        {/* Left Column (8/12 - 66%): STAR Timeline & Detailed Feedback */}
         <div className="space-y-8 lg:col-span-8">
-          {/* 5-Star Rating Showcase Hero Banner */}
-          <div className="flex flex-col items-center justify-between gap-5 rounded-2xl border border-slate-200/90 bg-gradient-to-r from-slate-900 to-indigo-950 p-6 text-white shadow-sm sm:flex-row dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400 shadow-inner">
-                <Star className="h-7 w-7 fill-amber-400 text-amber-400" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2.5">
-                  <span className="font-mono text-3xl font-extrabold tracking-tight text-white">
-                    {review.rating || 0}.0
-                  </span>
-                  <span className="text-sm font-semibold text-slate-400">/ 5.0</span>
-                  <Badge className="border-amber-400/40 bg-amber-500/20 text-xs font-bold text-amber-300">
-                    {getRatingLabel(review.rating || 0)}
-                  </Badge>
-                </div>
-                <p className="mt-1 text-xs font-medium text-slate-300">
-                  Đánh giá vào <span className="font-semibold text-white">{formattedDate}</span> bởi
-                  Mentor{" "}
-                  <span className="font-semibold text-amber-300">
-                    {review.mentor?.name || "Mentor"}
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            {/* Prominent 5 Gold Stars Display */}
-            <div className="flex flex-col items-center gap-1 sm:items-end">
-              <StarRating value={review.rating || 5} readOnly size="lg" />
-              <span className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-                Xếp loại {review.rating || 5}/5 sao
-              </span>
-            </div>
-          </div>
-
           {/* STAR Timeline Section */}
           <div className="space-y-5">
             <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800/80">
@@ -197,7 +161,7 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
                         {item.letter}
                       </div>
 
-                      {/* Content Block (Scaled Up) */}
+                      {/* Content Block */}
                       <div className="flex-1 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
                         <div className="mb-2.5 flex items-center gap-2">
                           <Icon className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
@@ -263,8 +227,26 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
           </div>
         </div>
 
-        {/* Right Column (4/12 - 34%): Executive Sidebar */}
+        {/* Right Column (4/12 - 34%): Rating Banner & Executive Sidebar */}
         <div className="space-y-6 lg:col-span-4">
+          {/* Soft 5-Star Rating Showcase Card (Placed Top Right) */}
+          <div className="flex flex-col items-center justify-center gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-3xl font-extrabold text-slate-900 dark:text-white">
+                {review.rating || 0}.0
+              </span>
+              <span className="text-sm font-semibold text-slate-400">/ 5.0</span>
+              <Badge
+                variant="outline"
+                className="border-amber-200/80 bg-amber-50/80 text-xs font-bold text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/60 dark:text-amber-300">
+                {getRatingLabel(review.rating || 0)}
+              </Badge>
+            </div>
+
+            <StarRating value={review.rating || 5} readOnly size="lg" />
+          </div>
+
+          {/* Session Overview & Participants Panel */}
           <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
             <h3 className="mb-5 flex items-center gap-2 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               <Video className="h-4 w-4 text-indigo-500" />
@@ -272,7 +254,7 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
             </h3>
 
             <div className="space-y-6">
-              {/* Session Overview Box */}
+              {/* Session Details Box */}
               <div className="space-y-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4.5 dark:border-slate-800/80 dark:bg-slate-950/60">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
