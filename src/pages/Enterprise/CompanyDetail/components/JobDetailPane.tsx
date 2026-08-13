@@ -85,11 +85,6 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
 
     setIsActionLoading(true);
     try {
-      if (hasApplied) {
-        navigate("/user?tab=applicationHistory");
-        return;
-      }
-
       if (!hasPurchased) {
         localStorage.setItem("pending_jd_purchase_id", String(jdId));
         const payment = await jdPurchaseManager.createPayment(jdId);
