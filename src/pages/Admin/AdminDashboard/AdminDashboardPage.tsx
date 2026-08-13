@@ -229,6 +229,13 @@ export function AdminDashboardPage() {
                 parentTitle: item.label,
               };
             }
+            if (activeTab === "reviews") {
+              return {
+                currentTitle: t("adminReviewmanagement.reviewDetail", "Chi tiết đánh giá"),
+                currentCategory: group.label,
+                parentTitle: item.label,
+              };
+            }
           }
           // companies: detect drill-down via query params
           if (activeTab === "companies") {

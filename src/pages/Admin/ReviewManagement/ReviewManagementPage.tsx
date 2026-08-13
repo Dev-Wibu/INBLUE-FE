@@ -35,7 +35,7 @@ import { useSortable } from "@/hooks/useSortable";
 import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { Search, Star, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ReviewDetailView } from "./components/ReviewDetailView";
 
@@ -53,13 +53,20 @@ const getReviewDate = (review: MentorReview): string => {
 
 export function ReviewManagementPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { id } = useParams<{ id?: string }>();
+
   const { data: reviews = [], isLoading, isRefetching, refetch } = useMentorReviews();
   const { mutate: deleteReview, isPending: isDeleting } = useDeleteMentorReview();
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
   const [selectedReview, setSelectedReview] = useState<MentorReview | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const activeReview = useMemo(() => {
+    if (!id) return null;
+    return reviews.find((r) => String(r.id) === id) || null;
+  }, [id, reviews]);
 
   // Stats calculation
   const stats = useMemo(() => {
@@ -120,8 +127,7 @@ export function ReviewManagementPage() {
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
   const handleViewDetail = (review: MentorReview) => {
-    setSelectedReview(review);
-    setViewMode("detail");
+    navigate(`/admin/reviews/${review.id}`);
   };
   const handleDeleteClick = (review: MentorReview) => {
     setSelectedReview(review);
@@ -134,19 +140,18 @@ export function ReviewManagementPage() {
           setIsDeleteOpen(false);
           setSelectedReview(null);
           toast.success(t("common.reviewRemoved"));
+          if (id) navigate("/admin/reviews");
         },
       });
     }
   };
 
-  if (viewMode === "detail" && selectedReview) {
+  if (id && activeReview) {
     return (
       <ReviewDetailView
-        review={selectedReview}
-        onBack={() => {
-          setViewMode("list");
-          setSelectedReview(null);
-        }}
+        review={activeReview}
+        onBack={() => navigate("/admin/reviews")}
+        onDelete={() => handleDeleteClick(activeReview)}
       />
     );
   }
