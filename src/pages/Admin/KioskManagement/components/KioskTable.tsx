@@ -172,7 +172,7 @@ export function KioskTable({
                 <TableCell className="px-5 py-4">
                   <span className="inline-flex items-center gap-1 rounded-md border border-slate-200/80 bg-slate-100/90 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-100">
                     <Clock4 className="h-3 w-3 text-indigo-500" />
-                    {t("adminKioskManagement.timeSlotsCount", "{{count}} khung giờ", {
+                    {t("adminKioskManagement.timeSlotsCount", {
                       count: kiosk.scheduleCount ?? 0,
                     })}
                   </span>

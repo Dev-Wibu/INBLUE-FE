@@ -702,7 +702,7 @@ function MentorCard({
   const feedbackCountLabel =
     isLoading || !mentorId
       ? t("userApplicationhistory.mentorSelectFeedbackLoading", "Loading...")
-      : t("userApplicationhistory.mentorSelectFeedbackCountValue", "{{count}} reviews", {
+      : t("userApplicationhistory.mentorSelectFeedbackCountValue", {
           count: feedbacks.length,
         });
 
@@ -757,7 +757,7 @@ function MentorCard({
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-medium text-indigo-700 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-200">
               <Users className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
-              {t("userApplicationhistory.mentorSelectSessionsValue", "{{count}} sessions", {
+              {t("userApplicationhistory.mentorSelectSessionsValue", {
                 count: mentor.totalSession ?? 0,
               })}
             </span>
@@ -907,7 +907,7 @@ function MentorDetailDialog({
                   {t("userApplicationhistory.mentorFeedbackTitle", "Feedback history")}
                 </h4>
                 <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-300">
-                  {t("userApplicationhistory.mentorSelectFeedbackCountValue", "{{count}} reviews", {
+                  {t("userApplicationhistory.mentorSelectFeedbackCountValue", {
                     count: feedbacks.length,
                   })}
                 </span>
@@ -1476,7 +1476,7 @@ function ScheduleStep({
                     {formattedEndTime}
                   </div>
                   <div className="mt-1 text-xs font-bold text-indigo-600 dark:text-indigo-300">
-                    {t("userApplication.mentorReview.summaryDurationSuffix", "+ {{minutes}} phút", {
+                    {t("userApplication.mentorReview.summaryDurationSuffix", {
                       minutes: duration,
                     })}
                   </div>
@@ -1816,7 +1816,7 @@ function SessionRoomStep({
               <InfoRow
                 icon={<Clock className="h-3.5 w-3.5" />}
                 label={t("userApplicationhistory.mentorSessionFieldDuration")}
-                value={t("userApplication.mentorReview.minutesValue", "{{minutes}} phút", {
+                value={t("userApplication.mentorReview.minutesValue", {
                   minutes: session.duration ?? 0,
                 })}
               />
@@ -2060,7 +2060,7 @@ function CompletedResultView({
               <InfoTile
                 icon={<Clock className="h-4 w-4" />}
                 label={t("userApplicationhistory.mentorSessionFieldDuration")}
-                value={t("userApplication.mentorReview.minutesValue", "{{minutes}} phút", {
+                value={t("userApplication.mentorReview.minutesValue", {
                   minutes: session.duration ?? 0,
                 })}
               />
@@ -2076,7 +2076,7 @@ function CompletedResultView({
               <InfoTile
                 icon={<Users className="h-4 w-4" />}
                 label={t("userApplication.mentorReview.mentorSessionTileLabel", "Phiên mentor")}
-                value={t("userApplication.mentorReview.mentorSessionTileValue", "{{count}} phiên", {
+                value={t("userApplication.mentorReview.mentorSessionTileValue", {
                   count: mentorSessionCount,
                 })}
               />

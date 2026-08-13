@@ -260,7 +260,7 @@ export function RoundCanvasEditorDialog({
       setPositions([{ x: 80, y: 80 }]);
       setActiveDragType(null);
       toast.success(
-        t("enterpriseJobdetailpage.addedRound", "Đã thêm vòng {{roundTitle}}", {
+        t("enterpriseJobdetailpage.addedRound", {
           roundTitle: template.title,
         })
       );
@@ -300,7 +300,7 @@ export function RoundCanvasEditorDialog({
     setPositions(newPositions);
     setActiveDragType(null);
     toast.success(
-      t("enterpriseJobdetailpage.addedRound", "Đã thêm vòng {{roundTitle}}", {
+      t("enterpriseJobdetailpage.addedRound", {
         roundTitle: template.title,
       })
     );

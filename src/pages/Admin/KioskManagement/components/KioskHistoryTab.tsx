@@ -201,7 +201,7 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
       {(searchQuery.trim().length > 0 || statusFilter !== "ALL") && (
         <div className="flex items-center gap-2 px-6 py-2">
           <span className="text-xs text-slate-500">
-            {t("common.showingResults", "Hiển thị {{shown}} / {{total}} kết quả", {
+            {t("common.showingResults", {
               shown: filteredHistory.length,
               total: history.length,
             })}

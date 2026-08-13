@@ -1047,7 +1047,7 @@ function AiInterviewQuestionsTab({
               <>
                 <Maximize2 className="h-3.5 w-3.5 text-indigo-500" />
                 <span>
-                  {t("userApplication.aiInterview.expandAll", "Mở tất cả ({{count}} chủ đề)", {
+                  {t("userApplication.aiInterview.expandAll", {
                     count: clusters.length,
                   })}
                 </span>
@@ -1068,7 +1068,7 @@ function AiInterviewQuestionsTab({
                 : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
             )}>
             <span>
-              {t("userApplication.aiInterview.filterAllQuestions", "All ({{count}})", {
+              {t("userApplication.aiInterview.filterAllQuestions", {
                 count: questions.length,
               })}
             </span>
@@ -1084,7 +1084,7 @@ function AiInterviewQuestionsTab({
             )}>
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             <span>
-              {t("userApplication.aiInterview.filterHighScores", "High Score ≥ 7 ({{count}})", {
+              {t("userApplication.aiInterview.filterHighScores", {
                 count: highCount,
               })}
             </span>
@@ -1117,7 +1117,7 @@ function AiInterviewQuestionsTab({
                 : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
             )}>
             <span>
-              {t("userApplication.aiInterview.filterBlueprint", "Blueprint ({{count}})", {
+              {t("userApplication.aiInterview.filterBlueprint", {
                 count: blueprintCount,
               })}
             </span>
@@ -1132,7 +1132,7 @@ function AiInterviewQuestionsTab({
                 : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800"
             )}>
             <span>
-              {t("userApplication.aiInterview.filterFollowup", "Follow-up ({{count}})", {
+              {t("userApplication.aiInterview.filterFollowup", {
                 count: followupCount,
               })}
             </span>
@@ -1766,7 +1766,7 @@ function AiInterviewResultView({
                   </span>
                 </div>
                 <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
-                  {t("userApplication.aiInterview.questionsCount", "{{count}} questions", {
+                  {t("userApplication.aiInterview.questionsCount", {
                     count: questions.length,
                   })}
                 </p>
@@ -1792,7 +1792,7 @@ function AiInterviewResultView({
                   </span>
                 </div>
                 <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
-                  {t("userApplication.aiInterview.termsCount", "{{count}} terms", {
+                  {t("userApplication.aiInterview.termsCount", {
                     count: allExtractedKeywords.length,
                   })}
                 </p>
@@ -1869,7 +1869,7 @@ function AiInterviewResultView({
                       className="text-xs font-bold text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
                       {showAllKeywords
                         ? t("userApplication.aiInterview.collapse", "Collapse")
-                        : t("userApplication.aiInterview.viewAll", "View all ({{count}})", {
+                        : t("userApplication.aiInterview.viewAll", {
                             count: allExtractedKeywords.length,
                           })}
                     </button>
@@ -2079,10 +2079,10 @@ function AiInterviewResultView({
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white">
                   {sessionData?.sessionConfig?.duration_minutes
-                    ? t("userApplication.aiInterview.durationValue", "{{minutes}} minutes", {
+                    ? t("userApplication.aiInterview.durationValue", {
                         minutes: sessionData.sessionConfig.duration_minutes,
                       })
-                    : t("userApplication.aiInterview.durationValue", "{{minutes}} minutes", {
+                    : t("userApplication.aiInterview.durationValue", {
                         minutes: 30,
                       })}
                 </span>

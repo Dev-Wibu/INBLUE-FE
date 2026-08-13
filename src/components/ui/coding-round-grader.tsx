@@ -450,7 +450,7 @@ function ProblemSidebarItem({
           )}
         </div>
         <p className="mt-0.5 truncate text-xs font-medium text-slate-700 group-hover:text-slate-900 dark:text-slate-200 dark:group-hover:text-white">
-          {problem.title ?? t("common.problemNum", "Bài #{{num}}", { num: idx + 1 })}
+          {problem.title ?? t("common.problemNum", { num: idx + 1 })}
         </p>
         {submitted && (
           <p className="mt-0.5 text-[10px] text-slate-400">

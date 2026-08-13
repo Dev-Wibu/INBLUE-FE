@@ -523,7 +523,7 @@ export function QuizEditor({
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   {selectedIndex === -1
                     ? t("adminQuizProblem.addNewQuestion")
-                    : t("adminQuizProblem.editQuestionNum", "Chỉnh sửa câu hỏi #{{num}}", {
+                    : t("adminQuizProblem.editQuestionNum", {
                         num: (selectedIndex || 0) + 1,
                       })}
                 </h3>
@@ -654,86 +654,117 @@ export function QuizEditor({
                 </span>
               </div>
 
-              {/* Filters */}
-              <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-white p-3 md:flex-row md:items-center dark:border-slate-800 dark:bg-slate-950">
-                <div className="relative flex-1">
-                  <Search className="absolute top-2 left-2.5 h-3.5 w-3.5 text-slate-400" />
+              {/* Filters: search + category + level in a clean 2-row layout */}
+              <div className="space-y-3 rounded-xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+                {/* Search row */}
+                <div className="relative">
+                  <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <Input
                     value={bankSearch}
                     onChange={(e) => setBankSearch(e.target.value)}
-                    placeholder={t("adminQuizProblem.searchQuestion")}
-                    className="h-8 border-slate-200 bg-white pl-8 text-xs dark:border-slate-800 dark:bg-slate-950"
+                    placeholder={t("adminQuizProblem.searchQuestion", "Tìm câu hỏi...")}
+                    className="h-10 w-full border-slate-200 bg-white pl-10 text-sm dark:border-slate-800 dark:bg-slate-950"
                   />
                 </div>
-                <div className="flex flex-wrap items-center gap-1">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setBankCategory(cat)}
-                      className={cn(
-                        "rounded-full border px-2.5 py-1 text-[9px] font-bold transition-all",
-                        bankCategory === cat
-                          ? "border-indigo-600 bg-indigo-600 text-white"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400"
-                      )}>
-                      {cat === "All" ? t("common.all") : cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* Level filter row */}
-              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/40">
-                <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  {t("general.difficulty", "Mức độ")}:
-                </span>
-                {LEVEL_FILTERS.map(({ key }) => {
-                  const isActive = bankLevel === key;
-                  const label =
-                    key === "All"
-                      ? t("common.all")
-                      : key === "EASY"
-                        ? t("common.difficultyEasy", "Dễ")
-                        : key === "MEDIUM"
-                          ? t("common.difficultyMedium", "Trung bình")
-                          : t("common.difficultyHard", "Khó");
-                  const levelColor =
-                    key === "EASY"
-                      ? isActive
-                        ? "border-emerald-600 bg-emerald-600 text-white"
-                        : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-slate-950 dark:text-emerald-400"
-                      : key === "MEDIUM"
+                {/* Category + Level in two clearly-labelled rows */}
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                      {t("general.category", "Danh mục")}
+                    </Label>
+                    <Select value={bankCategory} onValueChange={(val) => setBankCategory(val)}>
+                      <SelectTrigger className="h-10 w-full border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
+                        {categories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat === "All" ? t("common.all", "Tất cả") : cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                      {t("general.difficulty", "Mức độ")}
+                    </Label>
+                    <Select
+                      value={bankLevel}
+                      onValueChange={(val) => setBankLevel(val as LevelFilter)}>
+                      <SelectTrigger className="h-10 w-full border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
+                        {LEVEL_FILTERS.map(({ key }) => (
+                          <SelectItem key={key} value={key}>
+                            {key === "All"
+                              ? t("common.all", "Tất cả")
+                              : key === "EASY"
+                                ? t("common.difficultyEasy", "Dễ")
+                                : key === "MEDIUM"
+                                  ? t("common.difficultyMedium", "Trung bình")
+                                  : t("common.difficultyHard", "Khó")}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Compact pill row for quick visual scan (optional, but matches Admin filter UX) */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                    {t("common.quickFilter", "Lọc nhanh")}:
+                  </span>
+                  {LEVEL_FILTERS.map(({ key }) => {
+                    const isActive = bankLevel === key;
+                    const levelColor =
+                      key === "EASY"
                         ? isActive
-                          ? "border-amber-600 bg-amber-600 text-white"
-                          : "border-amber-200 bg-white text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:bg-slate-950 dark:text-amber-400"
-                        : key === "HARD"
+                          ? "border-emerald-600 bg-emerald-600 text-white"
+                          : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-slate-950 dark:text-emerald-400"
+                        : key === "MEDIUM"
                           ? isActive
-                            ? "border-rose-600 bg-rose-600 text-white"
-                            : "border-rose-200 bg-white text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:bg-slate-950 dark:text-rose-400"
-                          : isActive
-                            ? "border-indigo-600 bg-indigo-600 text-white"
-                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400";
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setBankLevel(key)}
-                      className={cn(
-                        "rounded-full border px-2.5 py-1 text-[9px] font-bold transition-all",
-                        levelColor
-                      )}>
-                      {label}
-                    </button>
-                  );
-                })}
-                <span className="ml-auto text-[10px] font-semibold text-slate-400">
-                  {t("common.showing", "Hiển thị")}{" "}
-                  <strong className="text-indigo-600 dark:text-indigo-400">
-                    {filteredBank.length}
-                  </strong>
-                  /{bankQuestions.length}
-                </span>
+                            ? "border-amber-600 bg-amber-600 text-white"
+                            : "border-amber-200 bg-white text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:bg-slate-950 dark:text-amber-400"
+                          : key === "HARD"
+                            ? isActive
+                              ? "border-rose-600 bg-rose-600 text-white"
+                              : "border-rose-200 bg-white text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:bg-slate-950 dark:text-rose-400"
+                            : isActive
+                              ? "border-indigo-600 bg-indigo-600 text-white"
+                              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400";
+                    const label =
+                      key === "All"
+                        ? t("common.all", "Tất cả")
+                        : key === "EASY"
+                          ? t("common.difficultyEasy", "Dễ")
+                          : key === "MEDIUM"
+                            ? t("common.difficultyMedium", "Trung bình")
+                            : t("common.difficultyHard", "Khó");
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setBankLevel(key)}
+                        className={cn(
+                          "rounded-full border px-3 py-1 text-[10px] font-bold transition-all",
+                          levelColor
+                        )}>
+                        {label}
+                      </button>
+                    );
+                  })}
+                  <span className="ml-auto text-[10px] font-semibold text-slate-400">
+                    {t("common.showing", "Hiển thị")}{" "}
+                    <strong className="text-indigo-600 dark:text-indigo-400">
+                      {filteredBank.length}
+                    </strong>
+                    /{bankQuestions.length}
+                  </span>
+                </div>
               </div>
 
               {/* Questions list */}
@@ -742,7 +773,7 @@ export function QuizEditor({
                   <SpinnerBlock size="sm" />
                 </div>
               ) : (
-                <div className="max-h-[340px] space-y-2.5 overflow-y-auto pr-1">
+                <div className="max-h-[420px] space-y-2.5 overflow-y-auto pr-1">
                   {filteredBank.map((q, idx) => {
                     const originalIndex = bankQuestions.findIndex((bq) => bq === q);
                     const isSelected = selectedBankIndexes.includes(originalIndex);
@@ -762,7 +793,7 @@ export function QuizEditor({
                         key={q.id ?? idx}
                         onClick={() => toggleBankSelection(originalIndex)}
                         className={cn(
-                          "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-all",
+                          "flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-all",
                           isSelected
                             ? "border-indigo-500 bg-indigo-500/[0.04] dark:bg-indigo-950/15"
                             : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/20 dark:hover:border-slate-700"
@@ -781,14 +812,14 @@ export function QuizEditor({
                         <div className="min-w-0 flex-1 space-y-1.5">
                           <div className="flex flex-wrap items-center gap-1.5">
                             {categoryName && (
-                              <span className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-700 ring-1 ring-indigo-600/10 ring-inset dark:bg-indigo-950/30 dark:text-indigo-400">
+                              <span className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 ring-1 ring-indigo-600/10 ring-inset dark:bg-indigo-950/30 dark:text-indigo-400">
                                 {categoryName}
                               </span>
                             )}
                             {difficultyLabel && (
                               <span
                                 className={cn(
-                                  "inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold ring-1 ring-inset",
+                                  "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold ring-1 ring-inset",
                                   q.questionLevel === "EASY" &&
                                     "bg-green-50 text-green-700 ring-green-600/10 dark:bg-green-950/20 dark:text-green-400",
                                   q.questionLevel === "MEDIUM" &&
@@ -803,8 +834,8 @@ export function QuizEditor({
                               10 {t("common.score")}
                             </span>
                           </div>
-                          <p className="rounded-lg border border-slate-100 bg-slate-50 p-2 font-mono text-xs leading-relaxed font-semibold whitespace-pre-wrap dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-200">
-                            {qText.length > 120 ? qText.substring(0, 120) + "..." : qText}
+                          <p className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 font-mono text-[13px] leading-relaxed font-semibold whitespace-pre-wrap dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-200">
+                            {qText.length > 160 ? qText.substring(0, 160) + "..." : qText}
                           </p>
                         </div>
                       </div>

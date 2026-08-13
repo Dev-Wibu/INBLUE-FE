@@ -236,7 +236,7 @@ export function CodeReviewProblemManagementPage() {
             <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
             <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
               {view.mode === "edit"
-                ? t("adminCodeReviewProblem.editTitle", "Chỉnh sửa: {{title}}", {
+                ? t("adminCodeReviewProblem.editTitle", {
                     title: view.problem.title,
                   })
                 : t("adminCodeReviewProblem.createTitle", "Tạo bài tập mới")}
