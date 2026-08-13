@@ -14,7 +14,6 @@ import {
   FileCheck2,
   LayoutDashboard,
   LayoutTemplate,
-  MessageSquare,
   Newspaper,
   Star,
   UserCheck,
@@ -113,14 +112,8 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
       {
         type: "reviews",
         icon: Star,
-        label: t("common.reviewFromMentor"),
+        label: t("common.reviewAndFeedback", "Đánh giá & Phản hồi"),
         color: "text-yellow-600 dark:text-yellow-500",
-      },
-      {
-        type: "feedback",
-        icon: MessageSquare,
-        label: t("common.feedbackFromCandidates"),
-        color: "text-cyan-600 dark:text-cyan-500",
       },
       {
         type: "mentor-review-assignment",
@@ -366,6 +359,7 @@ export function AdminDashboardPage() {
             <Route path="sessions/create" element={<SessionFormPage />} />
             <Route path="sessions/:id" element={<SessionFormPage />} />
             <Route path="reviews" element={<ReviewManagementPage />} />
+            <Route path="reviews/:id" element={<ReviewManagementPage />} />
             <Route path="feedback" element={<FeedbackManagementPage />} />
             <Route path="notifications" element={<NotificationManagementPage />} />
             <Route path="questionBanks" element={<QuestionBankManagementPage />} />

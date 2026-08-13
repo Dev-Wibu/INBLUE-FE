@@ -9,8 +9,6 @@ import { PaginationControl, ReloadButton, SortButton } from "@/components/shared
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
@@ -29,13 +27,14 @@ import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { MessageSquare, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 export function FeedbackManagementPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { data: feedbacks = [], isLoading, isRefetching, refetch } = useMentorFeedbacks();
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
-  const [selectedFeedback, setSelectedFeedback] = useState<MentorFeedback | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // Stats calculation
   const stats = useMemo(() => {
@@ -259,8 +258,8 @@ export function FeedbackManagementPage() {
                         <TableRow
                           key={feedback.id}
                           onClick={() => {
-                            setSelectedFeedback(feedback);
-                            setIsDetailOpen(true);
+                            const targetId = feedback.session?.id || feedback.id;
+                            navigate(`/admin/reviews/${targetId}`);
                           }}
                           className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
                           <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -339,22 +338,6 @@ export function FeedbackManagementPage() {
           </div>
         )}
       </div>
-
-      {/* View Detail Dialog */}
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>{t("common.comment")}</DialogTitle>
-          </DialogHeader>
-          {selectedFeedback && (
-            <div className="mt-2 rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
-              <p className="leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                {selectedFeedback.comment || t("common.thereAreNoDetailedComments")}
-              </p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
