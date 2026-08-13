@@ -2203,13 +2203,11 @@ function StaffAiInterviewWaitingView({
                   </>
                 )}
               </p>
-              {detail?.aiInterviewSessionId && (
+              {!isPending && detail?.aiInterviewSessionId && (
                 <p
                   className={cn(
                     "mt-2 font-mono text-xs font-semibold",
-                    isPending
-                      ? "text-amber-600 dark:text-amber-400"
-                      : "text-indigo-600 dark:text-indigo-400"
+                    "text-indigo-600 dark:text-indigo-400"
                   )}>
                   Session ID: {detail.aiInterviewSessionId}
                 </p>

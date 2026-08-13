@@ -160,8 +160,8 @@ export function StaffHorizontalPipeline({
                           : hasAIScored
                             ? // Only AI scored - show AI score
                               t("staffGrading.aiScore", {
-                                score: detail?.aiScore,
-                                defaultValue: `AI: ${detail?.aiScore}/100`,
+                                score: detail?.aiScore ?? 0,
+                                defaultValue: `AI: ${detail?.aiScore ?? 0}/100`,
                               })
                             : // No score yet
                               t("staffGrading.completedNoScore", "Đã hoàn thành")
