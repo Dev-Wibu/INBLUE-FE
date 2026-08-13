@@ -86,25 +86,25 @@ export function KioskTable({
       <Table>
         <TableHeader>
           <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               ID
             </TableHead>
-            <TableHead className="min-w-[240px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[32%] min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminKioskManagement.kioskName", "Tên trạm Kiosk")}
             </TableHead>
-            <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[28%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminKioskManagement.location", "Vị trí trạm")}
             </TableHead>
-            <TableHead className="w-[140px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[14%] min-w-[120px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminKioskManagement.operatingSchedule", "Lịch hoạt động")}
             </TableHead>
-            <TableHead className="w-[100px] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[10%] min-w-[90px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("common.onOff", "Bật/Tắt")}
             </TableHead>
-            <TableHead className="w-[130px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[16%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.createdDate", "Ngày tạo")}
             </TableHead>
-            <TableHead className="w-[100px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[90px] min-w-[90px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
               {t("common.actions", "Thao tác")}
             </TableHead>
           </TableRow>

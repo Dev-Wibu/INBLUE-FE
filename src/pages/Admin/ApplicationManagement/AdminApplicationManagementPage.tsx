@@ -733,25 +733,25 @@ export function AdminApplicationManagementPage() {
             <Table>
               <TableHeader>
                 <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                  <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                     ID
                   </TableHead>
-                  <TableHead className="min-w-[200px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[22%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.candidate", "Ứng viên")}
                   </TableHead>
-                  <TableHead className="min-w-[160px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[20%] min-w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                     {t("common.company", "Công ty")}
                   </TableHead>
-                  <TableHead className="min-w-[180px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[24%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.jobPosition", "Vị trí tuyển dụng")}
                   </TableHead>
-                  <TableHead className="w-[140px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[14%] min-w-[120px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.currentRound", "Vòng hiện tại")}
                   </TableHead>
-                  <TableHead className="w-[100px] text-center font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[10%] min-w-[90px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.score", "Điểm số")}
                   </TableHead>
-                  <TableHead className="w-[130px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[10%] min-w-[100px] pr-6 font-semibold text-slate-700 dark:text-slate-200">
                     {t("common.status", "Trạng thái")}
                   </TableHead>
                 </TableRow>
