@@ -234,7 +234,9 @@ export function ScheduleFormDialog({
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-5 overflow-y-auto p-7 sm:grid-cols-2">
+        <form
+          onSubmit={handleSubmit}
+          className="grid items-start gap-5 overflow-y-auto p-7 sm:grid-cols-2">
           <div className="order-1 space-y-2">
             <Label
               htmlFor="schedule-day"
