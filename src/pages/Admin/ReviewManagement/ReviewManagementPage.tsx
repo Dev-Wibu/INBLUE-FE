@@ -287,27 +287,27 @@ export function ReviewManagementPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                        <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.id")}
                         </TableHead>
-                        <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[28%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.mentorSent")}
                         </TableHead>
-                        <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[28%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.candidatesAreEvaluated")}
                         </TableHead>
-                        <TableHead className="w-[110px] min-w-[110px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[14%] min-w-[110px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.session")}
                         </TableHead>
-                        <TableHead className="w-[140px] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[15%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("rating" as keyof MentorReview)}>
                             {t("common.evaluate")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[140px] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[15%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
                         </TableHead>
-                        <TableHead className="w-[90px] min-w-[90px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[80px] min-w-[80px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.delete", "Xóa")}
                         </TableHead>
                       </TableRow>
