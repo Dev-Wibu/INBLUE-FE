@@ -11,14 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -32,7 +24,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAdminApplicationDetails } from "@/hooks/useAdminApplicationDetails";
 import { useAssignMentor, useAssignMentors } from "@/hooks/useApplicationDetails";
@@ -49,7 +40,6 @@ import {
   Clock,
   Eye,
   Inbox,
-  ListFilter,
   Mail,
   RefreshCw,
   Search,
@@ -64,17 +54,8 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-type MainTab = "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR";
-type MoreFilter = "SLOT_PICKED" | "ALL" | null;
+type StatusFilter = "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "ALL";
 
-/**
- * Two main views the admin actually uses day-to-day:
- * 1. "Chờ gán"  (AWAITING_MENTOR): admin needs to assign a mentor
- * 2. "Chờ UV chọn" (AWAITING_CANDIDATE_SELECT_MENTOR): admin already suggested N
- *    mentors, candidate will pick. Admin must NOT re-assign here.
- *
- * SLOT_PICKED + ALL sit behind a dropdown because they are read-only / archival.
- */
 type AdminDetailItem = AdminApplicationDetailResponse;
 
 function sortByOldestFirst(a: AdminDetailItem, b: AdminDetailItem): number {
@@ -121,15 +102,10 @@ function renderStatusBadge(detail: AdminDetailItem, t: (_key: string) => string)
 export function MentorReviewAssignmentPage() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
-  // Two main tabs the admin uses daily. Default = AWAITING_MENTOR (most common).
-  const [mainTab, setMainTab] = useState<MainTab>("AWAITING_MENTOR");
-  // Optional secondary filter (dropdown menu): SLOT_PICKED view, or ALL.
-  const [moreFilter, setMoreFilter] = useState<MoreFilter>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("AWAITING_MENTOR");
 
   const [selectedDetail, setSelectedDetail] = useState<AdminDetailItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  // ...rest unchanged
 
   const {
     data: applicationDetails = [],
@@ -172,19 +148,12 @@ export function MentorReviewAssignmentPage() {
     };
   }, [applicationDetails]);
 
-  // Effective status filter = mainTab (or fallback when moreFilter overrides).
-  const activeStatus: MainTab | "SLOT_PICKED" | "ALL" = useMemo(() => {
-    if (moreFilter === "SLOT_PICKED") return "SLOT_PICKED";
-    if (moreFilter === "ALL") return "ALL";
-    return mainTab;
-  }, [mainTab, moreFilter]);
-
   const filteredDetails = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
     const byStatus = applicationDetails.filter((detail) => {
-      if (activeStatus === "ALL") return true;
-      return detail.status === activeStatus;
+      if (statusFilter === "ALL") return true;
+      return detail.status === statusFilter;
     });
 
     if (!q) return [...byStatus].sort(sortByOldestFirst);
@@ -199,13 +168,15 @@ export function MentorReviewAssignmentPage() {
           detail.candidateEmail ?? "",
           detail.jdTitle ?? "",
           detail.roundName ?? "",
+          ((detail as Record<string, unknown>).companyName as string) ?? "",
+          ((detail as Record<string, unknown>).company_name as string) ?? "",
         ]
           .join(" ")
           .toLowerCase();
         return haystack.includes(q);
       })
       .sort(sortByOldestFirst);
-  }, [applicationDetails, searchQuery, activeStatus]);
+  }, [applicationDetails, searchQuery, statusFilter]);
 
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "src_pages_admin_mentorreviewassignment_mentorreviewassignmentpage_tsx_pagesize",
@@ -252,11 +223,6 @@ export function MentorReviewAssignmentPage() {
   const openAssignDialog = (detail: AdminDetailItem) => {
     setSelectedDetail(detail);
     setIsDialogOpen(true);
-  };
-
-  const moreFilterLabel: Record<Exclude<MoreFilter, null>, string> = {
-    SLOT_PICKED: t("adminMentorReviewAssignment.filterSlotPicked"),
-    ALL: t("adminMentorReviewAssignment.filterAll"),
   };
 
   return (
@@ -338,110 +304,44 @@ export function MentorReviewAssignmentPage() {
             />
           </form>
 
-          {/* Tabs + overflow filter dropdown (inside the same card) */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            <Tabs
-              value={mainTab}
-              onValueChange={(value) => {
-                setMainTab(value as MainTab);
-                setMoreFilter(null); // switching to a main tab clears the secondary filter
-              }}
-              className="w-full sm:w-auto">
-              <TabsList className="h-9 bg-gray-200/70 p-0.5 dark:bg-slate-800/60">
-                <TabsTrigger
-                  value="AWAITING_MENTOR"
-                  className="gap-1.5 data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                  <Clock className="h-3.5 w-3.5" />
-                  {t("adminMentorReviewAssignment.filterAwaitingMentor")}
-                  <Badge
-                    variant={mainTab === "AWAITING_MENTOR" && !moreFilter ? "secondary" : "outline"}
-                    className={cn(
-                      "ml-1 h-5 min-w-[20px] justify-center px-1.5 text-[10px]",
-                      mainTab === "AWAITING_MENTOR" && !moreFilter
-                        ? "bg-white/30 text-white dark:bg-slate-700/50 dark:text-slate-200"
-                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
-                    )}>
-                    {counts.awaitingMentor}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="AWAITING_CANDIDATE_SELECT_MENTOR"
-                  className="gap-1.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  <Users className="h-3.5 w-3.5" />
-                  {t("adminMentorReviewAssignment.filterAwaitingCandidateSelect")}
-                  <Badge
-                    variant={
-                      mainTab === "AWAITING_CANDIDATE_SELECT_MENTOR" && !moreFilter
-                        ? "secondary"
-                        : "outline"
-                    }
-                    className={cn(
-                      "ml-1 h-5 min-w-[20px] justify-center px-1.5 text-[10px]",
-                      mainTab === "AWAITING_CANDIDATE_SELECT_MENTOR" && !moreFilter
-                        ? "bg-white/30 text-white dark:bg-slate-700/50 dark:text-slate-200"
-                        : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
-                    )}>
-                    {counts.awaitingCandidateSelect}
-                  </Badge>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 gap-1.5">
-                  <ListFilter className="h-3.5 w-3.5" />
-                  {moreFilter ? moreFilterLabel[moreFilter] : t("adminMentorReviewAssignment.more")}
-                  {moreFilter && (
-                    <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
-                      {moreFilter === "ALL" ? counts.all : counts.slotPicked}
-                    </Badge>
-                  )}
-                  <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-                  {t("adminMentorReviewAssignment.more")}
-                </DropdownMenuLabel>
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setMoreFilter(null);
-                    setMainTab("AWAITING_MENTOR");
-                  }}
-                  className="gap-2">
-                  <X className="text-muted-foreground h-3.5 w-3.5" />
-                  <span className="flex-1">{t("adminMentorReviewAssignment.moreDefault")}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setMoreFilter("SLOT_PICKED");
-                    setMainTab("AWAITING_MENTOR");
-                  }}
-                  className="gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                  <span className="flex-1">
-                    {t("adminMentorReviewAssignment.filterSlotPicked")}
-                  </span>
-                  <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                    {counts.slotPicked}
-                  </Badge>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setMoreFilter("ALL");
-                    setMainTab("AWAITING_MENTOR");
-                  }}
-                  className="gap-2">
-                  <Eye className="text-muted-foreground h-3.5 w-3.5" />
-                  <span className="flex-1">{t("adminMentorReviewAssignment.filterAll")}</span>
-                  <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                    {counts.all}
-                  </Badge>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {/* Status Filter Pills */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+              {t("common.status", "Trạng thái")}:
+            </span>
+            {[
+              [
+                "AWAITING_MENTOR",
+                t("adminMentorReviewAssignment.filterAwaitingMentor", "Chờ gán Mentor"),
+                counts.awaitingMentor,
+              ],
+              [
+                "AWAITING_CANDIDATE_SELECT_MENTOR",
+                t("adminMentorReviewAssignment.filterAwaitingCandidateSelect", "Chờ UV chọn"),
+                counts.awaitingCandidateSelect,
+              ],
+              [
+                "SLOT_PICKED",
+                t("adminMentorReviewAssignment.filterSlotPicked", "Đã chọn lịch"),
+                counts.slotPicked,
+              ],
+              ["ALL", t("adminMentorReviewAssignment.filterAll", "Tất cả đơn"), counts.all],
+            ].map(([value, label, count]) => (
+              <button
+                key={value as string}
+                type="button"
+                onClick={() => {
+                  setStatusFilter(value as StatusFilter);
+                  pagination.goToFirstPage();
+                }}
+                className={`cursor-pointer rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                  statusFilter === value
+                    ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90 dark:text-white dark:shadow-indigo-500/20"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                }`}>
+                {label as string} ({count as number})
+              </button>
+            ))}
           </div>
         </div>
 
