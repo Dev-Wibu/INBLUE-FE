@@ -387,8 +387,8 @@ export function KioskDetailPage() {
           </Button>
         </div>
         <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.7fr_1.6fr_1fr_auto] lg:items-center [&_p:first-child]:hidden [&>div:nth-child(2)]:hidden">
+          <div className="border-b border-slate-200 bg-slate-50/80 px-5 py-3 dark:border-slate-800 dark:bg-slate-900">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] lg:items-center [&_p:first-child]:hidden [&>div:nth-child(2)]:hidden [&>div:nth-child(4)]:hidden">
               <div>
                 <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                   {t("adminKioskManagement.kioskName", "Tên trạm Kiosk")}
@@ -434,7 +434,7 @@ export function KioskDetailPage() {
                 variant="outline"
                 onClick={() => setEditOpen(true)}
                 disabled={!kiosk || isLoading}
-                className="group/btn h-8.5 gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-700 shadow-2xs transition-all hover:border-indigo-300 hover:bg-indigo-50/70 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-400">
+                className="group/btn h-8 shrink-0 gap-1.5 justify-self-start rounded-xl border border-slate-200/90 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition-all hover:border-indigo-300 hover:bg-indigo-50/70 hover:text-indigo-600 sm:justify-self-end dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-400">
                 <Pencil className="h-3.5 w-3.5 text-slate-400 transition-colors group-hover/btn:text-indigo-500" />
                 {t("common.edit", "Chỉnh sửa")}
               </Button>
