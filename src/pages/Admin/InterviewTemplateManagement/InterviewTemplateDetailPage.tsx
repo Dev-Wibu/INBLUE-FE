@@ -311,14 +311,14 @@ export function InterviewTemplateDetailPage() {
                   )}
                 </div>
 
-                {/* Rounds Timeline Content Container (Full Width) */}
-                <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                  <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+                {/* Rounds Timeline Stream (Flat & Sleek, No Over-Nested Cards) */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-1">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-                        <Layers className="h-4 w-4" />
+                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                        <Layers className="h-3.5 w-3.5" />
                       </div>
-                      <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                         {t("template.processContains", "Cấu trúc các vòng phỏng vấn")} (
                         {selectedTemplate.rounds?.length || 0} vòng)
                       </h2>
@@ -334,7 +334,7 @@ export function InterviewTemplateDetailPage() {
                     </Button>
                   </div>
 
-                  <div className="relative space-y-6 pl-12 before:absolute before:top-3 before:bottom-3 before:left-[23px] before:w-[2px] before:bg-slate-200 dark:before:bg-slate-800">
+                  <div className="relative space-y-4 pl-10 before:absolute before:top-3 before:bottom-3 before:left-[19px] before:w-[2px] before:bg-slate-200 dark:before:bg-slate-800">
                     {selectedTemplate.rounds?.map((round, idx) => {
                       const templateMetadata = AVAILABLE_ROUNDS_TEMPLATES.find(
                         (t) => t.type === round.roundType
@@ -348,13 +348,14 @@ export function InterviewTemplateDetailPage() {
 
                       return (
                         <div key={idx} className="group relative">
-                          <div className="absolute top-1.5 -left-[35px] flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-indigo-600 text-xs font-bold text-white shadow-xs dark:border-slate-900 dark:bg-indigo-500">
+                          <div className="absolute top-4 -left-[31px] flex h-6 w-6 items-center justify-center rounded-full border-2 border-slate-50 bg-indigo-600 font-mono text-[11px] font-bold text-white shadow-xs dark:border-slate-950 dark:bg-indigo-500">
                             {idx + 1}
                           </div>
 
+                          {/* Single-Level Round Card */}
                           <div
                             onClick={() => handleEditClick(selectedTemplate)}
-                            className="cursor-pointer rounded-xl border border-slate-200/90 bg-slate-50/50 p-5 shadow-2xs transition-all hover:border-indigo-400 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40 dark:hover:border-indigo-500/80 dark:hover:bg-slate-900">
+                            className="cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:border-indigo-400 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <div className="flex items-center gap-3">
                                 <div
@@ -376,22 +377,23 @@ export function InterviewTemplateDetailPage() {
                               </div>
 
                               <div className="flex items-center gap-3">
-                                <span className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                                <span className="flex items-center gap-1.5 rounded-lg border border-slate-200/80 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
                                   <Clock className="h-3.5 w-3.5 text-slate-400" />
                                   {round.configData?.timeLimitMinutes
                                     ? `${round.configData.timeLimitMinutes} ${t("general.minute")}`
                                     : t("enterpriseJobdescriptiondetailpage.unlimited")}
                                 </span>
-                                <span className="rounded-md border border-indigo-200/80 bg-indigo-50/80 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
+                                <span className="rounded-lg border border-indigo-200/80 bg-indigo-50/80 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
                                   {t("common.obtain")}{" "}
                                   {Math.round((round.passThreshold ?? 0.8) * 100)}%
                                 </span>
                               </div>
                             </div>
 
+                            {/* Candidate Instruction: Clean accent strip without nested border box */}
                             {round.configData?.instruction && (
-                              <div className="mt-4 rounded-xl border border-slate-200/80 bg-white p-3.5 text-xs leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                                <span className="mb-1 block font-bold text-slate-900 dark:text-white">
+                              <div className="mt-3.5 rounded-r-xl border-l-2 border-indigo-500 bg-slate-50/80 p-3.5 pl-4 text-xs leading-relaxed text-slate-700 dark:bg-slate-950/50 dark:text-slate-300">
+                                <span className="mb-0.5 block font-bold text-slate-900 dark:text-white">
                                   {t("template.candidateInstructions")}
                                 </span>
                                 {round.configData.instruction}
@@ -401,8 +403,8 @@ export function InterviewTemplateDetailPage() {
                             {round.roundType === "QUIZ" &&
                               round.configData?.quizQuestions &&
                               round.configData.quizQuestions.length > 0 && (
-                                <div className="mt-3.5 border-t border-slate-200/60 pt-3 dark:border-slate-800/60">
-                                  <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+                                <div className="mt-3 pt-2">
+                                  <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
                                     {t("template.configured")}{" "}
                                     {round.configData.quizQuestions.length}{" "}
                                     {t("question.multipleChoice")}
