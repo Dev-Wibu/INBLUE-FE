@@ -748,10 +748,10 @@ function AssignMentorDialog({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-h-[92vh] w-[95vw] gap-0 overflow-hidden rounded-2xl border border-slate-200/90 p-0 shadow-2xl sm:max-w-4xl dark:border-slate-800 dark:bg-slate-900">
-        {/* Unified DialogHeader with Candidate & Job Context */}
-        <DialogHeader className="border-b border-slate-200/80 bg-white p-4.5 px-5 dark:border-slate-800 dark:bg-slate-900">
+        {/* Distinct Header with Elevated Background */}
+        <DialogHeader className="border-b border-slate-200/80 bg-slate-50/90 p-4.5 px-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* Left: Candidate Info */}
+            {/* Left: Candidate Profile Info */}
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 shrink-0 rounded-full border border-slate-200/90 shadow-2xs dark:border-slate-700">
                 {detail?.candidateAvatarUrl ? (
@@ -781,10 +781,10 @@ function AssignMentorDialog({
               </div>
             </div>
 
-            {/* Right: Company & Role Info */}
+            {/* Right: Company Logo & JD Title */}
             {detail && (
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-50 px-3 py-1.5 dark:border-slate-700/80 dark:bg-slate-800">
+                <div className="flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 dark:border-slate-700/80 dark:bg-slate-800">
                   <Avatar className="h-4.5 w-4.5 shrink-0 rounded-xs">
                     {companyLogo ? <AvatarImage src={companyLogo} /> : null}
                     <AvatarFallback className="bg-sky-100 text-[9px] font-bold text-sky-700">
@@ -808,253 +808,250 @@ function AssignMentorDialog({
           </div>
         </DialogHeader>
 
-        {/* Modal Main Body Canvas */}
-        <div className="flex max-h-[calc(92vh-110px)] flex-col gap-4 overflow-y-auto bg-slate-50/70 p-5 dark:bg-slate-950/50">
-          {/* 2-Column Workspace Grid */}
-          <div className="grid min-h-[400px] grid-cols-1 items-start gap-4 lg:grid-cols-12">
-            {/* LEFT COLUMN (5/12) - Search & Mentor List Selector */}
-            <div className="flex max-h-[460px] flex-col gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-300">
-                  Danh sách Mentor ({filteredMentors.length})
-                </span>
-                {selectedMentorIds.length > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="bg-indigo-50 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                    Đã chọn: {selectedMentorIds.length}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Search Input */}
-              <div className="relative">
-                <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-                <Input
-                  placeholder="Tìm theo tên, email, kỹ năng..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 rounded-xl border-slate-200 pl-8.5 text-xs dark:border-slate-800 dark:bg-slate-950/60"
-                />
-              </div>
-
-              {/* Scrollable Mentor List */}
-              <div className="flex max-h-[360px] flex-col gap-2 overflow-y-auto pr-1">
-                {filteredMentors.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                    <p className="mt-2 text-xs text-slate-500">
-                      {t("common.noResults", "Không tìm thấy mentor")}
-                    </p>
-                  </div>
-                ) : (
-                  filteredMentors.map((mentor) => {
-                    const isChecked = mentor.id != null && selectedMentorIds.includes(mentor.id);
-                    const isPreviewing = previewMentor?.id === mentor.id;
-
-                    return (
-                      <div
-                        key={mentor.id}
-                        onClick={() => mentor.id && toggleMentorSelection(mentor.id)}
-                        className={cn(
-                          "flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all",
-                          isChecked
-                            ? "border-2 border-indigo-600 bg-indigo-50/80 shadow-xs dark:border-indigo-500 dark:bg-indigo-950/70"
-                            : isPreviewing
-                              ? "border-slate-300 bg-slate-100/80 dark:border-slate-700 dark:bg-slate-800/80"
-                              : "border-slate-200/80 bg-slate-50/50 hover:border-slate-300 hover:bg-slate-100/60 dark:border-slate-800/70 dark:bg-slate-950/40 dark:hover:border-slate-700 dark:hover:bg-slate-800/60"
-                        )}>
-                        <Checkbox
-                          checked={isChecked}
-                          onCheckedChange={() => mentor.id && toggleMentorSelection(mentor.id)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="shrink-0 rounded-xs"
-                        />
-
-                        <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-slate-200 dark:border-slate-800">
-                          {mentor.avatarUrl ? (
-                            <AvatarImage src={mentor.avatarUrl} className="object-cover" />
-                          ) : null}
-                          <AvatarFallback className="rounded-xl bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                            {mentor.name?.charAt(0).toUpperCase() || "?"}
-                          </AvatarFallback>
-                        </Avatar>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-1">
-                            <p className="truncate text-xs font-bold text-slate-900 dark:text-white">
-                              {mentor.name}
-                            </p>
-                            <span className="flex items-center gap-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
-                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                              {mentor.averageRating?.toFixed(1) ?? "4.8"}
-                            </span>
-                          </div>
-                          <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                            {mentor.currentCompany || mentor.email}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+        {/* Full-Bleed 2-Column Body (No Outer Body Card Borders!) */}
+        <div className="grid max-h-[calc(92vh-130px)] min-h-[420px] grid-cols-1 divide-x divide-slate-100 overflow-hidden bg-white lg:grid-cols-12 dark:divide-slate-800/80 dark:bg-slate-950">
+          {/* LEFT COLUMN (5/12) - Search & Scrollable Mentor List */}
+          <div className="flex flex-col gap-3 bg-white p-4 lg:col-span-5 dark:bg-slate-950">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-300">
+                Danh sách Mentor ({filteredMentors.length})
+              </span>
+              {selectedMentorIds.length > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="bg-indigo-50 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                  Đã chọn: {selectedMentorIds.length}
+                </Badge>
+              )}
             </div>
 
-            {/* RIGHT COLUMN (7/12) - Selected Mentor Dossier Panel */}
-            <div className="flex min-h-[460px] flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
-              {previewMentor ? (
-                <div className="flex flex-1 flex-col gap-4">
-                  {/* Multiple Selected Mentor Chips */}
-                  {selectedMentorsList.length > 1 && (
-                    <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 dark:border-slate-800">
-                      <span className="mr-1 text-xs font-semibold text-slate-500">
-                        Đã chọn ({selectedMentorsList.length}):
-                      </span>
-                      {selectedMentorsList.map((m) => (
-                        <Badge
-                          key={m.id}
-                          variant="secondary"
-                          onClick={() => m.id && setActivePreviewId(m.id)}
-                          className={cn(
-                            "cursor-pointer gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors",
-                            previewMentor.id === m.id
-                              ? "border-indigo-500 bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300"
-                              : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                          )}>
-                          <span>{m.name}</span>
-                          <X
-                            className="h-3 w-3 cursor-pointer text-slate-400 hover:text-red-500"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (m.id) toggleMentorSelection(m.id);
-                            }}
-                          />
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder="Tìm theo tên, email, kỹ năng..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 rounded-xl border-slate-200 pl-8.5 text-xs dark:border-slate-800 dark:bg-slate-900"
+              />
+            </div>
 
-                  {/* Mentor Header Profile */}
-                  <div className="flex items-start gap-4 border-b border-slate-100 pb-4 dark:border-slate-800">
-                    <Avatar className="h-14 w-14 shrink-0 rounded-2xl border-2 border-indigo-500/20 shadow-sm dark:border-indigo-500/40">
-                      {previewMentor.avatarUrl ? (
-                        <AvatarImage src={previewMentor.avatarUrl} className="object-cover" />
-                      ) : null}
-                      <AvatarFallback className="rounded-2xl bg-indigo-50 text-xl font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                        {previewMentor.name?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                          {previewMentor.name}
-                        </h4>
-                        {selectedMentorIds.includes(previewMentor.id as number) && (
-                          <Badge
-                            variant="outline"
-                            className="border-emerald-200 bg-emerald-50 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/60 dark:text-emerald-300">
-                            <CheckCircle2 className="mr-1 h-3 w-3" />
-                            Đã chọn
-                          </Badge>
-                        )}
-                      </div>
-
-                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                        {previewMentor.email}
-                      </p>
-
-                      <div className="mt-2.5 flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
-                        {previewMentor.currentCompany && (
-                          <span className="flex items-center gap-1 font-medium">
-                            <Briefcase className="h-3.5 w-3.5 text-slate-400" />
-                            {previewMentor.currentCompany}
-                          </span>
-                        )}
-                        {typeof previewMentor.pricePerMinute === "number" &&
-                          previewMentor.pricePerMinute > 0 && (
-                            <span className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400">
-                              <BadgeDollarSign className="h-3.5 w-3.5" />
-                              {previewMentor.pricePerMinute.toLocaleString("vi-VN")}đ/phút
-                            </span>
-                          )}
-                        <span className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
-                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                          {previewMentor.averageRating?.toFixed(1) ?? "4.8"} / 5.0
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Skill Badges */}
-                  {previewMentor.expertise && (
-                    <div>
-                      <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                        Chuyên môn & Kỹ năng
-                      </span>
-                      <div className="mt-1.5 flex flex-wrap gap-1.5">
-                        {previewMentor.expertise.split(",").map((skill, idx) => (
-                          <Badge
-                            key={idx}
-                            variant="secondary"
-                            className="rounded-lg border border-slate-200/80 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-300">
-                            {skill.trim()}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Bio */}
-                  {previewMentor.bio && (
-                    <div>
-                      <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                        Giới thiệu bản thân
-                      </span>
-                      <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                        {previewMentor.bio}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Admin Note Input */}
-                  <div className="mt-auto border-t border-slate-100 pt-3 dark:border-slate-800">
-                    <Label
-                      htmlFor="admin-assign-notes"
-                      className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Ghi chú bổ sung (Không bắt buộc)
-                    </Label>
-                    <Textarea
-                      id="admin-assign-notes"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Nhập ghi chú hoặc yêu cầu đối với Mentor..."
-                      rows={2}
-                      className="mt-1.5 resize-none rounded-xl border-slate-200/90 text-xs dark:border-slate-800 dark:bg-slate-950/60"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-1 flex-col items-center justify-center py-16 text-center">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-                    <UserPlus className="h-6 w-6" />
-                  </div>
-                  <h5 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Vui lòng chọn Mentor
-                  </h5>
-                  <p className="mt-1 max-w-xs text-xs text-slate-500 dark:text-slate-400">
-                    Nhấp vào một hoặc nhiều Mentor ở danh sách bên trái để xem thông tin chi tiết và
-                    thực hiện phân công.
+            {/* Scrollable Mentor List */}
+            <div className="flex max-h-[360px] flex-col gap-1.5 overflow-y-auto pr-1">
+              {filteredMentors.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                  <p className="mt-2 text-xs text-slate-500">
+                    {t("common.noResults", "Không tìm thấy mentor")}
                   </p>
                 </div>
+              ) : (
+                filteredMentors.map((mentor) => {
+                  const isChecked = mentor.id != null && selectedMentorIds.includes(mentor.id);
+                  const isPreviewing = previewMentor?.id === mentor.id;
+
+                  return (
+                    <div
+                      key={mentor.id}
+                      onClick={() => mentor.id && toggleMentorSelection(mentor.id)}
+                      className={cn(
+                        "flex cursor-pointer items-center gap-3 rounded-xl border p-2.5 transition-all",
+                        isChecked
+                          ? "border-indigo-600 bg-indigo-50/70 shadow-2xs dark:border-indigo-500 dark:bg-indigo-950/60"
+                          : isPreviewing
+                            ? "border-slate-300 bg-slate-100/70 dark:border-slate-700 dark:bg-slate-900"
+                            : "border-transparent hover:bg-slate-50 dark:hover:bg-slate-900/60"
+                      )}>
+                      <Checkbox
+                        checked={isChecked}
+                        onCheckedChange={() => mentor.id && toggleMentorSelection(mentor.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="shrink-0 rounded-xs"
+                      />
+
+                      <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-slate-200 dark:border-slate-800">
+                        {mentor.avatarUrl ? (
+                          <AvatarImage src={mentor.avatarUrl} className="object-cover" />
+                        ) : null}
+                        <AvatarFallback className="rounded-xl bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          {mentor.name?.charAt(0).toUpperCase() || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="truncate text-xs font-bold text-slate-900 dark:text-white">
+                            {mentor.name}
+                          </p>
+                          <span className="flex items-center gap-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            {mentor.averageRating?.toFixed(1) ?? "4.8"}
+                          </span>
+                        </div>
+                        <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+                          {mentor.currentCompany || mentor.email}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
+
+          {/* RIGHT COLUMN (7/12) - Selected Mentor Dossier Panel */}
+          <div className="flex max-h-[440px] flex-col overflow-y-auto bg-white p-5 lg:col-span-7 dark:bg-slate-950">
+            {previewMentor ? (
+              <div className="flex flex-1 flex-col gap-4">
+                {/* Multiple Selected Mentor Chips */}
+                {selectedMentorsList.length > 1 && (
+                  <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 dark:border-slate-800">
+                    <span className="mr-1 text-xs font-semibold text-slate-500">
+                      Đã chọn ({selectedMentorsList.length}):
+                    </span>
+                    {selectedMentorsList.map((m) => (
+                      <Badge
+                        key={m.id}
+                        variant="secondary"
+                        onClick={() => m.id && setActivePreviewId(m.id)}
+                        className={cn(
+                          "cursor-pointer gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors",
+                          previewMentor.id === m.id
+                            ? "border-indigo-500 bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300"
+                            : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                        )}>
+                        <span>{m.name}</span>
+                        <X
+                          className="h-3 w-3 cursor-pointer text-slate-400 hover:text-red-500"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (m.id) toggleMentorSelection(m.id);
+                          }}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
+                {/* Mentor Header Profile */}
+                <div className="flex items-start gap-4 border-b border-slate-100 pb-4 dark:border-slate-800">
+                  <Avatar className="h-14 w-14 shrink-0 rounded-2xl border-2 border-indigo-500/20 shadow-sm dark:border-indigo-500/40">
+                    {previewMentor.avatarUrl ? (
+                      <AvatarImage src={previewMentor.avatarUrl} className="object-cover" />
+                    ) : null}
+                    <AvatarFallback className="rounded-2xl bg-indigo-50 text-xl font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                      {previewMentor.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                        {previewMentor.name}
+                      </h4>
+                      {selectedMentorIds.includes(previewMentor.id as number) && (
+                        <Badge
+                          variant="outline"
+                          className="border-emerald-200 bg-emerald-50 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/60 dark:text-emerald-300">
+                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                          Đã chọn
+                        </Badge>
+                      )}
+                    </div>
+
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      {previewMentor.email}
+                    </p>
+
+                    <div className="mt-2.5 flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+                      {previewMentor.currentCompany && (
+                        <span className="flex items-center gap-1 font-medium">
+                          <Briefcase className="h-3.5 w-3.5 text-slate-400" />
+                          {previewMentor.currentCompany}
+                        </span>
+                      )}
+                      {typeof previewMentor.pricePerMinute === "number" &&
+                        previewMentor.pricePerMinute > 0 && (
+                          <span className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400">
+                            <BadgeDollarSign className="h-3.5 w-3.5" />
+                            {previewMentor.pricePerMinute.toLocaleString("vi-VN")}đ/phút
+                          </span>
+                        )}
+                      <span className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        {previewMentor.averageRating?.toFixed(1) ?? "4.8"} / 5.0
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Skill Badges */}
+                {previewMentor.expertise && (
+                  <div>
+                    <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                      Chuyên môn & Kỹ năng
+                    </span>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {previewMentor.expertise.split(",").map((skill, idx) => (
+                        <Badge
+                          key={idx}
+                          variant="secondary"
+                          className="rounded-lg border border-slate-200/80 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-300">
+                          {skill.trim()}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Bio */}
+                {previewMentor.bio && (
+                  <div>
+                    <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                      Giới thiệu bản thân
+                    </span>
+                    <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                      {previewMentor.bio}
+                    </p>
+                  </div>
+                )}
+
+                {/* Admin Note Input */}
+                <div className="mt-auto border-t border-slate-100 pt-3 dark:border-slate-800">
+                  <Label
+                    htmlFor="admin-assign-notes"
+                    className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Ghi chú bổ sung (Không bắt buộc)
+                  </Label>
+                  <Textarea
+                    id="admin-assign-notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Nhập ghi chú hoặc yêu cầu đối với Mentor..."
+                    rows={2}
+                    className="mt-1.5 resize-none rounded-xl border-slate-200/90 text-xs dark:border-slate-800 dark:bg-slate-900"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-1 flex-col items-center justify-center py-16 text-center">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                  <UserPlus className="h-6 w-6" />
+                </div>
+                <h5 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Vui lòng chọn Mentor
+                </h5>
+                <p className="mt-1 max-w-xs text-xs text-slate-500 dark:text-slate-400">
+                  Nhấp vào một hoặc nhiều Mentor ở danh sách bên trái để xem thông tin chi tiết và
+                  thực hiện phân công.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Modal Footer Actions */}
-        <div className="flex items-center justify-between gap-3 border-t border-slate-200/80 bg-white p-4 px-5 dark:border-slate-800 dark:bg-slate-900">
+        {/* Distinct Footer with Elevated Background Shading */}
+        <div className="flex items-center justify-between gap-3 border-t border-slate-200/80 bg-slate-50/90 p-4 px-6 dark:border-slate-800 dark:bg-slate-900">
           <Button
             type="button"
             variant="ghost"
