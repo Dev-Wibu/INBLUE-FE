@@ -154,7 +154,6 @@ interface JobDetailViewProps {
   hasPurchased: boolean;
   hasApplied?: boolean;
   onApplyAction: () => void;
-  onViewApplication?: () => void;
   isLoadingAction: boolean;
   isLoadingStatus?: boolean;
   onBack?: () => void;
@@ -165,7 +164,6 @@ export function JobDetailView({
   hasPurchased,
   hasApplied = false,
   onApplyAction,
-  onViewApplication,
   isLoadingAction,
   isLoadingStatus = false,
   onBack,
@@ -196,20 +194,6 @@ export function JobDetailView({
       );
     }
 
-    if (hasApplied) {
-      return (
-        <Button
-          onClick={onViewApplication || onApplyAction}
-          disabled={isLoadingAction}
-          variant="outline"
-          className="w-full rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/30">
-          {isLoadingAction
-            ? t("common.processing", "Đang xử lý...")
-            : t("enterpriseJobdescriptiondetailpage.alreadyApplied", "Đã ứng tuyển ✓")}
-        </Button>
-      );
-    }
-
     if (hasPurchased) {
       return (
         <Button
@@ -218,7 +202,9 @@ export function JobDetailView({
           className="w-full rounded-xl bg-emerald-600 text-white hover:bg-emerald-700">
           {isLoadingAction
             ? t("common.processing", "Đang xử lý...")
-            : t("enterpriseJobdescriptiondetailpage.applyNow", "Apply ngay")}
+            : hasApplied
+              ? t("enterpriseJobdescriptiondetailpage.applyNow", "Apply ngay")
+              : t("enterpriseJobdescriptiondetailpage.applyNow", "Apply ngay")}
         </Button>
       );
     }
