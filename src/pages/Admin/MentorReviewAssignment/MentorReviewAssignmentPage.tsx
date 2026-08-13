@@ -43,6 +43,7 @@ import {
   Mail,
   RefreshCw,
   Search,
+  Sparkles,
   Star,
   User,
   UserCheck,
