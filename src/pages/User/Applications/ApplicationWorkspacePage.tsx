@@ -533,66 +533,43 @@ export function ApplicationWorkspacePage() {
 
           {/* Centered application identity */}
           <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
-            {isAdmin ? (
-              <div className="hidden items-center -space-x-2.5 sm:flex">
-                <CandidateAvatar
-                  avatarUrl={candidateInfo?.avatarUrl}
-                  name={candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`}
-                  className="z-10 h-10 w-10 rounded-full border-2 border-white shadow-xs dark:border-[#0b1428]"
-                />
-                <CompanyAvatar
-                  logoUrl={jdInfo?.logoUrl}
-                  companyName={jdInfo?.companyName}
-                  className="h-10 w-10 rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-700 dark:bg-slate-900"
-                />
-              </div>
-            ) : (
-              <CompanyAvatar
-                logoUrl={jdInfo?.logoUrl}
-                companyName={jdInfo?.companyName}
-                className="hidden h-10 w-10 rounded-xl border-indigo-500/20 bg-indigo-500/10 text-sm sm:flex"
-              />
-            )}
+            <CompanyAvatar
+              logoUrl={jdInfo?.logoUrl}
+              companyName={jdInfo?.companyName}
+              className="hidden h-10 w-10 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-sm shadow-xs sm:flex"
+            />
 
             <div className="max-w-[min(68vw,720px)] min-w-0">
-              {isAdmin ? (
-                <>
-                  <div className="flex items-center justify-center gap-2">
-                    <h1 className="truncate text-base font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
-                      {candidateInfo?.name || `Ứng viên #${applicationId}`}
-                    </h1>
-                    <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-extrabold text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-300">
-                      Ứng viên
+              <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
+                {jdInfo?.companyName && (
+                  <span className="text-indigo-600 dark:text-indigo-300">{jdInfo.companyName}</span>
+                )}
+                {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
+                <span>
+                  {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+                </span>
+              </h1>
+
+              {isAdmin && (candidateInfo?.name || candidateInfo?.email) && (
+                <div className="mt-1 flex flex-wrap items-center justify-center gap-2 text-xs">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/80 bg-indigo-50/80 py-0.5 pr-2.5 pl-1 dark:border-indigo-900/60 dark:bg-indigo-950/60">
+                    <CandidateAvatar
+                      avatarUrl={candidateInfo.avatarUrl}
+                      name={candidateInfo.name || candidateInfo.email}
+                      className="h-4.5 w-4.5 rounded-full"
+                      textClassName="text-[9px] font-bold"
+                    />
+                    <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                      Ứng viên: {candidateInfo.name || "Ứng viên"}
                     </span>
-                  </div>
-                  <div className="mt-0.5 flex flex-wrap items-center justify-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                    {jdInfo?.companyName && (
-                      <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-                        {jdInfo.companyName}
-                      </span>
-                    )}
-                    {jdInfo?.companyName && <span>·</span>}
-                    <span className="truncate">{jdInfo?.title ?? "Vị trí ứng tuyển"}</span>
-                    {candidateInfo?.email && <span className="hidden sm:inline">·</span>}
-                    {candidateInfo?.email && (
-                      <span className="hidden font-mono text-[11px] text-slate-400 sm:inline dark:text-slate-500">
-                        {candidateInfo.email}
-                      </span>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
-                  {jdInfo?.companyName && (
-                    <span className="text-indigo-600 dark:text-indigo-300">
-                      {jdInfo.companyName}
+                  </span>
+
+                  {candidateInfo.email && (
+                    <span className="hidden font-mono text-[11px] text-slate-400 sm:inline dark:text-slate-500">
+                      ({candidateInfo.email})
                     </span>
                   )}
-                  {jdInfo?.companyName && <span className="px-1.5 text-slate-400">·</span>}
-                  <span>
-                    {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
-                  </span>
-                </h1>
+                </div>
               )}
             </div>
           </div>
