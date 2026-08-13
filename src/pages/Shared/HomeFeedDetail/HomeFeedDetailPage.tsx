@@ -219,10 +219,18 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
 
   return (
     <>
-      {/* Full-viewport 2-column layout. h-screen keeps both columns anchored
-          to the visible viewport on desktop so the user never needs to scroll
-          the page itself to find the composer / comments. */}
-      <div className="grid h-screen w-full overflow-hidden bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
+      {/* Two-column layout that fills the parent exactly. We deliberately use
+          h-full (not h-screen) because this page is rendered inside the
+          dashboard shell (UserDashboardPage / MentorDashboardPage / etc.),
+          which already sizes its main content area to the viewport minus
+          the dashboard header + sidebar. h-screen here would mis-compute
+          the height and let content spill past the composer.
+
+          overflow-hidden is the root guarantee that:
+          - the media column never scrolls,
+          - the right column is the only thing that scrolls,
+          - and the composer stays pinned. */}
+      <div className="grid h-full w-full overflow-hidden bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
         {/* LEFT — media canvas (fills viewport height) */}
         <section
           aria-label={t("compPost.feedDetail.media", "Post media")}
@@ -482,7 +490,7 @@ function EmptyState({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="grid h-screen w-full place-items-center bg-slate-50 px-6 dark:bg-slate-950">
+    <div className="grid h-full w-full place-items-center bg-slate-50 px-6 dark:bg-slate-950">
       <div className="relative flex max-w-md flex-col items-center gap-3 text-center">
         <button
           type="button"
@@ -507,7 +515,7 @@ function DetailShellSkeleton({
   backToFeedLabel: string;
 }) {
   return (
-    <div className="grid h-screen w-full overflow-hidden bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
+    <div className="grid h-full w-full overflow-hidden bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
       <section className="relative flex h-full items-center justify-center bg-slate-950">
         <Skeleton className="h-3/4 w-3/4 rounded-xl bg-slate-800/60" />
         <button

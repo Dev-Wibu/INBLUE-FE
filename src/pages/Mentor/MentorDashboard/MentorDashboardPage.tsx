@@ -382,11 +382,16 @@ export function MentorDashboardPage() {
           ref={handleContentRef}
           className={cn(
             "flex-1 overflow-hidden",
-            typedActiveTab === "messenger"
-              ? "p-0"
-              : typedActiveTab === "overview"
-                ? "overflow-auto"
-                : "overflow-auto p-4 md:p-6 lg:p-8"
+            // Home feed detail page is its own two-column layout that must
+            // fill the content area edge-to-edge with no padding and no
+            // page-level scroll. h-full inside the page depends on this.
+            location.pathname.startsWith("/mentor/home-feed/")
+              ? "overflow-hidden p-0"
+              : typedActiveTab === "messenger"
+                ? "p-0"
+                : typedActiveTab === "overview"
+                  ? "overflow-auto"
+                  : "overflow-auto p-4 md:p-6 lg:p-8"
           )}>
           {outlet ?? renderContent()}
         </div>

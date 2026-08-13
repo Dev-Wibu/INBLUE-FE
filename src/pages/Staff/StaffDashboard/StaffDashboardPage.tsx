@@ -3,11 +3,12 @@ import type { SidebarMenuGroup } from "@/components/shared";
 import { DashboardSidebar, getInitialSidebarCollapsed } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { useTabsState } from "@/hooks/useTabsState";
+import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { ClipboardCheck, Home, LayoutDashboard } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ApplicationGradingPage } from "../../Admin/ApplicationGrading/ApplicationGradingPage";
 import { StaffAccountPage } from "../Account/StaffAccountPage";
@@ -116,6 +117,7 @@ export function StaffDashboardPage() {
     availableTabs: availableTabs,
   });
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollTarget] = useState<HTMLDivElement | null>(null);
@@ -265,7 +267,17 @@ export function StaffDashboardPage() {
           isSidebarCollapsed={isSidebarCollapsed}
         />
 
-        <div ref={handleContentRef} className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+        <div
+          ref={handleContentRef}
+          className={cn(
+            "flex-1",
+            // Home feed detail page is its own two-column layout that must
+            // fill the content area edge-to-edge with no padding and no
+            // page-level scroll. h-full inside the page depends on this.
+            location.pathname.startsWith("/staff/home/")
+              ? "overflow-hidden p-0"
+              : "overflow-auto p-4 md:p-6 lg:p-8"
+          )}>
           {renderTabContent(typedActiveTab)}
         </div>
         <ScrollToTopButton target={scrollTarget} threshold={600} />
