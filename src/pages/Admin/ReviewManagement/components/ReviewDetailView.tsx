@@ -22,7 +22,7 @@ import {
   Video,
   Zap,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 interface ReviewDetailViewProps {
@@ -40,7 +40,6 @@ const getRatingLabel = (rating: number) => {
 
 export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<"mentor" | "candidate">("mentor");
 
   // Fetch all candidate feedbacks to match with current session
   const { data: candidateFeedbacks = [] } = useMentorFeedbacks();
@@ -161,221 +160,162 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
 
       {/* ── MAIN CONTENT 2-COLUMN DASHBOARD ── */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* Left Column (8/12 - 66%): Unified Feedback Content */}
-        <div className="space-y-6 lg:col-span-8">
-          {/* Sub-view Tab Switcher */}
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200/90 bg-slate-100/70 p-1.5 dark:border-slate-800/80 dark:bg-slate-900/80">
-            <button
-              type="button"
-              onClick={() => setActiveTab("mentor")}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${
-                activeTab === "mentor"
-                  ? "bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300"
-                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-              }`}>
-              <Star className="h-4 w-4 text-amber-500" />
-              <span>Đánh giá từ Mentor</span>
-              <span className="ml-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-extrabold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                {review.rating || 0}.0★
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("candidate")}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${
-                activeTab === "candidate"
-                  ? "bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300"
-                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-              }`}>
-              <MessageSquareQuote className="h-4 w-4 text-sky-500" />
-              <span>Phản hồi từ Ứng viên</span>
-              {matchingCandidateFeedback ? (
-                <span className="ml-1 rounded-md bg-sky-50 px-2 py-0.5 text-[10px] font-extrabold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
-                  {matchingCandidateFeedback.rating || 0}.0★
-                </span>
-              ) : (
-                <span className="ml-1 rounded-md bg-slate-200/80 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                  Chưa có
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* TAB 1: MENTOR ASSESSMENT OF CANDIDATE */}
-          {activeTab === "mentor" && (
-            <div className="animate-in fade-in space-y-8 duration-200">
-              {/* STAR Timeline Section */}
-              <div className="space-y-5">
-                <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800/80">
-                  <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                    <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                    <span>Đánh giá theo mô hình STAR</span>
-                  </h2>
-                </div>
-
-                {starItems.length === 0 ? (
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Chưa có ghi chú STAR cho đánh giá này.
-                  </p>
-                ) : (
-                  <div className="relative space-y-6 pl-8 before:absolute before:top-3 before:bottom-3 before:left-3.5 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
-                    {starItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <div key={item.key} className="relative flex gap-4">
-                          <div
-                            className={`absolute -left-8 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-extrabold shadow-2xs ${item.color}`}>
-                            {item.letter}
-                          </div>
-
-                          <div className="flex-1 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
-                            <div className="mb-2.5 flex items-center gap-2">
-                              <Icon className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
-                              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                                {item.title}
-                              </h3>
-                            </div>
-                            <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                              {item.content}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Feedback & Improvement Section */}
-              <div className="space-y-5">
-                <h2 className="flex items-center gap-2 border-b border-slate-200/80 pb-3 text-base font-bold text-slate-900 dark:border-slate-800/80 dark:text-white">
-                  <User className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                  <span>Nhận xét chuyên sâu & Định hướng phát triển</span>
-                </h2>
-
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {review.strength && (
-                    <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
-                      <div className="mb-2.5 flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        <ThumbsUp className="h-4 w-4" />
-                        <span>Điểm mạnh nổi bật</span>
-                      </div>
-                      <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                        {review.strength}
-                      </p>
-                    </div>
-                  )}
-
-                  {review.weakness && (
-                    <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
-                      <div className="mb-2.5 flex items-center gap-2 text-xs font-bold text-rose-600 dark:text-rose-400">
-                        <AlertTriangle className="h-4 w-4" />
-                        <span>Điểm cần cải thiện</span>
-                      </div>
-                      <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                        {review.weakness}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {review.improve && (
-                  <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
-                    <div className="mb-2.5 flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      <Lightbulb className="h-4 w-4" />
-                      <span>Đề xuất lộ trình phát triển</span>
-                    </div>
-                    <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                      {review.improve}
-                    </p>
-                  </div>
-                )}
-              </div>
+        {/* Left Column (8/12 - 66%): Direct Sequence (No Tabs) */}
+        <div className="space-y-8 lg:col-span-8">
+          {/* SECTION 1: STAR Timeline Section */}
+          <div className="space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800/80">
+              <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <span>Đánh giá từ Mentor (Mô hình STAR)</span>
+              </h2>
             </div>
-          )}
 
-          {/* TAB 2: CANDIDATE FEEDBACK FOR MENTOR */}
-          {activeTab === "candidate" && (
-            <div className="animate-in fade-in space-y-6 duration-200">
-              {matchingCandidateFeedback ? (
-                <div className="space-y-6">
-                  {/* Candidate Rating Hero Box */}
-                  <div className="flex flex-col items-center justify-between gap-5 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs sm:flex-row dark:border-slate-800/80 dark:bg-slate-900">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12 shrink-0 rounded-[16px] border border-slate-200/90 shadow-2xs dark:border-slate-800">
-                        <AvatarImage
-                          src={matchingCandidateFeedback.user?.avatarUrl}
-                          alt={matchingCandidateFeedback.user?.name}
-                        />
-                        <AvatarFallback className="rounded-[16px] bg-sky-50 font-bold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
-                          {matchingCandidateFeedback.user?.name?.charAt(0)?.toUpperCase() || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                          {matchingCandidateFeedback.user?.name || "Ứng viên"}
-                        </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          Đã gửi phản hồi đánh giá chất lượng phiên phỏng vấn
+            {starItems.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Chưa có ghi chú STAR cho đánh giá này.
+              </p>
+            ) : (
+              <div className="relative space-y-6 pl-8 before:absolute before:top-3 before:bottom-3 before:left-3.5 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+                {starItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.key} className="relative flex gap-4">
+                      <div
+                        className={`absolute -left-8 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-extrabold shadow-2xs ${item.color}`}>
+                        {item.letter}
+                      </div>
+
+                      <div className="flex-1 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
+                        <div className="mb-2.5 flex items-center gap-2">
+                          <Icon className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                            {item.title}
+                          </h3>
+                        </div>
+                        <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                          {item.content}
                         </p>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-                    <div className="flex flex-col items-center gap-1.5 sm:items-end">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-2xl font-extrabold text-slate-900 dark:text-white">
-                          {matchingCandidateFeedback.rating || 0}.0
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="border-sky-200/80 bg-sky-50/80 text-xs font-bold text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/60 dark:text-sky-300">
-                          {getRatingLabel(matchingCandidateFeedback.rating || 0)}
-                        </Badge>
-                      </div>
-                      <StarRating
-                        value={matchingCandidateFeedback.rating || 0}
-                        readOnly
-                        size="md"
-                        color="sky"
-                      />
-                    </div>
+          {/* SECTION 2: Feedback & Improvement Section */}
+          <div className="space-y-5">
+            <h2 className="flex items-center gap-2 border-b border-slate-200/80 pb-3 text-base font-bold text-slate-900 dark:border-slate-800/80 dark:text-white">
+              <User className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              <span>Nhận xét chuyên sâu & Định hướng phát triển</span>
+            </h2>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              {review.strength && (
+                <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
+                  <div className="mb-2.5 flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <ThumbsUp className="h-4 w-4" />
+                    <span>Điểm mạnh nổi bật</span>
                   </div>
-
-                  {/* Candidate Comment Box */}
-                  <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
-                    <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/60">
-                      <MessageSquareQuote className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                        Ý kiến & Cảm nhận của ứng viên
-                      </h4>
-                    </div>
-
-                    {matchingCandidateFeedback.comment ? (
-                      <blockquote className="rounded-xl border-l-4 border-sky-500 bg-sky-50/40 p-4 text-sm leading-relaxed text-slate-700 italic dark:border-sky-400 dark:bg-sky-950/20 dark:text-slate-300">
-                        "{matchingCandidateFeedback.comment}"
-                      </blockquote>
-                    ) : (
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Ứng viên chỉ chấm điểm {matchingCandidateFeedback.rating}/5 sao và không để
-                        lại lời nhắn thêm.
-                      </p>
-                    )}
-                  </div>
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                    {review.strength}
+                  </p>
                 </div>
-              ) : (
-                <div className="flex h-56 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
-                  <MessageSquareQuote className="h-10 w-10 text-slate-400" />
-                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                    Chưa có phản hồi từ Ứng viên
-                  </h3>
-                  <p className="max-w-md text-xs text-slate-500 dark:text-slate-400">
-                    Ứng viên chưa hoàn tất mẫu khảo sát đánh giá cho phiên phỏng vấn này.
+              )}
+
+              {review.weakness && (
+                <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
+                  <div className="mb-2.5 flex items-center gap-2 text-xs font-bold text-rose-600 dark:text-rose-400">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>Điểm cần cải thiện</span>
+                  </div>
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                    {review.weakness}
                   </p>
                 </div>
               )}
             </div>
-          )}
+
+            {review.improve && (
+              <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
+                <div className="mb-2.5 flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                  <Lightbulb className="h-4 w-4" />
+                  <span>Đề xuất lộ trình phát triển</span>
+                </div>
+                <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                  {review.improve}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 3: Candidate Feedback Section */}
+          <div className="space-y-5">
+            <h2 className="flex items-center gap-2 border-b border-slate-200/80 pb-3 text-base font-bold text-slate-900 dark:border-slate-800/80 dark:text-white">
+              <MessageSquareQuote className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+              <span>Phản hồi & Cảm nhận từ Ứng viên</span>
+            </h2>
+
+            {matchingCandidateFeedback ? (
+              <div className="space-y-4">
+                <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs sm:flex-row dark:border-slate-800/80 dark:bg-slate-900">
+                  <div className="flex items-center gap-3.5">
+                    <Avatar className="h-11 w-11 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800">
+                      <AvatarImage
+                        src={matchingCandidateFeedback.user?.avatarUrl}
+                        alt={matchingCandidateFeedback.user?.name}
+                      />
+                      <AvatarFallback className="rounded-[14px] bg-sky-50 font-bold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+                        {matchingCandidateFeedback.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                        {matchingCandidateFeedback.user?.name || "Ứng viên"}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Khảo sát chất lượng phiên phỏng vấn
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <StarRating
+                      value={matchingCandidateFeedback.rating || 0}
+                      readOnly
+                      size="md"
+                      color="sky"
+                    />
+                    <Badge
+                      variant="outline"
+                      className="border-sky-200/80 bg-sky-50/80 text-xs font-bold text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/60 dark:text-sky-300">
+                      {getRatingLabel(matchingCandidateFeedback.rating || 0)}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
+                  {matchingCandidateFeedback.comment ? (
+                    <blockquote className="rounded-xl border-l-4 border-sky-500 bg-sky-50/40 p-4 text-sm leading-relaxed text-slate-700 italic dark:border-sky-400 dark:bg-sky-950/20 dark:text-slate-300">
+                      "{matchingCandidateFeedback.comment}"
+                    </blockquote>
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Ứng viên đã hoàn tất chấm điểm {matchingCandidateFeedback.rating}/5 sao và
+                      không để lại nhận xét thêm.
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center dark:border-slate-800 dark:bg-slate-900">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  Ứng viên chưa hoàn tất gửi phản hồi cho phiên phỏng vấn này.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Column (4/12 - 34%): Executive Dual-Rating Sidebar */}
