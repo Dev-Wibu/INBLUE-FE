@@ -1,7 +1,8 @@
 import { $api } from "@/lib/api";
 import type { JobDescriptionSearchParams } from "@/services/job-description.manager";
 
-export const useJobDescriptions = () => $api.useQuery("get", "/api/job-descriptions");
+export const useJobDescriptions = (enabled = true) =>
+  $api.useQuery("get", "/api/job-descriptions", undefined, { enabled });
 
 export const useJobDescription = (id: number, enabled = true) =>
   $api.useQuery(
