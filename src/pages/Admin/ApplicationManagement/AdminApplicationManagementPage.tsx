@@ -733,25 +733,25 @@ export function AdminApplicationManagementPage() {
             <Table>
               <TableHeader>
                 <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                  <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                     ID
                   </TableHead>
-                  <TableHead className="min-w-[200px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[22%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.candidate", "Ứng viên")}
                   </TableHead>
-                  <TableHead className="min-w-[160px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[20%] min-w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                     {t("common.company", "Công ty")}
                   </TableHead>
-                  <TableHead className="min-w-[180px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[24%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.jobPosition", "Vị trí tuyển dụng")}
                   </TableHead>
-                  <TableHead className="w-[140px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[14%] min-w-[120px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.currentRound", "Vòng hiện tại")}
                   </TableHead>
-                  <TableHead className="w-[100px] text-center font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[10%] min-w-[90px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.score", "Điểm số")}
                   </TableHead>
-                  <TableHead className="w-[130px] font-semibold text-slate-700 dark:text-slate-200">
+                  <TableHead className="w-[10%] min-w-[100px] pr-6 font-semibold text-slate-700 dark:text-slate-200">
                     {t("common.status", "Trạng thái")}
                   </TableHead>
                 </TableRow>
@@ -797,10 +797,6 @@ export function AdminApplicationManagementPage() {
                       app.candidateName ||
                       app.applicantName ||
                       t("adminApplicationManagement.anonymousCandidate", "Ứng viên ẩn danh");
-                    const email =
-                      app.candidateEmail ||
-                      app.email ||
-                      t("adminApplicationManagement.noEmail", "Chưa có email");
                     const avatarUrl = app.avatarUrl || app.applicantAvatar;
                     const companyName = app.companyName || t("common.unspecified", "Company");
                     const companyLogoUrl =
@@ -845,19 +841,14 @@ export function AdminApplicationManagementPage() {
                                 {name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div>
-                              <div className="text-xs font-semibold text-slate-900 dark:text-white">
-                                {name}
-                              </div>
-                              <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                                {email}
-                              </div>
-                            </div>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                              {name}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell className="py-4">
-                          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-100 bg-slate-50 text-xs font-bold text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-indigo-400">
+                          <div className="flex items-center gap-2.5 text-sm font-medium text-slate-700 dark:text-slate-200">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-100 bg-slate-50 text-xs font-bold text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-indigo-400">
                               {companyLogoUrl ? (
                                 <img
                                   src={companyLogoUrl}
@@ -872,13 +863,13 @@ export function AdminApplicationManagementPage() {
                           </div>
                         </TableCell>
                         <TableCell className="py-4">
-                          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                          <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                             {app.jobTitle || t("common.unspecified", "Chưa xác định")}
                           </div>
                         </TableCell>
                         <TableCell className="py-4">
-                          <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
-                            <Layers className="h-3.5 w-3.5 text-indigo-500" />
+                          <div className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-300">
+                            <Layers className="h-4 w-4 text-indigo-500" />
                             <span>
                               {app.currentRoundName ||
                                 (app.currentRoundOrder
@@ -887,7 +878,7 @@ export function AdminApplicationManagementPage() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-center font-mono text-xs font-bold text-indigo-600 dark:text-sky-400">
+                        <TableCell className="text-center font-mono text-sm font-bold text-indigo-600 dark:text-sky-400">
                           {app.overallScore !== undefined ? `${app.overallScore}/100` : "—"}
                         </TableCell>
                         <TableCell className="py-4">{getStatusBadge(app.status)}</TableCell>

@@ -1,28 +1,35 @@
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import type { DetailResponse } from "@/interfaces";
 import { cn } from "@/lib/utils";
 import { interviewTemplateManager } from "@/services/interview-template.manager";
 import {
   AlertTriangle,
-  ChevronLeft,
+  ArrowLeft,
+  ChevronRight,
   Clock,
   Edit3,
   FileText,
+  Layers,
   LayoutTemplate,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
   getAvailableRoundsTemplates,
   RoundCanvasEditorWorkspace,
 } from "@/components/shared/RoundCanvasEditor";
+
+const getPassThresholdNumber = (val?: number | null): number => {
+  if (val == null) return 80;
+  if (val <= 1) return Math.round(val * 100);
+  return Math.round(val);
+};
 
 export function InterviewTemplateDetailPage() {
   const { t } = useTranslation();
@@ -91,7 +98,7 @@ export function InterviewTemplateDetailPage() {
     return sortedRounds.map((r) => ({
       name: r.name,
       roundType: r.roundType as RoundType,
-      passThreshold: r.passThreshold ?? 0.8,
+      passThreshold: getPassThresholdNumber(r.passThreshold),
       configData: {
         ...r.configData,
         codingProblemsId:
@@ -154,7 +161,7 @@ export function InterviewTemplateDetailPage() {
           roundOrder: idx + 1,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           roundType: r.roundType as any,
-          passThreshold: Number(r.passThreshold ?? 0.8),
+          passThreshold: getPassThresholdNumber(r.passThreshold),
           configData: {
             instruction: r.configData?.instruction || "",
             submissionFormat: r.configData?.submissionFormat || "",
@@ -186,7 +193,6 @@ export function InterviewTemplateDetailPage() {
           editorMode === "create" ? t("template.createSuccess") : t("template.updateSuccess")
         );
         fetchDetail();
-        // Only close on a full template save; per-round saves must keep the user in the editor.
         if (options?.closeEditorAfter !== false) {
           setIsEditorOpen(false);
         }
@@ -202,6 +208,29 @@ export function InterviewTemplateDetailPage() {
       setIsSaving(false);
     }
   };
+
+  const totalMinutes = useMemo(() => {
+    if (!selectedTemplate?.rounds) return 0;
+    return selectedTemplate.rounds.reduce(
+      (acc, r) => acc + (r.configData?.timeLimitMinutes || 0),
+      0
+    );
+  }, [selectedTemplate]);
+
+  const roundTypeDistribution = useMemo(() => {
+    if (!selectedTemplate?.rounds) return [];
+    const counts: Record<string, number> = {};
+    selectedTemplate.rounds.forEach((r) => {
+      if (r.roundType) {
+        counts[r.roundType] = (counts[r.roundType] || 0) + 1;
+      }
+    });
+    return Object.entries(counts).map(([type, count]) => ({
+      type,
+      count,
+      meta: AVAILABLE_ROUNDS_TEMPLATES.find((t) => t.type === type),
+    }));
+  }, [selectedTemplate, AVAILABLE_ROUNDS_TEMPLATES]);
 
   if (isEditorOpen) {
     return (
@@ -221,178 +250,292 @@ export function InterviewTemplateDetailPage() {
   }
 
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        {id ? (
-          isLoadingDetail ? (
-            <div className="flex h-full flex-col items-center justify-center text-slate-400">
-              <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-              <span className="mt-2 text-sm">{t("general.loadingDetails")}</span>
-            </div>
-          ) : selectedTemplate ? (
-            <div className="flex h-full flex-col lg:flex-row">
-              {/* Main Content: Rounds Timeline (Now on the left) */}
-              <ScrollArea className="flex-1 bg-slate-50/50 p-6 lg:p-8 dark:bg-slate-950/30">
-                <div className="mx-auto max-w-4xl space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold tracking-wider text-slate-800 uppercase dark:text-slate-300">
-                      {t("template.processContains")} {selectedTemplate.rounds?.length || 0}{" "}
-                      {t("userApplicationhistory.rounds")}
-                    </h3>
+    <div
+      className={cn(
+        "flex flex-col bg-slate-50 dark:bg-slate-950",
+        "-m-4 min-h-[calc(100%+32px)] md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)]"
+      )}>
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+        <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
+          {id ? (
+            isLoadingDetail ? (
+              <div className="flex h-64 flex-col items-center justify-center gap-3">
+                <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+                <span className="text-sm text-slate-400">{t("general.loadingDetails")}</span>
+              </div>
+            ) : selectedTemplate ? (
+              <div className="space-y-6">
+                {/* ── TOP SUBHEADER / BREADCRUMB CARD ── */}
+                <div className="flex flex-col gap-3.5 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate("/admin/interviewTemplates")}
+                        className="h-9 gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                        <ArrowLeft className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                        <span>{t("common.back", "Quay lại")}</span>
+                      </Button>
+
+                      <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-800" />
+
+                      <span
+                        onClick={() => navigate("/admin/interviewTemplates")}
+                        className="cursor-pointer text-xs font-semibold text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+                        {t("adminAdmindashboard.processTemplate", "Quản lý mẫu kịch bản")}
+                      </span>
+
+                      <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+
+                      {selectedTemplate.category && (
+                        <>
+                          <span className="inline-flex items-center rounded-md border border-indigo-200/80 bg-indigo-50/80 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
+                            {selectedTemplate.category}
+                          </span>
+                          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                        </>
+                      )}
+
+                      <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
+                        {selectedTemplate.name}
+                      </h1>
+
+                      <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-100/80 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200">
+                        <Layers className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                        {selectedTemplate.rounds?.length || 0} vòng
+                      </span>
+                    </div>
+
+                    {/* Header Right Actions */}
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => handleEditClick(selectedTemplate)}
+                        className="h-9 gap-1.5 rounded-xl border border-indigo-600 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-xs hover:border-indigo-700 hover:bg-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+                        <Edit3 className="h-3.5 w-3.5" />
+                        <span>{t("common.edit", "Chỉnh sửa kịch bản")}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={(e) => handleDeleteTemplate(selectedTemplate.id!, e)}
+                        disabled={isDeleting}
+                        className="h-9 gap-1.5 rounded-xl border border-rose-200 bg-white px-3.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-950/50 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/50">
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>{t("common.delete", "Xóa")}</span>
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="relative space-y-5 pl-12 before:absolute before:top-2 before:bottom-2 before:left-[29px] before:w-[1.5px] before:bg-slate-200 dark:before:bg-slate-800">
-                    {selectedTemplate.rounds?.map((round, idx) => {
-                      const templateMetadata = AVAILABLE_ROUNDS_TEMPLATES.find(
-                        (t) => t.type === round.roundType
-                      );
-                      const metadata = templateMetadata || {
-                        title: round.roundType || "",
-                        color: "text-slate-500 border-slate-200",
-                        bgColor: "bg-slate-100",
-                        icon: <FileText className="h-4 w-4" />,
-                      };
-
-                      return (
-                        <div key={idx} className="group relative">
-                          <div className="dark:bg-slate-850 absolute top-1 -left-[30px] flex h-[23px] w-[23px] items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-600 shadow-sm dark:border-slate-950 dark:text-slate-400">
-                            {idx + 1}
-                          </div>
-
-                          <div
-                            onClick={() => handleEditClick(selectedTemplate)}
-                            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-indigo-500/50 hover:bg-slate-50/50 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-400/50 dark:hover:bg-slate-900">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={cn(
-                                    "rounded-xl p-2",
-                                    metadata.bgColor,
-                                    metadata.color
-                                  )}>
-                                  {metadata.icon}
-                                </div>
-                                <div>
-                                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                    {round.name}
-                                  </h4>
-                                  <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
-                                    {metadata.title}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3.5 w-3.5 opacity-70" />
-                                  {round.configData?.timeLimitMinutes
-                                    ? `${round.configData.timeLimitMinutes} ${t("general.minute")}`
-                                    : t("enterpriseJobdescriptiondetailpage.unlimited")}
-                                </span>
-                                <span className="font-bold text-slate-700 dark:text-slate-300">
-                                  {t("common.obtain")}{" "}
-                                  {Math.round((round.passThreshold ?? 0.8) * 100)}%
-                                </span>
-                              </div>
-                            </div>
-
-                            {round.configData?.instruction && (
-                              <div className="border-slate-150/40 mt-3 rounded-lg border bg-slate-50/50 p-3 text-xs leading-relaxed text-slate-600 dark:bg-slate-950/40 dark:text-slate-400">
-                                <span className="mb-1 block font-bold text-slate-800 dark:text-slate-300">
-                                  {t("template.candidateInstructions")}
-                                </span>
-                                {round.configData.instruction}
-                              </div>
-                            )}
-
-                            {round.roundType === "QUIZ" &&
-                              round.configData?.quizQuestions &&
-                              round.configData.quizQuestions.length > 0 && (
-                                <div className="mt-3 border-t border-slate-100/10 pt-2 dark:border-slate-800/20">
-                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-500">
-                                    {t("template.configured")}{" "}
-                                    {round.configData.quizQuestions.length}{" "}
-                                    {t("question.multipleChoice")}
-                                  </span>
-                                </div>
-                              )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </ScrollArea>
-
-              {/* Sidebar: Metadata and Actions (Now on the right) */}
-              <div className="flex w-full shrink-0 flex-col border-t border-slate-200 bg-white p-6 lg:w-[350px] lg:border-t-0 lg:border-l xl:w-[400px] dark:border-slate-800 dark:bg-slate-900/20">
-                <div className="flex flex-col gap-5">
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => navigate("/admin/interviewTemplates")}
-                      className="-ml-2 h-8 w-8 shrink-0 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
-                      {selectedTemplate.category}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h2 className="text-xl leading-snug font-bold text-slate-900 dark:text-white">
-                      {selectedTemplate.name}
-                    </h2>
-                    {selectedTemplate.description && (
-                      <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                  {selectedTemplate.description && (
+                    <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
+                      <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          {t("adminInterviewTemplate.description", "Mô tả")}:{" "}
+                        </span>
                         {selectedTemplate.description}
                       </p>
-                    )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── MAIN CONTENT 2-COLUMN LAYOUT ── */}
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+                  {/* Left 70%: Timeline Stream (Naturally Proportioned) */}
+                  <div className="min-w-0 flex-1 space-y-4">
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                          <Layers className="h-3.5 w-3.5" />
+                        </div>
+                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                          {t("template.processContains", "Cấu trúc các vòng phỏng vấn")} (
+                          {selectedTemplate.rounds?.length || 0} vòng)
+                        </h2>
+                      </div>
+                    </div>
+
+                    <div className="relative space-y-4 pl-10 before:absolute before:top-3 before:bottom-3 before:left-[19px] before:w-[2px] before:bg-slate-200 dark:before:bg-slate-800">
+                      {selectedTemplate.rounds?.map((round, idx) => {
+                        const templateMetadata = AVAILABLE_ROUNDS_TEMPLATES.find(
+                          (t) => t.type === round.roundType
+                        );
+                        const metadata = templateMetadata || {
+                          title: round.roundType || "",
+                          color: "text-slate-500 border-slate-200",
+                          bgColor: "bg-slate-100",
+                          icon: <FileText className="h-4 w-4" />,
+                        };
+
+                        return (
+                          <div key={idx} className="group relative">
+                            <div className="absolute top-4 -left-[31px] flex h-6 w-6 items-center justify-center rounded-full border-2 border-slate-50 bg-indigo-600 font-mono text-[11px] font-bold text-white shadow-xs dark:border-slate-950 dark:bg-indigo-500">
+                              {idx + 1}
+                            </div>
+
+                            {/* Single-Level Round Card */}
+                            <div
+                              onClick={() => handleEditClick(selectedTemplate)}
+                              className="cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:border-indigo-400 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className={cn(
+                                      "rounded-xl p-2.5",
+                                      metadata.bgColor,
+                                      metadata.color
+                                    )}>
+                                    {metadata.icon}
+                                  </div>
+                                  <div>
+                                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                                      {round.name}
+                                    </h3>
+                                    <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                                      {metadata.title}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                  <span className="flex items-center gap-1.5 rounded-lg border border-slate-200/80 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
+                                    <Clock className="h-3.5 w-3.5 text-slate-400" />
+                                    {round.configData?.timeLimitMinutes
+                                      ? `${round.configData.timeLimitMinutes} ${t("general.minute")}`
+                                      : t("enterpriseJobdescriptiondetailpage.unlimited")}
+                                  </span>
+                                  <span className="rounded-lg border border-indigo-200/80 bg-indigo-50/80 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
+                                    {t("common.obtain")}{" "}
+                                    {getPassThresholdNumber(round.passThreshold)}%
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Candidate Instruction Accent Strip */}
+                              {round.configData?.instruction && (
+                                <div className="mt-3.5 rounded-r-xl border-l-2 border-indigo-500 bg-slate-50/80 p-3.5 pl-4 text-xs leading-relaxed text-slate-700 dark:bg-slate-950/50 dark:text-slate-300">
+                                  <span className="mb-0.5 block font-bold text-slate-900 dark:text-white">
+                                    {t("template.candidateInstructions")}
+                                  </span>
+                                  {round.configData.instruction}
+                                </div>
+                              )}
+
+                              {round.roundType === "QUIZ" &&
+                                round.configData?.quizQuestions &&
+                                round.configData.quizQuestions.length > 0 && (
+                                  <div className="mt-3 pt-2">
+                                    <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+                                      {t("template.configured")}{" "}
+                                      {round.configData.quizQuestions.length}{" "}
+                                      {t("question.multipleChoice")}
+                                    </span>
+                                  </div>
+                                )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  <div className="mt-2 flex gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditClick(selectedTemplate)}
-                      className="h-10 flex-1 gap-2 border-slate-200 font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 dark:hover:text-white">
-                      <Edit3 className="h-4 w-4" />
-                      {t("common.edit")}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteTemplate(selectedTemplate.id!)}
-                      disabled={isDeleting}
-                      className="h-10 flex-1 gap-2 border-red-200 font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 dark:border-red-950/40 dark:hover:bg-red-950/30">
-                      <Trash2 className="h-4 w-4" />
-                      {t("common.delete")}
-                    </Button>
+                  {/* Right 30%: Quick Stats & Overview Panel */}
+                  <div className="w-full shrink-0 space-y-5 lg:w-[320px] xl:w-[350px]">
+                    {/* Summary Stats Card */}
+                    <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                      <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        Tổng quan kịch bản
+                      </h3>
+
+                      <div className="mt-4 space-y-3">
+                        <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 dark:bg-slate-950/50">
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                            Số vòng phỏng vấn
+                          </span>
+                          <span className="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                            {selectedTemplate.rounds?.length || 0} vòng
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 dark:bg-slate-950/50">
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                            Tổng thời gian ước tính
+                          </span>
+                          <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
+                            {totalMinutes > 0 ? `${totalMinutes} phút` : "Không giới hạn"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Round Distribution Breakdown */}
+                      {roundTypeDistribution.length > 0 && (
+                        <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
+                          <h4 className="mb-3 text-[11px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                            Phân bổ hình thức
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {roundTypeDistribution.map(({ type, count, meta }) => (
+                              <span
+                                key={type}
+                                className={cn(
+                                  "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold",
+                                  meta?.bgColor || "bg-slate-100 dark:bg-slate-800",
+                                  meta?.color || "text-slate-700 dark:text-slate-300",
+                                  "border-slate-200/80 dark:border-slate-800"
+                                )}>
+                                <span>{meta?.title || type}</span>
+                                <span className="py-0.2 rounded-full bg-white/80 px-1.5 font-mono text-[11px] font-bold shadow-2xs dark:bg-black/40">
+                                  x{count}
+                                </span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Canvas Studio Quick Launcher Card */}
+                    <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-slate-50 p-5 shadow-xs dark:border-indigo-900/50 dark:from-indigo-950/30 dark:to-slate-900">
+                      <div className="flex items-center gap-2 text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                        <Sparkles className="h-4 w-4" />
+                        <span>Canvas Studio Sơ đồ</span>
+                      </div>
+                      <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                        Chỉnh sửa kéo thả trực quan sơ đồ các vòng và cấu hình tiêu chuẩn đánh giá.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={() => handleEditClick(selectedTemplate)}
+                        className="mt-4 w-full gap-2 rounded-xl bg-indigo-600 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>Mở Sơ đồ Canvas Studio</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex h-64 flex-col items-center justify-center p-8 text-center text-slate-400">
+                <AlertTriangle className="mb-2 h-8 w-8 text-amber-500" />
+                <span>{t("template.failedToLoadDetails")}</span>
+              </div>
+            )
           ) : (
-            <div className="flex h-full flex-col items-center justify-center p-8 text-center text-slate-400">
-              <AlertTriangle className="mb-2 h-8 w-8 text-amber-500" />
-              <span>{t("template.failedToLoadDetails")}</span>
+            <div className="flex h-64 flex-col items-center justify-center p-8 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950/40">
+                <LayoutTemplate className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h2 className="mb-1 text-xl font-bold text-slate-900 dark:text-white">
+                {t("adminCompanymanagement.processTemplate")}
+              </h2>
+              <p className="max-w-sm text-sm text-slate-500 dark:text-slate-400">
+                {t("template.selectFromList")}
+              </p>
             </div>
-          )
-        ) : (
-          <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-indigo-50/40 dark:bg-indigo-950/10">
-              <LayoutTemplate className="h-10 w-10 text-indigo-500" />
-            </div>
-            <h2 className="mb-2 text-2xl font-bold text-slate-800 dark:text-white">
-              {t("adminCompanymanagement.processTemplate")}
-            </h2>
-            <p className="max-w-sm text-sm text-slate-400 dark:text-slate-500">
-              {t("template.selectFromList")}
-            </p>
-          </div>
-        )}
-      </main>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

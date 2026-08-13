@@ -32,21 +32,42 @@ import type { MentorReview } from "@/hooks/useMentorReview";
 import { useDeleteMentorReview, useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
-import { Eye, Search, Star, Trash2 } from "lucide-react";
+import { Search, Star, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ReviewDetailView } from "./components/ReviewDetailView";
 
+const getReviewDate = (review: MentorReview): string => {
+  const dateVal =
+    review.session?.joinTime ||
+    review.session?.startTime1 ||
+    (review as Record<string, unknown>).createdAt ||
+    (review as Record<string, unknown>).created_at ||
+    review.session?.createdAt ||
+    review.session?.created_at ||
+    review.session?.startTime;
+  return dateVal ? formatDate(String(dateVal)) : "—";
+};
+
 export function ReviewManagementPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { id } = useParams<{ id?: string }>();
+
   const { data: reviews = [], isLoading, isRefetching, refetch } = useMentorReviews();
   const { mutate: deleteReview, isPending: isDeleting } = useDeleteMentorReview();
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
   const [selectedReview, setSelectedReview] = useState<MentorReview | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const activeReview = useMemo(() => {
+    if (!id) return null;
+    return reviews.find((r) => String(r.id) === id) || null;
+  }, [id, reviews]);
 
   // Stats calculation
   const stats = useMemo(() => {
@@ -107,8 +128,7 @@ export function ReviewManagementPage() {
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
   const handleViewDetail = (review: MentorReview) => {
-    setSelectedReview(review);
-    setViewMode("detail");
+    navigate(`/admin/reviews/${review.id}`);
   };
   const handleDeleteClick = (review: MentorReview) => {
     setSelectedReview(review);
@@ -121,19 +141,18 @@ export function ReviewManagementPage() {
           setIsDeleteOpen(false);
           setSelectedReview(null);
           toast.success(t("common.reviewRemoved"));
+          if (id) navigate("/admin/reviews");
         },
       });
     }
   };
 
-  if (viewMode === "detail" && selectedReview) {
+  if (id && activeReview) {
     return (
       <ReviewDetailView
-        review={selectedReview}
-        onBack={() => {
-          setViewMode("list");
-          setSelectedReview(null);
-        }}
+        review={activeReview}
+        onBack={() => navigate("/admin/reviews")}
+        onDelete={() => handleDeleteClick(activeReview)}
       />
     );
   }
@@ -273,26 +292,29 @@ export function ReviewManagementPage() {
                 <>
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                        <TableHead className="w-16 pl-6 font-medium text-slate-500">
+                      <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                        <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.id")}
                         </TableHead>
-                        <TableHead className="font-medium text-slate-500">
+                        <TableHead className="w-[28%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.mentorSent")}
                         </TableHead>
-                        <TableHead className="font-medium text-slate-500">
+                        <TableHead className="w-[28%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.candidatesAreEvaluated")}
                         </TableHead>
-                        <TableHead className="w-32 font-medium text-slate-500">
+                        <TableHead className="w-[14%] min-w-[110px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.session")}
                         </TableHead>
-                        <TableHead className="w-36 font-medium text-slate-500">
+                        <TableHead className="w-[15%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("rating" as keyof MentorReview)}>
                             {t("common.evaluate")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-24 pr-6 text-right font-medium text-slate-500">
-                          {t("common.operation")}
+                        <TableHead className="w-[15%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                          {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
+                        </TableHead>
+                        <TableHead className="w-[80px] min-w-[80px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
+                          {t("common.delete", "Xóa")}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -301,8 +323,8 @@ export function ReviewManagementPage() {
                         <TableRow
                           key={review.id}
                           onClick={() => handleViewDetail(review)}
-                          className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                          <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                          className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                          <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                             <div className="flex items-center gap-2">
                               <span>#{review.id}</span>
                               {/* Dummy element to force row height alignment */}
@@ -314,15 +336,19 @@ export function ReviewManagementPage() {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={review.mentor?.avatarUrl} />
-                                <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                                  {review.mentor?.name?.charAt(0) || "M"}
+                          <TableCell className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                                <AvatarImage
+                                  src={review.mentor?.avatarUrl}
+                                  alt={review.mentor?.name}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback className="rounded-[14px] bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
+                                  {review.mentor?.name?.charAt(0)?.toUpperCase() || "M"}
                                 </AvatarFallback>
                               </Avatar>
-                              <span className="font-medium">
+                              <span className="font-semibold text-slate-900 dark:text-white">
                                 {review.mentor?.name ||
                                   (review.mentor?.id
                                     ? `Mentor #${review.mentor.id}`
@@ -330,15 +356,19 @@ export function ReviewManagementPage() {
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={review.user?.avatarUrl} />
-                                <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
-                                  {review.user?.name?.charAt(0) || "U"}
+                          <TableCell className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                                <AvatarImage
+                                  src={review.user?.avatarUrl}
+                                  alt={review.user?.name}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback className="rounded-[14px] bg-sky-50 font-semibold text-sky-700 dark:bg-sky-950/80 dark:text-sky-300">
+                                  {review.user?.name?.charAt(0)?.toUpperCase() || "U"}
                                 </AvatarFallback>
                               </Avatar>
-                              <span className="font-medium">
+                              <span className="font-semibold text-slate-900 dark:text-white">
                                 {review.user?.name ||
                                   (review.user?.id
                                     ? `Candidate #${review.user.id}`
@@ -346,31 +376,28 @@ export function ReviewManagementPage() {
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">#{review.session?.id}</Badge>
+                          <TableCell className="px-4 py-4">
+                            <Badge variant="outline" className="font-mono text-xs font-semibold">
+                              #{review.session?.id}
+                            </Badge>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="px-4 py-4">
                             <StarRating value={review.rating || 0} readOnly size="sm" />
                           </TableCell>
+                          <TableCell className="px-4 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                            {getReviewDate(review)}
+                          </TableCell>
                           <TableCell
-                            className="pr-6 text-right"
+                            className="pr-6 text-center"
                             onClick={(e) => e.stopPropagation()}>
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                onClick={() => handleViewDetail(review)}>
-                                <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                onClick={() => handleDeleteClick(review)}>
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              </Button>
-                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/50 dark:hover:text-rose-400"
+                              onClick={() => handleDeleteClick(review)}
+                              title={t("common.delete", "Xóa")}>
+                              <Trash2 className="h-4 w-4 text-rose-500" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
