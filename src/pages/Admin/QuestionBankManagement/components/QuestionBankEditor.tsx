@@ -320,7 +320,7 @@ export function QuestionBankEditor({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[92vh] max-h-[920px] !w-[96vw] !max-w-[96vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl md:!w-[96vw] dark:border-slate-800 dark:bg-slate-900">
+      <DialogContent className="flex h-[90vh] max-h-[860px] !w-[88vw] !max-w-[1280px] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white !p-0 shadow-2xl md:!w-[88vw] dark:border-slate-800 dark:bg-slate-900">
         {/* Top Header matching KioskFormDialog format */}
         <div className="border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
           <DialogHeader>
