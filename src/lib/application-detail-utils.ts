@@ -38,6 +38,13 @@ export function inferRoundType(detail: ApplicationDetail): string | null {
     return "AI_INTERVIEW";
   }
 
+  // Fallback: detect AI Interview from roundName when sessionId is null
+  // (e.g. PENDING rows where the candidate hasn't started the AI session yet).
+  const lowerName = (detail as { roundName?: string }).roundName?.toLowerCase() ?? "";
+  if (lowerName.includes("ai interview") || lowerName.includes("phỏng vấn ai")) {
+    return "AI_INTERVIEW";
+  }
+
   const data = detail.submissionData as SubmissionData | undefined;
   if (!data) return null;
 
