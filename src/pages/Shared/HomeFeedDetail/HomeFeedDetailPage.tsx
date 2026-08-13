@@ -277,7 +277,7 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
             type="button"
             aria-label={t("compPost.feedDetail.backToFeed", "Back to feed")}
             onClick={handleClose}
-            className="absolute top-4 left-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/80 text-white shadow-lg ring-1 ring-white/10 backdrop-blur-md transition-all hover:bg-slate-900 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none">
+            className="absolute top-4 left-4 z-10 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-slate-900/80 text-white shadow-lg ring-1 ring-white/10 backdrop-blur-md transition-all hover:scale-105 hover:bg-slate-900 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none">
             <X className="h-5 w-5" aria-hidden />
           </button>
         </section>
@@ -508,7 +508,7 @@ function EmptyState({
           type="button"
           aria-label={t("compPost.feedDetail.backToFeed", "Back to feed")}
           onClick={onClose}
-          className="absolute -top-12 -left-12 inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg ring-1 ring-white/10 hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none dark:bg-slate-800 dark:hover:bg-slate-700">
+          className="absolute -top-12 -left-12 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-slate-900 text-white shadow-lg ring-1 ring-white/10 hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none dark:bg-slate-800 dark:hover:bg-slate-700">
           <X className="h-5 w-5" aria-hidden />
         </button>
         <MessageCircle className="h-10 w-10 text-slate-400" aria-hidden />
@@ -534,7 +534,7 @@ function DetailShellSkeleton({
           type="button"
           aria-label={backToFeedLabel}
           onClick={onClose}
-          className="absolute top-4 left-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/80 text-white shadow-lg ring-1 ring-white/10 hover:bg-slate-900">
+          className="absolute top-4 left-4 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-slate-900/80 text-white shadow-lg ring-1 ring-white/10 hover:bg-slate-900">
           <X className="h-5 w-5" aria-hidden />
         </button>
       </section>

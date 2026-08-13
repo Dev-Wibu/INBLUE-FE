@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { usePostFeed } from "@/hooks/usePostFeed";
+import { clearFeedScrollPosition, readFeedScrollPosition } from "@/lib/feedScrollMemory";
 import { toTimestamp } from "@/lib/formatting";
 import { chatManager } from "@/services/chat.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { MessageCircle, MoreHorizontal, PenSquare, Send, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { CreatePostModal } from "./CreatePostModal";
@@ -83,6 +84,60 @@ export function CommunityFeedPage() {
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasMore, isFetchingMore, loadMore]);
+
+  // Restore the feed's scroll position after the user comes back from
+  // a post detail. PostFeedCard writes the position into sessionStorage
+  // synchronously at the moment the user clicks a post; we read it
+  // here, wait until posts are rendered (so the container has enough
+  // scrollHeight), then scroll the dashboard content area to the saved
+  // position. The slot is consumed once so a refresh doesn't replay it.
+  useLayoutEffect(() => {
+    if (isLoading || filtered.length === 0) {
+      return;
+    }
+    const saved = readFeedScrollPosition();
+    if (!saved) {
+      return;
+    }
+    // The feed might have grown or shrunk while the user was reading
+    // the detail page (new posts fetched in the background, deletions,
+    // re-sorting). Clamp the saved position to the current scrollable
+    // range so the browser never snaps back to 0 on its own.
+    const container = document.querySelector(
+      '[data-dashboard-content-scroll="true"]'
+    ) as HTMLElement | null;
+    if (!container) {
+      return;
+    }
+    const maxScrollable = Math.max(0, container.scrollHeight - container.clientHeight);
+    const target = Math.max(0, Math.min(saved.scrollTop, maxScrollable));
+    if (target === 0 && saved.scrollTop > 0) {
+      // Content isn't tall enough yet — try again on the next frame a
+      // few times. This handles the case where usePostFeed is mid-fetch.
+      let attempts = 0;
+      const tick = () => {
+        attempts++;
+        const scrollable = Math.max(0, container.scrollHeight - container.clientHeight);
+        const next = Math.max(0, Math.min(saved.scrollTop, scrollable));
+        if (next > 0) {
+          container.scrollTop = next;
+          if (container.scrollTop >= next - 1) {
+            clearFeedScrollPosition();
+            return;
+          }
+        }
+        if (attempts < 10 && next < saved.scrollTop) {
+          window.requestAnimationFrame(tick);
+        } else {
+          clearFeedScrollPosition();
+        }
+      };
+      window.requestAnimationFrame(tick);
+      return;
+    }
+    container.scrollTop = target;
+    clearFeedScrollPosition();
+  }, [isLoading, filtered.length]);
   return (
     <div className="-m-4 min-h-full bg-slate-50/70 px-4 py-5 sm:-m-6 sm:px-6 lg:-m-8 lg:px-8 dark:bg-slate-950">
       <div className="mx-auto grid w-full max-w-[1140px] justify-center gap-6 xl:grid-cols-[minmax(0,740px)_320px]">

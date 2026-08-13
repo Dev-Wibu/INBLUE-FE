@@ -1,31 +1,62 @@
 /**
- * Cross-component signal for the home feed scroll position.
+ * Persists the dashboard content area's scroll position across a
+ * navigate-to-detail / navigate-back-to-feed round-trip.
  *
- * PostFeedCard captures `scrollTop` synchronously at the moment the user
- * clicks a post ("I want to read this"). The dashboard's
- * useDashboardScrollRestoration hook reads this on the way back from the
- * detail page and restores the feed to where the user left off.
- *
- * Why this exists in addition to the hook's own cleanup-time save:
- * the hook's cleanup runs as part of the React effect lifecycle, which
- * can race with the route change. By capturing the position at the
- * click handler we have an explicit, synchronous signal that the user
- * has committed to navigating away — and the value is provably the
- * scrollTop at that exact instant, not whatever the hook's last
- * debounced save recorded.
- *
- * The value is intentionally per-session and module-level — we only ever
- * need the most recent feed position, and the next PUSH to the feed
- * route will consume it.
+ * Used by PostFeedCard.openDetailPage (writes) and CommunityFeedPage's
+ * restore effect (reads + clears). Survives a hard refresh on the feed
+ * route by being keyed on the post id, so the next visit to that feed
+ * will not accidentally re-apply a stale position.
  */
-let capturedFeedScrollTop: number | null = null;
+const STORAGE_KEY = "homeFeed:scrollByPost";
 
-export function captureFeedScrollPosition(scrollTop: number): void {
-  capturedFeedScrollTop = Math.max(0, scrollTop);
+export type SavedFeedScroll = {
+  scrollTop: number;
+  postId: number;
+};
+
+export function saveFeedScrollPosition(value: SavedFeedScroll): void {
+  if (typeof window === "undefined" || !window.sessionStorage) {
+    return;
+  }
+  try {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+  } catch {
+    // Ignore quota / private-mode failures.
+  }
 }
 
-export function consumeFeedScrollPosition(): number | null {
-  const value = capturedFeedScrollTop;
-  capturedFeedScrollTop = null;
-  return value;
+export function readFeedScrollPosition(): SavedFeedScroll | null {
+  if (typeof window === "undefined" || !window.sessionStorage) {
+    return null;
+  }
+  try {
+    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      typeof parsed.scrollTop === "number" &&
+      Number.isFinite(parsed.scrollTop) &&
+      typeof parsed.postId === "number"
+    ) {
+      return parsed as SavedFeedScroll;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearFeedScrollPosition(): void {
+  if (typeof window === "undefined" || !window.sessionStorage) {
+    return;
+  }
+  try {
+    window.sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Ignore.
+  }
 }

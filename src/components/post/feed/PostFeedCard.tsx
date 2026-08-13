@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { captureFeedScrollPosition } from "@/lib/feedScrollMemory";
+import { saveFeedScrollPosition } from "@/lib/feedScrollMemory";
 import { formatDateTime } from "@/lib/formatting";
 import { useCheckLiked } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -42,19 +42,21 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
     if (!postId) return;
     const roleSegment = location.pathname.match(/^\/(user|mentor|staff)(?:\/|$)/)?.[1];
     if (roleSegment) {
-      // Capture the dashboard content area's current scroll position
-      // *just before* navigating. The dashboard's
-      // useDashboardScrollRestoration hook will read this on the way back
-      // and restore the feed to where the user left off. We do this
-      // explicitly (rather than relying on the hook's cleanup-time save)
-      // because the cleanup can race with route changes — the user has
-      // already committed to "I want to read this post" at the moment of
-      // click, so the position should be captured synchronously.
+      // Persist the feed's current scroll position into sessionStorage
+      // synchronously, *before* navigation. CommunityFeedPage reads this
+      // when it mounts again after the user comes back from the detail
+      // page and restores the scroll. We capture the value at the click
+      // because the dashboard's overflow handling can reset scrollTop
+      // during the route change, and the React effect lifecycle isn't
+      // guaranteed to run before the DOM swap.
       const scrollContainer = document.querySelector(
         '[data-dashboard-content-scroll="true"]'
       ) as HTMLElement | null;
       if (scrollContainer) {
-        captureFeedScrollPosition(scrollContainer.scrollTop);
+        saveFeedScrollPosition({
+          scrollTop: Math.max(0, scrollContainer.scrollTop),
+          postId,
+        });
       }
       navigate(`/${roleSegment}/home-feed/${postId}`);
       return;

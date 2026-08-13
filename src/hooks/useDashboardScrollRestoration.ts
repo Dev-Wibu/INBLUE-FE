@@ -1,4 +1,3 @@
-import { consumeFeedScrollPosition } from "@/lib/feedScrollMemory";
 import { useLayoutEffect, useRef } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 
@@ -221,19 +220,12 @@ export function useDashboardScrollRestoration(
       const saved = positionsRef.current.get(entryKey) ?? 0;
       restoreScrollWithFallback(container, saved);
     } else if (didLocationChange) {
-      // For a PUSH / REPLACE to a route the user has visited before in this
-      // session, restore the saved position. This is what makes the home
-      // feed "remember" where the user left off after they opened a post
-      // detail and came back via the close button (X is a PUSH, not a POP).
-      // First-visit PUSH still scrolls to top.
-      //
-      // PostFeedCard captures the scrollTop synchronously at the click
-      // and stashes it in a module-level slot. If the slot is non-null it
-      // takes precedence over sessionStorage because it is the most
-      // recent and most accurate value. We consume the slot so subsequent
-      // navigations don't replay it.
-      const captured = consumeFeedScrollPosition();
-      const savedForRoute = captured ?? positionsRef.current.get(routeKey);
+      // For a PUSH / REPLACE to a route the user has visited before in
+      // this session, restore the saved position. First-visit PUSH still
+      // scrolls to top. The home feed has its own scroll-restoration
+      // path (CommunityFeedPage reads sessionStorage on mount), so we
+      // only handle general-purpose PUSH restoration for other tabs.
+      const savedForRoute = positionsRef.current.get(routeKey);
       restoreScrollWithFallback(container, savedForRoute ?? 0);
     } else {
       container.scrollTop = 0;
