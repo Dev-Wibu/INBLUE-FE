@@ -124,7 +124,12 @@ export function InterviewTemplateManagementPage() {
           roundOrder: idx + 1,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           roundType: r.roundType as any,
-          passThreshold: Number(r.passThreshold ?? 0.8),
+          passThreshold:
+            r.passThreshold != null
+              ? r.passThreshold <= 1
+                ? Math.round(r.passThreshold * 100)
+                : Math.round(r.passThreshold)
+              : 80,
           configData: {
             instruction: r.configData?.instruction || "",
             submissionFormat: r.configData?.submissionFormat || "",

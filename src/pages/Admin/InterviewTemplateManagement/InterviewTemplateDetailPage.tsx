@@ -25,6 +25,12 @@ import {
   RoundCanvasEditorWorkspace,
 } from "@/components/shared/RoundCanvasEditor";
 
+const getPassThresholdNumber = (val?: number | null): number => {
+  if (val == null) return 80;
+  if (val <= 1) return Math.round(val * 100);
+  return Math.round(val);
+};
+
 export function InterviewTemplateDetailPage() {
   const { t } = useTranslation();
   const AVAILABLE_ROUNDS_TEMPLATES = useMemo(() => getAvailableRoundsTemplates(t), [t]);
@@ -92,7 +98,7 @@ export function InterviewTemplateDetailPage() {
     return sortedRounds.map((r) => ({
       name: r.name,
       roundType: r.roundType as RoundType,
-      passThreshold: r.passThreshold ?? 0.8,
+      passThreshold: getPassThresholdNumber(r.passThreshold),
       configData: {
         ...r.configData,
         codingProblemsId:
@@ -155,7 +161,7 @@ export function InterviewTemplateDetailPage() {
           roundOrder: idx + 1,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           roundType: r.roundType as any,
-          passThreshold: Number(r.passThreshold ?? 0.8),
+          passThreshold: getPassThresholdNumber(r.passThreshold),
           configData: {
             instruction: r.configData?.instruction || "",
             submissionFormat: r.configData?.submissionFormat || "",
@@ -401,7 +407,7 @@ export function InterviewTemplateDetailPage() {
                                   </span>
                                   <span className="rounded-lg border border-indigo-200/80 bg-indigo-50/80 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
                                     {t("common.obtain")}{" "}
-                                    {Math.round((round.passThreshold ?? 0.8) * 100)}%
+                                    {getPassThresholdNumber(round.passThreshold)}%
                                   </span>
                                 </div>
                               </div>
