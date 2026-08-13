@@ -221,7 +221,11 @@ export function QuestionBankManagementPage() {
         )
       );
       try {
-        const res = await questionBankManager.update(question.id, { isDeleted: false });
+        // IMPORTANT: use toggleStatus, NOT update - update sends the full payload and
+        // triggers 400 Bad Request because the backend validates @Size(min=1) on
+        // questionText and requires a non-empty options array. toggleStatus sends
+        // only `{ isDeleted }`, matching the docs' "PUT với { isDeleted: false }".
+        const res = await questionBankManager.toggleStatus(question.id, false);
         if (res.success) {
           toast.success(
             t("adminQuestionbankmanagement.reactivatedSuccess", "Đã kích hoạt lại câu hỏi")

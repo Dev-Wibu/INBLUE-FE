@@ -6433,7 +6433,10 @@
     "addCodeHereComment": "// Add source code here",
     "reactivatedSuccess": "Question reactivated successfully",
     "totalQuestions": "Total questions",
-    "categoryCount": "Category count"
+    "categoryCount": "Category count",
+    "inactiveConfirmTitle": "Inactive this question?",
+    "inactiveConfirmDescription": "This question will be hidden from quizzes and exams. You can re-activate it at any time.",
+    "inactiveAction": "Inactive"
   },
   "adminCodingProblem": {
     "updateSuccess": "Problem updated successfully!",

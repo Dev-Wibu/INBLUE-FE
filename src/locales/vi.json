@@ -6431,7 +6431,10 @@
     "addCodeHereComment": "// Thêm mã nguồn tại đây",
     "reactivatedSuccess": "Đã kích hoạt lại câu hỏi",
     "totalQuestions": "Tổng số câu hỏi",
-    "categoryCount": "Số danh mục"
+    "categoryCount": "Số danh mục",
+    "inactiveConfirmTitle": "Inactive câu hỏi này?",
+    "inactiveConfirmDescription": "Câu hỏi sẽ bị ẩn khỏi các bộ đề và quiz. Bạn có thể kích hoạt lại bất cứ lúc nào.",
+    "inactiveAction": "Inactive"
   },
   "adminCodingProblem": {
     "updateSuccess": "Cập nhật bài tập thành công!",

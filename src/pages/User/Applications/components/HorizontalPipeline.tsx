@@ -220,10 +220,7 @@ export function HorizontalPipeline({
                       ? t("userApplicationhistory.needsImprove", "Cần cải thiện")
                       : isCompleted
                         ? score !== undefined && score !== null
-                          ? t("userApplicationhistory.scoreShort", {
-                              score,
-                              defaultValue: `Điểm: ${score}/100`,
-                            })
+                          ? t("userApplicationhistory.scoreShort", `Điểm: ${score}/100`, { score })
                           : t("userApplicationhistory.completedBadge", "Đã đạt")
                         : isCurrent
                           ? t("userApplicationhistory.roundOpened", "Đang mở")

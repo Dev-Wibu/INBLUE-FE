@@ -6332,7 +6332,10 @@
     "addCodeHereComment": "// ここにソースコードを追加",
     "reactivatedSuccess": "質問が再有効化されました",
     "totalQuestions": "総問題数",
-    "categoryCount": "カテゴリ数"
+    "categoryCount": "カテゴリ数",
+    "inactiveConfirmTitle": "この問題を無効化しますか?",
+    "inactiveConfirmDescription": "この問題はクイズや試験から非表示になります。いつでも再有効化できます。",
+    "inactiveAction": "無効化"
   },
   "adminCodingProblem": {
     "updateSuccess": "Problem updated successfully!",

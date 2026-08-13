@@ -97,6 +97,13 @@ export class QuestionBankManager {
     }
   }
 
+  /**
+   * Update full question-bank fields (used by the editor form).
+   *
+   * NOTE: This sends the full payload (category, level, text, options, ...).
+   * It is NOT the right call for activate / inactivate - use toggleStatus()
+   * instead, which sends ONLY `{ isDeleted }` per the backend spec.
+   */
   async update(id: number, payload: QuestionBankFormData): Promise<ApiResponse<QuestionBank>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_BANKS.DETAIL, { id });
@@ -126,6 +133,39 @@ export class QuestionBankManager {
       return {
         success: false,
         error: "Failed to update question bank",
+      };
+    }
+  }
+
+  /**
+   * Toggle the isDeleted flag without touching any other field.
+   *
+   * The backend PUT /api/question-banks/{id} runs field-level validation
+   * (questionText @Size(min=1), options required, ...) when the field is
+   * present in the body. Sending an empty body, or omitting required
+   * fields, returns 400 Bad Request. The backend's documented contract
+   * for the activate / inactivate flow is a PUT with ONLY `{ isDeleted }`,
+   * so we isolate that call here.
+   *
+   * Use DELETE instead when the desired new state is isDeleted=true, per
+   * the docs.
+   */
+  async toggleStatus(id: number, isDeleted: boolean): Promise<ApiResponse<QuestionBank>> {
+    try {
+      const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_BANKS.DETAIL, { id });
+      // @ts-expect-error dynamic path
+      const { data, error } = await fetchClient.PUT(endpoint, {
+        body: { isDeleted } as never,
+      });
+      if (error) throw new Error(JSON.stringify(error));
+      return {
+        success: true,
+        data: data as QuestionBank,
+      };
+    } catch (e) {
+      return {
+        success: false,
+        error: e instanceof Error ? e.message : "Failed to toggle question status",
       };
     }
   }

@@ -413,9 +413,8 @@ export function FinalCompetencyReportNodeView({
               </span>
               <span className="text-slate-400">•</span>
               <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                {t("competencyReport.roundLabel", {
+                {t("competencyReport.roundLabel", "Vòng {{count}}: Báo cáo năng lực", {
                   count: sortedRounds.length || 7,
-                  defaultValue: "Vòng {{count}}: Báo cáo năng lực",
                 })}
               </span>
             </div>
@@ -505,9 +504,8 @@ export function FinalCompetencyReportNodeView({
                 ))}
                 {chart.technicalSkillAreas.length > 3 && (
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {t("competencyReport.moreSkillsLabel", {
+                    {t("competencyReport.moreSkillsLabel", "+{{count}} kỹ năng khác", {
                       count: chart.technicalSkillAreas.length - 3,
-                      defaultValue: "+{{count}} kỹ năng khác",
                     })}
                   </p>
                 )}
@@ -551,9 +549,8 @@ export function FinalCompetencyReportNodeView({
                 ))}
                 {chart.behavioralSkills.length > 3 && (
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {t("competencyReport.moreSkillsLabel", {
+                    {t("competencyReport.moreSkillsLabel", "+{{count}} kỹ năng khác", {
                       count: chart.behavioralSkills.length - 3,
-                      defaultValue: "+{{count}} kỹ năng khác",
                     })}
                   </p>
                 )}
@@ -876,9 +873,8 @@ export function FinalCompetencyReportNodeView({
                   {t("competencyReport.perRoundDetail", "Chi tiết từng vòng")}
                 </h3>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                  {t("competencyReport.roundsCountBadge", {
+                  {t("competencyReport.roundsCountBadge", "{{count}} vòng", {
                     count: sortedRounds.length,
-                    defaultValue: "{{count}} vòng",
                   })}
                 </span>
               </div>
@@ -898,9 +894,8 @@ export function FinalCompetencyReportNodeView({
                       </div>
                       <span className="flex-1 truncate text-xs font-medium text-slate-800 dark:text-slate-300">
                         {round.name ||
-                          t("competencyReport.defaultRoundName", {
+                          t("competencyReport.defaultRoundName", "Vòng {{order}}", {
                             order: roundOrder,
-                            defaultValue: "Vòng {{order}}",
                           })}
                       </span>
                       <ResultPill result={detail?.finalResult} />

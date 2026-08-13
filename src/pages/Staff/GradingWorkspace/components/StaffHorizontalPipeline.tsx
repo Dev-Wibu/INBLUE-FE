@@ -152,16 +152,15 @@ export function StaffHorizontalPipeline({
                       ? t("userApplicationhistory.needsImprove", "Cần cải thiện")
                       : isCompleted
                         ? hasStaffGraded
-                          ? // Staff has graded - show HR score
-                            t("staffGrading.yourScore", {
+                          ? // Staff has graded - show HR score (use defaultValue form so the
+                            //   string is the literal fallback if the key is missing).
+                            t("staffGrading.yourScore", `Bạn chấm: ${staffScore}/100`, {
                               score: staffScore,
-                              defaultValue: `Bạn chấm: ${staffScore}/100`,
                             })
                           : hasAIScored
                             ? // Only AI scored - show AI score
-                              t("staffGrading.aiScore", {
+                              t("staffGrading.aiScore", `AI: ${detail?.aiScore ?? 0}/100`, {
                                 score: detail?.aiScore ?? 0,
-                                defaultValue: `AI: ${detail?.aiScore ?? 0}/100`,
                               })
                             : // No score yet
                               t("staffGrading.completedNoScore", "Đã hoàn thành")

@@ -27,6 +27,10 @@ import {
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { questionBankManager, type QuestionBank } from "@/services/question-bank.manager";
+import {
+  questionCategoryManager,
+  type QuestionCategory,
+} from "@/services/question-category.manager";
 import { useTranslation } from "react-i18next";
 
 export interface QuizQuestion {
@@ -65,15 +69,28 @@ export function QuizEditor({
   const { t } = useTranslation();
   // Question Bank API state
   const [bankQuestions, setBankQuestions] = React.useState<QuestionBank[]>([]);
+  const [bankCategories, setBankCategories] = React.useState<QuestionCategory[]>([]);
   const [isLoadingBank, setIsLoadingBank] = React.useState(false);
   const [hasFetchedBank, setHasFetchedBank] = React.useState(false);
 
   const fetchBankQuestions = React.useCallback(async () => {
     setIsLoadingBank(true);
     try {
-      const res = await questionBankManager.getAll();
-      if (res.success && res.data) {
-        setBankQuestions(res.data.filter((q) => !q.isDeleted));
+      // Fetch questions + categories in parallel so the Category dropdown is always populated,
+      // even before the question list finishes loading or if the user has no questions yet.
+      const [banksRes, catRes] = await Promise.all([
+        questionBankManager.getAll(),
+        questionCategoryManager.getAll(),
+      ]);
+      if (banksRes.success && banksRes.data) {
+        setBankQuestions(banksRes.data.filter((q) => !q.isDeleted));
+      }
+      if (catRes.success && catRes.data) {
+        const raw = catRes.data as unknown;
+        const list = Array.isArray(raw)
+          ? (raw as QuestionCategory[])
+          : ((raw as { data?: QuestionCategory[] }).data ?? []);
+        setBankCategories(list);
       }
     } catch (err) {
       console.error("Failed to load question bank:", err);
@@ -104,7 +121,14 @@ export function QuizEditor({
   // Time edit inline
   const [editingTime, setEditingTime] = React.useState(false);
 
-  const categories = React.useMemo(() => {
+  const categoryOptions = React.useMemo(() => {
+    // Prefer the full list from /api/question-categories so the dropdown always shows every
+    // category the admin has created - even if those categories have zero questions yet.
+    const fromApi = bankCategories
+      .map((c) => c.categoryName)
+      .filter((n): n is string => typeof n === "string" && n.trim().length > 0);
+    if (fromApi.length > 0) return ["All", ...fromApi];
+    // Fallback: derive names from the questions themselves (older behaviour).
     const set = new Set<string>();
     bankQuestions.forEach((q) => {
       if (q.questionCategory?.categoryName) {
@@ -112,7 +136,7 @@ export function QuizEditor({
       }
     });
     return ["All", ...Array.from(set)];
-  }, [bankQuestions]);
+  }, [bankCategories, bankQuestions]);
 
   type LevelFilter = "All" | "EASY" | "MEDIUM" | "HARD";
 
@@ -678,7 +702,7 @@ export function QuizEditor({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
-                        {categories.map((cat) => (
+                        {categoryOptions.map((cat) => (
                           <SelectItem key={cat} value={cat}>
                             {cat === "All" ? t("common.all", "Tất cả") : cat}
                           </SelectItem>

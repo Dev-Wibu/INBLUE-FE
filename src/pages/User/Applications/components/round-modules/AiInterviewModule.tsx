@@ -1754,7 +1754,7 @@ function AiInterviewResultView({
                 </div>
                 <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">
                   {sessionDurationText ||
-                    `15 ${t("userApplication.aiInterview.minutes", "minutes")}`}
+                    t("userApplication.aiInterview.durationValue", { minutes: 15 })}
                 </p>
               </Card>
 
@@ -2746,14 +2746,20 @@ export function AiInterviewModule({
                   <SummaryItem
                     icon={<CalendarClock className="h-4 w-4" />}
                     label={t("userApplication.aiInterview.time", "Thời gian")}
-                    value={selectedSlot ? formatDateTime(selectedSlot.startTime) : "Chưa chọn"}
+                    value={
+                      selectedSlot
+                        ? formatDateTime(selectedSlot.startTime)
+                        : t("userApplication.aiInterview.notSelected", "Chưa chọn")
+                    }
                   />
                   <SummaryItem
                     icon={<Clock3 className="h-4 w-4" />}
                     label={t("userApplication.aiInterview.duration", "Duration")}
                     value={
                       selectedDuration
-                        ? `${selectedDuration} ${t("userApplication.aiInterview.minutes", "minutes")}`
+                        ? t("userApplication.aiInterview.durationValue", {
+                            minutes: selectedDuration,
+                          })
                         : t("userApplication.aiInterview.perSlot", "Per slot")
                     }
                   />
