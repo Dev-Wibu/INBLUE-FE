@@ -35,6 +35,7 @@ import { useSortable } from "@/hooks/useSortable";
 import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { Search, Star, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ReviewDetailView } from "./components/ReviewDetailView";
