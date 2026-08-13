@@ -36,10 +36,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTime } from "@/lib/formatting";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
+import { cn } from "@/lib/utils";
 import { useCheckLiked, useCreateComment, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { Heart, MessageCircle, Send, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -58,6 +59,8 @@ interface HomeFeedDetailPageProps {
   backTo?: string;
 }
 
+const BODY_COLLAPSE_LINE_CLAMP = 5;
+
 export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
   const { t } = useTranslation();
   const { postId: rawPostId } = useParams<{ postId: string }>();
@@ -68,6 +71,9 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
   const [newComment, setNewComment] = useState("");
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [likeModalOpen, setLikeModalOpen] = useState(false);
+  const [bodyExpanded, setBodyExpanded] = useState(false);
+  const [bodyIsLong, setBodyIsLong] = useState(false);
+  const bodyRef = useRef<HTMLParagraphElement | null>(null);
 
   const shouldFetchLive = !!user?.id && postId > 0;
   const { data: liveRaw, isLoading } = usePostById(postId, shouldFetchLive);
@@ -121,6 +127,19 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
   })();
 
   const invalidate = () => invalidatePostFeedQueries(postId);
+
+  // Detect whether the body overflows the collapsed threshold so we can show
+  // the See more / Show less toggle. We measure after render.
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 24;
+    const threshold = BODY_COLLAPSE_LINE_CLAMP + 0.5;
+    setBodyIsLong(el.scrollHeight > lineHeight * threshold);
+    // If the content shrinks (e.g. invalidation), reset to collapsed so we
+    // don't leave an expanded empty area.
+    setBodyExpanded(false);
+  }, [post?.content]);
 
   const handleCommentSubmit = () => {
     const content = newComment.trim();
@@ -203,7 +222,7 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
       {/* Full-viewport 2-column layout. h-screen keeps both columns anchored
           to the visible viewport on desktop so the user never needs to scroll
           the page itself to find the composer / comments. */}
-      <div className="grid h-screen w-full bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
+      <div className="grid h-screen w-full overflow-hidden bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
         {/* LEFT — media canvas (fills viewport height) */}
         <section
           aria-label={t("compPost.feedDetail.media", "Post media")}
@@ -294,12 +313,35 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
               )}
 
               {post.content && (
-                // Content sits inside the same scrollable column as reactions
-                // / comments / composer, so long posts scroll naturally inside
-                // the column instead of stretching the page (mirrors Facebook).
-                <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                  {post.content}
-                </p>
+                // Content block has a fixed max-height with internal scroll so
+                // long posts never push the reactions / comments / composer
+                // out of the viewport (mirrors Facebook's post detail). When
+                // collapsed we use a 5-line clamp; expanded content scrolls
+                // inside the same block.
+                <div
+                  className={cn(
+                    "rounded-xl",
+                    bodyExpanded && bodyIsLong && "max-h-[55vh] overflow-y-auto pr-1"
+                  )}>
+                  <p
+                    ref={bodyRef}
+                    className={cn(
+                      "text-[15px] leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200",
+                      !bodyExpanded && bodyIsLong && "line-clamp-5"
+                    )}>
+                    {post.content}
+                  </p>
+                  {bodyIsLong && (
+                    <button
+                      type="button"
+                      onClick={() => setBodyExpanded((v) => !v)}
+                      className="mt-2 inline-flex items-center text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-300">
+                      {bodyExpanded
+                        ? t("compPost.feedDetail.showLess", "Show less")
+                        : t("compPost.feedDetail.seeMore", "See more")}
+                    </button>
+                  )}
+                </div>
               )}
 
               {(post.tags?.length ?? 0) > 0 && (
@@ -381,7 +423,7 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
 
           {/* Sticky bottom composer */}
           {postId > 0 && user?.id && (
-            <div className="flex shrink-0 items-center gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-3.5 sm:px-6 dark:border-slate-800 dark:bg-slate-900/80">
+            <div className="flex shrink-0 items-center gap-3 border-t border-slate-200 bg-white px-5 py-3.5 shadow-[0_-2px_8px_-2px_rgba(15,23,42,0.06)] sm:px-6 dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_-2px_8px_-2px_rgba(0,0,0,0.4)]">
               <Avatar className="h-9 w-9 shrink-0">
                 <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? ""} />
                 <AvatarFallback className="bg-indigo-500/10 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
@@ -396,7 +438,7 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
                   "Write a comment... (Ctrl+Enter to post)"
                 )}
                 value={newComment}
-                className="max-h-24 flex-1 resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="max-h-24 flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.ctrlKey) handleCommentSubmit();
@@ -468,7 +510,7 @@ function DetailShellSkeleton({
   backToFeedLabel: string;
 }) {
   return (
-    <div className="grid h-screen w-full bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
+    <div className="grid h-screen w-full overflow-hidden bg-slate-50 lg:grid-cols-[minmax(0,1.4fr)_minmax(420px,1fr)] dark:bg-slate-950">
       <section className="relative flex h-full items-center justify-center bg-slate-950">
         <Skeleton className="h-3/4 w-3/4 rounded-xl bg-slate-800/60" />
         <button
