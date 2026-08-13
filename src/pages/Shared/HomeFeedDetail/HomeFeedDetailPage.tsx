@@ -36,11 +36,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTime } from "@/lib/formatting";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
-import { cn } from "@/lib/utils";
 import { useCheckLiked, useCreateComment, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { Heart, MessageCircle, Send, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -59,8 +58,6 @@ interface HomeFeedDetailPageProps {
   backTo?: string;
 }
 
-const BODY_COLLAPSE_LINE_CLAMP = 5;
-
 export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
   const { t } = useTranslation();
   const { postId: rawPostId } = useParams<{ postId: string }>();
@@ -71,9 +68,6 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
   const [newComment, setNewComment] = useState("");
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [likeModalOpen, setLikeModalOpen] = useState(false);
-  const [bodyExpanded, setBodyExpanded] = useState(false);
-  const [bodyIsLong, setBodyIsLong] = useState(false);
-  const bodyRef = useRef<HTMLParagraphElement | null>(null);
 
   const shouldFetchLive = !!user?.id && postId > 0;
   const { data: liveRaw, isLoading } = usePostById(postId, shouldFetchLive);
@@ -125,16 +119,6 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
       });
     return `${likeCount}`;
   })();
-
-  // Detect whether the body is long enough to warrant the See-more toggle.
-  // We measure after render (clientHeight vs lineHeight * threshold).
-  useEffect(() => {
-    const el = bodyRef.current;
-    if (!el) return;
-    const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 24;
-    const threshold = BODY_COLLAPSE_LINE_CLAMP + 0.5;
-    setBodyIsLong(el.scrollHeight > lineHeight * threshold);
-  }, [post?.content]);
 
   const invalidate = () => invalidatePostFeedQueries(postId);
 
@@ -310,26 +294,12 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
               )}
 
               {post.content && (
-                <div>
-                  <p
-                    ref={bodyRef}
-                    className={cn(
-                      "text-[15px] leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200",
-                      !bodyExpanded && bodyIsLong && "line-clamp-5"
-                    )}>
-                    {post.content}
-                  </p>
-                  {bodyIsLong && (
-                    <button
-                      type="button"
-                      onClick={() => setBodyExpanded((v) => !v)}
-                      className="mt-1 text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-300">
-                      {bodyExpanded
-                        ? t("compPost.feedDetail.showLess", "Show less")
-                        : t("compPost.feedDetail.seeMore", "See more")}
-                    </button>
-                  )}
-                </div>
+                // Content sits inside the same scrollable column as reactions
+                // / comments / composer, so long posts scroll naturally inside
+                // the column instead of stretching the page (mirrors Facebook).
+                <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200">
+                  {post.content}
+                </p>
               )}
 
               {(post.tags?.length ?? 0) > 0 && (
