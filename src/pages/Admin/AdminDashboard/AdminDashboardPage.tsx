@@ -48,7 +48,9 @@ import { SessionFormPage, SessionManagementPage } from "../SessionManagement";
 import { UserManagementPage } from "../UserManagement";
 import { AdminHeader } from "./components/AdminHeader";
 
-const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] => [
+// Local helper accepts the i18next TFunction signature (with optional fallback)
+type TranslateFn = (key: string, fallback?: string) => string;
+const getSidebarMenuGroups = (t: TranslateFn): SidebarMenuGroup[] => [
   {
     items: [
       {
