@@ -42,13 +42,10 @@ import { ReviewDetailView } from "./components/ReviewDetailView";
 
 const getReviewDate = (review: MentorReview): string => {
   const dateVal =
-    review.session?.joinTime ||
-    review.session?.startTime1 ||
     (review as Record<string, unknown>).createdAt ||
     (review as Record<string, unknown>).created_at ||
-    review.session?.createdAt ||
-    review.session?.created_at ||
-    review.session?.startTime;
+    review.session?.joinTime ||
+    review.session?.startTime1;
   return dateVal ? formatDate(String(dateVal)) : "—";
 };
 

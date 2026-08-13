@@ -39,12 +39,10 @@ export function ReviewDetailView({ review, onBack, onDelete }: ReviewDetailViewP
   const { t } = useTranslation();
 
   const joinDate =
-    review.session?.joinTime ||
-    review.session?.startTime1 ||
     (review as Record<string, unknown>).createdAt ||
     (review as Record<string, unknown>).created_at ||
-    review.session?.createdAt ||
-    review.session?.created_at;
+    review.session?.joinTime ||
+    review.session?.startTime1;
 
   const formattedDate = joinDate ? formatDate(String(joinDate)) : "—";
 
