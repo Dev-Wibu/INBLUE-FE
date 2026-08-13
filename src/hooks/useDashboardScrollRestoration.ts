@@ -78,20 +78,35 @@ const upsertPosition = (
 };
 
 /**
- * Restore a scroll position, retrying on the next animation frame if the
- * container's scrollHeight is still smaller than the requested value.
+ * Restore a scroll position, retrying on subsequent animation frames and
+ * also watching the container's scrollHeight via a MutationObserver so
+ * that async content growth (e.g. React Query fetching the feed after a
+ * PUSH from a post detail) doesn't lose the saved position.
  *
  * The hook runs as a `useLayoutEffect`, so it executes after the DOM
  * mutations but before the browser paints. In practice the new content
- * for the destination route may not have finished mounting yet (e.g. a
- * React Query cache that has to re-suspend on the feed route after a
- * detail-page PUSH). When that happens the browser clamps scrollTop to
- * `scrollHeight - clientHeight` and the saved position is lost.
+ * for the destination route may not have finished mounting yet — a
+ * detail-page PUSH back to the feed triggers the feed's query to
+ * re-hydrate and mount fresh PostFeedCards. While the data is in
+ * flight the container's scrollHeight is small and the browser clamps
+ * scrollTop to 0.
  *
- * To survive this, we set scrollTop up to three times across animation
- * frames, clamped to the container's current scrollable range. Once
- * the content has enough height the position sticks.
+ * To survive this we:
+ *   1. Set scrollTop synchronously inside the effect (clamped to the
+ *      current scrollable range so we don't crash in jsdom or other
+ *      layout-less test environments).
+ *   2. Tick across animation frames up to MAX_TICKS times, re-applying
+ *      the position each tick. As the feed mounts more posts the
+ *      scrollable range grows and the position sticks.
+ *   3. Observe the container for child mutations while there is still
+ *      pending restoration, and re-apply on each mutation. This catches
+ *      cases where the layout grows outside of an animation frame
+ *      boundary (e.g. Suspense fallbacks replacing with real content).
+ *   4. Stop when the target is reached, the container is full, or
+ *      MAX_TICKS ticks have elapsed (whichever comes first).
  */
+const MAX_TICKS = 20;
+
 function restoreScrollWithFallback(container: HTMLElement, target: number): void {
   const maxScrollable = () => Math.max(0, container.scrollHeight - container.clientHeight);
   const clamped = () => Math.max(0, Math.min(target, maxScrollable()));
@@ -103,21 +118,72 @@ function restoreScrollWithFallback(container: HTMLElement, target: number): void
   const isLayoutLess = maxScrollable() === 0 && container.scrollHeight === 0;
   container.scrollTop = isLayoutLess ? target : clamped();
 
-  let attempts = 0;
-  const tick = () => {
-    attempts++;
-    if (attempts > 3) {
+  if (target <= 0 || isLayoutLess) {
+    return;
+  }
+
+  let ticks = 0;
+  let stopped = false;
+  let rafHandle: number | null = null;
+  let observer: MutationObserver | null = null;
+
+  const stop = () => {
+    if (stopped) {
+      return;
+    }
+    stopped = true;
+    if (rafHandle !== null) {
+      window.cancelAnimationFrame(rafHandle);
+      rafHandle = null;
+    }
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
+  };
+
+  const applyIfNeeded = () => {
+    if (stopped) {
       return;
     }
     const desired = clamped();
-    if (container.scrollTop !== desired) {
+    if (desired >= target && container.scrollTop < target) {
       container.scrollTop = desired;
     }
-    if (maxScrollable() < target && attempts < 3) {
-      window.requestAnimationFrame(tick);
+    if (container.scrollTop >= target || maxScrollable() >= target) {
+      stop();
+      return;
     }
   };
-  window.requestAnimationFrame(tick);
+
+  const tick = () => {
+    if (stopped) {
+      return;
+    }
+    applyIfNeeded();
+    ticks++;
+    if (ticks >= MAX_TICKS) {
+      stop();
+      return;
+    }
+    rafHandle = window.requestAnimationFrame(tick);
+  };
+
+  // Start the rAF loop and also watch for any layout-affecting mutations
+  // on the container. The mutation observer fires synchronously when a
+  // child is added/removed, which lets us re-apply the position the
+  // instant React Query mounts more posts.
+  rafHandle = window.requestAnimationFrame(tick);
+  if (typeof MutationObserver !== "undefined") {
+    observer = new MutationObserver(() => {
+      applyIfNeeded();
+    });
+    observer.observe(container, { childList: true, subtree: true, attributes: true });
+  }
+
+  // Safety net: if anything goes wrong (e.g. user navigates away again
+  // mid-restore) we still give up after ~400ms of wall-clock time.
+  window.setTimeout(stop, MAX_TICKS * 24);
 }
 
 export function useDashboardScrollRestoration(
