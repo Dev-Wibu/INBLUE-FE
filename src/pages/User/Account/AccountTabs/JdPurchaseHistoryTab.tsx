@@ -35,6 +35,42 @@ function formatPurchaseDate(dateStr?: string | null): string {
   }
 }
 
+/**
+ * Resolve the payment method label for a JD purchase row.
+ *
+ * Priority:
+ *  1. No payment object at all → "Miễn phí" / "Free" (free tier JD).
+ *  2. Backend-provided method string → normalized to known labels.
+ *     We accept PayOS itself (PAYOS), banking-style channels
+ *     (BANKING, BANK_TRANSFER, QR_CODE, ATM, CARD), and we map
+ *     everything else to PayOS as the default provider.
+ *  3. Truly unknown / missing method with a payment row → "PayOS".
+ */
+function resolvePaymentMethodLabel(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payment: any,
+  t: (key: string, fallback?: string) => string
+): { label: string; isFree: boolean } {
+  if (!payment) {
+    return { label: t("payment.jdPurchaseMethodFree", "Miễn phí"), isFree: true };
+  }
+  const raw = (payment.method ?? "").toString().trim().toUpperCase();
+  if (raw === "BANKING" || raw === "BANK_TRANSFER" || raw === "ATM" || raw === "CARD") {
+    return { label: t("payment.jdPurchaseMethodBanking", "Banking"), isFree: false };
+  }
+  if (raw === "QR_CODE" || raw === "QR") {
+    return { label: t("payment.jdPurchaseMethodQR", "QR Code"), isFree: false };
+  }
+  if (raw === "PAYOS") {
+    return { label: "PayOS", isFree: false };
+  }
+  if (raw === "WALLET" || raw === "EWALLET") {
+    return { label: t("payment.jdPurchaseMethodWallet", "Ví điện tử"), isFree: false };
+  }
+  // No method set or unknown value → assume PayOS (current default provider).
+  return { label: "PayOS", isFree: false };
+}
+
 type LoadState = "loading" | "ready" | "error";
 
 export function JdPurchaseHistoryTab() {
@@ -106,7 +142,6 @@ export function JdPurchaseHistoryTab() {
           </div>
         </div>
       </div>
-
       {loadState === "loading" && (
         <div className="flex h-44 items-center justify-center rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800/80 dark:bg-slate-900">
           <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600" />
@@ -166,106 +201,115 @@ export function JdPurchaseHistoryTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedPurchases.map((purchase) => (
-                <TableRow
-                  key={purchase.id}
-                  className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                  <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                    #{purchase.id}
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8 shrink-0 rounded-md border border-slate-200 dark:border-slate-800">
-                        <AvatarImage
-                          src={
-                            purchase.jobDescription?.thumbnailUrl ||
-                            purchase.jobDescription?.companyLogoUrl ||
-                            purchase.jobDescription?.companyLogo ||
-                            ""
-                          }
-                          alt={purchase.jobDescription?.companyName || "Company"}
-                          className="object-cover"
-                        />
-                        <AvatarFallback className="rounded-md bg-slate-100 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                          {(purchase.jobDescription?.companyName || "C").charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {purchase.jobDescription?.companyName || t("common.unknown")}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <div className="flex flex-col gap-1">
-                      {purchase.jobDescription?.id ? (
-                        <Link
-                          to={`/user?tab=jobSearch&jobId=${purchase.jobDescription.id}`}
-                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
-                          <span className="line-clamp-2 max-w-[200px]">
+              {paginatedPurchases.map((purchase) => {
+                const methodInfo = resolvePaymentMethodLabel(purchase.payment, t);
+                return (
+                  <TableRow
+                    key={purchase.id}
+                    className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                    <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                      #{purchase.id}
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8 shrink-0 rounded-md border border-slate-200 dark:border-slate-800">
+                          <AvatarImage
+                            src={
+                              purchase.jobDescription?.thumbnailUrl ||
+                              purchase.jobDescription?.companyLogoUrl ||
+                              purchase.jobDescription?.companyLogo ||
+                              ""
+                            }
+                            alt={purchase.jobDescription?.companyName || "Company"}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="rounded-md bg-slate-100 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                            {(purchase.jobDescription?.companyName || "C").charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {purchase.jobDescription?.companyName || t("common.unknown")}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex flex-col gap-1">
+                        {purchase.jobDescription?.id ? (
+                          <Link
+                            to={`/user?tab=jobSearch&jobId=${purchase.jobDescription.id}`}
+                            className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
+                            <span className="line-clamp-2 max-w-[200px]">
+                              {purchase.jobDescription?.title || t("common.untitled")}
+                            </span>
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                          </Link>
+                        ) : (
+                          <span className="line-clamp-2 max-w-[200px] text-sm font-semibold text-slate-700 dark:text-slate-300">
                             {purchase.jobDescription?.title || t("common.untitled")}
                           </span>
-                          <ExternalLink className="h-3 w-3 shrink-0" />
-                        </Link>
-                      ) : (
-                        <span className="line-clamp-2 max-w-[200px] text-sm font-semibold text-slate-700 dark:text-slate-300">
-                          {purchase.jobDescription?.title || t("common.untitled")}
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex flex-col items-start gap-1.5">
+                        <span className="inline-flex items-center justify-center rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          {purchase.payment?.id
+                            ? `#${purchase.payment.id}`
+                            : t("common.notAvailable", "N/A")}
                         </span>
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold tracking-wider uppercase",
+                            methodInfo.isFree
+                              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/15 ring-inset dark:bg-emerald-950/30 dark:text-emerald-400"
+                              : "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/15 ring-inset dark:bg-indigo-950/30 dark:text-indigo-400"
+                          )}>
+                          {methodInfo.label}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "font-medium",
+                          purchase.status === "PURCHASED"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-400"
+                            : purchase.status === "EXPIRED"
+                              ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-900/20 dark:text-rose-400"
+                              : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
+                        )}>
+                        {t(`payment.jdPurchaseStatus_${purchase.status}`)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-4 text-right font-semibold text-slate-900 dark:text-slate-100">
+                      {purchase.payment?.amount ? formatCurrency(purchase.payment.amount) : "—"}
+                    </TableCell>
+                    <TableCell className="py-4 pl-4">
+                      <span className="text-xs text-slate-600 dark:text-slate-300">
+                        {formatPurchaseDate(purchase.purchasedAt)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-4 pr-6">
+                      {purchase.status === "USED" ? (
+                        <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          {formatPurchaseDate(purchase.usedAt)}
+                        </span>
+                      ) : purchase.status === "EXPIRED" ? (
+                        <span className="text-xs font-medium text-rose-600 dark:text-rose-400">
+                          {formatPurchaseDate(purchase.validUntil)}
+                        </span>
+                      ) : purchase.validUntil ? (
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {formatPurchaseDate(purchase.validUntil)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <div className="flex flex-col items-start gap-1.5">
-                      <span className="inline-flex items-center justify-center rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                        {purchase.payment?.id
-                          ? `#${purchase.payment.id}`
-                          : t("common.notAvailable", "N/A")}
-                      </span>
-                      <span className="text-[11px] font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                        {purchase.payment?.method || "PayOS"}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "font-medium",
-                        purchase.status === "PURCHASED"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-400"
-                          : purchase.status === "EXPIRED"
-                            ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-900/20 dark:text-rose-400"
-                            : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
-                      )}>
-                      {t(`payment.jdPurchaseStatus_${purchase.status}`)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="py-4 text-right font-semibold text-slate-900 dark:text-slate-100">
-                    {purchase.payment?.amount ? formatCurrency(purchase.payment.amount) : "—"}
-                  </TableCell>
-                  <TableCell className="py-4 pl-4">
-                    <span className="text-xs text-slate-600 dark:text-slate-300">
-                      {formatPurchaseDate(purchase.purchasedAt)}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-4 pr-6">
-                    {purchase.status === "USED" ? (
-                      <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                        {formatPurchaseDate(purchase.usedAt)}
-                      </span>
-                    ) : purchase.status === "EXPIRED" ? (
-                      <span className="text-xs font-medium text-rose-600 dark:text-rose-400">
-                        {formatPurchaseDate(purchase.validUntil)}
-                      </span>
-                    ) : purchase.validUntil ? (
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
-                        {formatPurchaseDate(purchase.validUntil)}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-slate-400">—</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
 

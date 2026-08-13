@@ -7369,6 +7369,10 @@
     "jdPurchaseExpiry": "Hạn",
     "jdPurchaseHistoryDescription": "Quản lý và xem lại lịch sử các gói JD đã mua",
     "jdPurchaseTransactionsCount": "{{count}} giao dịch",
+    "jdPurchaseMethodFree": "Miễn phí",
+    "jdPurchaseMethodBanking": "Banking",
+    "jdPurchaseMethodQR": "QR Code",
+    "jdPurchaseMethodWallet": "Ví điện tử",
     "jdPackage": "Gói vị trí việc làm",
     "confirmingJdPurchase": "Đang xác nhận giao dịch mua gói JD...",
     "applicationFee": "Lệ phí ứng tuyển"

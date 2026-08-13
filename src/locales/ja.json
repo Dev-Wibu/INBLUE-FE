@@ -7290,6 +7290,10 @@
     "jdPurchaseExpiry": "有効期限",
     "jdPurchaseHistoryDescription": "JDパッケージ購入履歴を管理・確認",
     "jdPurchaseTransactionsCount": "{{count}}件の取引",
+    "jdPurchaseMethodFree": "無料",
+    "jdPurchaseMethodBanking": "Banking",
+    "jdPurchaseMethodQR": "QRコード",
+    "jdPurchaseMethodWallet": "電子ウォレット",
     "jdPackage": "求人ポジションパッケージ",
     "confirmingJdPurchase": "JDパッケージ購入取引を確認中...",
     "applicationFee": "応募手数料"

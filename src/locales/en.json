@@ -7370,6 +7370,10 @@
     "jdPurchaseExpiry": "Expires",
     "jdPurchaseHistoryDescription": "Manage and review your JD package purchase history",
     "jdPurchaseTransactionsCount": "{{count}} transactions",
+    "jdPurchaseMethodFree": "Free",
+    "jdPurchaseMethodBanking": "Banking",
+    "jdPurchaseMethodQR": "QR Code",
+    "jdPurchaseMethodWallet": "E-Wallet",
     "jdPackage": "Job position package",
     "confirmingJdPurchase": "Confirming JD package purchase transaction...",
     "applicationFee": "Application Fee"
