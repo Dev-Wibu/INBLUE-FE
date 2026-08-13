@@ -222,6 +222,13 @@ export function AdminDashboardPage() {
                 parentTitle: item.label,
               };
             }
+            if (activeTab === "interviewTemplates") {
+              return {
+                currentTitle: t("adminInterviewTemplate.templateDetail", "Chi tiết kịch bản"),
+                currentCategory: group.label,
+                parentTitle: item.label,
+              };
+            }
           }
           // companies: detect drill-down via query params
           if (activeTab === "companies") {
