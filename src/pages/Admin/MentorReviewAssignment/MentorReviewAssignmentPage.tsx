@@ -747,7 +747,7 @@ function AssignMentorDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[92vh] w-[95vw] gap-0 overflow-hidden rounded-2xl border border-slate-200/90 p-0 shadow-2xl sm:max-w-4xl dark:border-slate-800 dark:bg-slate-950">
+      <DialogContent className="max-h-[92vh] w-[95vw] gap-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 shadow-2xl sm:max-w-4xl dark:border-slate-800 dark:bg-slate-900">
         {/* Modal Header */}
         <DialogHeader className="border-b border-slate-100 bg-white p-5 pb-3.5 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center gap-3">
@@ -768,67 +768,53 @@ function AssignMentorDialog({
           </div>
         </DialogHeader>
 
-        {/* Candidate & Job Context Subheader Banner */}
+        {/* Streamlined Candidate & Job Context Bar */}
         {detail && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 bg-slate-50/80 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/60">
-            {/* Candidate Info */}
-            <div className="flex min-w-0 items-center gap-3">
-              <Avatar className="h-9 w-9 shrink-0 rounded-full border border-slate-200/90 shadow-2xs dark:border-slate-700">
+          <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-2.5 dark:border-slate-800/80 dark:bg-slate-800/40">
+            {/* Candidate Avatar + Name */}
+            <div className="flex shrink-0 items-center gap-2">
+              <Avatar className="h-7 w-7 rounded-full border border-slate-200/90 dark:border-slate-700">
                 {detail.candidateAvatarUrl ? (
                   <AvatarImage src={detail.candidateAvatarUrl} className="object-cover" />
                 ) : null}
-                <AvatarFallback className="bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                  {(detail.candidateName ?? detail.candidateEmail ?? "?").charAt(0).toUpperCase()}
+                <AvatarFallback className="bg-indigo-100 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                  {(detail.candidateName ?? "?").charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-bold text-slate-900 dark:text-white">
-                    {detail.candidateName ?? "-"}
-                  </span>
-                  <span className="font-mono text-xs font-medium text-slate-400">#{detail.id}</span>
-                </div>
-                <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                  {detail.candidateEmail ?? "-"}
-                </p>
-              </div>
+              <span className="text-xs font-bold text-slate-900 dark:text-white">
+                {detail.candidateName ?? "-"}
+              </span>
             </div>
 
-            {/* Target Role & Company */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-2 rounded-md border border-slate-200/80 bg-white px-2.5 py-1 dark:border-slate-800 dark:bg-slate-800/80">
-                <Avatar className="h-4 w-4 shrink-0 rounded-xs">
-                  {companyLogo ? <AvatarImage src={companyLogo} /> : null}
-                  <AvatarFallback className="bg-sky-100 text-[9px] font-bold text-sky-700">
-                    {companyName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                  {companyName}
-                </span>
-              </div>
+            <div className="h-3 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />
 
-              {detail.jdTitle && (
-                <Badge
-                  variant="secondary"
-                  className="bg-slate-200/70 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            {/* Company Logo + Company Name */}
+            <div className="flex shrink-0 items-center gap-1.5">
+              <Avatar className="h-4 w-4 rounded-xs">
+                {companyLogo ? <AvatarImage src={companyLogo} /> : null}
+                <AvatarFallback className="bg-sky-100 text-[8px] font-bold text-sky-700">
+                  {companyName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                {companyName}
+              </span>
+            </div>
+
+            {/* JD Title */}
+            {detail.jdTitle && (
+              <>
+                <div className="h-3 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />
+                <span className="max-w-[280px] truncate text-xs font-medium text-slate-500 dark:text-slate-400">
                   {detail.jdTitle}
-                </Badge>
-              )}
-
-              {detail.roundName && (
-                <Badge
-                  variant="outline"
-                  className="border-indigo-200 bg-indigo-50 text-xs font-semibold text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/60 dark:text-indigo-300">
-                  {detail.roundName}
-                </Badge>
-              )}
-            </div>
+                </span>
+              </>
+            )}
           </div>
         )}
 
-        {/* Seamless 2-Column Grid Body */}
-        <div className="grid max-h-[calc(88vh-180px)] min-h-[420px] grid-cols-1 overflow-hidden bg-slate-50/40 lg:grid-cols-12 dark:bg-slate-950/20">
+        {/* Unified 2-Column Grid Body */}
+        <div className="grid max-h-[calc(88vh-180px)] min-h-[420px] grid-cols-1 overflow-hidden bg-white lg:grid-cols-12 dark:bg-slate-900">
           {/* LEFT COLUMN (5/12) - Search & Scrollable Mentor List */}
           <div className="flex flex-col gap-3 border-r border-slate-200/80 bg-white p-4 lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center justify-between">
