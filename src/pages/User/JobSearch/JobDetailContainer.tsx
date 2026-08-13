@@ -92,8 +92,7 @@ export function JobDetailContainer({
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const jdIdNum = Number(job.id);
 
-  const { hasPurchased, hasApplied, applicationId, isLoadingStatus, refetchStatus } =
-    useJdPurchaseStatus(jdIdNum);
+  const { hasPurchased, hasApplied, isLoadingStatus, refetchStatus } = useJdPurchaseStatus(jdIdNum);
   const [isApplying, setIsApplying] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [iframeLoading, setIframeLoading] = useState(true);
@@ -337,15 +336,6 @@ export function JobDetailContainer({
       return;
     }
 
-    if (hasApplied) {
-      navigate(
-        applicationId
-          ? `/user?tab=applicationHistory&appId=${applicationId}`
-          : "/user?tab=applicationHistory"
-      );
-      return;
-    }
-
     setIsApplying(true);
     try {
       if (!hasPurchased) {
@@ -383,13 +373,6 @@ export function JobDetailContainer({
         hasPurchased={hasPurchased}
         hasApplied={hasApplied}
         onApplyAction={handleApply}
-        onViewApplication={() => {
-          navigate(
-            applicationId
-              ? `/user?tab=applicationHistory&appId=${applicationId}`
-              : "/user?tab=applicationHistory"
-          );
-        }}
         isLoadingAction={isApplying}
         isLoadingStatus={isLoadingStatus}
         onBack={hideBackButton ? undefined : onClose}

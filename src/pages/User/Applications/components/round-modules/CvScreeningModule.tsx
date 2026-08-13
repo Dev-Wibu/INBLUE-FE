@@ -218,8 +218,11 @@ export function CvScreeningModule({
     isCompleted
   );
 
+  // HR has data only when hrScore is actually graded by HR
+  const hasHrData = detail?.hrScore !== undefined && detail?.hrScore !== null;
+
   const aiScoreVal = detail?.aiScore ?? detail?.finalScore ?? (isCompleted ? 85 : 0);
-  const hrScoreVal = detail?.hrScore ?? detail?.finalScore ?? (isCompleted ? 85 : 0);
+  const hrScoreVal = hasHrData ? (detail?.hrScore ?? 0) : 0;
 
   const extraMetrics = aiFeedback?.extraMetrics;
   const keywordDensity = extraMetrics?.["Keyword Density"] || {};
@@ -663,7 +666,7 @@ export function CvScreeningModule({
                 score={hrScoreVal}
                 label={t("userApplication.cvScreening.hrScore", "HR Score")}
                 color="emerald"
-                hasData={hasAiData}
+                hasData={hasHrData}
               />
             </div>
 
