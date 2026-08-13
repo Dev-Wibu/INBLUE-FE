@@ -274,411 +274,428 @@ export function MentorReviewAssignmentPage() {
     <div
       className={cn(
         "flex flex-col bg-slate-50 dark:bg-slate-950",
-        "-m-4 min-h-[calc(100%+32px)] md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)]"
+        "-m-4 h-[calc(100%+32px)] overflow-hidden md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]"
       )}>
       {/* Content */}
-      <div className="flex flex-1 flex-col overflow-auto bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
-        {/* Stat Summary & Control Card (matching User/Mentor pattern) */}
-        <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {t("adminMentorReviewAssignment.pageTitle")}
-              </h2>
-              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-                {t("adminMentorReviewAssignment.pageDescription")}
-              </p>
-            </div>
-            <div className="flex items-center justify-center gap-5 sm:gap-6">
-              {[
-                [counts.awaitingMentor, t("adminMentorReviewAssignment.filterAwaitingMentor")],
-                [
-                  counts.awaitingCandidateSelect,
-                  t("adminMentorReviewAssignment.filterAwaitingCandidateSelect"),
-                ],
-                [counts.slotPicked, t("adminMentorReviewAssignment.filterSlotPicked")],
-              ].map(([value, label], index) => (
-                <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
-                  {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
-                  <div className="flex min-w-[78px] flex-col items-center justify-center text-center">
-                    <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
-                      {value}
-                    </span>
-                    <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
-                      {label}
-                    </span>
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+        {/* Stat Summary, Search & Tabs (fixed at top) */}
+        <div className="flex-none p-5 pb-0 sm:p-6 sm:pb-0 md:px-8 md:pb-0">
+          <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {t("adminMentorReviewAssignment.pageTitle")}
+                </h2>
+                <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                  {t("adminMentorReviewAssignment.pageDescription")}
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-5 sm:gap-6">
+                {[
+                  [counts.awaitingMentor, t("adminMentorReviewAssignment.filterAwaitingMentor")],
+                  [
+                    counts.awaitingCandidateSelect,
+                    t("adminMentorReviewAssignment.filterAwaitingCandidateSelect"),
+                  ],
+                  [counts.slotPicked, t("adminMentorReviewAssignment.filterSlotPicked")],
+                ].map(([value, label], index) => (
+                  <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
+                    {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
+                    <div className="flex min-w-[78px] flex-col items-center justify-center text-center">
+                      <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
+                        {value}
+                      </span>
+                      <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                        {label}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Search row (matching User/Mentor pattern) */}
-          <form
-            onSubmit={(event) => event.preventDefault()}
-            className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-              <Input
-                type="search"
-                placeholder={t("adminMentorReviewAssignment.searchPlaceholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
+            {/* Search row (matching User/Mentor pattern) */}
+            <form
+              onSubmit={(event) => event.preventDefault()}
+              className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+                <Input
+                  type="search"
+                  placeholder={t("adminMentorReviewAssignment.searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 rounded p-1">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <Button
+                type="submit"
+                className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                <Search className="mr-2 h-[18px] w-[18px]" />
+                {t("common.search", "Tìm kiếm")}
+              </Button>
+              <ReloadButton
+                onReload={() => void refetch()}
+                isLoading={isRefetching}
+                size="sm"
+                className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
               />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 rounded p-1">
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            <Button
-              type="submit"
-              className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
-              <Search className="mr-2 h-[18px] w-[18px]" />
-              {t("common.search", "Tìm kiếm")}
-            </Button>
-            <ReloadButton
-              onReload={() => void refetch()}
-              isLoading={isRefetching}
-              size="sm"
-              className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
-            />
-          </form>
+            </form>
 
-          {/* Tabs + overflow filter dropdown (inside the same card) */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            <Tabs
-              value={mainTab}
-              onValueChange={(value) => {
-                setMainTab(value as MainTab);
-                setMoreFilter(null); // switching to a main tab clears the secondary filter
-              }}
-              className="w-full sm:w-auto">
-              <TabsList className="h-9 bg-gray-200/70 p-0.5 dark:bg-slate-800/60">
-                <TabsTrigger
-                  value="AWAITING_MENTOR"
-                  className="gap-1.5 data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                  <Clock className="h-3.5 w-3.5" />
-                  {t("adminMentorReviewAssignment.filterAwaitingMentor")}
-                  <Badge
-                    variant={mainTab === "AWAITING_MENTOR" && !moreFilter ? "secondary" : "outline"}
-                    className={cn(
-                      "ml-1 h-5 min-w-[20px] justify-center px-1.5 text-[10px]",
-                      mainTab === "AWAITING_MENTOR" && !moreFilter
-                        ? "bg-white/30 text-white dark:bg-slate-700/50 dark:text-slate-200"
-                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
-                    )}>
-                    {counts.awaitingMentor}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="AWAITING_CANDIDATE_SELECT_MENTOR"
-                  className="gap-1.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  <Users className="h-3.5 w-3.5" />
-                  {t("adminMentorReviewAssignment.filterAwaitingCandidateSelect")}
-                  <Badge
-                    variant={
-                      mainTab === "AWAITING_CANDIDATE_SELECT_MENTOR" && !moreFilter
-                        ? "secondary"
-                        : "outline"
-                    }
-                    className={cn(
-                      "ml-1 h-5 min-w-[20px] justify-center px-1.5 text-[10px]",
-                      mainTab === "AWAITING_CANDIDATE_SELECT_MENTOR" && !moreFilter
-                        ? "bg-white/30 text-white dark:bg-slate-700/50 dark:text-slate-200"
-                        : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
-                    )}>
-                    {counts.awaitingCandidateSelect}
-                  </Badge>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 gap-1.5">
-                  <ListFilter className="h-3.5 w-3.5" />
-                  {moreFilter ? moreFilterLabel[moreFilter] : t("adminMentorReviewAssignment.more")}
-                  {moreFilter && (
-                    <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
-                      {moreFilter === "ALL" ? counts.all : counts.slotPicked}
+            {/* Tabs + overflow filter dropdown (inside the same card) */}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <Tabs
+                value={mainTab}
+                onValueChange={(value) => {
+                  setMainTab(value as MainTab);
+                  setMoreFilter(null); // switching to a main tab clears the secondary filter
+                }}
+                className="w-full sm:w-auto">
+                <TabsList className="h-9 bg-gray-200/70 p-0.5 dark:bg-slate-800/60">
+                  <TabsTrigger
+                    value="AWAITING_MENTOR"
+                    className="gap-1.5 data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+                    <Clock className="h-3.5 w-3.5" />
+                    {t("adminMentorReviewAssignment.filterAwaitingMentor")}
+                    <Badge
+                      variant={
+                        mainTab === "AWAITING_MENTOR" && !moreFilter ? "secondary" : "outline"
+                      }
+                      className={cn(
+                        "ml-1 h-5 min-w-[20px] justify-center px-1.5 text-[10px]",
+                        mainTab === "AWAITING_MENTOR" && !moreFilter
+                          ? "bg-white/30 text-white dark:bg-slate-700/50 dark:text-slate-200"
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                      )}>
+                      {counts.awaitingMentor}
                     </Badge>
-                  )}
-                  <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-                  {t("adminMentorReviewAssignment.more")}
-                </DropdownMenuLabel>
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setMoreFilter(null);
-                    setMainTab("AWAITING_MENTOR");
-                  }}
-                  className="gap-2">
-                  <X className="text-muted-foreground h-3.5 w-3.5" />
-                  <span className="flex-1">{t("adminMentorReviewAssignment.moreDefault")}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setMoreFilter("SLOT_PICKED");
-                    setMainTab("AWAITING_MENTOR");
-                  }}
-                  className="gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                  <span className="flex-1">
-                    {t("adminMentorReviewAssignment.filterSlotPicked")}
-                  </span>
-                  <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                    {counts.slotPicked}
-                  </Badge>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setMoreFilter("ALL");
-                    setMainTab("AWAITING_MENTOR");
-                  }}
-                  className="gap-2">
-                  <Eye className="text-muted-foreground h-3.5 w-3.5" />
-                  <span className="flex-1">{t("adminMentorReviewAssignment.filterAll")}</span>
-                  <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                    {counts.all}
-                  </Badge>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="AWAITING_CANDIDATE_SELECT_MENTOR"
+                    className="gap-1.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                    <Users className="h-3.5 w-3.5" />
+                    {t("adminMentorReviewAssignment.filterAwaitingCandidateSelect")}
+                    <Badge
+                      variant={
+                        mainTab === "AWAITING_CANDIDATE_SELECT_MENTOR" && !moreFilter
+                          ? "secondary"
+                          : "outline"
+                      }
+                      className={cn(
+                        "ml-1 h-5 min-w-[20px] justify-center px-1.5 text-[10px]",
+                        mainTab === "AWAITING_CANDIDATE_SELECT_MENTOR" && !moreFilter
+                          ? "bg-white/30 text-white dark:bg-slate-700/50 dark:text-slate-200"
+                          : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                      )}>
+                      {counts.awaitingCandidateSelect}
+                    </Badge>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9 gap-1.5">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    {moreFilter
+                      ? moreFilterLabel[moreFilter]
+                      : t("adminMentorReviewAssignment.more")}
+                    {moreFilter && (
+                      <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
+                        {moreFilter === "ALL" ? counts.all : counts.slotPicked}
+                      </Badge>
+                    )}
+                    <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                    {t("adminMentorReviewAssignment.more")}
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setMoreFilter(null);
+                      setMainTab("AWAITING_MENTOR");
+                    }}
+                    className="gap-2">
+                    <X className="text-muted-foreground h-3.5 w-3.5" />
+                    <span className="flex-1">{t("adminMentorReviewAssignment.moreDefault")}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setMoreFilter("SLOT_PICKED");
+                      setMainTab("AWAITING_MENTOR");
+                    }}
+                    className="gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    <span className="flex-1">
+                      {t("adminMentorReviewAssignment.filterSlotPicked")}
+                    </span>
+                    <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                      {counts.slotPicked}
+                    </Badge>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setMoreFilter("ALL");
+                      setMainTab("AWAITING_MENTOR");
+                    }}
+                    className="gap-2">
+                    <Eye className="text-muted-foreground h-3.5 w-3.5" />
+                    <span className="flex-1">{t("adminMentorReviewAssignment.filterAll")}</span>
+                    <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                      {counts.all}
+                    </Badge>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
 
-        {/* Table card */}
-        {isLoading ? (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <SpinnerBlock label={t("common.loading")} />
-          </div>
-        ) : error ? (
-          <Card className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30">
-            <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-              <AlertTriangle className="h-10 w-10 text-red-500" />
-              <div>
-                <p className="text-sm font-medium text-red-700">
-                  {t("adminMentorReviewAssignment.loadError")}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3 gap-2"
-                  onClick={() => void refetch()}>
-                  <RefreshCw className="h-4 w-4" />
-                  {t("common.retry")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : filteredDetails.length === 0 ? (
-          <div className="border-border flex h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed bg-white dark:border-slate-700 dark:bg-slate-900/50">
-            <Inbox className="text-muted-foreground h-12 w-12" />
-            <p className="text-muted-foreground text-sm font-medium">
-              {t("adminMentorReviewAssignment.noPendingAssignments")}
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            {/* Table header */}
-            <div className="text-muted-foreground hidden border-b bg-gray-100/70 px-4 py-2 text-xs font-semibold tracking-wider uppercase sm:grid sm:grid-cols-12 sm:gap-2 sm:px-4 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
-              <div className="sm:col-span-4">{t("adminMentorReviewAssignment.candidate")}</div>
-              <div className="sm:col-span-3">{t("adminMentorReviewAssignment.jobDescription")}</div>
-              <div className="sm:col-span-2">{t("adminMentorReviewAssignment.roundName")}</div>
-              <div className="text-center sm:col-span-1">
-                {t("adminMentorReviewAssignment.aiScore")}
-              </div>
-              <div className="text-right sm:col-span-2">
-                {t("adminMentorReviewAssignment.action")}
+        {/* Table card (scrollable area, pagination pinned at bottom) */}
+        <div className="flex flex-1 flex-col overflow-hidden p-5 pt-4 sm:p-6 sm:pt-4 md:px-8 md:pt-4">
+          {isLoading ? (
+            <div className="flex flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex w-full items-center justify-center">
+                <SpinnerBlock label={t("common.loading")} />
               </div>
             </div>
+          ) : error ? (
+            <Card className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30">
+              <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+                <AlertTriangle className="h-10 w-10 text-red-500" />
+                <div>
+                  <p className="text-sm font-medium text-red-700">
+                    {t("adminMentorReviewAssignment.loadError")}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 gap-2"
+                    onClick={() => void refetch()}>
+                    <RefreshCw className="h-4 w-4" />
+                    {t("common.retry")}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : filteredDetails.length === 0 ? (
+            <div className="border-border flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed bg-white dark:border-slate-700 dark:bg-slate-900/50">
+              <Inbox className="text-muted-foreground h-12 w-12" />
+              <p className="text-muted-foreground text-sm font-medium">
+                {t("adminMentorReviewAssignment.noPendingAssignments")}
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              {/* Scrollable table body */}
+              <div className="flex-1 overflow-auto">
+                {/* Table header */}
+                <div className="text-muted-foreground sticky top-0 z-10 hidden border-b bg-gray-100/70 px-4 py-2 text-xs font-semibold tracking-wider uppercase backdrop-blur-sm sm:grid sm:grid-cols-12 sm:gap-2 sm:px-4 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
+                  <div className="sm:col-span-4">{t("adminMentorReviewAssignment.candidate")}</div>
+                  <div className="sm:col-span-3">
+                    {t("adminMentorReviewAssignment.jobDescription")}
+                  </div>
+                  <div className="sm:col-span-2">{t("adminMentorReviewAssignment.roundName")}</div>
+                  <div className="text-center sm:col-span-1">
+                    {t("adminMentorReviewAssignment.aiScore")}
+                  </div>
+                  <div className="text-right sm:col-span-2">
+                    {t("adminMentorReviewAssignment.action")}
+                  </div>
+                </div>
 
-            {pageData.map((detail) => {
-              // BE rule (mentor-review-assignment API doc):
-              //   AWAITING_MENTOR              -> assign single -> status -> PENDING (gone from this view)
-              //   AWAITING_CANDIDATE_SELECT    -> admin can REASSIGN suggested mentors while UV picks
-              //   PENDING (with session)       -> room already created, READ-ONLY
-              //   Anything else (SUBMITTED/AI_EVALUATED/COMPLETED/SLOT_PICKED) -> READ-ONLY
-              const status = detail.status;
-              const isAwaitingMentor = status === "AWAITING_MENTOR";
-              const isAwaitingCandidate = status === "AWAITING_CANDIDATE_SELECT_MENTOR";
-              const hasSuggestedMentors =
-                (detail.assignedMentorIds?.length ?? 0) > 0 ||
-                (detail.assignedMentors?.length ?? 0) > 0;
-              const hasRoom = status === "PENDING" && detail.sessionId != null;
+                {pageData.map((detail) => {
+                  // BE rule (mentor-review-assignment API doc):
+                  //   AWAITING_MENTOR              -> assign single -> status -> PENDING (gone from this view)
+                  //   AWAITING_CANDIDATE_SELECT    -> admin can REASSIGN suggested mentors while UV picks
+                  //   PENDING (with session)       -> room already created, READ-ONLY
+                  //   Anything else (SUBMITTED/AI_EVALUATED/COMPLETED/SLOT_PICKED) -> READ-ONLY
+                  const status = detail.status;
+                  const isAwaitingMentor = status === "AWAITING_MENTOR";
+                  const isAwaitingCandidate = status === "AWAITING_CANDIDATE_SELECT_MENTOR";
+                  const hasSuggestedMentors =
+                    (detail.assignedMentorIds?.length ?? 0) > 0 ||
+                    (detail.assignedMentors?.length ?? 0) > 0;
+                  const hasRoom = status === "PENDING" && detail.sessionId != null;
 
-              return (
-                <div
-                  key={detail.id}
-                  className="border-border/60 hover:bg-muted/40 border-b transition-colors last:border-b-0 dark:hover:bg-slate-800/40">
-                  <div className="grid grid-cols-1 gap-3 px-4 py-3 sm:grid sm:grid-cols-12 sm:items-center sm:gap-2">
-                    {/* Candidate */}
-                    <div className="flex items-center gap-3 sm:col-span-4">
-                      {renderRowAvatar(detail)}
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold">
-                          {detail.candidateName ?? "-"}
-                        </div>
-                        {detail.candidateEmail && (
-                          <div className="text-muted-foreground truncate text-xs">
-                            {detail.candidateEmail}
+                  return (
+                    <div
+                      key={detail.id}
+                      className="border-border/60 hover:bg-muted/40 border-b transition-colors last:border-b-0 dark:hover:bg-slate-800/40">
+                      <div className="grid grid-cols-1 gap-3 px-4 py-3 sm:grid sm:grid-cols-12 sm:items-center sm:gap-2">
+                        {/* Candidate */}
+                        <div className="flex items-center gap-3 sm:col-span-4">
+                          {renderRowAvatar(detail)}
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold">
+                              {detail.candidateName ?? "-"}
+                            </div>
+                            {detail.candidateEmail && (
+                              <div className="text-muted-foreground truncate text-xs">
+                                {detail.candidateEmail}
+                              </div>
+                            )}
                           </div>
+                        </div>
+
+                        {/* JD */}
+                        <div className="sm:col-span-3">
+                          <div className="line-clamp-2 text-sm">{detail.jdTitle ?? "-"}</div>
+                          <div className="text-muted-foreground text-xs">
+                            {t("adminMentorReviewAssignment.application")} #{detail.applicationId} ·{" "}
+                            {t("adminMentorReviewAssignment.detailId")} #{detail.id}
+                          </div>
+                        </div>
+
+                        {/* Round */}
+                        <div className="sm:col-span-2">
+                          <div className="text-sm font-medium">{detail.roundName ?? "-"}</div>
+                          {detail.roundOrder && (
+                            <div className="text-muted-foreground text-xs">
+                              {t("adminMentorReviewAssignment.round")} {detail.roundOrder}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* AI score */}
+                        <div className="text-center sm:col-span-1">
+                          {detail.aiScore != null ? (
+                            <Badge variant="secondary" className="font-mono text-xs tabular-nums">
+                              {detail.aiScore.toFixed(1)}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
+                        </div>
+
+                        {/* Action */}
+                        <div className="flex flex-col items-stretch justify-end gap-1 sm:col-span-2 sm:items-end">
+                          {isAwaitingMentor && (
+                            <Button
+                              size="sm"
+                              onClick={() => openAssignDialog(detail)}
+                              className="gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700">
+                              <UserPlus className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">
+                                {t("adminKiosk.assignMentor")}
+                              </span>
+                              <span className="sm:hidden">
+                                {t("adminMentorReviewAssignment.actionAssign")}
+                              </span>
+                            </Button>
+                          )}
+                          {isAwaitingCandidate && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openAssignDialog(detail)}
+                                className="gap-1.5 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-900/30">
+                                <RefreshCw className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">
+                                  {t("adminMentorReviewAssignment.reassign")}
+                                </span>
+                                <span className="sm:hidden">
+                                  {t("adminMentorReviewAssignment.actionAssign")}
+                                </span>
+                              </Button>
+                              {hasSuggestedMentors &&
+                                detail.assignedMentors?.slice(0, 3).map((m) => (
+                                  <span
+                                    key={m.id}
+                                    className="text-muted-foreground truncate text-[11px]">
+                                    • {m.name}
+                                  </span>
+                                ))}
+                            </>
+                          )}
+                          {!isAwaitingMentor && !isAwaitingCandidate && hasRoom && (
+                            <Badge
+                              variant="outline"
+                              className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
+                              <CheckCircle2 className="h-3 w-3" />
+                              {t("adminMentorReviewAssignment.roomCreated")}
+                            </Badge>
+                          )}
+                          {!isAwaitingMentor &&
+                            !isAwaitingCandidate &&
+                            !hasRoom &&
+                            renderStatusBadge(detail, t)}
+                        </div>
+
+                        {/* Mobile-only metadata */}
+                        <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs sm:hidden">
+                          {renderStatusBadge(detail, t)}
+                          {hasRoom && (
+                            <Badge
+                              variant="outline"
+                              className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
+                              <CheckCircle2 className="h-3 w-3" />
+                              {t("adminMentorReviewAssignment.roomCreated")}
+                            </Badge>
+                          )}
+                          {detail.createdAt && (
+                            <span>
+                              {t("adminMentorReviewAssignment.createdAt")}:{" "}
+                              {formatDateTime(treatZuluAsVietnamLocal(detail.createdAt))}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Expanded metadata on desktop */}
+                      <div className="text-muted-foreground hidden gap-4 px-4 pb-3 text-xs sm:flex">
+                        {renderStatusBadge(detail, t)}
+                        {hasRoom && (
+                          <Badge
+                            variant="outline"
+                            className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
+                            <CheckCircle2 className="h-3 w-3" />
+                            {t("adminMentorReviewAssignment.roomCreated")}
+                          </Badge>
+                        )}
+                        {detail.createdAt && (
+                          <span>
+                            {t("adminMentorReviewAssignment.createdAt")}:{" "}
+                            {formatDateTime(treatZuluAsVietnamLocal(detail.createdAt))}
+                          </span>
+                        )}
+                        {detail.sessionId != null && (
+                          <span>
+                            Session #{detail.sessionId}
+                            {detail.aiInterviewSessionId != null &&
+                              ` · AI #${detail.aiInterviewSessionId}`}
+                          </span>
                         )}
                       </div>
                     </div>
-
-                    {/* JD */}
-                    <div className="sm:col-span-3">
-                      <div className="line-clamp-2 text-sm">{detail.jdTitle ?? "-"}</div>
-                      <div className="text-muted-foreground text-xs">
-                        {t("adminMentorReviewAssignment.application")} #{detail.applicationId} ·{" "}
-                        {t("adminMentorReviewAssignment.detailId")} #{detail.id}
-                      </div>
-                    </div>
-
-                    {/* Round */}
-                    <div className="sm:col-span-2">
-                      <div className="text-sm font-medium">{detail.roundName ?? "-"}</div>
-                      {detail.roundOrder && (
-                        <div className="text-muted-foreground text-xs">
-                          {t("adminMentorReviewAssignment.round")} {detail.roundOrder}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* AI score */}
-                    <div className="text-center sm:col-span-1">
-                      {detail.aiScore != null ? (
-                        <Badge variant="secondary" className="font-mono text-xs tabular-nums">
-                          {detail.aiScore.toFixed(1)}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">-</span>
-                      )}
-                    </div>
-
-                    {/* Action */}
-                    <div className="flex flex-col items-stretch justify-end gap-1 sm:col-span-2 sm:items-end">
-                      {isAwaitingMentor && (
-                        <Button
-                          size="sm"
-                          onClick={() => openAssignDialog(detail)}
-                          className="gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700">
-                          <UserPlus className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">{t("adminKiosk.assignMentor")}</span>
-                          <span className="sm:hidden">
-                            {t("adminMentorReviewAssignment.actionAssign")}
-                          </span>
-                        </Button>
-                      )}
-                      {isAwaitingCandidate && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openAssignDialog(detail)}
-                            className="gap-1.5 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-900/30">
-                            <RefreshCw className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">
-                              {t("adminMentorReviewAssignment.reassign")}
-                            </span>
-                            <span className="sm:hidden">
-                              {t("adminMentorReviewAssignment.actionAssign")}
-                            </span>
-                          </Button>
-                          {hasSuggestedMentors &&
-                            detail.assignedMentors?.slice(0, 3).map((m) => (
-                              <span
-                                key={m.id}
-                                className="text-muted-foreground truncate text-[11px]">
-                                • {m.name}
-                              </span>
-                            ))}
-                        </>
-                      )}
-                      {!isAwaitingMentor && !isAwaitingCandidate && hasRoom && (
-                        <Badge
-                          variant="outline"
-                          className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
-                          <CheckCircle2 className="h-3 w-3" />
-                          {t("adminMentorReviewAssignment.roomCreated")}
-                        </Badge>
-                      )}
-                      {!isAwaitingMentor &&
-                        !isAwaitingCandidate &&
-                        !hasRoom &&
-                        renderStatusBadge(detail, t)}
-                    </div>
-
-                    {/* Mobile-only metadata */}
-                    <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs sm:hidden">
-                      {renderStatusBadge(detail, t)}
-                      {hasRoom && (
-                        <Badge
-                          variant="outline"
-                          className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
-                          <CheckCircle2 className="h-3 w-3" />
-                          {t("adminMentorReviewAssignment.roomCreated")}
-                        </Badge>
-                      )}
-                      {detail.createdAt && (
-                        <span>
-                          {t("adminMentorReviewAssignment.createdAt")}:{" "}
-                          {formatDateTime(treatZuluAsVietnamLocal(detail.createdAt))}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Expanded metadata on desktop */}
-                  <div className="text-muted-foreground hidden gap-4 px-4 pb-3 text-xs sm:flex">
-                    {renderStatusBadge(detail, t)}
-                    {hasRoom && (
-                      <Badge
-                        variant="outline"
-                        className="gap-1 border-emerald-200 bg-emerald-50/70 px-2 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
-                        <CheckCircle2 className="h-3 w-3" />
-                        {t("adminMentorReviewAssignment.roomCreated")}
-                      </Badge>
-                    )}
-                    {detail.createdAt && (
-                      <span>
-                        {t("adminMentorReviewAssignment.createdAt")}:{" "}
-                        {formatDateTime(treatZuluAsVietnamLocal(detail.createdAt))}
-                      </span>
-                    )}
-                    {detail.sessionId != null && (
-                      <span>
-                        Session #{detail.sessionId}
-                        {detail.aiInterviewSessionId != null &&
-                          ` · AI #${detail.aiInterviewSessionId}`}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-            {pageData.length > 0 && (
-              <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800 dark:bg-slate-900">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={setPageSize}
-                  showBoundaryButtons={false}
-                  showPageJump={false}
-                />
+                  );
+                })}
               </div>
-            )}
-          </div>
-        )}
+              {pageData.length > 0 && (
+                <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800 dark:bg-slate-900">
+                  <PaginationControl
+                    pagination={pagination}
+                    onPageSizeChange={setPageSize}
+                    showBoundaryButtons={false}
+                    showPageJump={false}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Assign Mentor Dialog */}
