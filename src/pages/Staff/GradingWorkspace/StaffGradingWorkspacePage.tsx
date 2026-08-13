@@ -850,8 +850,9 @@ export function StaffGradingWorkspacePage() {
     isLoading: isLoadingReviewer,
     refetch: refetchReviewer,
   } = useApplicationDetailsForReviewer(true);
-  const { data: allJds = [] } = useJobDescriptions();
-  const { data: allUsers = [] } = useUsers();
+  // Disable JD/users list fetching — reviewer API already embeds this data
+  const { data: allJds = [] } = useJobDescriptions(false);
+  const { data: allUsers = [] } = useUsers(false);
 
   // List → maps for O(1) lookup (best-effort enrichment; empty if BE
   // forbids staff from listing these resources)
