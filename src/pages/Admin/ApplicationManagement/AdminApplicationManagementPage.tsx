@@ -734,7 +734,7 @@ export function AdminApplicationManagementPage() {
               <TableHeader>
                 <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
                   <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
-                    #ID
+                    ID
                   </TableHead>
                   <TableHead className="min-w-[200px] font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminApplicationManagement.candidate", "Ứng viên")}
