@@ -98,7 +98,7 @@ export function QuestionBankTable({
             <TableHead className="w-[90px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               #ID
             </TableHead>
-            <TableHead className="max-w-[380px] min-w-[240px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[360px] max-w-[360px] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminQuestionbankmanagement.questionContent", "Nội dung câu hỏi")}
             </TableHead>
             <TableHead className="min-w-[150px] px-4 font-semibold text-slate-700 dark:text-slate-200">
@@ -138,13 +138,15 @@ export function QuestionBankTable({
                   </div>
                 </TableCell>
 
-                <TableCell className="max-w-[380px] px-4 py-4">
-                  <p
-                    className="truncate text-sm font-bold text-slate-900 dark:text-slate-100"
-                    title={q.questionText}>
-                    {q.questionText ||
-                      t("adminQuestionbankmanagement.noContent", "Chưa có nội dung")}
-                  </p>
+                <TableCell className="w-[360px] max-w-[360px] px-4 py-4">
+                  <div className="group/scroll relative overflow-hidden">
+                    <p
+                      className="truncate text-sm font-bold text-slate-900 transition-transform duration-1000 ease-in-out group-hover/scroll:[transform:translateX(calc(-100%+320px))] group-hover/scroll:overflow-visible group-hover/scroll:whitespace-nowrap dark:text-slate-100"
+                      title={q.questionText}>
+                      {q.questionText ||
+                        t("adminQuestionbankmanagement.noContent", "Chưa có nội dung")}
+                    </p>
+                  </div>
                 </TableCell>
 
                 <TableCell className="px-4 py-4">

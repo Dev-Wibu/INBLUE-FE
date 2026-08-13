@@ -157,11 +157,6 @@ export function QuestionBankEditor({
     const oldValue = opts[index];
     opts[index] = value;
 
-    // If the edited option was the currently-selected correct answer, keep
-    // the selection pinned to this option by tracking its letter rather than
-    // the previous text. That way, if the user clears the text we don't lose
-    // the "this row is the answer" intent – we'll just fall back to the
-    // letter and re-attach to the new text as soon as it's typed.
     if (formData.correctAnswer) {
       const optLetter = String.fromCharCode(65 + index);
       const wasSelectedAsText = formData.correctAnswer === oldValue && oldValue !== "";
@@ -181,11 +176,6 @@ export function QuestionBankEditor({
     const optLetter = String.fromCharCode(65 + index);
     const optText = (formData.options || [])[index] ?? "";
 
-    // The backend persists `correctAnswer` as a string that must match one
-    // of the `options` entries (or be a letter that resolves to one). Pick
-    // the most descriptive value available so the API never receives an
-    // empty string – which is what produced the
-    // "Correct answer is required" error.
     const candidate = optText.trim() !== "" ? optText : optLetter;
 
     if (formData.correctAnswer === candidate) {
@@ -207,17 +197,12 @@ export function QuestionBankEditor({
       return;
     }
 
-    // Validate that the user has picked a correct answer. We also resolve
-    // the answer back to the matching option text if the user only set a
-    // letter (e.g. "A") while the option was still empty, so the backend
-    // always receives a fully-populated value that matches one of the
-    // `options` entries.
     const rawAnswer = (formData.correctAnswer ?? "").trim();
     if (!rawAnswer) {
       toast.error(
         t(
           "question.pleaseSelectCorrectAnswer",
-          "Please select a correct answer (click the A/B/C/D badge next to one option)."
+          "Vui lòng chọn 1 đáp án đúng (click vào nút A/B/C/D)."
         )
       );
       return;
@@ -234,7 +219,7 @@ export function QuestionBankEditor({
       toast.error(
         t(
           "question.pleaseSelectCorrectAnswer",
-          "Please select a correct answer (click the A/B/C/D badge next to one option)."
+          "Vui lòng chọn 1 đáp án đúng (click vào nút A/B/C/D)."
         )
       );
       return;
@@ -334,7 +319,7 @@ export function QuestionBankEditor({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] w-full max-w-6xl flex-col gap-0 overflow-hidden rounded-2xl border-slate-200 p-0 shadow-2xl dark:border-slate-800 [&>button]:hidden">
+      <DialogContent className="flex h-[88vh] max-h-[840px] w-[98vw] flex-col gap-0 overflow-hidden rounded-[24px] border border-slate-200 bg-white p-0 shadow-2xl sm:max-w-[1240px] dark:border-slate-800 dark:bg-slate-900 [&>button]:hidden">
         <DialogHeader className="hidden">
           <DialogTitle>
             {initialData?.id
@@ -349,40 +334,45 @@ export function QuestionBankEditor({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex h-full flex-col overflow-hidden bg-slate-50/50 dark:bg-slate-950">
-          {/* ── TOP BAR ──────────────────────────────────────────────────────────── */}
-          <div className="flex flex-none items-center justify-between border-b border-slate-200/80 bg-white px-6 py-3.5 dark:border-slate-800/80 dark:bg-slate-900">
+        <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+          {/* ── TOP BAR HEADER ──────────────────────────────────────────────────────────── */}
+          <div className="flex flex-none items-center justify-between border-b border-slate-200/80 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                {initialData?.id
-                  ? t("adminQuestionbankmanagement.questionDetails", "Chi tiết câu hỏi")
-                  : t("adminQuestionbankmanagement.createQuestion", "Tạo câu hỏi mới")}
-              </h2>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400">
+                <FileText className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                  {initialData?.id
+                    ? t("adminQuestionbankmanagement.questionDetails", "Chi tiết câu hỏi")
+                    : t("adminQuestionbankmanagement.createQuestion", "Tạo câu hỏi mới")}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {t(
+                    "adminQuestionbankmanagement.createOrEditDesc",
+                    "Quản lý thông tin câu hỏi trắc nghiệm và các lựa chọn đáp án"
+                  )}
+                </p>
+              </div>
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => onOpenChange(false)}
-              className="h-8 w-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+              className="h-8 w-8 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
               <X className="h-5 w-5" />
             </Button>
           </div>
 
           {/* ── MAIN CONTENT (SPLIT PANE) ────────────────────────────────────────── */}
-          <div className="flex min-h-[420px] flex-1 overflow-hidden">
-            {/* LEFT COLUMN: Question Text & AI */}
-            <div className="flex min-w-0 flex-1 flex-col overflow-y-auto p-6 md:p-8">
+          <div className="flex min-h-0 flex-1 overflow-hidden bg-slate-50/60 dark:bg-slate-950/60">
+            {/* LEFT COLUMN: Question Text & AI Editor */}
+            <div className="flex min-w-0 flex-1 flex-col overflow-y-auto p-6 [scrollbar-gutter:stable] md:p-8">
               <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
-                      <FileText className="h-3.5 w-3.5" />
-                    </div>
-                    <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                      {t(
-                        "adminQuestionbankmanagement.liveDocTitle",
-                        "Nội dung câu hỏi (Live Document)"
-                      )}
+                    <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
+                      {t("adminQuestionbankmanagement.liveDocTitle", "Nội dung câu hỏi")}
                     </span>
                   </div>
                   {!showAI && (
@@ -390,7 +380,7 @@ export function QuestionBankEditor({
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-7 gap-1 border-slate-200 px-2.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:border-slate-800 dark:text-indigo-400 dark:hover:bg-indigo-950/30"
+                      className="h-8 gap-1.5 rounded-xl border-slate-200 px-3 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:border-slate-800 dark:text-indigo-400 dark:hover:bg-indigo-950/30"
                       onClick={() => {
                         const blocks = parseBlocks(formData.questionText || "");
                         blocks.push({
@@ -427,7 +417,7 @@ export function QuestionBankEditor({
                           placeholder="VD: Spring Boot, AOP, Transactional..."
                           value={aiTopics}
                           onChange={(e) => setAiTopics(e.target.value)}
-                          className="h-9 focus-visible:ring-indigo-500"
+                          className="h-10 rounded-xl focus-visible:ring-indigo-500"
                         />
                       </div>
                       <div className="space-y-2">
@@ -439,12 +429,12 @@ export function QuestionBankEditor({
                           rows={3}
                           value={aiPrompt}
                           onChange={(e) => setAiPrompt(e.target.value)}
-                          className="resize-none focus-visible:ring-indigo-500"
+                          className="resize-none rounded-xl focus-visible:ring-indigo-500"
                         />
                       </div>
                       <Button
                         type="button"
-                        className="w-full bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+                        className="h-10 w-full rounded-xl bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
                         onClick={handleGenerate}
                         disabled={aiLoading}>
                         {aiLoading ? (
@@ -459,7 +449,7 @@ export function QuestionBankEditor({
                 )}
 
                 {!showAI && (
-                  <div className="space-y-4 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
+                  <div className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                     {parseBlocks(formData.questionText || "").map((block, index, allBlocks) => {
                       if (block.type === "code") {
                         return (
@@ -530,12 +520,12 @@ export function QuestionBankEditor({
                             nextBlocks[index] = { ...block, content: e.target.value };
                             patch({ questionText: serializeBlocks(nextBlocks) });
                           }}
-                          rows={Math.max(3, block.content.split("\n").length)}
+                          rows={Math.max(4, block.content.split("\n").length)}
                           placeholder={t(
                             "adminQuestionbankmanagement.enterTextContent",
-                            "Nhập nội dung văn bản câu hỏi..."
+                            "Nhập nội dung câu hỏi phỏng vấn tại đây..."
                           )}
-                          className="w-full resize-y rounded-xl border-slate-200 bg-slate-50/50 p-3.5 text-[14px] leading-relaxed text-slate-800 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                          className="w-full resize-y rounded-xl border-slate-200 bg-slate-50/50 p-4 text-[14.5px] leading-relaxed text-slate-900 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                         />
                       );
                     })}
@@ -545,16 +535,16 @@ export function QuestionBankEditor({
             </div>
 
             {/* RIGHT COLUMN: Config Cards & Actions Footer */}
-            <div className="flex w-[440px] flex-none flex-col border-l border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40">
-              <div className="flex-1 space-y-5 overflow-y-auto p-6">
+            <div className="flex w-[460px] flex-none flex-col border-l border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex-1 space-y-5 overflow-y-auto p-6 [scrollbar-gutter:stable]">
                 {/* CARD 1: CẤU HÌNH CÂU HỎI */}
-                <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
-                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-900/50">
+                <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-950/50">
                     <div className="flex items-center gap-2">
                       <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
                         <FolderTree className="h-3.5 w-3.5" />
                       </div>
-                      <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                      <span className="text-[11px] font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
                         {t("adminQuestionbankmanagement.questionConfig", "Cấu Hình Câu Hỏi")}
                       </span>
                     </div>
@@ -573,10 +563,10 @@ export function QuestionBankEditor({
                       <Select
                         value={formData.questionCategoryId?.toString() || ""}
                         onValueChange={(val) => patch({ questionCategoryId: parseInt(val) })}>
-                        <SelectTrigger className="h-9 border-slate-200 bg-slate-50/50 text-xs font-medium focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50">
+                        <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50/50 text-xs font-semibold focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50">
                           <SelectValue placeholder={t("category.selectCategory")} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-xl">
                           {categories.map((c) => (
                             <SelectItem key={c.id} value={c.id!.toString()} className="text-xs">
                               {c.categoryName}
@@ -594,12 +584,12 @@ export function QuestionBankEditor({
                                   handleCreateCategorySubmit();
                                 }
                               }}
-                              className="h-8 text-xs focus-visible:ring-indigo-500"
+                              className="h-8 rounded-lg text-xs focus-visible:ring-indigo-500"
                             />
                             <Button
                               type="button"
                               size="sm"
-                              className="h-8 px-3"
+                              className="h-8 rounded-lg bg-indigo-600 px-3 text-white"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleCreateCategorySubmit();
@@ -631,19 +621,19 @@ export function QuestionBankEditor({
                         <ToggleGroupItem
                           value="EASY"
                           aria-label="easy"
-                          className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-emerald-300 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-700 dark:data-[state=on]:border-emerald-800/60 dark:data-[state=on]:bg-emerald-950/40 dark:data-[state=on]:text-emerald-400">
+                          className="flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all data-[state=on]:border-emerald-500 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-700 dark:data-[state=on]:border-emerald-600 dark:data-[state=on]:bg-emerald-950/40 dark:data-[state=on]:text-emerald-400">
                           {t("adminQuestionbankmanagement.easy", "Dễ")}
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="MEDIUM"
                           aria-label="medium"
-                          className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-amber-300 data-[state=on]:bg-amber-50 data-[state=on]:text-amber-700 dark:data-[state=on]:border-amber-800/60 dark:data-[state=on]:bg-amber-950/40 dark:data-[state=on]:text-amber-400">
+                          className="flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all data-[state=on]:border-amber-500 data-[state=on]:bg-amber-50 data-[state=on]:text-amber-700 dark:data-[state=on]:border-amber-600 dark:data-[state=on]:bg-amber-950/40 dark:data-[state=on]:text-amber-400">
                           {t("adminQuestionbankmanagement.medium", "TB")}
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="HARD"
                           aria-label="hard"
-                          className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-rose-300 data-[state=on]:bg-rose-50 data-[state=on]:text-rose-700 dark:data-[state=on]:border-rose-800/60 dark:data-[state=on]:bg-rose-950/40 dark:data-[state=on]:text-rose-400">
+                          className="flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all data-[state=on]:border-rose-500 data-[state=on]:bg-rose-50 data-[state=on]:text-rose-700 dark:data-[state=on]:border-rose-600 dark:data-[state=on]:bg-rose-950/40 dark:data-[state=on]:text-rose-400">
                           {t("adminQuestionbankmanagement.hard", "Khó")}
                         </ToggleGroupItem>
                       </ToggleGroup>
@@ -652,13 +642,13 @@ export function QuestionBankEditor({
                 </div>
 
                 {/* CARD 2: CÁC ĐÁP ÁN */}
-                <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
-                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-900/50">
+                <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-950/50">
                     <div className="flex items-center gap-2">
                       <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
                         <CheckSquare className="h-3.5 w-3.5" />
                       </div>
-                      <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                      <span className="text-[11px] font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
                         {t("question.answers")}
                       </span>
                     </div>
@@ -674,10 +664,6 @@ export function QuestionBankEditor({
                   <div className="space-y-3 p-5">
                     {(formData.options || []).map((opt, idx) => {
                       const optLetter = String.fromCharCode(65 + idx);
-                      // "Correct" means either the saved answer matches this
-                      // option's text, or it matches this option's letter
-                      // (used while the option is still empty so the user
-                      // can mark an answer before typing its text).
                       const isCorrect =
                         (formData.correctAnswer != null &&
                           formData.correctAnswer !== "" &&
@@ -705,7 +691,7 @@ export function QuestionBankEditor({
                               "adminQuestionbankmanagement.enterAnswerPlaceholder",
                               "Nhập đáp án..."
                             )}
-                            className={`h-10 pr-9 pl-10 text-[13px] shadow-none transition-colors focus-visible:ring-indigo-500 ${
+                            className={`h-10 rounded-xl pr-9 pl-10 text-[13px] shadow-none transition-colors focus-visible:ring-indigo-500 ${
                               isCorrect
                                 ? "border-emerald-500/80 bg-emerald-50/50 font-medium text-emerald-950 dark:border-emerald-500/50 dark:bg-emerald-950/20 dark:text-emerald-50"
                                 : "border-slate-200 bg-slate-50/30 text-slate-900 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-100"
@@ -726,7 +712,7 @@ export function QuestionBankEditor({
                 </div>
               </div>
 
-              {/* FOOTER ACTIONS (Grid 2 cols: AI Magic & Save/Update - No Cancel button) */}
+              {/* FOOTER ACTIONS */}
               <div className="grid grid-cols-2 gap-3 border-t border-slate-200/80 bg-white p-4 dark:border-slate-800/80 dark:bg-slate-900">
                 <Button
                   type="button"
