@@ -99,6 +99,7 @@ export function QuizEditor({
   const [selectedBankIndexes, setSelectedBankIndexes] = React.useState<number[]>([]);
   const [bankSearch, setBankSearch] = React.useState("");
   const [bankCategory, setBankCategory] = React.useState("All");
+  const [bankLevel, setBankLevel] = React.useState<LevelFilter>("All");
 
   // Time edit inline
   const [editingTime, setEditingTime] = React.useState(false);
@@ -112,6 +113,15 @@ export function QuizEditor({
     });
     return ["All", ...Array.from(set)];
   }, [bankQuestions]);
+
+  type LevelFilter = "All" | "EASY" | "MEDIUM" | "HARD";
+
+  const LEVEL_FILTERS: Array<{ key: LevelFilter }> = [
+    { key: "All" },
+    { key: "EASY" },
+    { key: "MEDIUM" },
+    { key: "HARD" },
+  ];
 
   // --- Left column actions ---
 
@@ -180,6 +190,7 @@ export function QuizEditor({
     setSelectedBankIndexes([]);
     setBankSearch("");
     setBankCategory("All");
+    setBankLevel("All");
     setRightView("bank");
     if (!hasFetchedBank) {
       fetchBankQuestions();
@@ -192,9 +203,10 @@ export function QuizEditor({
       const matchesSearch = (q.questionText || "").toLowerCase().includes(bankSearch.toLowerCase());
       const matchesCategory =
         bankCategory === "All" || q.questionCategory?.categoryName === bankCategory;
-      return matchesSearch && matchesCategory;
+      const matchesLevel = bankLevel === "All" || q.questionLevel === bankLevel;
+      return matchesSearch && matchesCategory && matchesLevel;
     });
-  }, [bankQuestions, bankSearch, bankCategory]);
+  }, [bankQuestions, bankSearch, bankCategory, bankLevel]);
 
   const toggleBankSelection = (index: number) => {
     setSelectedBankIndexes((prev) =>
@@ -643,7 +655,7 @@ export function QuizEditor({
               </div>
 
               {/* Filters */}
-              <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-white p-3 md:flex-row dark:border-slate-800 dark:bg-slate-950">
+              <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-white p-3 md:flex-row md:items-center dark:border-slate-800 dark:bg-slate-950">
                 <div className="relative flex-1">
                   <Search className="absolute top-2 left-2.5 h-3.5 w-3.5 text-slate-400" />
                   <Input
@@ -669,6 +681,59 @@ export function QuizEditor({
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Level filter row */}
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/40">
+                <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  {t("general.difficulty", "Mức độ")}:
+                </span>
+                {LEVEL_FILTERS.map(({ key }) => {
+                  const isActive = bankLevel === key;
+                  const label =
+                    key === "All"
+                      ? t("common.all")
+                      : key === "EASY"
+                        ? t("common.difficultyEasy", "Dễ")
+                        : key === "MEDIUM"
+                          ? t("common.difficultyMedium", "Trung bình")
+                          : t("common.difficultyHard", "Khó");
+                  const levelColor =
+                    key === "EASY"
+                      ? isActive
+                        ? "border-emerald-600 bg-emerald-600 text-white"
+                        : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-slate-950 dark:text-emerald-400"
+                      : key === "MEDIUM"
+                        ? isActive
+                          ? "border-amber-600 bg-amber-600 text-white"
+                          : "border-amber-200 bg-white text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:bg-slate-950 dark:text-amber-400"
+                        : key === "HARD"
+                          ? isActive
+                            ? "border-rose-600 bg-rose-600 text-white"
+                            : "border-rose-200 bg-white text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:bg-slate-950 dark:text-rose-400"
+                          : isActive
+                            ? "border-indigo-600 bg-indigo-600 text-white"
+                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400";
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setBankLevel(key)}
+                      className={cn(
+                        "rounded-full border px-2.5 py-1 text-[9px] font-bold transition-all",
+                        levelColor
+                      )}>
+                      {label}
+                    </button>
+                  );
+                })}
+                <span className="ml-auto text-[10px] font-semibold text-slate-400">
+                  {t("common.showing", "Hiển thị")}{" "}
+                  <strong className="text-indigo-600 dark:text-indigo-400">
+                    {filteredBank.length}
+                  </strong>
+                  /{bankQuestions.length}
+                </span>
               </div>
 
               {/* Questions list */}
