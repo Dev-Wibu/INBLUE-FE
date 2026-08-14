@@ -304,7 +304,7 @@ export function MentorSessionsPage() {
       </div>
 
       {/* Table Card - Admin Pattern */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {isLoading ? (
           <div className="p-4">
             <Skeleton className="h-12" />

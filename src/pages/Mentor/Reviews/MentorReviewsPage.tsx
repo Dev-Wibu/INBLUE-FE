@@ -276,7 +276,7 @@ export function MentorReviewsPage() {
       {/* Main content grid */}
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
         {/* Left - Table */}
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {isLoading ? (
             <div className="p-4">
               <Skeleton className="h-12" />

@@ -346,6 +346,11 @@ function CommunityChatRail() {
     };
   }, [user?.id, user?.role]);
 
+  // Don't render chat rail for Staff role
+  if (user?.role === "STAFF") {
+    return null;
+  }
+
   return (
     <aside className="hidden xl:block">
       <Card className="sticky top-5 h-fit rounded-2xl border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
