@@ -23,7 +23,6 @@ import {
   getLatestCandidateProfile,
   useCandidateProfile,
 } from "@/services/candidate-profile.manager";
-import { motion } from "framer-motion";
 import {
   AlertCircle,
   ArrowLeft,
@@ -52,10 +51,6 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-
-// ---------- shared surfaces ----------
-const GLASS_SURFACE =
-  "rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900";
 
 export function StudentDetailPage() {
   const { t } = useTranslation();
@@ -224,43 +219,31 @@ export function StudentDetailPage() {
             <div
               role="tablist"
               aria-label="student-detail-tabs"
-              className="relative grid w-full grid-cols-4 gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-800">
+              className="flex w-full overflow-x-auto border-b border-slate-200 dark:border-slate-800">
               {[
                 {
                   id: "sessions",
                   icon: Calendar,
                   label: `${t("general.session8")} (${totalSessions})`,
-                  tone: "emerald" as const,
                 },
                 {
                   id: "feedbacks",
                   icon: MessageSquare,
                   label: `${t("mentorStudents.responseReceived1")} (${totalFeedbacks})`,
-                  tone: "rose" as const,
                 },
                 {
                   id: "reviews",
                   icon: Star,
                   label: `${t("mentorStudents.submittedReview")} (${totalReviews})`,
-                  tone: "amber" as const,
                 },
                 {
                   id: "profile",
                   icon: User,
                   label: t("mentorStudents.profile"),
-                  tone: "sky" as const,
                 },
               ].map((tab) => {
                 const isActive = activeTab === tab.id;
                 const Icon = tab.icon;
-                const activeTextClass =
-                  tab.tone === "emerald"
-                    ? "text-emerald-700 dark:text-emerald-300"
-                    : tab.tone === "rose"
-                      ? "text-rose-700 dark:text-rose-300"
-                      : tab.tone === "amber"
-                        ? "text-amber-700 dark:text-amber-300"
-                        : "text-sky-700 dark:text-sky-300";
                 return (
                   <button
                     key={tab.id}
@@ -269,27 +252,13 @@ export function StudentDetailPage() {
                     aria-selected={isActive}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "relative flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors",
+                      "relative flex min-w-max items-center justify-center gap-2 border-b-2 px-4 py-3 text-xs font-medium transition-colors",
                       isActive
-                        ? activeTextClass
-                        : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                        ? "border-indigo-600 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300"
+                        : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-100"
                     )}>
-                    {isActive && (
-                      <motion.span
-                        layoutId="student-detail-tab-pill"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                        className={cn(
-                          "absolute inset-0 rounded-lg shadow-xs ring-1 ring-inset",
-                          tab.tone === "emerald" && "bg-emerald-500/10 ring-emerald-400/30",
-                          tab.tone === "rose" && "bg-rose-500/10 ring-rose-400/30",
-                          tab.tone === "amber" && "bg-amber-500/10 ring-amber-400/30",
-                          tab.tone === "sky" && "bg-sky-500/10 ring-sky-400/30",
-                          "dark:bg-white/[0.05]"
-                        )}
-                      />
-                    )}
-                    <Icon className="relative h-3.5 w-3.5" aria-hidden />
-                    <span className="relative truncate">{tab.label}</span>
+                    <Icon className="h-3.5 w-3.5" aria-hidden />
+                    <span className="truncate">{tab.label}</span>
                   </button>
                 );
               })}
@@ -297,12 +266,7 @@ export function StudentDetailPage() {
 
             {/* Sessions Tab */}
             {activeTab === "sessions" && (
-              <motion.div
-                key="sessions"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="space-y-2">
+              <div key="sessions" className="border-y border-slate-200 dark:border-slate-800">
                 {studentSessions.length === 0 ? (
                   <EmptyState
                     icon={Calendar}
@@ -321,17 +285,12 @@ export function StudentDetailPage() {
                     />
                   ))
                 )}
-              </motion.div>
+              </div>
             )}
 
             {/* Feedbacks Tab */}
             {activeTab === "feedbacks" && (
-              <motion.div
-                key="feedbacks"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="space-y-3">
+              <div key="feedbacks" className="border-y border-slate-200 dark:border-slate-800">
                 {studentFeedbacks.length === 0 ? (
                   <EmptyState
                     icon={MessageSquare}
@@ -362,17 +321,12 @@ export function StudentDetailPage() {
                     )
                   )
                 )}
-              </motion.div>
+              </div>
             )}
 
             {/* Reviews Tab */}
             {activeTab === "reviews" && (
-              <motion.div
-                key="reviews"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="space-y-3">
+              <div key="reviews" className="border-y border-slate-200 dark:border-slate-800">
                 {studentReviews.length === 0 ? (
                   <EmptyState
                     icon={Star}
@@ -408,16 +362,12 @@ export function StudentDetailPage() {
                     )
                   )
                 )}
-              </motion.div>
+              </div>
             )}
 
             {/* Profile Tab */}
             {activeTab === "profile" && (
-              <motion.div
-                key="profile"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}>
+              <div key="profile">
                 {!candidateProfile ? (
                   <EmptyState
                     icon={FileText}
@@ -427,7 +377,7 @@ export function StudentDetailPage() {
                 ) : (
                   <CandidateProfileView profile={candidateProfile} t={t} />
                 )}
-              </motion.div>
+              </div>
             )}
           </div>
         </div>
@@ -467,9 +417,9 @@ function SessionRow({
   return (
     <button
       onClick={onClick}
-      className="group flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-3 text-left transition-all hover:border-indigo-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      className="group flex min-h-16 w-full items-center justify-between gap-4 border-b border-slate-100 bg-white px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset dark:bg-emerald-500/20 dark:text-emerald-300">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
           <Calendar className="h-4 w-4" aria-hidden />
         </div>
         <div>
@@ -485,7 +435,7 @@ function SessionRow({
       </div>
       <div className="flex items-center gap-2">
         <Badge variant={statusVariant as never}>{statusLabel}</Badge>
-        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-indigo-500" />
+        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-500" />
       </div>
     </button>
   );
@@ -505,58 +455,44 @@ function CandidateProfileView({
     (profile.tools?.length ?? 0);
 
   return (
-    <div className="space-y-4">
-      {/* Profile header banner */}
-      <div
-        className={cn(
-          "relative overflow-hidden rounded-2xl p-5 ring-1 ring-inset",
-          "bg-gradient-to-br from-sky-500/12 via-indigo-500/8 to-violet-500/12 ring-sky-400/20",
-          "dark:from-sky-500/20 dark:via-indigo-500/10 dark:to-violet-500/20"
-        )}>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-16 -right-12 h-48 w-48 rounded-full bg-sky-400/25 opacity-60 blur-3xl dark:bg-sky-500/30"
-        />
-        <div className="relative flex flex-wrap items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-600 ring-1 ring-sky-400/30 ring-inset dark:text-sky-300">
-            <FileText className="h-5 w-5" aria-hidden />
-          </div>
-          <div className="flex-1">
-            <p className="text-[10px] font-semibold tracking-[0.06em] text-sky-700 uppercase dark:text-sky-300">
-              {t("mentorStudents.profile")}
+    <div>
+      <div className="flex flex-wrap items-center gap-4 border-b border-slate-200 py-6 dark:border-slate-800">
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <FileText className="h-5 w-5" aria-hidden />
+        </div>
+        <div className="flex-1">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {t("mentorStudents.profile")}
+          </p>
+          <p className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">
+            {profile.targetRole || t("mentorStudents.candidateProfile")}
+          </p>
+          {profile.targetLevel && (
+            <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
+              {profile.targetLevel}
             </p>
-            <p className="mt-0.5 text-lg font-bold tracking-[-0.02em] text-slate-900 dark:text-slate-100">
-              {profile.targetRole || t("mentorStudents.candidateProfile")}
-            </p>
-            {profile.targetLevel && (
-              <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
-                {profile.targetLevel}
-              </p>
-            )}
-          </div>
-          {totalSkills > 0 && (
-            <div className="text-right">
-              <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
-                {t("common.skill")}
-              </p>
-              <p className="text-2xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
-                {totalSkills}
-              </p>
-            </div>
           )}
         </div>
+        {totalSkills > 0 && (
+          <div className="text-right">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {t("common.skill")}
+            </p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totalSkills}</p>
+          </div>
+        )}
       </div>
 
       {/* Basic Info */}
-      <div className={GLASS_SURFACE}>
+      <div className="border-b border-slate-200 py-6 dark:border-slate-800">
         <SectionHeading icon={User} title={t("common.basicInformation")} />
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <InfoBlock label={t("mentorStudents.targetRole")} value={profile.targetRole || "—"} />
           <InfoBlock label={t("mentorStudents.level")} value={profile.targetLevel || "—"} />
         </div>
         {profile.introduction && (
-          <div className="mt-3 rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
-            <p className="mb-1 text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+          <div className="mt-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
               {t("common.introduction")}
             </p>
             <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
@@ -567,7 +503,7 @@ function CandidateProfileView({
       </div>
 
       {/* Skills */}
-      <div className={GLASS_SURFACE}>
+      <div className="border-b border-slate-200 py-6 dark:border-slate-800">
         <SectionHeading icon={Award} title={t("common.skill")} />
         <div className="mt-3 space-y-3">
           <SkillRow
@@ -593,13 +529,11 @@ function CandidateProfileView({
 
       {/* Projects */}
       {(profile.projects ?? []).length > 0 && (
-        <div className={GLASS_SURFACE}>
+        <div className="border-b border-slate-200 py-6 dark:border-slate-800">
           <SectionHeading icon={Briefcase} title={t("common.project")} />
           <div className="mt-3 grid gap-2">
             {profile.projects!.map((p, i) => (
-              <div
-                key={i}
-                className="rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm dark:border-slate-700/60 dark:bg-slate-900/40">
+              <div key={i} className="border-t border-slate-100 py-4 text-sm dark:border-slate-800">
                 <p className="font-medium text-slate-900 dark:text-slate-100">{p.name}</p>
                 <p className="mt-0.5 text-slate-600 dark:text-slate-300">{p.description}</p>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -613,13 +547,11 @@ function CandidateProfileView({
 
       {/* Work Experience */}
       {(profile.workExperiences ?? []).length > 0 && (
-        <div className={GLASS_SURFACE}>
+        <div className="border-b border-slate-200 py-6 dark:border-slate-800">
           <SectionHeading icon={Briefcase} title={t("common.workExperience")} />
           <div className="mt-3 grid gap-2">
             {profile.workExperiences!.map((w, i) => (
-              <div
-                key={i}
-                className="rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm dark:border-slate-700/60 dark:bg-slate-900/40">
+              <div key={i} className="border-t border-slate-100 py-4 text-sm dark:border-slate-800">
                 <p className="font-medium text-slate-900 dark:text-slate-100">
                   {w.position} — {w.company}
                 </p>
@@ -636,13 +568,11 @@ function CandidateProfileView({
 
       {/* Education */}
       {(profile.educations ?? []).length > 0 && (
-        <div className={GLASS_SURFACE}>
+        <div className="border-b border-slate-200 py-6 dark:border-slate-800">
           <SectionHeading icon={GraduationCap} title={t("common.education")} />
           <div className="mt-3 grid gap-2">
             {profile.educations!.map((e, i) => (
-              <div
-                key={i}
-                className="rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm dark:border-slate-700/60 dark:bg-slate-900/40">
+              <div key={i} className="border-t border-slate-100 py-4 text-sm dark:border-slate-800">
                 <p className="flex items-center gap-2 font-medium text-slate-900 dark:text-slate-100">
                   <School className="h-3.5 w-3.5 text-sky-500" />
                   {e.school}
@@ -667,7 +597,7 @@ function CandidateProfileView({
 
       {/* Certifications */}
       {(profile.certifications ?? []).length > 0 && (
-        <div className={GLASS_SURFACE}>
+        <div className="border-b border-slate-200 py-6 dark:border-slate-800">
           <SectionHeading icon={Award} title={t("common.certificate")} />
           <div className="mt-3 flex flex-wrap gap-1.5">
             {profile.certifications!.map((c) => (
@@ -684,7 +614,7 @@ function CandidateProfileView({
 
       {/* Achievements */}
       {(profile.achievements ?? []).length > 0 && (
-        <div className={GLASS_SURFACE}>
+        <div className="py-6">
           <SectionHeading icon={Trophy} title={t("common.achievements")} />
           <div className="mt-3 flex flex-wrap gap-1.5">
             {profile.achievements!.map((a) => (
@@ -706,22 +636,18 @@ function CandidateProfileView({
 function SectionHeading({ icon: Icon, title }: { icon: typeof User; title: string }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset dark:bg-emerald-500/15 dark:text-emerald-300">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
         <Icon className="h-4 w-4" aria-hidden />
       </div>
-      <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
-        {title}
-      </p>
+      <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h2>
     </div>
   );
 }
 
 function InfoBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
-      <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
-        {label}
-      </p>
+    <div className="border-t border-slate-100 py-3 dark:border-slate-800">
+      <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
       <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
@@ -819,13 +745,10 @@ function MentorReviewListRow({
   const hasContent = starNotes.length > 0 || review.strength || review.weakness || review.improve;
 
   return (
-    <motion.div
-      whileHover={{ y: -1 }}
-      transition={{ duration: 0.18 }}
+    <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl p-5 ring-1 transition-all ring-inset hover:shadow-md",
-        "bg-slate-500/[0.04] ring-slate-200/70",
-        "dark:bg-white/[0.03] dark:ring-white/5",
+        "group border-b border-slate-100 bg-white px-4 py-5 transition-colors last:border-b-0 hover:bg-slate-50",
+        "dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900",
         onClick && "cursor-pointer"
       )}
       onClick={onClick}
@@ -834,15 +757,15 @@ function MentorReviewListRow({
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-y-0 left-0 w-1.5",
-          tone === "emerald" && "bg-gradient-to-b from-emerald-500 to-emerald-300",
-          tone === "teal" && "bg-gradient-to-b from-teal-500 to-teal-300",
-          tone === "sky" && "bg-gradient-to-b from-sky-500 to-sky-300",
-          tone === "amber" && "bg-gradient-to-b from-amber-500 to-amber-300",
-          tone === "rose" && "bg-gradient-to-b from-rose-500 to-rose-300"
+          "hidden",
+          tone === "emerald" && "bg-emerald-500",
+          tone === "teal" && "bg-teal-500",
+          tone === "sky" && "bg-sky-500",
+          tone === "amber" && "bg-amber-500",
+          tone === "rose" && "bg-rose-500"
         )}
       />
-      <div className="flex flex-col gap-3 pl-2 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span
@@ -870,7 +793,7 @@ function MentorReviewListRow({
       </div>
 
       {hasContent ? (
-        <div className="mt-4 space-y-3 border-t border-slate-200/60 pt-3 dark:border-white/5">
+        <div className="mt-4 space-y-3 border-t border-slate-200 pt-3 dark:border-slate-800">
           {/* STAR notes */}
           {starNotes.length > 0 && (
             <div className="grid gap-2 sm:grid-cols-2">
@@ -879,7 +802,7 @@ function MentorReviewListRow({
                 return (
                   <div
                     key={note.key}
-                    className="rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+                    className="border-t border-slate-100 py-3 dark:border-slate-800">
                     <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
                       <Icon className="h-3 w-3 text-slate-400" aria-hidden />
                       {note.label}
@@ -897,34 +820,34 @@ function MentorReviewListRow({
           {(review.strength || review.weakness || review.improve) && (
             <div className="grid gap-2 sm:grid-cols-3">
               {review.strength && (
-                <div className="rounded-xl bg-emerald-500/[0.06] p-3 ring-1 ring-emerald-500/15 ring-inset">
+                <div className="border-t border-slate-100 py-3 dark:border-slate-800">
                   <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-emerald-700 uppercase dark:text-emerald-300">
                     <ThumbsUp className="h-3 w-3" aria-hidden />
                     {t("common.strengths")}
                   </p>
-                  <p className="text-sm leading-relaxed text-emerald-900 dark:text-emerald-100">
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                     {review.strength}
                   </p>
                 </div>
               )}
               {review.weakness && (
-                <div className="rounded-xl bg-amber-500/[0.06] p-3 ring-1 ring-amber-500/15 ring-inset">
+                <div className="border-t border-slate-100 py-3 dark:border-slate-800">
                   <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-amber-700 uppercase dark:text-amber-300">
                     <AlertCircle className="h-3 w-3" aria-hidden />
                     {t("common.pointsForImprovement")}
                   </p>
-                  <p className="text-sm leading-relaxed text-amber-900 dark:text-amber-100">
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                     {review.weakness}
                   </p>
                 </div>
               )}
               {review.improve && (
-                <div className="rounded-xl bg-sky-500/[0.06] p-3 ring-1 ring-sky-500/15 ring-inset">
+                <div className="border-t border-slate-100 py-3 dark:border-slate-800">
                   <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-sky-700 uppercase dark:text-sky-300">
                     <Lightbulb className="h-3 w-3" aria-hidden />
                     {t("common.suggestedImprovements1")}
                   </p>
-                  <p className="text-sm leading-relaxed text-sky-900 dark:text-sky-100">
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                     {review.improve}
                   </p>
                 </div>
@@ -937,7 +860,7 @@ function MentorReviewListRow({
           {t("compReview.thereIsNoDetailedReview")}
         </p>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -959,23 +882,17 @@ function MentorFeedbackListRow({
 }) {
   const rating = feedback.rating || 0;
   return (
-    <motion.div
-      whileHover={{ y: -1 }}
-      transition={{ duration: 0.18 }}
+    <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl p-5 ring-1 transition-all ring-inset hover:shadow-md",
-        "bg-slate-500/[0.04] ring-slate-200/70",
-        "dark:bg-white/[0.03] dark:ring-white/5",
+        "group border-b border-slate-100 bg-white px-4 py-5 transition-colors last:border-b-0 hover:bg-slate-50",
+        "dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900",
         onClick && "cursor-pointer"
       )}
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-rose-500 to-rose-300"
-      />
-      <div className="flex items-start gap-3 pl-2">
+      <div aria-hidden className="hidden" />
+      <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/10">
           {feedback.user?.avatarUrl ? (
             <AvatarImage src={feedback.user.avatarUrl} alt={feedback.user.name} />
@@ -1011,7 +928,7 @@ function MentorFeedbackListRow({
           </span>
         </div>
       </div>
-      <div className="mt-3 rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+      <div className="mt-3 border-t border-slate-200 pt-3 dark:border-slate-800">
         {feedback.comment ? (
           <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
             {feedback.comment}
@@ -1023,6 +940,6 @@ function MentorFeedbackListRow({
           </p>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
