@@ -34,13 +34,19 @@ import {
   Zap,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 export function ReviewDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const reviewId = Number(id);
   const navigate = useNavigate();
+  const location = useLocation();
+  const requestedReturnTo = (location.state as { returnTo?: string } | null)?.returnTo;
+  const returnTo =
+    typeof requestedReturnTo === "string" && requestedReturnTo.startsWith("/mentor/")
+      ? requestedReturnTo
+      : "/mentor?tab=reviews";
   const currentUser = useAuthStore((state) => state.user);
   const { data: review, isLoading } = useMentorReviewById(reviewId);
   const studentId = review?.user?.id || review?.session?.userId || 0;
@@ -75,7 +81,7 @@ export function ReviewDetailPage() {
   if (!review) {
     return (
       <div className="flex flex-col gap-5 bg-slate-50 p-4 md:p-6 lg:p-8 dark:bg-slate-950">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
+        <Button variant="ghost" onClick={() => navigate(returnTo)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("general.back")}
         </Button>
@@ -92,7 +98,7 @@ export function ReviewDetailPage() {
   if (!currentUser?.id || review.session?.userId2 !== currentUser.id) {
     return (
       <div className="flex flex-col gap-5 bg-slate-50 p-4 md:p-6 lg:p-8 dark:bg-slate-950">
-        <Button variant="ghost" onClick={() => navigate("/mentor?tab=reviews")}>
+        <Button variant="ghost" onClick={() => navigate(returnTo)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("common.backToTheList")}
         </Button>
@@ -147,7 +153,7 @@ export function ReviewDetailPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/mentor?tab=reviews")}
+            onClick={() => navigate(returnTo)}
             className="h-9 rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             {t("common.backToTheList")}
@@ -162,7 +168,9 @@ export function ReviewDetailPage() {
           size="sm"
           onClick={() => {
             if (typeof reviewSessionId === "number") {
-              navigate(`/mentor/sessions/${reviewSessionId}/review`);
+              navigate(`/mentor/sessions/${reviewSessionId}/review/view`, {
+                state: { returnTo },
+              });
             }
           }}
           disabled={typeof reviewSessionId !== "number"}
@@ -350,7 +358,9 @@ export function ReviewDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate(`/mentor/sessions/${reviewSessionId}`)}
+                  onClick={() =>
+                    navigate(`/mentor/sessions/${reviewSessionId}`, { state: { returnTo } })
+                  }
                   className="h-9 rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
                   {t("common.viewSessionDetails")}
                   <ChevronRight className="ml-1 h-3.5 w-3.5" />
