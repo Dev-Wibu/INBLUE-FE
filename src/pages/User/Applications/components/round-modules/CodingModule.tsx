@@ -519,10 +519,10 @@ export function CodingModule({
       };
       setSampleResults((prev) => ({ ...prev, [problemId]: compiled }));
       toast.success(
-        t(
-          "userApplication.coding.testCasesPassed",
-          `Sample test cases passed (${compiled.passedTestCases}/${compiled.totalTestCases})`
-        )
+        t("userApplication.coding.testCasesPassed", {
+          passed: compiled.passedTestCases,
+          total: compiled.totalTestCases,
+        })
       );
     } catch (err) {
       console.error("[CodingModule] Run sample error:", err);
