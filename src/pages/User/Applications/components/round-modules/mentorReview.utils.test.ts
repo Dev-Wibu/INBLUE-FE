@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   collectEmbeddedMentors,
   mergeMentorResponses,
+  resolvePersistedMentorId,
   resolveSelectedMentor,
 } from "./mentorReview.utils";
 
@@ -74,5 +75,29 @@ describe("mentor review display utilities", () => {
         null
       )
     ).toBeNull();
+  });
+
+  it("keeps the selected mentor lookup id after a review round is completed", () => {
+    const completedDetail = {
+      id: 388,
+      status: "COMPLETED",
+      mentorId: 4,
+      assignedMentorIds: null,
+      mentorReview: {
+        mentor: null,
+        session: { id: 95, userId2: 4, status: "COMPLETED" },
+      },
+    };
+
+    expect(resolvePersistedMentorId(completedDetail)).toBe(4);
+  });
+
+  it("falls back to the completed session mentor id when detail identity is absent", () => {
+    expect(
+      resolvePersistedMentorId(
+        { mentorId: null },
+        { mentorId: null, userId2: 9, status: "COMPLETED" }
+      )
+    ).toBe(9);
   });
 });

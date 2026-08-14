@@ -116,3 +116,39 @@ export function resolveSelectedMentor(
   if (matched) return matched;
   return mentors.length === 1 ? mentors[0] : null;
 }
+
+function toPositiveId(value: unknown): number | null {
+  const id = Number(value);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+export function resolvePersistedMentorId(...sources: unknown[]): number | null {
+  for (const source of sources) {
+    const record = asRecord(source);
+    if (!record) continue;
+
+    const sessionInfo = asRecord(record.sessionInfo);
+    const session = asRecord(record.session);
+    const mentorReview = asRecord(record.mentorReview);
+    const reviewMentor = asRecord(mentorReview?.mentor);
+    const reviewSession = asRecord(mentorReview?.session);
+
+    const candidates = [
+      record.mentorId,
+      record.userId2,
+      sessionInfo?.mentorId,
+      session?.mentorId,
+      session?.userId2,
+      reviewMentor?.id,
+      reviewSession?.mentorId,
+      reviewSession?.userId2,
+    ];
+
+    for (const candidate of candidates) {
+      const id = toPositiveId(candidate);
+      if (id) return id;
+    }
+  }
+
+  return null;
+}
