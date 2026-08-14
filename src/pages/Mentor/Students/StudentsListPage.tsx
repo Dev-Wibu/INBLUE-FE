@@ -40,7 +40,7 @@ import { isSessionMentor } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import { MentorQuickStat } from "@/pages/Mentor/Common";
 import { useAuthStore } from "@/stores/authStore";
-import { Calendar, MessageSquare, Search, Star, Trophy, Users } from "lucide-react";
+import { Calendar, MessageSquare, Search, Star, Trophy, Users, Video } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
