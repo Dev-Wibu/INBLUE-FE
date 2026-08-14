@@ -9,10 +9,10 @@
  * logic is preserved 1:1 from the previous version.
  */
 
+import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { SortButton } from "@/components/shared/SortButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -34,15 +34,10 @@ import { toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { isSessionMentor } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import {
-  MENTOR_EYEBROW,
-  MentorCommandHero,
   MentorEmptyState,
   MentorListRow,
   MentorQuickStat,
   MentorSortCluster,
-  MentorStatusFilter,
-  SpotlightBlock,
-  type MentorStatusItem,
 } from "@/pages/Mentor/Common";
 import { useAuthStore } from "@/stores/authStore";
 import { motion } from "framer-motion";
@@ -51,11 +46,8 @@ import {
   Inbox,
   MessageSquare,
   Search,
-  Sparkles,
   Star,
   Trophy,
-  Users,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -76,15 +68,6 @@ interface StudentInfo {
 }
 
 type StudentFilter = "all" | "reviewed" | "feedbacked" | "noReview";
-
-// ---------- motion ----------
-const listMotion = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.06, ease: "easeOut" as const },
-  },
-};
 
 const rowMotion = {
   hidden: { opacity: 0, y: 12 },
@@ -267,274 +250,242 @@ export function StudentsListPage() {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
-  // Status filter items (4 pills)
-  const filterItems: MentorStatusItem[] = useMemo(
-    () => [
-      {
-        id: "all",
-        label: t("mentorStudents.allStudents"),
-        count: students.length,
-        icon: Users,
-        tone: "indigo",
-        active: studentFilter === "all",
-      },
-      {
-        id: "reviewed",
-        label: t("mentorStudents.reviewed"),
-        count: students.filter((s) => s.reviewCount > 0).length,
-        icon: Star,
-        tone: "amber",
-        active: studentFilter === "reviewed",
-      },
-      {
-        id: "feedbacked",
-        label: t("mentorStudents.responseSent1"),
-        count: students.filter((s) => s.feedbackCount > 0).length,
-        icon: MessageSquare,
-        tone: "emerald",
-        active: studentFilter === "feedbacked",
-      },
-      {
-        id: "noReview",
-        label: t("common.thereAreNoReviewsYet"),
-        count: students.filter((s) => s.reviewCount === 0).length,
-        icon: Sparkles,
-        tone: "violet",
-        pulse: true,
-        active: studentFilter === "noReview",
-      },
-    ],
-    [students, studentFilter, t]
-  );
-
-  const handleFilterSelect = (id: string) => {
-    setStudentFilter(id as StudentFilter);
-    pagination.goToFirstPage();
-  };
-
-  const handleClearFilters = () => {
-    setSearchQuery("");
-    setStudentFilter("all");
-    pagination.goToFirstPage();
-  };
-
-  const isDirty = !!searchQuery || studentFilter !== "all";
-
-  const spotlightSlot = spotlightStudent ? (
-    <SpotlightBlock
-      primary={spotlightStudent.name || t("common.studentVar0", { var_0: spotlightStudent.id })}
-      secondary={
-        <span className="flex items-center gap-2 text-xs">
-          <StarRating value={spotlightStudent.avgRating} readOnly size="sm" />
-          <span className="text-slate-300">
-            {spotlightStudent.avgRating.toFixed(1)} ({spotlightStudent.reviewCount})
-          </span>
-        </span>
-      }
-    />
-  ) : null;
-
   // ---------- render ----------
   return (
-    <div className="flex min-h-full flex-col gap-5">
-      {/* Command deck hero */}
-      <MentorCommandHero
-        eyebrow={t("common.students")}
-        title={t("mentorStudents.student")}
-        subtitle={t("mentorStudents.listOfStudentsWhoHave")}
-        iconBadge={Users}
-        tone="violet"
-        anchor={{ label: t("mentorStudents.totalStudents"), value: students.length }}
-        onReload={async () => {
-          await Promise.all([refetchSessions(), refetchFeedbacks(), refetchReviews()]);
-        }}
-        isReloading={isReloading}
-        reloadTooltip={t("mentorStudents.reloadStudentList")}
-        spotlight={spotlightSlot}
-      />
-
-      {/* Status filter track */}
-      <MentorStatusFilter
-        items={filterItems}
-        onSelect={handleFilterSelect}
-        ariaLabel={t("mentorStudents.filterByInteraction")}
-      />
-
-      {/* Main content — bento: list + side spotlight */}
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
-        {/* LEFT — list + filter strip */}
-        <div className="relative z-10 flex flex-col gap-4">
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-24" />
-              <Skeleton className="h-24" />
-              <Skeleton className="h-24" />
+    <div
+      className={cn(
+        "flex flex-col bg-slate-50 dark:bg-slate-950",
+        "-m-4 min-h-[calc(100%+32px)] md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)]"
+      )}>
+      <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
+        {/* Stat Summary & Control Card - Admin Pattern */}
+        <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {t("mentorStudents.student")}
+              </h2>
+              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                {t("mentorStudents.listOfStudentsWhoHave")}
+              </p>
             </div>
-          ) : students.length === 0 ? (
-            <MentorEmptyState
-              icon={Inbox}
-              title={t("mentorStudents.noStudentsYet")}
-              description={t("common.youHaveNotHadAnyInterviewSessions")}
-              tone="violet"
+            <div className="flex items-center justify-center gap-5 sm:gap-6">
+              {[
+                [students.length, t("mentorStudents.totalStudents")],
+                [mentorSessions.length, t("common.totalSession")],
+                [reviews.length, t("mentorStudents.reviewsReceived")],
+              ].map(([value, label], index) => (
+                <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
+                  {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
+                  <div className="flex min-w-[78px] flex-col items-center justify-center text-center">
+                    <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
+                      {value}
+                    </span>
+                    <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                      {label}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Search row - Admin Pattern */}
+          <form
+            onSubmit={(event) => event.preventDefault()}
+            className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <Input
+                type="text"
+                placeholder={t("mentorStudents.searchByIdNameEmail")}
+                value={searchQuery}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  pagination.goToFirstPage();
+                }}
+                className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
+              />
+            </div>
+            <Select
+              value={studentFilter}
+              onValueChange={(value) => {
+                setStudentFilter(value as StudentFilter);
+                pagination.goToFirstPage();
+              }}>
+              <SelectTrigger className="h-[46px] w-[200px] rounded-xl border border-slate-200/90 bg-white text-[14.5px] shadow-2xs dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100">
+                <SelectValue placeholder={t("mentorStudents.filterByInteraction")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("mentorStudents.allStudents")}</SelectItem>
+                <SelectItem value="reviewed">{t("mentorStudents.reviewed")}</SelectItem>
+                <SelectItem value="feedbacked">{t("mentorStudents.responseSent1")}</SelectItem>
+                <SelectItem value="noReview">{t("common.thereAreNoReviewsYet")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <ReloadButton
+              onReload={async () => {
+                await Promise.all([refetchSessions(), refetchFeedbacks(), refetchReviews()]);
+              }}
+              isLoading={isReloading}
+              tooltip={t("mentorStudents.reloadStudentList")}
+              className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950/70"
             />
-          ) : (
-            <>
-              {/* Command bar (search + sort + clear) */}
-              <div
-                className={cn(
-                  "flex flex-col gap-3 rounded-xl p-3 ring-1 ring-slate-200/70 ring-inset sm:flex-row sm:items-center",
-                  "bg-white shadow-[0_8px_24px_-18px_rgba(15,23,42,0.25)]",
-                  "dark:bg-slate-900 dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] dark:ring-white/5"
-                )}>
-                <div className="relative min-w-0 flex-1">
-                  <Search
-                    className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
-                    aria-hidden
-                  />
-                  <Input
-                    value={searchQuery}
-                    onChange={(event) => {
-                      setSearchQuery(event.target.value);
-                      pagination.goToFirstPage();
-                    }}
-                    placeholder={t("mentorStudents.searchByIdNameEmail")}
-                    className="border-slate-200 bg-white pl-9 dark:border-slate-700 dark:bg-slate-900"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={studentFilter}
-                    onValueChange={(value) => {
-                      setStudentFilter(value as StudentFilter);
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger className="h-9 w-[200px] border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-                      <SelectValue placeholder={t("mentorStudents.filterByInteraction")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t("mentorStudents.allStudents")}</SelectItem>
-                      <SelectItem value="reviewed">{t("mentorStudents.reviewed")}</SelectItem>
-                      <SelectItem value="feedbacked">
-                        {t("mentorStudents.responseSent1")}
-                      </SelectItem>
-                      <SelectItem value="noReview">{t("common.thereAreNoReviewsYet")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {isDirty && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleClearFilters}
-                      className="h-9 gap-1 px-2 text-xs text-slate-600 dark:text-slate-300">
-                      <X className="h-3 w-3" aria-hidden />
-                      {t("common.clearFilter")}
-                    </Button>
-                  )}
-                </div>
-              </div>
+          </form>
 
-              {/* Sort cluster */}
-              {sortedData.length > 0 && (
-                <MentorSortCluster>
-                  <SortButton {...getSortProps("sessionCount")}>
-                    {t("mentorStudents.numberOfSessions")}
-                  </SortButton>
-                  <SortButton {...getSortProps("avgRating")}>{t("common.evaluate")}</SortButton>
-                  <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
-                </MentorSortCluster>
-              )}
-
-              {/* List */}
-              {pageData.length === 0 ? (
-                <MentorEmptyState
-                  icon={Search}
-                  title={t("mentorStudents.noSuitableStudentsWereFound")}
-                  description={t("mentorStudents.tryAnotherKeywordOrChange")}
-                  tone="violet"
-                />
-              ) : (
-                <motion.div
-                  variants={listMotion}
-                  // Filter changes mount new rows after the parent has already
-                  // animated. Starting them as `hidden` leaves their DOM boxes
-                  // clickable but visually invisible.
-                  initial={false}
-                  animate="show"
-                  className="flex flex-col gap-2">
-                  {pageData.map((student) => (
-                    <motion.div key={student.id} variants={rowMotion}>
-                      <MentorListRow
-                        tone={
-                          student.reviewCount > 0
-                            ? "violet"
-                            : student.feedbackCount > 0
-                              ? "emerald"
-                              : "indigo"
-                        }
-                        onClick={() => navigate(`/mentor/students/${student.id}`)}
-                        ariaLabel={student.name || t("common.studentVar0", { var_0: student.id })}
-                        actionSlot={<StudentRowTrailing student={student} t={t} />}>
-                        <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/10">
-                          <AvatarImage src={student.avatarUrl} alt={student.name} />
-                          <AvatarFallback className="bg-violet-100 text-xs font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                            {student.name?.charAt(0) || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-                            {student.name ||
-                              t("common.studentVar0", {
-                                var_0: student.id,
-                              })}
-                          </p>
-                          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                            <span className="truncate">{student.email || student.university}</span>
-                            {student.lastSessionDate && (
-                              <>
-                                <span className="text-slate-300 dark:text-slate-600">·</span>
-                                <Calendar className="h-3 w-3 shrink-0" aria-hidden />
-                                <span className="shrink-0">
-                                  {fmtDateShort(student.lastSessionDate)}
-                                </span>
-                              </>
-                            )}
-                          </p>
-                        </div>
-                      </MentorListRow>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-
-              {/* Pagination */}
-              {sortedData.length > 0 && (
-                <div className="rounded-xl border border-slate-200/70 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
-                  <PaginationControl
-                    pagination={pagination}
-                    onPageSizeChange={(size) => {
-                      setPageSize(size);
-                      pagination.goToFirstPage();
-                    }}
-                    pageSizeOptions={[5, 10, 20, 50]}
-                  />
-                </div>
-              )}
-            </>
-          )}
+          {/* Filter pills - Admin Pattern */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+              {t("common.filter", "Lọc")}:
+            </span>
+            {[
+              ["all", t("common.allStatus", "Tất cả")],
+              ["reviewed", t("mentorStudents.reviewed", "Đã review")],
+              ["feedbacked", t("mentorStudents.responseSent1", "Đã feedback")],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setStudentFilter(value as StudentFilter);
+                  pagination.goToFirstPage();
+                }}
+                className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                  studentFilter === value
+                    ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90 dark:text-white dark:shadow-indigo-500/20"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                }`}>
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* RIGHT — side bento spotlight */}
-        <SidePanel
-          isLoading={isLoading}
-          spotlightStudent={spotlightStudent}
-          students={students}
-          studentsCount={students.length}
-          reviewsCount={reviews.length}
-          feedbacksCount={feedbacks.length}
-          mentorSessionsCount={mentorSessions.length}
-          navigate={navigate}
-          t={t}
-        />
+        {/* Main content - Table Layout like Admin */}
+        <div className="flex flex-1 flex-col gap-5 xl:flex-row xl:gap-6">
+          {/* LEFT - Table */}
+          <div className="relative z-10 flex flex-1 flex-col gap-4">
+            {isLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-16" />
+                <Skeleton className="h-16" />
+                <Skeleton className="h-16" />
+              </div>
+            ) : students.length === 0 ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
+                <MentorEmptyState
+                  icon={Inbox}
+                  title={t("mentorStudents.noStudentsYet")}
+                  description={t("common.youHaveNotHadAnyInterviewSessions")}
+                  tone="violet"
+                />
+              </div>
+            ) : (
+              <>
+                {/* Sort cluster */}
+                {sortedData.length > 0 && (
+                  <MentorSortCluster>
+                    <SortButton {...getSortProps("sessionCount")}>
+                      {t("mentorStudents.numberOfSessions")}
+                    </SortButton>
+                    <SortButton {...getSortProps("avgRating")}>{t("common.evaluate")}</SortButton>
+                    <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
+                  </MentorSortCluster>
+                )}
+
+                {/* Table Card */}
+                {pageData.length === 0 ? (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
+                    <MentorEmptyState
+                      icon={Search}
+                      title={t("mentorStudents.noSuitableStudentsWereFound")}
+                      description={t("mentorStudents.tryAnotherKeywordOrChange")}
+                      tone="violet"
+                    />
+                  </div>
+                ) : (
+                  <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div className="flex flex-col gap-2 p-4">
+                      {pageData.map((student) => (
+                        <motion.div key={student.id} variants={rowMotion}>
+                          <MentorListRow
+                            tone={
+                              student.reviewCount > 0
+                                ? "violet"
+                                : student.feedbackCount > 0
+                                  ? "emerald"
+                                  : "indigo"
+                            }
+                            onClick={() => navigate(`/mentor/students/${student.id}`)}
+                            ariaLabel={
+                              student.name || t("common.studentVar0", { var_0: student.id })
+                            }
+                            actionSlot={<StudentRowTrailing student={student} t={t} />}>
+                            <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/10">
+                              <AvatarImage src={student.avatarUrl} alt={student.name} />
+                              <AvatarFallback className="bg-violet-100 text-xs font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
+                                {student.name?.charAt(0) || "U"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                {student.name ||
+                                  t("common.studentVar0", {
+                                    var_0: student.id,
+                                  })}
+                              </p>
+                              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                                <span className="truncate">
+                                  {student.email || student.university}
+                                </span>
+                                {student.lastSessionDate && (
+                                  <>
+                                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                                    <Calendar className="h-3 w-3 shrink-0" aria-hidden />
+                                    <span className="shrink-0">
+                                      {fmtDateShort(student.lastSessionDate)}
+                                    </span>
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                          </MentorListRow>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {sortedData.length > 0 && (
+                      <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 dark:border-t-slate-800 dark:bg-slate-900">
+                        <PaginationControl
+                          pagination={pagination}
+                          onPageSizeChange={(size) => {
+                            setPageSize(size);
+                            pagination.goToFirstPage();
+                          }}
+                          pageSizeOptions={[5, 10, 20, 50]}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* RIGHT - Side stats panel */}
+          <SidePanel
+            isLoading={isLoading}
+            spotlightStudent={spotlightStudent}
+            students={students}
+            studentsCount={students.length}
+            reviewsCount={reviews.length}
+            feedbacksCount={feedbacks.length}
+            mentorSessionsCount={mentorSessions.length}
+            navigate={navigate}
+            t={t}
+          />
+        </div>
       </div>
     </div>
   );
@@ -568,7 +519,7 @@ function SidePanel({
     return spotlightStudent.avgRating.toFixed(1);
   }, [spotlightStudent, reviewsCount]);
 
-  // Top-3 students sorted by (avg rating desc, review count desc)
+  // Top-5 students sorted by (avg rating desc, review count desc)
   const topStudents = useMemo(() => {
     return [...students]
       .sort((a, b) => {
@@ -580,104 +531,81 @@ function SidePanel({
   }, [students]);
 
   return (
-    <aside className="flex flex-col gap-4 xl:sticky xl:top-4 xl:self-start">
-      {/* Top performers card — shows ALL students (clickable mini-list) */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.36, ease: "easeOut" }}
-        className={cn(
-          "relative overflow-hidden rounded-2xl p-5 ring-1 ring-inset",
-          "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
-          "dark:bg-white/[0.03] dark:ring-white/5"
-        )}>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-16 -right-12 h-40 w-40 rounded-full bg-violet-400/15 opacity-60 blur-3xl dark:bg-violet-500/20"
-        />
-        <div className="relative flex flex-col gap-3">
-          <div className="flex items-end justify-between gap-2">
-            <div>
-              <p className={MENTOR_EYEBROW}>{t("mentorStudents.totalStudents")}</p>
-              <p className="mt-0.5 flex items-baseline gap-2">
-                <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
-                  {isLoading ? "—" : studentsCount}
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {t("mentorStudents.listOfStudents")}
-                </span>
-              </p>
-            </div>
+    <aside className="flex w-full flex-col gap-4 xl:sticky xl:top-4 xl:w-[280px] xl:self-start">
+      {/* Top performers card */}
+      <div className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+        <div className="flex items-end justify-between gap-2">
+          <div>
+            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+              {t("mentorStudents.totalStudents")}
+            </p>
+            <p className="mt-0.5 flex items-baseline gap-2">
+              <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-white">
+                {isLoading ? "—" : studentsCount}
+              </span>
+            </p>
           </div>
-
-          {isLoading ? (
-            <div className="space-y-2 pt-2">
-              <Skeleton className="h-10" />
-              <Skeleton className="h-10" />
-              <Skeleton className="h-10" />
-            </div>
-          ) : topStudents.length === 0 ? (
-            <p className="pt-2 text-xs text-slate-500 italic dark:text-slate-400">—</p>
-          ) : (
-            <ul className="mt-1 flex flex-col gap-1.5 border-t border-slate-200/60 pt-3 dark:border-white/5">
-              {topStudents.map((student, index) => (
-                <li key={student.id}>
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/mentor/students/${student.id}`)}
-                    className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-all hover:bg-violet-500/10 dark:hover:bg-violet-500/15">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-[10px] font-bold text-violet-600 ring-1 ring-violet-500/20 ring-inset dark:bg-violet-500/15 dark:text-violet-300">
-                      #{index + 1}
-                    </span>
-                    <Avatar className="h-8 w-8 shrink-0 ring-1 ring-white/10">
-                      {student.avatarUrl ? (
-                        <AvatarImage src={student.avatarUrl} alt={student.name} />
-                      ) : null}
-                      <AvatarFallback className="bg-violet-100 text-[10px] font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                        {student.name?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold text-slate-900 group-hover:text-violet-700 dark:text-slate-100 dark:group-hover:text-violet-300">
-                        {student.name || t("common.studentVar0", { var_0: student.id })}
-                      </p>
-                      <p className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
-                        <span className="font-medium">
-                          {student.sessionCount} {t("common.session").toLowerCase()}
-                        </span>
-                        <span className="text-slate-300 dark:text-slate-600">·</span>
-                        <span className="font-medium">
-                          {student.reviewCount} {t("common.evaluate").toLowerCase()}
-                        </span>
-                      </p>
-                    </div>
-                    {student.reviewCount > 0 && (
-                      <span className="flex items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-500/20 ring-inset dark:bg-amber-500/15 dark:text-amber-300">
-                        {student.avgRating.toFixed(1)}
-                        <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
-                      </span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
-      </motion.div>
+
+        {isLoading ? (
+          <div className="space-y-2 pt-3">
+            <Skeleton className="h-10" />
+            <Skeleton className="h-10" />
+            <Skeleton className="h-10" />
+          </div>
+        ) : topStudents.length === 0 ? (
+          <p className="pt-3 text-xs text-slate-500 italic dark:text-slate-400">—</p>
+        ) : (
+          <ul className="mt-3 flex flex-col gap-1.5 border-t border-slate-200 pt-3 dark:border-slate-800">
+            {topStudents.map((student, index) => (
+              <li key={student.id}>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/mentor/students/${student.id}`)}
+                  className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-[10px] font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                    #{index + 1}
+                  </span>
+                  <Avatar className="h-8 w-8 shrink-0 ring-1 ring-white/10">
+                    {student.avatarUrl ? (
+                      <AvatarImage src={student.avatarUrl} alt={student.name} />
+                    ) : null}
+                    <AvatarFallback className="bg-slate-100 text-[10px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      {student.name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-300">
+                      {student.name || t("common.studentVar0", { var_0: student.id })}
+                    </p>
+                    <p className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                      <span className="font-medium">
+                        {student.sessionCount} {t("common.session").toLowerCase()}
+                      </span>
+                      <span className="text-slate-300 dark:text-slate-600">·</span>
+                      <span className="font-medium">
+                        {student.reviewCount} {t("common.evaluate").toLowerCase()}
+                      </span>
+                    </p>
+                  </div>
+                  {student.reviewCount > 0 && (
+                    <span className="flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+                      {student.avgRating.toFixed(1)}
+                      <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {/* Top performer highlight */}
       {spotlightStudent && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.36, ease: "easeOut", delay: 0.06 }}
-          className={cn(
-            "relative overflow-hidden rounded-2xl p-4 ring-1 ring-inset",
-            "bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-transparent ring-amber-400/20",
-            "dark:from-amber-500/15 dark:via-amber-400/10 dark:ring-amber-400/20"
-          )}>
+        <div className="rounded-[20px] border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm dark:border-amber-900/30 dark:from-amber-950/20 dark:to-slate-950 dark:shadow-md">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 ring-1 ring-amber-400/30 ring-inset dark:text-amber-300">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-300">
               <Trophy className="h-4 w-4" aria-hidden />
             </div>
             <div className="min-w-0 flex-1">
@@ -689,7 +617,7 @@ function SidePanel({
               </p>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between border-t border-amber-300/30 pt-3 dark:border-amber-400/20">
+          <div className="mt-3 flex items-center justify-between border-t border-amber-200 pt-3 dark:border-amber-900/30">
             <div>
               <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
                 {t("common.averageStarRating")}
@@ -701,7 +629,7 @@ function SidePanel({
             </div>
             <StarRating value={spotlightStudent.avgRating} readOnly size="sm" />
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* 3 quick stats */}

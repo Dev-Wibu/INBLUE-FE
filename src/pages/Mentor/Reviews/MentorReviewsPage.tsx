@@ -1,26 +1,13 @@
 /**
- * Mentor Reviews List Page — "Command Deck" v2.
- *
- * UI-only refresh. Same vocabulary as Students list: dark command
- * hero + status filter pills + sticky search + asymmetric bento
- * layout (main list + side rating-distribution panel).
- *
- * All data hooks, filtering, sorting, pagination, and navigation
- * logic is preserved 1:1 from the previous version.
+ * Mentor Reviews List Page — Admin UI Pattern Sync
+ * Matches Admin Review Management page design patterns
  */
 
+import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { SortButton } from "@/components/shared/SortButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
@@ -29,19 +16,15 @@ import { useMentorReviews, type MentorReview } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { cn } from "@/lib/utils";
 import {
-  MENTOR_EYEBROW,
-  MentorCommandHero,
   MentorEmptyState,
   MentorListRow,
   MentorQuickStat,
   MentorSortCluster,
-  MentorStatusFilter,
-  SpotlightBlock,
-  type MentorStatusItem,
 } from "@/pages/Mentor/Common";
 import { motion } from "framer-motion";
-import { Search, Send, Star, Trophy, X, type LucideIcon } from "lucide-react";
+import { Search, Star, Trophy, type LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -60,15 +43,6 @@ const getReviewNewestSortValue = (review: MentorReview) => {
   const startTime = toSessionTimestamp(review.session?.startTime1);
   if (startTime > 0) return startTime;
   return typeof review.id === "number" ? review.id : 0;
-};
-
-// ---------- motion ----------
-const listMotion = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.06, ease: "easeOut" as const },
-  },
 };
 
 const rowMotion = {
@@ -173,275 +147,232 @@ export function MentorReviewsPage() {
 
   const fiveStarCount = reviews.filter((r: { rating?: number }) => r.rating === 5).length;
 
-  // Status filter items (4 pills)
-  const filterItems: MentorStatusItem[] = useMemo(
-    () => [
-      {
-        id: "all",
-        label: t("common.allPoints"),
-        count: reviews.length,
-        icon: Send,
-        tone: "indigo",
-        active: ratingFilter === "all",
-      },
-      {
-        id: "high",
-        label: t("common.fiveStars"),
-        count: fiveStarCount,
-        icon: Trophy,
-        tone: "emerald",
-        active: ratingFilter === "high",
-      },
-      {
-        id: "medium",
-        label: t("common.threeToFourStars"),
-        count: reviews.filter((r: { rating?: number }) => {
-          const rating = r.rating || 0;
-          return rating >= 3 && rating <= 4;
-        }).length,
-        icon: Star,
-        tone: "amber",
-        active: ratingFilter === "medium",
-      },
-      {
-        id: "low",
-        label: t("common.oneToTwoStars"),
-        count: reviews.filter((r: { rating?: number }) => {
-          const rating = r.rating || 0;
-          return rating >= 1 && rating <= 2;
-        }).length,
-        icon: Star,
-        tone: "rose",
-        active: ratingFilter === "low",
-      },
-    ],
-    [reviews, ratingFilter, fiveStarCount, t]
-  );
-
-  const handleFilterSelect = (id: string) => {
-    setRatingFilter(id as "all" | "high" | "medium" | "low");
-    pagination.goToFirstPage();
-  };
-
-  const handleClearFilters = () => {
-    setSearchQuery("");
-    setRatingFilter("all");
-    pagination.goToFirstPage();
-  };
-
-  const isDirty = !!searchQuery || ratingFilter !== "all";
-
-  const spotlightReview = useMemo(() => {
-    if (reviews.length === 0) return null;
-    const five = reviews.filter((r: { rating?: number }) => r.rating === 5);
-    return (five.length > 0 ? five[0] : reviews[0]) ?? null;
-  }, [reviews]);
-
-  const spotlightSlot = spotlightReview ? (
-    <SpotlightBlock
-      primary={spotlightReview.user?.name || `Review #${spotlightReview.id}`}
-      secondary={
-        <span className="flex items-center gap-2 text-xs">
-          <StarRating value={spotlightReview.rating || 0} readOnly size="sm" />
-          <span className="text-slate-300">{spotlightReview.rating} / 5</span>
-        </span>
-      }
-    />
-  ) : null;
-
   // ---------- render ----------
   return (
-    <div className="flex min-h-full flex-col gap-5">
-      <MentorCommandHero
-        eyebrow={t("mentorMentordashboard.reviewSent")}
-        title={t("common.reviewSubmitted")}
-        subtitle={t("mentorReviews.viewTheAssessmentsYouSent")}
-        iconBadge={Send}
-        tone="emerald"
-        anchor={{ label: t("common.totalRating"), value: reviews.length }}
-        onReload={async () => {
-          await refetch();
-        }}
-        isReloading={isRefetching}
-        reloadTooltip={t("common.reloadReviewList")}
-        spotlight={spotlightSlot}
-      />
-
-      <MentorStatusFilter
-        items={filterItems}
-        onSelect={handleFilterSelect}
-        ariaLabel={t("common.filterByScore")}
-      />
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
-        {/* LEFT — list + filter strip */}
-        <div className="relative z-10 flex flex-col gap-4">
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-24" />
-              <Skeleton className="h-24" />
-              <Skeleton className="h-24" />
+    <div
+      className={cn(
+        "flex flex-col bg-slate-50 dark:bg-slate-950",
+        "-m-4 min-h-[calc(100%+32px)] md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)]"
+      )}>
+      <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
+        {/* Stat Summary & Control Card - Admin Pattern */}
+        <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {t("mentorMentordashboard.reviewSent")}
+              </h2>
+              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                {t("mentorReviews.viewTheAssessmentsYouSent")}
+              </p>
             </div>
-          ) : reviews.length === 0 ? (
-            <MentorEmptyState
-              icon={Star}
-              title={t("common.thereAreNoReviewsYet")}
-              description={t("mentorReviews.youHaveNotSentAny")}
-              tone="emerald"
+            <div className="flex items-center justify-center gap-5 sm:gap-6">
+              {[
+                [reviews.length, t("common.totalRating")],
+                [avgStarRating, t("common.averageStarRating")],
+                [fiveStarCount, t("common.fiveStars")],
+              ].map(([value, label], index) => (
+                <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
+                  {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
+                  <div className="flex min-w-[78px] flex-col items-center justify-center text-center">
+                    <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
+                      {value}
+                    </span>
+                    <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                      {label}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Search row - Admin Pattern */}
+          <form
+            onSubmit={(event) => event.preventDefault()}
+            className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <Input
+                type="text"
+                placeholder={t("mentorReviews.searchByStudentEmailInterview")}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  pagination.goToFirstPage();
+                }}
+                className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-500/80"
+              />
+            </div>
+            <ReloadButton
+              onReload={async () => {
+                await refetch();
+              }}
+              isLoading={isRefetching}
+              tooltip={t("common.reloadReviewList")}
+              className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
             />
-          ) : (
-            <>
-              {/* Command bar */}
-              <div
-                className={
-                  "flex flex-col gap-3 rounded-xl p-3 ring-1 ring-slate-200/70 ring-inset sm:flex-row sm:items-center " +
-                  "bg-white shadow-[0_8px_24px_-18px_rgba(15,23,42,0.25)] " +
-                  "dark:bg-slate-900 dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] dark:ring-white/5"
-                }>
-                <div className="relative min-w-0 flex-1">
-                  <Search
-                    className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
-                    aria-hidden
-                  />
-                  <Input
-                    placeholder={t("mentorReviews.searchByStudentEmailInterview")}
-                    value={searchQuery}
-                    onChange={(event) => {
-                      setSearchQuery(event.target.value);
-                      pagination.goToFirstPage();
-                    }}
-                    className="border-slate-200 bg-white pl-9 dark:border-slate-700 dark:bg-slate-900"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={ratingFilter}
-                    onValueChange={(value) => {
-                      setRatingFilter(value as "all" | "high" | "medium" | "low");
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger className="h-9 w-[180px] border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-                      <SelectValue placeholder={t("common.filterByScore")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t("common.allPoints")}</SelectItem>
-                      <SelectItem value="high">{t("common.fiveStars")}</SelectItem>
-                      <SelectItem value="medium">{t("common.threeToFourStars")}</SelectItem>
-                      <SelectItem value="low">{t("common.oneToTwoStars")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {isDirty && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleClearFilters}
-                      className="h-9 gap-1 px-2 text-xs text-slate-600 dark:text-slate-300">
-                      <X className="h-3 w-3" aria-hidden />
-                      {t("common.clearFilter")}
-                    </Button>
-                  )}
-                </div>
+          </form>
+
+          {/* Rating filter pills - Admin Pattern */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+              {t("common.evaluate", "Đánh giá")}:
+            </span>
+            {[
+              ["all", t("common.allStatus", "Tất cả")],
+              ["high", t("common.fiveStars", "5 sao")],
+              ["medium", t("common.threeToFourStars", "3-4 sao")],
+              ["low", t("common.oneToTwoStars", "1-2 sao")],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setRatingFilter(value as "all" | "high" | "medium" | "low");
+                  pagination.goToFirstPage();
+                }}
+                className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                  ratingFilter === value
+                    ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90 dark:text-white dark:shadow-indigo-500/20"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                }`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main content - Table Layout like Admin */}
+        <div className="flex flex-1 flex-col gap-5 xl:flex-row xl:gap-6">
+          {/* LEFT - Table */}
+          <div className="relative z-10 flex flex-1 flex-col gap-4">
+            {isLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-16" />
+                <Skeleton className="h-16" />
+                <Skeleton className="h-16" />
               </div>
-
-              {sortedData.length > 0 && (
-                <MentorSortCluster>
-                  <SortButton {...getSortProps("rating")}>{t("common.evaluate")}</SortButton>
-                  <SortButton {...getSortProps("newestSortValue")}>{t("common.latest")}</SortButton>
-                </MentorSortCluster>
-              )}
-
-              {pageData.length === 0 ? (
+            ) : reviews.length === 0 ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
                 <MentorEmptyState
-                  icon={Search}
+                  icon={Star}
                   title={t("common.thereAreNoReviewsYet")}
                   description={t("mentorReviews.youHaveNotSentAny")}
                   tone="emerald"
                 />
-              ) : (
-                <motion.div
-                  variants={listMotion}
-                  initial={false}
-                  animate="show"
-                  className="flex flex-col gap-2">
-                  {pageData.map((review) => {
-                    const rating = review.rating || 0;
-                    return (
-                      <motion.div key={review.id} variants={rowMotion}>
-                        <MentorListRow
-                          tone={
-                            rating === 5
-                              ? "emerald"
-                              : rating >= 3
-                                ? "sky"
-                                : rating >= 1
-                                  ? "amber"
-                                  : "indigo"
-                          }
-                          onClick={() => {
-                            if (review.id) navigate(`/mentor/reviews/${review.id}`);
+              </div>
+            ) : (
+              <>
+                {/* Sort cluster */}
+                {sortedData.length > 0 && (
+                  <MentorSortCluster>
+                    <SortButton {...getSortProps("rating")}>{t("common.evaluate")}</SortButton>
+                    <SortButton {...getSortProps("newestSortValue")}>
+                      {t("common.latest")}
+                    </SortButton>
+                  </MentorSortCluster>
+                )}
+
+                {/* Table Card */}
+                {pageData.length === 0 ? (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
+                    <MentorEmptyState
+                      icon={Search}
+                      title={t("common.thereAreNoReviewsYet")}
+                      description={t("mentorReviews.youHaveNotSentAny")}
+                      tone="emerald"
+                    />
+                  </div>
+                ) : (
+                  <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div className="flex flex-col gap-2 p-4">
+                      {pageData.map((review) => {
+                        const rating = review.rating || 0;
+                        return (
+                          <motion.div key={review.id} variants={rowMotion}>
+                            <MentorListRow
+                              tone={
+                                rating === 5
+                                  ? "emerald"
+                                  : rating >= 3
+                                    ? "sky"
+                                    : rating >= 1
+                                      ? "amber"
+                                      : "indigo"
+                              }
+                              onClick={() => {
+                                if (review.id) navigate(`/mentor/reviews/${review.id}`);
+                              }}
+                              ariaLabel={review.user?.name || `Review #${review.id ?? ""}`}
+                              actionSlot={<ReviewRowTrailing review={review} t={t} />}>
+                              <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/10">
+                                <AvatarImage src={review.user?.avatarUrl} alt={review.user?.name} />
+                                <AvatarFallback className="bg-emerald-100 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                                  {review.user?.name?.charAt(0) || "S"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                    {review.user?.name || `Review #${review.id}`}
+                                  </p>
+                                  <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
+                                    #{review.id}
+                                  </span>
+                                </div>
+                                <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                                  <span className="truncate">
+                                    {review.session?.roomName || "—"}
+                                  </span>
+                                  {review.session?.endTime1 && (
+                                    <>
+                                      <span className="text-slate-300 dark:text-slate-600">·</span>
+                                      <TimeAgo
+                                        date={String(
+                                          treatZuluAsVietnamLocal(review.session.endTime1)
+                                        )}
+                                        prefix={false}
+                                      />
+                                    </>
+                                  )}
+                                </p>
+                              </div>
+                            </MentorListRow>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Pagination */}
+                    {sortedData.length > 0 && (
+                      <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 dark:border-t-slate-800 dark:bg-slate-900">
+                        <PaginationControl
+                          pagination={pagination}
+                          onPageSizeChange={(size) => {
+                            setPageSize(size);
+                            pagination.goToFirstPage();
                           }}
-                          ariaLabel={review.user?.name || `Review #${review.id ?? ""}`}
-                          actionSlot={<ReviewRowTrailing review={review} t={t} />}>
-                          <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/10">
-                            <AvatarImage src={review.user?.avatarUrl} alt={review.user?.name} />
-                            <AvatarFallback className="bg-emerald-100 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
-                              {review.user?.name?.charAt(0) || "S"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                {review.user?.name || `Review #${review.id}`}
-                              </p>
-                              <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
-                                #{review.id}
-                              </span>
-                            </div>
-                            <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                              <span className="truncate">{review.session?.roomName || "—"}</span>
-                              {review.session?.endTime1 && (
-                                <>
-                                  <span className="text-slate-300 dark:text-slate-600">·</span>
-                                  <TimeAgo
-                                    date={String(treatZuluAsVietnamLocal(review.session.endTime1))}
-                                    prefix={false}
-                                  />
-                                </>
-                              )}
-                            </p>
-                          </div>
-                        </MentorListRow>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              )}
+                          pageSizeOptions={[5, 10, 20, 50]}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
-              {sortedData.length > 0 && (
-                <div className="rounded-xl border border-slate-200/70 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
-                  <PaginationControl
-                    pagination={pagination}
-                    onPageSizeChange={(size) => {
-                      setPageSize(size);
-                      pagination.goToFirstPage();
-                    }}
-                    pageSizeOptions={[5, 10, 20, 50]}
-                  />
-                </div>
-              )}
-            </>
-          )}
+          {/* RIGHT - Side stats panel */}
+          <SidePanel
+            isLoading={isLoading}
+            avgStarRating={avgStarRating}
+            distribution={distribution}
+            totalReviews={reviews.length}
+            fiveStarCount={fiveStarCount}
+            t={t}
+          />
         </div>
-
-        {/* RIGHT — side bento: distribution + stats */}
-        <SidePanel
-          isLoading={isLoading}
-          avgStarRating={avgStarRating}
-          distribution={distribution}
-          totalReviews={reviews.length}
-          fiveStarCount={fiveStarCount}
-          t={t}
-        />
       </div>
     </div>
   );
@@ -483,7 +414,9 @@ function SidePanel({
         <div className="relative flex flex-col gap-4">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className={MENTOR_EYEBROW}>{t("common.averageStarRating")}</p>
+              <p className="text-[11px] font-medium tracking-widest text-indigo-500 uppercase dark:text-indigo-400">
+                {t("common.averageStarRating")}
+              </p>
               <p className="mt-0.5 flex items-baseline gap-1.5">
                 <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
                   {isLoading ? "—" : avgStarRating}

@@ -77,11 +77,7 @@ function buildStatusMap(t: (_key: string) => string): Record<string, StatusConfi
 // ---------- shared surface tokens ----------
 
 const METRIC_TILE = cn(
-  "group relative flex flex-col gap-1.5 overflow-hidden rounded-2xl p-4 ring-1 ring-inset",
-  "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
-  "dark:bg-white/[0.03] dark:ring-white/5",
-  "transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_-12px_rgba(15,23,42,0.25)]",
-  "dark:hover:shadow-[0_6px_20px_-8px_rgba(0,0,0,0.5)]"
+  "group relative flex flex-col gap-1.5 overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-sm dark:border-slate-800/80 dark:bg-slate-900"
 );
 
 const CHIP_LABEL_CLS =
@@ -344,499 +340,525 @@ export function MentorSessionDetailPage() {
   );
 
   return (
-    <motion.div
-      className="mx-auto flex w-full max-w-7xl flex-col gap-5"
-      variants={{
-        hidden: { opacity: 0 },
-        show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
-      }}
-      initial="hidden"
-      animate="show">
-      {/* Top action bar */}
-      <motion.div variants={childMotion} className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="ghost"
-          className="gap-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
-          onClick={() => navigate("/mentor?tab=sessions")}>
-          <ArrowLeft className="h-4 w-4" aria-hidden />
-          {t("common.returnToTheSessionList")}
-        </Button>
-      </motion.div>
+    <div className="-m-4 min-h-[calc(100%+32px)] bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
+      <div className="flex flex-col gap-5 p-4 md:p-6 lg:p-8">
+        <motion.div
+          className="flex w-full flex-col gap-5"
+          variants={{
+            hidden: { opacity: 0 },
+            show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+          }}
+          initial="hidden"
+          animate="show">
+          {/* Top action bar */}
+          <motion.div variants={childMotion}>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
+              <Button
+                variant="ghost"
+                className="gap-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                onClick={() => navigate("/mentor?tab=sessions")}>
+                <ArrowLeft className="h-4 w-4" aria-hidden />
+                {t("common.returnToTheSessionList")}
+              </Button>
+              <div className="flex items-center gap-2">
+                {canReview && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/mentor/sessions/${session.id}/review`)}
+                    className="rounded-xl border border-slate-200/90 bg-white text-xs font-medium text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800">
+                    {t("common.writeReview")}
+                  </Button>
+                )}
+                {candidateFeedback && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
+                    className="rounded-xl border border-slate-200/90 bg-white text-xs font-medium text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800">
+                    {t("common.viewReview")}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </motion.div>
 
-      {/* HERO — bold, full-width, with avatar halo + status badge */}
-      <motion.div variants={heroMotion}>
-        <div
-          className={cn(
-            "relative overflow-hidden rounded-3xl p-6 ring-1 ring-inset sm:p-8",
-            "bg-gradient-to-br from-slate-900/[0.04] via-slate-500/[0.03] to-slate-900/[0.04]",
-            "ring-slate-200/70 backdrop-blur",
-            "dark:from-white/[0.04] dark:via-white/[0.02] dark:to-white/[0.04] dark:ring-white/5"
-          )}>
-          {/* Background orbs — feel alive without distracting */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -top-20 -right-16 h-64 w-64 rounded-full bg-sky-400/15 opacity-60 blur-3xl dark:bg-sky-500/20"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-20 -left-12 h-64 w-64 rounded-full bg-violet-400/15 opacity-60 blur-3xl dark:bg-violet-500/15"
-          />
-          {/* Dotted grid */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.18] dark:opacity-[0.08]"
-            style={{
-              backgroundImage: "radial-gradient(rgba(148,163,184,0.45) 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
-            }}
-          />
-
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex min-w-0 items-center gap-5">
-              <StudentAvatarHalo
-                src={studentInfo?.avatarUrl}
-                name={studentInfo?.name || t("common.students")}
-                status={session.status}
+          {/* HERO — bold, full-width, with avatar halo + status badge */}
+          <motion.div variants={heroMotion}>
+            <div
+              className={cn(
+                "relative overflow-hidden rounded-3xl p-6 ring-1 ring-inset sm:p-8",
+                "bg-gradient-to-br from-slate-900/[0.04] via-slate-500/[0.03] to-slate-900/[0.04]",
+                "ring-slate-200/70 backdrop-blur",
+                "dark:from-white/[0.04] dark:via-white/[0.02] dark:to-white/[0.04] dark:ring-white/5"
+              )}>
+              {/* Background orbs */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -top-20 -right-16 h-64 w-64 rounded-full bg-sky-400/15 opacity-60 blur-3xl dark:bg-sky-500/20"
               />
-              <div className="min-w-0 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-[10px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
-                    {t("common.interviewSession")}
-                  </span>
-                  <span className="text-slate-300 dark:text-slate-600">·</span>
-                  <span className="font-mono text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                    #{session.id}
-                  </span>
-                  <span className="text-slate-300 dark:text-slate-600">·</span>
-                  <span className="font-mono text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                    {session.roomName || "—"}
-                  </span>
-                </div>
-                <h1
-                  className="text-2xl font-semibold tracking-[-0.02em] text-slate-900 sm:text-3xl dark:text-slate-100"
-                  style={{ textWrap: "balance" }}>
-                  {studentInfo?.name || t("common.students")}
-                </h1>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                  <span className="inline-flex items-center gap-1">
-                    <User className="h-3 w-3" aria-hidden />
-                    {mentorInfo?.name ||
-                      (mentorId != null ? t("common.mentorWithId", { id: mentorId }) : "—")}
-                  </span>
-                  <span className="text-slate-300 dark:text-slate-600">·</span>
-                  <span className="inline-flex items-center gap-1">
-                    <Calendar className="h-3 w-3" aria-hidden />
-                    {formatDateTime(session.joinTime)}
-                  </span>
-                  {completionLabel && (
-                    <>
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-20 -left-12 h-64 w-64 rounded-full bg-violet-400/15 opacity-60 blur-3xl dark:bg-violet-500/15"
+              />
+              {/* Dotted grid */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-[0.18] dark:opacity-[0.08]"
+                style={{
+                  backgroundImage: "radial-gradient(rgba(148,163,184,0.45) 1px, transparent 1px)",
+                  backgroundSize: "20px 20px",
+                }}
+              />
+
+              <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex min-w-0 items-center gap-5">
+                  <StudentAvatarHalo
+                    src={studentInfo?.avatarUrl}
+                    name={studentInfo?.name || t("common.students")}
+                    status={session.status}
+                  />
+                  <div className="min-w-0 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-[10px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
+                        {t("common.interviewSession")}
+                      </span>
+                      <span className="text-slate-300 dark:text-slate-600">·</span>
+                      <span className="font-mono text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                        #{session.id}
+                      </span>
+                      <span className="text-slate-300 dark:text-slate-600">·</span>
+                      <span className="font-mono text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                        {session.roomName || "—"}
+                      </span>
+                    </div>
+                    <h1
+                      className="text-2xl font-semibold tracking-[-0.02em] text-slate-900 sm:text-3xl dark:text-slate-100"
+                      style={{ textWrap: "balance" }}>
+                      {studentInfo?.name || t("common.students")}
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                      <span className="inline-flex items-center gap-1">
+                        <User className="h-3 w-3" aria-hidden />
+                        {mentorInfo?.name ||
+                          (mentorId != null ? t("common.mentorWithId", { id: mentorId }) : "—")}
+                      </span>
                       <span className="text-slate-300 dark:text-slate-600">·</span>
                       <span className="inline-flex items-center gap-1">
-                        <Clock className="h-3 w-3" aria-hidden />
-                        {completionLabel}
+                        <Calendar className="h-3 w-3" aria-hidden />
+                        {formatDateTime(session.joinTime)}
                       </span>
-                    </>
-                  )}
+                      {completionLabel && (
+                        <>
+                          <span className="text-slate-300 dark:text-slate-600">·</span>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-3 w-3" aria-hidden />
+                            {completionLabel}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={session.status}
+                      initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={reduceMotion ? undefined : { opacity: 0, scale: 0.92 }}
+                      transition={{ duration: 0.24, ease: "easeOut" as const }}>
+                      <SessionStatusBadge
+                        tone={sessionToneFromStatus(session.status)}
+                        label={status.label}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
               </div>
             </div>
+          </motion.div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={session.status}
-                  initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, scale: 0.92 }}
-                  transition={{ duration: 0.24, ease: "easeOut" as const }}>
-                  <SessionStatusBadge
-                    tone={sessionToneFromStatus(session.status)}
-                    label={status.label}
+          {/* KPI strip — 4 tiles on desktop, 2 on tablet, 1 on mobile */}
+          <motion.div
+            variants={gridStagger}
+            initial="hidden"
+            animate="show"
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiTile
+              index={1}
+              icon={Calendar}
+              label={t("common.appointmentTime")}
+              value={formatDateTime(session.joinTime)}
+              accent="sky"
+            />
+            <KpiTile
+              index={2}
+              icon={Timer}
+              label={t("common.duration1")}
+              value={
+                typeof session.duration === "number" && session.duration > 0
+                  ? t("general.minutes", { var_0: session.duration })
+                  : "—"
+              }
+              accent="indigo"
+            />
+            <KpiTile
+              index={3}
+              icon={CreditCard}
+              label={t("common.totalPrice")}
+              value={
+                typeof session.totalPrice === "number" && session.totalPrice > 0
+                  ? formatCurrency(session.totalPrice)
+                  : "—"
+              }
+              accent="emerald"
+              meta={session.transactionCode ?? undefined}
+            />
+            <KpiTile
+              index={4}
+              icon={Hash}
+              label={t("common.sessionCode")}
+              value={`#${session.id || "—"}`}
+              accent="violet"
+            />
+          </motion.div>
+
+          {/* Bento — main content + side rail */}
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
+            {/* LEFT — Act-fast + Your review (compact) + STAR preview */}
+            <motion.div variants={childMotion} className="flex flex-col gap-5">
+              {/* Act-fast — bold CTA strip with gradient edges */}
+              <ActFastBar
+                canJoinRoom={canJoinRoom}
+                canReview={canReview}
+                hasReview={!!mentorReview}
+                onJoin={() => navigate(`/mentor/sessions/room/${session.id}`)}
+                onWrite={() => navigate(`/mentor/sessions/${session.id}/review`)}
+                onEdit={() => navigate(`/mentor/sessions/${session.id}/review`)}
+                onView={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
+                t={t}
+              />
+
+              {/* Bento: Your review summary + STAR preview */}
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                {/* Your review summary — compact, signal-first */}
+                <PanelSurface className="relative overflow-hidden">
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -top-16 -right-12 h-40 w-40 rounded-full bg-amber-300/10 opacity-60 blur-3xl dark:bg-amber-500/15"
                   />
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* KPI strip — 4 tiles on desktop, 2 on tablet, 1 on mobile */}
-      <motion.div
-        variants={gridStagger}
-        initial="hidden"
-        animate="show"
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiTile
-          index={1}
-          icon={Calendar}
-          label={t("common.appointmentTime")}
-          value={formatDateTime(session.joinTime)}
-          accent="sky"
-        />
-        <KpiTile
-          index={2}
-          icon={Timer}
-          label={t("common.duration1")}
-          value={
-            typeof session.duration === "number" && session.duration > 0
-              ? t("general.minutes", { var_0: session.duration })
-              : "—"
-          }
-          accent="indigo"
-        />
-        <KpiTile
-          index={3}
-          icon={CreditCard}
-          label={t("common.totalPrice")}
-          value={
-            typeof session.totalPrice === "number" && session.totalPrice > 0
-              ? formatCurrency(session.totalPrice)
-              : "—"
-          }
-          accent="emerald"
-          meta={session.transactionCode ?? undefined}
-        />
-        <KpiTile
-          index={4}
-          icon={Hash}
-          label={t("common.sessionCode")}
-          value={`#${session.id || "—"}`}
-          accent="violet"
-        />
-      </motion.div>
-
-      {/* Bento — main content + side rail */}
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
-        {/* LEFT — Act-fast + Your review (compact) + STAR preview */}
-        <motion.div variants={childMotion} className="flex flex-col gap-5">
-          {/* Act-fast — bold CTA strip with gradient edges */}
-          <ActFastBar
-            canJoinRoom={canJoinRoom}
-            canReview={canReview}
-            hasReview={!!mentorReview}
-            onJoin={() => navigate(`/mentor/sessions/room/${session.id}`)}
-            onWrite={() => navigate(`/mentor/sessions/${session.id}/review`)}
-            onEdit={() => navigate(`/mentor/sessions/${session.id}/review`)}
-            onView={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
-            t={t}
-          />
-
-          {/* Bento: Your review summary + STAR preview */}
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            {/* Your review summary — compact, signal-first */}
-            <PanelSurface className="relative overflow-hidden">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -top-16 -right-12 h-40 w-40 rounded-full bg-amber-300/10 opacity-60 blur-3xl dark:bg-amber-500/15"
-              />
-              <div className="relative flex flex-col gap-4 p-5 sm:p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className={cn(
-                        "flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-inset",
-                        "bg-slate-900/[0.04] ring-slate-900/10",
-                        "dark:bg-white/[0.05] dark:ring-white/10"
-                      )}>
-                      <Star className="h-4 w-4 text-amber-500" aria-hidden />
-                    </div>
-                    <div>
-                      <p className={CHIP_LABEL_CLS}>{t("mentorSessions.yourReview")}</p>
-                      <p className="text-sm font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
-                        {rating > 0
-                          ? t("mentorSessions.youScoredCandidateWith", {
-                              var_0: rating.toFixed(1),
-                            })
-                          : t("mentorSessions.thereAreNoReviewsSubmitted")}
-                      </p>
-                    </div>
-                  </div>
-                  {mentorReview?.id && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
-                      className="gap-1.5 text-xs">
-                      {t("common.seeReviewDetails")}
-                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-                    </Button>
-                  )}
-                </div>
-
-                {reviewLoading ? (
-                  <Skeleton className="h-20" />
-                ) : !mentorReview ? (
-                  <div
-                    className={cn(
-                      "ring-dashed rounded-xl p-5 text-center ring-1 ring-inset",
-                      "ring-slate-300/70 dark:ring-slate-700/70"
-                    )}>
-                    <Wand2 className="mx-auto h-5 w-5 text-slate-400" aria-hidden />
-                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                      {t("mentorSessions.youHaventSubmittedAReview")}
-                    </p>
-                    {canReview && (
-                      <Button
-                        size="sm"
-                        className="mt-3 gap-1.5 bg-sky-600 text-white hover:bg-sky-700"
-                        onClick={() => navigate(`/mentor/sessions/${session.id}/review`)}>
-                        <MessageSquare className="h-3.5 w-3.5" aria-hidden />
-                        {t("common.writeAReview")}
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
-                          {rating.toFixed(1)}
-                        </span>
-                        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                          /5
-                        </span>
+                  <div className="relative flex flex-col gap-4 p-5 sm:p-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={cn(
+                            "flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-inset",
+                            "bg-slate-900/[0.04] ring-slate-900/10",
+                            "dark:bg-white/[0.05] dark:ring-white/10"
+                          )}>
+                          <Star className="h-4 w-4 text-amber-500" aria-hidden />
+                        </div>
+                        <div>
+                          <p className={CHIP_LABEL_CLS}>{t("mentorSessions.yourReview")}</p>
+                          <p className="text-sm font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
+                            {rating > 0
+                              ? t("mentorSessions.youScoredCandidateWith", {
+                                  var_0: rating.toFixed(1),
+                                })
+                              : t("mentorSessions.thereAreNoReviewsSubmitted")}
+                          </p>
+                        </div>
                       </div>
-                      {renderStars(rating, "md")}
-                    </div>
-                    {starSummary && (
-                      <p className="line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                        {starSummary}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-1.5">
-                      {mentorReview.strength && (
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] uppercase ring-1 ring-inset",
-                            "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20",
-                            "dark:text-emerald-300"
-                          )}>
-                          <ThumbsUpTiny />
-                          {t("mentorSessions.strengths")}
-                        </span>
-                      )}
-                      {mentorReview.weakness && (
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] uppercase ring-1 ring-inset",
-                            "bg-rose-500/10 text-rose-700 ring-rose-500/20",
-                            "dark:text-rose-300"
-                          )}>
-                          <WrenchTiny />
-                          {t("mentorSessions.pointsForImprovement")}
-                        </span>
-                      )}
-                      {mentorReview.improve && (
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] uppercase ring-1 ring-inset",
-                            "bg-violet-500/10 text-violet-700 ring-violet-500/20",
-                            "dark:text-violet-300"
-                          )}>
-                          <LightbulbTiny />
-                          {t("common.suggestedImprovements")}
-                        </span>
+                      {mentorReview?.id && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
+                          className="gap-1.5 text-xs">
+                          {t("common.seeReviewDetails")}
+                          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                        </Button>
                       )}
                     </div>
-                  </div>
-                )}
-              </div>
-            </PanelSurface>
 
-            {/* STAR preview — 4 compact rows, full content in detail page */}
-            <PanelSurface className="relative overflow-hidden">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -top-16 -left-12 h-40 w-40 rounded-full bg-sky-300/10 opacity-60 blur-3xl dark:bg-sky-500/15"
-              />
-              <div className="relative flex flex-col gap-4 p-5 sm:p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className={cn(
-                        "flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-inset",
-                        "bg-slate-900/[0.04] ring-slate-900/10",
-                        "dark:bg-white/[0.05] dark:ring-white/10"
-                      )}>
-                      <Target className="h-4 w-4 text-sky-500" aria-hidden />
+                    {reviewLoading ? (
+                      <Skeleton className="h-20" />
+                    ) : !mentorReview ? (
+                      <div
+                        className={cn(
+                          "ring-dashed rounded-xl p-5 text-center ring-1 ring-inset",
+                          "ring-slate-300/70 dark:ring-slate-700/70"
+                        )}>
+                        <Wand2 className="mx-auto h-5 w-5 text-slate-400" aria-hidden />
+                        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                          {t("mentorSessions.youHaventSubmittedAReview")}
+                        </p>
+                        {canReview && (
+                          <Button
+                            size="sm"
+                            className="mt-3 gap-1.5 bg-sky-600 text-white hover:bg-sky-700"
+                            onClick={() => navigate(`/mentor/sessions/${session.id}/review`)}>
+                            <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+                            {t("common.writeAReview")}
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-4xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                              {rating.toFixed(1)}
+                            </span>
+                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                              /5
+                            </span>
+                          </div>
+                          {renderStars(rating, "md")}
+                        </div>
+                        {starSummary && (
+                          <p className="line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                            {starSummary}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-1.5">
+                          {mentorReview.strength && (
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] uppercase ring-1 ring-inset",
+                                "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20",
+                                "dark:text-emerald-300"
+                              )}>
+                              <ThumbsUpTiny />
+                              {t("mentorSessions.strengths")}
+                            </span>
+                          )}
+                          {mentorReview.weakness && (
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] uppercase ring-1 ring-inset",
+                                "bg-rose-500/10 text-rose-700 ring-rose-500/20",
+                                "dark:text-rose-300"
+                              )}>
+                              <WrenchTiny />
+                              {t("mentorSessions.pointsForImprovement")}
+                            </span>
+                          )}
+                          {mentorReview.improve && (
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] uppercase ring-1 ring-inset",
+                                "bg-violet-500/10 text-violet-700 ring-violet-500/20",
+                                "dark:text-violet-300"
+                              )}>
+                              <LightbulbTiny />
+                              {t("common.suggestedImprovements")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </PanelSurface>
+
+                {/* STAR preview — 4 compact rows, full content in detail page */}
+                <PanelSurface className="relative overflow-hidden">
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -top-16 -left-12 h-40 w-40 rounded-full bg-sky-300/10 opacity-60 blur-3xl dark:bg-sky-500/15"
+                  />
+                  <div className="relative flex flex-col gap-4 p-5 sm:p-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={cn(
+                            "flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-inset",
+                            "bg-slate-900/[0.04] ring-slate-900/10",
+                            "dark:bg-white/[0.05] dark:ring-white/10"
+                          )}>
+                          <Target className="h-4 w-4 text-sky-500" aria-hidden />
+                        </div>
+                        <div>
+                          <p className={CHIP_LABEL_CLS}>{t("common.star")}</p>
+                          <p className="text-sm font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
+                            {t("mentorReviews.detailedAssessmentStarMethod")}
+                          </p>
+                        </div>
+                      </div>
+                      {mentorReview?.id && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
+                          className="gap-1 text-xs text-slate-500 dark:text-slate-400">
+                          {t("common.seeReviewDetails")}
+                          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                        </Button>
+                      )}
                     </div>
-                    <div>
-                      <p className={CHIP_LABEL_CLS}>{t("common.star")}</p>
-                      <p className="text-sm font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
-                        {t("mentorReviews.detailedAssessmentStarMethod")}
+
+                    {reviewLoading ? (
+                      <Skeleton className="h-40" />
+                    ) : starRows.length === 0 ? (
+                      <div
+                        className={cn(
+                          "ring-dashed rounded-xl p-5 text-center ring-1 ring-inset",
+                          "ring-slate-300/70 dark:ring-slate-700/70"
+                        )}>
+                        <Sparkles className="mx-auto h-5 w-5 text-slate-400" aria-hidden />
+                        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                          {t("mentorSessions.youHaventSubmittedAReview")}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        {starRows.map((row) => (
+                          <StarPreviewRow key={row.letter} {...row} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </PanelSurface>
+              </div>
+            </motion.div>
+
+            {/* RIGHT — Candidate feedback + Timeline */}
+            <motion.aside variants={childMotion} className="flex flex-col gap-5">
+              {/* Candidate feedback */}
+              <PanelSurface className="relative overflow-hidden">
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -top-12 -right-10 h-44 w-44 rounded-full bg-emerald-300/10 opacity-60 blur-3xl dark:bg-emerald-500/15"
+                />
+                <div className="relative flex flex-col gap-4 p-5 sm:p-6">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10 shrink-0 ring-2 ring-emerald-400/30">
+                      <AvatarImage
+                        src={studentInfo?.avatarUrl}
+                        alt={studentInfo?.name ?? t("common.students")}
+                      />
+                      <AvatarFallback className="bg-slate-200/60 text-sm font-semibold text-slate-700 dark:bg-slate-700/40 dark:text-slate-200">
+                        {(studentInfo?.name || "S").charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className={CHIP_LABEL_CLS}>{t("mentorSessions.candidateFeedback")}</p>
+                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {studentInfo?.name || t("common.students")}
                       </p>
                     </div>
                   </div>
-                  {mentorReview?.id && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
-                      className="gap-1 text-xs text-slate-500 dark:text-slate-400">
-                      {t("common.seeReviewDetails")}
-                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-                    </Button>
+
+                  <AnimatePresence mode="wait">
+                    {candidateFeedback ? (
+                      <motion.div
+                        key="filled"
+                        initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                        transition={{ duration: 0.24, ease: "easeOut" as const }}
+                        className="flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                            {candidateRating != null ? candidateRating.toFixed(1) : "—"}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                            /5
+                          </span>
+                          {renderStars(candidateRating || 0, "sm")}
+                        </div>
+                        <blockquote
+                          className={cn(
+                            "relative rounded-xl p-4 ring-1 ring-inset",
+                            "bg-slate-500/[0.04] ring-slate-200/70",
+                            "dark:bg-white/[0.03] dark:ring-white/5"
+                          )}>
+                          <span
+                            aria-hidden
+                            className="absolute -top-2 left-3 text-3xl leading-none text-slate-300 dark:text-slate-600">
+                            “
+                          </span>
+                          <p className="text-xs leading-relaxed text-slate-700 italic dark:text-slate-300">
+                            {candidateFeedback.comment || t("common.noDataAvailable")}
+                          </p>
+                        </blockquote>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="empty"
+                        initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                        transition={{ duration: 0.24, ease: "easeOut" as const }}
+                        className={cn(
+                          "ring-dashed rounded-xl p-5 text-center ring-1 ring-inset",
+                          "ring-slate-300/70 dark:ring-slate-700/70"
+                        )}>
+                        <Sparkles className="mx-auto h-5 w-5 text-slate-400" aria-hidden />
+                        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                          {t("mentorSessions.candidateHasNotLeftFeedbackYet")}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </PanelSurface>
+
+              {/* Timeline */}
+              <PanelSurface variant="flat" className="p-5 sm:p-6">
+                <div className="flex items-center justify-between gap-2">
+                  <p className={CHIP_LABEL_CLS}>{t("common.timeline")}</p>
+                  <TrendingUp className="h-3.5 w-3.5 text-slate-400" aria-hidden />
+                </div>
+                <div className="mt-3 flex flex-col gap-1.5">
+                  {session.joinTime && (
+                    <TimelineRow
+                      label={t("common.appointmentTime")}
+                      value={formatDateTime(session.joinTime)}
+                      dot="bg-indigo-500/70"
+                    />
+                  )}
+                  {session.startTime1 && (
+                    <TimelineRow
+                      label={t("mentorSessions.startTime")}
+                      value={formatDateTime(session.startTime1)}
+                      dot="bg-sky-500/70"
+                    />
+                  )}
+                  {session.endTime1 && (
+                    <TimelineRow
+                      label={t("mentorSessions.endTime")}
+                      value={formatDateTime(session.endTime1)}
+                      dot="bg-slate-400"
+                    />
                   )}
                 </div>
-
-                {reviewLoading ? (
-                  <Skeleton className="h-40" />
-                ) : starRows.length === 0 ? (
-                  <div
-                    className={cn(
-                      "ring-dashed rounded-xl p-5 text-center ring-1 ring-inset",
-                      "ring-slate-300/70 dark:ring-slate-700/70"
-                    )}>
-                    <Sparkles className="mx-auto h-5 w-5 text-slate-400" aria-hidden />
-                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                      {t("mentorSessions.youHaventSubmittedAReview")}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-2.5">
-                    {starRows.map((row) => (
-                      <StarPreviewRow key={row.letter} {...row} />
-                    ))}
+                {session.recordUrl && (
+                  <div className="mt-4">
+                    <MetaChip
+                      icon={<Link2 className="h-3.5 w-3.5" aria-hidden />}
+                      label={t("mentorSessions.recording")}
+                      value={
+                        <a
+                          href={session.recordUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-sky-600 underline-offset-2 hover:underline dark:text-sky-300">
+                          {t("common.open")}
+                          <ArrowUpRight className="h-3 w-3" aria-hidden />
+                        </a>
+                      }
+                    />
                   </div>
                 )}
-              </div>
-            </PanelSurface>
+              </PanelSurface>
+            </motion.aside>
           </div>
         </motion.div>
-
-        {/* RIGHT — Candidate feedback + Timeline */}
-        <motion.aside variants={childMotion} className="flex flex-col gap-5">
-          {/* Candidate feedback */}
-          <PanelSurface className="relative overflow-hidden">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -top-12 -right-10 h-44 w-44 rounded-full bg-emerald-300/10 opacity-60 blur-3xl dark:bg-emerald-500/15"
-            />
-            <div className="relative flex flex-col gap-4 p-5 sm:p-6">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 shrink-0 ring-2 ring-emerald-400/30">
-                  <AvatarImage
-                    src={studentInfo?.avatarUrl}
-                    alt={studentInfo?.name ?? t("common.students")}
-                  />
-                  <AvatarFallback className="bg-slate-200/60 text-sm font-semibold text-slate-700 dark:bg-slate-700/40 dark:text-slate-200">
-                    {(studentInfo?.name || "S").charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className={CHIP_LABEL_CLS}>{t("mentorSessions.candidateFeedback")}</p>
-                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    {studentInfo?.name || t("common.students")}
-                  </p>
-                </div>
-              </div>
-
-              <AnimatePresence mode="wait">
-                {candidateFeedback ? (
-                  <motion.div
-                    key="filled"
-                    initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                    transition={{ duration: 0.24, ease: "easeOut" as const }}
-                    className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
-                        {candidateRating != null ? candidateRating.toFixed(1) : "—"}
-                      </span>
-                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                        /5
-                      </span>
-                      {renderStars(candidateRating || 0, "sm")}
-                    </div>
-                    <blockquote
-                      className={cn(
-                        "relative rounded-xl p-4 ring-1 ring-inset",
-                        "bg-slate-500/[0.04] ring-slate-200/70",
-                        "dark:bg-white/[0.03] dark:ring-white/5"
-                      )}>
-                      <span
-                        aria-hidden
-                        className="absolute -top-2 left-3 text-3xl leading-none text-slate-300 dark:text-slate-600">
-                        “
-                      </span>
-                      <p className="text-xs leading-relaxed text-slate-700 italic dark:text-slate-300">
-                        {candidateFeedback.comment || t("common.noDataAvailable")}
-                      </p>
-                    </blockquote>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="empty"
-                    initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                    transition={{ duration: 0.24, ease: "easeOut" as const }}
-                    className={cn(
-                      "ring-dashed rounded-xl p-5 text-center ring-1 ring-inset",
-                      "ring-slate-300/70 dark:ring-slate-700/70"
-                    )}>
-                    <Sparkles className="mx-auto h-5 w-5 text-slate-400" aria-hidden />
-                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                      {t("mentorSessions.candidateHasNotLeftFeedbackYet")}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </PanelSurface>
-
-          {/* Timeline */}
-          <PanelSurface variant="flat" className="p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-2">
-              <p className={CHIP_LABEL_CLS}>{t("common.timeline")}</p>
-              <TrendingUp className="h-3.5 w-3.5 text-slate-400" aria-hidden />
-            </div>
-            <div className="mt-3 flex flex-col gap-1.5">
-              {session.joinTime && (
-                <TimelineRow
-                  label={t("common.appointmentTime")}
-                  value={formatDateTime(session.joinTime)}
-                  dot="bg-indigo-500/70"
-                />
-              )}
-              {session.startTime1 && (
-                <TimelineRow
-                  label={t("mentorSessions.startTime")}
-                  value={formatDateTime(session.startTime1)}
-                  dot="bg-sky-500/70"
-                />
-              )}
-              {session.endTime1 && (
-                <TimelineRow
-                  label={t("mentorSessions.endTime")}
-                  value={formatDateTime(session.endTime1)}
-                  dot="bg-slate-400"
-                />
-              )}
-            </div>
-            {session.recordUrl && (
-              <div className="mt-4">
-                <MetaChip
-                  icon={<Link2 className="h-3.5 w-3.5" aria-hidden />}
-                  label={t("mentorSessions.recording")}
-                  value={
-                    <a
-                      href={session.recordUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-sky-600 underline-offset-2 hover:underline dark:text-sky-300">
-                      {t("common.open")}
-                      <ArrowUpRight className="h-3 w-3" aria-hidden />
-                    </a>
-                  }
-                />
-              </div>
-            )}
-          </PanelSurface>
-        </motion.aside>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

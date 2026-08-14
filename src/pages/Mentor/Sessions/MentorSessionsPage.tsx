@@ -5,6 +5,7 @@
  * pagination, mutations, navigation) is preserved.
  */
 
+import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { SortButton } from "@/components/shared/SortButton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -25,7 +26,6 @@ import { useNavigate } from "react-router-dom";
 import {
   CommandBar,
   type CommandBarStatus,
-  HeroCommand,
   SessionCard,
   StatusTrack,
   type StatusTrackItem,
@@ -80,17 +80,6 @@ const cardMotion = {
     transition: { duration: 0.32, ease: "easeOut" as const },
   },
 };
-
-function formatCountdown(ms: number): string {
-  if (ms <= 0) return "now";
-  const totalSeconds = Math.floor(ms / 1000);
-  const days = Math.floor(totalSeconds / 86_400);
-  const hours = Math.floor((totalSeconds % 86_400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-}
 
 export function MentorSessionsPage() {
   const { t } = useTranslation();
@@ -244,28 +233,6 @@ export function MentorSessionsPage() {
   ).length;
   const completedCount = mentorSessions.filter((s: Session) => s.status === "COMPLETED").length;
 
-  // Up Next spotlight — nearest SCHEDULED/PAID/ONGOING session.
-  const upcomingSessions = useMemo(() => {
-    return mentorSessions
-      .filter((s: Session) => ["SCHEDULED", "PAID", "ONGOING"].includes(s.status ?? ""))
-      .filter((s: Session) => typeof toTimestampSafe(s.joinTime) === "number")
-      .sort(
-        (a: Session, b: Session) =>
-          (toTimestampSafe(a.joinTime) ?? 0) - (toTimestampSafe(b.joinTime) ?? 0)
-      );
-  }, [mentorSessions]);
-  const nextSession = upcomingSessions[0] ?? null;
-  const nextMs = nextSession ? toTimestampSafe(nextSession.joinTime) : null;
-  const upNextPayload =
-    nextSession && nextMs
-      ? {
-          title: nextSession.roomName || t("common.sessionVar0", { var_0: nextSession.id }),
-          whenLabel: nextSession.joinTime ? new Date(nextSession.joinTime).toLocaleString() : "",
-          countdownLabel: nextMs > now ? formatCountdown(nextMs - now) : t("common.ongoing"),
-          studentLabel: `${t("common.student")} ${nextSession.userId ?? ""}`.trim(),
-        }
-      : null;
-
   // Status track items — 4 pills with counts and active state. Click to filter.
   const statusItems: StatusTrackItem[] = useMemo(
     () => [
@@ -332,145 +299,165 @@ export function MentorSessionsPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col gap-5">
-      {/* Command Deck hero — compact, dense, dark. No oversized gradient. */}
-      <HeroCommand
-        mentorName={currentMentorProfile?.name ?? user?.name ?? undefined}
-        onReload={async () => {
-          await Promise.all([refetchSessions(), refetchReviews()]);
-        }}
-        isReloading={sessionsRefetching || reviewsRefetching}
-        reloadTooltip={t("mentorSessions.reloadInterviewSessionList")}
-        totalSessions={mentorSessions.length}
-        upNext={upNextPayload}
-      />
-
-      {/* Status track — 4 clickable filter pills with live counts */}
-      <StatusTrack items={statusItems} onSelect={handleTrackSelect} />
-
-      {isLoading ? (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <Skeleton className="h-44" />
-          <Skeleton className="h-44" />
-          <Skeleton className="h-44" />
-          <Skeleton className="h-44" />
-        </div>
-      ) : mentorSessions.length === 0 ? (
-        <div className="rounded-2xl bg-white p-2 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-white/5">
-          <EmptyState
-            icon={Video}
-            title={t("common.noInterviewSessionYet")}
-            description={t("common.youHaveNotHadAnyInterviewSessions")}
-          />
-        </div>
-      ) : (
-        <>
-          {/* Pending (draft) sessions — hidden in current end-to-end flow (no approval step). */}
-
-          {/* Command bar — single sticky strip. Skipped when track is "waiting" (no granular filter needed). */}
-          {trackFilter !== "waiting" && (
-            <CommandBar
-              searchValue={searchQuery}
-              onSearchChange={(value) => {
-                setSearchQuery(value);
-                pagination.goToFirstPage();
-              }}
-              status={otherStatusFilter}
-              onStatusChange={(value) => {
-                setOtherStatusFilter(value);
-                pagination.goToFirstPage();
-              }}
-              statusOptions={statusOptions}
-              sortSlot={
-                <>
-                  <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
-                  <SortButton {...getSortProps("sessionSortValue")}>{t("common.time")}</SortButton>
-                  <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
-                </>
-              }
-              onClear={() => {
-                setSearchQuery("");
-                setOtherStatusFilter("all");
-                pagination.goToFirstPage();
-              }}
-            />
-          )}
-
-          {sortedData.length === 0 ? (
-            <div className="flex flex-1 rounded-2xl bg-white p-2 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-white/5">
-              <EmptyState
-                icon={Video}
-                title={
-                  trackFilter === "waiting"
-                    ? t("common.noInterviewSessionYet")
-                    : t("mentorSessions.thereIsNoProperInterview")
-                }
-                description={t("mentorSessions.tryChangingYourSearchKeywords")}
-              />
+    <div className="-m-4 min-h-[calc(100%+32px)] bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
+      <div className="flex flex-col gap-5 p-4 md:p-6 lg:p-8">
+        {/* Stat summary card */}
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-500/15">
+              <Video className="h-5 w-5 text-indigo-500" />
             </div>
-          ) : (
-            <div className="flex flex-1 flex-col gap-4">
-              <motion.div
-                key={`${trackFilter}-${otherStatusFilter}-${searchQuery}`}
-                variants={listMotion}
-                initial={false}
-                animate="show"
-                className={cn("grid gap-3 sm:grid-cols-2 xl:grid-cols-3")}>
-                <AnimatePresence initial={false}>
-                  {pageData.map((session) => (
-                    <motion.div
-                      key={session.id}
-                      variants={cardMotion}
-                      exit={{ opacity: 0, y: -8, transition: { duration: 0.18 } }}
-                      layout="position">
-                      <SessionCard
-                        session={session}
-                        hasReview={
-                          typeof session.id === "number" && reviewSessionIds.has(session.id)
-                        }
-                        now={now}
-                        isUpdatingStatus={updateStatusMutation.isPending}
-                        actions={{
-                          onViewDetails: () => handleViewDetails(session),
-                          onJoinSession: () => handleJoinSession(session),
-                          onWriteReview: () => handleWriteReview(session),
-                          onViewReview: () => {
-                            // Keep the user in session context — route to
-                            // the session detail page which already shows
-                            // the review snapshot + a link to the deep
-                            // read-only review view.
-                            if (typeof session.id === "number") {
-                              handleViewDetails(session);
-                            }
-                          },
-                          onEditReview: () => {
-                            if (typeof session.id === "number") {
-                              handleEditReview(session.id);
-                            }
-                          },
-                          onAcceptSession: () => handleAcceptSession(session),
-                          onRejectSession: () => handleRejectSession(session),
-                        }}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+            <div>
+              <h1 className="text-lg font-bold tracking-[-0.02em] text-slate-900 dark:text-white">
+                {t("mentorSessions.interviewSessions")}
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {currentMentorProfile?.name ?? user?.name ?? ""}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-2xl font-bold tracking-[-0.03em] text-slate-900 dark:text-white">
+                {isLoading ? "—" : mentorSessions.length}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {t("common.totalSession")}
+              </p>
+            </div>
+            <ReloadButton
+              onReload={async () => {
+                await Promise.all([refetchSessions(), refetchReviews()]);
+              }}
+              isLoading={sessionsRefetching || reviewsRefetching}
+              tooltip={t("mentorSessions.reloadInterviewSessionList")}
+            />
+          </div>
+        </div>
 
-              <div className="mt-auto rounded-xl border border-slate-200/70 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(size) => {
-                    setPageSize(size);
-                    pagination.goToFirstPage();
-                  }}
-                  pageSizeOptions={[5, 10, 20, 50]}
+        {/* Status track */}
+        <StatusTrack items={statusItems} onSelect={handleTrackSelect} />
+
+        {isLoading ? (
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <Skeleton className="h-44" />
+            <Skeleton className="h-44" />
+            <Skeleton className="h-44" />
+            <Skeleton className="h-44" />
+          </div>
+        ) : mentorSessions.length === 0 ? (
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white py-16 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <EmptyState
+              icon={Video}
+              title={t("common.noInterviewSessionYet")}
+              description={t("common.youHaveNotHadAnyInterviewSessions")}
+            />
+          </div>
+        ) : (
+          <>
+            {/* Command bar */}
+            {trackFilter !== "waiting" && (
+              <CommandBar
+                searchValue={searchQuery}
+                onSearchChange={(value) => {
+                  setSearchQuery(value);
+                  pagination.goToFirstPage();
+                }}
+                status={otherStatusFilter}
+                onStatusChange={(value) => {
+                  setOtherStatusFilter(value);
+                  pagination.goToFirstPage();
+                }}
+                statusOptions={statusOptions}
+                sortSlot={
+                  <>
+                    <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
+                    <SortButton {...getSortProps("sessionSortValue")}>
+                      {t("common.time")}
+                    </SortButton>
+                    <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
+                  </>
+                }
+                onClear={() => {
+                  setSearchQuery("");
+                  setOtherStatusFilter("all");
+                  pagination.goToFirstPage();
+                }}
+              />
+            )}
+
+            {sortedData.length === 0 ? (
+              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white py-16 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <EmptyState
+                  icon={Video}
+                  title={
+                    trackFilter === "waiting"
+                      ? t("common.noInterviewSessionYet")
+                      : t("mentorSessions.thereIsNoProperInterview")
+                  }
+                  description={t("mentorSessions.tryChangingYourSearchKeywords")}
                 />
               </div>
-            </div>
-          )}
-        </>
-      )}
+            ) : (
+              <div className="flex flex-1 flex-col gap-4">
+                <motion.div
+                  key={`${trackFilter}-${otherStatusFilter}-${searchQuery}`}
+                  variants={listMotion}
+                  initial={false}
+                  animate="show"
+                  className={cn("grid gap-3 sm:grid-cols-2 xl:grid-cols-3")}>
+                  <AnimatePresence initial={false}>
+                    {pageData.map((session) => (
+                      <motion.div
+                        key={session.id}
+                        variants={cardMotion}
+                        exit={{ opacity: 0, y: -8, transition: { duration: 0.18 } }}
+                        layout="position">
+                        <SessionCard
+                          session={session}
+                          hasReview={
+                            typeof session.id === "number" && reviewSessionIds.has(session.id)
+                          }
+                          now={now}
+                          isUpdatingStatus={updateStatusMutation.isPending}
+                          actions={{
+                            onViewDetails: () => handleViewDetails(session),
+                            onJoinSession: () => handleJoinSession(session),
+                            onWriteReview: () => handleWriteReview(session),
+                            onViewReview: () => {
+                              if (typeof session.id === "number") {
+                                handleViewDetails(session);
+                              }
+                            },
+                            onEditReview: () => {
+                              if (typeof session.id === "number") {
+                                handleEditReview(session.id);
+                              }
+                            },
+                            onAcceptSession: () => handleAcceptSession(session),
+                            onRejectSession: () => handleRejectSession(session),
+                          }}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+
+                <div className="mt-auto rounded-xl border border-slate-200/70 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                  <PaginationControl
+                    pagination={pagination}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size);
+                      pagination.goToFirstPage();
+                    }}
+                    pageSizeOptions={[5, 10, 20, 50]}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
