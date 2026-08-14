@@ -532,74 +532,77 @@ export function StudentsListPage() {
             </>
           )}
         </div>
-      </div>
 
-      {/* Right side cards - Stats */}
-      <aside className="hidden lg:flex lg:flex-col lg:gap-4">
-        {/* Top performers card */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15">
-                <Trophy className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  {t("mentorOverview.topPerformer")}
-                </p>
-              </div>
-            </div>
-          </div>
-          {topPerformingStudent ? (
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 rounded-lg border border-slate-100 dark:border-slate-800">
-                <AvatarImage src={topPerformingStudent.avatarUrl} alt={topPerformingStudent.name} />
-                <AvatarFallback className="rounded-lg bg-amber-100 text-xs font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                  {topPerformingStudent.name?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                  {topPerformingStudent.name}
-                </p>
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                    {topPerformingStudent.avgRating.toFixed(1)}
-                  </span>
-                  <span className="text-xs text-slate-500">
-                    ({topPerformingStudent.reviewCount} reviews)
-                  </span>
+        {/* Right side cards - Stats */}
+        <aside className="hidden lg:flex lg:flex-col lg:gap-4">
+          {/* Top performers card */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15">
+                  <Trophy className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("mentorOverview.topPerformer")}
+                  </p>
                 </div>
               </div>
             </div>
-          ) : (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              {t("mentorStudents.noReviewsYet")}
-            </p>
-          )}
-        </div>
+            {topPerformingStudent ? (
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10 rounded-lg border border-slate-100 dark:border-slate-800">
+                  <AvatarImage
+                    src={topPerformingStudent.avatarUrl}
+                    alt={topPerformingStudent.name}
+                  />
+                  <AvatarFallback className="rounded-lg bg-amber-100 text-xs font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                    {topPerformingStudent.name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                    {topPerformingStudent.name}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                      {topPerformingStudent.avgRating.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      ({topPerformingStudent.reviewCount} reviews)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {t("mentorStudents.noReviewsYet")}
+              </p>
+            )}
+          </div>
 
-        {/* Quick stats cards */}
-        <MentorQuickStat
-          icon={Calendar}
-          label={t("common.totalSession")}
-          value={mentorSessions.length}
-          tone="indigo"
-        />
-        <MentorQuickStat
-          icon={MessageSquare}
-          label={t("common.totalResponse")}
-          value={feedbacks.length}
-          tone="emerald"
-        />
-        <MentorQuickStat
-          icon={Star}
-          label={t("common.totalReview")}
-          value={reviews.length}
-          tone="amber"
-        />
-      </aside>
+          {/* Quick stats cards */}
+          <MentorQuickStat
+            icon={Calendar}
+            label={t("common.totalSession")}
+            value={mentorSessions.length}
+            tone="indigo"
+          />
+          <MentorQuickStat
+            icon={MessageSquare}
+            label={t("common.totalResponse")}
+            value={feedbacks.length}
+            tone="emerald"
+          />
+          <MentorQuickStat
+            icon={Star}
+            label={t("common.totalReview")}
+            value={reviews.length}
+            tone="amber"
+          />
+        </aside>
+      </div>
     </div>
   );
 }
