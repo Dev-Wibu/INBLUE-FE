@@ -80,9 +80,9 @@ export function NewHomepageHero() {
           className="relative">
           <div className="relative overflow-hidden rounded-xl bg-[#040814] shadow-[0_8px_8px_rgba(15,23,42,0.06)] ring-1 ring-slate-900/10 dark:ring-white/10">
             <img
-              src="/images/homepage/ai-kiosk-pin-screen.svg"
+              src="/images/homepage/ai-kiosk-pin-screen.png"
               alt={t("landingNew.heroCaption")}
-              className="block aspect-[1918/934] w-full object-cover"
+              className="block aspect-[2048/1071] w-full object-cover"
               loading="eager"
             />
           </div>

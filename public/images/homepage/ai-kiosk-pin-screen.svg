@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1918" height="934" viewBox="0 0 1918 934" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1071" viewBox="0 0 2048 1071" role="img" aria-labelledby="title desc">
   <title id="title">INBLUE AI kiosk PIN screen</title>
   <desc id="desc">Dark INBLUE kiosk PIN entry screen with brand panel, constellation background, time, lock icon, six PIN circles, and numeric keypad.</desc>
   <defs>
@@ -30,13 +30,13 @@
     </style>
   </defs>
 
-  <rect width="1918" height="934" fill="#030713"/>
-  <rect x="0" y="0" width="916" height="902" fill="url(#leftPanel)"/>
-  <rect x="0" y="0" width="916" height="902" fill="url(#leftGlow)"/>
-  <rect x="916" y="0" width="1002" height="902" fill="url(#rightPanel)"/>
-  <rect x="916" y="0" width="1002" height="902" fill="url(#grid)" opacity="0.52"/>
-  <path d="M916 0V902" stroke="#25344b" stroke-width="1.5"/>
-  <path d="M0 902H1918" stroke="#1b2a40" stroke-width="1.5"/>
+  <rect width="2048" height="1071" fill="#030713"/>
+  <rect x="0" y="0" width="970" height="1030" fill="url(#leftPanel)"/>
+  <rect x="0" y="0" width="970" height="1030" fill="url(#leftGlow)"/>
+  <rect x="970" y="0" width="1078" height="1030" fill="url(#rightPanel)"/>
+  <rect x="970" y="0" width="1078" height="1030" fill="url(#grid)" opacity="0.52"/>
+  <path d="M970 0V1030" stroke="#25344b" stroke-width="1.5"/>
+  <path d="M0 1030H2048" stroke="#1b2a40" stroke-width="1.5"/>
 
   <g opacity="0.42" stroke="#85bdff" stroke-width="2" fill="#85bdff">
     <path d="M105 89 211 168 64 282" opacity="0.34"/>
@@ -89,22 +89,22 @@
   <rect x="64" y="339" width="166" height="40" rx="20" fill="#101827" stroke="#2b3b51"/>
   <circle cx="87" cy="359" r="5" fill="#91caff"/>
   <text x="103" y="366" class="small" fill="#9dccff">System Online</text>
-  <text x="665" y="99" class="mono" fill="#9dccff">13-08-2026</text>
+  <text x="720" y="108" class="mono" fill="#9dccff">14-08-2026</text>
 
-  <g transform="translate(1716 61)">
+  <g transform="translate(1849 62)">
     <rect width="150" height="52" rx="18" fill="#111827" stroke="#27364b"/>
     <circle cx="33" cy="26" r="9" fill="none" stroke="#9dccff" stroke-width="2.5"/>
     <path d="M33 17v9l7 4" fill="none" stroke="#9dccff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="58" y="35" class="mono" fill="#f5f7fb">20:30</text>
+    <text x="58" y="35" class="mono" fill="#f5f7fb">00:34</text>
   </g>
 
-  <g transform="translate(1396 133)" fill="none" stroke="#9dccff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(1500 140)" fill="none" stroke="#9dccff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M19 0a19 19 0 0 1 19 19v20h-38v-20a19 19 0 0 1 19-19z"/>
     <rect x="-10" y="38" width="58" height="46" rx="8"/>
   </g>
-  <text x="1196" y="226" class="body" fill="#b7bdc8">Nhập mã PIN 6 số từ lịch hẹn của bạn để bắt đầu.</text>
+  <text x="1288" y="281" class="body" fill="#b7bdc8">Nhập mã PIN 6 số từ lịch hẹn của bạn để bắt đầu.</text>
 
-  <g transform="translate(1212 266)">
+  <g transform="translate(1302 320)">
     <circle cx="25" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
     <circle cx="98" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
     <circle cx="171" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
@@ -113,7 +113,7 @@
     <circle cx="390" cy="25" r="26" fill="#101827" stroke="#31405d" stroke-width="1.5"/>
   </g>
 
-  <g transform="translate(1222 356)">
+  <g transform="translate(1312 420)">
     <g fill="#111827" stroke="#27364b" stroke-width="1.5">
       <rect width="113" height="89" rx="16"/>
       <rect x="140" width="113" height="89" rx="16"/>
@@ -147,6 +147,6 @@
     </g>
   </g>
 
-  <text x="70" y="932" class="tiny" fill="#8896ab">FPT UNIVERSITY  •  SOFTWARE ENGINEERING  •  SUMMER 2026</text>
-  <text x="1574" y="932" class="tiny" fill="#8896ab">POWERED BY INBLUE PLATFORM</text>
+  <text x="72" y="1060" class="tiny" fill="#8896ab">FPT UNIVERSITY  •  SOFTWARE ENGINEERING  •  SUMMER 2026</text>
+  <text x="1702" y="1060" class="tiny" fill="#8896ab">POWERED BY INBLUE PLATFORM</text>
 </svg>
