@@ -103,6 +103,9 @@ export function StudentDetailPage() {
 
   // ---- stats ----
   const totalSessions = studentSessions.length;
+  const completedSessions = studentSessions.filter(
+    (session: Session) => session.status === "COMPLETED"
+  ).length;
   const totalFeedbacks = studentFeedbacks.length;
   const totalReviews = studentReviews.length;
   const avgRating = calculateAverageRating(studentReviews);
@@ -209,6 +212,59 @@ export function StudentDetailPage() {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="flex-none border-b border-slate-200 bg-slate-50 px-4 py-4 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            {
+              icon: Calendar,
+              value: totalSessions,
+              label: t("common.totalSessions"),
+              detail: `${completedSessions} ${t("general.completed")}`,
+              tone: "text-indigo-600 dark:text-indigo-300",
+              surface: "bg-indigo-50 dark:bg-indigo-950/50",
+            },
+            {
+              icon: MessageSquare,
+              value: totalFeedbacks,
+              label: t("common.responseReceived"),
+              detail: t("common.feedback"),
+              tone: "text-sky-600 dark:text-sky-300",
+              surface: "bg-sky-50 dark:bg-sky-950/50",
+            },
+            {
+              icon: Star,
+              value: totalReviews,
+              label: t("common.totalReviews"),
+              detail: totalReviews > 0 ? `${avgRating.toFixed(1)}/5` : "—",
+              tone: "text-amber-600 dark:text-amber-300",
+              surface: "bg-amber-50 dark:bg-amber-950/50",
+            },
+          ].map(({ icon: Icon, value, label, detail, tone, surface }) => (
+            <div
+              key={label}
+              className="flex min-h-[92px] items-center gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${surface}`}>
+                <Icon className={`h-5 w-5 ${tone}`} aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl leading-none font-bold text-slate-900 dark:text-white">
+                    {value}
+                  </span>
+                  <span className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {detail}
+                  </span>
+                </div>
+                <p className="mt-1.5 truncate text-sm font-semibold text-slate-600 dark:text-slate-300">
+                  {label}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

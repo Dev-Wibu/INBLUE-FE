@@ -18,9 +18,18 @@ export function MentorFeedbackDetailPage() {
   const location = useLocation();
   const requestedReturnTo = (location.state as { returnTo?: string } | null)?.returnTo;
   const returnTo =
-    typeof requestedReturnTo === "string" && requestedReturnTo.startsWith("/mentor/")
+    typeof requestedReturnTo === "string" &&
+    (requestedReturnTo.startsWith("/mentor/") || requestedReturnTo.startsWith("/mentor?"))
       ? requestedReturnTo
       : "/mentor?tab=reviews";
+  const hasInternalReturn = Boolean(requestedReturnTo);
+  const goBack = () => {
+    if (hasInternalReturn) {
+      navigate(-1);
+      return;
+    }
+    navigate(returnTo, { replace: true });
+  };
   const currentUser = useAuthStore((state) => state.user);
 
   const { data: feedback, isLoading } = useMentorFeedbackById(Number(id));
@@ -49,7 +58,7 @@ export function MentorFeedbackDetailPage() {
     return (
       <div className={pageShell}>
         <div className="border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-          <Button variant="ghost" size="sm" onClick={() => navigate(returnTo)}>
+          <Button variant="ghost" size="sm" onClick={goBack}>
             <ArrowLeft className="h-4 w-4" />
             {t("common.backToTheList")}
           </Button>
@@ -73,7 +82,7 @@ export function MentorFeedbackDetailPage() {
     return (
       <div className={pageShell}>
         <div className="border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-          <Button variant="ghost" size="sm" onClick={() => navigate(returnTo)}>
+          <Button variant="ghost" size="sm" onClick={goBack}>
             <ArrowLeft className="h-4 w-4" />
             {t("common.backToTheList")}
           </Button>
@@ -126,7 +135,7 @@ export function MentorFeedbackDetailPage() {
             variant="ghost"
             size="icon"
             className="h-9 w-9 shrink-0"
-            onClick={() => navigate(returnTo)}
+            onClick={goBack}
             title={t("common.backToTheList")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -145,7 +154,11 @@ export function MentorFeedbackDetailPage() {
             variant="outline"
             size="sm"
             className="h-9"
-            onClick={() => navigate(`/mentor/sessions/${sessionId}`, { state: { returnTo } })}>
+            onClick={() =>
+              navigate(`/mentor/sessions/${sessionId}`, {
+                state: { returnTo: `/mentor/feedback/${feedback.id}` },
+              })
+            }>
             {t("common.viewSessionDetails")}
             <ChevronRight className="h-4 w-4" />
           </Button>

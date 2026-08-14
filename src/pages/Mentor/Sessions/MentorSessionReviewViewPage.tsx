@@ -103,7 +103,8 @@ const normalizeOptionalText = (value: string): string | undefined => {
 
 const getSafeReturnTo = (state: unknown): string => {
   const returnTo = (state as MentorRouteState | null)?.returnTo;
-  return typeof returnTo === "string" && returnTo.startsWith("/mentor/")
+  return typeof returnTo === "string" &&
+    (returnTo.startsWith("/mentor/") || returnTo.startsWith("/mentor?"))
     ? returnTo
     : "/mentor?tab=sessions";
 };
@@ -192,7 +193,10 @@ export function MentorSessionReviewViewPage() {
   const [activeField, setActiveField] = useState<ReviewTextField | null>(null);
   const [draft, setDraft] = useState<ReviewDraft>(() => createDraft(review));
   const returnTo = getSafeReturnTo(location.state);
-  const routeState = { returnTo } satisfies MentorRouteState;
+  const hasInternalReturn = Boolean((location.state as MentorRouteState | null)?.returnTo);
+  const routeState = {
+    returnTo: `/mentor/sessions/${sessionId}`,
+  } satisfies MentorRouteState;
 
   useEffect(() => {
     if (!editing) {
@@ -242,8 +246,12 @@ export function MentorSessionReviewViewPage() {
     setDraft((current) => ({ ...current, [field]: value }));
   };
 
-  const goBackToSession = () => {
-    navigate(`/mentor/sessions/${sessionId}`, { state: routeState });
+  const goBack = () => {
+    if (hasInternalReturn) {
+      navigate(-1);
+      return;
+    }
+    navigate(`/mentor/sessions/${sessionId}`, { replace: true });
   };
 
   if (sessionLoading || reviewLoading) {
@@ -271,7 +279,12 @@ export function MentorSessionReviewViewPage() {
           <p className="font-semibold text-slate-900 dark:text-white">
             {t("common.noInterviewSessionsFound")}
           </p>
-          <Button variant="outline" size="sm" onClick={() => navigate(returnTo)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              hasInternalReturn ? navigate(-1) : navigate(returnTo, { replace: true })
+            }>
             <ArrowLeft className="h-4 w-4" />
             {t("general.back")}
           </Button>
@@ -305,14 +318,14 @@ export function MentorSessionReviewViewPage() {
         <div className="flex min-w-0 items-center gap-2">
           <button
             type="button"
-            onClick={goBackToSession}
+            onClick={goBack}
             aria-label={t("common.backToTheSession")}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:border-slate-700 dark:text-slate-300 dark:hover:bg-indigo-950/40">
             <ArrowLeft className="h-4 w-4" />
           </button>
           <button
             type="button"
-            onClick={goBackToSession}
+            onClick={goBack}
             className="hidden text-xs font-medium text-slate-500 hover:text-indigo-600 sm:block dark:text-slate-400 dark:hover:text-indigo-400">
             {t("common.interviewSession")} #{sessionId}
           </button>

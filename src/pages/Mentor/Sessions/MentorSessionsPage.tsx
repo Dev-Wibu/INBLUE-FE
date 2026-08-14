@@ -1,4 +1,5 @@
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
-import { useMentorReviews } from "@/hooks/useMentorReview";
+import { useMentorReviews, type MentorReview } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
@@ -27,15 +28,12 @@ import type { Session } from "@/interfaces";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { getSessionStatusBadge } from "@/lib/status-utils";
 import { useAuthStore } from "@/stores/authStore";
-import { Check, Eye, Pencil, Search, Video, X } from "lucide-react";
+import { Check, Pencil, Search, Video, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-type SortableSession = Session & {
-  sessionSortValue: number;
-};
-
+type SortableSession = Session & { sessionSortValue: number };
 type SessionStatus =
   | "all"
   | "DRAFT"
@@ -51,18 +49,7 @@ const getSessionSortValue = (session: Session): number => {
   if (joinTime > 0) return joinTime;
   const startTime = session.startTime1 ? new Date(session.startTime1).getTime() : 0;
   if (startTime > 0) return startTime;
-  return typeof session.id === "number" ? session.id : 0;
-};
-
-const matchesSessionSearch = (session: Session, query: string): boolean => {
-  const normalizedQuery = query.trim().toLowerCase();
-  if (!normalizedQuery) return true;
-  return !!(
-    session.id?.toString().includes(normalizedQuery) ||
-    session.userId?.toString().includes(normalizedQuery) ||
-    session.roomName?.toLowerCase().includes(normalizedQuery) ||
-    session.roomUrl?.toLowerCase().includes(normalizedQuery)
-  );
+  return session.id ?? 0;
 };
 
 export function MentorSessionsPage() {
@@ -81,52 +68,50 @@ export function MentorSessionsPage() {
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
+    isRefetching: reviewsRefetching,
     refetch: refetchReviews,
   } = useMentorReviews();
   const updateStatusMutation = useUpdateSessionStatus();
   const { data: currentMentorProfile } = useCurrentMentorProfile();
-  const isLoading = sessionsLoading || reviewsLoading;
 
   const mentorSessions = useMemo(() => {
-    const userId = user?.id;
-    const mentorProfileId =
-      currentMentorProfile?.id != null
-        ? typeof currentMentorProfile.id === "string"
-          ? parseInt(currentMentorProfile.id, 10)
-          : currentMentorProfile.id
-        : undefined;
-    const candidates = [userId, mentorProfileId].filter(
-      (id): id is number => typeof id === "number" && Number.isFinite(id)
+    const mentorProfileId = Number(currentMentorProfile?.id);
+    const candidateIds = [user?.id, mentorProfileId].filter(
+      (id): id is number => typeof id === "number" && Number.isFinite(id) && id > 0
     );
-    if (candidates.length === 0) return [];
-    return [...allSessions]
-      .filter((session) => {
-        const sessionIds = [session.userId, session.userId2, session.mentorId]
-          .filter((id): id is number => typeof id === "number")
-          .map((id) => String(id));
-        return candidates.some((id) => sessionIds.includes(String(id)));
-      })
-      .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
-  }, [allSessions, user, currentMentorProfile]);
+    if (candidateIds.length === 0) return [];
+    return allSessions.filter((session) => {
+      const sessionIds = [session.userId, session.userId2, session.mentorId]
+        .filter((id): id is number => typeof id === "number")
+        .map(String);
+      return candidateIds.some((id) => sessionIds.includes(String(id)));
+    });
+  }, [allSessions, currentMentorProfile, user?.id]);
 
   const reviewBySessionId = useMemo(() => {
-    const reviewMap = new Map<number, number>();
+    const map = new Map<number, MentorReview>();
     reviews.forEach((review) => {
-      if (typeof review.session?.id === "number" && typeof review.id === "number") {
-        reviewMap.set(review.session.id, review.id);
-      }
+      if (typeof review.session?.id === "number") map.set(review.session.id, review);
     });
-    return reviewMap;
+    return map;
   }, [reviews]);
 
-  const filteredSessions = useMemo(
-    () =>
-      mentorSessions.filter((session) => {
-        if (!matchesSessionSearch(session, searchQuery)) return false;
-        return statusFilter === "all" || session.status === statusFilter;
-      }),
-    [mentorSessions, searchQuery, statusFilter]
-  );
+  const filteredSessions = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return mentorSessions.filter((session) => {
+      const candidate =
+        typeof session.id === "number" ? reviewBySessionId.get(session.id)?.user : null;
+      const matchesSearch =
+        !query ||
+        session.id?.toString().includes(query) ||
+        session.userId?.toString().includes(query) ||
+        session.roomName?.toLowerCase().includes(query) ||
+        session.roomUrl?.toLowerCase().includes(query) ||
+        candidate?.name?.toLowerCase().includes(query) ||
+        candidate?.email?.toLowerCase().includes(query);
+      return matchesSearch && (statusFilter === "all" || session.status === statusFilter);
+    });
+  }, [mentorSessions, reviewBySessionId, searchQuery, statusFilter]);
 
   const sortableSessions = useMemo<SortableSession[]>(
     () =>
@@ -136,7 +121,11 @@ export function MentorSessionsPage() {
       })),
     [filteredSessions]
   );
-  const { sortedData, getSortProps } = useSortable(sortableSessions);
+  const { sortedData, getSortProps } = useSortable(sortableSessions, {
+    defaultSort: { key: "sessionSortValue", direction: "desc" },
+    noSortBehavior: "preserve",
+    tieBreaker: { key: "sessionSortValue", direction: "desc" },
+  });
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "src_pages_mentor_sessions_mentorsessionspage_tsx_pagesize",
     defaultPageSize: 10,
@@ -144,287 +133,314 @@ export function MentorSessionsPage() {
   const pagination = usePagination({ totalCount: sortedData.length, pageSize });
   const pageData = useMemo(
     () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
-    [sortedData, pagination.startIndex, pagination.endIndex]
+    [pagination.endIndex, pagination.startIndex, sortedData]
   );
 
-  const handleAcceptSession = (session: Session) => {
-    if (session.id) {
-      updateStatusMutation.mutate({ sessionId: session.id, isApproved: true });
-    }
-  };
-
-  const handleRejectSession = (session: Session) => {
-    if (session.id) {
-      updateStatusMutation.mutate({ sessionId: session.id, isApproved: false });
-    }
-  };
-
+  const completedCount = mentorSessions.filter((session) => session.status === "COMPLETED").length;
+  const upcomingCount = mentorSessions.filter((session) =>
+    ["SCHEDULED", "PAID", "ONGOING"].includes(session.status || "")
+  ).length;
   const clearFilters = () => {
     setSearchQuery("");
     setStatusFilter("all");
     pagination.goToFirstPage();
   };
+  const isLoading = sessionsLoading || reviewsLoading;
+  const isRefetching = sessionsRefetching || reviewsRefetching;
 
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            {t("mentorSessions.interviewSessions")}
-          </h1>
-          <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
-            {currentMentorProfile?.name ?? user?.name ?? ""}
-          </p>
+    <div className="-m-4 min-h-[calc(100%+32px)] bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
+      {isLoading ? (
+        <div className="flex h-64 items-center justify-center">
+          <SpinnerBlock size="lg" label={t("common.loading")} />
         </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-[220px] flex-1 sm:w-64 sm:flex-none">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-            <Input
-              type="search"
-              placeholder={t("mentorSessions.searchByRoomNameOrId")}
-              value={searchQuery}
-              onChange={(event) => {
-                setSearchQuery(event.target.value);
-                pagination.goToFirstPage();
-              }}
-              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
-            />
-          </div>
-
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => {
-              setStatusFilter(value as SessionStatus);
-              pagination.goToFirstPage();
-            }}>
-            <SelectTrigger className="h-8 w-36 border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
-              <SelectValue placeholder={t("common.filterByStatus")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-              <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
-              <SelectItem value="SCHEDULED">{t("common.scheduled")}</SelectItem>
-              <SelectItem value="PAID">{t("common.paid")}</SelectItem>
-              <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
-              <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
-              <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
-              <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {(searchQuery || statusFilter !== "all") && (
-            <Button
-              variant="ghost"
-              onClick={clearFilters}
-              className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
-              {t("common.clearFilter")}
-            </Button>
-          )}
-
-          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-          <ReloadButton
-            onReload={async () => {
-              await Promise.all([refetchSessions(), refetchReviews()]);
-            }}
-            isLoading={sessionsRefetching}
-            tooltip={t("mentorSessions.reloadInterviewSessionList")}
-            className="h-8 w-8"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-        {isLoading ? (
-          <div className="flex h-64 items-center justify-center">
-            <SpinnerBlock size="lg" label={t("common.loading")} />
-          </div>
-        ) : (
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              {pageData.length === 0 ? (
-                <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                    {mentorSessions.length === 0 ? (
-                      <Video className="h-6 w-6 text-slate-400" />
-                    ) : (
-                      <Search className="h-6 w-6 text-slate-400" />
-                    )}
-                  </div>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {mentorSessions.length === 0
-                      ? t("common.noInterviewSessionYet")
-                      : t("mentorSessions.thereIsNoProperInterview")}
-                  </p>
-                  {(searchQuery || statusFilter !== "all") && (
-                    <Button variant="outline" size="sm" onClick={clearFilters}>
-                      {t("common.clearFilter")}
-                    </Button>
+      ) : (
+        <div className="animate-in fade-in slide-in-from-bottom-2 flex min-h-full flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
+          <section className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {t("mentorSessions.interviewSessions")}
+                </h1>
+                <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                  {t(
+                    "mentorSessions.manageInterviewSessions",
+                    "Manage schedules, join interviews, and complete candidate reviews"
                   )}
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-5 sm:gap-6">
+                {[
+                  [mentorSessions.length, t("common.totalSessions")],
+                  [completedCount, t("general.completed")],
+                  [upcomingCount, t("common.upcoming")],
+                ].map(([value, label], index) => (
+                  <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
+                    {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
+                    <div className="flex min-w-[78px] flex-col items-center text-center">
+                      <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
+                        {value}
+                      </span>
+                      <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                        {label}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <form
+              onSubmit={(event) => event.preventDefault()}
+              className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
+                <Input
+                  type="search"
+                  placeholder={t("mentorSessions.searchByRoomNameOrId")}
+                  value={searchQuery}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    pagination.goToFirstPage();
+                  }}
+                  className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70"
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="outline"
+                className="h-[46px] rounded-xl border-slate-200/90 bg-white px-6 font-semibold shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                <Search className="h-[18px] w-[18px]" />
+                {t("common.search")}
+              </Button>
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => {
+                  setStatusFilter(value as SessionStatus);
+                  pagination.goToFirstPage();
+                }}>
+                <SelectTrigger className="h-[46px] w-full rounded-xl border-slate-200/90 bg-white px-4 text-sm font-semibold shadow-2xs sm:w-44 dark:border-slate-800 dark:bg-slate-900">
+                  <SelectValue placeholder={t("common.filterByStatus")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                  <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
+                  <SelectItem value="SCHEDULED">{t("common.scheduled")}</SelectItem>
+                  <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+                  <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
+                  <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                  <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
+                  <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <ReloadButton
+                onReload={async () => {
+                  await Promise.all([refetchSessions(), refetchReviews()]);
+                }}
+                isLoading={isRefetching}
+                tooltip={t("mentorSessions.reloadInterviewSessionList")}
+                className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900"
+              />
+            </form>
+
+            {(searchQuery || statusFilter !== "all") && (
+              <div className="mt-4">
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  {t("common.clearFilter")}
+                </Button>
+              </div>
+            )}
+          </section>
+
+          <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            {pageData.length === 0 ? (
+              <div className="flex h-64 flex-col items-center justify-center gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <Video className="h-6 w-6 text-slate-400" />
                 </div>
-              ) : (
-                <div className="min-w-[1040px]">
+                <p className="text-sm font-medium text-slate-500">
+                  {t("mentorSessions.thereIsNoProperInterview")}
+                </p>
+                {(searchQuery || statusFilter !== "all") && (
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    {t("common.clearFilter")}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <div className="min-w-[1120px]">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                        <TableHead className="w-[80px] pl-6 font-medium text-slate-500">
+                      <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                        <TableHead className="w-[7%] min-w-[72px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.id")}
                         </TableHead>
-                        <TableHead className="min-w-[280px] font-medium text-slate-500">
-                          {t("common.roomName")}
-                        </TableHead>
-                        <TableHead className="w-[120px] font-medium text-slate-500">
+                        <TableHead className="w-[23%] min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.candidate")}
                         </TableHead>
-                        <TableHead className="w-[180px] font-medium text-slate-500">
+                        <TableHead className="w-[24%] min-w-[240px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                          {t("common.session")}
+                        </TableHead>
+                        <TableHead className="w-[16%] min-w-[170px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("sessionSortValue")}>
                             {t("common.time")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[130px] font-medium text-slate-500">
+                        <TableHead className="w-[12%] min-w-[130px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.status")}
                         </TableHead>
-                        <TableHead className="w-[130px] text-center font-medium text-slate-500">
+                        <TableHead className="w-[10%] min-w-[120px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.review")}
                         </TableHead>
-                        <TableHead className="w-[230px] pr-6 text-right font-medium text-slate-500">
+                        <TableHead className="w-[8%] min-w-[112px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.actions")}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {pageData.map((session) => {
+                        const review =
+                          typeof session.id === "number"
+                            ? reviewBySessionId.get(session.id)
+                            : undefined;
+                        const candidate = review?.user;
                         const statusBadge = getSessionStatusBadge(session.status);
-                        const hasReview =
-                          typeof session.id === "number" && reviewBySessionId.has(session.id);
-
+                        const hasReview = Boolean(review?.id);
                         return (
                           <TableRow
                             key={session.id}
-                            onClick={() => {
-                              if (typeof session.id === "number") {
-                                navigate(`/mentor/sessions/${session.id}`);
-                              }
-                            }}
-                            className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                            <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                            onClick={() =>
+                              navigate(`/mentor/sessions/${session.id}`, {
+                                state: { returnTo: "/mentor?tab=sessions" },
+                              })
+                            }
+                            className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                            <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                               #{session.id}
                             </TableCell>
-                            <TableCell>
-                              <p className="max-w-[360px] truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                            <TableCell className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                                  <AvatarImage src={candidate?.avatarUrl} alt={candidate?.name} />
+                                  <AvatarFallback className="rounded-[14px] bg-sky-50 font-semibold text-sky-700 dark:bg-sky-950/80 dark:text-sky-300">
+                                    {candidate?.name?.charAt(0)?.toUpperCase() || "U"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0">
+                                  <p className="max-w-[190px] truncate font-semibold text-slate-900 dark:text-white">
+                                    {candidate?.name ||
+                                      (session.userId
+                                        ? `${t("common.candidate")} #${session.userId}`
+                                        : t("common.candidate"))}
+                                  </p>
+                                  <p className="max-w-[190px] truncate text-xs text-slate-500 dark:text-slate-400">
+                                    {candidate?.email || `ID #${session.userId ?? "—"}`}
+                                  </p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
+                              <p className="max-w-[260px] truncate font-semibold text-slate-900 dark:text-white">
                                 {session.roomName || t("common.interviewSession")}
                               </p>
-                              {session.roomUrl && (
-                                <p className="max-w-[360px] truncate text-xs text-slate-500 dark:text-slate-400">
-                                  {session.roomUrl}
-                                </p>
-                              )}
+                              <p className="mt-0.5 max-w-[260px] truncate text-xs text-slate-500 dark:text-slate-400">
+                                {session.roomUrl || "—"}
+                              </p>
                             </TableCell>
-                            <TableCell>
-                              {session.userId ? (
-                                <Badge
-                                  variant="outline"
-                                  className="border-sky-500/30 bg-sky-500/10 font-mono text-xs text-sky-700 dark:text-sky-300">
-                                  #{session.userId}
-                                </Badge>
-                              ) : (
-                                "—"
-                              )}
+                            <TableCell className="px-4 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                              {session.startTime1
+                                ? formatDateTime(treatZuluAsVietnamLocal(session.startTime1))
+                                : "—"}
                             </TableCell>
-                            <TableCell className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                              {formatDateTime(treatZuluAsVietnamLocal(session.startTime1))}
-                            </TableCell>
-                            <TableCell>
+                            <TableCell className="px-4 py-4 text-center">
                               <Badge
                                 variant={statusBadge.variant}
-                                className={statusBadge.className}>
+                                className={`${statusBadge.className} inline-flex min-w-[96px] justify-center`}>
                                 {statusBadge.label}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-center">
-                              {hasReview ? (
-                                <Badge
-                                  variant="outline"
-                                  className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-                                  <Check className="h-3 w-3" />
-                                  {t("common.done")}
-                                </Badge>
-                              ) : session.status === "COMPLETED" ? (
-                                <Badge
-                                  variant="outline"
-                                  className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300">
-                                  {t("common.pending")}
-                                </Badge>
-                              ) : (
-                                <span className="text-slate-400">—</span>
-                              )}
+                            <TableCell className="px-4 py-4 text-center">
+                              <Badge
+                                variant="outline"
+                                className={`inline-flex min-w-[92px] justify-center ${
+                                  hasReview
+                                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                                    : session.status === "COMPLETED"
+                                      ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                                      : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800"
+                                }`}>
+                                {hasReview
+                                  ? t("common.done")
+                                  : session.status === "COMPLETED"
+                                    ? t("common.pending")
+                                    : "—"}
+                              </Badge>
                             </TableCell>
                             <TableCell
-                              className="pr-6"
+                              className="py-4 pr-6"
                               onClick={(event) => event.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    if (typeof session.id === "number") {
-                                      navigate(`/mentor/sessions/${session.id}`);
-                                    }
-                                  }}
-                                  className="h-7 px-2.5 text-xs">
-                                  <Eye className="h-3.5 w-3.5" />
-                                  {t("common.view")}
-                                </Button>
-
+                              <div className="flex min-h-8 items-center justify-end gap-2">
                                 {session.status === "DRAFT" && (
                                   <>
                                     <Button
                                       variant="outline"
-                                      size="sm"
-                                      onClick={() => handleAcceptSession(session)}
+                                      size="icon"
+                                      className="h-8 w-8 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                                      title={t("common.accept")}
+                                      aria-label={t("common.accept")}
                                       disabled={updateStatusMutation.isPending}
-                                      className="h-7 border-emerald-500/30 bg-emerald-500/10 px-2.5 text-xs text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-300">
+                                      onClick={() =>
+                                        session.id &&
+                                        updateStatusMutation.mutate({
+                                          sessionId: session.id,
+                                          isApproved: true,
+                                        })
+                                      }>
                                       <Check className="h-3.5 w-3.5" />
-                                      {t("common.accept")}
                                     </Button>
                                     <Button
                                       variant="outline"
-                                      size="sm"
-                                      onClick={() => handleRejectSession(session)}
+                                      size="icon"
+                                      className="h-8 w-8 border-rose-500/30 text-rose-700 dark:text-rose-300"
+                                      title={t("common.reject")}
+                                      aria-label={t("common.reject")}
                                       disabled={updateStatusMutation.isPending}
-                                      className="h-7 border-rose-500/30 bg-rose-500/10 px-2.5 text-xs text-rose-700 hover:bg-rose-500/15 dark:text-rose-300">
+                                      onClick={() =>
+                                        session.id &&
+                                        updateStatusMutation.mutate({
+                                          sessionId: session.id,
+                                          isApproved: false,
+                                        })
+                                      }>
                                       <X className="h-3.5 w-3.5" />
-                                      {t("common.reject")}
                                     </Button>
                                   </>
                                 )}
-
-                                {!hasReview && session.status === "COMPLETED" && (
+                                {session.status === "COMPLETED" && (
                                   <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      if (typeof session.id === "number") {
-                                        navigate(`/mentor/sessions/${session.id}/review`);
-                                      }
-                                    }}
-                                    className="h-7 bg-indigo-600 px-2.5 text-xs text-white hover:bg-indigo-700">
+                                    variant={hasReview ? "outline" : "default"}
+                                    size="icon"
+                                    className={`h-8 w-8 ${
+                                      hasReview
+                                        ? ""
+                                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                                    }`}
+                                    title={
+                                      hasReview ? t("common.editReview") : t("common.writeReview")
+                                    }
+                                    aria-label={
+                                      hasReview ? t("common.editReview") : t("common.writeReview")
+                                    }
+                                    onClick={() =>
+                                      navigate(
+                                        hasReview
+                                          ? `/mentor/sessions/${session.id}/review/view`
+                                          : `/mentor/sessions/${session.id}/review`,
+                                        { state: { returnTo: "/mentor?tab=sessions" } }
+                                      )
+                                    }>
                                     <Pencil className="h-3.5 w-3.5" />
-                                    {t("common.writeReview")}
-                                  </Button>
-                                )}
-
-                                {hasReview && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      if (typeof session.id === "number") {
-                                        navigate(`/mentor/sessions/${session.id}/review/view`);
-                                      }
-                                    }}
-                                    className="h-7 px-2.5 text-xs">
-                                    <Pencil className="h-3.5 w-3.5" />
-                                    {t("common.editReview")}
                                   </Button>
                                 )}
                               </div>
@@ -435,24 +451,25 @@ export function MentorSessionsPage() {
                     </TableBody>
                   </Table>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {sortedData.length > 0 && (
-              <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+              <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
                 <PaginationControl
                   pagination={pagination}
+                  showBoundaryButtons={false}
+                  showPageJump={false}
                   onPageSizeChange={(size) => {
                     setPageSize(size);
                     pagination.goToFirstPage();
                   }}
-                  pageSizeOptions={[5, 10, 20, 50]}
                 />
               </div>
             )}
-          </div>
-        )}
-      </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

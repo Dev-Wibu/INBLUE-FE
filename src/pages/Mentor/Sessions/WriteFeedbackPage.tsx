@@ -18,7 +18,7 @@ import { useSessionById } from "@/hooks/useSession";
 import { isSessionMentor } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
 import { ArrowLeft, Star, User } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 export function WriteFeedbackPage() {
   const { t } = useTranslation();
@@ -27,6 +27,21 @@ export function WriteFeedbackPage() {
   }>();
   const numericSessionId = Number(sessionId);
   const navigate = useNavigate();
+  const location = useLocation();
+  const requestedReturnTo = (location.state as { returnTo?: string } | null)?.returnTo;
+  const hasInternalReturn = Boolean(requestedReturnTo);
+  const returnTo =
+    typeof requestedReturnTo === "string" &&
+    (requestedReturnTo.startsWith("/mentor/") || requestedReturnTo.startsWith("/mentor?"))
+      ? requestedReturnTo
+      : "/mentor?tab=sessions";
+  const goBack = () => {
+    if (hasInternalReturn) {
+      navigate(-1);
+      return;
+    }
+    navigate(returnTo, { replace: true });
+  };
   const user = useAuthStore((state) => state.user);
   const { data: session, isLoading: sessionLoading } = useSessionById(numericSessionId);
   const { data: existingReview, isLoading: reviewLoading } =
@@ -134,14 +149,14 @@ export function WriteFeedbackPage() {
         },
         {
           onSuccess: () => {
-            navigate("/mentor?tab=sessions");
+            goBack();
           },
         }
       );
     } else {
       createReview(payload, {
         onSuccess: () => {
-          navigate("/mentor?tab=sessions");
+          goBack();
         },
       });
     }
@@ -217,7 +232,7 @@ export function WriteFeedbackPage() {
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
-          onClick={() => navigate("/mentor?tab=sessions")}
+          onClick={goBack}
           className="gap-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60">
           <ArrowLeft className="h-4 w-4" aria-hidden />
           {t("common.returnToTheSessionList")}
@@ -238,7 +253,7 @@ export function WriteFeedbackPage() {
         userId={session.userId || 0}
         existingReview={existingReview}
         onSubmit={handleSubmit}
-        onCancel={() => navigate("/mentor?tab=sessions")}
+        onCancel={goBack}
         isLoading={isSubmitting}
       />
     </div>

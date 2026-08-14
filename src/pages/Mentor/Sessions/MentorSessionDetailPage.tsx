@@ -37,7 +37,8 @@ interface MentorRouteState {
 
 const getSafeReturnTo = (state: unknown): string => {
   const returnTo = (state as MentorRouteState | null)?.returnTo;
-  return typeof returnTo === "string" && returnTo.startsWith("/mentor/")
+  return typeof returnTo === "string" &&
+    (returnTo.startsWith("/mentor/") || returnTo.startsWith("/mentor?"))
     ? returnTo
     : "/mentor?tab=sessions";
 };
@@ -98,7 +99,16 @@ export function MentorSessionDetailPage() {
   const { data: studentInfo } = useUserById(session?.userId ?? 0, !!session?.userId);
   const isAllowed = isSessionMentor(session, user?.id);
   const returnTo = getSafeReturnTo(location.state);
-  const nestedRouteState = { returnTo } satisfies MentorRouteState;
+  const hasInternalReturn = Boolean((location.state as MentorRouteState | null)?.returnTo);
+  const currentSessionPath = `/mentor/sessions/${numericSessionId}`;
+  const nestedRouteState = { returnTo: currentSessionPath } satisfies MentorRouteState;
+  const goBack = () => {
+    if (hasInternalReturn) {
+      navigate(-1);
+      return;
+    }
+    navigate(returnTo, { replace: true });
+  };
 
   useEffect(() => {
     if (sessionLoading) return;
@@ -147,18 +157,20 @@ export function MentorSessionDetailPage() {
         <div className="flex min-w-0 items-center gap-2">
           <button
             type="button"
-            onClick={() => navigate(returnTo)}
+            onClick={goBack}
             aria-label={t("common.back")}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:border-slate-700 dark:text-slate-300 dark:hover:bg-indigo-950/40">
             <ArrowLeft className="h-4 w-4" />
           </button>
           <button
             type="button"
-            onClick={() => navigate(returnTo)}
+            onClick={goBack}
             className="hidden text-xs font-medium text-slate-500 hover:text-indigo-600 sm:block dark:text-slate-400 dark:hover:text-indigo-400">
             {returnTo.includes("/students/")
               ? t("common.students")
-              : t("mentorSessions.interviewSessions")}
+              : returnTo.includes("/reviews/") || returnTo.includes("/feedback/")
+                ? t("common.reviewAndFeedback")
+                : t("mentorSessions.interviewSessions")}
           </button>
           <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-slate-400 sm:block" />
           <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">

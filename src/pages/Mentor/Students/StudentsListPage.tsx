@@ -202,81 +202,109 @@ export function StudentsListPage() {
     pagination.goToFirstPage();
   };
 
+  const reviewedStudentCount = students.filter((student) => student.reviewCount > 0).length;
+  const totalSessionCount = students.reduce((total, student) => total + student.sessionCount, 0);
+
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            {t("mentorStudents.student")}
-          </h1>
-          <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
-            {t("mentorStudents.listOfStudentsWhoHave")}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-[220px] flex-1 sm:w-64 sm:flex-none">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-            <Input
-              type="search"
-              placeholder={t("mentorStudents.searchByIdNameEmail")}
-              value={searchQuery}
-              onChange={(event) => {
-                setSearchQuery(event.target.value);
-                pagination.goToFirstPage();
-              }}
-              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
-            />
-          </div>
-
-          <Select
-            value={studentFilter}
-            onValueChange={(value) => {
-              setStudentFilter(value as StudentFilter);
-              pagination.goToFirstPage();
-            }}>
-            <SelectTrigger className="h-8 w-40 border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
-              <SelectValue placeholder={t("mentorStudents.filterByInteraction")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("mentorStudents.allStudents")}</SelectItem>
-              <SelectItem value="reviewed">{t("mentorStudents.reviewed")}</SelectItem>
-              <SelectItem value="feedbacked">{t("mentorStudents.responseSent1")}</SelectItem>
-              <SelectItem value="noReview">{t("common.thereAreNoReviewsYet")}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {(searchQuery || studentFilter !== "all") && (
-            <Button
-              variant="ghost"
-              onClick={clearFilters}
-              className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
-              {t("common.clearFilter")}
-            </Button>
-          )}
-
-          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-          <ReloadButton
-            onReload={async () => {
-              await Promise.all([refetchSessions(), refetchFeedbacks(), refetchReviews()]);
-            }}
-            isLoading={isReloading}
-            tooltip={t("mentorStudents.reloadStudentList")}
-            className="h-8 w-8"
-          />
-        </div>
-      </div>
-
+    <div className="-m-4 flex min-h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
       <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="lg" label={t("common.loading")} />
           </div>
         ) : (
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto p-5 duration-300 sm:p-6 md:px-8">
+            <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+              <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {t("mentorStudents.student")}
+                  </h2>
+                  <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                    {t("mentorStudents.listOfStudentsWhoHave")}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-5 sm:gap-6">
+                  {[
+                    [students.length, t("mentorStudents.allStudents")],
+                    [totalSessionCount, t("common.session")],
+                    [reviewedStudentCount, t("common.reviewed")],
+                  ].map(([value, label], index) => (
+                    <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
+                      {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
+                      <div className="flex min-w-[78px] flex-col items-center justify-center text-center">
+                        <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
+                          {value}
+                        </span>
+                        <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                          {label}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <form
+                onSubmit={(event) => event.preventDefault()}
+                className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+                  <Input
+                    type="text"
+                    placeholder={t("mentorStudents.searchByIdNameEmail")}
+                    value={searchQuery}
+                    onChange={(event) => {
+                      setSearchQuery(event.target.value);
+                      pagination.goToFirstPage();
+                    }}
+                    className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                  <Search className="mr-2 h-[18px] w-[18px]" />
+                  {t("common.search")}
+                </Button>
+                <Select
+                  value={studentFilter}
+                  onValueChange={(value) => {
+                    setStudentFilter(value as StudentFilter);
+                    pagination.goToFirstPage();
+                  }}>
+                  <SelectTrigger className="h-[46px] w-full rounded-xl border-slate-200/90 bg-white px-4 text-sm font-semibold shadow-2xs sm:w-48 dark:border-slate-800 dark:bg-slate-900">
+                    <SelectValue placeholder={t("mentorStudents.filterByInteraction")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("mentorStudents.allStudents")}</SelectItem>
+                    <SelectItem value="reviewed">{t("mentorStudents.reviewed")}</SelectItem>
+                    <SelectItem value="feedbacked">{t("mentorStudents.responseSent1")}</SelectItem>
+                    <SelectItem value="noReview">{t("common.thereAreNoReviewsYet")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <ReloadButton
+                  onReload={async () => {
+                    await Promise.all([refetchSessions(), refetchFeedbacks(), refetchReviews()]);
+                  }}
+                  isLoading={isReloading}
+                  tooltip={t("mentorStudents.reloadStudentList")}
+                  className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
+                />
+              </form>
+
+              {(searchQuery || studentFilter !== "all") && (
+                <div className="mt-3 flex justify-end">
+                  <Button variant="ghost" size="sm" onClick={clearFilters}>
+                    {t("common.clearFilter")}
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               {pageData.length === 0 ? (
-                <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+                <div className="flex h-64 flex-col items-center justify-center gap-4 bg-slate-50/50 dark:bg-slate-900/50">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
                     {students.length === 0 ? (
                       <Users className="h-6 w-6 text-slate-400" />
@@ -296,36 +324,36 @@ export function StudentsListPage() {
                   )}
                 </div>
               ) : (
-                <div className="min-w-[1080px]">
+                <div className="min-w-[1040px] overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                        <TableHead className="w-[80px] pl-6 font-medium text-slate-500">
+                      <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                        <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.id")}
                         </TableHead>
-                        <TableHead className="min-w-[220px] font-medium text-slate-500">
-                          <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
+                        <TableHead className="w-[31%] min-w-[280px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                          <SortButton {...getSortProps("name")}>{t("common.candidate")}</SortButton>
                         </TableHead>
-                        <TableHead className="min-w-[220px] font-medium text-slate-500">
-                          {t("common.email")}
-                        </TableHead>
-                        <TableHead className="w-[110px] text-center font-medium text-slate-500">
+                        <TableHead className="w-[11%] min-w-[105px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("sessionCount")}>
                             {t("common.session")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[120px] text-center font-medium text-slate-500">
+                        <TableHead className="w-[11%] min-w-[110px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.feedback1")}
                         </TableHead>
-                        <TableHead className="w-[150px] text-center font-medium text-slate-500">
+                        <TableHead className="w-[12%] min-w-[115px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
+                          {t("common.review")}
+                        </TableHead>
+                        <TableHead className="w-[13%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("avgRating")}>
                             {t("common.evaluate")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[150px] font-medium text-slate-500">
+                        <TableHead className="w-[14%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.lastSession")}
                         </TableHead>
-                        <TableHead className="w-[130px] pr-6 text-center font-medium text-slate-500">
+                        <TableHead className="w-[13%] min-w-[140px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.status")}
                         </TableHead>
                       </TableRow>
@@ -334,51 +362,59 @@ export function StudentsListPage() {
                       {pageData.map((student) => (
                         <TableRow
                           key={student.id}
-                          onClick={() => navigate(`/mentor/students/${student.id}`)}
-                          className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                          <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                          onClick={() =>
+                            navigate(`/mentor/students/${student.id}`, {
+                              state: { returnTo: "/mentor?tab=students" },
+                            })
+                          }
+                          className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                          <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                             #{student.id}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="px-4 py-4">
                             <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10 shrink-0 rounded-lg border border-slate-100 dark:border-slate-800">
-                                <AvatarImage src={student.avatarUrl} alt={student.name} />
-                                <AvatarFallback className="rounded-lg bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                              <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                                <AvatarImage
+                                  src={student.avatarUrl}
+                                  alt={student.name}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback className="rounded-[14px] bg-sky-50 font-semibold text-sky-700 dark:bg-sky-950/80 dark:text-sky-300">
                                   {student.name?.charAt(0)?.toUpperCase() || "U"}
                                 </AvatarFallback>
                               </Avatar>
                               <div className="min-w-0">
-                                <p className="max-w-[240px] truncate font-semibold text-slate-900 dark:text-white">
+                                <p className="max-w-[260px] truncate font-semibold text-slate-900 dark:text-white">
                                   {student.name || t("common.studentVar0", { var_0: student.id })}
                                 </p>
-                                {student.university && (
-                                  <p className="max-w-[240px] truncate text-xs text-slate-500 dark:text-slate-400">
-                                    {student.university}
-                                  </p>
-                                )}
+                                <p className="max-w-[260px] truncate text-xs text-slate-500 dark:text-slate-400">
+                                  {student.email || student.university || "—"}
+                                </p>
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="font-medium text-slate-700 dark:text-slate-200">
-                            {student.email || "—"}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant="secondary" className="font-mono">
+                          <TableCell className="px-4 py-4 text-center">
+                            <Badge
+                              variant="outline"
+                              className="min-w-9 justify-center font-mono text-xs font-semibold">
                               {student.sessionCount}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="px-4 py-4 text-center">
                             <Badge
                               variant="outline"
-                              className={
-                                student.feedbackCount > 0
-                                  ? "border-sky-500/30 bg-sky-500/10 font-mono text-sky-700 dark:text-sky-300"
-                                  : "font-mono text-slate-500"
-                              }>
+                              className="min-w-9 justify-center font-mono text-xs font-semibold">
                               {student.feedbackCount}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="px-4 py-4 text-center">
+                            <Badge
+                              variant="outline"
+                              className="min-w-9 justify-center font-mono text-xs font-semibold">
+                              {student.reviewCount}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="px-4 py-4">
                             {student.reviewCount > 0 ? (
                               <span className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-700 dark:text-amber-400">
                                 <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -388,18 +424,18 @@ export function StudentsListPage() {
                               <span className="text-slate-400">—</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                          <TableCell className="px-4 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                             {student.lastSessionDate
                               ? formatDate(treatZuluAsVietnamLocal(student.lastSessionDate))
                               : "—"}
                           </TableCell>
-                          <TableCell className="pr-6 text-center">
+                          <TableCell className="py-4 pr-6 text-center">
                             <Badge
                               variant="outline"
-                              className={getRatingBadgeClass(
+                              className={`min-w-[108px] justify-center ${getRatingBadgeClass(
                                 student.avgRating,
                                 student.reviewCount > 0
-                              )}>
+                              )}`}>
                               {student.reviewCount > 0 && <Check className="h-3 w-3" />}
                               {student.reviewCount > 0
                                 ? t("common.reviewed")
@@ -412,20 +448,20 @@ export function StudentsListPage() {
                   </Table>
                 </div>
               )}
+              {sortedData.length > 0 && (
+                <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800 dark:bg-slate-900">
+                  <PaginationControl
+                    pagination={pagination}
+                    showBoundaryButtons={false}
+                    showPageJump={false}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                </div>
+              )}
             </div>
-
-            {sortedData.length > 0 && (
-              <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(size) => {
-                    setPageSize(size);
-                    pagination.goToFirstPage();
-                  }}
-                  pageSizeOptions={[5, 10, 20, 50]}
-                />
-              </div>
-            )}
           </div>
         )}
       </div>

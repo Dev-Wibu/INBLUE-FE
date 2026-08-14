@@ -3,13 +3,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import {
@@ -26,7 +19,7 @@ import { useMentorReviews, type MentorReview } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate, toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
-import { Eye, MessageSquareText, Search, Star } from "lucide-react";
+import { Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -185,87 +178,126 @@ export function MentorReviewsPage() {
     setRatingFilter("all");
     pagination.goToFirstPage();
   };
+  const averageMentorRating = reviews.length
+    ? (reviews.reduce((total, review) => total + (review.rating || 0), 0) / reviews.length).toFixed(
+        1
+      )
+    : "0.0";
+  const feedbackCount = rows.filter((row) => row.feedback).length;
 
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            {t("common.reviewAndFeedback", "Review & Feedback")}
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t(
-              "adminReviewmanagement.description",
-              "Mentor reviews and candidate responses grouped by interview session"
-            )}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-[220px] flex-1 sm:w-64 sm:flex-none">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-            <Input
-              type="search"
-              placeholder={t("adminReviewmanagement.searchByMentorNameCandidate")}
-              value={searchQuery}
-              onChange={(event) => {
-                setSearchQuery(event.target.value);
-                pagination.goToFirstPage();
-              }}
-              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
-            />
-          </div>
-
-          <Select
-            value={ratingFilter}
-            onValueChange={(value) => {
-              setRatingFilter(value as RatingFilter);
-              pagination.goToFirstPage();
-            }}>
-            <SelectTrigger className="h-8 w-36 border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
-              <SelectValue placeholder={t("common.rating")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("common.allPoints")}</SelectItem>
-              {[5, 4, 3, 2, 1].map((rating) => (
-                <SelectItem key={rating} value={String(rating)}>
-                  {rating} {t("common.star")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {(searchQuery || ratingFilter !== "all") && (
-            <Button
-              variant="ghost"
-              onClick={clearFilters}
-              className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
-              {t("common.clearFilter")}
-            </Button>
-          )}
-
-          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-          <ReloadButton
-            onReload={async () => {
-              await Promise.all([refetchReviews(), refetchFeedbacks()]);
-            }}
-            isLoading={isRefetching}
-            tooltip={t("common.reloadTheReviewList")}
-            className="h-8 w-8"
-          />
-        </div>
-      </div>
-
+    <div className="-m-4 flex min-h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
       <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="lg" label={t("common.loading")} />
           </div>
         ) : (
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto p-5 duration-300 sm:p-6 md:px-8">
+            <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+              <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {t("common.reviewAndFeedback", "Review & Feedback")}
+                  </h2>
+                  <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                    {t(
+                      "adminReviewmanagement.description",
+                      "Mentor reviews and candidate responses grouped by interview session"
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-5 sm:gap-6">
+                  {[
+                    [rows.length, t("adminReviewmanagement.totalReviews")],
+                    [averageMentorRating, t("adminReviewmanagement.averageRating")],
+                    [feedbackCount, t("common.responseReceived")],
+                  ].map(([value, label], index) => (
+                    <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
+                      {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
+                      <div className="flex min-w-[78px] flex-col items-center justify-center text-center">
+                        <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
+                          {value}
+                        </span>
+                        <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                          {label}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <form
+                onSubmit={(event) => event.preventDefault()}
+                className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+                  <Input
+                    type="text"
+                    placeholder={t("adminReviewmanagement.searchByMentorNameCandidate")}
+                    value={searchQuery}
+                    onChange={(event) => {
+                      setSearchQuery(event.target.value);
+                      pagination.goToFirstPage();
+                    }}
+                    className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                  <Search className="mr-2 h-[18px] w-[18px]" />
+                  {t("common.search")}
+                </Button>
+                <ReloadButton
+                  onReload={async () => {
+                    await Promise.all([refetchReviews(), refetchFeedbacks()]);
+                  }}
+                  isLoading={isRefetching}
+                  tooltip={t("common.reloadTheReviewList")}
+                  className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
+                />
+              </form>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                  {t("common.evaluate")}:
+                </span>
+                {[
+                  ["all", t("common.allStatus")],
+                  ["5", t("common.fiveStars")],
+                  ["4", t("common.fourStars")],
+                  ["3", t("common.threeStars")],
+                  ["2", t("common.twoStars")],
+                  ["1", t("common.oneStar")],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      setRatingFilter(value as RatingFilter);
+                      pagination.goToFirstPage();
+                    }}
+                    className={`rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                      ratingFilter === value
+                        ? "border-indigo-600 bg-indigo-600 text-white shadow-xs shadow-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-600/90 dark:text-white"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800"
+                    }`}>
+                    {label}
+                  </button>
+                ))}
+                {(searchQuery || ratingFilter !== "all") && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters}>
+                    {t("common.clearFilter")}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               {pageData.length === 0 ? (
-                <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+                <div className="flex h-64 flex-col items-center justify-center gap-4 bg-slate-50/50 dark:bg-slate-900/50">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
                     <Star className="h-6 w-6 text-slate-400" />
                   </div>
@@ -279,89 +311,100 @@ export function MentorReviewsPage() {
                   )}
                 </div>
               ) : (
-                <div className="min-w-[1120px]">
+                <div className="min-w-[1120px] overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                        <TableHead className="w-[90px] pl-6 font-medium text-slate-500">
+                      <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                        <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("idSortValue")}>{t("common.id")}</SortButton>
                         </TableHead>
-                        <TableHead className="min-w-[260px] font-medium text-slate-500">
+                        <TableHead className="w-[24%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                          {t("common.mentor")}
+                        </TableHead>
+                        <TableHead className="w-[24%] min-w-[190px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("candidateNameSortValue")}>
                             {t("common.candidate")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="min-w-[220px] font-medium text-slate-500">
+                        <TableHead className="w-[12%] min-w-[100px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.session")}
                         </TableHead>
-                        <TableHead className="w-[180px] font-medium text-slate-500">
+                        <TableHead className="w-[14%] min-w-[135px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("mentorRatingSortValue")}>
                             {t("mentorMentordashboard.reviewSent")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[180px] font-medium text-slate-500">
+                        <TableHead className="w-[14%] min-w-[135px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.responseReceived")}
                         </TableHead>
-                        <TableHead className="w-[140px] font-medium text-slate-500">
+                        <TableHead className="w-[12%] min-w-[125px] pr-6 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("newestSortValue")}>
                             {t("common.date")}
                           </SortButton>
-                        </TableHead>
-                        <TableHead className="w-[150px] pr-6 text-right font-medium text-slate-500">
-                          {t("common.actions")}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {pageData.map((row) => {
                         const candidate = row.review?.user ?? row.feedback?.user;
-                        const session = row.review?.session ?? row.feedback?.session;
                         const defaultDetail = row.review?.id
                           ? `/mentor/reviews/${row.review.id}`
                           : row.feedback?.id
                             ? `/mentor/feedback/${row.feedback.id}`
                             : undefined;
+                        const listState = { returnTo: "/mentor?tab=reviews" };
 
                         return (
                           <TableRow
                             key={row.key}
-                            onClick={() => defaultDetail && navigate(defaultDetail)}
-                            className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                            <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                            onClick={() =>
+                              defaultDetail && navigate(defaultDetail, { state: listState })
+                            }
+                            className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                            <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                               #{row.sessionId ?? row.idSortValue}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="px-4 py-4">
                               <div className="flex items-center gap-3">
-                                <Avatar className="h-10 w-10 shrink-0 rounded-lg border border-slate-100 dark:border-slate-800">
-                                  <AvatarImage src={candidate?.avatarUrl} alt={candidate?.name} />
-                                  <AvatarFallback className="rounded-lg bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                                    {candidate?.name?.charAt(0)?.toUpperCase() || "U"}
+                                <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                                  <AvatarImage
+                                    src={mentorProfile?.avatarUrl}
+                                    alt={mentorProfile?.name}
+                                    className="object-cover"
+                                  />
+                                  <AvatarFallback className="rounded-[14px] bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
+                                    {mentorProfile?.name?.charAt(0)?.toUpperCase() || "M"}
                                   </AvatarFallback>
                                 </Avatar>
-                                <div className="min-w-0">
-                                  <p className="max-w-[230px] truncate font-semibold text-slate-900 dark:text-white">
-                                    {candidate?.name ||
-                                      t("common.studentVar0", { var_0: candidate?.id ?? "—" })}
-                                  </p>
-                                  <p className="max-w-[230px] truncate text-xs text-slate-500 dark:text-slate-400">
-                                    {candidate?.email || "—"}
-                                  </p>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                {row.sessionId && (
-                                  <Badge variant="outline" className="font-mono text-xs">
-                                    #{row.sessionId}
-                                  </Badge>
-                                )}
-                                <span className="max-w-[180px] truncate text-sm text-slate-600 dark:text-slate-300">
-                                  {session?.roomName || "—"}
+                                <span className="truncate font-semibold text-slate-900 dark:text-white">
+                                  {mentorProfile?.name || t("common.mentor")}
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                                  <AvatarImage
+                                    src={candidate?.avatarUrl}
+                                    alt={candidate?.name}
+                                    className="object-cover"
+                                  />
+                                  <AvatarFallback className="rounded-[14px] bg-sky-50 font-semibold text-sky-700 dark:bg-sky-950/80 dark:text-sky-300">
+                                    {candidate?.name?.charAt(0)?.toUpperCase() || "U"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="truncate font-semibold text-slate-900 dark:text-white">
+                                  {candidate?.name ||
+                                    t("common.studentVar0", { var_0: candidate?.id ?? "—" })}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
+                              <Badge variant="outline" className="font-mono text-xs font-semibold">
+                                #{row.sessionId ?? "—"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
                               {row.review ? (
                                 <StarRating
                                   value={row.review.rating || 0}
@@ -375,8 +418,27 @@ export function MentorReviewsPage() {
                                 </span>
                               )}
                             </TableCell>
-                            <TableCell>
-                              {row.feedback ? (
+                            <TableCell
+                              className="px-4 py-4"
+                              onClick={(event) => event.stopPropagation()}>
+                              {row.feedback?.id ? (
+                                <button
+                                  type="button"
+                                  className="rounded-md focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+                                  title={t("mentorFeedback.feedbackDetail")}
+                                  onClick={() =>
+                                    navigate(`/mentor/feedback/${row.feedback?.id}`, {
+                                      state: listState,
+                                    })
+                                  }>
+                                  <StarRating
+                                    value={row.feedback.rating || 0}
+                                    readOnly
+                                    size="sm"
+                                    color="sky"
+                                  />
+                                </button>
+                              ) : row.feedback ? (
                                 <StarRating
                                   value={row.feedback.rating || 0}
                                   readOnly
@@ -389,38 +451,8 @@ export function MentorReviewsPage() {
                                 </span>
                               )}
                             </TableCell>
-                            <TableCell className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                            <TableCell className="py-4 pr-6 text-sm font-medium text-slate-600 dark:text-slate-300">
                               {getDisplayDate(row)}
-                            </TableCell>
-                            <TableCell
-                              className="pr-6"
-                              onClick={(event) => event.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-2">
-                                {row.review?.id && (
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    title={t("mentorReviews.reviewDetail")}
-                                    aria-label={t("mentorReviews.reviewDetail")}
-                                    onClick={() => navigate(`/mentor/reviews/${row.review?.id}`)}>
-                                    <Eye className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
-                                {row.feedback?.id && (
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    title={t("mentorFeedback.feedbackDetail")}
-                                    aria-label={t("mentorFeedback.feedbackDetail")}
-                                    onClick={() =>
-                                      navigate(`/mentor/feedback/${row.feedback?.id}`)
-                                    }>
-                                    <MessageSquareText className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
-                              </div>
                             </TableCell>
                           </TableRow>
                         );
@@ -429,19 +461,20 @@ export function MentorReviewsPage() {
                   </Table>
                 </div>
               )}
+              {sortedData.length > 0 && (
+                <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800 dark:bg-slate-900">
+                  <PaginationControl
+                    pagination={pagination}
+                    showBoundaryButtons={false}
+                    showPageJump={false}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                </div>
+              )}
             </div>
-
-            {sortedData.length > 0 && (
-              <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(size) => {
-                    setPageSize(size);
-                    pagination.goToFirstPage();
-                  }}
-                />
-              </div>
-            )}
           </div>
         )}
       </div>
