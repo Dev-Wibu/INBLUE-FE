@@ -28,13 +28,19 @@ import {
   User,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 export function MentorFeedbackDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const feedbackId = Number(id);
+  const requestedReturnTo = (location.state as { returnTo?: string } | null)?.returnTo;
+  const returnTo =
+    typeof requestedReturnTo === "string" && requestedReturnTo.startsWith("/mentor/")
+      ? requestedReturnTo
+      : "/mentor?tab=feedback";
   const currentUser = useAuthStore((state) => state.user);
 
   const { data: feedback, isLoading } = useMentorFeedbackById(feedbackId);
@@ -60,7 +66,7 @@ export function MentorFeedbackDetailPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate("/mentor?tab=feedback")}
+          onClick={() => navigate(returnTo)}
           className="h-9 w-fit rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t("common.backToTheList")}
@@ -87,7 +93,7 @@ export function MentorFeedbackDetailPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate("/mentor?tab=feedback")}
+          onClick={() => navigate(returnTo)}
           className="h-9 w-fit rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t("common.backToTheList")}
@@ -142,7 +148,7 @@ export function MentorFeedbackDetailPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/mentor?tab=feedback")}
+            onClick={() => navigate(returnTo)}
             className="h-9 rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             {t("common.backToTheList")}
@@ -312,7 +318,9 @@ export function MentorFeedbackDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate(`/mentor/sessions/${feedback.session?.id}`)}
+                  onClick={() =>
+                    navigate(`/mentor/sessions/${feedback.session?.id}`, { state: { returnTo } })
+                  }
                   className="h-9 rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
                   {t("common.viewSessionDetails")}
                   <ChevronRight className="ml-1 h-3.5 w-3.5" />
