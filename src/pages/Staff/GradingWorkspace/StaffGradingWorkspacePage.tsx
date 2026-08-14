@@ -366,18 +366,20 @@ function InlineGradingForm({
 
           {/* Right: Recommendation */}
           <div className="space-y-2">
-            <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+              <Lock className="h-3 w-3" />
               Recommendation
-            </label>
+            </div>
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => handlePassChange(true)}
+                disabled
+                aria-pressed={isPass}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold transition-all",
+                  "flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold",
                   isPass
                     ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                    : "border-slate-200 bg-white text-slate-500 hover:border-emerald-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+                    : "border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500"
                 )}>
                 <CheckCircle2
                   className={cn("h-4 w-4", isPass ? "text-emerald-500" : "text-slate-400")}
@@ -386,12 +388,13 @@ function InlineGradingForm({
               </button>
               <button
                 type="button"
-                onClick={() => handlePassChange(false)}
+                disabled
+                aria-pressed={!isPass}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold transition-all",
+                  "flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold",
                   !isPass
                     ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
-                    : "border-slate-200 bg-white text-slate-500 hover:border-rose-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+                    : "border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500"
                 )}>
                 <XCircle className={cn("h-4 w-4", !isPass ? "text-rose-500" : "text-slate-400")} />
                 Reject
@@ -609,7 +612,7 @@ function StaffGradingWorkspaceHeaderCard({
   onSuccess?: () => void;
   onCancel?: () => void;
   onSafeClose: () => void;
-  onDirtyChange?: (dirty: boolean) => void;
+  onDirtyChange?: (_dirty: boolean) => void;
 }) {
   const { t } = useTranslation();
   const detail = staffActiveDetail;
@@ -1168,6 +1171,8 @@ export function StaffGradingWorkspacePage() {
   }, []);
 
   const handleGradingSuccess = useCallback(() => {
+    setIsGradingEditing(false);
+    setIsGradingDirty(false);
     // useHrScore already invalidates the /reviewer cache. Pinging it here
     // makes the workspace pull the freshly-graded detail immediately.
     void refetchReviewer();

@@ -5791,6 +5791,8 @@
       "mentorListLoading": "Đang tải danh sách mentor...",
       "mentorListEmptyTitle": "Chưa có mentor nào được chỉ định",
       "mentorListEmptyDescription": "Vui lòng chờ quản trị viên phân bổ mentor phù hợp.",
+      "mentorHistoryUnavailableTitle": "Không thể xem lại chi tiết mentor",
+      "mentorHistoryUnavailableDescription": "Buổi phỏng vấn đã hoàn thành nên chi tiết lựa chọn mentor không còn hiển thị trong lịch sử.",
       "yearsExperienceValue": "{{count}}+ năm",
       "sessionWithMentor": "Phỏng vấn cùng {{name}}",
       "mentorNameUnavailable": "Mentor được chỉ định",

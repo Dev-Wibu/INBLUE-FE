@@ -22,6 +22,7 @@ import {
   useSelectMentor,
   type MentorResponse,
 } from "@/hooks/useApplicationDetails";
+import { useMentorById } from "@/hooks/useMentor";
 import {
   useCreateMentorFeedback,
   useMentorFeedbacksByMentor,
@@ -73,6 +74,12 @@ import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import { applicationTheme } from "../applicationTheme";
 import type { JdRound } from "../HorizontalPipeline";
+import {
+  collectEmbeddedMentors,
+  mergeMentorResponses,
+  resolvePersistedMentorId,
+  resolveSelectedMentor,
+} from "./mentorReview.utils";
 import { MentorReviewSubheader } from "./MentorReviewSubheader";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
@@ -170,6 +177,14 @@ export function MentorReviewModule({
   const sessionId = sessionInfo?.sessionId ?? detail?.sessionId ?? null;
   const { data: session, refetch: refetchSession } = useSessionById(sessionId ?? 0);
   const sessionStatus = session?.status ?? null;
+  const mentorLookupId = resolvePersistedMentorId(detail, session) ?? 0;
+  const { data: mentorById, isLoading: mentorByIdLoading } = useMentorById(mentorLookupId);
+  const fallbackMentors = useMemo(
+    () =>
+      mergeMentorResponses(collectEmbeddedMentors(detail, session), mentorById ? [mentorById] : []),
+    [detail, mentorById, session]
+  );
+  const fallbackMentorsLoading = mentorLookupId > 0 && mentorByIdLoading;
 
   const activeStep = useMemo<StepKey>(() => {
     // 1. The interview actually happened + completed -> RESULT
@@ -264,6 +279,8 @@ export function MentorReviewModule({
       {viewedStep === "SELECT_MENTOR" && (
         <SelectMentorStep
           detailId={detailId}
+          fallbackMentors={fallbackMentors}
+          fallbackMentorsLoading={fallbackMentorsLoading}
           readOnly={isPreviewingStep}
           onAfterSelect={() => {
             void refetchDetail();
@@ -275,6 +292,8 @@ export function MentorReviewModule({
         <ScheduleStep
           detail={detail}
           detailId={detailId}
+          fallbackMentors={fallbackMentors}
+          fallbackMentorsLoading={fallbackMentorsLoading}
           submitting={createSessionMutation.isPending}
           readOnly={isPreviewingStep}
           onSubmit={(payload) =>
@@ -291,6 +310,9 @@ export function MentorReviewModule({
         <SessionRoomStep
           detailId={detailId}
           sessionId={sessionId}
+          selectedMentorId={detail?.mentorId ?? null}
+          fallbackMentors={fallbackMentors}
+          fallbackMentorsLoading={fallbackMentorsLoading}
           applicationId={applicationId}
           finalScore={finalScore}
           finalResult={detail?.finalResult ?? null}
@@ -525,26 +547,31 @@ function AwaitingMentorStep() {
 
 function SelectMentorStep({
   detailId,
+  fallbackMentors,
+  fallbackMentorsLoading,
   readOnly = false,
   onAfterSelect,
 }: {
   detailId: number;
+  fallbackMentors: MentorResponse[];
+  fallbackMentorsLoading: boolean;
   readOnly?: boolean;
   onAfterSelect: () => void;
 }) {
   const { t } = useTranslation();
-  const { data: mentors, isLoading, error, refetch } = useAssignedMentors(detailId);
+  const { data: mentors, isLoading, refetch } = useAssignedMentors(detailId);
   const selectMutation = useSelectMentor({
     onSuccess: () => onAfterSelect(),
   });
   const [feedbackMentor, setFeedbackMentor] = useState<MentorResponse | null>(null);
   const [mentorToConfirm, setMentorToConfirm] = useState<MentorResponse | null>(null);
-  const mentorsSorted = useMemo(
-    () => [...(mentors ?? [])].sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0)),
-    [mentors]
-  );
+  const mentorsSorted = useMemo(() => {
+    return mergeMentorResponses(fallbackMentors, mentors).sort(
+      (a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0)
+    );
+  }, [fallbackMentors, mentors]);
 
-  if (isLoading) {
+  if ((isLoading || fallbackMentorsLoading) && mentorsSorted.length === 0) {
     return (
       <Card className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
         <Spinner className="mx-auto h-8 w-8 text-indigo-500" />
@@ -555,7 +582,11 @@ function SelectMentorStep({
     );
   }
 
-  if (error || !mentors || mentors.length === 0) {
+  if (mentorsSorted.length === 0 && readOnly) {
+    return <MentorHistoryUnavailable />;
+  }
+
+  if (mentorsSorted.length === 0) {
     return (
       <Card className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80">
         <AlertCircle className="mx-auto h-12 w-12 text-rose-400" />
@@ -591,7 +622,7 @@ function SelectMentorStep({
                       "userApplicationhistory.mentorSelectCount",
                       "{{count}} mentor được đề xuất",
                       {
-                        count: mentors.length,
+                        count: mentorsSorted.length,
                       }
                     )}
                   </span>
@@ -686,6 +717,31 @@ function SelectMentorStep({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+function MentorHistoryUnavailable({ compact = false }: { compact?: boolean }) {
+  const { t } = useTranslation();
+
+  return (
+    <div
+      role="status"
+      className={cn(
+        "flex flex-col items-center justify-center rounded-xl border border-amber-200 bg-amber-50/70 text-center dark:border-amber-900/60 dark:bg-amber-950/25",
+        compact ? "gap-2 px-4 py-5" : "gap-3 px-6 py-10"
+      )}>
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+        <AlertTriangle className="h-5 w-5" />
+      </div>
+      <div className="max-w-lg space-y-1">
+        <h3 className="text-sm font-semibold text-amber-950 dark:text-amber-100">
+          {t("userApplication.mentorReview.mentorHistoryUnavailableTitle")}
+        </h3>
+        <p className="text-sm leading-6 text-amber-800 dark:text-amber-200/80">
+          {t("userApplication.mentorReview.mentorHistoryUnavailableDescription")}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -994,29 +1050,34 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
 function ScheduleStep({
   detail,
   detailId,
+  fallbackMentors,
+  fallbackMentorsLoading,
   submitting,
   readOnly = false,
   onSubmit,
 }: {
   detail?: ApplicationDetail;
   detailId: number;
+  fallbackMentors: MentorResponse[];
+  fallbackMentorsLoading: boolean;
   submitting: boolean;
   readOnly?: boolean;
   onSubmit: (_payload: { joinTime: string; duration: number; offline: boolean }) => void;
 }) {
   const { t } = useTranslation();
-  const { data: mentors } = useAssignedMentors(detailId);
+  const { data: mentors, isLoading: assignedMentorsLoading } = useAssignedMentors(detailId);
   const scheduleSessionInfo = (
     detail as unknown as { sessionInfo?: { mentorId?: number | null } } | undefined
   )?.sessionInfo;
   const selectedMentorId = detail?.mentorId ?? scheduleSessionInfo?.mentorId ?? null;
+  const availableMentors = useMemo(
+    () => mergeMentorResponses(fallbackMentors, mentors),
+    [fallbackMentors, mentors]
+  );
   const selectedMentor = useMemo(() => {
-    return (
-      mentors?.find((m) => selectedMentorId != null && m.id === selectedMentorId) ??
-      mentors?.[0] ??
-      null
-    );
-  }, [mentors, selectedMentorId]);
+    return resolveSelectedMentor(availableMentors, selectedMentorId);
+  }, [availableMentors, selectedMentorId]);
+  const mentorDataLoading = assignedMentorsLoading || fallbackMentorsLoading;
 
   const now = new Date();
   const tomorrow = new Date(now);
@@ -1334,7 +1395,12 @@ function ScheduleStep({
         {/* ===== Mentor hero card ===== */}
         <Card className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="p-4">
-            {selectedMentor ? (
+            {mentorDataLoading && !selectedMentor ? (
+              <div className="flex flex-col items-center gap-3 py-8 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
+                <Spinner className="h-6 w-6 text-indigo-500" />
+                <p>{t("userApplication.mentorReview.mentorListLoading")}</p>
+              </div>
+            ) : selectedMentor ? (
               <>
                 {/* Identity */}
                 <div className="flex items-start gap-3">
@@ -1431,6 +1497,8 @@ function ScheduleStep({
                   </div>
                 )}
               </>
+            ) : readOnly ? (
+              <MentorHistoryUnavailable compact />
             ) : (
               <div className="flex flex-col items-center gap-2 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
                 <Globe className="h-6 w-6 text-slate-400" />
@@ -1707,6 +1775,9 @@ function InfoRow({
 function SessionRoomStep({
   detailId,
   sessionId,
+  selectedMentorId,
+  fallbackMentors,
+  fallbackMentorsLoading,
   finalScore,
   finalResult,
   viewStep,
@@ -1715,6 +1786,9 @@ function SessionRoomStep({
 }: {
   detailId: number;
   sessionId: number | null;
+  selectedMentorId: number | null;
+  fallbackMentors: MentorResponse[];
+  fallbackMentorsLoading: boolean;
   applicationId: number;
   finalScore: number | null;
   finalResult: string | null;
@@ -1723,14 +1797,22 @@ function SessionRoomStep({
   onStatusChange: () => void;
 }) {
   const { t } = useTranslation();
-  const { data: mentors } = useAssignedMentors(detailId);
+  const { data: mentors, isLoading: mentorsLoading } = useAssignedMentors(detailId);
   const { data: session, refetch } = useSessionById(sessionId ?? 0);
   const [now, setNow] = useState(() => Date.now());
+  const availableMentors = useMemo(
+    () => mergeMentorResponses(fallbackMentors, mentors),
+    [fallbackMentors, mentors]
+  );
   const sessionMentor = useMemo(() => {
-    const mentorId = Number(session?.mentorId);
-    if (!Number.isFinite(mentorId)) return null;
-    return mentors?.find((mentor) => Number(mentor.id) === mentorId) ?? null;
-  }, [mentors, session?.mentorId]);
+    return resolveSelectedMentor(
+      availableMentors,
+      session?.mentorId,
+      session?.userId2,
+      selectedMentorId
+    );
+  }, [availableMentors, selectedMentorId, session?.mentorId, session?.userId2]);
+  const mentorDataLoading = mentorsLoading || fallbackMentorsLoading;
 
   // Poll session every 30s while in WAITING or IN_CALL
   useEffect(() => {
@@ -1769,7 +1851,11 @@ function SessionRoomStep({
   const canEnter = minutesUntilStart <= 15 && minutesUntilStart > -(session.duration ?? 0);
   const isCompleted = readOnly ? viewStep === "RESULT" : session.status === "COMPLETED";
   const mentorName = sessionMentor?.name?.trim();
-  const mentorDisplayName = mentorName || t("userApplication.mentorReview.mentorNameUnavailable");
+  const mentorDisplayName =
+    mentorName ||
+    (mentorDataLoading
+      ? t("userApplication.mentorReview.mentorListLoading")
+      : t("userApplication.mentorReview.mentorHistoryUnavailableTitle"));
 
   // ---- COMPLETED ----
   if (isCompleted) {
@@ -1777,6 +1863,7 @@ function SessionRoomStep({
       <CompletedResultView
         session={session}
         mentor={sessionMentor}
+        mentorLoading={mentorDataLoading}
         finalScore={finalScore}
         finalResult={finalResult}
         readOnly={readOnly}
@@ -1853,6 +1940,11 @@ function SessionRoomStep({
                 }
               />
             </div>
+            {!mentorDataLoading && !sessionMentor && readOnly && (
+              <div className="mt-4">
+                <MentorHistoryUnavailable compact />
+              </div>
+            )}
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/40">
@@ -1952,6 +2044,7 @@ function SessionRoomStep({
 function CompletedResultView({
   session,
   mentor,
+  mentorLoading,
   finalScore,
   finalResult,
   readOnly = false,
@@ -1959,6 +2052,7 @@ function CompletedResultView({
 }: {
   session: Session;
   mentor: MentorResponse | null;
+  mentorLoading: boolean;
   finalScore: number | null;
   finalResult: string | null;
   readOnly?: boolean;
@@ -1977,13 +2071,18 @@ function CompletedResultView({
       })
     : "—";
   const mentorDisplayName =
-    mentor?.name?.trim() || t("userApplication.mentorReview.mentorNameUnavailable");
+    mentor?.name?.trim() ||
+    (mentorLoading
+      ? t("userApplication.mentorReview.mentorListLoading")
+      : t("userApplication.mentorReview.mentorHistoryUnavailableTitle"));
   const hasFinalScore = finalScore !== null && finalScore !== undefined;
   const finalPassed = finalResult === "PASSED";
   const finalFailed = finalResult === "FAILED";
 
   return (
     <div className="space-y-5">
+      {!mentorLoading && !mentor && <MentorHistoryUnavailable />}
+
       <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
         <div className="space-y-5">
           <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
@@ -2014,16 +2113,20 @@ function CompletedResultView({
                 <Avatar className="h-full w-full rounded-[1.15rem]">
                   <AvatarImage
                     src={mentor?.avatarUrl ?? undefined}
-                    alt={mentor?.name ?? "Mentor"}
+                    alt={mentor?.name ?? mentorDisplayName}
                     className="h-full w-full object-cover"
                   />
                   <AvatarFallback className="rounded-[1.15rem] bg-indigo-500/10 text-lg font-bold text-indigo-500 dark:bg-indigo-950/30 dark:text-indigo-300">
-                    {(mentor?.name ?? "M")
-                      .split(" ")
-                      .slice(0, 2)
-                      .map((part) => part[0])
-                      .join("")
-                      .toUpperCase()}
+                    {mentor?.name ? (
+                      mentor.name
+                        .split(" ")
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()
+                    ) : (
+                      <UserCheck className="h-6 w-6" />
+                    )}
                   </AvatarFallback>
                 </Avatar>
               </div>
@@ -2040,10 +2143,12 @@ function CompletedResultView({
                   <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
                     {mentorDisplayName}
                   </h3>
-                  <p className="inline-flex max-w-full items-center gap-1.5 truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    <Building2 className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
-                    <span className="truncate">{mentor?.currentCompany ?? "Mentor"}</span>
-                  </p>
+                  {mentor?.currentCompany && (
+                    <p className="inline-flex max-w-full items-center gap-1.5 truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      <Building2 className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
+                      <span className="truncate">{mentor.currentCompany}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
