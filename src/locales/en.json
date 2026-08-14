@@ -5789,6 +5789,8 @@
       "mentorListLoading": "Loading mentors...",
       "mentorListEmptyTitle": "No mentor has been assigned yet",
       "mentorListEmptyDescription": "Please wait while an administrator assigns suitable mentors.",
+      "mentorHistoryUnavailableTitle": "Mentor details unavailable",
+      "mentorHistoryUnavailableDescription": "This interview has been completed, but its mentor selection details are no longer available in history.",
       "yearsExperienceValue": "{{count}}+ years",
       "sessionWithMentor": "Interview with {{name}}",
       "mentorNameUnavailable": "Assigned mentor",

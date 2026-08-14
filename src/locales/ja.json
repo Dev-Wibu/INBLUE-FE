@@ -5777,6 +5777,8 @@
       "mentorListLoading": "メンターを読み込み中...",
       "mentorListEmptyTitle": "メンターはまだ割り当てられていません",
       "mentorListEmptyDescription": "管理者が適切なメンターを割り当てるまでお待ちください。",
+      "mentorHistoryUnavailableTitle": "メンターの詳細を確認できません",
+      "mentorHistoryUnavailableDescription": "面接は完了しているため、メンター選択の詳細は履歴で確認できません。",
       "yearsExperienceValue": "{{count}} 年以上",
       "sessionWithMentor": "{{name}}との面接",
       "mentorNameUnavailable": "担当メンター",
