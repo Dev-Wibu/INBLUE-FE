@@ -73,7 +73,11 @@ import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import { applicationTheme } from "../applicationTheme";
 import type { JdRound } from "../HorizontalPipeline";
-import { collectEmbeddedMentors, mergeMentorResponses } from "./mentorReview.utils";
+import {
+  collectEmbeddedMentors,
+  mergeMentorResponses,
+  resolveSelectedMentor,
+} from "./mentorReview.utils";
 import { MentorReviewSubheader } from "./MentorReviewSubheader";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
@@ -278,6 +282,7 @@ export function MentorReviewModule({
         <ScheduleStep
           detail={detail}
           detailId={detailId}
+          fallbackMentors={embeddedMentors}
           submitting={createSessionMutation.isPending}
           readOnly={isPreviewingStep}
           onSubmit={(payload) =>
@@ -1029,12 +1034,14 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
 function ScheduleStep({
   detail,
   detailId,
+  fallbackMentors,
   submitting,
   readOnly = false,
   onSubmit,
 }: {
   detail?: ApplicationDetail;
   detailId: number;
+  fallbackMentors: MentorResponse[];
   submitting: boolean;
   readOnly?: boolean;
   onSubmit: (_payload: { joinTime: string; duration: number; offline: boolean }) => void;
@@ -1045,13 +1052,13 @@ function ScheduleStep({
     detail as unknown as { sessionInfo?: { mentorId?: number | null } } | undefined
   )?.sessionInfo;
   const selectedMentorId = detail?.mentorId ?? scheduleSessionInfo?.mentorId ?? null;
+  const availableMentors = useMemo(
+    () => mergeMentorResponses(fallbackMentors, mentors),
+    [fallbackMentors, mentors]
+  );
   const selectedMentor = useMemo(() => {
-    return (
-      mentors?.find((m) => selectedMentorId != null && m.id === selectedMentorId) ??
-      mentors?.[0] ??
-      null
-    );
-  }, [mentors, selectedMentorId]);
+    return resolveSelectedMentor(availableMentors, selectedMentorId);
+  }, [availableMentors, selectedMentorId]);
 
   const now = new Date();
   const tomorrow = new Date(now);
@@ -1466,6 +1473,8 @@ function ScheduleStep({
                   </div>
                 )}
               </>
+            ) : readOnly ? (
+              <MentorHistoryUnavailable compact />
             ) : (
               <div className="flex flex-col items-center gap-2 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
                 <Globe className="h-6 w-6 text-slate-400" />
