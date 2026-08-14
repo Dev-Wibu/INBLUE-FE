@@ -73,6 +73,7 @@ import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import { applicationTheme } from "../applicationTheme";
 import type { JdRound } from "../HorizontalPipeline";
+import { collectEmbeddedMentors, mergeMentorResponses } from "./mentorReview.utils";
 import { MentorReviewSubheader } from "./MentorReviewSubheader";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
@@ -170,6 +171,7 @@ export function MentorReviewModule({
   const sessionId = sessionInfo?.sessionId ?? detail?.sessionId ?? null;
   const { data: session, refetch: refetchSession } = useSessionById(sessionId ?? 0);
   const sessionStatus = session?.status ?? null;
+  const embeddedMentors = useMemo(() => collectEmbeddedMentors(detail, session), [detail, session]);
 
   const activeStep = useMemo<StepKey>(() => {
     // 1. The interview actually happened + completed -> RESULT
@@ -264,6 +266,7 @@ export function MentorReviewModule({
       {viewedStep === "SELECT_MENTOR" && (
         <SelectMentorStep
           detailId={detailId}
+          fallbackMentors={embeddedMentors}
           readOnly={isPreviewingStep}
           onAfterSelect={() => {
             void refetchDetail();
@@ -525,26 +528,29 @@ function AwaitingMentorStep() {
 
 function SelectMentorStep({
   detailId,
+  fallbackMentors,
   readOnly = false,
   onAfterSelect,
 }: {
   detailId: number;
+  fallbackMentors: MentorResponse[];
   readOnly?: boolean;
   onAfterSelect: () => void;
 }) {
   const { t } = useTranslation();
-  const { data: mentors, isLoading, error, refetch } = useAssignedMentors(detailId);
+  const { data: mentors, isLoading, refetch } = useAssignedMentors(detailId);
   const selectMutation = useSelectMentor({
     onSuccess: () => onAfterSelect(),
   });
   const [feedbackMentor, setFeedbackMentor] = useState<MentorResponse | null>(null);
   const [mentorToConfirm, setMentorToConfirm] = useState<MentorResponse | null>(null);
-  const mentorsSorted = useMemo(
-    () => [...(mentors ?? [])].sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0)),
-    [mentors]
-  );
+  const mentorsSorted = useMemo(() => {
+    return mergeMentorResponses(fallbackMentors, mentors).sort(
+      (a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0)
+    );
+  }, [fallbackMentors, mentors]);
 
-  if (isLoading) {
+  if (isLoading && mentorsSorted.length === 0) {
     return (
       <Card className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
         <Spinner className="mx-auto h-8 w-8 text-indigo-500" />
@@ -555,7 +561,11 @@ function SelectMentorStep({
     );
   }
 
-  if (error || !mentors || mentors.length === 0) {
+  if (mentorsSorted.length === 0 && readOnly) {
+    return <MentorHistoryUnavailable />;
+  }
+
+  if (mentorsSorted.length === 0) {
     return (
       <Card className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80">
         <AlertCircle className="mx-auto h-12 w-12 text-rose-400" />
@@ -591,7 +601,7 @@ function SelectMentorStep({
                       "userApplicationhistory.mentorSelectCount",
                       "{{count}} mentor được đề xuất",
                       {
-                        count: mentors.length,
+                        count: mentorsSorted.length,
                       }
                     )}
                   </span>
@@ -686,6 +696,31 @@ function SelectMentorStep({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+function MentorHistoryUnavailable({ compact = false }: { compact?: boolean }) {
+  const { t } = useTranslation();
+
+  return (
+    <div
+      role="status"
+      className={cn(
+        "flex flex-col items-center justify-center rounded-xl border border-amber-200 bg-amber-50/70 text-center dark:border-amber-900/60 dark:bg-amber-950/25",
+        compact ? "gap-2 px-4 py-5" : "gap-3 px-6 py-10"
+      )}>
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+        <AlertTriangle className="h-5 w-5" />
+      </div>
+      <div className="max-w-lg space-y-1">
+        <h3 className="text-sm font-semibold text-amber-950 dark:text-amber-100">
+          {t("userApplication.mentorReview.mentorHistoryUnavailableTitle")}
+        </h3>
+        <p className="text-sm leading-6 text-amber-800 dark:text-amber-200/80">
+          {t("userApplication.mentorReview.mentorHistoryUnavailableDescription")}
+        </p>
+      </div>
+    </div>
   );
 }
 
