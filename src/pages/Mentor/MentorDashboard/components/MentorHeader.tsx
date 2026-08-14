@@ -73,14 +73,9 @@ const STATIC_NAVIGATION: Array<{
     icon: Users,
   },
   {
-    labelKey: "mentorMentordashboard.reviewSent",
+    labelKey: "common.reviewAndFeedback",
     to: "/mentor?tab=reviews",
     icon: Star,
-  },
-  {
-    labelKey: "common.responseReceived",
-    to: "/mentor?tab=feedback",
-    icon: MessageSquare,
   },
   {
     labelKey: "common.messages",

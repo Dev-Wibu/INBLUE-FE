@@ -14,7 +14,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { MentorAccountPage } from "../Account";
-import { GivenFeedbackListPage } from "../Feedback";
 import { MentorHomeFeedPage } from "../HomeFeed";
 import { MentorKioskEntryPage } from "../MentorKioskEntryPage";
 import { MessengerPage } from "../Messenger";
@@ -76,11 +75,11 @@ const getAvailableTabs = (
   },
   {
     type: "reviews",
-    label: _t("mentorMentordashboard.reviewSent"),
+    label: _t("common.reviewAndFeedback"),
   },
   {
     type: "feedback",
-    label: _t("common.responseReceived"),
+    label: _t("common.reviewAndFeedback"),
   },
   {
     type: "kioskEntry",
@@ -135,14 +134,8 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
       {
         type: "reviews",
         icon: Star,
-        label: t("mentorMentordashboard.reviewSent"),
+        label: t("common.reviewAndFeedback"),
         color: "text-yellow-600",
-      },
-      {
-        type: "feedback",
-        icon: MessageSquare,
-        label: t("common.responseReceived"),
-        color: "text-cyan-600",
       },
     ],
   },
@@ -175,7 +168,7 @@ export function MentorDashboardPage() {
         </span>
       </a>
     ),
-    [t]
+    []
   );
   const navigate = useNavigate();
   const location = useLocation();
@@ -212,6 +205,7 @@ export function MentorDashboardPage() {
     : isValidTabType(activeTab)
       ? activeTab
       : DEFAULT_TAB;
+  const navigationActiveTab: TabType = typedActiveTab === "feedback" ? "reviews" : typedActiveTab;
   // Find current title and category for header (Candidate style)
   const { currentTitle, currentCategory, parentTitle } = useMemo(() => {
     if (location.pathname.startsWith("/mentor/account")) {
@@ -223,7 +217,7 @@ export function MentorDashboardPage() {
     }
     for (const group of sidebarMenuGroups) {
       for (const item of group.items) {
-        if (item.type === typedActiveTab) {
+        if (item.type === navigationActiveTab) {
           return {
             currentTitle: item.label,
             currentCategory: group.label,
@@ -231,7 +225,7 @@ export function MentorDashboardPage() {
           };
         }
         if (item.children) {
-          const child = item.children.find((c) => c.type === typedActiveTab);
+          const child = item.children.find((c) => c.type === navigationActiveTab);
           if (child) {
             return {
               currentTitle: child.label,
@@ -247,7 +241,7 @@ export function MentorDashboardPage() {
       currentCategory: undefined,
       parentTitle: undefined,
     };
-  }, [typedActiveTab, sidebarMenuGroups, t, location.pathname]);
+  }, [navigationActiveTab, sidebarMenuGroups, t, location.pathname]);
 
   const shouldHideScrollButton = location.pathname.startsWith("/mentor/sessions/room/");
   const handleContentRef = useCallback((node: HTMLDivElement | null) => {
@@ -312,7 +306,7 @@ export function MentorDashboardPage() {
       case "reviews":
         return <MentorReviewsPage />;
       case "feedback":
-        return <GivenFeedbackListPage />;
+        return <MentorReviewsPage />;
       case "kioskEntry":
         return <MentorKioskEntryPage />;
       case "notifications":
@@ -329,7 +323,7 @@ export function MentorDashboardPage() {
     <div className="isolate flex h-screen bg-slate-50 dark:bg-slate-950">
       <DashboardSidebar
         menuGroups={sidebarMenuGroups}
-        activeTab={typedActiveTab}
+        activeTab={navigationActiveTab}
         onNavigate={handleNavigate}
         onProfileClick={() => handleNavigate("account")}
         storageKey="mentor_dashboard_sidebar_collapsed"
