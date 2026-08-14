@@ -62,11 +62,11 @@ interface MentorReviewReportProps {
 }
 
 const ratingLabel = (rating: number, t: TFunction) => {
-  if (rating >= 5) return t("common.excellent", { defaultValue: "Excellent" });
-  if (rating >= 4) return t("common.veryGood", { defaultValue: "Very good" });
-  if (rating >= 3) return t("common.meetsExpectations", { defaultValue: "Meets expectations" });
-  if (rating >= 2) return t("common.needsImprovement", { defaultValue: "Needs improvement" });
-  return t("common.notRated", { defaultValue: "Not rated" });
+  if (rating >= 5) return t("common.excellent");
+  if (rating >= 4) return t("common.veryGood");
+  if (rating >= 3) return t("common.meetsExpectations");
+  if (rating >= 2) return t("common.needsImprovement");
+  return t("common.notRated");
 };
 
 function ReviewTextPanel({
@@ -146,7 +146,7 @@ export function MentorReviewReport({
     {
       field: "situationNote",
       letter: "S",
-      title: t("mentorReviews.situation", "Situation"),
+      title: t("mentorReviews.situation"),
       icon: MessageSquare,
       value: review.situationNote,
       color:
@@ -155,7 +155,7 @@ export function MentorReviewReport({
     {
       field: "taskNote",
       letter: "T",
-      title: t("mentorReviews.tasks", "Task"),
+      title: t("mentorReviews.tasks"),
       icon: Target,
       value: review.taskNote,
       color:
@@ -164,7 +164,7 @@ export function MentorReviewReport({
     {
       field: "actionNote",
       letter: "A",
-      title: t("mentorReviews.action", "Action"),
+      title: t("mentorReviews.action"),
       icon: Zap,
       value: review.actionNote,
       color:
@@ -173,7 +173,7 @@ export function MentorReviewReport({
     {
       field: "resultNote",
       letter: "R",
-      title: t("mentorReviews.result", "Result"),
+      title: t("mentorReviews.result"),
       icon: TrendingUp,
       value: review.resultNote,
       color:
@@ -194,7 +194,7 @@ export function MentorReviewReport({
                   <span>{t("mentorReviews.detailedAssessmentStarMethod")}</span>
                 </h2>
                 <Badge className="bg-indigo-50 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                  {t("common.mentor", "Mentor")} {mentorRating.toFixed(1)}/5
+                  {t("common.mentor")} {mentorRating.toFixed(1)}/5
                 </Badge>
               </div>
 
@@ -349,7 +349,9 @@ export function MentorReviewReport({
           <div className="space-y-6">
             <div className="space-y-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 dark:border-slate-800/80 dark:bg-slate-950/60">
               <div className="flex items-center justify-between gap-4">
-                <span className="text-xs text-slate-500 dark:text-slate-400">Session</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {t("common.session")}
+                </span>
                 <span className="rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 font-mono text-xs font-bold text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300">
                   #{sessionId}
                 </span>
@@ -374,14 +376,14 @@ export function MentorReviewReport({
             </div>
             <LabeledPerson
               label={t("common.mentor")}
-              badge={t("common.reviewer", "Reviewer")}
+              badge={t("common.reviewer")}
               person={mentor}
               fallback="M"
               tone="indigo"
             />
             <LabeledPerson
               label={t("common.candidate")}
-              badge={t("common.interview", "Interview")}
+              badge={t("common.interview")}
               person={candidate}
               fallback="U"
               tone="sky"

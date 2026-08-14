@@ -83,14 +83,14 @@ function AgendaSessionItem({
           variant="outline"
           className="h-7 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           onClick={() => onOpenDetail(item.session.id)}>
-          {t("common.seeDetails", "Xem chi tiết")}
+          {t("common.seeDetails")}
         </Button>
         {canJoinRoom && (
           <Button
             size="sm"
             className="h-7 bg-emerald-600 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             onClick={() => onOpenRoom(item.session.id)}>
-            {t("common.enterTheRoom", "Vào phòng")}
+            {t("common.enterTheRoom")}
           </Button>
         )}
         {canReview && (
@@ -99,7 +99,7 @@ function AgendaSessionItem({
             variant="secondary"
             className="h-7 bg-emerald-50 text-xs font-medium text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300"
             onClick={() => onOpenReview(item.session.id)}>
-            {t("common.evaluate", "Đánh giá")}
+            {t("common.evaluate")}
           </Button>
         )}
       </div>
@@ -327,7 +327,7 @@ export function MentorOverviewPage() {
             {MONTH_NAMES[currentMonth]} {currentYear}
           </CardTitle>
           <CardDescription className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            {t("common.clickOnTheDateToSeeDetails", "Nhấp vào ngày để xem chi tiết lịch")}
+            {t("common.clickOnTheDateToSeeDetails")}
           </CardDescription>
         </div>
 
@@ -337,7 +337,7 @@ export function MentorOverviewPage() {
             size="sm"
             onClick={jumpToToday}
             className="h-8 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-            {t("common.today", "Hôm nay")}
+            {t("common.today")}
           </Button>
           <div className="flex items-center gap-1">
             <Button
@@ -369,25 +369,23 @@ export function MentorOverviewPage() {
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-blue-500" />
             <span className="text-xs text-slate-600 dark:text-slate-400">
-              {t("common.comingSoon", "Sắp diễn ra")}
+              {t("common.comingSoon")}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-xs text-slate-600 dark:text-slate-400">
-              {t("common.paid", "Đã thanh toán")}
-            </span>
+            <span className="text-xs text-slate-600 dark:text-slate-400">{t("common.paid")}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-green-500" />
             <span className="text-xs text-slate-600 dark:text-slate-400">
-              {t("common.ongoing", "Đang diễn ra")}
+              {t("common.ongoing")}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-slate-400" />
             <span className="text-xs text-slate-600 dark:text-slate-400">
-              {t("general.completed", "Hoàn thành")}
+              {t("general.completed")}
             </span>
           </div>
         </div>
@@ -489,7 +487,7 @@ export function MentorOverviewPage() {
                           <Popover>
                             <PopoverTrigger asChild>
                               <button className="w-full rounded-md border border-dashed border-emerald-300 bg-white/80 px-2 py-0.5 text-center text-[10px] font-bold text-emerald-600 transition-colors hover:border-emerald-400 dark:border-emerald-700 dark:bg-slate-900 dark:text-emerald-300">
-                                +{overflowCount} {t("common.anotherSession", "bài nữa")}
+                                +{overflowCount} {t("common.anotherSession")}
                               </button>
                             </PopoverTrigger>
                             <PopoverContent
@@ -535,7 +533,7 @@ export function MentorOverviewPage() {
       className="flex h-[580px] max-h-[580px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="shrink-0 border-b border-slate-100 px-4 pt-4 pb-3 dark:border-slate-800">
         <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-          {t("common.appointmentScheduleByDay", "Lịch hẹn theo ngày")}
+          {t("common.appointmentScheduleByDay")}
         </h3>
         <p className="text-xs font-semibold text-emerald-600 capitalize dark:text-emerald-400">
           {selectedDateDisplay}
@@ -584,14 +582,14 @@ export function MentorOverviewPage() {
         <div className="mt-2 rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/30">
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-              {t("userOverview.upcomingSession", "Phiên sắp tới")}
+              {t("userOverview.upcomingSession")}
             </p>
             <Button
               variant="outline"
               size="sm"
               className="h-6 px-2 text-[11px] font-semibold dark:border-slate-700 dark:bg-slate-800"
               onClick={() => navigate("/mentor?tab=sessions")}>
-              {t("common.viewHistory", "Xem lịch sử")}
+              {t("common.viewHistory")}
             </Button>
           </div>
 
@@ -636,7 +634,7 @@ export function MentorOverviewPage() {
         {/* Recent Reviews Box */}
         <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-4 dark:border-slate-800 dark:bg-slate-900/50">
           <p className="mb-2 text-xs font-bold text-slate-900 dark:text-slate-100">
-            {t("mentorOverview.recentReviews", "Đánh giá gần đây")}
+            {t("mentorOverview.recentReviews")}
           </p>
           {reviewsLoading ? (
             <div className="space-y-2">
@@ -645,7 +643,7 @@ export function MentorOverviewPage() {
             </div>
           ) : recentReviews.length === 0 ? (
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              {t("mentorOverview.youHaveNoRecentReviews", "Chưa có đánh giá nào")}
+              {t("mentorOverview.youHaveNoRecentReviews")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -687,7 +685,7 @@ export function MentorOverviewPage() {
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {t("userOverview.interviewOverview", "Tổng quan phỏng vấn")}
+                {t("userOverview.interviewOverview")}
               </h2>
               <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
                 {t(
@@ -704,7 +702,7 @@ export function MentorOverviewPage() {
                   {totalInterviews}
                 </span>
                 <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
-                  {t("common.totalInterviewSession", "Tổng lượt phỏng vấn")}
+                  {t("common.totalInterviewSession")}
                 </span>
               </div>
               <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
@@ -713,7 +711,7 @@ export function MentorOverviewPage() {
                   {upcomingInterviews}
                 </span>
                 <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
-                  {t("common.sessionIsComingSoon", "Sắp diễn ra")}
+                  {t("common.sessionIsComingSoon")}
                 </span>
               </div>
               <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
@@ -722,7 +720,7 @@ export function MentorOverviewPage() {
                   {completedInterviews}
                 </span>
                 <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
-                  {t("userOverview.sessionCompleted", "Đã hoàn thành")}
+                  {t("userOverview.sessionCompleted")}
                 </span>
               </div>
               <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
@@ -731,7 +729,7 @@ export function MentorOverviewPage() {
                   {pendingInterviews}
                 </span>
                 <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
-                  {t("userOverview.requestPendingApproval", "Chờ duyệt")}
+                  {t("userOverview.requestPendingApproval")}
                 </span>
               </div>
             </div>
@@ -744,10 +742,8 @@ export function MentorOverviewPage() {
         <div className="w-full min-w-0 xl:hidden">
           <Tabs value={mobileView} onValueChange={setMobileView}>
             <TabsList className="mb-3 grid w-full grid-cols-2">
-              <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list", "Danh sách")}</TabsTrigger>
-              <TabsTrigger value={MOBILE_VIEW_CALENDAR}>
-                {t("common.monthlyCalendar", "Lịch tháng")}
-              </TabsTrigger>
+              <TabsTrigger value={MOBILE_VIEW_AGENDA}>{t("common.list")}</TabsTrigger>
+              <TabsTrigger value={MOBILE_VIEW_CALENDAR}>{t("common.monthlyCalendar")}</TabsTrigger>
             </TabsList>
             <TabsContent value={MOBILE_VIEW_AGENDA} className="mt-0">
               <div key={`mobile-agenda-${selectedDateKey}`}>{renderAgendaContent()}</div>

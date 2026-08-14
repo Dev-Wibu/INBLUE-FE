@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useApplicationDetailsForReviewer } from "@/hooks/useApplicationDetails";
 import { cn, fixUtf8Mojibake } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
+import type { TFunction } from "i18next";
 import {
   ArrowRight,
   BarChart3,
@@ -56,16 +57,13 @@ interface ReviewerItem {
 
 const scoreOf = (item: ReviewerItem) => item.hrScore ?? item.finalScore ?? item.aiScore;
 
-const statusLabel = (status: string) => {
-  if (status === "AI_EVALUATED") return "Ready to grade";
-  if (status === "COMPLETED") return "Completed";
-  if (status === "SUBMITTED") return "Submitted";
-  if (status === "PENDING") return "Pending";
-  return status
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+const statusLabel = (status: string, t: TFunction) => {
+  if (status === "AI_EVALUATED") return t("staffOverview.statusReadyToGrade");
+  if (status === "COMPLETED") return t("staffOverview.statusCompleted");
+  if (status === "SUBMITTED") return t("staffOverview.statusSubmitted");
+  if (status === "PENDING") return t("staffOverview.statusPending");
+  if (status === "SLOT_PICKED") return t("staffOverview.statusSlotPicked");
+  return t("staffOverview.statusUnknown", { status });
 };
 
 export function StaffOverviewPage() {
@@ -107,13 +105,17 @@ export function StaffOverviewPage() {
       const status = item.status || "PENDING";
       counts.set(status, (counts.get(status) || 0) + 1);
     });
-    return Array.from(counts, ([status, value]) => ({ status, name: statusLabel(status), value }));
-  }, [reviews]);
+    return Array.from(counts, ([status, value]) => ({
+      status,
+      name: statusLabel(status, t),
+      value,
+    }));
+  }, [reviews, t]);
 
   const roundData = useMemo(() => {
     const rounds = new Map<string, { assigned: number; completed: number }>();
     reviews.forEach((item) => {
-      const round = fixUtf8Mojibake(item.roundName) || t("common.interviewRound", "Round");
+      const round = fixUtf8Mojibake(item.roundName) || t("staffOverview.roundFallback");
       const current = rounds.get(round) || { assigned: 0, completed: 0 };
       current.assigned += 1;
       if (item.status === "COMPLETED") current.completed += 1;
@@ -196,7 +198,7 @@ export function StaffOverviewPage() {
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             icon={Layers3}
-            label={t("common.totalAssigned", "Total assigned")}
+            label={t("staffOverview.totalAssigned")}
             value={isLoading ? undefined : stats.total}
             tone="indigo"
           />
@@ -214,7 +216,7 @@ export function StaffOverviewPage() {
           />
           <MetricCard
             icon={Gauge}
-            label={t("common.averageScore", "Average score")}
+            label={t("staffOverview.averageScore")}
             value={isLoading ? undefined : stats.averageScore.toFixed(1)}
             suffix="/100"
             tone="sky"
@@ -227,17 +229,17 @@ export function StaffOverviewPage() {
               <div>
                 <h2 className="flex items-center gap-2 text-base font-bold text-slate-950 dark:text-white">
                   <BarChart3 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                  {t("common.workloadByRound", "Workload by round")}
+                  {t("staffOverview.workloadByRound")}
                 </h2>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  {t("common.assignedAndCompleted", "Assigned and completed grading rounds")}
+                  {t("staffOverview.workloadByRoundHint")}
                 </p>
               </div>
             </div>
             {isLoading ? (
               <Skeleton className="h-72 w-full" />
             ) : roundData.length === 0 ? (
-              <EmptyChart />
+              <EmptyChart message={t("staffOverview.noGradingData")} />
             ) : (
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -267,7 +269,7 @@ export function StaffOverviewPage() {
                     />
                     <Bar
                       dataKey="assigned"
-                      name={t("common.assigned", "Assigned")}
+                      name={t("staffOverview.assigned")}
                       fill="#6366f1"
                       radius={[4, 4, 0, 0]}
                       maxBarSize={36}
@@ -287,15 +289,15 @@ export function StaffOverviewPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
             <h2 className="text-base font-bold text-slate-950 dark:text-white">
-              {t("common.statusDistribution", "Status distribution")}
+              {t("staffOverview.statusDistribution")}
             </h2>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("common.currentGradingQueue", "Current grading queue")}
+              {t("staffOverview.statusDistributionHint")}
             </p>
             {isLoading ? (
               <Skeleton className="mt-5 h-72 w-full" />
             ) : statusData.length === 0 ? (
-              <EmptyChart />
+              <EmptyChart message={t("staffOverview.noGradingData")} />
             ) : (
               <div className="relative mt-2 h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -374,9 +376,9 @@ export function StaffOverviewPage() {
             <div className="overflow-x-auto">
               <div className="min-w-[960px]">
                 <div className="grid grid-cols-[90px_minmax(240px,1.4fr)_minmax(180px,1fr)_130px_130px_48px] border-b border-slate-200 bg-slate-100/80 px-5 py-3 text-xs font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300">
-                  <span>ID</span>
+                  <span>{t("common.id")}</span>
                   <span>{t("common.candidate")}</span>
-                  <span>{t("common.interviewRound", "Round")}</span>
+                  <span>{t("common.interviewRound")}</span>
                   <span>{t("common.score")}</span>
                   <span>{t("common.status")}</span>
                   <span />
@@ -418,7 +420,7 @@ export function StaffOverviewPage() {
                               ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300"
                               : "border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                         )}>
-                        {statusLabel(status)}
+                        {statusLabel(status, t)}
                       </Badge>
                       <ArrowRight className="h-4 w-4 justify-self-end text-slate-400 group-hover:text-indigo-500" />
                     </button>
@@ -475,11 +477,11 @@ function MetricCard({
   );
 }
 
-function EmptyChart() {
+function EmptyChart({ message }: { message: string }) {
   return (
     <div className="flex h-72 flex-col items-center justify-center gap-2 text-slate-400">
       <Clock3 className="h-8 w-8" />
-      <span className="text-sm">No grading data</span>
+      <span className="text-sm">{message}</span>
     </div>
   );
 }

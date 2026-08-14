@@ -339,7 +339,7 @@ export function StudentDetailPage() {
                 ) : (
                   <div className="min-w-[920px] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
                     <div className="grid grid-cols-[90px_minmax(280px,1.7fr)_minmax(180px,1fr)_150px_56px] items-center border-b border-slate-200 bg-slate-100/80 px-5 py-3 text-xs font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300">
-                      <span>ID</span>
+                      <span>{t("common.id")}</span>
                       <span>{t("common.session")}</span>
                       <span>{t("common.time")}</span>
                       <span>{t("common.status")}</span>
@@ -364,7 +364,7 @@ export function StudentDetailPage() {
             {activeTab === "feedbacks" && (
               <div
                 key="feedbacks"
-                className="mx-5 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+                className="mx-5 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                 {studentFeedbacks.length === 0 ? (
                   <EmptyState
                     icon={MessageSquare}
@@ -402,7 +402,7 @@ export function StudentDetailPage() {
             {activeTab === "reviews" && (
               <div
                 key="reviews"
-                className="mx-5 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+                className="mx-5 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                 {studentReviews.length === 0 ? (
                   <EmptyState
                     icon={Star}
@@ -830,8 +830,8 @@ function MentorReviewListRow({
   return (
     <div
       className={cn(
-        "group border-b border-slate-100 bg-white px-4 py-5 transition-colors last:border-b-0 hover:bg-slate-50",
-        "dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900",
+        "group border-b border-slate-100 bg-white px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-50/80",
+        "dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/60",
         onClick && "cursor-pointer"
       )}
       onClick={onClick}
@@ -851,9 +851,12 @@ function MentorReviewListRow({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">
+              #{review.id}
+            </span>
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-[0.06em] uppercase ring-1 ring-inset",
+                "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset",
                 accentClass
               )}>
               <Star className="h-3 w-3 fill-current" aria-hidden />
@@ -870,13 +873,14 @@ function MentorReviewListRow({
             </p>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-3">
           <StarRating value={rating} readOnly size="sm" />
+          <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-500" />
         </div>
       </div>
 
       {hasContent ? (
-        <div className="mt-4 space-y-3 border-t border-slate-200 pt-3 dark:border-slate-800">
+        <div className="mt-4 space-y-3 border-t border-slate-200 pt-3 dark:border-slate-700/80">
           {/* STAR notes */}
           {starNotes.length > 0 && (
             <div className="grid gap-2 sm:grid-cols-2">
@@ -967,8 +971,8 @@ function MentorFeedbackListRow({
   return (
     <div
       className={cn(
-        "group border-b border-slate-100 bg-white px-4 py-5 transition-colors last:border-b-0 hover:bg-slate-50",
-        "dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900",
+        "group border-b border-slate-100 bg-white px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-50/80",
+        "dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/60",
         onClick && "cursor-pointer"
       )}
       onClick={onClick}
@@ -1004,14 +1008,17 @@ function MentorFeedbackListRow({
             )}
           </p>
         </div>
-        <div className="flex flex-col items-end gap-0.5">
-          <StarRating value={rating} readOnly size="sm" />
-          <span className="text-[10px] font-bold tracking-[0.06em] text-rose-700 uppercase dark:text-rose-300">
-            {rating}/5
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col items-end gap-0.5">
+            <StarRating value={rating} readOnly size="sm" />
+            <span className="text-xs font-semibold text-rose-700 dark:text-rose-300">
+              {rating}/5
+            </span>
+          </div>
+          <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-500" />
         </div>
       </div>
-      <div className="mt-3 border-t border-slate-200 pt-3 dark:border-slate-800">
+      <div className="mt-3 border-t border-slate-200 pt-3 dark:border-slate-700/80">
         {feedback.comment ? (
           <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
             {feedback.comment}
