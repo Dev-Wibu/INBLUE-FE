@@ -299,6 +299,8 @@ export function MentorReviewModule({
         <SessionRoomStep
           detailId={detailId}
           sessionId={sessionId}
+          selectedMentorId={detail?.mentorId ?? null}
+          fallbackMentors={embeddedMentors}
           applicationId={applicationId}
           finalScore={finalScore}
           finalResult={detail?.finalResult ?? null}
@@ -1751,6 +1753,8 @@ function InfoRow({
 function SessionRoomStep({
   detailId,
   sessionId,
+  selectedMentorId,
+  fallbackMentors,
   finalScore,
   finalResult,
   viewStep,
@@ -1759,6 +1763,8 @@ function SessionRoomStep({
 }: {
   detailId: number;
   sessionId: number | null;
+  selectedMentorId: number | null;
+  fallbackMentors: MentorResponse[];
   applicationId: number;
   finalScore: number | null;
   finalResult: string | null;
@@ -1767,14 +1773,16 @@ function SessionRoomStep({
   onStatusChange: () => void;
 }) {
   const { t } = useTranslation();
-  const { data: mentors } = useAssignedMentors(detailId);
+  const { data: mentors, isLoading: mentorsLoading } = useAssignedMentors(detailId);
   const { data: session, refetch } = useSessionById(sessionId ?? 0);
   const [now, setNow] = useState(() => Date.now());
+  const availableMentors = useMemo(
+    () => mergeMentorResponses(fallbackMentors, mentors),
+    [fallbackMentors, mentors]
+  );
   const sessionMentor = useMemo(() => {
-    const mentorId = Number(session?.mentorId);
-    if (!Number.isFinite(mentorId)) return null;
-    return mentors?.find((mentor) => Number(mentor.id) === mentorId) ?? null;
-  }, [mentors, session?.mentorId]);
+    return resolveSelectedMentor(availableMentors, session?.mentorId, selectedMentorId);
+  }, [availableMentors, selectedMentorId, session?.mentorId]);
 
   // Poll session every 30s while in WAITING or IN_CALL
   useEffect(() => {
@@ -1813,7 +1821,11 @@ function SessionRoomStep({
   const canEnter = minutesUntilStart <= 15 && minutesUntilStart > -(session.duration ?? 0);
   const isCompleted = readOnly ? viewStep === "RESULT" : session.status === "COMPLETED";
   const mentorName = sessionMentor?.name?.trim();
-  const mentorDisplayName = mentorName || t("userApplication.mentorReview.mentorNameUnavailable");
+  const mentorDisplayName =
+    mentorName ||
+    (mentorsLoading
+      ? t("userApplication.mentorReview.mentorListLoading")
+      : t("userApplication.mentorReview.mentorHistoryUnavailableTitle"));
 
   // ---- COMPLETED ----
   if (isCompleted) {
@@ -1897,6 +1909,11 @@ function SessionRoomStep({
                 }
               />
             </div>
+            {!mentorsLoading && !sessionMentor && readOnly && (
+              <div className="mt-4">
+                <MentorHistoryUnavailable compact />
+              </div>
+            )}
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/40">
