@@ -307,7 +307,7 @@ export function MentorSessionsPage() {
       {/* Main content grid */}
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
         {/* Left - Table */}
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex min-h-[500px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {isLoading ? (
             <div className="p-4">
               <Skeleton className="h-12" />
@@ -315,7 +315,7 @@ export function MentorSessionsPage() {
               <Skeleton className="mt-2 h-12" />
             </div>
           ) : mentorSessions.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center gap-4">
+            <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
                 <Video className="h-6 w-6 text-slate-400" />
               </div>
