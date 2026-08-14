@@ -1,15 +1,19 @@
 /**
- * Mentor Sessions Page — "Interview Command Deck" v2.
- * UI-only refresh: compact dark hero, status track with live filter pills,
- * command-bar, and personality-rich session cards. Logic (filters, sort,
- * pagination, mutations, navigation) is preserved.
+ * Mentor Sessions Page — Admin UI Pattern
+ * Redesigned to match Admin table layout pattern
  */
 
-import { ReloadButton } from "@/components/shared";
+import { ReloadButton, SortButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
-import { SortButton } from "@/components/shared/SortButton";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
@@ -18,68 +22,77 @@ import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { AnimatePresence, motion } from "framer-motion";
-import { Calendar, Check, Video } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Calendar, Check, Search, Video } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import {
-  CommandBar,
-  type CommandBarStatus,
-  SessionCard,
-  StatusTrack,
-  type StatusTrackItem,
-} from "./components";
-import { toTimestampSafe } from "./components/mentor-interview.constants";
 
 type SortableSession = Session & {
   sessionSortValue: number;
 };
 
+type SessionStatus = "all" | "SCHEDULED" | "PAID" | "ONGOING" | "COMPLETED" | "DRAFT";
+
 const getSessionSortValue = (session: Session): number => {
-  const joinTimeSort = toTimestampSafe(session.joinTime);
-  if (typeof joinTimeSort === "number") {
-    return joinTimeSort;
-  }
-  const startTimeSort = toTimestampSafe(session.startTime1);
-  if (typeof startTimeSort === "number") {
-    return startTimeSort;
-  }
+  const joinTime = session.joinTime ? new Date(session.joinTime).getTime() : 0;
+  if (joinTime > 0) return joinTime;
+  const startTime = session.startTime1 ? new Date(session.startTime1).getTime() : 0;
+  if (startTime > 0) return startTime;
   return typeof session.id === "number" ? session.id : 0;
 };
 
 const matchesSessionSearch = (session: Session, query: string): boolean => {
   const normalizedQuery = query.trim().toLowerCase();
-  if (!normalizedQuery) {
-    return true;
-  }
-  const roomNameMatch = session.roomName?.toLowerCase().includes(normalizedQuery) ?? false;
-  const roomUrlMatch = session.roomUrl?.toLowerCase().includes(normalizedQuery) ?? false;
-  return (
+  if (!normalizedQuery) return true;
+  return !!(
     session.id?.toString().includes(normalizedQuery) ||
     session.userId?.toString().includes(normalizedQuery) ||
-    session.userId2?.toString().includes(normalizedQuery) ||
-    roomNameMatch ||
-    roomUrlMatch
+    session.roomName?.toLowerCase().includes(normalizedQuery) ||
+    session.roomUrl?.toLowerCase().includes(normalizedQuery)
   );
 };
 
-const listMotion = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.05, ease: "easeOut" as const },
-  },
-};
-
-const cardMotion = {
-  hidden: { opacity: 0, y: 14 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.32, ease: "easeOut" as const },
-  },
-};
+function getStatusBadgeClass(status: string): { bg: string; text: string; dot: string } {
+  switch (status) {
+    case "SCHEDULED":
+      return {
+        bg: "bg-sky-100 dark:bg-sky-500/20",
+        text: "text-sky-700 dark:text-sky-300",
+        dot: "bg-sky-500",
+      };
+    case "PAID":
+      return {
+        bg: "bg-purple-100 dark:bg-purple-500/20",
+        text: "text-purple-700 dark:text-purple-300",
+        dot: "bg-purple-500",
+      };
+    case "ONGOING":
+      return {
+        bg: "bg-amber-100 dark:bg-amber-500/20",
+        text: "text-amber-700 dark:text-amber-300",
+        dot: "bg-amber-500",
+      };
+    case "COMPLETED":
+      return {
+        bg: "bg-emerald-100 dark:bg-emerald-500/20",
+        text: "text-emerald-700 dark:text-emerald-300",
+        dot: "bg-emerald-500",
+      };
+    case "REJECTED":
+    case "CANCELED":
+      return {
+        bg: "bg-slate-100 dark:bg-slate-500/20",
+        text: "text-slate-700 dark:text-slate-300",
+        dot: "bg-slate-500",
+      };
+    default:
+      return {
+        bg: "bg-slate-100 dark:bg-slate-500/20",
+        text: "text-slate-700 dark:text-slate-300",
+        dot: "bg-slate-500",
+      };
+  }
+}
 
 export function MentorSessionsPage() {
   const { t } = useTranslation();
@@ -87,8 +100,7 @@ export function MentorSessionsPage() {
   const user = useAuthStore((state) => state.user);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [trackFilter, setTrackFilter] = useState<string>("all");
-  const [otherStatusFilter, setOtherStatusFilter] = useState<CommandBarStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<SessionStatus>("all");
 
   const {
     data: allSessions = [],
@@ -99,17 +111,11 @@ export function MentorSessionsPage() {
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
-    isRefetching: reviewsRefetching,
     refetch: refetchReviews,
   } = useMentorReviews();
   const updateStatusMutation = useUpdateSessionStatus();
   const { data: currentMentorProfile } = useCurrentMentorProfile();
 
-  const [now, setNow] = useState<number>(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 5_000);
-    return () => clearInterval(timer);
-  }, []);
   const isLoading = sessionsLoading || reviewsLoading;
 
   const mentorSessions = useMemo(() => {
@@ -120,13 +126,12 @@ export function MentorSessionsPage() {
           ? parseInt(currentMentorProfile.id, 10)
           : currentMentorProfile.id
         : undefined;
-    const all = [...allSessions];
-    return all
-      .filter((session: Session) => {
-        const candidates = [userId, mentorProfileId].filter(
-          (id): id is number => typeof id === "number" && Number.isFinite(id)
-        );
-        if (candidates.length === 0) return false;
+    const candidates = [userId, mentorProfileId].filter(
+      (id): id is number => typeof id === "number" && Number.isFinite(id)
+    );
+    if (candidates.length === 0) return [];
+    return [...allSessions]
+      .filter((session) => {
         const sessionIds = [session.userId, session.userId2, session.mentorId]
           .filter((id): id is number => typeof id === "number")
           .map((id) => String(id));
@@ -144,168 +149,61 @@ export function MentorSessionsPage() {
     });
     return reviewMap;
   }, [reviews]);
-  const reviewSessionIds = useMemo(() => new Set(reviewBySessionId.keys()), [reviewBySessionId]);
 
-  const otherSessions = useMemo(
-    () => mentorSessions.filter((session) => session.status !== "DRAFT"),
-    [mentorSessions]
-  );
-
-  const filteredOtherSessions = useMemo(() => {
-    return otherSessions.filter((session) => {
-      if (!matchesSessionSearch(session, searchQuery)) {
-        return false;
-      }
-      // Status-track filter takes precedence for "waiting" because it has its own semantic.
-      if (trackFilter === "waiting") {
-        return (
-          session.status === "COMPLETED" &&
-          typeof session.id === "number" &&
-          !reviewSessionIds.has(session.id)
-        );
-      }
-      if (otherStatusFilter !== "all") {
-        return session.status === otherStatusFilter;
-      }
+  const filteredSessions = useMemo(() => {
+    return mentorSessions.filter((session) => {
+      if (!matchesSessionSearch(session, searchQuery)) return false;
+      if (statusFilter !== "all" && session.status !== statusFilter) return false;
       return true;
     });
-  }, [otherSessions, searchQuery, otherStatusFilter, trackFilter, reviewSessionIds]);
+  }, [mentorSessions, searchQuery, statusFilter]);
 
-  const sortableOtherSessions = useMemo<SortableSession[]>(
+  const sortableSessions = useMemo<SortableSession[]>(
     () =>
-      filteredOtherSessions.map((session) => ({
+      filteredSessions.map((session) => ({
         ...session,
         sessionSortValue: getSessionSortValue(session),
       })),
-    [filteredOtherSessions]
+    [filteredSessions]
   );
 
-  const { sortedData, getSortProps } = useSortable(sortableOtherSessions);
+  const { sortedData, getSortProps } = useSortable(sortableSessions);
 
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "src_pages_mentor_sessions_mentorsessionspage_tsx_pagesize",
     defaultPageSize: 10,
   });
-  const pagination = usePagination({
-    totalCount: sortedData.length,
-    pageSize,
-  });
+  const pagination = usePagination({ totalCount: sortedData.length, pageSize });
 
   const pageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
-  const handleJoinSession = (session: Session) => {
-    if (session.roomUrl) {
-      navigate(`/mentor/sessions/room/${session.id}`);
-    }
-  };
-  const handleWriteReview = (session: Session) => {
-    navigate(`/mentor/sessions/${session.id}/review`);
-  };
-  const handleViewDetails = (session: Session) => {
-    if (typeof session.id === "number") {
-      navigate(`/mentor/sessions/${session.id}`);
-    }
-  };
-  const handleEditReview = (sessionId: number) => {
-    navigate(`/mentor/sessions/${sessionId}/review`);
-  };
+  const scheduledCount = mentorSessions.filter(
+    (s) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
+  ).length;
+  const completedCount = mentorSessions.filter((s) => s.status === "COMPLETED").length;
+
   const handleAcceptSession = (session: Session) => {
     if (session.id) {
-      updateStatusMutation.mutate({
-        sessionId: session.id,
-        isApproved: true,
-      });
+      updateStatusMutation.mutate({ sessionId: session.id, isApproved: true });
     }
   };
   const handleRejectSession = (session: Session) => {
     if (session.id) {
-      updateStatusMutation.mutate({
-        sessionId: session.id,
-        isApproved: false,
-      });
+      updateStatusMutation.mutate({ sessionId: session.id, isApproved: false });
     }
   };
 
-  const scheduledCount = mentorSessions.filter(
-    (s: Session) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
-  ).length;
-  const completedCount = mentorSessions.filter((s: Session) => s.status === "COMPLETED").length;
-
-  // Status track items — 4 pills with counts and active state. Click to filter.
-  const statusItems: StatusTrackItem[] = useMemo(
-    () => [
-      {
-        id: "all",
-        label: t("common.allStatus"),
-        count: otherSessions.length,
-        icon: Video,
-        tone: "indigo",
-        active: trackFilter === "all",
-      },
-      {
-        id: "upcoming",
-        label: t("common.comingSoon"),
-        count: scheduledCount,
-        icon: Calendar,
-        tone: "sky",
-        pulse: true,
-        active: trackFilter === "upcoming",
-      },
-      {
-        id: "completed",
-        label: t("general.completed"),
-        count: completedCount,
-        icon: Check,
-        tone: "emerald",
-        active: trackFilter === "completed",
-      },
-    ],
-    [t, otherSessions.length, scheduledCount, completedCount, trackFilter]
-  );
-
-  const statusOptions = useMemo(
-    () => [
-      {
-        value: "all" as CommandBarStatus,
-        label: t("common.allStatus"),
-        count: otherSessions.length,
-      },
-      {
-        value: "SCHEDULED" as CommandBarStatus,
-        label: t("common.comingSoon"),
-        count: scheduledCount,
-      },
-      { value: "PAID" as CommandBarStatus, label: t("common.paid") },
-      { value: "ONGOING" as CommandBarStatus, label: t("common.ongoing") },
-      {
-        value: "COMPLETED" as CommandBarStatus,
-        label: t("general.completed"),
-        count: completedCount,
-      },
-    ],
-    [t, otherSessions.length, scheduledCount, completedCount]
-  );
-
-  const handleTrackSelect = (id: string) => {
-    setTrackFilter(id);
-    if (id !== "all") {
-      // Reset granular status filter when switching to a track filter,
-      // because "waiting" has its own semantic that's status-track scoped.
-      setOtherStatusFilter("all");
-    }
-    pagination.goToFirstPage();
-  };
-
+  // ---------- render ----------
   return (
-    <div className="-m-4 min-h-[calc(100%+32px)] bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
-      <div className="flex flex-col gap-5 p-4 md:p-6 lg:p-8">
-        {/* Stat summary card */}
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+    <div className="flex flex-col bg-slate-50 p-4 md:p-6 lg:p-8 dark:bg-slate-950">
+      {/* Header Card - Admin Pattern */}
+      <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-500/15">
-              <Video className="h-5 w-5 text-indigo-500" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/15">
+              <Video className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-[-0.02em] text-slate-900 dark:text-white">
@@ -316,143 +214,292 @@ export function MentorSessionsPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-2xl font-bold tracking-[-0.03em] text-slate-900 dark:text-white">
-                {isLoading ? "—" : mentorSessions.length}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {t("common.totalSession")}
-              </p>
+          <div className="flex items-center gap-6">
+            {/* Quick stats */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-slate-400" />
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  {scheduledCount}
+                </span>
+                <span className="text-xs text-slate-500">{t("common.comingSoon")}</span>
+              </div>
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-emerald-500" />
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  {completedCount}
+                </span>
+                <span className="text-xs text-slate-500">{t("general.completed")}</span>
+              </div>
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  {mentorSessions.length}
+                </span>
+                <span className="text-xs text-slate-500">{t("common.totalSession")}</span>
+              </div>
             </div>
             <ReloadButton
               onReload={async () => {
                 await Promise.all([refetchSessions(), refetchReviews()]);
               }}
-              isLoading={sessionsRefetching || reviewsRefetching}
+              isLoading={sessionsRefetching}
               tooltip={t("mentorSessions.reloadInterviewSessionList")}
+              className="h-9 w-9"
             />
           </div>
         </div>
 
-        {/* Status track */}
-        <StatusTrack items={statusItems} onSelect={handleTrackSelect} />
+        {/* Search and Filter Row */}
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder={t("mentorSessions.searchByRoomNameOrId")}
+              value={searchQuery}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                pagination.goToFirstPage();
+              }}
+              className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pr-4 pl-11 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
+          </div>
+        </div>
 
+        {/* Status Filter Pills */}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {[
+            ["all", t("common.allStatus"), mentorSessions.length],
+            [
+              "SCHEDULED",
+              t("common.comingSoon"),
+              mentorSessions.filter((s) => s.status === "SCHEDULED").length,
+            ],
+            ["PAID", t("common.paid"), mentorSessions.filter((s) => s.status === "PAID").length],
+            [
+              "ONGOING",
+              t("common.ongoing"),
+              mentorSessions.filter((s) => s.status === "ONGOING").length,
+            ],
+            ["COMPLETED", t("general.completed"), completedCount],
+          ].map(([value, label, count]) => (
+            <button
+              key={value}
+              onClick={() => {
+                setStatusFilter(value as SessionStatus);
+                pagination.goToFirstPage();
+              }}
+              className={cn(
+                "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                statusFilter === value
+                  ? "border-indigo-500 bg-indigo-500 text-white"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              )}>
+              {label} ({count})
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Table Card - Admin Pattern */}
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {isLoading ? (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <Skeleton className="h-44" />
-            <Skeleton className="h-44" />
-            <Skeleton className="h-44" />
-            <Skeleton className="h-44" />
+          <div className="p-4">
+            <Skeleton className="h-12" />
+            <Skeleton className="mt-2 h-12" />
+            <Skeleton className="mt-2 h-12" />
           </div>
         ) : mentorSessions.length === 0 ? (
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white py-16 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <EmptyState
-              icon={Video}
-              title={t("common.noInterviewSessionYet")}
-              description={t("common.youHaveNotHadAnyInterviewSessions")}
-            />
+          <div className="flex h-64 flex-col items-center justify-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <Video className="h-6 w-6 text-slate-400" />
+            </div>
+            <p className="text-sm font-medium text-slate-500">
+              {t("common.noInterviewSessionYet")}
+            </p>
           </div>
         ) : (
           <>
-            {/* Command bar */}
-            {trackFilter !== "waiting" && (
-              <CommandBar
-                searchValue={searchQuery}
-                onSearchChange={(value) => {
-                  setSearchQuery(value);
-                  pagination.goToFirstPage();
-                }}
-                status={otherStatusFilter}
-                onStatusChange={(value) => {
-                  setOtherStatusFilter(value);
-                  pagination.goToFirstPage();
-                }}
-                statusOptions={statusOptions}
-                sortSlot={
-                  <>
-                    <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
-                    <SortButton {...getSortProps("sessionSortValue")}>
-                      {t("common.time")}
-                    </SortButton>
-                    <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
-                  </>
-                }
-                onClear={() => {
-                  setSearchQuery("");
-                  setOtherStatusFilter("all");
-                  pagination.goToFirstPage();
-                }}
-              />
-            )}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900">
+                    <TableHead className="w-[80px] pl-5 font-semibold text-slate-700 dark:text-slate-200">
+                      <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
+                    </TableHead>
+                    <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                      {t("common.roomName")}
+                    </TableHead>
+                    <TableHead className="w-[120px] min-w-[120px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+                      {t("common.status")}
+                    </TableHead>
+                    <TableHead className="w-[150px] min-w-[150px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+                      <SortButton {...getSortProps("sessionSortValue")}>
+                        {t("common.time")}
+                      </SortButton>
+                    </TableHead>
+                    <TableHead className="w-[100px] min-w-[100px] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
+                      {t("common.review")}
+                    </TableHead>
+                    <TableHead className="w-[200px] min-w-[200px] pr-5 text-center font-semibold text-slate-700 dark:text-slate-200">
+                      {t("common.actions")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pageData.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-48 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <Search className="h-6 w-6 text-slate-400" />
+                          <p className="text-sm text-slate-500">
+                            {t("mentorSessions.thereIsNoProperInterview")}
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    pageData.map((session) => {
+                      const statusBadge = getStatusBadgeClass(session.status || "");
+                      const hasReview =
+                        typeof session.id === "number" && reviewBySessionId.has(session.id);
+                      return (
+                        <TableRow
+                          key={session.id}
+                          className="border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/80">
+                          <TableCell className="py-3.5 pl-5">
+                            <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                              #{session.id}
+                            </span>
+                          </TableCell>
+                          <TableCell className="px-4 py-3.5">
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                              {session.roomName || `Session ${session.id}`}
+                            </p>
+                            {session.roomUrl && (
+                              <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                {session.roomUrl}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell className="px-5 py-3.5">
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
+                                statusBadge.bg,
+                                statusBadge.text
+                              )}>
+                              <span className={cn("h-1.5 w-1.5 rounded-full", statusBadge.dot)} />
+                              {session.status}
+                            </span>
+                          </TableCell>
+                          <TableCell className="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300">
+                            {session.startTime1 ? (
+                              <span>{new Date(session.startTime1).toLocaleString()}</span>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="px-5 py-3.5 text-center">
+                            {hasReview ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                                <Check className="h-3 w-3" />
+                                {t("common.done")}
+                              </span>
+                            ) : session.status === "COMPLETED" ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+                                {t("common.pending")}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="px-5 py-3.5">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (typeof session.id === "number") {
+                                    navigate(`/mentor/sessions/${session.id}`);
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                                {t("common.view")}
+                              </button>
+                              {session.status === "DRAFT" && (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAcceptSession(session);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300">
+                                    {t("common.accept")}
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRejectSession(session);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition-all hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300">
+                                    {t("common.reject")}
+                                  </button>
+                                </>
+                              )}
+                              {!hasReview && session.status === "COMPLETED" && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (typeof session.id === "number") {
+                                      navigate(`/mentor/sessions/${session.id}/review`);
+                                    }
+                                  }}
+                                  className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition-all hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300">
+                                  {t("common.writeReview")}
+                                </button>
+                              )}
+                              {hasReview && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (typeof session.id === "number") {
+                                      navigate(`/mentor/sessions/${session.id}/review`);
+                                    }
+                                  }}
+                                  className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                                  {t("common.editReview")}
+                                </button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
 
-            {sortedData.length === 0 ? (
-              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white py-16 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <EmptyState
-                  icon={Video}
-                  title={
-                    trackFilter === "waiting"
-                      ? t("common.noInterviewSessionYet")
-                      : t("mentorSessions.thereIsNoProperInterview")
-                  }
-                  description={t("mentorSessions.tryChangingYourSearchKeywords")}
+            {/* Pagination */}
+            {sortedData.length > 0 && (
+              <div className="flex items-center justify-between border-t border-slate-200 bg-white px-5 py-3 dark:border-t-slate-800 dark:bg-slate-900">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {t("common.showing", {
+                    start: pagination.startIndex + 1,
+                    end: Math.min(pagination.endIndex + 1, sortedData.length),
+                    total: sortedData.length,
+                  })}
+                </p>
+                <PaginationControl
+                  pagination={pagination}
+                  onPageSizeChange={(size) => {
+                    setPageSize(size);
+                    pagination.goToFirstPage();
+                  }}
+                  pageSizeOptions={[5, 10, 20, 50]}
                 />
-              </div>
-            ) : (
-              <div className="flex flex-1 flex-col gap-4">
-                <motion.div
-                  key={`${trackFilter}-${otherStatusFilter}-${searchQuery}`}
-                  variants={listMotion}
-                  initial={false}
-                  animate="show"
-                  className={cn("grid gap-3 sm:grid-cols-2 xl:grid-cols-3")}>
-                  <AnimatePresence initial={false}>
-                    {pageData.map((session) => (
-                      <motion.div
-                        key={session.id}
-                        variants={cardMotion}
-                        exit={{ opacity: 0, y: -8, transition: { duration: 0.18 } }}
-                        layout="position">
-                        <SessionCard
-                          session={session}
-                          hasReview={
-                            typeof session.id === "number" && reviewSessionIds.has(session.id)
-                          }
-                          now={now}
-                          isUpdatingStatus={updateStatusMutation.isPending}
-                          actions={{
-                            onViewDetails: () => handleViewDetails(session),
-                            onJoinSession: () => handleJoinSession(session),
-                            onWriteReview: () => handleWriteReview(session),
-                            onViewReview: () => {
-                              if (typeof session.id === "number") {
-                                handleViewDetails(session);
-                              }
-                            },
-                            onEditReview: () => {
-                              if (typeof session.id === "number") {
-                                handleEditReview(session.id);
-                              }
-                            },
-                            onAcceptSession: () => handleAcceptSession(session),
-                            onRejectSession: () => handleRejectSession(session),
-                          }}
-                        />
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </motion.div>
-
-                <div className="mt-auto rounded-xl border border-slate-200/70 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                  <PaginationControl
-                    pagination={pagination}
-                    onPageSizeChange={(size) => {
-                      setPageSize(size);
-                      pagination.goToFirstPage();
-                    }}
-                    pageSizeOptions={[5, 10, 20, 50]}
-                  />
-                </div>
               </div>
             )}
           </>
