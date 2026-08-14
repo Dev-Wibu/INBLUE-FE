@@ -15,25 +15,23 @@
  * UI-only refresh. All data + access checks preserved exactly.
  */
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
-import { TimeAgo } from "@/components/ui/time-ago";
 import { useUserById } from "@/hooks/useApplication";
 import { useMentorById } from "@/hooks/useMentor";
 import { useMentorReviewBySession } from "@/hooks/useMentorReview";
 import { useSessionById } from "@/hooks/useSession";
-import { formatCurrency, formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { formatCurrency, formatDateTime } from "@/lib/formatting";
 import { getSessionMentorId, isSessionMentor } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowUpRight,
   Calendar,
-  Clock,
   CreditCard,
   Hash,
   Link2,
@@ -43,7 +41,6 @@ import {
   Target,
   Timer,
   TrendingUp,
-  User,
   Video,
   Wand2,
   Zap,
@@ -77,33 +74,11 @@ function buildStatusMap(t: (_key: string) => string): Record<string, StatusConfi
 // ---------- shared surface tokens ----------
 
 const METRIC_TILE = cn(
-  "group relative flex flex-col gap-1.5 overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-sm dark:border-slate-800/80 dark:bg-slate-900"
+  "flex flex-col gap-1.5 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
 );
 
 const CHIP_LABEL_CLS =
   "text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400";
-
-// ---------- motion variants ----------
-
-const heroMotion = {
-  hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.42, ease: "easeOut" as const } },
-};
-
-const childMotion = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: "easeOut" as const } },
-};
-
-const gridStagger = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.08 } },
-};
-
-const cardPop = {
-  hidden: { opacity: 0, y: 10, scale: 0.98 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.36, ease: "easeOut" as const } },
-};
 
 // ---------- KPI tiles ----------
 
@@ -117,11 +92,11 @@ interface KpiTileProps {
 }
 
 const ACCENT_RING: Record<NonNullable<KpiTileProps["accent"]>, string> = {
-  sky: "from-sky-400/40 to-transparent",
-  indigo: "from-indigo-400/40 to-transparent",
-  emerald: "from-emerald-400/40 to-transparent",
-  amber: "from-amber-400/40 to-transparent",
-  violet: "from-violet-400/40 to-transparent",
+  sky: "bg-sky-100 dark:bg-sky-500/15",
+  indigo: "bg-indigo-100 dark:bg-indigo-500/15",
+  emerald: "bg-emerald-100 dark:bg-emerald-500/15",
+  amber: "bg-amber-100 dark:bg-amber-500/15",
+  violet: "bg-violet-100 dark:bg-violet-500/15",
 };
 
 const ACCENT_ICON: Record<NonNullable<KpiTileProps["accent"]>, string> = {
@@ -132,37 +107,24 @@ const ACCENT_ICON: Record<NonNullable<KpiTileProps["accent"]>, string> = {
   violet: "text-violet-600 dark:text-violet-300",
 };
 
-function KpiTile({ icon: Icon, label, value, accent = "sky", meta, index }: KpiTileProps) {
+function KpiTile({ icon: Icon, label, value, accent = "indigo", meta }: KpiTileProps) {
   return (
-    <motion.div variants={cardPop} className={METRIC_TILE}>
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute -top-10 -right-10 h-24 w-24 rounded-full bg-gradient-to-br opacity-60 blur-2xl",
-          ACCENT_RING[accent]
-        )}
-      />
-      <div className="relative flex items-center justify-between">
-        <span className={cn("font-mono text-[10px] tracking-[0.1em] text-slate-400 uppercase")}>
-          0{index}
-        </span>
+    <div className={METRIC_TILE}>
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</span>
         <div
           className={cn(
-            "flex h-7 w-7 items-center justify-center rounded-lg ring-1 ring-inset",
-            "bg-slate-900/[0.04] ring-slate-900/10",
-            "dark:bg-white/[0.05] dark:ring-white/10"
+            "flex h-8 w-8 items-center justify-center rounded-lg",
+            ACCENT_RING[accent]
           )}>
-          <Icon className={cn("h-3.5 w-3.5", ACCENT_ICON[accent])} aria-hidden />
+          <Icon className={cn("h-4 w-4", ACCENT_ICON[accent])} aria-hidden />
         </div>
       </div>
-      <div className="relative">
-        <p className={CHIP_LABEL_CLS}>{label}</p>
-        <p className="mt-1 text-base font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
-          {value}
-        </p>
+      <div className="mt-2">
+        <p className="text-xl font-bold text-slate-900 dark:text-white">{value}</p>
         {meta && <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{meta}</p>}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -327,14 +289,6 @@ export function MentorSessionDetailPage() {
   const candidateRating =
     typeof candidateFeedback?.rating === "number" ? candidateFeedback.rating : null;
 
-  const completionLabel = (() => {
-    if (session.status === "COMPLETED" && session.endTime1) {
-      const ended = treatZuluAsVietnamLocal(session.endTime1);
-      return <TimeAgo date={String(ended)} />;
-    }
-    return null;
-  })();
-
   const renderStars = (value: number, size: "sm" | "md" = "md") => (
     <StarRating value={value} readOnly size={size} />
   );
@@ -350,148 +304,80 @@ export function MentorSessionDetailPage() {
           }}
           initial="hidden"
           animate="show">
-          {/* Top action bar */}
-          <motion.div variants={childMotion}>
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
-              <Button
-                variant="ghost"
-                className="gap-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
-                onClick={() => navigate("/mentor?tab=sessions")}>
-                <ArrowLeft className="h-4 w-4" aria-hidden />
-                {t("common.returnToTheSessionList")}
-              </Button>
-              <div className="flex items-center gap-2">
-                {canReview && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/mentor/sessions/${session.id}/review`)}
-                    className="rounded-xl border border-slate-200/90 bg-white text-xs font-medium text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800">
-                    {t("common.writeReview")}
-                  </Button>
-                )}
-                {candidateFeedback && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
-                    className="rounded-xl border border-slate-200/90 bg-white text-xs font-medium text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800">
-                    {t("common.viewReview")}
-                  </Button>
-                )}
-              </div>
+          {/* Top action bar - Admin Pattern */}
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/mentor?tab=sessions")}
+              className="h-9 rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
+              <ArrowLeft className="mr-1.5 h-4 w-4" />
+              {t("common.backToTheList")}
+            </Button>
+            <div className="flex items-center gap-2">
+              {canReview && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/mentor/sessions/${session.id}/review`)}
+                  className="h-9 rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
+                  {t("common.writeReview")}
+                </Button>
+              )}
+              {candidateFeedback && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/mentor/sessions/${session.id}/review/view`)}
+                  className="h-9 rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
+                  {t("common.viewReview")}
+                </Button>
+              )}
             </div>
-          </motion.div>
+          </div>
 
-          {/* HERO — bold, full-width, with avatar halo + status badge */}
-          <motion.div variants={heroMotion}>
-            <div
-              className={cn(
-                "relative overflow-hidden rounded-3xl p-6 ring-1 ring-inset sm:p-8",
-                "bg-gradient-to-br from-slate-900/[0.04] via-slate-500/[0.03] to-slate-900/[0.04]",
-                "ring-slate-200/70 backdrop-blur",
-                "dark:from-white/[0.04] dark:via-white/[0.02] dark:to-white/[0.04] dark:ring-white/5"
-              )}>
-              {/* Background orbs */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -top-20 -right-16 h-64 w-64 rounded-full bg-sky-400/15 opacity-60 blur-3xl dark:bg-sky-500/20"
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -bottom-20 -left-12 h-64 w-64 rounded-full bg-violet-400/15 opacity-60 blur-3xl dark:bg-violet-500/15"
-              />
-              {/* Dotted grid */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 opacity-[0.18] dark:opacity-[0.08]"
-                style={{
-                  backgroundImage: "radial-gradient(rgba(148,163,184,0.45) 1px, transparent 1px)",
-                  backgroundSize: "20px 20px",
-                }}
-              />
-
-              <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex min-w-0 items-center gap-5">
-                  <StudentAvatarHalo
-                    src={studentInfo?.avatarUrl}
-                    name={studentInfo?.name || t("common.students")}
-                    status={session.status}
-                  />
-                  <div className="min-w-0 space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-[10px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
-                        {t("common.interviewSession")}
-                      </span>
-                      <span className="text-slate-300 dark:text-slate-600">·</span>
-                      <span className="font-mono text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                        #{session.id}
-                      </span>
-                      <span className="text-slate-300 dark:text-slate-600">·</span>
-                      <span className="font-mono text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                        {session.roomName || "—"}
-                      </span>
-                    </div>
-                    <h1
-                      className="text-2xl font-semibold tracking-[-0.02em] text-slate-900 sm:text-3xl dark:text-slate-100"
-                      style={{ textWrap: "balance" }}>
-                      {studentInfo?.name || t("common.students")}
-                    </h1>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                      <span className="inline-flex items-center gap-1">
-                        <User className="h-3 w-3" aria-hidden />
-                        {mentorInfo?.name ||
-                          (mentorId != null ? t("common.mentorWithId", { id: mentorId }) : "—")}
-                      </span>
-                      <span className="text-slate-300 dark:text-slate-600">·</span>
-                      <span className="inline-flex items-center gap-1">
-                        <Calendar className="h-3 w-3" aria-hidden />
-                        {formatDateTime(session.joinTime)}
-                      </span>
-                      {completionLabel && (
-                        <>
-                          <span className="text-slate-300 dark:text-slate-600">·</span>
-                          <span className="inline-flex items-center gap-1">
-                            <Clock className="h-3 w-3" aria-hidden />
-                            {completionLabel}
-                          </span>
-                        </>
-                      )}
-                    </div>
+          {/* Session Info Card - Admin Pattern */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-14 w-14 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <AvatarImage src={studentInfo?.avatarUrl} alt={studentInfo?.name} />
+                  <AvatarFallback className="rounded-xl bg-indigo-100 text-lg font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+                    {studentInfo?.name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("common.interviewSession")} #{session.id}
+                  </p>
+                  <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+                    {studentInfo?.name || t("common.students")}
+                  </h1>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                    <span>{session.roomName || "—"}</span>
+                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                    <span>
+                      {mentorInfo?.name ||
+                        (mentorId != null ? t("common.mentorWithId", { id: mentorId }) : "—")}
+                    </span>
                   </div>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={session.status}
-                      initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={reduceMotion ? undefined : { opacity: 0, scale: 0.92 }}
-                      transition={{ duration: 0.24, ease: "easeOut" as const }}>
-                      <SessionStatusBadge
-                        tone={sessionToneFromStatus(session.status)}
-                        label={status.label}
-                      />
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
               </div>
+              <SessionStatusBadge
+                tone={sessionToneFromStatus(session.status)}
+                label={status.label}
+              />
             </div>
-          </motion.div>
+          </div>
 
-          {/* KPI strip — 4 tiles on desktop, 2 on tablet, 1 on mobile */}
-          <motion.div
-            variants={gridStagger}
-            initial="hidden"
-            animate="show"
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* KPI strip */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <KpiTile
               index={1}
               icon={Calendar}
               label={t("common.appointmentTime")}
               value={formatDateTime(session.joinTime)}
-              accent="sky"
+              accent="indigo"
             />
             <KpiTile
               index={2}
@@ -502,7 +388,7 @@ export function MentorSessionDetailPage() {
                   ? t("general.minutes", { var_0: session.duration })
                   : "—"
               }
-              accent="indigo"
+              accent="emerald"
             />
             <KpiTile
               index={3}
@@ -513,7 +399,7 @@ export function MentorSessionDetailPage() {
                   ? formatCurrency(session.totalPrice)
                   : "—"
               }
-              accent="emerald"
+              accent="amber"
               meta={session.transactionCode ?? undefined}
             />
             <KpiTile
@@ -521,9 +407,9 @@ export function MentorSessionDetailPage() {
               icon={Hash}
               label={t("common.sessionCode")}
               value={`#${session.id || "—"}`}
-              accent="violet"
+              accent="sky"
             />
-          </motion.div>
+          </div>
 
           {/* Bento — main content + side rail */}
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
@@ -964,44 +850,6 @@ function ActFastBar({
         </div>
       </div>
     </motion.div>
-  );
-}
-
-function StudentAvatarHalo({ src, name, status }: { src?: string; name: string; status?: string }) {
-  const completed = status === "COMPLETED";
-  const ongoing = status === "ONGOING" || status === "PAID";
-  const halo =
-    completed || ongoing
-      ? "from-sky-400/40 via-indigo-400/40 to-violet-400/40"
-      : "from-slate-400/30 via-slate-300/30 to-slate-400/30";
-  return (
-    <div className="relative shrink-0">
-      <div
-        aria-hidden
-        className={cn("absolute -inset-1 rounded-full bg-gradient-to-br opacity-80 blur-md", halo)}
-      />
-      <div
-        aria-hidden
-        className={cn(
-          "absolute inset-0 rounded-full ring-2",
-          ongoing
-            ? "ring-emerald-400/60"
-            : completed
-              ? "ring-sky-400/60"
-              : "ring-slate-300/60 dark:ring-slate-600/60"
-        )}
-      />
-      <Avatar className="relative h-16 w-16 shrink-0 sm:h-20 sm:w-20">
-        <AvatarImage src={src} alt={name} />
-        <AvatarFallback
-          className={cn(
-            "bg-slate-200/60 text-lg font-semibold text-slate-700",
-            "dark:bg-slate-700/40 dark:text-slate-200"
-          )}>
-          {(name || "S").charAt(0)}
-        </AvatarFallback>
-      </Avatar>
-    </div>
   );
 }
 

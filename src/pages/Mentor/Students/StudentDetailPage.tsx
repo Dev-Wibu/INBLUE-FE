@@ -62,24 +62,6 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
-// ---------- shared surfaces (single dark-glass, no fruit salad) ----------
-const HERO_SURFACE = cn(
-  "relative overflow-hidden rounded-3xl ring-1 ring-slate-200/70 ring-inset",
-  "dark:ring-white/5"
-);
-
-const GLASS_SURFACE = cn(
-  "rounded-2xl p-5 ring-1 ring-inset transition-all",
-  "bg-slate-500/[0.04] ring-slate-200/70 backdrop-blur-sm",
-  "dark:bg-white/[0.03] dark:ring-white/5"
-);
-
-const fadeUp = (delay: number) => ({
-  initial: { opacity: 0, y: 14 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, ease: "easeOut" as const, delay },
-});
-
 type DatedItem = {
   createdAt?: string;
   session?: Pick<Session, "startTime1" | "endTime1">;
@@ -225,79 +207,41 @@ export function StudentDetailPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-5">
+    <div className="flex flex-col gap-5 bg-slate-50 p-4 md:p-6 lg:p-8 dark:bg-slate-950">
       {/* Header */}
-      <motion.div {...fadeUp(0)}>
+      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => navigate("/mentor?tab=students")}
-          className="text-slate-600 dark:text-slate-300">
+          className="h-9 rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t("common.backToTheList")}
         </Button>
-      </motion.div>
+      </div>
 
-      {/* HERO */}
-      <motion.div {...fadeUp(0.05)} className={HERO_SURFACE}>
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-sky-500/15 dark:from-emerald-500/25 dark:via-teal-500/15 dark:to-sky-500/15"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-slate-950 dark:via-slate-950/40 dark:to-transparent"
-        />
-        <div
-          aria-hidden
-          className="absolute -top-24 -left-12 h-72 w-72 rounded-full bg-emerald-400/30 opacity-60 blur-3xl dark:bg-emerald-500/30"
-        />
-        <div
-          aria-hidden
-          className="absolute -right-12 -bottom-24 h-72 w-72 rounded-full bg-sky-300/20 opacity-50 blur-3xl dark:bg-sky-500/20"
-        />
-
-        <div className="relative flex flex-col gap-5 p-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            {/* avatar halo */}
-            <div className="relative">
-              <div
-                aria-hidden
-                className="absolute inset-0 -m-2 rounded-full bg-gradient-to-br from-emerald-400/40 to-sky-400/40 opacity-60 blur-xl"
-              />
-              <Avatar className="relative h-24 w-24 ring-2 ring-white/10">
-                <AvatarImage src={studentInfo.avatarUrl} alt={studentInfo.name} />
-                <AvatarFallback className="bg-emerald-100 text-3xl text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-                  {studentInfo.name?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+      {/* Profile Card - Admin Pattern */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 rounded-xl border border-slate-100 dark:border-slate-800">
+              <AvatarImage src={studentInfo.avatarUrl} alt={studentInfo.name} />
+              <AvatarFallback className="rounded-xl bg-indigo-100 text-xl font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+                {studentInfo.name?.charAt(0) || "U"}
+              </AvatarFallback>
+            </Avatar>
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold tracking-[0.06em] text-emerald-600 uppercase ring-1 ring-emerald-500/20 ring-inset dark:text-emerald-300">
-                  <Sparkles className="h-3 w-3" aria-hidden />
-                  {t("mentorStudents.candidateProfile")}
-                </span>
-                <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
-                  #{studentId}
-                </span>
-              </div>
-              <h1 className="mt-1.5 text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                {t("common.student")}
+              </p>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                 {studentInfo.name || t("common.studentVar0", { var_0: studentId })}
               </h1>
-              <div className="mt-2 flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
+              <div className="mt-1 flex flex-col gap-0.5 text-sm text-slate-500 dark:text-slate-400">
                 {studentInfo.email && (
-                  <p className="flex items-center gap-2">
-                    <Mail className="h-3.5 w-3.5" aria-hidden />
+                  <p className="flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5" />
                     {studentInfo.email}
-                  </p>
-                )}
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {(studentInfo as any).university && (
-                  <p className="flex items-center gap-2">
-                    <School className="h-3.5 w-3.5" aria-hidden />
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {(studentInfo as any).university}
                   </p>
                 )}
               </div>
@@ -306,78 +250,134 @@ export function StudentDetailPage() {
 
           {/* Rating display */}
           {totalReviews > 0 && (
-            <div className="flex items-center gap-4 self-start lg:self-end">
+            <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   {t("common.averageStarRating")}
                 </p>
-                <p className="text-[44px] leading-none font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">
                   {avgRating.toFixed(1)}
-                  <span className="ml-0.5 text-base font-medium text-slate-400">/5</span>
+                  <span className="ml-1 text-base font-medium text-slate-400">/5</span>
                 </p>
                 <StarRating value={avgRating} readOnly size="sm" />
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {totalReviews} {t("mentorStudents.studentReviews")}
                 </p>
               </div>
-              <div className="rounded-2xl bg-amber-500/15 p-3 ring-1 ring-amber-400/30 ring-inset dark:bg-amber-500/20">
-                <Trophy className="h-8 w-8 text-amber-500" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/15">
+                <Trophy className="h-6 w-6 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
+
+      {/* Stats Strip */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {/* Total Sessions */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/15">
+              <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                {t("common.totalSession")}
+              </p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalSessions}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {completedSessions} {t("general.completed")}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Feedback */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15">
+              <MessageSquare className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                {t("common.totalResponse")}
+              </p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalFeedbacks}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{t("common.feedback")}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Reviews */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15">
+              <Star className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                {t("common.totalReview")}
+              </p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalReviews}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{t("common.review")}</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Body */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,300px)]">
         <div className="flex flex-col gap-4">
           {/* Bento KPI strip */}
-          <motion.div {...fadeUp(0.1)} className="grid gap-3 sm:grid-cols-3">
-            {/* big card */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500/15 to-teal-500/10 p-4 ring-1 ring-emerald-400/30 ring-inset sm:col-span-1 dark:from-emerald-500/20 dark:to-teal-500/15">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {/* Total Session Card */}
+            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold tracking-[0.06em] text-emerald-700 uppercase dark:text-emerald-300">
+                  <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                     {t("common.totalSession")}
                   </p>
-                  <p className="mt-1 text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                  <p className="mt-1 text-3xl font-bold text-slate-900 dark:text-white">
                     {totalSessions}
                   </p>
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {completedSessions} {t("general.completed")}
                   </p>
                 </div>
-                <Calendar className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/15">
+                  <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                </div>
               </div>
               {totalSessions > 0 && (
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-emerald-200/40 ring-1 ring-emerald-300/30 ring-inset dark:bg-emerald-900/40">
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
                   <div
-                    className="h-full rounded-full bg-emerald-500"
+                    className="h-full rounded-full bg-indigo-500"
                     style={{ width: `${(completedSessions / totalSessions) * 100}%` }}
                   />
                 </div>
               )}
             </div>
 
-            {/* 3 small cards */}
-            <div className={GLASS_SURFACE}>
-              <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+            {/* Response Card */}
+            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {t("common.responseReceived")}
               </p>
-              <p className="mt-1 text-2xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                 {totalFeedbacks}
               </p>
               <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <MessageSquare className="h-3 w-3 text-sky-500" />
+                <MessageSquare className="h-3 w-3" />
                 {t("mentorStudents.responseReceived1")}
               </div>
             </div>
 
-            <div className={GLASS_SURFACE}>
-              <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+            {/* Review Card */}
+            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {t("mentorMentordashboard.reviewSent")}
               </p>
-              <p className="mt-1 text-2xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                 {totalReviews}
               </p>
               <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
@@ -385,14 +385,14 @@ export function StudentDetailPage() {
                 {t("mentorStudents.submittedReview")}
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Sliding segmented control tabs (Framer Motion layoutId) */}
-          <motion.div {...fadeUp(0.15)} className="space-y-4">
+          {/* Tabs */}
+          <div className="space-y-4">
             <div
               role="tablist"
               aria-label="student-detail-tabs"
-              className="relative grid w-full grid-cols-4 gap-1 rounded-xl border border-slate-200/70 bg-slate-100/70 p-1 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-800/60">
+              className="relative grid w-full grid-cols-4 gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-800">
               {[
                 {
                   id: "sessions",
@@ -587,21 +587,20 @@ export function StudentDetailPage() {
                 )}
               </motion.div>
             )}
-          </motion.div>
+          </div>
         </div>
 
         {/* Side summary */}
-        <motion.aside
-          {...fadeUp(0.25)}
-          className="flex flex-col gap-4 lg:sticky lg:top-4 lg:self-start">
-          <div className={GLASS_SURFACE}>
-            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+        <aside className="flex flex-col gap-4">
+          {/* Reviews Summary Card */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("mentorStudents.studentReviews")}
             </p>
             {totalReviews > 0 ? (
               <>
                 <p className="mt-1 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                  <span className="text-3xl font-bold text-slate-900 dark:text-white">
                     {avgRating.toFixed(1)}
                   </span>
                   <span className="text-sm font-medium text-slate-400">/5</span>
@@ -613,17 +612,10 @@ export function StudentDetailPage() {
                   {ratingDistribution.map((row) => (
                     <div key={row.star} className="flex items-center gap-2 text-xs">
                       <span className="w-6 text-slate-600 dark:text-slate-300">{row.star}★</span>
-                      <div
-                        className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800/60"
-                        role="progressbar"
-                        aria-valuenow={row.pct}
-                        aria-valuemin={0}
-                        aria-valuemax={100}>
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${row.pct}%` }}
-                          transition={{ duration: 0.45, ease: "easeOut" }}
-                          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400"
+                      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+                        <div
+                          className="absolute inset-y-0 left-0 h-full rounded-full bg-amber-500"
+                          style={{ width: `${row.pct}%` }}
                         />
                       </div>
                       <span className="w-7 text-right text-slate-500 tabular-nums dark:text-slate-400">
@@ -640,8 +632,9 @@ export function StudentDetailPage() {
             )}
           </div>
 
-          <div className={GLASS_SURFACE}>
-            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+          {/* Timeline Card */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("common.timeline")}
             </p>
             <div className="mt-3 flex flex-col gap-3">
@@ -657,7 +650,7 @@ export function StudentDetailPage() {
                     "—"
                   )
                 }
-                tone="emerald"
+                tone="indigo"
               />
               <TimelineRow
                 icon={MessageSquare}
@@ -669,7 +662,7 @@ export function StudentDetailPage() {
                     "—"
                   )
                 }
-                tone="rose"
+                tone="emerald"
               />
               <TimelineRow
                 icon={Star}
@@ -686,35 +679,36 @@ export function StudentDetailPage() {
             </div>
           </div>
 
-          <div className={GLASS_SURFACE}>
-            <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+          {/* Quick Actions Card */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("common.quickActions")}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               {studentInfo.email && (
                 <a
                   href={`mailto:${studentInfo.email}`}
-                  className="group flex items-center justify-between rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm text-slate-700 transition-all hover:border-emerald-300 hover:bg-emerald-50/40 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-emerald-500/10">
+                  className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition-all hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10">
                   <span className="flex items-center gap-2">
-                    <Mail className="h-3.5 w-3.5 text-emerald-500" />
+                    <Mail className="h-4 w-4 text-indigo-500" />
                     {t("common.sendEmail")}
                   </span>
-                  <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-emerald-500" />
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
                 </a>
               )}
               <button
                 type="button"
                 onClick={() => navigate("/mentor?tab=sessions")}
-                className="group flex items-center justify-between rounded-xl border border-slate-200/70 bg-white/60 p-3 text-sm text-slate-700 transition-all hover:border-sky-300 hover:bg-sky-50/40 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-sky-500/10">
+                className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition-all hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10">
                 <span className="flex items-center gap-2">
-                  <Calendar className="h-3.5 w-3.5 text-sky-500" />
+                  <Calendar className="h-4 w-4 text-indigo-500" />
                   {t("mentorStudents.bookANewInterview")}
                 </span>
-                <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-sky-500" />
+                <ChevronRight className="h-4 w-4 text-slate-400" />
               </button>
             </div>
           </div>
-        </motion.aside>
+        </aside>
       </div>
     </div>
   );
@@ -749,11 +743,9 @@ function SessionRow({
           : t("common.scheduled");
 
   return (
-    <motion.button
+    <button
       onClick={onClick}
-      whileHover={{ y: -1 }}
-      transition={{ duration: 0.18 }}
-      className="group flex w-full items-center justify-between rounded-xl border border-slate-200/70 bg-white/70 p-3 text-left ring-1 ring-transparent transition-all hover:border-emerald-300 hover:shadow-xs dark:border-slate-700/60 dark:bg-slate-900/40 dark:hover:border-emerald-700/60">
+      className="group flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-3 text-left transition-all hover:border-indigo-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900">
       <div className="flex items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset dark:bg-emerald-500/20 dark:text-emerald-300">
           <Calendar className="h-4 w-4" aria-hidden />
@@ -778,9 +770,9 @@ function SessionRow({
       </div>
       <div className="flex items-center gap-2">
         <Badge variant={statusVariant as never}>{statusLabel}</Badge>
-        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-emerald-500" />
+        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-indigo-500" />
       </div>
-    </motion.button>
+    </button>
   );
 }
 
@@ -794,21 +786,18 @@ function TimelineRow({
   icon: typeof Calendar;
   label: string;
   value: React.ReactNode;
-  tone: "emerald" | "rose" | "amber" | "sky";
+  tone: "indigo" | "emerald" | "amber";
 }) {
   return (
     <div className="flex items-center gap-2 text-xs">
       <span
         className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-xl ring-1 ring-inset",
+          "flex h-7 w-7 items-center justify-center rounded-xl",
+          tone === "indigo" &&
+            "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300",
           tone === "emerald" &&
-            "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-300",
-          tone === "rose" &&
-            "bg-rose-500/10 text-rose-600 ring-rose-500/20 dark:bg-rose-500/20 dark:text-rose-300",
-          tone === "amber" &&
-            "bg-amber-500/10 text-amber-600 ring-amber-500/20 dark:bg-amber-500/20 dark:text-amber-300",
-          tone === "sky" &&
-            "bg-sky-500/10 text-sky-600 ring-sky-500/20 dark:bg-sky-500/20 dark:text-sky-300"
+            "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300",
+          tone === "amber" && "bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300"
         )}>
         <Icon className="h-3.5 w-3.5" aria-hidden />
       </span>

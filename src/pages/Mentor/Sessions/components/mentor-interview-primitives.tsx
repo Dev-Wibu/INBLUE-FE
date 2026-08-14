@@ -95,13 +95,13 @@ export interface PanelSurfaceProps {
 }
 
 export function PanelSurface({ children, className, variant = "raised" }: PanelSurfaceProps) {
-  const base = "rounded-2xl ring-1 ring-inset ring-white/5 dark:ring-white/5";
+  const base = "rounded-xl border border-slate-200 dark:border-slate-800";
   const variantClass =
     variant === "raised"
-      ? "bg-white shadow-[0_4px_24px_-12px_rgba(15,23,42,0.18)] dark:bg-slate-900/70 dark:shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)] backdrop-blur"
+      ? "bg-white dark:bg-slate-900"
       : variant === "flat"
-        ? "bg-white dark:bg-slate-900/60"
-        : "bg-slate-50/60 dark:bg-slate-900/40";
+        ? "bg-white dark:bg-slate-900"
+        : "bg-slate-50 dark:bg-slate-900";
   return <div className={cn(base, variantClass, className)}>{children}</div>;
 }
 
