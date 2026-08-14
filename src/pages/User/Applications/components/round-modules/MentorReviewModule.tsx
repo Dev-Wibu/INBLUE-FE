@@ -1833,6 +1833,7 @@ function SessionRoomStep({
       <CompletedResultView
         session={session}
         mentor={sessionMentor}
+        mentorLoading={mentorsLoading}
         finalScore={finalScore}
         finalResult={finalResult}
         readOnly={readOnly}
@@ -2013,6 +2014,7 @@ function SessionRoomStep({
 function CompletedResultView({
   session,
   mentor,
+  mentorLoading,
   finalScore,
   finalResult,
   readOnly = false,
@@ -2020,6 +2022,7 @@ function CompletedResultView({
 }: {
   session: Session;
   mentor: MentorResponse | null;
+  mentorLoading: boolean;
   finalScore: number | null;
   finalResult: string | null;
   readOnly?: boolean;
@@ -2038,13 +2041,18 @@ function CompletedResultView({
       })
     : "—";
   const mentorDisplayName =
-    mentor?.name?.trim() || t("userApplication.mentorReview.mentorNameUnavailable");
+    mentor?.name?.trim() ||
+    (mentorLoading
+      ? t("userApplication.mentorReview.mentorListLoading")
+      : t("userApplication.mentorReview.mentorHistoryUnavailableTitle"));
   const hasFinalScore = finalScore !== null && finalScore !== undefined;
   const finalPassed = finalResult === "PASSED";
   const finalFailed = finalResult === "FAILED";
 
   return (
     <div className="space-y-5">
+      {!mentorLoading && !mentor && <MentorHistoryUnavailable />}
+
       <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
         <div className="space-y-5">
           <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
@@ -2075,16 +2083,20 @@ function CompletedResultView({
                 <Avatar className="h-full w-full rounded-[1.15rem]">
                   <AvatarImage
                     src={mentor?.avatarUrl ?? undefined}
-                    alt={mentor?.name ?? "Mentor"}
+                    alt={mentor?.name ?? mentorDisplayName}
                     className="h-full w-full object-cover"
                   />
                   <AvatarFallback className="rounded-[1.15rem] bg-indigo-500/10 text-lg font-bold text-indigo-500 dark:bg-indigo-950/30 dark:text-indigo-300">
-                    {(mentor?.name ?? "M")
-                      .split(" ")
-                      .slice(0, 2)
-                      .map((part) => part[0])
-                      .join("")
-                      .toUpperCase()}
+                    {mentor?.name ? (
+                      mentor.name
+                        .split(" ")
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()
+                    ) : (
+                      <UserCheck className="h-6 w-6" />
+                    )}
                   </AvatarFallback>
                 </Avatar>
               </div>
@@ -2101,10 +2113,12 @@ function CompletedResultView({
                   <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
                     {mentorDisplayName}
                   </h3>
-                  <p className="inline-flex max-w-full items-center gap-1.5 truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    <Building2 className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
-                    <span className="truncate">{mentor?.currentCompany ?? "Mentor"}</span>
-                  </p>
+                  {mentor?.currentCompany && (
+                    <p className="inline-flex max-w-full items-center gap-1.5 truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      <Building2 className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
+                      <span className="truncate">{mentor.currentCompany}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
