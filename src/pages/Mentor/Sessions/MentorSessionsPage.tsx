@@ -526,48 +526,48 @@ export function MentorSessionsPage() {
         </div>
 
         {/* Right side cards - Stats */}
-        <aside className="hidden lg:flex lg:flex-col lg:gap-4">
+        <aside className="hidden lg:flex lg:flex-col lg:gap-4 xl:sticky xl:top-4 xl:self-start">
           {/* Total sessions card */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/15">
-                  <Video className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                    {t("common.totalSession")}
-                  </p>
-                </div>
+          <div className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+            <div className="flex items-end justify-between gap-2">
+              <div>
+                <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                  {t("mentorOverview.totalSessions")}
+                </p>
+                <p className="mt-0.5 flex items-baseline gap-2">
+                  <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-white">
+                    {mentorSessions.length}
+                  </span>
+                  <span className="text-sm text-slate-500">sessions</span>
+                </p>
               </div>
-            </div>
-            <div className="flex items-end gap-2">
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                {mentorSessions.length}
-              </p>
-              <p className="mb-1 text-sm text-slate-500 dark:text-slate-400">sessions</p>
             </div>
           </div>
 
-          {/* Quick stats cards */}
-          <MentorQuickStat
-            icon={Calendar}
-            label={t("common.comingSoon")}
-            value={scheduledCount}
-            tone="indigo"
-          />
-          <MentorQuickStat
-            icon={Check}
-            label={t("general.completed")}
-            value={completedCount}
-            tone="emerald"
-          />
-          <MentorQuickStat
-            icon={Star}
-            label={t("common.totalReview")}
-            value={reviews.length}
-            tone="amber"
-          />
+          {/* 3 quick stats grid */}
+          <div className="grid grid-cols-3 gap-2.5">
+            <MentorQuickStat
+              index={1}
+              icon={Calendar}
+              label={t("common.comingSoon")}
+              value={scheduledCount}
+              tone="indigo"
+            />
+            <MentorQuickStat
+              index={2}
+              icon={Check}
+              label={t("general.completed")}
+              value={completedCount}
+              tone="emerald"
+            />
+            <MentorQuickStat
+              index={3}
+              icon={Star}
+              label={t("common.totalReview")}
+              value={reviews.length}
+              tone="amber"
+            />
+          </div>
         </aside>
       </div>
     </div>

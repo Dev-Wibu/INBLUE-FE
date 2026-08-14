@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StarRating } from "@/components/ui/star-rating";
 import {
   Table,
   TableBody,
@@ -196,6 +197,17 @@ export function StudentsListPage() {
       },
       null as StudentInfo | null
     );
+  }, [students]);
+
+  // Top-5 students sorted by (avg rating desc, review count desc)
+  const topStudents = useMemo(() => {
+    return [...students]
+      .sort((a, b) => {
+        if (b.avgRating !== a.avgRating) return b.avgRating - a.avgRating;
+        if (b.reviewCount !== a.reviewCount) return b.reviewCount - a.reviewCount;
+        return b.sessionCount - a.sessionCount;
+      })
+      .slice(0, 5);
   }, [students]);
 
   const filteredStudents = useMemo(
@@ -534,73 +546,133 @@ export function StudentsListPage() {
         </div>
 
         {/* Right side cards - Stats */}
-        <aside className="hidden lg:flex lg:flex-col lg:gap-4">
-          {/* Top performers card */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15">
-                  <Trophy className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                    {t("mentorOverview.topPerformer")}
-                  </p>
-                </div>
+        <aside className="hidden lg:flex lg:flex-col lg:gap-4 xl:sticky xl:top-4 xl:self-start">
+          {/* Total Students card with top 5 list */}
+          <div className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+            <div className="flex items-end justify-between gap-2">
+              <div>
+                <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                  {t("mentorStudents.totalStudents")}
+                </p>
+                <p className="mt-0.5 flex items-baseline gap-2">
+                  <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-white">
+                    {isLoading ? "—" : students.length}
+                  </span>
+                </p>
               </div>
             </div>
-            {topPerformingStudent ? (
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <AvatarImage
-                    src={topPerformingStudent.avatarUrl}
-                    alt={topPerformingStudent.name}
-                  />
-                  <AvatarFallback className="rounded-lg bg-amber-100 text-xs font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                    {topPerformingStudent.name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                    {topPerformingStudent.name}
-                  </p>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                      {topPerformingStudent.avgRating.toFixed(1)}
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      ({topPerformingStudent.reviewCount} reviews)
-                    </span>
-                  </div>
-                </div>
+
+            {isLoading ? (
+              <div className="space-y-2 pt-3">
+                <Skeleton className="h-10" />
+                <Skeleton className="h-10" />
+                <Skeleton className="h-10" />
               </div>
+            ) : topStudents.length === 0 ? (
+              <p className="pt-3 text-xs text-slate-500 italic dark:text-slate-400">—</p>
             ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {t("mentorStudents.noReviewsYet")}
-              </p>
+              <ul className="mt-3 flex flex-col gap-1.5 border-t border-slate-200 pt-3 dark:border-slate-800">
+                {topStudents.map((student, index) => (
+                  <li key={student.id}>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/mentor/students/${student.id}`)}
+                      className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-[10px] font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                        #{index + 1}
+                      </span>
+                      <Avatar className="h-8 w-8 shrink-0 ring-1 ring-white/10">
+                        <AvatarImage src={student.avatarUrl} alt={student.name} />
+                        <AvatarFallback className="bg-slate-100 text-[10px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          {student.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-300">
+                          {student.name || t("common.studentVar0", { var_0: student.id })}
+                        </p>
+                        <p className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                          <span className="font-medium">
+                            {student.sessionCount} {t("common.session").toLowerCase()}
+                          </span>
+                          <span className="text-slate-300 dark:text-slate-600">·</span>
+                          <span className="font-medium">
+                            {student.reviewCount} {t("common.evaluate").toLowerCase()}
+                          </span>
+                        </p>
+                      </div>
+                      {student.reviewCount > 0 && (
+                        <span className="flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+                          {student.avgRating.toFixed(1)}
+                          <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 
-          {/* Quick stats cards */}
-          <MentorQuickStat
-            icon={Calendar}
-            label={t("common.totalSession")}
-            value={mentorSessions.length}
-            tone="indigo"
-          />
-          <MentorQuickStat
-            icon={MessageSquare}
-            label={t("common.totalResponse")}
-            value={feedbacks.length}
-            tone="emerald"
-          />
-          <MentorQuickStat
-            icon={Star}
-            label={t("common.totalReview")}
-            value={reviews.length}
-            tone="amber"
-          />
+          {/* Top performer highlight */}
+          {topPerformingStudent && (
+            <div className="rounded-[20px] border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm dark:border-amber-900/30 dark:from-amber-950/20 dark:to-slate-950 dark:shadow-md">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-300">
+                  <Trophy className="h-4 w-4" aria-hidden />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-semibold tracking-[0.06em] text-amber-700 uppercase dark:text-amber-300">
+                    {t("mentorOverview.topPerformer")}
+                  </p>
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {topPerformingStudent.name ||
+                      t("common.studentVar0", { var_0: topPerformingStudent.id })}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between border-t border-amber-200 pt-3 dark:border-amber-900/30">
+                <div>
+                  <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
+                    {t("common.averageStarRating")}
+                  </p>
+                  <p className="text-xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                    {topPerformingStudent.avgRating.toFixed(1)}
+                    <span className="ml-0.5 text-xs font-medium text-slate-400">/5</span>
+                  </p>
+                </div>
+                <StarRating value={topPerformingStudent.avgRating} readOnly size="sm" />
+              </div>
+            </div>
+          )}
+
+          {/* 3 quick stats grid */}
+          <div className="grid grid-cols-3 gap-2.5">
+            <MentorQuickStat
+              index={1}
+              icon={Calendar}
+              label={t("common.totalSession")}
+              value={isLoading ? "—" : mentorSessions.length}
+              caption={t("mentorOverview.complete")}
+              tone="indigo"
+            />
+            <MentorQuickStat
+              index={2}
+              icon={MessageSquare}
+              label={t("mentorStudents.responseSent")}
+              value={isLoading ? "—" : feedbacks.length}
+              caption={t("mentorStudents.responseSent1")}
+              tone="emerald"
+            />
+            <MentorQuickStat
+              index={3}
+              icon={Star}
+              label={t("mentorStudents.reviewsReceived")}
+              value={isLoading ? "—" : reviews.length}
+              caption={t("mentorStudents.reviewSubmitted")}
+              tone="amber"
+            />
+          </div>
         </aside>
       </div>
     </div>
