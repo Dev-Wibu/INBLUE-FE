@@ -353,7 +353,7 @@ export function MentorSessionRoomPage() {
             {sessionStatus === "COMPLETED" && (
               <Button
                 size="sm"
-                onClick={() => navigate(`/mentor/sessions/${sessionId}/review`)}
+                onClick={() => navigate(`/mentor/sessions/${sessionId}/review/view`)}
                 className="gap-2 bg-emerald-600 hover:bg-emerald-700">
                 <CheckCircle2 className="h-4 w-4" />
                 {t("common.writeAReview")}
@@ -611,7 +611,7 @@ export function MentorSessionRoomPage() {
               {t("common.itsOver")}
             </Badge>
             <Button
-              onClick={() => navigate(`/mentor/sessions/${sessionId}/review`)}
+              onClick={() => navigate(`/mentor/sessions/${sessionId}/review/view`)}
               className="gap-2 bg-emerald-600 hover:bg-emerald-700">
               <CheckCircle2 className="h-4 w-4" />
               {t("common.writeAReview")}

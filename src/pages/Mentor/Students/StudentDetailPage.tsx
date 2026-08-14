@@ -10,13 +10,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
+import { useUserById } from "@/hooks/useApplication";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorFeedbacksByMentor } from "@/hooks/useMentorFeedback";
 import { calculateAverageRating, useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import type { CandidateProfile } from "@/interfaces/schema.types";
-import { treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { isSessionMentor } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import {
@@ -78,6 +79,7 @@ export function StudentDetailPage() {
   //   triggered the "no candidate profile" empty state. We now unwrap
   //   the latest profile via `getLatestCandidateProfile`.
   const { data: candidateProfileRaw, isLoading: profileLoading } = useCandidateProfile(studentId);
+  const { data: studentProfile, isLoading: studentProfileLoading } = useUserById(studentId);
   const candidateProfile = useMemo<CandidateProfile | null>(() => {
     const raw = candidateProfileRaw as unknown;
     if (Array.isArray(raw)) {
@@ -90,7 +92,12 @@ export function StudentDetailPage() {
   }, [candidateProfileRaw]);
 
   const isLoading =
-    mentorLoading || sessionsLoading || feedbacksLoading || reviewsLoading || profileLoading;
+    mentorLoading ||
+    sessionsLoading ||
+    feedbacksLoading ||
+    reviewsLoading ||
+    profileLoading ||
+    studentProfileLoading;
 
   // ---- DATA (logic preserved 1:1 from previous version) ----
   const studentSessions = allSessions.filter(
@@ -104,7 +111,13 @@ export function StudentDetailPage() {
     (review: { user?: { id?: number }; session?: { userId?: number } }) =>
       (review.user?.id ?? review.session?.userId) === studentId
   );
-  const studentInfo = studentFeedbacks[0]?.user || studentReviews[0]?.user || { id: studentId };
+  const relatedStudent = studentFeedbacks[0]?.user || studentReviews[0]?.user;
+  const studentInfo = {
+    id: studentId,
+    name: relatedStudent?.name || studentProfile?.name,
+    email: relatedStudent?.email || studentProfile?.email,
+    avatarUrl: relatedStudent?.avatarUrl || studentProfile?.avatarUrl,
+  };
 
   // ---- stats ----
   const totalSessions = studentSessions.length;
@@ -265,11 +278,11 @@ export function StudentDetailPage() {
       <MentorDetailPanel>
         <div className="flex flex-col gap-4">
           {/* Tabs */}
-          <div className="space-y-4 pb-5">
+          <div className="space-y-5 pb-5">
             <div
               role="tablist"
               aria-label="student-detail-tabs"
-              className="flex w-full overflow-x-auto border-b border-slate-200 px-5 dark:border-slate-800">
+              className="flex w-full overflow-x-auto border-b border-slate-200 bg-slate-50/70 px-5 dark:border-slate-800 dark:bg-slate-950/40">
               {[
                 {
                   id: "sessions",
@@ -302,7 +315,7 @@ export function StudentDetailPage() {
                     aria-selected={isActive}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "relative flex min-w-max items-center justify-center gap-2 border-b-2 px-4 py-3 text-xs font-medium transition-colors",
+                      "relative flex min-w-max items-center justify-center gap-2 border-b-2 px-5 py-4 text-xs font-semibold transition-colors",
                       isActive
                         ? "border-indigo-600 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300"
                         : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-100"
@@ -316,7 +329,7 @@ export function StudentDetailPage() {
 
             {/* Sessions Tab */}
             {activeTab === "sessions" && (
-              <div key="sessions" className="border-y border-slate-200 dark:border-slate-800">
+              <div key="sessions" className="overflow-x-auto px-5">
                 {studentSessions.length === 0 ? (
                   <EmptyState
                     icon={Calendar}
@@ -324,23 +337,34 @@ export function StudentDetailPage() {
                     description={t("mentorStudents.thereHasBeenNoInterview")}
                   />
                 ) : (
-                  studentSessions.map((session: Session) => (
-                    <SessionRow
-                      key={session.id}
-                      session={session}
-                      onClick={() =>
-                        navigate(`/mentor/sessions/${session.id}`, { state: studentReturnState })
-                      }
-                      t={t}
-                    />
-                  ))
+                  <div className="min-w-[920px] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="grid grid-cols-[90px_minmax(280px,1.7fr)_minmax(180px,1fr)_150px_56px] items-center border-b border-slate-200 bg-slate-100/80 px-5 py-3 text-xs font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300">
+                      <span>ID</span>
+                      <span>{t("common.session")}</span>
+                      <span>{t("common.time")}</span>
+                      <span>{t("common.status")}</span>
+                      <span className="text-right">{t("common.action")}</span>
+                    </div>
+                    {studentSessions.map((session: Session) => (
+                      <SessionRow
+                        key={session.id}
+                        session={session}
+                        onClick={() =>
+                          navigate(`/mentor/sessions/${session.id}`, { state: studentReturnState })
+                        }
+                        t={t}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
             )}
 
             {/* Feedbacks Tab */}
             {activeTab === "feedbacks" && (
-              <div key="feedbacks" className="border-y border-slate-200 dark:border-slate-800">
+              <div
+                key="feedbacks"
+                className="mx-5 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
                 {studentFeedbacks.length === 0 ? (
                   <EmptyState
                     icon={MessageSquare}
@@ -376,7 +400,9 @@ export function StudentDetailPage() {
 
             {/* Reviews Tab */}
             {activeTab === "reviews" && (
-              <div key="reviews" className="border-y border-slate-200 dark:border-slate-800">
+              <div
+                key="reviews"
+                className="mx-5 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
                 {studentReviews.length === 0 ? (
                   <EmptyState
                     icon={Star}
@@ -417,7 +443,7 @@ export function StudentDetailPage() {
 
             {/* Profile Tab */}
             {activeTab === "profile" && (
-              <div key="profile">
+              <div key="profile" className="px-5">
                 {!candidateProfile ? (
                   <EmptyState
                     icon={FileText}
@@ -447,14 +473,6 @@ function SessionRow({
   t: (_key: string, _options?: Record<string, unknown>) => string;
 }) {
   const status = session.status;
-  const statusVariant =
-    status === "COMPLETED"
-      ? "default"
-      : status === "CANCELED"
-        ? "destructive"
-        : status === "ONGOING"
-          ? "secondary"
-          : "outline";
   const statusLabel =
     status === "COMPLETED"
       ? t("general.completed")
@@ -467,26 +485,41 @@ function SessionRow({
   return (
     <button
       onClick={onClick}
-      className="group flex min-h-16 w-full items-center justify-between gap-4 border-b border-slate-100 bg-white px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+      className="group grid min-h-[72px] w-full grid-cols-[90px_minmax(280px,1.7fr)_minmax(180px,1fr)_150px_56px] items-center border-b border-slate-100 bg-white px-5 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70">
+      <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+        #{session.id}
+      </span>
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
           <Calendar className="h-4 w-4" aria-hidden />
         </div>
-        <div>
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
             {session.roomName || t("common.mentorInterview")}
           </p>
-          <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-            {session.startTime1 && (
-              <TimeAgo date={String(treatZuluAsVietnamLocal(session.startTime1))} prefix={false} />
-            )}
-          </div>
+          <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+            {session.roomUrl || t("common.interviewSession")}
+          </p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Badge variant={statusVariant as never}>{statusLabel}</Badge>
+      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+        {session.startTime1 ? formatDateTime(treatZuluAsVietnamLocal(session.startTime1)) : "-"}
+      </span>
+      <Badge
+        variant="outline"
+        className={cn(
+          "w-fit min-w-24 justify-center rounded-full px-3 py-1 text-[11px] font-bold",
+          status === "COMPLETED" &&
+            "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+          status === "ONGOING" && "border-sky-500/25 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+          status === "CANCELED" &&
+            "border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300"
+        )}>
+        {statusLabel}
+      </Badge>
+      <span className="flex justify-end">
         <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-500" />
-      </div>
+      </span>
     </button>
   );
 }

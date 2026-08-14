@@ -298,7 +298,7 @@ export function MentorOverviewPage() {
 
   const handleOpenSessionReview = (sessionId?: number) => {
     if (typeof sessionId === "number") {
-      navigate(`/mentor/sessions/${sessionId}/review`);
+      navigate(`/mentor/sessions/${sessionId}/review/view`);
     }
   };
 

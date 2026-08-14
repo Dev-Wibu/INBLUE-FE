@@ -25,6 +25,7 @@ import { calculateAverageRating, useMentorReviewsByMentor } from "@/hooks/useMen
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
+import { useUserProfilesByIds } from "@/hooks/useUserProfilesByIds";
 import type { Session } from "@/interfaces";
 import { formatDate, toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { isSessionMentor } from "@/lib/session-mentor";
@@ -90,12 +91,18 @@ export function StudentsListPage() {
     isRefetching: reviewsRefetching,
     refetch: refetchReviews,
   } = useMentorReviewsByMentor(userIdForReviews);
-  const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading;
-  const isReloading = sessionsRefetching || feedbacksRefetching || reviewsRefetching;
-
-  const mentorSessions = allSessions.filter((session: Session) =>
-    isSessionMentor(session, mentorId || user?.id)
+  const mentorSessions = useMemo(
+    () => allSessions.filter((session: Session) => isSessionMentor(session, mentorId || user?.id)),
+    [allSessions, mentorId, user?.id]
   );
+  const {
+    profilesById,
+    isRefetching: profilesRefetching,
+    refetch: refetchProfiles,
+  } = useUserProfilesByIds(mentorSessions.map((session) => session.userId));
+  const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading;
+  const isReloading =
+    sessionsRefetching || feedbacksRefetching || reviewsRefetching || profilesRefetching;
 
   const studentsMap = useMemo(() => {
     const map = new Map<number, StudentInfo>();
@@ -110,12 +117,15 @@ export function StudentsListPage() {
           (review: { user?: { id?: number } }) => review.user?.id === studentId
         );
         const userInfo = userFeedback?.user || userReview?.user || null;
+        const userProfile = profilesById.get(studentId);
         map.set(studentId, {
           id: studentId,
-          name: userInfo?.name,
-          email: userInfo?.email,
-          avatarUrl: userInfo?.avatarUrl,
-          university: (userInfo as { university?: string } | null)?.university,
+          name: userInfo?.name || userProfile?.name,
+          email: userInfo?.email || userProfile?.email,
+          avatarUrl: userInfo?.avatarUrl || userProfile?.avatarUrl,
+          university:
+            (userInfo as { university?: string } | null)?.university ||
+            (userProfile as { university?: string } | undefined)?.university,
           sessionCount: 0,
           feedbackCount: 0,
           reviewCount: 0,
@@ -136,7 +146,7 @@ export function StudentsListPage() {
       }
     });
     return map;
-  }, [mentorSessions, feedbacks, reviews]);
+  }, [mentorSessions, feedbacks, reviews, profilesById]);
 
   const students = useMemo(() => {
     const map = new Map(studentsMap);
@@ -285,7 +295,12 @@ export function StudentsListPage() {
                 </Select>
                 <ReloadButton
                   onReload={async () => {
-                    await Promise.all([refetchSessions(), refetchFeedbacks(), refetchReviews()]);
+                    await Promise.all([
+                      refetchSessions(),
+                      refetchFeedbacks(),
+                      refetchReviews(),
+                      refetchProfiles(),
+                    ]);
                   }}
                   isLoading={isReloading}
                   tooltip={t("mentorStudents.reloadStudentList")}

@@ -709,29 +709,29 @@ function ApplicationGradingTable({
   onOpenGrading: (_appId: number, _detailId?: number, _item?: GradingListItem) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
-      <Table>
+    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+      <Table className="min-w-[920px] table-fixed">
         <TableHeader className="border-b border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90">
           <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
-            <TableHead className="h-11 pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+            <TableHead className="h-12 w-[80px] pl-6 text-xs font-bold text-slate-800 dark:text-slate-200">
               {t("adminApplicationGrading.tableHeaderCode")}
             </TableHead>
-            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+            <TableHead className="h-12 w-[200px] text-xs font-bold text-slate-800 dark:text-slate-200">
               {t("adminApplicationGrading.tableHeaderCandidate")}
             </TableHead>
-            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+            <TableHead className="h-12 w-[180px] text-xs font-bold text-slate-800 dark:text-slate-200">
               {t("adminApplicationGrading.tableHeaderPosition")}
             </TableHead>
-            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+            <TableHead className="h-12 w-[150px] text-xs font-bold text-slate-800 dark:text-slate-200">
               {t("adminApplicationGrading.tableHeaderRound")}
             </TableHead>
-            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+            <TableHead className="h-12 w-[125px] text-xs font-bold text-slate-800 dark:text-slate-200">
               {t("adminApplicationGrading.tableHeaderStatus")}
             </TableHead>
-            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+            <TableHead className="h-12 w-[120px] text-xs font-bold text-slate-800 dark:text-slate-200">
               {t("adminApplicationGrading.tableHeaderScore")}
             </TableHead>
-            <TableHead className="h-11 pr-6 text-right text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+            <TableHead className="h-12 w-[80px] pr-6 text-right text-xs font-bold text-slate-800 dark:text-slate-200">
               {t("adminApplicationGrading.tableHeaderActions")}
             </TableHead>
           </TableRow>
@@ -1192,9 +1192,19 @@ export function ApplicationGradingPage({
   );
 
   return (
-    <div className="flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
+    <div
+      className={cn(
+        "flex min-h-full flex-col bg-slate-50 dark:bg-slate-950",
+        isStaff &&
+          "-m-4 min-h-[calc(100%+32px)] md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)]"
+      )}>
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-4 border-b border-slate-200/80 bg-white/95 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-950/95">
+      <div
+        className={cn(
+          "flex flex-col gap-4 border-b border-slate-200/80 bg-white/95 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-950/95",
+          isStaff &&
+            "m-5 mb-0 rounded-[20px] border bg-white p-6 shadow-sm sm:p-6 md:mx-8 dark:bg-slate-900"
+        )}>
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             {t("adminApplicationGrading.pageTitle")}
@@ -1322,7 +1332,7 @@ export function ApplicationGradingPage({
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col duration-300">
             {viewMode === "table" ? (
-              <div className="flex-1 p-4 sm:p-6">
+              <div className={cn("p-4 sm:p-6", !isStaff && "flex-1")}>
                 <ApplicationGradingTable
                   items={paginatedData}
                   userMap={userMap}
@@ -1486,11 +1496,7 @@ export function ApplicationGradingPage({
             )}
 
             {/* Pagination */}
-            <div className="mt-auto flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                {pagination.startIndex + 1}-{Math.min(pagination.endIndex + 1, sortedData.length)} /{" "}
-                {sortedData.length}
-              </span>
+            <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
               <PaginationControl pagination={pagination} />
             </div>
           </div>

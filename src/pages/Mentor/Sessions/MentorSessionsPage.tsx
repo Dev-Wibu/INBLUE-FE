@@ -469,12 +469,12 @@ export function MentorSessionsPage() {
                                       hasReview ? t("common.editReview") : t("common.writeReview")
                                     }
                                     onClick={() =>
-                                      navigate(
-                                        hasReview
-                                          ? `/mentor/sessions/${session.id}/review/view`
-                                          : `/mentor/sessions/${session.id}/review`,
-                                        { state: { returnTo: "/mentor?tab=sessions" } }
-                                      )
+                                      navigate(`/mentor/sessions/${session.id}/review/view`, {
+                                        state: {
+                                          returnTo: "/mentor?tab=sessions",
+                                          edit: hasReview,
+                                        },
+                                      })
                                     }>
                                     <Pencil className="h-3.5 w-3.5" />
                                   </Button>
