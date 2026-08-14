@@ -1263,6 +1263,9 @@
     "cardView": "Card view",
     "loading": "Loading...",
     "noResults": "No results found.",
+    "rating": "Rating",
+    "accept": "Accept",
+    "reject": "Reject",
     "pages": "Pages",
     "createdAt": "Created At",
     "free": "Free",
@@ -3367,7 +3370,9 @@
     "thereAreCurrentlyNoSessions": "There are currently no sessions to follow.",
     "trackAppointmentsMentoringProgressAnd": "Track appointments, mentoring progress, and priority actions for the day.",
     "welcomeBack": "Welcome back,",
-    "youHaveNoRecentReviews": "You have no recent reviews."
+    "youHaveNoRecentReviews": "You have no recent reviews.",
+    "totalSessions": "Total sessions",
+    "topPerformer": "Top performer"
   },
   "mentorReviews": {
     "action": "Action",
@@ -3389,9 +3394,16 @@
     "viewTheAssessmentsYouSent": "View the assessments you sent to students after each interview session",
     "youHaveNotSentAny": "You have not sent any reviews to your students yet.",
     "candidate": "Candidate",
-    "mentorReviewReport": "Mentor Review Report"
+    "mentorReviewReport": "Mentor Review Report",
+    "reviewsSent": "Reviews sent",
+    "reviewsYouHaveWritten": "Reviews you have written for candidates",
+    "reloadReviewList": "Reload review list",
+    "searchByStudentNameOrSession": "Search by candidate name or session",
+    "starMethod": "STAR method",
+    "detailedAssessment": "Detailed assessment"
   },
   "mentorSessions": {
+    "searchByRoomNameOrId": "Search by candidate or room",
     "acceptInterviewSession": "Accept interview session",
     "allSessionsPendingApproval": "All sessions pending approval",
     "interviewSessions": "Interview Sessions",

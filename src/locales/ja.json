@@ -1207,6 +1207,9 @@
     "cardView": "カード表示",
     "loading": "読み込み中...",
     "noResults": "結果が見つかりません。",
+    "rating": "評価",
+    "accept": "承認",
+    "reject": "拒否",
     "pages": "ページ",
     "createdAt": "作成日",
     "free": "無料",
@@ -3336,7 +3339,9 @@
     "thereAreCurrentlyNoSessions": "現在フォローするセッションはありません。",
     "trackAppointmentsMentoringProgressAnd": "アポイントメント、メンタリング進捗、本日の優先アクションを追跡。",
     "welcomeBack": "おかえりなさい、",
-    "youHaveNoRecentReviews": "最近のレビューはありません。"
+    "youHaveNoRecentReviews": "最近のレビューはありません。",
+    "totalSessions": "セッション総数",
+    "topPerformer": "注目の候補者"
   },
   "mentorReviews": {
     "action": "アクション",
@@ -3358,9 +3363,16 @@
     "viewTheAssessmentsYouSent": "各面接セッション後に学生に送信した評価を表示",
     "youHaveNotSentAny": "まだ学生にレビューを送信していません。",
     "candidate": "候補者",
-    "mentorReviewReport": "メンターレビューレポート"
+    "mentorReviewReport": "メンターレビューレポート",
+    "reviewsSent": "送信済み評価",
+    "reviewsYouHaveWritten": "候補者に送った評価",
+    "reloadReviewList": "評価一覧を再読み込み",
+    "searchByStudentNameOrSession": "候補者名またはセッションで検索",
+    "starMethod": "STARメソッド",
+    "detailedAssessment": "詳細評価"
   },
   "mentorSessions": {
+    "searchByRoomNameOrId": "候補者またはルームで検索",
     "acceptInterviewSession": "面接セッションを承認",
     "allSessionsPendingApproval": "承認待ちのセッション",
     "interviewSessions": "面接セッション",

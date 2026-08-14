@@ -1258,6 +1258,9 @@
     "cardView": "Xem dạng thẻ",
     "loading": "Đang tải...",
     "noResults": "Không tìm thấy kết quả.",
+    "rating": "Đánh giá",
+    "accept": "Chấp nhận",
+    "reject": "Từ chối",
     "pages": "Trang",
     "createdAt": "Ngày tạo",
     "free": "Miễn phí",
@@ -3363,7 +3366,9 @@
     "thereAreCurrentlyNoSessions": "Hiện chưa có phiên nào cần theo dõi.",
     "trackAppointmentsMentoringProgressAnd": "Theo dõi lịch hẹn, tiến độ mentoring và các hành động ưu tiên trong ngày.",
     "welcomeBack": "Chào mừng trở lại,",
-    "youHaveNoRecentReviews": "Bạn chưa có đánh giá nào gần đây."
+    "youHaveNoRecentReviews": "Bạn chưa có đánh giá nào gần đây.",
+    "totalSessions": "Tổng số phiên",
+    "topPerformer": "Ứng viên nổi bật"
   },
   "mentorReviews": {
     "action": "Action (Hành động)",
@@ -3385,9 +3390,16 @@
     "viewTheAssessmentsYouSent": "Xem các đánh giá bạn đã gửi cho học viên sau mỗi phiên phỏng vấn",
     "youHaveNotSentAny": "Bạn chưa gửi đánh giá nào cho học viên.",
     "candidate": "Candidate",
-    "mentorReviewReport": "Báo cáo đánh giá của mentor"
+    "mentorReviewReport": "Báo cáo đánh giá của mentor",
+    "reviewsSent": "Đánh giá đã gửi",
+    "reviewsYouHaveWritten": "Các đánh giá bạn đã viết cho ứng viên",
+    "reloadReviewList": "Tải lại danh sách đánh giá",
+    "searchByStudentNameOrSession": "Tìm theo tên ứng viên hoặc phiên",
+    "starMethod": "Phương pháp STAR",
+    "detailedAssessment": "Đánh giá chi tiết"
   },
   "mentorSessions": {
+    "searchByRoomNameOrId": "Tìm theo ứng viên hoặc phòng",
     "acceptInterviewSession": "Chấp nhận phiên phỏng vấn",
     "allSessionsPendingApproval": "Tất cả phiên chờ duyệt",
     "interviewSessions": "Phiên Phỏng Vấn",
