@@ -2,6 +2,7 @@ import {
   Activity,
   ArrowLeft,
   ArrowRight,
+  BriefcaseBusiness,
   Check,
   ChevronDown,
   ChevronRight,
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -52,19 +54,16 @@ import { HoloboxThreeRobotPage } from "./HoloboxThreeRobotPage";
 type KioskStep = "search" | "applications" | "result";
 type HoloboxDimension = "overview" | "technical" | "behavioral" | "journey";
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
+function formatDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   }).format(new Date(value));
 }
 
-function formatApplicationScore(score: number) {
-  return score >= 0 ? `${Math.round(score)}/100` : "No score yet";
-}
-
 function KioskHeader({ step, onReset }: { step: KioskStep; onReset: () => void }) {
+  const { t } = useTranslation();
   return (
     <header className="flex items-center justify-between border-b border-slate-200/80 bg-white/90 px-6 py-4 backdrop-blur sm:px-10">
       <div className="flex items-center gap-3">
@@ -73,19 +72,19 @@ function KioskHeader({ step, onReset }: { step: KioskStep; onReset: () => void }
         </div>
         <div>
           <p className="text-[11px] font-bold tracking-[0.2em] text-slate-950 uppercase">Inblue</p>
-          <p className="text-xs text-slate-500">Holobox competency experience</p>
+          <p className="text-xs text-slate-500">{t("competencyKiosk.experience")}</p>
         </div>
       </div>
 
       <div className="hidden items-center gap-2 text-xs text-slate-500 sm:flex">
         <span className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Kiosk ready
+          {t("competencyKiosk.kioskReady")}
         </span>
         {step !== "search" && (
           <Button variant="ghost" size="sm" onClick={onReset} className="gap-1.5 text-slate-500">
             <RotateCcw className="h-3.5 w-3.5" />
-            Start over
+            {t("competencyKiosk.startOver")}
           </Button>
         )}
       </div>
@@ -94,19 +93,19 @@ function KioskHeader({ step, onReset }: { step: KioskStep; onReset: () => void }
 }
 
 function StepRail({ activeStep }: { activeStep: KioskStep }) {
+  const { t } = useTranslation();
   const steps = [
-    { key: "search" as const, label: "Enter email", detail: "Identify candidate" },
+    { key: "search" as const, label: t("competencyKiosk.enterEmail") },
     {
       key: "applications" as const,
-      label: "Choose application",
-      detail: "Select a result to read",
+      label: t("competencyKiosk.chooseApplication"),
     },
-    { key: "result" as const, label: "Competency result", detail: "Charts & narration" },
+    { key: "result" as const, label: t("competencyKiosk.competencyResult") },
   ];
   const activeIndex = steps.findIndex((step) => step.key === activeStep);
 
   return (
-    <div className="flex items-center gap-2" aria-label="Kiosk progress">
+    <div className="flex items-center gap-2" aria-label={t("competencyKiosk.progress")}>
       {steps.map((step, index) => {
         const isDone = index < activeIndex;
         const isActive = index === activeIndex;
@@ -147,26 +146,26 @@ function SearchStep({
   isLoading: boolean;
   error: string | null;
 }) {
+  const { t } = useTranslation();
   return (
     <main className="mx-auto grid w-full max-w-6xl gap-14 px-6 py-10 sm:px-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-20">
       <section>
         <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-semibold text-cyan-800">
           <Activity className="h-3.5 w-3.5" />
-          View assessment results
+          {t("competencyKiosk.viewResults")}
         </div>
         <h1 className="max-w-xl text-4xl font-bold tracking-[-0.035em] text-slate-950 sm:text-6xl">
-          Discover your potential.
+          {t("competencyKiosk.discoverPotential")}
         </h1>
         <p className="mt-6 max-w-lg text-base leading-7 text-slate-500 sm:text-lg">
-          Enter the email used during the hiring journey so Holobox can display and narrate your
-          competency summary.
+          {t("competencyKiosk.searchDescription")}
         </p>
 
         <form onSubmit={onSubmit} className="mt-10 max-w-xl">
           <label
             htmlFor="candidate-email"
             className="mb-2 block text-sm font-semibold text-slate-700">
-            Candidate email
+            {t("competencyKiosk.candidateEmail")}
           </label>
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
@@ -186,7 +185,7 @@ function SearchStep({
               type="submit"
               disabled={isLoading}
               className="h-14 rounded-xl bg-slate-950 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.98] disabled:opacity-60">
-              {isLoading ? "Searching..." : "Find applications"}
+              {isLoading ? t("competencyKiosk.searching") : t("competencyKiosk.findApplications")}
               {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
           </div>
@@ -202,7 +201,7 @@ function SearchStep({
 
         <p className="mt-6 flex items-center gap-2 text-xs text-slate-400">
           <ShieldCheck className="h-4 w-4 text-emerald-600" />
-          Your information is only used to find the correct assessment.
+          {t("competencyKiosk.privacyHint")}
         </p>
       </section>
 
@@ -212,15 +211,15 @@ function SearchStep({
         <div className="relative">
           <div className="mb-16 flex items-center justify-between">
             <span className="text-xs font-semibold tracking-[0.18em] text-slate-400 uppercase">
-              Holobox flow
+              {t("competencyKiosk.flow")}
             </span>
             <Headphones className="h-5 w-5 text-cyan-400" />
           </div>
           <div className="space-y-7">
             {[
-              ["01", "Find the candidate", "Verify with email"],
-              ["02", "Choose an application", "Each role is a different journey"],
-              ["03", "Hear the result", "Charts become a spoken story"],
+              ["01", t("competencyKiosk.findCandidate"), t("competencyKiosk.verifyEmail")],
+              ["02", t("competencyKiosk.chooseApplication"), t("competencyKiosk.roleJourney")],
+              ["03", t("competencyKiosk.hearResult"), t("competencyKiosk.spokenStory")],
             ].map(([number, title, description], index) => (
               <div key={number} className="flex gap-4">
                 <span className="font-mono text-xs text-cyan-400">{number}</span>
@@ -233,7 +232,7 @@ function SearchStep({
             ))}
           </div>
           <div className="mt-14 border-t border-slate-800 pt-5 text-xs text-slate-500">
-            Tap to begin · The experience takes about 2 minutes
+            {t("competencyKiosk.durationHint")}
           </div>
         </div>
       </aside>
@@ -256,6 +255,7 @@ function ApplicationsStep({
   onSelect: (_summary: SummaryAudioItem) => void;
   onBack: () => void;
 }) {
+  const { t, i18n } = useTranslation();
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-8 sm:px-10 sm:py-12">
       <button
@@ -263,22 +263,23 @@ function ApplicationsStep({
         onClick={onBack}
         className="mb-8 flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
         <ArrowLeft className="h-4 w-4" />
-        Change email
+        {t("competencyKiosk.changeEmail")}
       </button>
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="mb-2 text-sm font-medium text-orange-700">
-            Found {summaries.length} role{summaries.length === 1 ? "" : "s"}
+            {t("competencyKiosk.rolesFound", { count: summaries.length })}
           </p>
           <h1 className="text-3xl font-bold tracking-[-0.03em] text-slate-950 sm:text-4xl">
-            Choose a role to explore
+            {t("competencyKiosk.chooseRole")}
           </h1>
           <p className="mt-3 text-sm text-slate-500">
-            Results for <span className="font-medium text-slate-700">{email}</span>
+            {t("competencyKiosk.resultsFor")}{" "}
+            <span className="font-medium text-slate-700">{email}</span>
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          <Search className="h-4 w-4" /> Select a job title to continue
+          <Search className="h-4 w-4" /> {t("competencyKiosk.selectJobHint")}
         </div>
       </div>
 
@@ -295,24 +296,26 @@ function ApplicationsStep({
               disabled={isLoading}
               className={`group grid w-full grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border bg-white p-5 text-left transition sm:grid-cols-[auto_1fr_auto_auto] sm:gap-6 sm:p-6 ${isSelected ? "border-orange-400 bg-orange-50/30 ring-4 ring-orange-50" : "border-slate-200 hover:border-orange-300 hover:shadow-md"} ${isLoading && !isSelected ? "opacity-50" : ""}`}>
               <div
-                className={`flex h-11 w-11 items-center justify-center rounded-xl font-mono text-sm font-bold ${isSelected ? "bg-orange-400 text-white" : "bg-slate-100 text-slate-500"}`}>
-                #{summary.applicationId}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl ${isSelected ? "bg-orange-400 text-white" : "bg-slate-100 text-slate-500"}`}>
+                <BriefcaseBusiness className="h-5 w-5" />
               </div>
               <div className="min-w-0">
                 <p className="truncate font-semibold text-slate-950">
-                  {chart.jobTitle || `Application #${summary.applicationId}`}
+                  {chart.jobTitle || chart.candidateName}
                 </p>
                 <p className="mt-1 truncate text-sm text-slate-500">
-                  {chart.candidateName} · Application #{summary.applicationId}
-                  {createdAt ? ` · ${formatDate(createdAt)}` : ""}
+                  {chart.candidateName}
+                  {createdAt ? ` · ${formatDate(createdAt, i18n.language)}` : ""}
                 </p>
               </div>
               <div className="hidden text-right sm:block">
                 <p className="text-[11px] font-semibold tracking-[0.14em] text-slate-400 uppercase">
-                  Overall score
+                  {t("competencyKiosk.overallScore")}
                 </p>
                 <p className="mt-1 text-xl font-bold text-slate-950">
-                  {formatApplicationScore(chart.overallScore)}
+                  {chart.overallScore >= 0
+                    ? `${Math.round(chart.overallScore)}/100`
+                    : t("competencyKiosk.noScoreYet")}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -360,6 +363,7 @@ function ResultStep({
   onBack: () => void;
   displayMode?: "robot" | "details";
 }) {
+  const { t, i18n } = useTranslation();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isVoiceLoading, setIsVoiceLoading] = useState(false);
   const [isScriptExpanded, setIsScriptExpanded] = useState(false);
@@ -368,16 +372,18 @@ function ResultStep({
   const [isRadarReady, setIsRadarReady] = useState(false);
   const script = useMemo(() => buildHoloboxCompetencyScript(chart, journey), [chart, journey]);
   const robotScript = narrationScript?.trim() || script;
-  const isVi = useMemo(
-    () => /[àáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i.test(script),
-    [script]
-  );
+  const narrationLanguage = i18n.resolvedLanguage || i18n.language || "en";
+  const speechLocale = narrationLanguage.startsWith("vi")
+    ? "vi-VN"
+    : narrationLanguage.startsWith("ja")
+      ? "ja-JP"
+      : "en-US";
   const radarData = useMemo(
     () => [
       ...chart.technicalSkillAreas.map((item) => ({
         subject: item.skillArea,
         label: compactSkillName(item.skillArea),
-        category: "Technical",
+        category: t("competencyKiosk.technical"),
         score: item.score,
         fullMark: 100,
         sourceRounds: item.sourceRounds,
@@ -385,28 +391,40 @@ function ResultStep({
       ...chart.behavioralSkills.map((item) => ({
         subject: item.skillName,
         label: compactSkillName(item.skillName),
-        category: "Behavioral",
+        category: t("competencyKiosk.behavioral"),
         score: item.score,
         fullMark: 100,
         sourceRounds: item.sourceRounds,
       })),
     ],
-    [chart]
+    [chart, t]
   );
   const activeChartData = useMemo(() => {
     if (activeDimension === "technical") {
-      return radarData.filter((item) => item.category === "Technical");
+      return radarData.filter((item) => item.category === t("competencyKiosk.technical"));
     }
     if (activeDimension === "behavioral") {
-      return radarData.filter((item) => item.category === "Behavioral");
+      return radarData.filter((item) => item.category === t("competencyKiosk.behavioral"));
     }
     return radarData;
-  }, [activeDimension, radarData]);
+  }, [activeDimension, radarData, t]);
   const activeDimensionCopy: Record<HoloboxDimension, { kicker: string; title: string }> = {
-    overview: { kicker: "Core dimension", title: "Competency radar" },
-    technical: { kicker: "Technical dimension", title: "Technical radar" },
-    behavioral: { kicker: "Human dimension", title: "Behavioral radar" },
-    journey: { kicker: "Journey dimension", title: "Assessment journey" },
+    overview: {
+      kicker: t("competencyKiosk.coreDimension"),
+      title: t("competencyKiosk.competencyRadar"),
+    },
+    technical: {
+      kicker: t("competencyKiosk.technicalDimension"),
+      title: t("competencyKiosk.technicalRadar"),
+    },
+    behavioral: {
+      kicker: t("competencyKiosk.humanDimension"),
+      title: t("competencyKiosk.behavioralRadar"),
+    },
+    journey: {
+      kicker: t("competencyKiosk.journeyDimension"),
+      title: t("competencyKiosk.assessmentJourney"),
+    },
   };
 
   useEffect(() => {
@@ -458,14 +476,15 @@ function ResultStep({
     }
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(script);
-    utterance.lang = isVi ? "vi-VN" : "en-US";
+    utterance.lang = speechLocale;
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
     utterance.volume = 1;
     const availableVoices = window.speechSynthesis.getVoices();
-    const selectedVoice = isVi
-      ? availableVoices.find((voice) => voice.lang.toLowerCase().startsWith("vi"))
-      : availableVoices.find((voice) => voice.lang.toLowerCase().startsWith("en"));
+    const voiceLanguage = speechLocale.split("-")[0].toLowerCase();
+    const selectedVoice = availableVoices.find((voice) =>
+      voice.lang.toLowerCase().startsWith(voiceLanguage)
+    );
     if (selectedVoice) utterance.voice = selectedVoice;
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
@@ -486,8 +505,13 @@ function ResultStep({
     setIsSpeaking(true);
     setIsVoiceLoading(true);
     try {
+      if (speechLocale === "ja-JP") {
+        const started = speakWithBrowserVoice();
+        if (!started) setIsSpeaking(false);
+        return;
+      }
       const responsiveVoice = await loadResponsiveVoice();
-      const lang = isVi ? "vi-VN" : "en-US";
+      const lang = speechLocale === "vi-VN" ? "vi-VN" : "en-US";
       responsiveVoice.speak(script, resolveResponsiveVoiceName(lang, "female"), {
         rate: 0.95,
         pitch: 1.0,
@@ -511,8 +535,8 @@ function ResultStep({
         {isFullMode ? (
           <div className="holobox-full-mode-bar">
             <div>
-              <p className="holobox-full-mode-kicker">Inblue / Holobox theatre</p>
-              <strong>Immersive competency workspace</strong>
+              <p className="holobox-full-mode-kicker">{t("competencyKiosk.theatre")}</p>
+              <strong>{t("competencyKiosk.immersiveWorkspace")}</strong>
             </div>
             <div className="holobox-full-mode-actions flex-row">
               <Button
@@ -524,12 +548,12 @@ function ResultStep({
                 ) : (
                   <Volume2 className="mr-2.5 h-4 w-4" />
                 )}
-                {isSpeaking ? "Stop voice" : "Read result"}
+                {isSpeaking ? t("competencyKiosk.stopVoice") : t("competencyKiosk.readResult")}
               </Button>
               <Button
                 onClick={toggleFullMode}
                 className="holobox-full-mode-exit"
-                title="Exit full mode">
+                title={t("competencyKiosk.exitFullMode")}>
                 <Minimize2 className="h-3.5 w-3.5" />
               </Button>
             </div>
@@ -540,7 +564,7 @@ function ResultStep({
           onClick={onBack}
           className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
           <ArrowLeft className="h-4 w-4" />
-          Back to applications
+          {t("competencyKiosk.backToApplications")}
         </button>
 
         {/* ── Unified Command Deck: merged Overall Score + AI Operator + Radar ── */}
@@ -556,7 +580,7 @@ function ResultStep({
               </span>
               <div className="holobox-unified-score-block flex items-center gap-1.5 rounded-xl border border-cyan-200/90 bg-cyan-50/90 px-3 py-1 text-cyan-950 shadow-2xs">
                 <span className="text-[10px] font-bold tracking-wider text-cyan-700 uppercase">
-                  Score
+                  {t("competencyKiosk.score")}
                 </span>
                 <span className="text-xl leading-none font-black text-cyan-900 sm:text-2xl">
                   {Math.round(chart.overallScore)}
@@ -569,7 +593,7 @@ function ResultStep({
                 <Button
                   onClick={toggleFullMode}
                   className="holobox-unified-action-btn"
-                  title="Full mode">
+                  title={t("competencyKiosk.fullMode")}>
                   <Maximize2 className="h-4 w-4" />
                 </Button>
                 <Button
@@ -585,16 +609,10 @@ function ResultStep({
                   )}
                   <span className="holobox-unified-voice-label font-bold">
                     {isVoiceLoading
-                      ? isVi
-                        ? "Chuẩn bị..."
-                        : "Loading..."
+                      ? t("competencyKiosk.preparing")
                       : isSpeaking
-                        ? isVi
-                          ? "Dừng"
-                          : "Stop"
-                        : isVi
-                          ? "Nghe"
-                          : "Listen"}
+                        ? t("competencyKiosk.stop")
+                        : t("competencyKiosk.listen")}
                   </span>
                 </Button>
               </div>
@@ -606,9 +624,9 @@ function ResultStep({
             {/* AI Operator (center) */}
             <div className="holobox-operator-bay holobox-operator-bay--unified">
               <div className="holobox-operator-topline">
-                <span>AI operator</span>
+                <span>{t("competencyKiosk.aiOperator")}</span>
                 <span className="holobox-operator-live">
-                  <i /> Speaking simulation
+                  <i /> {t("competencyKiosk.speakingSimulation")}
                 </span>
               </div>
               <div className="holobox-operator-3d-robot">
@@ -624,7 +642,11 @@ function ResultStep({
                   <span
                     className={`holobox-operator-status-dot ${isSpeaking ? "is-speaking" : ""}`}
                   />
-                  <strong>{isSpeaking ? "Speaking..." : "Ready to narrate"}</strong>
+                  <strong>
+                    {isSpeaking
+                      ? t("competencyKiosk.speaking")
+                      : t("competencyKiosk.readyToNarrate")}
+                  </strong>
                 </div>
                 <div className="holobox-wave" aria-hidden="true">
                   {Array.from({ length: 18 }, (_, index) => (
@@ -654,18 +676,18 @@ function ResultStep({
                         onClick={() => setActiveDimension(dimension)}
                         className={`holobox-dimension-tab ${activeDimension === dimension ? "is-active" : ""}`}>
                         {dimension === "overview"
-                          ? "Core"
+                          ? t("competencyKiosk.core")
                           : dimension === "technical"
-                            ? "Technical"
+                            ? t("competencyKiosk.technical")
                             : dimension === "behavioral"
-                              ? "Behavioral"
-                              : "Journey"}
+                              ? t("competencyKiosk.behavioral")
+                              : t("competencyKiosk.journey")}
                       </button>
                     )
                   )}
                 </div>
                 <div className="holobox-radar-status">
-                  <span /> {activeChartData.length} signals
+                  <span /> {t("competencyKiosk.signals", { count: activeChartData.length })}
                 </div>
               </div>
               {activeChartData.length > 0 && activeDimension !== "journey" ? (
@@ -732,7 +754,7 @@ function ResultStep({
                             }}
                           />
                           <Radar
-                            name="Score"
+                            name={t("competencyKiosk.score")}
                             dataKey="score"
                             stroke={isFullMode ? "#0891b2" : "#0284c7"}
                             fill={isFullMode ? "#22d3ee" : "#38bdf8"}
@@ -744,7 +766,10 @@ function ResultStep({
                             labelFormatter={(label) =>
                               activeChartData.find((item) => item.label === label)?.subject ?? label
                             }
-                            formatter={(value) => [`${Number(value).toFixed(2)}/100`, "Score"]}
+                            formatter={(value) => [
+                              `${Number(value).toFixed(2)}/100`,
+                              t("competencyKiosk.score"),
+                            ]}
                           />
                         </RadarChart>
                       </ResponsiveContainer>
@@ -774,13 +799,13 @@ function ResultStep({
               ) : (
                 <div className="holobox-journey-preview flex min-h-[300px] flex-col justify-center">
                   <p className="text-xs font-bold tracking-[0.16em] text-cyan-600 uppercase">
-                    AI operator feed
+                    {t("competencyKiosk.aiOperatorFeed")}
                   </p>
                   <p className="mt-3 max-w-lg text-lg leading-7 font-semibold text-slate-800">
-                    {journey?.narrative?.trim() || "No detailed journey summary is available yet."}
+                    {journey?.narrative?.trim() || t("competencyKiosk.noJourneySummary")}
                   </p>
                   <p className="mt-4 text-xs font-medium text-slate-500">
-                    The center operator is ready to narrate this dimension.
+                    {t("competencyKiosk.operatorReady")}
                   </p>
                 </div>
               )}
@@ -792,10 +817,10 @@ function ResultStep({
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
             <div className="mb-7 flex items-start justify-between">
               <div>
-                <h2 className="font-bold text-slate-950">Behavioral skills</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  What was observed throughout the assessment
-                </p>
+                <h2 className="font-bold text-slate-950">
+                  {t("competencyKiosk.behavioralSkills")}
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">{t("competencyKiosk.observations")}</p>
               </div>
               <Activity className="h-5 w-5 text-cyan-600" />
             </div>
@@ -816,12 +841,13 @@ function ResultStep({
                       />
                     </div>
                     <p className="mt-1.5 text-xs text-slate-400">
-                      Source: {item.sourceRounds.join(" · ") || "Summary"}
+                      {t("competencyKiosk.source")}:{" "}
+                      {item.sourceRounds.join(" · ") || t("competencyKiosk.summary")}
                     </p>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-slate-400">No behavioral data available.</p>
+                <p className="text-sm text-slate-400">{t("competencyKiosk.noBehavioralData")}</p>
               )}
             </div>
           </div>
@@ -835,7 +861,7 @@ function ResultStep({
                 </div>
                 <span className="flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-cyan-800 shadow-xs">
                   <Volume2 className="h-3.5 w-3.5" />
-                  {isVi ? "Giọng đọc tự nhiên" : "Natural voice"}
+                  {t("competencyKiosk.naturalVoice")}
                 </span>
               </div>
               <div className="holobox-wave mt-7" aria-hidden="true">
@@ -859,12 +885,12 @@ function ResultStep({
                     {isScriptExpanded ? (
                       <>
                         <ChevronUp className="h-4 w-4" />
-                        {isVi ? "Thu gọn script" : "Collapse script"}
+                        {t("competencyKiosk.collapseScript")}
                       </>
                     ) : (
                       <>
                         <ChevronDown className="h-4 w-4" />
-                        {isVi ? "Xem thêm script" : "Expand script"}
+                        {t("competencyKiosk.expandScript")}
                       </>
                     )}
                   </button>
@@ -881,12 +907,8 @@ function ResultStep({
                   <Play className="h-4 w-4 fill-current" />
                 )}{" "}
                 {isSpeaking
-                  ? isVi
-                    ? "Đang đọc kết quả"
-                    : "Reading result"
-                  : isVi
-                    ? "Nghe tóm tắt"
-                    : "Listen to summary"}
+                  ? t("competencyKiosk.readingResult")
+                  : t("competencyKiosk.listenSummary")}
               </button>
             </div>
           </div>
@@ -897,16 +919,18 @@ function ResultStep({
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold tracking-[0.14em] text-cyan-700 uppercase">
-                  AI journey narrative
+                  {t("competencyKiosk.aiJourneyNarrative")}
                 </p>
-                <h2 className="mt-2 text-xl font-bold text-slate-950">Competency story</h2>
+                <h2 className="mt-2 text-xl font-bold text-slate-950">
+                  {t("competencyKiosk.competencyStory")}
+                </h2>
               </div>
               <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
-                Journey summary
+                {t("competencyKiosk.journeySummary")}
               </span>
             </div>
             <p className="text-[15px] leading-7 text-slate-600">
-              {journey?.narrative?.trim() || "No detailed journey summary is available yet."}
+              {journey?.narrative?.trim() || t("competencyKiosk.noJourneySummary")}
             </p>
             {(journey?.swecomAssessments?.length ?? 0) > 0 && (
               <div className="mt-6 space-y-3 border-t border-slate-100 pt-5">
@@ -931,10 +955,10 @@ function ResultStep({
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold tracking-[0.14em] text-violet-700 uppercase">
-                  Next moves
+                  {t("competencyKiosk.nextMoves")}
                 </p>
                 <h2 className="mt-2 text-xl font-bold text-slate-950">
-                  Development recommendations
+                  {t("competencyKiosk.developmentRecommendations")}
                 </h2>
               </div>
               <ArrowRight className="h-5 w-5 text-violet-500" />
@@ -948,14 +972,14 @@ function ResultStep({
                     <p className="text-sm font-bold text-slate-800">{item.targetSkillArea}</p>
                     <p className="mt-1.5 text-sm leading-6 text-slate-500">{item.recommendation}</p>
                     <span className="mt-2 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
-                      Target: {competencyLevelLabel[item.targetLevel]}
+                      {t("competencyKiosk.target")}: {competencyLevelLabel[item.targetLevel]}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
               <p className="text-sm leading-6 text-slate-500">
-                No detailed recommendations are available for this application.
+                {t("competencyKiosk.noRecommendations")}
               </p>
             )}
           </article>
@@ -971,7 +995,7 @@ function ResultStep({
         onClick={onBack}
         className="holobox-robot-only-back flex items-center gap-2 text-sm font-semibold">
         <ArrowLeft className="h-4 w-4" />
-        Back to applications
+        {t("competencyKiosk.backToApplications")}
       </button>
       <div className="holobox-robot-only-stage">
         <HoloboxThreeRobotPage
@@ -986,6 +1010,7 @@ function ResultStep({
 }
 
 export function CompetencyKioskPage() {
+  const { t } = useTranslation();
   const [step, setStep] = useState<KioskStep>("search");
   const [email, setEmail] = useState("");
   const [summaries, setSummaries] = useState<SummaryAudioItem[]>([]);
@@ -1011,7 +1036,7 @@ export function CompetencyKioskPage() {
     try {
       const result = await getSummaryAudioByEmail(email);
       if (result.length === 0) {
-        setError("This email has no competency summaries to display.");
+        setError(t("competencyKiosk.noSummariesForEmail"));
         return;
       }
       setSummaries(result);
@@ -1020,7 +1045,7 @@ export function CompetencyKioskPage() {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Unable to find applications right now."
+          : t("competencyKiosk.findApplicationsError")
       );
     } finally {
       setIsLoading(false);

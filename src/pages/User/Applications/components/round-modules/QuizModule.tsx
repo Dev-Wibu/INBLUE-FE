@@ -63,7 +63,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
   const handleCopy = () => {
     void navigator.clipboard.writeText(code);
     setCopied(true);
-    toast.success("Đã sao chép mã nguồn!");
+    toast.success(t("userApplication.quiz.copyCodeSuccess"));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -111,7 +111,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
           {copied ? (
             <>
               <Check className="h-3 w-3 text-emerald-400" />
-              <span className="text-emerald-400">Đã chép</span>
+              <span className="text-emerald-400">{t("userApplication.quiz.copied")}</span>
             </>
           ) : (
             <>
@@ -341,63 +341,6 @@ function ModernGaugeClock({
   );
 }
 
-const DEFAULT_QUESTIONS: QuizQuestion[] = [
-  {
-    questionText: "Trong JavaScript/TypeScript, sự khác biệt chính giữa `let` và `var` là gì?",
-    options: [
-      "A. `var` có scope phạm vi block, còn `let` có scope phạm vi function",
-      "B. `let` có scope phạm vi block, còn `var` có scope phạm vi function/global và bị hoisting",
-      "C. `let` không thể gán lại giá trị, còn `var` thì có thể",
-      "D. Cả hai hoàn toàn giống nhau về mọi mặt",
-    ],
-    correctAnswer:
-      "B. `let` có scope phạm vi block, còn `var` có scope phạm vi function/global và bị hoisting",
-  },
-  {
-    questionText: "Mục đích chính của chỉ số `Index` trong cơ sở dữ liệu quan hệ (RDBMS) là gì?",
-    options: [
-      "A. Giúp mã hóa dữ liệu an toàn hơn",
-      "B. Tăng tốc độ truy vấn tìm kiếm dữ liệu (SELECT) bằng cách đánh chỉ mục",
-      "C. Tự động kiểm tra cú pháp của câu lệnh SQL",
-      "D. Giảm bớt dung lượng lưu trữ trên đĩa cứng",
-    ],
-    correctAnswer: "B. Tăng tốc độ truy vấn tìm kiếm dữ liệu (SELECT) bằng cách đánh chỉ mục",
-  },
-  {
-    questionText:
-      "Trong kiến trúc RESTful API, HTTP Method nào được định nghĩa là `Idempotent` (Đồng năng)?",
-    options: [
-      "A. POST",
-      "B. GET, PUT, DELETE",
-      "C. CHỈ CÓ POST VÀ PATCH",
-      "D. Không có method nào là idempotent",
-    ],
-    correctAnswer: "B. GET, PUT, DELETE",
-  },
-  {
-    questionText: "Khái niệm `Closure` trong JavaScript được hiểu như thế nào?",
-    options: [
-      "A. Là một hàm có khả năng truy cập các biến ở phạm vi bên ngoài (outer scope) ngay cả khi hàm bên ngoài đã thực thi xong",
-      "B. Là kỹ thuật tự động đóng kết nối Database sau khi query",
-      "C. Là một khối lệnh try/catch để bắt lỗi bất đồng bộ",
-      "D. Là một hàm không có tham số đầu vào",
-    ],
-    correctAnswer:
-      "A. Là một hàm có khả năng truy cập các biến ở phạm vi bên ngoài (outer scope) ngay cả khi hàm bên ngoài đã thực thi xong",
-  },
-  {
-    questionText: "Trong React, mục đích sử dụng của `useCallback` Hook là gì?",
-    options: [
-      "A. Thay thế hoàn toàn cho useState",
-      "B. Lưu trữ giá trị hàm (memoize callback) giúp tránh tạo lại instance hàm không cần thiết giữa các lần re-render khi truyền xuống component con",
-      "C. Tự động chuyển đổi dữ liệu thành dạng JSON",
-      "D. Quản lý các sự kiện click trên thẻ HTML",
-    ],
-    correctAnswer:
-      "B. Lưu trữ giá trị hàm (memoize callback) giúp tránh tạo lại instance hàm không cần thiết giữa các lần re-render khi truyền xuống component con",
-  },
-];
-
 export function QuizModule({
   round,
   detail,
@@ -416,7 +359,7 @@ export function QuizModule({
   // Guard: staff view gets quiz questions from detail.roundConfig — no JD API call needed
   const { data: quizConfig } = useQuizConfig(jdId ?? 0, round.id ?? 0, !isStaffView);
 
-  // Resolved list of questions — priority: quizConfig (JD API) > detail.roundConfig (reviewer API) > round.configData > DEFAULT
+  // Resolved list of questions from the configured round only.
   const questions: QuizQuestion[] = useMemo(() => {
     // Staff view: questions come from detail.roundConfig (no JD API needed)
     const detailQuestions = (detailRoundConfig as { quizQuestions?: QuizQuestion[] })
@@ -426,8 +369,8 @@ export function QuizModule({
     if (quizConfig?.questions?.length) return quizConfig.questions;
     const configQuestions = (round.configData as { quizQuestions?: QuizQuestion[] })?.quizQuestions;
     if (configQuestions?.length) return configQuestions;
-    return DEFAULT_QUESTIONS;
-  }, [detail, quizConfig, round.configData]);
+    return [];
+  }, [detailRoundConfig, quizConfig, round.configData]);
 
   // Quiz result breakdown hook (parsed from ApplicationDetail)
   const quizResultData = useQuizResult(detail);

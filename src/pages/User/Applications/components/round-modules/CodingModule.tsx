@@ -198,7 +198,7 @@ function parseCodeStubs(raw: unknown): Partial<Record<CompilerLanguage, string>>
   return {};
 }
 
-function getProblems(round: JdRound): CodingProblemVM[] {
+function getProblems(round: JdRound, titleForIndex: (_index: number) => string): CodingProblemVM[] {
   // JdRound is a partial local shape — pull `codingProblems` off the full
   // BE round schema which is the source of truth for problem snapshots.
   const roundFull = round as JdRound & {
@@ -222,9 +222,9 @@ function getProblems(round: JdRound): CodingProblemVM[] {
   };
 
   const raw = roundFull.configData?.codingProblems ?? [];
-  return raw.map((p) => ({
+  return raw.map((p, index) => ({
     problemId: p.problemId ?? 0,
-    title: p.title ?? `Problem #${p.problemId ?? "?"}`,
+    title: p.title ?? titleForIndex(index),
     difficulty: p.difficulty,
     problemStatement: p.problemStatement ?? "",
     rulesAndConstraints: parseRules(
@@ -353,7 +353,13 @@ export function CodingModule({
   const detailRoundConfig = (initialDetail as any)?.roundConfig;
   const [submittedDetail, setSubmittedDetail] = useState<ApplicationDetail | null>(null);
   const detail = submittedDetail ?? initialDetail;
-  const problems = useMemo(() => getProblems(round), [round]);
+  const problems = useMemo(
+    () =>
+      getProblems(round, (index) =>
+        t("userApplication.coding.problemNumber", { number: index + 1 })
+      ),
+    [round, t]
+  );
 
   // ---- Per-problem editing state ------------------------------------------
   // Re-seed whenever the round changes (different problem set).
@@ -519,10 +525,10 @@ export function CodingModule({
       };
       setSampleResults((prev) => ({ ...prev, [problemId]: compiled }));
       toast.success(
-        t(
-          "userApplication.coding.testCasesPassed",
-          `Sample test cases passed (${compiled.passedTestCases}/${compiled.totalTestCases})`
-        )
+        t("userApplication.coding.testCasesPassed", {
+          passed: compiled.passedTestCases,
+          total: compiled.totalTestCases,
+        })
       );
     } catch (err) {
       console.error("[CodingModule] Run sample error:", err);
@@ -832,7 +838,7 @@ export function CodingModule({
             </div>
 
             <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 font-mono text-[10px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
-              ● Sandbox Grader
+              ● {t("userApplication.coding.sandboxGrader")}
             </span>
           </div>
 
@@ -866,7 +872,7 @@ export function CodingModule({
                 <div className="mt-0.5 text-lg font-black text-emerald-700 tabular-nums dark:text-emerald-300">
                   {submissionStats.totalChars}{" "}
                   <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
-                    chars
+                    {t("userApplication.coding.charsLabel")}
                   </span>
                 </div>
               </div>
@@ -929,7 +935,10 @@ export function CodingModule({
                                 isAllSamplePassed ? "bg-emerald-400" : "bg-rose-400"
                               )}
                             />
-                            {samplePassed}/{sampleTotal} Tests
+                            {t("userApplication.coding.samplePassedCount", {
+                              passed: samplePassed,
+                              total: sampleTotal,
+                            })}
                           </span>
                         ) : (
                           <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] text-slate-500 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400">
@@ -1233,15 +1242,18 @@ function ProblemExampleCard({
   const [copied, setCopied] = useState(false);
 
   const cleanInputs = (example.inputs ?? []).map((inp) => String(inp ?? "").trim()).filter(Boolean);
-  const inputStr = cleanInputs.length > 0 ? cleanInputs.join(", ") : "(trống)";
+  const inputStr =
+    cleanInputs.length > 0 ? cleanInputs.join(", ") : t("userApplication.coding.problemEmpty");
   const outputStr =
     example.output != null && String(example.output).trim() !== ""
       ? String(example.output)
-      : "(trống)";
+      : t("userApplication.coding.problemEmpty");
 
   const handleCopy = () => {
-    const textToCopy = `Input: ${inputStr}\nOutput: ${outputStr}${
-      example.explanation ? `\nExplanation: ${example.explanation}` : ""
+    const textToCopy = `${t("userApplication.coding.inputLabel")}: ${inputStr}\n${t("userApplication.coding.outputLabel")} ${outputStr}${
+      example.explanation
+        ? `\n${t("userApplication.coding.explanation")} ${example.explanation}`
+        : ""
     }`;
     void navigator.clipboard.writeText(textToCopy);
     setCopied(true);
@@ -1277,13 +1289,17 @@ function ProblemExampleCard({
       {/* Body */}
       <div className="space-y-2 p-3.5 font-mono text-xs">
         <div className="flex items-start gap-2">
-          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Input:</span>
+          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">
+            {t("userApplication.coding.inputLabel")}:
+          </span>
           <span className="flex-1 font-semibold break-all text-slate-800 dark:text-slate-200">
             {inputStr}
           </span>
         </div>
         <div className="flex items-start gap-2">
-          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">Output:</span>
+          <span className="w-16 shrink-0 font-bold text-slate-400 select-none">
+            {t("userApplication.coding.outputLabel")}
+          </span>
           <span className="flex-1 font-bold break-all text-emerald-600 dark:text-emerald-400">
             {outputStr}
           </span>
@@ -1674,7 +1690,8 @@ function CodingProblemCard({
                 "font-mono text-[10px] tabular-nums",
                 monacoTheme === "inblue-dark" ? "text-slate-500" : "text-slate-400"
               )}>
-              {source.code.split("\n").length} lines · {source.code.length} chars
+              {source.code.split("\n").length} {t("userApplication.coding.linesLabel")} ·{" "}
+              {source.code.length} {t("userApplication.coding.charsLabel")}
             </span>
           </div>
 
@@ -2054,7 +2071,7 @@ function TestResultsPanel({
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <span className={cn("h-2 w-2 rounded-full", dotColor)} />
-                  <span>Case {idx + 1}</span>
+                  <span>{t("userApplication.coding.testCaseLabel", { num: idx + 1 })}</span>
                   {tc.executionTimeMs !== undefined && tc.executionTimeMs > 0 && (
                     <span className="font-mono text-[10px] font-normal text-slate-400">
                       {tc.executionTimeMs}ms
@@ -2072,7 +2089,7 @@ function TestResultsPanel({
               <div className="flex items-center justify-between border-b border-slate-200/70 pb-2.5 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs font-bold text-slate-500 dark:text-slate-400">
-                    Testcase #{selectedIdx + 1}
+                    {t("userApplication.coding.testCaseLabel", { num: selectedIdx + 1 })}
                   </span>
                   <span
                     className={cn(
@@ -2084,7 +2101,8 @@ function TestResultsPanel({
                 </div>
                 {activeTestCase.executionTimeMs !== undefined && (
                   <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
-                    Thời gian: <strong>{activeTestCase.executionTimeMs} ms</strong>
+                    {t("userApplication.coding.runtimeLabel")}{" "}
+                    <strong>{activeTestCase.executionTimeMs} ms</strong>
                   </span>
                 )}
               </div>

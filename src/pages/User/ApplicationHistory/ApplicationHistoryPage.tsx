@@ -359,9 +359,6 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
         <TableHeader className="border-b border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90">
           <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
             <TableHead className="h-11 pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              {t("userApplicationhistory.tableHeaderId", "#ID")}
-            </TableHead>
-            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               {t("userApplicationhistory.tableHeaderCompany", "Công ty")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
@@ -397,13 +394,8 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                 key={`completed-row-${app.id}`}
                 onClick={() => navigate(`/user/application/${app.id}?round=99`)}
                 className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-indigo-50/40 dark:border-slate-800/60 dark:hover:bg-slate-800/60">
-                {/* ID Column */}
-                <TableCell className="pl-6 font-mono text-xs font-extrabold text-slate-800 dark:text-slate-200">
-                  #{app.id}
-                </TableCell>
-
                 {/* Company Name & Logo */}
-                <TableCell className="py-3">
+                <TableCell className="py-3 pl-6">
                   <div className="flex items-center gap-2.5">
                     <CompanyAvatar
                       logoUrl={app.logoUrl}
@@ -766,7 +758,10 @@ export function ApplicationHistoryPage() {
         {/* Filter Result Count (Above table per Khảo thí rule) */}
         {statusFilter !== "all" && (
           <div className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Hiển thị {completedApplications.length} kết quả phù hợp
+            {t("common.showingResults", {
+              shown: completedApplications.length,
+              total: completedApplications.length,
+            })}
           </div>
         )}
 
@@ -777,14 +772,14 @@ export function ApplicationHistoryPage() {
           <Card className="flex h-48 flex-col items-center justify-center gap-3 rounded-xl border-dashed p-6 text-center">
             <XCircle className="h-9 w-9 text-rose-500" />
             <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-              Không thể tải danh sách ứng tuyển
+              {t("userApplicationhistory.unableToLoadApplications")}
             </p>
             <Button
               variant="outline"
               size="sm"
               onClick={() => loadApplications()}
               className="h-8 text-xs">
-              Thử lại
+              {t("common.retry")}
             </Button>
           </Card>
         ) : completedApplications.length === 0 ? (

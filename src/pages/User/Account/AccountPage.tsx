@@ -368,7 +368,7 @@ export function AccountPage() {
                   size="icon"
                   onClick={() => handleSwitchTab("editProfile")}
                   className="absolute top-2.5 right-2.5 h-8 w-8 rounded-full bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
-                  title={t("general.edit") || "Chỉnh sửa"}>
+                  title={t("general.edit")}>
                   <Pencil className="h-4 w-4" />
                 </Button>
               </div>

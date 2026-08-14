@@ -27,7 +27,6 @@ import {
   ChevronRight,
   ClipboardList,
   Clock,
-  Hash,
   Lightbulb,
   Star,
   Target,
@@ -145,10 +144,7 @@ export function FeedbackDetailPage() {
     );
   }
 
-  const mentorName =
-    review.mentor?.name ||
-    mentorInfo?.name ||
-    (mentorId ? t("common.mentorWithId", { id: mentorId }) : t("common.mentor"));
+  const mentorName = review.mentor?.name || mentorInfo?.name || t("common.mentor");
   const mentorAvatarUrl = review.mentor?.avatarUrl || mentorInfo?.avatarUrl;
   const mentorExpertise = review.mentor?.expertise || mentorInfo?.expertise;
   const mentorCompany = review.mentor?.currentCompany || mentorInfo?.currentCompany;
@@ -253,12 +249,9 @@ export function FeedbackDetailPage() {
                   <Star className="h-3 w-3" aria-hidden />
                   {t("userFeedback.evaluationContent")}
                 </span>
-                <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
-                  #{review.id}
-                </span>
               </div>
               <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl dark:text-slate-100">
-                {t("common.reviewDetails1")} #{review.id}
+                {t("common.reviewDetails1")} · {mentorName}
               </h1>
               <div className="mt-2 flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
                 <p className="flex items-center gap-2 font-medium text-slate-800 dark:text-slate-200">
@@ -443,14 +436,9 @@ export function FeedbackDetailPage() {
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <InfoRow
-                icon={Hash}
-                label={t("common.sessionCode1")}
-                value={sessionId ? `#${sessionId}` : "—"}
-              />
-              <InfoRow
                 icon={Building2}
                 label={t("common.roomName1")}
-                value={sessionRoomName || (sessionId ? `Session ${sessionId}` : "—")}
+                value={sessionRoomName || t("common.mentorInterview")}
               />
               <InfoRow
                 icon={Clock}

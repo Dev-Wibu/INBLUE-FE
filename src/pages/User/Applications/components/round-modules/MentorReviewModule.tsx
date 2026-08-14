@@ -317,8 +317,10 @@ function ProgressHub({
 }: {
   activeIndex: number;
   viewedIndex: number;
-  onSelectStep: (step: StepKey) => void;
+  onSelectStep: (_step: StepKey) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
       <div className="flex w-full items-start justify-between">
@@ -344,7 +346,9 @@ function ProgressHub({
               <button
                 type="button"
                 onClick={() => onSelectStep(step.key)}
-                title={`Xem lại: ${step.short}`}
+                title={t("userApplication.mentorReview.reviewStepTitle", {
+                  step: step.short,
+                })}
                 className={cn(
                   "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-indigo-400/60 focus-visible:outline-none",
                   isActive
@@ -544,7 +548,9 @@ function SelectMentorStep({
     return (
       <Card className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
         <Spinner className="mx-auto h-8 w-8 text-indigo-500" />
-        <p className="mt-4 text-sm font-semibold text-slate-500">Đang tải danh sách mentor...</p>
+        <p className="mt-4 text-sm font-semibold text-slate-500">
+          {t("userApplication.mentorReview.mentorListLoading")}
+        </p>
       </Card>
     );
   }
@@ -554,13 +560,13 @@ function SelectMentorStep({
       <Card className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80">
         <AlertCircle className="mx-auto h-12 w-12 text-rose-400" />
         <h3 className="mt-4 text-lg font-black text-rose-900 dark:text-rose-100">
-          Chưa có mentor nào được chỉ định
+          {t("userApplication.mentorReview.mentorListEmptyTitle")}
         </h3>
         <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">
-          Vui lòng chờ Admin phân bổ chuyên gia phù hợp.
+          {t("userApplication.mentorReview.mentorListEmptyDescription")}
         </p>
         <Button variant="outline" onClick={() => void refetch()} className="mt-6 rounded-xl">
-          Tải lại
+          {t("common.retry")}
         </Button>
       </Card>
     );
@@ -804,7 +810,7 @@ function MentorDetailDialog({
 }: {
   mentor: MentorResponse | null;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
 }) {
   const { t } = useTranslation();
   const mentorId = mentor?.id ?? 0;
@@ -962,9 +968,7 @@ function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
                 {feedback.user?.name || "—"}
               </div>
               <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                {session?.id
-                  ? `${t("userApplicationhistory.mentorFeedbackSessionLabel", "Session")} #${session.id}`
-                  : t("userApplicationhistory.mentorFeedbackSessionUnknown", "Session unavailable")}
+                {t("userApplicationhistory.mentorFeedbackSessionLabel", "Session")}
                 {session?.joinTime ? ` · ${formatDateTime(session.joinTime)}` : ""}
               </div>
             </div>
@@ -1367,12 +1371,16 @@ function ScheduleStep({
                       </span>
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/25 dark:text-indigo-200">
                         <Briefcase className="h-3.5 w-3.5" />
-                        {selectedMentor.totalSession ?? 0} phiên
+                        {t("userApplication.mentorReview.mentorSessionTileValue", {
+                          count: selectedMentor.totalSession ?? 0,
+                        })}
                       </span>
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-bold text-violet-700 dark:border-violet-900/50 dark:bg-violet-950/25 dark:text-violet-200">
                         <Award className="h-3.5 w-3.5" />
                         {selectedMentor.yearsOfExperience != null
-                          ? `${selectedMentor.yearsOfExperience}+ năm`
+                          ? t("userApplication.mentorReview.yearsExperienceValue", {
+                              count: selectedMentor.yearsOfExperience,
+                            })
                           : "—"}
                       </span>
                     </div>
@@ -1719,7 +1727,9 @@ function SessionRoomStep({
   const { data: session, refetch } = useSessionById(sessionId ?? 0);
   const [now, setNow] = useState(() => Date.now());
   const sessionMentor = useMemo(() => {
-    return mentors?.find((mentor) => mentor.id === session?.mentorId) ?? null;
+    const mentorId = Number(session?.mentorId);
+    if (!Number.isFinite(mentorId)) return null;
+    return mentors?.find((mentor) => Number(mentor.id) === mentorId) ?? null;
   }, [mentors, session?.mentorId]);
 
   // Poll session every 30s while in WAITING or IN_CALL
@@ -1758,6 +1768,8 @@ function SessionRoomStep({
   const minutesUntilStart = Math.floor((joinAt - now) / 60_000);
   const canEnter = minutesUntilStart <= 15 && minutesUntilStart > -(session.duration ?? 0);
   const isCompleted = readOnly ? viewStep === "RESULT" : session.status === "COMPLETED";
+  const mentorName = sessionMentor?.name?.trim();
+  const mentorDisplayName = mentorName || t("userApplication.mentorReview.mentorNameUnavailable");
 
   // ---- COMPLETED ----
   if (isCompleted) {
@@ -1781,7 +1793,9 @@ function SessionRoomStep({
           <div className="min-w-0 space-y-2">
             <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-300">
               <Video className="h-3 w-3 text-indigo-500 dark:text-indigo-300" />
-              {t("userApplicationhistory.mentorSession", "Phiên phỏng vấn")} #{session.id}
+              {mentorName
+                ? t("userApplication.mentorReview.sessionWithMentor", { name: mentorName })
+                : t("userApplicationhistory.mentorSessionTitle")}
             </div>
             <h3 className="text-base font-semibold tracking-tight text-slate-900 dark:text-white">
               {t("userApplicationhistory.mentorSessionHint")}
@@ -1833,11 +1847,9 @@ function SessionRoomStep({
                 icon={<UserCheck className="h-3.5 w-3.5" />}
                 label={t("userApplicationhistory.mentorSessionFieldMentor")}
                 value={
-                  sessionMentor
-                    ? `${sessionMentor.name ?? `#${session.mentorId ?? "—"}`}${
-                        sessionMentor.currentCompany ? ` · ${sessionMentor.currentCompany}` : ""
-                      }`
-                    : `#${session.mentorId ?? "—"}`
+                  sessionMentor?.currentCompany
+                    ? `${mentorDisplayName} · ${sessionMentor.currentCompany}`
+                    : mentorDisplayName
                 }
               />
             </div>
@@ -1960,8 +1972,12 @@ function CompletedResultView({
   const mentorAverageRating = mentor?.averageRating ?? 0;
   const mentorSessionCount = mentor?.totalSession ?? 0;
   const mentorExperienceLabel = mentor?.yearsOfExperience
-    ? `${mentor.yearsOfExperience}+ năm`
+    ? t("userApplication.mentorReview.yearsExperienceValue", {
+        count: mentor.yearsOfExperience,
+      })
     : "—";
+  const mentorDisplayName =
+    mentor?.name?.trim() || t("userApplication.mentorReview.mentorNameUnavailable");
   const hasFinalScore = finalScore !== null && finalScore !== undefined;
   const finalPassed = finalResult === "PASSED";
   const finalFailed = finalResult === "FAILED";
@@ -1987,7 +2003,9 @@ function CompletedResultView({
                   <span className="text-[11px] font-black opacity-70">/100</span>
                   {(finalPassed || finalFailed) && (
                     <span className="text-[10px] font-black tracking-wide uppercase">
-                      {finalPassed ? "Passed" : "Failed"}
+                      {finalPassed
+                        ? t("userApplication.mentorReview.resultPassedLabel")
+                        : t("userApplication.mentorReview.resultFailedLabel")}
                     </span>
                   )}
                 </div>
@@ -2020,7 +2038,7 @@ function CompletedResultView({
                 </div>
                 <div className="space-y-1.5">
                   <h3 className="truncate text-2xl font-semibold text-slate-950 dark:text-white">
-                    {mentor?.name ?? (session.mentorId ? `#${session.mentorId}` : "-")}
+                    {mentorDisplayName}
                   </h3>
                   <p className="inline-flex max-w-full items-center gap-1.5 truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
                     <Building2 className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
@@ -2274,7 +2292,7 @@ function CandidateMentorFeedbackBlock({
   const validate = () => {
     const next: typeof errors = {};
     if (!rating || rating < 1 || rating > 5) {
-      next.rating = "Vui lòng chọn điểm đánh giá (1–5)";
+      next.rating = t("userApplication.mentorReview.feedbackRatingRequired");
     }
     if (comment.trim().length < MIN_COMMENT_LENGTH) {
       next.comment = t("userApplicationhistory.mentorSessionCommentMinError", {
@@ -2444,13 +2462,13 @@ function CandidateMentorFeedbackBlock({
                 <span className="text-rose-500">*</span>
               </Label>
               <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Chọn mức sao phản ánh cách mentor đặt câu hỏi, hướng dẫn và hỗ trợ bạn.
+                {t("userApplication.mentorReview.feedbackRatingInstruction")}
               </p>
             </div>
             <div>
               <div className="mb-3 flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Mức bạn chọn
+                  {t("userApplication.mentorReview.feedbackSelectedRatingLabel")}
                 </span>
                 <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-600 tabular-nums dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-300">
                   {rating || 0}/5
@@ -2474,7 +2492,7 @@ function CandidateMentorFeedbackBlock({
                 <span className="text-rose-500">*</span>
               </Label>
               <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Viết ngắn gọn điều mentor làm tốt hoặc cần cải thiện.
+                {t("userApplication.mentorReview.feedbackCommentInstruction")}
               </p>
             </div>
             <div>
@@ -2554,11 +2572,11 @@ function CandidateMentorFeedbackBlock({
                   setErrors({});
                 }}
                 className="h-10 px-4 text-xs font-semibold">
-                Hủy
+                {t("common.cancel")}
               </Button>
             )}
             <p className="ml-auto text-xs text-slate-500 dark:text-slate-400">
-              Hoàn tất để đóng vòng Mentor Interview
+              {t("userApplication.mentorReview.feedbackCompleteRoundHint")}
             </p>
           </div>
         </form>
@@ -2574,8 +2592,10 @@ function RatingScale5({
 }: {
   value: number;
   disabled?: boolean;
-  onChange: (value: number) => void;
+  onChange: (_value: number) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       {Array.from({ length: 5 }).map((_, index) => {
@@ -2585,7 +2605,9 @@ function RatingScale5({
           <button
             key={starValue}
             type="button"
-            aria-label={`Chọn ${starValue} sao`}
+            aria-label={t("userApplication.mentorReview.selectStarLabel", {
+              count: starValue,
+            })}
             disabled={disabled}
             onClick={() => {
               if (!disabled) onChange(starValue);

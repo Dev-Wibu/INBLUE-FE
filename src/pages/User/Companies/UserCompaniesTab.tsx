@@ -175,7 +175,7 @@ export function CompanyCard({
 
 export function UserCompaniesTab() {
   const { t: i18nT } = useTranslation();
-  const t: (key: string, optionsOrDefault?: string | Record<string, unknown>) => string =
+  const t: (_key: string, _optionsOrDefault?: string | Record<string, unknown>) => string =
     useCallback(
       (key, optionsOrDefault) => {
         if (typeof optionsOrDefault === "string") {
@@ -436,10 +436,10 @@ export function UserCompaniesTab() {
             </div>
             <div className="text-center">
               <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                Không tìm thấy công ty phù hợp
+                {t("enterpriseCompanysearchpage.noCompaniesFound")}
               </h3>
               <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-                Chưa có doanh nghiệp nào phù hợp với bộ lọc hiện tại.
+                {t("enterpriseCompanysearchpage.emptyFilteredDescription")}
               </p>
             </div>
             <Button
@@ -449,7 +449,7 @@ export function UserCompaniesTab() {
                 setSelectedIndustry("ALL");
               }}
               className="mt-2 h-8 border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10">
-              Xem tất cả
+              {t("enterpriseCompanysearchpage.viewAllCompanies")}
             </Button>
           </div>
         ) : (

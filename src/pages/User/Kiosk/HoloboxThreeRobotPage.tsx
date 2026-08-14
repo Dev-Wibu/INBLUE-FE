@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { Activity, RotateCw, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   EXPERIENCE_DAY_ROBOT_DANCE_EVENT,
@@ -10,18 +11,28 @@ import {
 
 const DANCE_CONTROLS: Array<{
   mode: ExperienceDayRobotDanceMode;
-  label: string;
-  title: string;
+  labelKey: string;
+  titleKey: string;
   Icon: LucideIcon;
 }> = [
-  { mode: "bounce", label: "Nh\u00fan", title: "Cho robot nh\u00fan nh\u1ea3y", Icon: Activity },
+  {
+    mode: "bounce",
+    labelKey: "competencyKiosk.danceBounce",
+    titleKey: "competencyKiosk.danceBounceHint",
+    Icon: Activity,
+  },
   {
     mode: "wave",
-    label: "Qu\u01a1 tay",
-    title: "Cho robot qu\u01a1 tay thuy\u1ebft tr\u00ecnh",
+    labelKey: "competencyKiosk.danceWave",
+    titleKey: "competencyKiosk.danceWaveHint",
     Icon: Sparkles,
   },
-  { mode: "spin", label: "Xoay", title: "Cho robot xoay ngang", Icon: RotateCw },
+  {
+    mode: "spin",
+    labelKey: "competencyKiosk.danceSpin",
+    titleKey: "competencyKiosk.danceSpinHint",
+    Icon: RotateCw,
+  },
 ];
 
 type HoloboxThreeRobotPageProps = {
@@ -37,6 +48,7 @@ export function HoloboxThreeRobotPage({
   onNarrationStateChange,
   script,
 }: HoloboxThreeRobotPageProps) {
+  const { t } = useTranslation();
   const danceResetTimerRef = useRef<number | null>(null);
   const [showDanceControls, setShowDanceControls] = useState(false);
   const [activeDanceMode, setActiveDanceMode] = useState<ExperienceDayRobotDanceMode | null>(null);
@@ -70,7 +82,7 @@ export function HoloboxThreeRobotPage({
   return (
     <>
       <HoloboxExperienceRobotPreviewPage
-        ariaLabel="AI Holobox 3D"
+        ariaLabel={t("competencyKiosk.robotPreview")}
         audioUrl={audioUrl}
         embedded={embedded}
         enableNarration
@@ -81,18 +93,18 @@ export function HoloboxThreeRobotPage({
       {showDanceControls && !embedded ? (
         <div
           className="holobox-dance-controls"
-          aria-label="Robot dance controls"
+          aria-label={t("competencyKiosk.danceControls")}
           onPointerDown={(event) => event.stopPropagation()}>
-          {DANCE_CONTROLS.map(({ mode, label, title, Icon }) => (
+          {DANCE_CONTROLS.map(({ mode, labelKey, titleKey, Icon }) => (
             <button
               key={mode}
               type="button"
               className={`holobox-dance-button ${activeDanceMode === mode ? "is-active" : ""}`}
               aria-pressed={activeDanceMode === mode}
-              title={title}
+              title={t(titleKey)}
               onClick={() => triggerDance(mode)}>
               <Icon aria-hidden="true" size={18} strokeWidth={2.4} />
-              <span>{label}</span>
+              <span>{t(labelKey)}</span>
             </button>
           ))}
         </div>

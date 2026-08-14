@@ -349,10 +349,10 @@ function RoomReadyStep({
   roomUrl?: string | null;
   onJoinRoom: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const scheduledTime = booking.scheduledStart
-    ? new Date(booking.scheduledStart).toLocaleString("vi-VN", {
+    ? new Date(booking.scheduledStart).toLocaleString(i18n.resolvedLanguage || i18n.language, {
         hour: "2-digit",
         minute: "2-digit",
         weekday: "long",
@@ -452,7 +452,7 @@ function MentorSelectionStep({
   applicationDetailId: number;
   onSelectSuccess: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedMentor, setSelectedMentor] = useState<MentorResponse | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
@@ -556,7 +556,7 @@ function MentorSelectionStep({
                     </span>
                   </div>
                   <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white/90 backdrop-blur-sm">
-                    {mentor.totalSession || 0} buổi PV
+                    {t("userMentorReview.sessionCount", { count: mentor.totalSession || 0 })}
                   </span>
                 </div>
               </div>
@@ -594,7 +594,9 @@ function MentorSelectionStep({
                   </h3>
                   <p className="mt-0.5 flex items-center justify-center gap-1 truncate text-xs text-gray-500 dark:text-gray-400">
                     <Building2 className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{mentor.currentCompany || "Chưa cập nhật"}</span>
+                    <span className="truncate">
+                      {mentor.currentCompany || t("userMentorReview.notUpdated")}
+                    </span>
                   </p>
                 </div>
 
@@ -603,9 +605,15 @@ function MentorSelectionStep({
                   <div className="mt-2 flex justify-center">
                     <div className="rounded-full bg-emerald-50 px-2.5 py-0.5 dark:bg-emerald-900/20">
                       <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        {new Intl.NumberFormat("vi-VN").format(mentor.pricePerMinute)}đ
+                        {new Intl.NumberFormat(i18n.resolvedLanguage || i18n.language, {
+                          style: "currency",
+                          currency: "VND",
+                          maximumFractionDigits: 0,
+                        }).format(mentor.pricePerMinute)}
                       </span>
-                      <span className="text-[10px] text-emerald-500">/phút</span>
+                      <span className="text-[10px] text-emerald-500">
+                        {t("userMentorReview.perMinute")}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -641,7 +649,9 @@ function MentorSelectionStep({
                 <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-gray-400">
                   <span className="flex items-center gap-1">
                     <Briefcase className="h-3 w-3" />
-                    {mentor.yearsOfExperience || 0} năm KN
+                    {t("userMentorReview.experienceYears", {
+                      count: mentor.yearsOfExperience || 0,
+                    })}
                   </span>
                   {mentor.linkedInUrl && (
                     <a
@@ -665,7 +675,7 @@ function MentorSelectionStep({
                     handleSelectMentor(mentor);
                   }}>
                   <UserCheck className="h-3.5 w-3.5" />
-                  Chọn Mentor
+                  {t("userMentorReview.selectThisMentor")}
                 </Button>
               </div>
             </Card>
@@ -680,8 +690,12 @@ function MentorSelectionStep({
           <div className="relative bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 px-6 pt-6 pb-12 text-center text-white">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIi8+PC9zdmc+')] opacity-50" />
             <div className="relative">
-              <h2 className="text-base font-bold">Xác nhận lựa chọn</h2>
-              <p className="mt-0.5 text-xs text-white/70">Bạn sẽ chọn mentor này để phỏng vấn</p>
+              <h2 className="text-base font-bold">{t("userMentorReview.confirmSelectionTitle")}</h2>
+              <p className="mt-0.5 text-xs text-white/70">
+                {t("userMentorReview.confirmSelectionDesc", {
+                  mentorName: selectedMentor?.name || t("userMentorReview.mentor"),
+                })}
+              </p>
             </div>
           </div>
 
@@ -713,7 +727,7 @@ function MentorSelectionStep({
                 </p>
                 <p className="mt-0.5 flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                   <Building2 className="h-3 w-3" />
-                  {selectedMentor.currentCompany || "Chưa cập nhật"}
+                  {selectedMentor.currentCompany || t("userMentorReview.notUpdated")}
                 </p>
                 <div className="mt-2 flex items-center justify-center gap-3">
                   <div className="flex items-center gap-1 rounded-full bg-purple-50 px-2.5 py-1 dark:bg-purple-900/30">
@@ -723,7 +737,9 @@ function MentorSelectionStep({
                     </span>
                   </div>
                   <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-300">
-                    {selectedMentor.yearsOfExperience || 0} năm KN
+                    {t("userMentorReview.experienceYears", {
+                      count: selectedMentor.yearsOfExperience || 0,
+                    })}
                   </span>
                 </div>
               </div>
@@ -746,7 +762,7 @@ function MentorSelectionStep({
                 </svg>
               </div>
               <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
-                Sau khi xác nhận, bạn không thể thay đổi mentor khác trong lần này.
+                {t("userMentorReview.selectionWarning")}
               </p>
             </div>
 
@@ -756,7 +772,7 @@ function MentorSelectionStep({
                 variant="outline"
                 className="flex-1 rounded-xl"
                 onClick={() => setShowConfirmDialog(false)}>
-                Hủy bỏ
+                {t("common.cancel")}
               </Button>
               <Button
                 onClick={handleConfirmSelect}
@@ -765,10 +781,10 @@ function MentorSelectionStep({
                 {selectMentorMutation.isPending ? (
                   <>
                     <Spinner size="sm" tone="white" />
-                    <span>Đang xử lý...</span>
+                    <span>{t("common.processing")}</span>
                   </>
                 ) : (
-                  "Xác nhận"
+                  t("userMentorReview.confirmSelection")
                 )}
               </Button>
             </div>
@@ -784,9 +800,9 @@ function MentorSelectionStep({
 // ============================================================
 
 function OfflineConfirmedStep({ booking }: { booking: MentorInterviewBooking }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const scheduledTime = booking.scheduledStart
-    ? new Date(booking.scheduledStart).toLocaleString("vi-VN", {
+    ? new Date(booking.scheduledStart).toLocaleString(i18n.resolvedLanguage || i18n.language, {
         hour: "2-digit",
         minute: "2-digit",
         weekday: "long",
@@ -828,7 +844,6 @@ function OfflineConfirmedStep({ booking }: { booking: MentorInterviewBooking }) 
 function InProgressStep({
   roomUrl,
   sessionTiming,
-  sessionId,
   onJoinRoom,
 }: {
   roomUrl?: string;
@@ -840,7 +855,6 @@ function InProgressStep({
     durationSeconds1?: number | null;
     durationSeconds2?: number | null;
   } | null;
-  sessionId?: number;
   onJoinRoom?: () => void;
 }) {
   const { t } = useTranslation();
@@ -876,7 +890,6 @@ function InProgressStep({
             startTime2={sessionTiming.startTime2}
             endTime2={sessionTiming.endTime2}
             durationSeconds2={sessionTiming.durationSeconds2}
-            sessionId={sessionId}
           />
         )}
       </CardContent>
@@ -896,7 +909,6 @@ function SessionTimingPanel({
   startTime2,
   endTime2,
   durationSeconds2,
-  sessionId,
 }: {
   startTime1?: string | null;
   endTime1?: string | null;
@@ -904,7 +916,6 @@ function SessionTimingPanel({
   startTime2?: string | null;
   endTime2?: string | null;
   durationSeconds2?: number | null;
-  sessionId?: number;
 }) {
   const { t } = useTranslation();
   const hasAnyTiming = !!(startTime1 || startTime2);
@@ -912,7 +923,6 @@ function SessionTimingPanel({
     return (
       <p className="text-xs text-blue-600 dark:text-blue-400">
         {t("userMentorReview.timingNotRecorded")}
-        {sessionId ? ` (#${sessionId})` : ""}
       </p>
     );
   }
@@ -945,7 +955,7 @@ function TimingChip({
   endAt?: string | null;
   durationSeconds?: number | null;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (!startAt) {
     return (
       <div className="rounded-lg border border-blue-200 bg-white/60 px-3 py-2 text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
@@ -959,41 +969,45 @@ function TimingChip({
       <p className="font-semibold">{label}</p>
       <p>
         <span className="text-blue-500 dark:text-blue-400">{t("userMentorReview.joinedAt")}: </span>
-        {formatVnDateTime(startAt)}
+        {formatDateTimeForLocale(startAt, i18n.resolvedLanguage || i18n.language)}
       </p>
       {endAt && (
         <p>
           <span className="text-blue-500 dark:text-blue-400">{t("userMentorReview.leftAt")}: </span>
-          {formatVnDateTime(endAt)}
+          {formatDateTimeForLocale(endAt, i18n.resolvedLanguage || i18n.language)}
         </p>
       )}
       {typeof durationSeconds === "number" && (
         <p className="font-mono">
-          {t("userMentorReview.duration")}: {formatVnDuration(durationSeconds, t)}
+          {t("userMentorReview.duration")}: {formatDuration(durationSeconds, t)}
         </p>
       )}
     </div>
   );
 }
 
-function formatVnDuration(seconds: number, t: (key: string) => string): string {
+function formatDuration(seconds: number, t: (_key: string) => string): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-  if (h > 0) return `${h} ${t("hour")} ${m} ${t("minute")} ${s} ${t("general.second") || "giây"}`;
-  if (m > 0) return `${m} ${t("minute")} ${s} ${t("general.second") || "giây"}`;
-  return `${s} ${t("general.second") || "giây"}`;
+  if (h > 0) {
+    return `${h}${t("userMentorReview.hourShort")} ${m}${t("userMentorReview.minuteShort")} ${s}${t("userMentorReview.secondShort")}`;
+  }
+  if (m > 0) {
+    return `${m}${t("userMentorReview.minuteShort")} ${s}${t("userMentorReview.secondShort")}`;
+  }
+  return `${s}${t("userMentorReview.secondShort")}`;
 }
 
 /**
  * Backend records timestamps as naive "yyyy-MM-dd HH:mm:ss.SSS" in UTC+7.
  * Append the offset so `new Date(...)` parses to the intended instant.
  */
-function formatVnDateTime(input: string | null | undefined): string {
+function formatDateTimeForLocale(input: string | null | undefined, locale: string): string {
   if (!input) return "-";
   const parsed = new Date(input.includes("T") ? input : input.replace(" ", "T") + "+07:00");
   if (Number.isNaN(parsed.getTime())) return input;
-  return parsed.toLocaleString("vi-VN", {
+  return parsed.toLocaleString(locale, {
     timeZone: "Asia/Ho_Chi_Minh",
     hour: "2-digit",
     minute: "2-digit",
@@ -1925,7 +1939,6 @@ export function ApplicationMentorReviewPage() {
           <InProgressStep
             roomUrl={roomUrl ?? undefined}
             sessionTiming={sessionTiming}
-            sessionId={bookingSnapshot?.sessionId}
             onJoinRoom={handleJoinRoom}
           />
         )}

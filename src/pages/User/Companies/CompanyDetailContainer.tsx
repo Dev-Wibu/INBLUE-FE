@@ -195,7 +195,7 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
               <div className="mt-1.5 flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
                 <span className="inline-flex items-center gap-1 font-medium">
                   <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                  {company.location || "TP. Hồ Chí Minh"}
+                  {company.location || t("enterpriseCompanysearchpage.noCompanyLocation")}
                 </span>
                 <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                 <span className="inline-flex items-center gap-1 font-semibold text-indigo-600 dark:text-indigo-400">
@@ -218,7 +218,9 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
               <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                 {openJobs.length}
               </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">Vị trí mở</span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                {t("enterpriseCompanydetail.openPositions")}
+              </span>
             </div>
           </div>
         </div>
@@ -254,7 +256,9 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
 
             {/* Level Chips */}
             <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-[11px] font-semibold text-slate-400">Level:</span>
+              <span className="mr-1 text-[11px] font-semibold text-slate-400">
+                {t("common.level")}:
+              </span>
               <button
                 type="button"
                 onClick={() => setSelectedLevel(null)}
@@ -263,7 +267,7 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
                     ? "border-indigo-600 bg-indigo-600 text-white"
                     : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-400"
                 }`}>
-                Tất cả
+                {t("common.all")}
               </button>
               {levels.map((lvl) => (
                 <button

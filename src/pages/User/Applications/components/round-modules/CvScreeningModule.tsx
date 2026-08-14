@@ -213,17 +213,13 @@ export function CvScreeningModule({
 
   // Strict check if real AI feedback or submission exists
   const hasAiData = Boolean(
-    fileUrl ||
-    detail?.aiFeedback ||
-    detail?.aiScore !== undefined ||
-    detail?.finalScore !== undefined ||
-    isCompleted
+    detail?.aiFeedback || detail?.aiScore != null || detail?.finalScore != null
   );
 
   // HR has data only when hrScore is actually graded by HR
   const hasHrData = detail?.hrScore !== undefined && detail?.hrScore !== null;
 
-  const aiScoreVal = detail?.aiScore ?? detail?.finalScore ?? (isCompleted ? 85 : 0);
+  const aiScoreVal = detail?.aiScore ?? detail?.finalScore ?? 0;
   const hrScoreVal = hasHrData ? (detail?.hrScore ?? 0) : 0;
 
   const extraMetrics = aiFeedback?.extraMetrics;
@@ -245,13 +241,7 @@ export function CvScreeningModule({
   // Parse Requirements string into clean individual line items
   const parsedRequirements = useMemo(() => {
     const raw = jdInfo?.requirements || jdInfo?.description || "";
-    if (!raw.trim()) {
-      return [
-        "1+ năm kinh nghiệm lập trình Java / Spring Boot",
-        "Thành thạo REST API, SQL và thiết kế Database",
-        "Có tư duy thiết kế hệ thống và làm việc nhóm tốt",
-      ];
-    }
+    if (!raw.trim()) return [];
     return raw
       .split(/\r?\n/)
       .map((line) => line.replace(/^[\s•*-]+/, "").trim())
@@ -434,7 +424,7 @@ export function CvScreeningModule({
                 <div className="relative h-[600px] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-inner dark:border-slate-800 dark:bg-slate-950">
                   <iframe
                     src={`${fileUrl}#toolbar=0&navpanes=0&view=FitH`}
-                    title="Resume Preview"
+                    title={t("userApplication.cvScreening.resumePreview")}
                     className="h-full w-full rounded-xl border-none bg-white dark:bg-slate-950"
                   />
                 </div>

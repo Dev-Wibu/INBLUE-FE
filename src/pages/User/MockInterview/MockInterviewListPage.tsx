@@ -18,7 +18,6 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useUserSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate, formatTime, toTimestamp } from "@/lib/formatting";
-import { getSessionMentorId } from "@/lib/session-mentor";
 import { getMockInterviewStatusBadge } from "@/lib/status-utils";
 import {
   Calendar,
@@ -91,17 +90,8 @@ export function MockInterviewListPage() {
         (typeof session.id === "number" ? session.id : 0);
       return {
         id: session.id,
-        title:
-          session.roomName ||
-          t("common.sessionVar0", {
-            var_0: session.id,
-          }),
-        mentorName: (() => {
-          const mentorId = getSessionMentorId(session);
-          return t("common.mentorWithId", {
-            id: mentorId ?? t("common.noDataAvailable"),
-          });
-        })(),
+        title: session.roomName || t("common.mentorInterview"),
+        mentorName: t("common.mentor"),
         date: session.joinTime
           ? formatDate(session.joinTime, t("common.noDataAvailable"))
           : formatDate(session.startTime1, t("common.noDataAvailable")),
@@ -274,12 +264,7 @@ export function MockInterviewListPage() {
 
                 {/* Content */}
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-foreground text-lg font-semibold">
-                    {interview.title}
-                    <span className="text-muted-foreground ml-2 text-sm font-normal">
-                      (ID: {interview.id})
-                    </span>
-                  </h3>
+                  <h3 className="text-foreground text-lg font-semibold">{interview.title}</h3>
 
                   {/* Metadata */}
                   <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-4 text-sm">

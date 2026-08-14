@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
@@ -17,9 +18,6 @@ const MIN_VERTICAL_OFFSET = -1.1;
 const MAX_VERTICAL_OFFSET = 0.75;
 const VERTICAL_DRAG_SENSITIVITY = 0.008;
 const OUTRO_DURATION = 2.35;
-const DEFAULT_SCRIPT =
-  "Xin ch\u00e0o. T\u00f4i l\u00e0 tr\u1ee3 l\u00fd AI c\u1ee7a Inblue. T\u00f4i \u0111ang tr\u00ecnh b\u00e0y k\u1ebft qu\u1ea3 \u0111\u00e1nh gi\u00e1 trong kh\u00f4ng gian Holobox.";
-
 export const EXPERIENCE_DAY_ROBOT_DANCE_EVENT = "holobox:robot-dance";
 export type ExperienceDayRobotDanceMode = "bounce" | "wave" | "spin";
 
@@ -604,7 +602,7 @@ function disposeObjectResources(root: THREE.Object3D) {
 }
 
 export function HoloboxExperienceRobotPreviewPage({
-  ariaLabel = "Experience Day robot Three.js preview",
+  ariaLabel,
   audioUrl: audioUrlProp,
   embedded = false,
   enableNarration = false,
@@ -612,7 +610,11 @@ export function HoloboxExperienceRobotPreviewPage({
   onRobotActivate,
   script,
 }: HoloboxExperienceRobotPreviewPageProps = {}) {
+  const { t, i18n } = useTranslation();
   const viewportRef = useRef<HTMLDivElement>(null);
+  const resolvedAriaLabel = ariaLabel || t("competencyKiosk.robotPreview");
+  const defaultScript = t("competencyKiosk.defaultExperienceSpeech");
+  const speechLanguage = i18n.resolvedLanguage || i18n.language || "en";
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -810,7 +812,7 @@ export function HoloboxExperienceRobotPreviewPage({
 
     const query = new URLSearchParams(window.location.search);
     const speechScript =
-      script?.trim() || query.get("script")?.trim() || query.get("text")?.trim() || DEFAULT_SCRIPT;
+      script?.trim() || query.get("script")?.trim() || query.get("text")?.trim() || defaultScript;
     const audioUrl = enableNarration ? audioUrlProp?.trim() || query.get("audio")?.trim() : null;
     const audio = new Audio();
     audio.preload = "auto";
@@ -873,12 +875,14 @@ export function HoloboxExperienceRobotPreviewPage({
         return;
       }
       const utterance = new SpeechSynthesisUtterance(speechScript);
-      utterance.lang = "vi-VN";
+      utterance.lang = speechLanguage;
       utterance.rate = 0.94;
       utterance.pitch = 1.03;
       const voice = window.speechSynthesis
         .getVoices()
-        .find((item) => item.lang.toLowerCase().startsWith("vi"));
+        .find((item) =>
+          item.lang.toLowerCase().startsWith(speechLanguage.split("-")[0].toLowerCase())
+        );
       if (voice) utterance.voice = voice;
       utterance.onstart = () => {
         motionState = "narrating";
@@ -1462,12 +1466,21 @@ export function HoloboxExperienceRobotPreviewPage({
       delete viewport.dataset.modelState;
       viewport.removeAttribute("aria-busy");
     };
-  }, [audioUrlProp, embedded, enableNarration, onNarrationChange, onRobotActivate, script]);
+  }, [
+    audioUrlProp,
+    defaultScript,
+    embedded,
+    enableNarration,
+    onNarrationChange,
+    onRobotActivate,
+    script,
+    speechLanguage,
+  ]);
 
   return (
     <main
       className={embedded ? "holobox-experience-robot-embedded" : "holobox-ai-only-page"}
-      aria-label={ariaLabel}>
+      aria-label={resolvedAriaLabel}>
       <div
         ref={viewportRef}
         className={`holobox-three-viewport ${embedded ? "holobox-three-viewport--embedded" : ""}`}

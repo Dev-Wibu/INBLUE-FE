@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserSchedule } from "@/hooks/useUserSchedule";
 import { formatDateTime, toVietnamDateKey } from "@/lib/formatting";
-import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
@@ -47,9 +46,9 @@ function AgendaSessionItem({
   onWriteReview,
 }: {
   item: UserCalendarSession;
-  onOpenDetail: (item: UserCalendarSession) => void;
-  onOpenRoom: (item: UserCalendarSession) => void;
-  onWriteReview: (item: UserCalendarSession) => void;
+  onOpenDetail: (_item: UserCalendarSession) => void;
+  onOpenRoom: (_item: UserCalendarSession) => void;
+  onWriteReview: (_item: UserCalendarSession) => void;
 }) {
   const { t } = useTranslation();
   const status = getSessionStatusConfig(item.session.status);
@@ -62,10 +61,10 @@ function AgendaSessionItem({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
-            {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
+            {item.session.roomName || t("common.mentorInterview")}
           </p>
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            {t("common.mentorWithId", { id: getSessionMentorId(item.session) ?? "-" })}
+            {t("common.mentor")}
           </p>
         </div>
         <Badge className={cn("shrink-0 border-0 text-[10px] font-semibold", status.badgeClass)}>
@@ -113,7 +112,7 @@ function CalendarSessionEntry({
   onOpen,
 }: {
   item: UserCalendarSession;
-  onOpen: (item: UserCalendarSession) => void;
+  onOpen: (_item: UserCalendarSession) => void;
 }) {
   const { t } = useTranslation();
   const status = getSessionStatusConfig(item.session.status);
@@ -127,7 +126,7 @@ function CalendarSessionEntry({
         {formatCalendarTime(item.session.joinTime)}
       </span>
       <span className="flex-1 truncate font-semibold text-slate-900 dark:text-slate-100">
-        {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
+        {item.session.roomName || t("common.mentorInterview")}
       </span>
       <Badge className={cn("border-0 px-1.5 py-0 text-[10px]", status.badgeClass)}>
         {status.label}
@@ -512,7 +511,7 @@ export function OverviewPage() {
                               {formatCalendarTime(item.session.joinTime)}
                             </span>
                             <span className="truncate font-semibold">
-                              {item.session.roomName || `#${item.session.id}`}
+                              {item.session.roomName || t("common.mentorInterview")}
                             </span>
                           </button>
                         );
@@ -645,8 +644,7 @@ export function OverviewPage() {
                     className="flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
                     <div className="min-w-0">
                       <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
-                        {item.session.roomName ||
-                          t("common.sessionVar0", { var_0: item.session.id })}
+                        {item.session.roomName || t("common.mentorInterview")}
                       </p>
                       <p className="text-[10px] text-slate-500 dark:text-slate-400">
                         {formatDateTime(item.session.joinTime)}

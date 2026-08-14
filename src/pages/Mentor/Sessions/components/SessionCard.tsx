@@ -112,11 +112,7 @@ export function SessionCard({
     session.roomUrl !== "OFFLINE" &&
     isTimeReached;
 
-  const sessionTitle =
-    session.roomName ||
-    t("common.sessionVar0", {
-      var_0: session.id,
-    });
+  const sessionTitle = session.roomName || t("common.interviewSession");
 
   const msUntilJoin = joinTimestamp ? joinTimestamp - now : null;
 
@@ -194,9 +190,7 @@ export function SessionCard({
             </h3>
             <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
               <User className="h-3 w-3" aria-hidden />
-              <span>
-                {t("common.student")} {session.userId}
-              </span>
+              <span>{t("common.student")}</span>
             </p>
           </div>
         </div>
@@ -289,7 +283,7 @@ export function SessionCard({
           <span className="inline-flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" aria-hidden />
             <span className="font-medium text-slate-700 dark:text-slate-200">
-              {t("common.session2")} {session.id}
+              {t("common.interviewSession")}
             </span>
           </span>
         )}

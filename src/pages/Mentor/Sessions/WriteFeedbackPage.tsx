@@ -228,12 +228,7 @@ export function WriteFeedbackPage() {
             {isEdit ? t("mentorSessions.editReview1") : t("mentorSessions.writeReviews")}
           </span>
           <span className="text-slate-300 dark:text-slate-600">·</span>
-          <span>
-            {session.roomName ||
-              t("common.sessionVar0", {
-                var_0: session.id,
-              })}
-          </span>
+          <span>{session.roomName || t("common.interviewSession")}</span>
         </span>
       </div>
 

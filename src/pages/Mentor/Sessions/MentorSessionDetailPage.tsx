@@ -359,7 +359,7 @@ export function MentorSessionDetailPage() {
                 </Avatar>
                 <div>
                   <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                    {t("common.interviewSession")} #{session.id}
+                    {t("common.interviewSession")}
                   </p>
                   <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                     {studentInfo?.name || t("common.students")}
@@ -367,10 +367,7 @@ export function MentorSessionDetailPage() {
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                     <span>{session.roomName || "—"}</span>
                     <span className="text-slate-300 dark:text-slate-600">·</span>
-                    <span>
-                      {mentorInfo?.name ||
-                        (mentorId != null ? t("common.mentorWithId", { id: mentorId }) : "—")}
-                    </span>
+                    <span>{mentorInfo?.name || t("common.mentor")}</span>
                   </div>
                 </div>
               </div>
@@ -412,8 +409,8 @@ export function MentorSessionDetailPage() {
             />
             <KpiTile
               icon={Hash}
-              label={t("common.sessionCode")}
-              value={`#${session.id || "—"}`}
+              label={t("common.roomName1")}
+              value={session.roomName || t("common.interviewSession")}
               accent="sky"
             />
           </div>

@@ -49,55 +49,46 @@ interface QuickSearchResult {
 
 const STATIC_NAVIGATION: Array<{
   labelKey: string;
-  defaultLabel: string;
   to: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
   {
     labelKey: "common.home",
-    defaultLabel: "Trang chủ",
     to: "/mentor?tab=homeFeed",
     icon: Newspaper,
   },
   {
     labelKey: "common.overview",
-    defaultLabel: "Tổng quan",
     to: "/mentor?tab=overview",
     icon: LayoutDashboard,
   },
   {
     labelKey: "common.interviewSession",
-    defaultLabel: "Buổi phỏng vấn",
     to: "/mentor?tab=sessions",
     icon: Calendar,
   },
   {
     labelKey: "common.students",
-    defaultLabel: "Sinh viên",
     to: "/mentor?tab=students",
     icon: Users,
   },
   {
     labelKey: "mentorMentordashboard.reviewSent",
-    defaultLabel: "Đánh giá đã gửi",
     to: "/mentor?tab=reviews",
     icon: Star,
   },
   {
     labelKey: "common.responseReceived",
-    defaultLabel: "Phản hồi nhận được",
     to: "/mentor?tab=feedback",
     icon: MessageSquare,
   },
   {
     labelKey: "common.messages",
-    defaultLabel: "Tin nhắn",
     to: "/mentor?tab=messenger",
     icon: MessageSquare,
   },
   {
     labelKey: "common.account",
-    defaultLabel: "Tài khoản",
     to: "/mentor?tab=account",
     icon: UserCircle,
   },
@@ -127,18 +118,18 @@ export function MentorHeader({ title, parentTitle, category, onToggleSidebar }: 
     if (!debouncedSearch.trim())
       return STATIC_NAVIGATION.map<QuickSearchResult>((n) => ({
         id: n.to,
-        label: t(n.labelKey, n.defaultLabel),
+        label: t(n.labelKey),
         type: "navigation",
         to: n.to,
       }));
 
     const q = debouncedSearch.toLowerCase();
     return STATIC_NAVIGATION.filter((n) => {
-      const label = t(n.labelKey, n.defaultLabel);
+      const label = t(n.labelKey);
       return label.toLowerCase().includes(q);
     }).map<QuickSearchResult>((n) => ({
       id: n.to,
-      label: t(n.labelKey, n.defaultLabel),
+      label: t(n.labelKey),
       type: "navigation",
       to: n.to,
     }));

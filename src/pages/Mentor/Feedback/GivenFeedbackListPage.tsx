@@ -325,10 +325,7 @@ export function GivenFeedbackListPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900">
-                      <TableHead className="w-[80px] pl-5 font-semibold text-slate-700 dark:text-slate-200">
-                        {t("common.id")}
-                      </TableHead>
-                      <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                      <TableHead className="min-w-[200px] pl-5 font-semibold text-slate-700 dark:text-slate-200">
                         <SortButton {...getSortProps("studentNameSortValue")}>
                           {t("common.student")}
                         </SortButton>
@@ -354,7 +351,7 @@ export function GivenFeedbackListPage() {
                   <TableBody>
                     {pageData.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-48 text-center">
+                        <TableCell colSpan={5} className="h-48 text-center">
                           <p className="text-sm text-slate-500">{t("common.noResponseYet")}</p>
                         </TableCell>
                       </TableRow>
@@ -366,11 +363,6 @@ export function GivenFeedbackListPage() {
                             key={feedback.id}
                             className="border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/80">
                             <TableCell className="py-3.5 pl-5">
-                              <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
-                                #{feedback.id}
-                              </span>
-                            </TableCell>
-                            <TableCell className="px-4 py-3.5">
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9 shrink-0 rounded-lg border border-slate-100 dark:border-slate-800">
                                   <AvatarImage
@@ -383,7 +375,7 @@ export function GivenFeedbackListPage() {
                                 </Avatar>
                                 <div className="min-w-0">
                                   <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                                    {feedback.user?.name || `Feedback #${feedback.id}`}
+                                    {feedback.user?.name || t("common.student")}
                                   </p>
                                   {feedback.user?.email && (
                                     <p className="truncate text-xs text-slate-500 dark:text-slate-400">

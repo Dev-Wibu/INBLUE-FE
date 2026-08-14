@@ -311,7 +311,7 @@ export function MentorSessionReviewViewPage() {
             {t("mentorSessions.reviewOfSession")}
           </span>
           <span className="text-slate-300 dark:text-slate-600">·</span>
-          <span className="font-mono">#{sessionId}</span>
+          <span>{session.roomName || t("common.interviewSession")}</span>
         </span>
         <Button
           variant="outline"
@@ -389,7 +389,7 @@ export function MentorSessionReviewViewPage() {
                   <span className="text-slate-300 dark:text-slate-600">·</span>
                   <span className="inline-flex items-center gap-1">
                     <Calendar className="h-3 w-3" aria-hidden />
-                    {session.roomName || `#${sessionId}`}
+                    {session.roomName || t("common.interviewSession")}
                   </span>
                 </div>
               </div>
@@ -507,7 +507,7 @@ export function MentorSessionReviewViewPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-mono text-[10px] font-semibold tracking-[0.18em] text-slate-500 uppercase dark:text-slate-400">
-                        Step {cfg.step}
+                        {t("common.stepNumber", { number: cfg.step })}
                       </p>
                       <h3 className="text-base font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100">
                         {t(cfg.titleKey)}
@@ -606,15 +606,6 @@ export function MentorSessionReviewViewPage() {
         <PanelSurface variant="flat" className="p-4 sm:p-5">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
             <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-              <Calendar className="h-3.5 w-3.5" aria-hidden />
-              <span className="text-[10px] font-semibold tracking-wide uppercase opacity-70">
-                {t("common.sessionCode1")}
-              </span>
-              <span className="font-mono text-sm font-medium text-slate-700 dark:text-slate-200">
-                #{sessionId}
-              </span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
               <User className="h-3.5 w-3.5" aria-hidden />
               <span className="text-[10px] font-semibold tracking-wide uppercase opacity-70">
                 {t("mentorReviews.candidate")}
@@ -626,7 +617,7 @@ export function MentorSessionReviewViewPage() {
                 {t("common.roomName1")}
               </span>
               <span className="font-medium text-slate-700 dark:text-slate-200">
-                {session.roomName || t("common.sessionVar0", { var_0: sessionId })}
+                {session.roomName || t("common.interviewSession")}
               </span>
             </span>
           </div>

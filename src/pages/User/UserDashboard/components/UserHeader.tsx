@@ -53,49 +53,42 @@ interface QuickSearchResult {
 
 const STATIC_NAVIGATION: Array<{
   labelKey: string;
-  defaultLabel: string;
   to: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { labelKey: "common.home", defaultLabel: "Trang chủ", to: "/user?tab=homeFeed", icon: Newspaper },
+  { labelKey: "common.home", to: "/user?tab=homeFeed", icon: Newspaper },
   {
     labelKey: "userDashboard.jobSearch",
-    defaultLabel: "Việc làm",
     to: "/user?tab=jobSearch",
     icon: Search,
   },
   {
     labelKey: "common.companies",
-    defaultLabel: "Công ty",
     to: "/user?tab=companies",
     icon: Building2,
   },
   {
     labelKey: "common.overview",
-    defaultLabel: "Tổng quan",
     to: "/user?tab=overview",
     icon: LayoutDashboard,
   },
-  { labelKey: "common.mentors", defaultLabel: "Mentor", to: "/user?tab=mentors", icon: UserIcon },
+  { labelKey: "common.mentors", to: "/user?tab=mentors", icon: UserIcon },
   {
     labelKey: "common.application",
-    defaultLabel: "Ứng tuyển",
     to: "/user?tab=applicationHistory",
     icon: Briefcase,
   },
   {
     labelKey: "common.aiInterview1",
-    defaultLabel: "Phỏng vấn AI",
     to: "/user?tab=aiInterview",
     icon: Bot,
   },
   {
     labelKey: "common.messages",
-    defaultLabel: "Tin nhắn",
     to: "/user?tab=messenger",
     icon: MessageSquare,
   },
-  { labelKey: "common.account", defaultLabel: "Tài khoản", to: "/user/account", icon: UserCircle },
+  { labelKey: "common.account", to: "/user/account", icon: UserCircle },
 ];
 
 export function UserHeader({ title, parentTitle, category, onToggleSidebar }: UserHeaderProps) {
@@ -206,11 +199,11 @@ export function UserHeader({ title, parentTitle, category, onToggleSidebar }: Us
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase();
     return STATIC_NAVIGATION.filter((n) => {
-      const label = t(n.labelKey, n.defaultLabel);
+      const label = t(n.labelKey);
       return label.toLowerCase().includes(q);
     }).map<QuickSearchResult>((n) => ({
       id: n.to,
-      label: t(n.labelKey, n.defaultLabel),
+      label: t(n.labelKey),
       type: "navigation",
       to: n.to,
     }));

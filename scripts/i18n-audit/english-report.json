@@ -1424,22 +1424,6 @@
     "text": "KB"
   },
   {
-    "file": "src/components/user/MentorInterviewHub.tsx",
-    "line": 385,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Online"
-  },
-  {
-    "file": "src/components/user/MentorInterviewHub.tsx",
-    "line": 397,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Offline"
-  },
-  {
     "file": "src/pages/Admin/AdminDashboard/AdminDashboardPage.tsx",
     "line": 281,
     "character": 26,
@@ -2440,16 +2424,8 @@
     "text": "50K+"
   },
   {
-    "file": "src/pages/Mentor/Account/MentorAccountTabs/MentorProfileSection.tsx",
-    "line": 122,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "ID:"
-  },
-  {
     "file": "src/pages/Mentor/MentorDashboard/components/MentorHeader.tsx",
-    "line": 229,
+    "line": 220,
     "character": 56,
     "type": "JsxText",
     "category": "english",
@@ -2486,54 +2462,6 @@
     "type": "JsxText",
     "category": "english",
     "text": "STAR"
-  },
-  {
-    "file": "src/pages/Mentor/Sessions/MentorSessionReviewViewPage.tsx",
-    "line": 510,
-    "character": 25,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Step"
-  },
-  {
-    "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 667,
-    "character": 62,
-    "type": "JsxText",
-    "category": "english",
-    "text": "In"
-  },
-  {
-    "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 672,
-    "character": 64,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Out"
-  },
-  {
-    "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 678,
-    "character": 64,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Duration"
-  },
-  {
-    "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 680,
-    "character": 49,
-    "type": "JsxText",
-    "category": "english",
-    "text": "m"
-  },
-  {
-    "file": "src/pages/Mentor/Sessions/MentorSessionRoomPage.tsx",
-    "line": 680,
-    "character": 73,
-    "type": "JsxText",
-    "category": "english",
-    "text": "s"
   },
   {
     "file": "src/pages/Staff/Account/StaffAccountPage.tsx",
@@ -2825,22 +2753,6 @@
   },
   {
     "file": "src/pages/User/Account/AccountTabs/ProfileEditTab.tsx",
-    "line": 106,
-    "character": 19,
-    "type": "JsxAttribute[alt]",
-    "category": "english",
-    "text": "avatar"
-  },
-  {
-    "file": "src/pages/User/Account/AccountTabs/ProfileEditTab.tsx",
-    "line": 154,
-    "character": 24,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Email"
-  },
-  {
-    "file": "src/pages/User/Account/AccountTabs/ProfileEditTab.tsx",
     "line": 177,
     "character": 48,
     "type": "JsxText",
@@ -2864,30 +2776,6 @@
     "text": "INBLUE AI Platform • v1.2.0"
   },
   {
-    "file": "src/pages/User/Account/CandidateProfile/index.tsx",
-    "line": 197,
-    "character": 32,
-    "type": "JsxAttribute[placeholder]",
-    "category": "english",
-    "text": "Select a profile"
-  },
-  {
-    "file": "src/pages/User/AIInterview/AIInterviewListPage.tsx",
-    "line": 322,
-    "character": 29,
-    "type": "JsxText",
-    "category": "english",
-    "text": "SESSION #"
-  },
-  {
-    "file": "src/pages/User/AIInterview/AIInterviewListPage.tsx",
-    "line": 448,
-    "character": 85,
-    "type": "JsxText",
-    "category": "english",
-    "text": "#ID"
-  },
-  {
     "file": "src/pages/User/AIInterview/AIInterviewSession/InterviewHeader.tsx",
     "line": 119,
     "character": 17,
@@ -2905,7 +2793,7 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationMentorReviewPage.tsx",
-    "line": 654,
+    "line": 664,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2913,7 +2801,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 883,
+    "line": 885,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2921,7 +2809,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 886,
+    "line": 888,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2929,7 +2817,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 889,
+    "line": 891,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2937,7 +2825,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 892,
+    "line": 894,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2952,40 +2840,8 @@
     "text": "GPA:"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 1407,
-    "character": 74,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Senior Tip:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 1903,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "INBLUE AI Evaluator"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 2212,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Session ID:"
-  },
-  {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 677,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "AI Code Review Evaluator is running..."
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1122,
+    "line": 1128,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -2993,7 +2849,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1130,
+    "line": 1136,
     "character": 19,
     "type": "JsxText",
     "category": "english",
@@ -3001,79 +2857,15 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1138,
+    "line": 1144,
     "character": 19,
     "type": "JsxText",
     "category": "english",
     "text": "INFO"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1975,
-    "character": 74,
-    "type": "JsxText",
-    "category": "english",
-    "text": "AI vs HR"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1979,
-    "character": 52,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "AI Score"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1982,
-    "character": 17,
-    "type": "JsxAttribute[label]",
-    "category": "english",
-    "text": "HR Score"
-  },
-  {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 835,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "● Sandbox Grader"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 869,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "chars"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 932,
-    "character": 58,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Tests"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1280,
-    "character": 80,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Input:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1286,
-    "character": 80,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Output:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1477,
+    "line": 1493,
     "character": 51,
     "type": "JsxText",
     "category": "english",
@@ -3081,7 +2873,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1483,
+    "line": 1499,
     "character": 44,
     "type": "JsxText",
     "category": "english",
@@ -3089,7 +2881,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1668,
+    "line": 1684,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -3097,23 +2889,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1677,
-    "character": 48,
-    "type": "JsxText",
-    "category": "english",
-    "text": "lines ·"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 1677,
-    "character": 77,
-    "type": "JsxText",
-    "category": "english",
-    "text": "chars"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2006,
+    "line": 2023,
     "character": 46,
     "type": "JsxText",
     "category": "english",
@@ -3121,15 +2897,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2057,
-    "character": 25,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Case"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2060,
+    "line": 2077,
     "character": 43,
     "type": "JsxText",
     "category": "english",
@@ -3137,27 +2905,11 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2075,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Testcase #"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
-    "line": 2087,
-    "character": 73,
+    "line": 2105,
+    "character": 62,
     "type": "JsxText",
     "category": "english",
     "text": "ms"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
-    "line": 437,
-    "character": 21,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "Resume Preview"
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
@@ -3169,22 +2921,6 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 474,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "● Interactive Editor"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 518,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Subject:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
     "line": 554,
     "character": 23,
     "type": "JsxText",
@@ -3192,40 +2928,8 @@
     "text": "Sans Serif"
   },
   {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 563,
-    "character": 74,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Live Draft"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 596,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "#APP-"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 978,
-    "character": 25,
-    "type": "JsxText",
-    "category": "english",
-    "text": "From:"
-  },
-  {
-    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 994,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Subject:"
-  },
-  {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1237,
+    "line": 1241,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -3233,7 +2937,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1400,
+    "line": 1408,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -3241,7 +2945,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1400,
+    "line": 1408,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -3249,7 +2953,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1419,
+    "line": 1427,
     "character": 27,
     "type": "JsxText",
     "category": "english",
@@ -3257,7 +2961,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2408,
+    "line": 2426,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -3265,23 +2969,15 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2408,
+    "line": 2426,
     "character": 42,
     "type": "JsxText",
     "category": "english",
     "text": "&rdquo;"
   },
   {
-    "file": "src/pages/User/Companies/CompanyDetailContainer.tsx",
-    "line": 257,
-    "character": 79,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Level:"
-  },
-  {
     "file": "src/pages/User/Feedback/FeedbackDetailPage.tsx",
-    "line": 334,
+    "line": 328,
     "character": 57,
     "type": "JsxText",
     "category": "english",
@@ -3321,7 +3017,7 @@
   },
   {
     "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 75,
+    "line": 74,
     "character": 90,
     "type": "JsxText",
     "category": "english",
@@ -3329,63 +3025,7 @@
   },
   {
     "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 76,
-    "character": 49,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Holobox competency experience"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 83,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Kiosk ready"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 88,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Start over"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 155,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "View assessment results"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 158,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Discover your potential."
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 161,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Enter the email used during the hiring journey so Holobox can display and narrate your\r\n          competency summary."
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 169,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Candidate email"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 179,
+    "line": 178,
     "character": 17,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -3393,283 +3033,11 @@
   },
   {
     "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 205,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Your information is only used to find the correct assessment."
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 215,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Holobox flow"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 236,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Tap to begin · The experience takes about 2 minutes"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 266,
-    "character": 9,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Change email"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 271,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Found"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 271,
-    "character": 38,
-    "type": "JsxText",
-    "category": "english",
-    "text": "role"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 274,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Choose a role to explore"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 277,
-    "character": 13,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Results for"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 281,
-    "character": 42,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Select a job title to continue"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 306,
-    "character": 41,
-    "type": "JsxText",
-    "category": "english",
-    "text": "· Application #"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 312,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Overall score"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 514,
-    "character": 55,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Inblue / Holobox theatre"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 515,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Immersive competency workspace"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 532,
-    "character": 17,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "Exit full mode"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 543,
-    "character": 11,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Back to applications"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 559,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Score"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 572,
-    "character": 19,
-    "type": "JsxAttribute[title]",
-    "category": "english",
-    "text": "Full mode"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 609,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "AI operator"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 611,
-    "character": 25,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Speaking simulation"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 668,
-    "character": 53,
-    "type": "JsxText",
-    "category": "english",
-    "text": "signals"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 768,
+    "line": 801,
     "character": 43,
     "type": "JsxText",
     "category": "english",
     "text": "&middot;"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 777,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "AI operator feed"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 783,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "The center operator is ready to narrate this dimension."
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 795,
-    "character": 58,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Behavioral skills"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 797,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "What was observed throughout the assessment"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 819,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Source:"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 824,
-    "character": 55,
-    "type": "JsxText",
-    "category": "english",
-    "text": "No behavioral data available."
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 900,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "AI journey narrative"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 902,
-    "character": 71,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Competency story"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 905,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Journey summary"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 934,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Next moves"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 937,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Development recommendations"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 951,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Target:"
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 958,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "No detailed recommendations are available for this application."
-  },
-  {
-    "file": "src/pages/User/Kiosk/CompetencyKioskPage.tsx",
-    "line": 974,
-    "character": 9,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Back to applications"
   },
   {
     "file": "src/pages/User/MentorList/components/MentorListHero.tsx",
@@ -3680,56 +3048,8 @@
     "text": "Mentor"
   },
   {
-    "file": "src/pages/User/MockInterview/MockInterviewListPage.tsx",
-    "line": 280,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "(ID:"
-  },
-  {
-    "file": "src/pages/User/Sessions/StudentSessionRoomPage.tsx",
-    "line": 671,
-    "character": 62,
-    "type": "JsxText",
-    "category": "english",
-    "text": "In"
-  },
-  {
-    "file": "src/pages/User/Sessions/StudentSessionRoomPage.tsx",
-    "line": 676,
-    "character": 64,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Out"
-  },
-  {
-    "file": "src/pages/User/Sessions/StudentSessionRoomPage.tsx",
-    "line": 682,
-    "character": 64,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Duration"
-  },
-  {
-    "file": "src/pages/User/Sessions/StudentSessionRoomPage.tsx",
-    "line": 684,
-    "character": 49,
-    "type": "JsxText",
-    "category": "english",
-    "text": "m"
-  },
-  {
-    "file": "src/pages/User/Sessions/StudentSessionRoomPage.tsx",
-    "line": 684,
-    "character": 73,
-    "type": "JsxText",
-    "category": "english",
-    "text": "s"
-  },
-  {
     "file": "src/pages/User/UserDashboard/components/UserHeader.tsx",
-    "line": 303,
+    "line": 296,
     "character": 56,
     "type": "JsxText",
     "category": "english",

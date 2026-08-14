@@ -48,7 +48,6 @@ import {
   Calendar,
   Clock,
   CreditCard,
-  Hash,
   Loader2,
   MessageSquare,
   Sparkles,
@@ -637,21 +636,14 @@ export function SessionDetailPage() {
                   <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                     {t("common.interviewSession")}
                   </span>
-                  <span className="text-slate-300 dark:text-slate-600">·</span>
-                  <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                    #{session.id}
-                  </span>
                 </div>
                 <h1 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-slate-100">
-                  {session.roomName || t("common.sessionVar0", { var_0: session.id })}
+                  {session.roomName || t("common.interviewSession")}
                 </h1>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                   <span className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
                     <User className="h-3.5 w-3.5 text-slate-400" />
-                    {mentorInfo?.name ||
-                      (mentorId > 0
-                        ? t("common.mentorWithId", { id: mentorId })
-                        : t("userMockinterview.notDetermined"))}
+                    {mentorInfo?.name || t("userMockinterview.notDetermined")}
                   </span>
                   <span className="text-slate-300 dark:text-slate-600">·</span>
                   <span className="flex items-center gap-1.5">
@@ -695,7 +687,7 @@ export function SessionDetailPage() {
         variants={gridStagger}
         initial="hidden"
         animate="show"
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <KpiTile
           index={1}
           icon={Calendar}
@@ -725,13 +717,6 @@ export function SessionDetailPage() {
           }
           accent="emerald"
           meta={session.transactionCode ?? undefined}
-        />
-        <KpiTile
-          index={4}
-          icon={Hash}
-          label={t("common.sessionCode")}
-          value={`#${session.id || "-"}`}
-          accent="violet"
         />
       </motion.div>
 

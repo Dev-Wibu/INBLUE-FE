@@ -384,7 +384,7 @@ export function ApplicationWorkspacePage() {
       }
     } catch (err) {
       console.error("[Workspace] Failed to load data:", err);
-      toast.error("Không thể tải thông tin workspace ứng tuyển");
+      toast.error(t("userApplicationhistory.workspaceLoadError"));
     } finally {
       setLoading(false);
     }
@@ -561,19 +561,17 @@ export function ApplicationWorkspacePage() {
                 <div className="flex min-w-0 items-center justify-center gap-3.5 text-center">
                   <CandidateAvatar
                     avatarUrl={candidateInfo?.avatarUrl}
-                    name={
-                      candidateInfo?.name || candidateInfo?.email || `Ứng viên #${applicationId}`
-                    }
+                    name={candidateInfo?.name || candidateInfo?.email || t("common.candidate")}
                     className="hidden h-10 w-10 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-sm shadow-xs sm:flex"
                   />
                   <div className="max-w-[min(32vw,340px)] min-w-0">
                     <h1 className="truncate text-[17px] font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-white">
-                      <span className="text-indigo-600 dark:text-indigo-300">Ứng viên</span>
+                      <span className="text-indigo-600 dark:text-indigo-300">
+                        {t("common.candidate")}
+                      </span>
                       <span className="px-1.5 font-normal text-slate-400">·</span>
                       <span>
-                        {candidateInfo?.name ||
-                          candidateInfo?.email ||
-                          `Ứng viên #${applicationId}`}
+                        {candidateInfo?.name || candidateInfo?.email || t("common.candidate")}
                       </span>
                     </h1>
                   </div>
@@ -793,10 +791,10 @@ export function ApplicationWorkspacePage() {
                       />
                       <div className="min-w-0 flex-1">
                         <span className="text-[10px] font-extrabold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
-                          Ứng viên (Candidate)
+                          {t("common.candidate")}
                         </span>
                         <h4 className="truncate text-sm font-bold text-slate-900 dark:text-white">
-                          {candidateInfo.name || "Ứng viên"}
+                          {candidateInfo.name || t("common.candidate")}
                         </h4>
                         {candidateInfo.email && (
                           <p className="truncate text-xs text-slate-500 dark:text-slate-400">
