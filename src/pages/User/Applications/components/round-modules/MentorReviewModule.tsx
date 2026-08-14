@@ -22,6 +22,7 @@ import {
   useSelectMentor,
   type MentorResponse,
 } from "@/hooks/useApplicationDetails";
+import { useMentorById } from "@/hooks/useMentor";
 import {
   useCreateMentorFeedback,
   useMentorFeedbacksByMentor,
@@ -76,6 +77,7 @@ import type { JdRound } from "../HorizontalPipeline";
 import {
   collectEmbeddedMentors,
   mergeMentorResponses,
+  resolvePersistedMentorId,
   resolveSelectedMentor,
 } from "./mentorReview.utils";
 import { MentorReviewSubheader } from "./MentorReviewSubheader";
@@ -175,7 +177,14 @@ export function MentorReviewModule({
   const sessionId = sessionInfo?.sessionId ?? detail?.sessionId ?? null;
   const { data: session, refetch: refetchSession } = useSessionById(sessionId ?? 0);
   const sessionStatus = session?.status ?? null;
-  const embeddedMentors = useMemo(() => collectEmbeddedMentors(detail, session), [detail, session]);
+  const mentorLookupId = resolvePersistedMentorId(detail, session) ?? 0;
+  const { data: mentorById, isLoading: mentorByIdLoading } = useMentorById(mentorLookupId);
+  const fallbackMentors = useMemo(
+    () =>
+      mergeMentorResponses(collectEmbeddedMentors(detail, session), mentorById ? [mentorById] : []),
+    [detail, mentorById, session]
+  );
+  const fallbackMentorsLoading = mentorLookupId > 0 && mentorByIdLoading;
 
   const activeStep = useMemo<StepKey>(() => {
     // 1. The interview actually happened + completed -> RESULT
@@ -270,7 +279,8 @@ export function MentorReviewModule({
       {viewedStep === "SELECT_MENTOR" && (
         <SelectMentorStep
           detailId={detailId}
-          fallbackMentors={embeddedMentors}
+          fallbackMentors={fallbackMentors}
+          fallbackMentorsLoading={fallbackMentorsLoading}
           readOnly={isPreviewingStep}
           onAfterSelect={() => {
             void refetchDetail();
@@ -282,7 +292,8 @@ export function MentorReviewModule({
         <ScheduleStep
           detail={detail}
           detailId={detailId}
-          fallbackMentors={embeddedMentors}
+          fallbackMentors={fallbackMentors}
+          fallbackMentorsLoading={fallbackMentorsLoading}
           submitting={createSessionMutation.isPending}
           readOnly={isPreviewingStep}
           onSubmit={(payload) =>
@@ -300,7 +311,8 @@ export function MentorReviewModule({
           detailId={detailId}
           sessionId={sessionId}
           selectedMentorId={detail?.mentorId ?? null}
-          fallbackMentors={embeddedMentors}
+          fallbackMentors={fallbackMentors}
+          fallbackMentorsLoading={fallbackMentorsLoading}
           applicationId={applicationId}
           finalScore={finalScore}
           finalResult={detail?.finalResult ?? null}
@@ -536,11 +548,13 @@ function AwaitingMentorStep() {
 function SelectMentorStep({
   detailId,
   fallbackMentors,
+  fallbackMentorsLoading,
   readOnly = false,
   onAfterSelect,
 }: {
   detailId: number;
   fallbackMentors: MentorResponse[];
+  fallbackMentorsLoading: boolean;
   readOnly?: boolean;
   onAfterSelect: () => void;
 }) {
@@ -557,7 +571,7 @@ function SelectMentorStep({
     );
   }, [fallbackMentors, mentors]);
 
-  if (isLoading && mentorsSorted.length === 0) {
+  if ((isLoading || fallbackMentorsLoading) && mentorsSorted.length === 0) {
     return (
       <Card className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
         <Spinner className="mx-auto h-8 w-8 text-indigo-500" />
@@ -1037,6 +1051,7 @@ function ScheduleStep({
   detail,
   detailId,
   fallbackMentors,
+  fallbackMentorsLoading,
   submitting,
   readOnly = false,
   onSubmit,
@@ -1044,12 +1059,13 @@ function ScheduleStep({
   detail?: ApplicationDetail;
   detailId: number;
   fallbackMentors: MentorResponse[];
+  fallbackMentorsLoading: boolean;
   submitting: boolean;
   readOnly?: boolean;
   onSubmit: (_payload: { joinTime: string; duration: number; offline: boolean }) => void;
 }) {
   const { t } = useTranslation();
-  const { data: mentors } = useAssignedMentors(detailId);
+  const { data: mentors, isLoading: assignedMentorsLoading } = useAssignedMentors(detailId);
   const scheduleSessionInfo = (
     detail as unknown as { sessionInfo?: { mentorId?: number | null } } | undefined
   )?.sessionInfo;
@@ -1061,6 +1077,7 @@ function ScheduleStep({
   const selectedMentor = useMemo(() => {
     return resolveSelectedMentor(availableMentors, selectedMentorId);
   }, [availableMentors, selectedMentorId]);
+  const mentorDataLoading = assignedMentorsLoading || fallbackMentorsLoading;
 
   const now = new Date();
   const tomorrow = new Date(now);
@@ -1378,7 +1395,12 @@ function ScheduleStep({
         {/* ===== Mentor hero card ===== */}
         <Card className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="p-4">
-            {selectedMentor ? (
+            {mentorDataLoading && !selectedMentor ? (
+              <div className="flex flex-col items-center gap-3 py-8 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
+                <Spinner className="h-6 w-6 text-indigo-500" />
+                <p>{t("userApplication.mentorReview.mentorListLoading")}</p>
+              </div>
+            ) : selectedMentor ? (
               <>
                 {/* Identity */}
                 <div className="flex items-start gap-3">
@@ -1755,6 +1777,7 @@ function SessionRoomStep({
   sessionId,
   selectedMentorId,
   fallbackMentors,
+  fallbackMentorsLoading,
   finalScore,
   finalResult,
   viewStep,
@@ -1765,6 +1788,7 @@ function SessionRoomStep({
   sessionId: number | null;
   selectedMentorId: number | null;
   fallbackMentors: MentorResponse[];
+  fallbackMentorsLoading: boolean;
   applicationId: number;
   finalScore: number | null;
   finalResult: string | null;
@@ -1781,8 +1805,14 @@ function SessionRoomStep({
     [fallbackMentors, mentors]
   );
   const sessionMentor = useMemo(() => {
-    return resolveSelectedMentor(availableMentors, session?.mentorId, selectedMentorId);
-  }, [availableMentors, selectedMentorId, session?.mentorId]);
+    return resolveSelectedMentor(
+      availableMentors,
+      session?.mentorId,
+      session?.userId2,
+      selectedMentorId
+    );
+  }, [availableMentors, selectedMentorId, session?.mentorId, session?.userId2]);
+  const mentorDataLoading = mentorsLoading || fallbackMentorsLoading;
 
   // Poll session every 30s while in WAITING or IN_CALL
   useEffect(() => {
@@ -1823,7 +1853,7 @@ function SessionRoomStep({
   const mentorName = sessionMentor?.name?.trim();
   const mentorDisplayName =
     mentorName ||
-    (mentorsLoading
+    (mentorDataLoading
       ? t("userApplication.mentorReview.mentorListLoading")
       : t("userApplication.mentorReview.mentorHistoryUnavailableTitle"));
 
@@ -1833,7 +1863,7 @@ function SessionRoomStep({
       <CompletedResultView
         session={session}
         mentor={sessionMentor}
-        mentorLoading={mentorsLoading}
+        mentorLoading={mentorDataLoading}
         finalScore={finalScore}
         finalResult={finalResult}
         readOnly={readOnly}
@@ -1910,7 +1940,7 @@ function SessionRoomStep({
                 }
               />
             </div>
-            {!mentorsLoading && !sessionMentor && readOnly && (
+            {!mentorDataLoading && !sessionMentor && readOnly && (
               <div className="mt-4">
                 <MentorHistoryUnavailable compact />
               </div>
