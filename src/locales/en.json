@@ -5697,7 +5697,22 @@
       "feedbackCommentTitle": "Your comment",
       "feedbackCommentDesc": "This helps the system improve mentor quality.",
       "feedbackCommentEmpty": "No detailed comment yet.",
-      "finalStepHint": "Final step of the Mentor Interview round"
+      "finalStepHint": "Final step of the Mentor Interview round",
+      "reviewStepTitle": "Review: {{step}}",
+      "mentorListLoading": "Loading mentors...",
+      "mentorListEmptyTitle": "No mentor has been assigned yet",
+      "mentorListEmptyDescription": "Please wait while an administrator assigns suitable mentors.",
+      "yearsExperienceValue": "{{count}}+ years",
+      "sessionWithMentor": "Interview with {{name}}",
+      "mentorNameUnavailable": "Assigned mentor",
+      "resultPassedLabel": "Passed",
+      "resultFailedLabel": "Failed",
+      "feedbackRatingRequired": "Please select a rating from 1 to 5.",
+      "feedbackRatingInstruction": "Choose a rating that reflects how the mentor asked questions, guided, and supported you.",
+      "feedbackSelectedRatingLabel": "Your rating",
+      "feedbackCommentInstruction": "Briefly describe what the mentor did well or could improve.",
+      "feedbackCompleteRoundHint": "Complete this feedback to close the Mentor Interview round.",
+      "selectStarLabel": "Select {{count}} stars"
     },
     "roundNumber": "Round {{number}}"
   },
