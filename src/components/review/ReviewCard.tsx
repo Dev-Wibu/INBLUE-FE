@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
-import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import type { MentorReview } from "@/services/mentor-review.manager";
 import { Calendar, Edit, Trash2, User } from "lucide-react";
@@ -36,15 +35,8 @@ export function ReviewCard({
   const hasStarNotes =
     review.situationNote || review.taskNote || review.actionNote || review.resultNote;
   const hasAdditionalNotes = review.strength || review.weakness || review.improve;
-  const fallbackUserName = review.session?.userId
-    ? t("common.studentVar0", {
-        var_0: review.session.userId,
-      })
-    : t("common.students");
-  const fallbackMentorName =
-    getSessionMentorId(review.session) != null
-      ? t("common.mentorWithId", { id: getSessionMentorId(review.session) })
-      : t("common.mentor");
+  const fallbackUserName = t("common.candidate");
+  const fallbackMentorName = t("common.mentor");
   const displayName = showUser
     ? review.user?.name || fallbackUserName
     : showMentor

@@ -134,14 +134,11 @@ function SessionCard({
             </div>
             <div>
               <CardTitle className="text-base">
-                {session.roomName ||
-                  t("common.sessionVar0", {
-                    var_0: session.id,
-                  })}
+                {session.roomName || t("common.mentorInterview")}
               </CardTitle>
               <CardDescription className="flex items-center gap-2">
                 <User className="h-3 w-3" />
-                {t("common.mentorWithId", { id: getSessionMentorId(session) ?? "-" })}
+                {t("common.mentor")}
               </CardDescription>
             </div>
           </div>
@@ -181,8 +178,7 @@ function SessionCard({
           {!session.joinTime && !session.startTime1 && (
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              {t("common.session2")}
-              {session.id}
+              {t("userMentorReview.notUpdated")}
             </span>
           )}
           {typeof session.totalPrice === "number" && session.totalPrice > 0 && (

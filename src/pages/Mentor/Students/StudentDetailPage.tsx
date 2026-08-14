@@ -756,18 +756,11 @@ function SessionRow({
         </div>
         <div>
           <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            {session.roomName || t("common.sessionVar0", { var_0: session.id })}
+            {session.roomName || t("common.mentorInterview")}
           </p>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-mono">#{session.id}</span>
             {session.startTime1 && (
-              <>
-                <span className="text-slate-300 dark:text-slate-600">·</span>
-                <TimeAgo
-                  date={String(treatZuluAsVietnamLocal(session.startTime1))}
-                  prefix={false}
-                />
-              </>
+              <TimeAgo date={String(treatZuluAsVietnamLocal(session.startTime1))} prefix={false} />
             )}
           </div>
         </div>
@@ -1175,9 +1168,6 @@ function MentorReviewListRow({
               <Star className="h-3 w-3 fill-current" aria-hidden />
               {rating}/5 · {t("mentorMentordashboard.reviewSent")}
             </span>
-            <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
-              #{review.id}
-            </span>
           </div>
           <p className="mt-1.5 flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
             <Calendar className="h-3.5 w-3.5 text-slate-400" aria-hidden />
@@ -1312,11 +1302,8 @@ function MentorFeedbackListRow({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              {feedback.user?.name || t("common.studentVar0", { var_0: feedback.id ?? "—" })}
+              {feedback.user?.name || t("common.student")}
             </p>
-            <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
-              #{feedback.id}
-            </span>
           </div>
           <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             <Calendar className="h-3 w-3 shrink-0" aria-hidden />

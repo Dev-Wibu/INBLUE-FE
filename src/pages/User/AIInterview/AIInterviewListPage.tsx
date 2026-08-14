@@ -314,13 +314,10 @@ export function AIInterviewListPage() {
                       key={session.id}
                       className="flex flex-col justify-between gap-4 rounded-xl border border-indigo-200 bg-indigo-50/50 p-5 dark:border-indigo-900/60 dark:bg-indigo-950/30">
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center">
                           <Badge className="border-0 bg-amber-500 text-[10px] font-semibold text-white">
                             {t("common.ongoing", "Đang diễn ra")}
                           </Badge>
-                          <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-300">
-                            SESSION #{session.id}
-                          </span>
                         </div>
                         <h3 className="text-base font-bold text-slate-900 dark:text-white">
                           {modeLabel}
@@ -432,11 +429,11 @@ export function AIInterviewListPage() {
             {/* Result count when filter active */}
             {searchQuery && (
               <div className="text-xs text-slate-500">
-                Hiển thị{" "}
+                {t("common.showing")}{" "}
                 <strong className="text-slate-800 dark:text-slate-200">
                   {historyPageData.length}
                 </strong>{" "}
-                / <strong>{historySessions.length}</strong> kết quả
+                / <strong>{historySessions.length}</strong> {t("common.results")}
               </div>
             )}
 
@@ -445,8 +442,7 @@ export function AIInterviewListPage() {
               <Table>
                 <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
                   <TableRow className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                    <TableHead className="w-[80px] pl-6 font-medium text-slate-500">#ID</TableHead>
-                    <TableHead className="font-medium text-slate-500">
+                    <TableHead className="pl-6 font-medium text-slate-500">
                       {t("userAiinterview.regime", "Chế độ phỏng vấn")}
                     </TableHead>
                     <TableHead className="font-medium text-slate-500">
@@ -469,7 +465,7 @@ export function AIInterviewListPage() {
                 <TableBody>
                   {historyPageData.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-48 text-center">
+                      <TableCell colSpan={6} className="h-48 text-center">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
                             <Search className="h-5 w-5 text-slate-400" />
@@ -520,10 +516,7 @@ export function AIInterviewListPage() {
                           key={session.id}
                           className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80"
                           onClick={() => !isExpired && handleViewResult(session.id)}>
-                          <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                            #{session.id}
-                          </TableCell>
-                          <TableCell className="font-semibold text-slate-900 dark:text-slate-100">
+                          <TableCell className="pl-6 font-semibold text-slate-900 dark:text-slate-100">
                             <div className="flex flex-col">
                               <span>{modeLabel}</span>
                               {(histTargetRole || histTargetLevel) && (

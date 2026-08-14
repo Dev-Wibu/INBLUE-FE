@@ -376,10 +376,7 @@ export function StudentsListPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900">
-                      <TableHead className="w-[80px] pl-5 font-semibold text-slate-700 dark:text-slate-200">
-                        {t("common.id")}
-                      </TableHead>
-                      <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                      <TableHead className="min-w-[200px] pl-5 font-semibold text-slate-700 dark:text-slate-200">
                         <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
                       </TableHead>
                       <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
@@ -409,7 +406,7 @@ export function StudentsListPage() {
                   <TableBody>
                     {pageData.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="h-48 text-center">
+                        <TableCell colSpan={7} className="h-48 text-center">
                           <div className="flex flex-col items-center gap-3">
                             <Search className="h-6 w-6 text-slate-400" />
                             <p className="text-sm text-slate-500">
@@ -425,11 +422,6 @@ export function StudentsListPage() {
                           onClick={() => navigate(`/mentor/students/${student.id}`)}
                           className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
                           <TableCell className="py-3.5 pl-5">
-                            <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
-                              #{student.id}
-                            </span>
-                          </TableCell>
-                          <TableCell className="px-4 py-3.5">
                             <div className="flex items-center gap-3">
                               <Avatar className="h-9 w-9 shrink-0 rounded-lg border border-slate-100 dark:border-slate-800">
                                 <AvatarImage src={student.avatarUrl} alt={student.name} />

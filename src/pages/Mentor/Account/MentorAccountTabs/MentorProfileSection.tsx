@@ -118,9 +118,6 @@ export function MentorProfileSection({
           <h2 className="truncate font-['Inter'] text-2xl font-bold text-zinc-800 dark:text-white">
             {mentorProfile.name}
           </h2>
-          <p className="font-['Inter'] text-sm font-medium text-emerald-600 dark:text-emerald-400">
-            ID: {mentorProfile.id}
-          </p>
           <div className="mt-2 flex items-center justify-center gap-4">
             <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-slate-400">
               <Star className="h-4 w-4 text-yellow-500" />

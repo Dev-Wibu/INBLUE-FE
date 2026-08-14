@@ -532,7 +532,7 @@ export function CodeReviewModule({
     } catch {
       // ignore
     }
-    toast.info("Đã xóa danh sách draft issues của bài này");
+    toast.info(t("userApplication.codeReview.draftCleared"));
   };
 
   // Flatten all issues across all problems
@@ -571,21 +571,21 @@ export function CodeReviewModule({
       if (!res.success) {
         if (res.statusCode === 409) {
           setStep("GRADED");
-          toast.error(res.error || "Bai da duoc nop cho vong nay");
+          toast.error(res.error || t("userApplicationhistory.alreadySubmitted"));
           onSuccess?.();
           return;
         }
-        throw new Error(res.error || "Submit failed");
+        throw new Error(res.error || t("userApplication.codeReview.submitFailedHint"));
       }
 
       const resDetail = res.data?.detail ?? (res.data as unknown as ApplicationDetail) ?? null;
       setGradedResult(resDetail);
       setStep("GRADED");
       toast.success(
-        t(
-          "userApplicationhistory.codeReviewSubmitted",
-          `Hoàn tất! Điểm: ${resDetail?.finalScore ?? resDetail?.aiScore ?? "?"}/${maxScore}`
-        )
+        t("userApplication.codeReview.submitCompleted", {
+          score: resDetail?.finalScore ?? resDetail?.aiScore ?? "?",
+          maxScore,
+        })
       );
 
       // Clean local storage drafts
@@ -600,7 +600,8 @@ export function CodeReviewModule({
       onSuccess?.();
     } catch (err) {
       console.error("[CodeReviewModule] Submit error:", err);
-      const message = err instanceof Error ? err.message : "Nộp Review thất bại";
+      const message =
+        err instanceof Error ? err.message : t("userApplication.codeReview.submitFailedHint");
       toast.error(message);
       setStep("ERROR");
     } finally {
@@ -616,7 +617,7 @@ export function CodeReviewModule({
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <SpinnerBlock />
         <p className="mt-4 text-xs font-semibold text-slate-400">
-          Đang tải dữ liệu bài tập Code Review...
+          {t("userApplication.codeReview.loadingProblems")}
         </p>
       </div>
     );
@@ -674,7 +675,7 @@ export function CodeReviewModule({
               </div>
               <div className="flex items-center justify-center gap-2 font-mono text-[11px] font-bold text-indigo-400">
                 <span className="h-2 w-2 animate-ping rounded-full bg-indigo-400" />
-                <span>AI Code Review Evaluator is running...</span>
+                <span>{t("userApplication.codeReview.evaluatorRunning")}</span>
               </div>
             </div>
           </div>
@@ -810,7 +811,8 @@ export function CodeReviewModule({
                           )}>
                           <span className="font-mono text-[11px] opacity-80">#{idx + 1}</span>
                           <span className="max-w-[200px] truncate">
-                            {p.title || `Bài tập #${idx + 1}`}
+                            {p.title ||
+                              t("userApplication.codeReview.problemNumber", { number: idx + 1 })}
                           </span>
                           {p.difficulty && (
                             <span
@@ -846,7 +848,8 @@ export function CodeReviewModule({
                       #1
                     </span>
                     <span className="text-sm font-bold text-slate-900 dark:text-white">
-                      {activeProblem.title || "Code Review Problem #1"}
+                      {activeProblem.title ||
+                        t("userApplication.codeReview.problemNumber", { number: 1 })}
                     </span>
                   </div>
                 )}
@@ -943,7 +946,7 @@ export function CodeReviewModule({
               <div className="flex items-center gap-3">
                 <AlertTriangle className="h-5 w-5 shrink-0 text-amber-400" />
                 <span className="text-sm font-semibold">
-                  Bài tập này chưa có file mã nguồn nào để review.
+                  {t("userApplicationhistory.codeReviewNoFiles")}
                 </span>
               </div>
             </Card>
@@ -1072,8 +1075,9 @@ export function CodeReviewModule({
                   className="h-9 gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-5 text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition-all hover:from-indigo-500 hover:to-indigo-400 active:scale-95">
                   <Send className="h-3.5 w-3.5" />
                   <span>
-                    {t("userApplication.codeReview.submitReview", "Nộp bài Review")} (
-                    {allFlattenedIssues.length})
+                    {t("userApplication.codeReview.submitReviewCount", {
+                      count: allFlattenedIssues.length,
+                    })}
                   </span>
                 </Button>
               )}
@@ -1093,7 +1097,7 @@ export function CodeReviewModule({
                 <span className="h-3 w-3 rounded-full bg-emerald-500/80 shadow-xs shadow-emerald-500/30" />
               </div>
               <span className="ml-2 text-xs font-bold text-slate-600 dark:text-slate-400">
-                Xác nhận nộp bài Code Review
+                {t("userApplication.codeReview.submitConfirmTitle")}
               </span>
             </div>
           </div>
@@ -1105,12 +1109,14 @@ export function CodeReviewModule({
               </div>
               <div>
                 <DialogTitle className="text-base font-bold text-slate-950 dark:text-white">
-                  Bạn có chắc chắn muốn nộp bài?
+                  {t("userApplication.codeReview.confirmSubmitDesc")}
                 </DialogTitle>
                 <DialogDescription className="mt-1 text-xs text-slate-600 dark:text-slate-400">
                   {allFlattenedIssues.length === 0
-                    ? "Bạn chưa thêm issue nào. Hệ thống AI vẫn sẽ đối chiếu và chấm điểm với 0 issue."
-                    : `Hệ thống AI sẽ đối chiếu ${allFlattenedIssues.length} issue(s) trên ${problems.length} bài tập và chấm điểm ngay lập tức.`}
+                    ? t("userApplication.codeReview.submitConfirmEmpty")
+                    : t("userApplication.codeReview.submitConfirmCount", {
+                        count: allFlattenedIssues.length,
+                      })}
                 </DialogDescription>
               </div>
             </div>
@@ -1159,12 +1165,12 @@ export function CodeReviewModule({
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Đang xử lý...</span>
+                  <span>{t("common.processing")}</span>
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  <span>Xác nhận nộp</span>
+                  <span>{t("userApplication.codeReview.confirmSubmit")}</span>
                 </>
               )}
             </Button>
@@ -1888,8 +1894,7 @@ function GradedResultView({
             </div>
 
             <p className="text-sm leading-relaxed font-normal text-slate-700 dark:text-slate-200">
-              {generalComment ||
-                "Hệ thống AI đã phân tích chi tiết bài đánh giá mã nguồn, đối chiếu danh sách bug và kiểm tra độ chính xác của các ghi chú."}
+              {generalComment || t("userApplication.codeReview.generalCommentFallback")}
             </p>
           </Card>
 
@@ -1972,14 +1977,21 @@ function GradedResultView({
                   {t("userApplication.codeReview.matchScoreTitle", "Chỉ số Match Score")}
                 </h4>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">AI vs HR</span>
+              <span className="text-[10px] font-semibold text-slate-400">
+                {t("userApplication.codeReview.aiVsHr")}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <ModernGaugeClock score={aiScoreVal} label="AI Score" color="indigo" hasData={true} />
+              <ModernGaugeClock
+                score={aiScoreVal}
+                label={t("userApplication.codeReview.aiScore")}
+                color="indigo"
+                hasData={true}
+              />
               <ModernGaugeClock
                 score={hrScoreVal}
-                label="HR Score"
+                label={t("userApplication.codeReview.hrScore")}
                 color="emerald"
                 hasData={hasHrScore}
               />
@@ -2096,7 +2108,8 @@ function GradedResultView({
                         ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-200 dark:text-indigo-200"
                         : "border border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-800/60 hover:text-slate-200 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
                     )}>
-                    #{idx + 1} {p.title || `Bài ${idx + 1}`}
+                    #{idx + 1}{" "}
+                    {p.title || t("userApplication.codeReview.problemNumber", { number: idx + 1 })}
                   </button>
                 ))}
               </div>

@@ -194,16 +194,16 @@ export function CandidateProfileTab() {
                 value={form.selectedProfileId ? String(form.selectedProfileId) : undefined}
                 onValueChange={(value) => form.setSelectedProfileId(Number(value))}>
                 <SelectTrigger className="min-h-10 min-w-52">
-                  <SelectValue placeholder="Select a profile" />
+                  <SelectValue placeholder={t("userAccount.selectProfile")} />
                 </SelectTrigger>
                 <SelectContent>
                   {form.profiles
                     .filter((profileItem) => profileItem.id !== undefined)
-                    .map((profileItem) => (
+                    .map((profileItem, index) => (
                       <SelectItem key={profileItem.id} value={String(profileItem.id)}>
-                        {profileItem.applicationId
-                          ? `Application #${profileItem.applicationId}`
-                          : `Profile #${profileItem.id}`}
+                        {[profileItem.targetRole, profileItem.targetLevel]
+                          .filter(Boolean)
+                          .join(" · ") || t("userAccount.profileOption", { number: index + 1 })}
                       </SelectItem>
                     ))}
                 </SelectContent>

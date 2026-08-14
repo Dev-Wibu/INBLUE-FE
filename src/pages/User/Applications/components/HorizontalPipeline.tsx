@@ -255,10 +255,12 @@ export function HorizontalPipeline({
               disabled={!isAllCompleted}
               aria-label={
                 isAllCompleted
-                  ? "Mở báo cáo năng lực"
-                  : "Hoàn tất tất cả vòng để mở báo cáo năng lực"
+                  ? t("userApplicationhistory.openCompetencyReport")
+                  : t("userApplicationhistory.completeAllRoundsToUnlock")
               }
-              title={isAllCompleted ? undefined : "Hoàn tất tất cả vòng để mở báo cáo năng lực"}
+              title={
+                isAllCompleted ? undefined : t("userApplicationhistory.completeAllRoundsToUnlock")
+              }
               className={cn(
                 "group relative flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-hidden",
                 isAllCompleted

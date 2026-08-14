@@ -329,10 +329,7 @@ export function MentorSessionsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900">
-                      <TableHead className="w-[80px] pl-5 font-semibold text-slate-700 dark:text-slate-200">
-                        <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
-                      </TableHead>
-                      <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                      <TableHead className="min-w-[180px] pl-5 font-semibold text-slate-700 dark:text-slate-200">
                         {t("common.roomName")}
                       </TableHead>
                       <TableHead className="w-[120px] min-w-[120px] px-5 font-semibold text-slate-700 dark:text-slate-200">
@@ -354,7 +351,7 @@ export function MentorSessionsPage() {
                   <TableBody>
                     {pageData.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-48 text-center">
+                        <TableCell colSpan={5} className="h-48 text-center">
                           <div className="flex flex-col items-center gap-3">
                             <Search className="h-6 w-6 text-slate-400" />
                             <p className="text-sm text-slate-500">
@@ -373,13 +370,8 @@ export function MentorSessionsPage() {
                             key={session.id}
                             className="border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/80">
                             <TableCell className="py-3.5 pl-5">
-                              <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
-                                #{session.id}
-                              </span>
-                            </TableCell>
-                            <TableCell className="px-4 py-3.5">
                               <p className="text-sm font-medium text-slate-900 dark:text-white">
-                                {session.roomName || `Session ${session.id}`}
+                                {session.roomName || t("common.interviewSession")}
                               </p>
                               {session.roomUrl && (
                                 <p className="truncate text-xs text-slate-500 dark:text-slate-400">
@@ -538,7 +530,9 @@ export function MentorSessionsPage() {
                   <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-white">
                     {mentorSessions.length}
                   </span>
-                  <span className="text-sm text-slate-500">sessions</span>
+                  <span className="text-sm text-slate-500">
+                    {t("common.sessionCount", { count: mentorSessions.length })}
+                  </span>
                 </p>
               </div>
             </div>

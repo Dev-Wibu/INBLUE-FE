@@ -1,9 +1,7 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-
-const DEFAULT_SPEECH =
-  "Xin chào. Đây là trợ lý AI của Inblue đang được hiển thị trong không gian Holobox ba chiều.";
 
 type AudioWindow = Window &
   typeof globalThis & {
@@ -54,7 +52,9 @@ function createContactShadowTexture() {
 }
 
 export function HoloboxRobotPage() {
+  const { t, i18n } = useTranslation();
   const viewportRef = useRef<HTMLDivElement>(null);
+  const speechLanguage = i18n.resolvedLanguage || i18n.language || "en";
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -76,7 +76,7 @@ export function HoloboxRobotPage() {
     renderer.shadowMap.type = THREE.VSMShadowMap;
     renderer.domElement.tabIndex = 0;
     renderer.domElement.setAttribute("role", "button");
-    renderer.domElement.setAttribute("aria-label", "Chạm vào robot để phát hoặc dừng âm thanh");
+    renderer.domElement.setAttribute("aria-label", t("competencyKiosk.robotAudioControl"));
     viewport.appendChild(renderer.domElement);
 
     // =====================================================================
@@ -450,7 +450,7 @@ export function HoloboxRobotPage() {
     // =====================================================================
     const query = new URLSearchParams(window.location.search);
     const audioUrl = query.get("audio");
-    const speechText = query.get("text")?.trim() || DEFAULT_SPEECH;
+    const speechText = query.get("text")?.trim() || t("competencyKiosk.defaultRobotSpeech");
     const audio = new Audio();
     audio.preload = "metadata";
     if (audioUrl) audio.src = audioUrl;
@@ -489,9 +489,11 @@ export function HoloboxRobotPage() {
     const speak = () => {
       if (!("speechSynthesis" in window)) return;
       const voices = window.speechSynthesis.getVoices();
-      const voice = voices.find((item) => item.lang.toLowerCase().startsWith("vi")) ?? voices[0];
+      const languageCode = speechLanguage.split("-")[0].toLowerCase();
+      const voice =
+        voices.find((item) => item.lang.toLowerCase().startsWith(languageCode)) ?? voices[0];
       const utterance = new SpeechSynthesisUtterance(speechText);
-      utterance.lang = voice?.lang || "vi-VN";
+      utterance.lang = voice?.lang || speechLanguage;
       utterance.voice = voice ?? null;
       utterance.rate = 0.96;
       utterance.pitch = 1;
@@ -526,7 +528,7 @@ export function HoloboxRobotPage() {
           await unlockAudio();
           await audio.play();
         } catch (error) {
-          console.info("Holobox audio không phát được trên thiết bị hiện tại.", error);
+          console.info("Holobox audio could not play on this device.", error);
         }
         return;
       }
@@ -647,7 +649,7 @@ export function HoloboxRobotPage() {
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, []);
+  }, [speechLanguage, t]);
 
   return (
     <main className="holobox-robot-only-page">

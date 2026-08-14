@@ -23,7 +23,6 @@ import {
   ChevronRight,
   ClipboardList,
   Clock,
-  Hash,
   Lightbulb,
   Mail,
   Star,
@@ -155,7 +154,7 @@ export function ReviewDetailPage() {
           </Button>
           <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
           <h1 className="text-base font-bold text-slate-900 dark:text-white">
-            {t("mentorReviews.reviewDetail")} #{review.id}
+            {t("mentorReviews.reviewDetail")} · {studentName}
           </h1>
         </div>
         <Button
@@ -215,11 +214,6 @@ export function ReviewDetailPage() {
                   </p>
                 )}
               </div>
-              {studentId && (
-                <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                  #{studentId}
-                </span>
-              )}
             </div>
           </div>
 
@@ -323,15 +317,6 @@ export function ReviewDetailPage() {
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  <Hash className="h-3.5 w-3.5" />
-                  {t("common.sessionCode")}
-                </div>
-                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                  #{review.session?.id || "—"}
-                </p>
-              </div>
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
                 <div className="flex items-center gap-1.5 text-xs text-slate-500">
                   <Calendar className="h-3.5 w-3.5" />

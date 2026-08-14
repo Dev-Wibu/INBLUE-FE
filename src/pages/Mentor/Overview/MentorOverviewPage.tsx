@@ -64,10 +64,7 @@ function AgendaSessionItem({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
-            {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
-          </p>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            {t("common.mentorWithId", { id: item.session.userId ?? "-" })}
+            {item.session.roomName || t("common.interviewSession")}
           </p>
         </div>
         <Badge className={cn("shrink-0 border-0 text-[10px] font-semibold", status.badgeClass)}>
@@ -129,7 +126,7 @@ function CalendarSessionEntry({
         {formatCalendarTime(item.session.joinTime)}
       </span>
       <span className="flex-1 truncate font-semibold text-slate-900 dark:text-slate-100">
-        {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
+        {item.session.roomName || t("common.interviewSession")}
       </span>
       <Badge className={cn("border-0 px-1.5 py-0 text-[10px]", status.badgeClass)}>
         {status.label}
@@ -482,7 +479,7 @@ export function MentorOverviewPage() {
                                 {formatCalendarTime(item.session.joinTime)}
                               </span>
                               <span className="truncate font-semibold">
-                                {item.session.roomName || `#${item.session.id}`}
+                                {item.session.roomName || t("common.interviewSession")}
                               </span>
                             </button>
                           );
@@ -616,8 +613,7 @@ export function MentorOverviewPage() {
                     className="flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors hover:border-emerald-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
                     <div className="min-w-0">
                       <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
-                        {item.session.roomName ||
-                          t("common.sessionVar0", { var_0: item.session.id })}
+                        {item.session.roomName || t("common.interviewSession")}
                       </p>
                       <p className="text-[10px] text-slate-500 dark:text-slate-400">
                         {formatDateTime(item.session.joinTime)}
@@ -664,14 +660,10 @@ export function MentorOverviewPage() {
                   className="flex w-full items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-left transition-colors hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/50 dark:hover:border-slate-700">
                   <div className="min-w-0">
                     <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                      {review.session?.roomName ||
-                        t("common.sessionVar0", {
-                          var_0: review.session?.id || review.id,
-                        })}
+                      {review.session?.roomName || t("common.interviewSession")}
                     </p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       {t("common.student")}
-                      {review.session?.userId || "-"}
                     </p>
                   </div>
                   <span className="flex items-center gap-1 text-xs font-medium text-yellow-600">

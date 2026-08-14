@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
-import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { Calendar, Edit, MessageSquare, Trash2, User } from "lucide-react";
@@ -35,15 +34,8 @@ export function FeedbackCard({
   className,
 }: FeedbackCardProps) {
   const { t } = useTranslation();
-  const fallbackUserName = feedback.session?.userId
-    ? t("common.studentVar0", {
-        var_0: feedback.session.userId,
-      })
-    : t("common.students");
-  const fallbackMentorName =
-    getSessionMentorId(feedback.session) != null
-      ? t("common.mentorWithId", { id: getSessionMentorId(feedback.session) })
-      : t("common.mentor");
+  const fallbackUserName = t("common.candidate");
+  const fallbackMentorName = t("common.mentor");
   const displayName = showMentor
     ? feedback.mentor?.name || fallbackMentorName
     : showUser

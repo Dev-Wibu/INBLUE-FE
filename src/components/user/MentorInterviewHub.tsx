@@ -382,7 +382,7 @@ function SlotSelectionPanel({
                   : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
               )}>
               <Video className="h-3.5 w-3.5" />
-              Online
+              {t("userMentorReview.online")}
             </button>
             <button
               type="button"
@@ -394,7 +394,7 @@ function SlotSelectionPanel({
                   : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
               )}>
               <MapPin className="h-3.5 w-3.5" />
-              Offline
+              {t("userMentorReview.offline")}
             </button>
           </div>
         </div>

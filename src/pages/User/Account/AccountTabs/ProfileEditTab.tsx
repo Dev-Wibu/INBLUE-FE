@@ -103,7 +103,7 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
               <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-md dark:border-slate-900 dark:bg-slate-800">
                 <img
                   src={editAvatarPreview || userProfile?.avatar || authUser?.avatarUrl || ""}
-                  alt="avatar"
+                  alt={t("userAccount.avatarAlt")}
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -114,12 +114,12 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
               onFilesChange={handleEditAvatarChange}
               customTrigger={
                 <Button variant="outline" size="sm" className="gap-2">
-                  <Camera className="h-4 w-4" /> Đổi ảnh
+                  <Camera className="h-4 w-4" /> {t("userAccount.changePhoto")}
                 </Button>
               }
             />
             <p className="max-w-[200px] text-xs text-slate-500">
-              Tải lên ảnh chân dung rõ mặt. Định dạng JPG, PNG tối đa 5MB.
+              {t("userAccount.profilePhotoHint")}
             </p>
           </div>
 
@@ -127,7 +127,7 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
           <div className="col-span-12 space-y-6 md:col-span-8">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name">Họ và tên</Label>
+                <Label htmlFor="edit-name">{t("userAccount.fullName")}</Label>
                 <div className="relative">
                   <User className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
                   <Input
@@ -139,7 +139,7 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-phone">Số điện thoại</Label>
+                <Label htmlFor="edit-phone">{t("userAccount.phoneNumber")}</Label>
                 <div className="relative">
                   <Phone className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
                   <Input
@@ -151,7 +151,7 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>{t("common.email")}</Label>
                 <div className="relative">
                   <Mail className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
                   <Input
@@ -162,7 +162,7 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-address">Địa chỉ / Thành phố</Label>
+                <Label htmlFor="edit-address">{t("userAccount.addressOrCity")}</Label>
                 <div className="relative">
                   <MapPin className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
                   <Input
@@ -204,11 +204,11 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
             {/* Password Section */}
             <div className="space-y-4">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <Lock className="h-4 w-4" /> Bảo mật
+                <Lock className="h-4 w-4" /> {t("userSettings.security")}
               </h3>
               <Input
                 type="password"
-                placeholder="Mật khẩu hiện tại"
+                placeholder={t("changePassword.currentPasswordPlaceholder")}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 className="h-9"
@@ -216,14 +216,14 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   type="password"
-                  placeholder="Mật khẩu mới"
+                  placeholder={t("changePassword.newPasswordPlaceholder")}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="h-9"
                 />
                 <Input
                   type="password"
-                  placeholder="Xác nhận mật khẩu mới"
+                  placeholder={t("changePassword.confirmPasswordPlaceholder")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="h-9"
@@ -236,7 +236,7 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
                 onClick={handleSaveAll}
                 disabled={isSaving}
                 className="bg-[#6366f1] hover:bg-[#4f46e5]">
-                {isSaving ? <SpinnerBlock size="sm" /> : <>Lưu thay đổi</>}
+                {isSaving ? <SpinnerBlock size="sm" /> : <>{t("userSettings.saveChanges")}</>}
               </Button>
             </div>
           </div>

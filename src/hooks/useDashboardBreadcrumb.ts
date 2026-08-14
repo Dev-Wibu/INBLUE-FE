@@ -48,10 +48,7 @@ const toPositiveInteger = (value: string | undefined): number | undefined => {
   }
   return parsed;
 };
-const getSessionBreadcrumbLabel = (sessionId: number, t: TFunction): string =>
-  t("common.sessionVar0", {
-    var_0: sessionId,
-  });
+const getSessionBreadcrumbLabel = (_sessionId: number, t: TFunction): string => t("common.session");
 function resolveRoleSpecificDetailChain({
   role,
   pathname,
@@ -114,11 +111,7 @@ async function resolvePracticeQuizDetailLabels(
       href: `/user/practice/session/${sessionId}`,
     },
   ];
-  const quizName =
-    asNonEmptyString(quizSet.quizName) ??
-    t("common.testVar0", {
-      var_0: quizId,
-    });
+  const quizName = asNonEmptyString(quizSet.quizName) ?? t("common.quiz");
   detailLabels.push({
     label: formatBreadcrumbLabelWithPrefix(t("general.test"), quizName),
   });
@@ -144,7 +137,7 @@ async function resolveDynamicRouteLabel(
       if (!response.success || !response.data) {
         return null;
       }
-      const mentorName = asNonEmptyString(response.data.name) ?? t("common.mentorWithId", { id });
+      const mentorName = asNonEmptyString(response.data.name) ?? t("common.mentor");
       return formatBreadcrumbLabelWithPrefix(prefix, mentorName);
     }
     case "practiceSet": {
@@ -153,10 +146,7 @@ async function resolveDynamicRouteLabel(
         return null;
       }
       const practiceSetName =
-        asNonEmptyString(response.data.practiceSetName) ??
-        t("general.set1", {
-          var_0: id,
-        });
+        asNonEmptyString(response.data.practiceSetName) ?? t("common.practiceSet");
       return formatBreadcrumbLabelWithPrefix(prefix, practiceSetName);
     }
     case "quizSet": {
@@ -164,11 +154,7 @@ async function resolveDynamicRouteLabel(
       if (!response.success || !response.data) {
         return null;
       }
-      const quizName =
-        asNonEmptyString(response.data.quizName) ??
-        t("common.testVar0", {
-          var_0: id,
-        });
+      const quizName = asNonEmptyString(response.data.quizName) ?? t("common.quiz");
       return formatBreadcrumbLabelWithPrefix(prefix, quizName);
     }
     case "mentorReview": {
@@ -177,15 +163,7 @@ async function resolveDynamicRouteLabel(
         return null;
       }
       const reviewedUserName = asNonEmptyString(response.data.user?.name);
-      const reviewedSessionId = response.data.session?.id;
-      const fallbackLabel =
-        typeof reviewedSessionId === "number" && reviewedSessionId > 0
-          ? t("common.sessionVar0", {
-              var_0: reviewedSessionId,
-            })
-          : t("general.review", {
-              var_0: id,
-            });
+      const fallbackLabel = t("common.review");
       return formatBreadcrumbLabelWithPrefix(prefix, reviewedUserName ?? fallbackLabel);
     }
     case "user": {
@@ -200,9 +178,7 @@ async function resolveDynamicRouteLabel(
       const userName =
         asNonEmptyString(userRecord.name) ??
         asNonEmptyString(userRecord.fullName) ??
-        t("common.studentVar0", {
-          var_0: id,
-        });
+        t("common.candidate");
       return formatBreadcrumbLabelWithPrefix(prefix, userName);
     }
     default:

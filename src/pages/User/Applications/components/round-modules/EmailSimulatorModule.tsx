@@ -145,8 +145,8 @@ export function EmailSimulatorModule({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const detailRoundConfig = (detail as any)?.roundConfig;
 
-  const [sampleBody, setSampleBody] = useState(
-    "Kính gửi Anh/Chị,\n\nEm xin phép phản hồi email của Anh/Chị về vấn đề đang xảy ra...\n\nTrân trọng,\n[Tên của bạn]"
+  const [sampleBody, setSampleBody] = useState(() =>
+    t("userApplication.emailSimulator.defaultSampleBody")
   );
   const [userWaiting, setUserWaiting] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -266,7 +266,7 @@ export function EmailSimulatorModule({
     }
 
     return { kind: "DRAFT" };
-  }, [detail, emailSubmissionId, emailSubmission, userWaiting]);
+  }, [detail, emailSubmissionId, emailSubmission, t, userWaiting]);
 
   // 4. Tự động poll refetch detail từ parent mỗi 5s nếu candidate đã bấm gửi (WAITING_FOR_FIRST_EMAIL) hoặc đang PENDING
   useEffect(() => {
@@ -471,7 +471,7 @@ export function EmailSimulatorModule({
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] font-bold text-emerald-400">
-                  ● Interactive Editor
+                  ● {t("userApplication.emailSimulator.interactiveEditor")}
                 </span>
               </div>
 
@@ -515,7 +515,7 @@ export function EmailSimulatorModule({
                 <div className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50/80 px-3.5 py-2.5 shadow-inner dark:border-amber-500/40 dark:bg-amber-950/30">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="w-14 font-mono text-[11px] font-bold text-amber-400 uppercase">
-                      Subject:
+                      {t("userApplication.emailSimulator.subjectLabel")}
                     </span>
                     <code className="truncate font-mono text-xs font-black text-amber-700 dark:text-amber-300">
                       {subjectToken}
@@ -560,7 +560,9 @@ export function EmailSimulatorModule({
                     <Link2 className="h-3.5 w-3.5 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200" />
                     <Paperclip className="h-3.5 w-3.5 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200" />
                   </div>
-                  <span className="font-mono text-[10px] text-slate-500">Live Draft</span>
+                  <span className="font-mono text-[10px] text-slate-500">
+                    {t("userApplication.emailSimulator.liveDraft")}
+                  </span>
                 </div>
 
                 <Textarea
@@ -592,9 +594,6 @@ export function EmailSimulatorModule({
                 <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
                   {t("userApplication.emailSimulator.candidatePosition")}
                 </span>
-                <span className="rounded bg-indigo-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold text-indigo-400">
-                  #APP-{applicationId}
-                </span>
               </div>
               <div className="flex items-center gap-3 pt-0.5">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-indigo-200 bg-indigo-50 shadow-inner dark:border-indigo-500/20 dark:bg-slate-950">
@@ -612,10 +611,10 @@ export function EmailSimulatorModule({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-extrabold text-slate-900 dark:text-slate-100">
-                    {jdInfo?.companyName ?? "Công ty"}
+                    {jdInfo?.companyName ?? t("common.company")}
                   </p>
                   <p className="mt-0.5 truncate text-[11px] font-semibold text-indigo-600 dark:text-indigo-300">
-                    {jdInfo?.title ?? "Vị trí ứng tuyển"}
+                    {jdInfo?.title ?? t("common.jobPosition")}
                   </p>
                 </div>
               </div>
@@ -975,12 +974,12 @@ export function EmailSimulatorModule({
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 pb-2 dark:border-slate-800/60">
                     <div className="flex min-w-0 items-center gap-2">
                       <span className="w-14 font-mono text-[10px] font-bold text-slate-400 uppercase">
-                        From:
+                        {t("userApplication.emailSimulator.fromLabel")}
                       </span>
                       <span className="truncate font-mono font-bold text-indigo-600 dark:text-indigo-300">
                         {emailSubmission?.senderEmail ||
                           parsedSubmissionData?.senderEmail ||
-                          "Ứng viên"}
+                          t("common.candidate")}
                       </span>
                     </div>
                     {(emailSubmission?.receivedAt || emailSubmission?.createdAt) && (
@@ -991,7 +990,7 @@ export function EmailSimulatorModule({
                   </div>
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="w-14 font-mono text-[10px] font-bold text-slate-400 uppercase">
-                      Subject:
+                      {t("userApplication.emailSimulator.subjectLabel")}
                     </span>
                     <span className="truncate font-mono font-extrabold text-amber-600 dark:text-amber-400">
                       {emailSubmission?.subject ||
@@ -1032,7 +1031,9 @@ export function EmailSimulatorModule({
                     </h4>
                   </div>
                   <span className="rounded bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-400">
-                    {Object.keys(aiFeedback.extraMetrics).length} Tiêu chí
+                    {t("userApplication.emailSimulator.criteriaCount", {
+                      count: Object.keys(aiFeedback.extraMetrics).length,
+                    })}
                   </span>
                 </div>
 

@@ -1041,7 +1041,7 @@ function AiInterviewQuestionsTab({
             {allExpanded ? (
               <>
                 <Minimize2 className="h-3.5 w-3.5 text-slate-500" />
-                <span>Thu gọn tất cả</span>
+                <span>{t("userApplication.aiInterview.collapseAll")}</span>
               </>
             ) : (
               <>
@@ -1261,7 +1261,9 @@ function AiInterviewQuestionsTab({
                                 "userApplication.aiInterview.candidateAnswer",
                                 "Trả lời của ứng viên"
                               )}{" "}
-                              (Câu chính #{mainQ.questionOrder ?? 1}):
+                              {t("userApplication.aiInterview.mainQuestionLabel", {
+                                order: mainQ.questionOrder ?? 1,
+                              })}
                             </span>
                             <span className="text-xs font-bold text-slate-400">
                               {t("userApplication.aiInterview.candidate", "Ứng viên")}
@@ -1297,7 +1299,7 @@ function AiInterviewQuestionsTab({
                                 {/* Follow-up Answer */}
                                 <div className="space-y-1.5 border-l-2 border-purple-500/80 py-0.5 pl-4">
                                   <div className="text-xs font-bold text-slate-600 dark:text-slate-400">
-                                    Trả lời hỏi bồi:
+                                    {t("userApplication.aiInterview.followUpAnswer")}
                                   </div>
                                   <p className="text-sm leading-relaxed text-slate-800 italic dark:text-slate-200">
                                     "{subQ.answerText || t("userApplication.aiInterview.noDataYet")}
@@ -1342,7 +1344,9 @@ function AiInterviewQuestionsTab({
                                     <span>
                                       {t("userApplication.aiInterview.aiFeedbackCritique")}{" "}
                                       {cluster.allQuestions.length > 1
-                                        ? `(Câu #${q.questionOrder ?? qIdx + 1})`
+                                        ? t("userApplication.aiInterview.questionReference", {
+                                            order: q.questionOrder ?? qIdx + 1,
+                                          })
                                         : ""}
                                     </span>
                                   </div>
@@ -1404,7 +1408,9 @@ function AiInterviewQuestionsTab({
                                     <div className="flex items-start gap-2.5 rounded-r-xl border-l-2 border-amber-500 bg-amber-500/10 p-3.5 text-sm text-amber-950 dark:bg-amber-500/15 dark:text-amber-200">
                                       <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
                                       <div>
-                                        <span className="font-extrabold">Senior Tip: </span>
+                                        <span className="font-extrabold">
+                                          {t("userApplication.aiInterview.seniorTip")}:{" "}
+                                        </span>
                                         {parsedSuggestion.seniorTip}
                                       </div>
                                     </div>
@@ -1900,7 +1906,7 @@ function AiInterviewResultView({
                     {t("userApplication.aiInterview.aiOverviewReport")}
                   </h4>
                   <p className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
-                    INBLUE AI Evaluator
+                    {t("userApplication.aiInterview.evaluatorName")}
                   </p>
                 </div>
               </div>
@@ -2203,15 +2209,6 @@ function StaffAiInterviewWaitingView({
                   </>
                 )}
               </p>
-              {!isPending && detail?.aiInterviewSessionId && (
-                <p
-                  className={cn(
-                    "mt-2 font-mono text-xs font-semibold",
-                    "text-indigo-600 dark:text-indigo-400"
-                  )}>
-                  Session ID: {detail.aiInterviewSessionId}
-                </p>
-              )}
             </div>
           </div>
         </Card>
@@ -2834,7 +2831,7 @@ export function AiInterviewModule({
 
                 {!applicationDetailId && (
                   <p className="mt-3 text-xs leading-5 text-rose-600 dark:text-rose-300">
-                    Vòng AI chưa có applicationDetailId nên chưa thể đặt slot.
+                    {t("userApplication.aiInterview.noApplicationDetail")}
                   </p>
                 )}
               </div>

@@ -637,6 +637,7 @@ function ParticipantRow({
   active,
   tone,
 }: ParticipantRowProps) {
+  const { t } = useTranslation();
   const ringClass =
     tone === "student"
       ? "ring-blue-200 dark:ring-blue-800"
@@ -648,7 +649,7 @@ function ParticipantRow({
   const badge = active ? (
     <Badge variant="outline" className={`gap-1.5 border-current ${ringClass}`}>
       <span className={`h-1.5 w-1.5 animate-pulse rounded-full ${dotClass}`} />
-      {tone === "student" ? "online" : "live"}
+      {tone === "student" ? t("common.online") : t("common.live")}
     </Badge>
   ) : null;
   return (
@@ -664,20 +665,22 @@ function ParticipantRow({
       <p className="text-xs tracking-wide text-slate-500 uppercase dark:text-slate-400">{role}</p>
       <dl className="mt-3 space-y-1.5 text-xs">
         <div className="flex items-center justify-between">
-          <dt className="text-slate-500 dark:text-slate-400">In</dt>
+          <dt className="text-slate-500 dark:text-slate-400">{t("common.inLabel")}</dt>
           <dd className="font-mono">{joinedAt}</dd>
         </div>
         {leftAt !== "—" && (
           <div className="flex items-center justify-between">
-            <dt className="text-slate-500 dark:text-slate-400">Out</dt>
+            <dt className="text-slate-500 dark:text-slate-400">{t("common.outLabel")}</dt>
             <dd className="font-mono">{leftAt}</dd>
           </div>
         )}
         {durationSeconds !== null && durationSeconds > 0 && (
           <div className="flex items-center justify-between">
-            <dt className="text-slate-500 dark:text-slate-400">Duration</dt>
+            <dt className="text-slate-500 dark:text-slate-400">{t("common.duration")}</dt>
             <dd className="font-mono">
-              {Math.floor(durationSeconds / 60)}m {durationSeconds % 60}s
+              {Math.floor(durationSeconds / 60)}
+              {t("common.minutesShort")} {durationSeconds % 60}
+              {t("common.secondsShort")}
             </dd>
           </div>
         )}

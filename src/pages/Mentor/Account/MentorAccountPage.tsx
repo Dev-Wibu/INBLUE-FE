@@ -353,7 +353,7 @@ export function MentorAccountPage() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="absolute top-2.5 right-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
-                  title={t("general.edit") || "Chỉnh sửa"}>
+                  title={t("general.edit")}>
                   <Camera className="h-4 w-4" />
                 </button>
                 <input
