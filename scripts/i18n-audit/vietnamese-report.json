@@ -1185,7 +1185,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 273,
+    "line": 285,
     "character": 37,
     "type": "JsxAttribute[label]",
     "category": "vietnamese",
@@ -1193,7 +1193,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 273,
+    "line": 285,
     "character": 43,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1201,7 +1201,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 306,
+    "line": 318,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1209,7 +1209,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 385,
+    "line": 397,
     "character": 21,
     "type": "JsxAttribute[placeholder]",
     "category": "vietnamese",
@@ -1217,7 +1217,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 385,
+    "line": 397,
     "character": 33,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1225,7 +1225,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 429,
+    "line": 441,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1233,7 +1233,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 432,
+    "line": 444,
     "character": 29,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1241,7 +1241,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 433,
+    "line": 445,
     "character": 30,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1249,7 +1249,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 434,
+    "line": 446,
     "character": 32,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1257,7 +1257,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 435,
+    "line": 447,
     "character": 30,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1265,7 +1265,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 457,
+    "line": 469,
     "character": 25,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1273,7 +1273,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 466,
+    "line": 478,
     "character": 40,
     "type": "JsxAttribute[placeholder]",
     "category": "vietnamese",
@@ -1281,7 +1281,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 466,
+    "line": 478,
     "character": 52,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -1289,7 +1289,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 469,
+    "line": 481,
     "character": 51,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1297,7 +1297,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 482,
+    "line": 494,
     "character": 23,
     "type": "JsxText",
     "category": "vietnamese",
@@ -1305,7 +1305,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/QuestionBankManagementPage.tsx",
-    "line": 482,
+    "line": 494,
     "character": 78,
     "type": "JsxText",
     "category": "vietnamese",
@@ -2273,7 +2273,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/HorizontalPipeline.tsx",
-    "line": 262,
+    "line": 258,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2281,7 +2281,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/HorizontalPipeline.tsx",
-    "line": 263,
+    "line": 259,
     "character": 21,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2289,7 +2289,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/HorizontalPipeline.tsx",
-    "line": 265,
+    "line": 261,
     "character": 51,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -2329,7 +2329,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 2833,
+    "line": 2837,
     "character": 21,
     "type": "JsxText",
     "category": "vietnamese",

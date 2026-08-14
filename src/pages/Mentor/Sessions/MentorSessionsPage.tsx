@@ -21,8 +21,9 @@ import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import { cn } from "@/lib/utils";
+import { MentorQuickStat } from "@/pages/Mentor/Common";
 import { useAuthStore } from "@/stores/authStore";
-import { Calendar, Check, Search, Video } from "lucide-react";
+import { Calendar, Check, Search, Star, Video } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -303,223 +304,271 @@ export function MentorSessionsPage() {
         </div>
       </div>
 
-      {/* Table Card - Admin Pattern */}
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        {isLoading ? (
-          <div className="p-4">
-            <Skeleton className="h-12" />
-            <Skeleton className="mt-2 h-12" />
-            <Skeleton className="mt-2 h-12" />
-          </div>
-        ) : mentorSessions.length === 0 ? (
-          <div className="flex h-64 flex-col items-center justify-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-              <Video className="h-6 w-6 text-slate-400" />
+      {/* Main content grid */}
+      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+        {/* Left - Table */}
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {isLoading ? (
+            <div className="p-4">
+              <Skeleton className="h-12" />
+              <Skeleton className="mt-2 h-12" />
+              <Skeleton className="mt-2 h-12" />
             </div>
-            <p className="text-sm font-medium text-slate-500">
-              {t("common.noInterviewSessionYet")}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900">
-                    <TableHead className="w-[80px] pl-5 font-semibold text-slate-700 dark:text-slate-200">
-                      <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
-                    </TableHead>
-                    <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-                      {t("common.roomName")}
-                    </TableHead>
-                    <TableHead className="w-[120px] min-w-[120px] px-5 font-semibold text-slate-700 dark:text-slate-200">
-                      {t("common.status")}
-                    </TableHead>
-                    <TableHead className="w-[150px] min-w-[150px] px-5 font-semibold text-slate-700 dark:text-slate-200">
-                      <SortButton {...getSortProps("sessionSortValue")}>
-                        {t("common.time")}
-                      </SortButton>
-                    </TableHead>
-                    <TableHead className="w-[100px] min-w-[100px] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
-                      {t("common.review")}
-                    </TableHead>
-                    <TableHead className="w-[200px] min-w-[200px] pr-5 text-center font-semibold text-slate-700 dark:text-slate-200">
-                      {t("common.actions")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pageData.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="h-48 text-center">
-                        <div className="flex flex-col items-center gap-3">
-                          <Search className="h-6 w-6 text-slate-400" />
-                          <p className="text-sm text-slate-500">
-                            {t("mentorSessions.thereIsNoProperInterview")}
-                          </p>
-                        </div>
-                      </TableCell>
+          ) : mentorSessions.length === 0 ? (
+            <div className="flex h-64 flex-col items-center justify-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                <Video className="h-6 w-6 text-slate-400" />
+              </div>
+              <p className="text-sm font-medium text-slate-500">
+                {t("common.noInterviewSessionYet")}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900">
+                      <TableHead className="w-[80px] pl-5 font-semibold text-slate-700 dark:text-slate-200">
+                        <SortButton {...getSortProps("id")}>{t("common.id")}</SortButton>
+                      </TableHead>
+                      <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        {t("common.roomName")}
+                      </TableHead>
+                      <TableHead className="w-[120px] min-w-[120px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+                        {t("common.status")}
+                      </TableHead>
+                      <TableHead className="w-[150px] min-w-[150px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+                        <SortButton {...getSortProps("sessionSortValue")}>
+                          {t("common.time")}
+                        </SortButton>
+                      </TableHead>
+                      <TableHead className="w-[100px] min-w-[100px] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        {t("common.review")}
+                      </TableHead>
+                      <TableHead className="w-[200px] min-w-[200px] pr-5 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        {t("common.actions")}
+                      </TableHead>
                     </TableRow>
-                  ) : (
-                    pageData.map((session) => {
-                      const statusBadge = getStatusBadgeClass(session.status || "");
-                      const hasReview =
-                        typeof session.id === "number" && reviewBySessionId.has(session.id);
-                      return (
-                        <TableRow
-                          key={session.id}
-                          className="border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/80">
-                          <TableCell className="py-3.5 pl-5">
-                            <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
-                              #{session.id}
-                            </span>
-                          </TableCell>
-                          <TableCell className="px-4 py-3.5">
-                            <p className="text-sm font-medium text-slate-900 dark:text-white">
-                              {session.roomName || `Session ${session.id}`}
+                  </TableHeader>
+                  <TableBody>
+                    {pageData.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-48 text-center">
+                          <div className="flex flex-col items-center gap-3">
+                            <Search className="h-6 w-6 text-slate-400" />
+                            <p className="text-sm text-slate-500">
+                              {t("mentorSessions.thereIsNoProperInterview")}
                             </p>
-                            {session.roomUrl && (
-                              <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                                {session.roomUrl}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pageData.map((session) => {
+                        const statusBadge = getStatusBadgeClass(session.status || "");
+                        const hasReview =
+                          typeof session.id === "number" && reviewBySessionId.has(session.id);
+                        return (
+                          <TableRow
+                            key={session.id}
+                            className="border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/80">
+                            <TableCell className="py-3.5 pl-5">
+                              <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                                #{session.id}
+                              </span>
+                            </TableCell>
+                            <TableCell className="px-4 py-3.5">
+                              <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                {session.roomName || `Session ${session.id}`}
                               </p>
-                            )}
-                          </TableCell>
-                          <TableCell className="px-5 py-3.5">
-                            <span
-                              className={cn(
-                                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
-                                statusBadge.bg,
-                                statusBadge.text
-                              )}>
-                              <span className={cn("h-1.5 w-1.5 rounded-full", statusBadge.dot)} />
-                              {session.status}
-                            </span>
-                          </TableCell>
-                          <TableCell className="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300">
-                            {session.startTime1 ? (
-                              <div className="flex flex-col">
-                                <span>{new Date(session.startTime1).toLocaleDateString()}</span>
-                                <span className="text-xs text-slate-400">
-                                  {new Date(session.startTime1).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
+                              {session.roomUrl && (
+                                <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                  {session.roomUrl}
+                                </p>
+                              )}
+                            </TableCell>
+                            <TableCell className="px-5 py-3.5">
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
+                                  statusBadge.bg,
+                                  statusBadge.text
+                                )}>
+                                <span className={cn("h-1.5 w-1.5 rounded-full", statusBadge.dot)} />
+                                {session.status}
+                              </span>
+                            </TableCell>
+                            <TableCell className="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300">
+                              {session.startTime1 ? (
+                                <div className="flex flex-col">
+                                  <span>{new Date(session.startTime1).toLocaleDateString()}</span>
+                                  <span className="text-xs text-slate-400">
+                                    {new Date(session.startTime1).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </span>
+                                </div>
+                              ) : session.status === "DRAFT" ? (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                  {t("common.draft")}
                                 </span>
-                              </div>
-                            ) : session.status === "DRAFT" ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                                {t("common.draft")}
-                              </span>
-                            ) : session.status === "REJECTED" || session.status === "CANCELED" ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700 dark:bg-rose-500/20 dark:text-rose-300">
-                                {t("common.canceled")}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="px-5 py-3.5 text-center">
-                            {hasReview ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-                                <Check className="h-3 w-3" />
-                                {t("common.done")}
-                              </span>
-                            ) : session.status === "COMPLETED" ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
-                                {t("common.pending")}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="px-5 py-3.5">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (typeof session.id === "number") {
-                                    navigate(`/mentor/sessions/${session.id}`);
-                                  }
-                                }}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                                {t("common.view")}
-                              </button>
-                              {session.status === "DRAFT" && (
-                                <>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleAcceptSession(session);
-                                    }}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 transition-all hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300">
-                                    {t("common.accept")}
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleRejectSession(session);
-                                    }}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 transition-all hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300">
-                                    {t("common.reject")}
-                                  </button>
-                                </>
+                              ) : session.status === "REJECTED" || session.status === "CANCELED" ? (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700 dark:bg-rose-500/20 dark:text-rose-300">
+                                  {t("common.canceled")}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">—</span>
                               )}
-                              {!hasReview && session.status === "COMPLETED" && (
+                            </TableCell>
+                            <TableCell className="px-5 py-3.5 text-center">
+                              {hasReview ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                                  <Check className="h-3 w-3" />
+                                  {t("common.done")}
+                                </span>
+                              ) : session.status === "COMPLETED" ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+                                  {t("common.pending")}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="px-5 py-3.5">
+                              <div className="flex items-center justify-center gap-1.5">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (typeof session.id === "number") {
-                                      navigate(`/mentor/sessions/${session.id}/review`);
-                                    }
-                                  }}
-                                  className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 transition-all hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300">
-                                  {t("common.writeReview")}
-                                </button>
-                              )}
-                              {hasReview && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (typeof session.id === "number") {
-                                      navigate(`/mentor/sessions/${session.id}/review`);
+                                      navigate(`/mentor/sessions/${session.id}`);
                                     }
                                   }}
                                   className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                                  {t("common.editReview")}
+                                  {t("common.view")}
                                 </button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Pagination */}
-            {sortedData.length > 0 && (
-              <div className="flex items-center justify-between border-t border-slate-200 bg-white px-5 py-3 dark:border-t-slate-800 dark:bg-slate-900">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {t("common.showing", {
-                    start: pagination.startIndex + 1,
-                    end: Math.min(pagination.endIndex + 1, sortedData.length),
-                    total: sortedData.length,
-                  })}
-                </p>
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(size) => {
-                    setPageSize(size);
-                    pagination.goToFirstPage();
-                  }}
-                  pageSizeOptions={[5, 10, 20, 50]}
-                />
+                                {session.status === "DRAFT" && (
+                                  <>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAcceptSession(session);
+                                      }}
+                                      className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 transition-all hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300">
+                                      {t("common.accept")}
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRejectSession(session);
+                                      }}
+                                      className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 transition-all hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300">
+                                      {t("common.reject")}
+                                    </button>
+                                  </>
+                                )}
+                                {!hasReview && session.status === "COMPLETED" && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (typeof session.id === "number") {
+                                        navigate(`/mentor/sessions/${session.id}/review`);
+                                      }
+                                    }}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 transition-all hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300">
+                                    {t("common.writeReview")}
+                                  </button>
+                                )}
+                                {hasReview && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (typeof session.id === "number") {
+                                        navigate(`/mentor/sessions/${session.id}/review`);
+                                      }
+                                    }}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                                    {t("common.editReview")}
+                                  </button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            )}
-          </>
-        )}
+
+              {/* Pagination */}
+              {sortedData.length > 0 && (
+                <div className="flex items-center justify-between border-t border-slate-200 bg-white px-5 py-3 dark:border-t-slate-800 dark:bg-slate-900">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {t("common.showing", {
+                      start: pagination.startIndex + 1,
+                      end: Math.min(pagination.endIndex + 1, sortedData.length),
+                      total: sortedData.length,
+                    })}
+                  </p>
+                  <PaginationControl
+                    pagination={pagination}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size);
+                      pagination.goToFirstPage();
+                    }}
+                    pageSizeOptions={[5, 10, 20, 50]}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Right side cards - Stats */}
+        <aside className="hidden lg:flex lg:flex-col lg:gap-4">
+          {/* Total sessions card */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/15">
+                  <Video className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("common.totalSession")}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-end gap-2">
+              <p className="text-3xl font-bold text-slate-900 dark:text-white">
+                {mentorSessions.length}
+              </p>
+              <p className="mb-1 text-sm text-slate-500 dark:text-slate-400">sessions</p>
+            </div>
+          </div>
+
+          {/* Quick stats cards */}
+          <MentorQuickStat
+            icon={Calendar}
+            label={t("common.comingSoon")}
+            value={scheduledCount}
+            tone="indigo"
+          />
+          <MentorQuickStat
+            icon={Check}
+            label={t("general.completed")}
+            value={completedCount}
+            tone="emerald"
+          />
+          <MentorQuickStat
+            icon={Star}
+            label={t("common.totalReview")}
+            value={reviews.length}
+            tone="amber"
+          />
+        </aside>
       </div>
     </div>
   );

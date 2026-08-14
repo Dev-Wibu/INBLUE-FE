@@ -2201,7 +2201,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
-    "line": 155,
+    "line": 160,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -2209,7 +2209,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
-    "line": 195,
+    "line": 200,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -2217,7 +2217,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
-    "line": 196,
+    "line": 201,
     "character": 53,
     "type": "JsxText",
     "category": "english",
