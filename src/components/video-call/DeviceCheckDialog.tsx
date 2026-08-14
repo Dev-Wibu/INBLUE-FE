@@ -229,7 +229,7 @@ export function DeviceCheckDialog({
   };
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] gap-0 overflow-hidden p-0 sm:max-h-[90dvh] sm:max-w-[500px]">
+      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-h-[90dvh] sm:max-w-[500px] md:w-[500px] md:p-0">
         <DialogHeader className="shrink-0 border-b border-slate-200 px-4 py-4 pr-12 text-left sm:px-6 dark:border-slate-800">
           <DialogTitle>{t("common.checkTheDevice")}</DialogTitle>
           <DialogDescription>{t("compVideoCall.checkTheCameraAndMicrophone")}</DialogDescription>
