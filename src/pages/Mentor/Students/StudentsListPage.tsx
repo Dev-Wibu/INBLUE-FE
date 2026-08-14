@@ -324,36 +324,36 @@ export function StudentsListPage() {
                   )}
                 </div>
               ) : (
-                <div className="min-w-[1040px] overflow-x-auto">
-                  <Table>
+                <div className="min-w-[1240px] overflow-x-auto">
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                        <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[6%] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.id")}
                         </TableHead>
-                        <TableHead className="w-[31%] min-w-[280px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[27%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("name")}>{t("common.candidate")}</SortButton>
                         </TableHead>
-                        <TableHead className="w-[11%] min-w-[105px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[9%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("sessionCount")}>
                             {t("common.session")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[11%] min-w-[110px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[9%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.feedback1")}
                         </TableHead>
-                        <TableHead className="w-[12%] min-w-[115px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[9%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.review")}
                         </TableHead>
-                        <TableHead className="w-[13%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[11%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("avgRating")}>
                             {t("common.evaluate")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[14%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[15%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.lastSession")}
                         </TableHead>
-                        <TableHead className="w-[13%] min-w-[140px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[14%] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.status")}
                         </TableHead>
                       </TableRow>
@@ -371,7 +371,7 @@ export function StudentsListPage() {
                           <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                             #{student.id}
                           </TableCell>
-                          <TableCell className="px-4 py-4">
+                          <TableCell className="px-5 py-4">
                             <div className="flex items-center gap-3">
                               <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
                                 <AvatarImage
@@ -393,28 +393,28 @@ export function StudentsListPage() {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="px-4 py-4 text-center">
+                          <TableCell className="px-5 py-4 text-center">
                             <Badge
                               variant="outline"
                               className="min-w-9 justify-center font-mono text-xs font-semibold">
                               {student.sessionCount}
                             </Badge>
                           </TableCell>
-                          <TableCell className="px-4 py-4 text-center">
+                          <TableCell className="px-5 py-4 text-center">
                             <Badge
                               variant="outline"
                               className="min-w-9 justify-center font-mono text-xs font-semibold">
                               {student.feedbackCount}
                             </Badge>
                           </TableCell>
-                          <TableCell className="px-4 py-4 text-center">
+                          <TableCell className="px-5 py-4 text-center">
                             <Badge
                               variant="outline"
                               className="min-w-9 justify-center font-mono text-xs font-semibold">
                               {student.reviewCount}
                             </Badge>
                           </TableCell>
-                          <TableCell className="px-4 py-4">
+                          <TableCell className="px-5 py-4">
                             {student.reviewCount > 0 ? (
                               <span className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-700 dark:text-amber-400">
                                 <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -424,7 +424,7 @@ export function StudentsListPage() {
                               <span className="text-slate-400">—</span>
                             )}
                           </TableCell>
-                          <TableCell className="px-4 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                          <TableCell className="px-5 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                             {student.lastSessionDate
                               ? formatDate(treatZuluAsVietnamLocal(student.lastSessionDate))
                               : "—"}
@@ -432,7 +432,7 @@ export function StudentsListPage() {
                           <TableCell className="py-4 pr-6 text-center">
                             <Badge
                               variant="outline"
-                              className={`min-w-[108px] justify-center ${getRatingBadgeClass(
+                              className={`min-w-[96px] justify-center px-2.5 ${getRatingBadgeClass(
                                 student.avgRating,
                                 student.reviewCount > 0
                               )}`}>

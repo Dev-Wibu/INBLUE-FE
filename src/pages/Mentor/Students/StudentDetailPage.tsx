@@ -20,6 +20,11 @@ import { treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { isSessionMentor } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import {
+  MentorDetailHeader,
+  MentorDetailPage,
+  MentorDetailPanel,
+} from "@/pages/Mentor/components/MentorDetailLayout";
+import {
   getLatestCandidateProfile,
   useCandidateProfile,
 } from "@/services/candidate-profile.manager";
@@ -146,31 +151,20 @@ export function StudentDetailPage() {
   }
 
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      <header className="flex flex-none items-center gap-2 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-        <button
-          type="button"
-          onClick={() => navigate("/mentor?tab=students")}
-          aria-label={t("common.backToTheList")}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:border-slate-700 dark:text-slate-300 dark:hover:bg-indigo-950/40">
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate("/mentor?tab=students")}
-          className="hidden text-xs font-medium text-slate-500 hover:text-indigo-600 sm:block dark:text-slate-400 dark:hover:text-indigo-400">
-          {t("mentorStudents.student")}
-        </button>
-        <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-slate-400 sm:block" />
-        <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
-          {studentInfo.name || t("common.studentVar0", { var_0: studentId })}
-        </h1>
-        <Badge variant="outline" className="font-mono text-xs text-slate-500">
-          #{studentId}
-        </Badge>
-      </header>
+    <MentorDetailPage>
+      <MentorDetailHeader
+        onBack={() => navigate("/mentor?tab=students")}
+        backLabel={t("general.back")}
+        parentLabel={t("mentorStudents.student")}
+        title={studentInfo.name || t("common.studentVar0", { var_0: studentId })}
+        badge={
+          <Badge variant="outline" className="font-mono text-xs text-slate-500">
+            #{studentId}
+          </Badge>
+        }
+      />
 
-      <section className="flex-none border-b border-slate-200 bg-white p-4 sm:px-6 sm:py-5 dark:border-slate-800 dark:bg-slate-900">
+      <MentorDetailPanel className="p-5 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -213,15 +207,15 @@ export function StudentDetailPage() {
             </div>
           )}
         </div>
-      </section>
+      </MentorDetailPanel>
 
-      <section className="flex-none border-b border-slate-200 bg-slate-50 px-4 py-4 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+      <section>
         <div className="grid gap-4 sm:grid-cols-3">
           {[
             {
               icon: Calendar,
               value: totalSessions,
-              label: t("common.totalSessions"),
+              label: t("mentorOverview.totalSessions"),
               detail: `${completedSessions} ${t("general.completed")}`,
               tone: "text-indigo-600 dark:text-indigo-300",
               surface: "bg-indigo-50 dark:bg-indigo-950/50",
@@ -237,7 +231,7 @@ export function StudentDetailPage() {
             {
               icon: Star,
               value: totalReviews,
-              label: t("common.totalReviews"),
+              label: t("adminReviewmanagement.totalReviews"),
               detail: totalReviews > 0 ? `${avgRating.toFixed(1)}/5` : "—",
               tone: "text-amber-600 dark:text-amber-300",
               surface: "bg-amber-50 dark:bg-amber-950/50",
@@ -245,7 +239,7 @@ export function StudentDetailPage() {
           ].map(({ icon: Icon, value, label, detail, tone, surface }) => (
             <div
               key={label}
-              className="flex min-h-[92px] items-center gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              className="flex min-h-[96px] items-center gap-4 rounded-2xl border border-slate-200/90 bg-white px-5 py-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
               <div
                 className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${surface}`}>
                 <Icon className={`h-5 w-5 ${tone}`} aria-hidden />
@@ -268,14 +262,14 @@ export function StudentDetailPage() {
         </div>
       </section>
 
-      <main className="flex-1 overflow-auto p-4 sm:p-6">
+      <MentorDetailPanel>
         <div className="flex flex-col gap-4">
           {/* Tabs */}
-          <div className="space-y-4">
+          <div className="space-y-4 pb-5">
             <div
               role="tablist"
               aria-label="student-detail-tabs"
-              className="flex w-full overflow-x-auto border-b border-slate-200 dark:border-slate-800">
+              className="flex w-full overflow-x-auto border-b border-slate-200 px-5 dark:border-slate-800">
               {[
                 {
                   id: "sessions",
@@ -437,8 +431,8 @@ export function StudentDetailPage() {
             )}
           </div>
         </div>
-      </main>
-    </div>
+      </MentorDetailPanel>
+    </MentorDetailPage>
   );
 }
 

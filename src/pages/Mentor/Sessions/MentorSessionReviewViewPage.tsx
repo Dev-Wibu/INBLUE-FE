@@ -14,9 +14,14 @@ import {
 import { useSessionById } from "@/hooks/useSession";
 import { treatZuluAsVietnamLocal } from "@/lib/formatting";
 import {
+  MentorDetailHeader,
+  MentorDetailPage,
+  MentorDetailPanel,
+  MentorPanelHeading,
+} from "@/pages/Mentor/components/MentorDetailLayout";
+import {
   ArrowLeft,
   Check,
-  ChevronRight,
   ClipboardList,
   Lightbulb,
   Mail,
@@ -137,9 +142,7 @@ function EditableReviewSection({
   }, [active, editing]);
 
   return (
-    <div
-      onDoubleClick={onActivate}
-      className="group relative min-w-0 border-b border-slate-100 px-5 py-4 last:border-b-0 dark:border-slate-800">
+    <div onDoubleClick={onActivate} className="group relative min-w-0 px-5 py-4">
       <div className="mb-2 flex items-center gap-2 pr-8">
         <span
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${TONE_STYLES[config.tone]}`}>
@@ -312,52 +315,40 @@ export function MentorSessionReviewViewPage() {
     );
   }
 
+  const displayedRating = editing ? draft.rating : review.rating || 0;
+
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      <header className="flex flex-none flex-col gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex min-w-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={goBack}
-            aria-label={t("common.backToTheSession")}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:border-slate-700 dark:text-slate-300 dark:hover:bg-indigo-950/40">
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={goBack}
-            className="hidden text-xs font-medium text-slate-500 hover:text-indigo-600 sm:block dark:text-slate-400 dark:hover:text-indigo-400">
-            {t("common.interviewSession")} #{sessionId}
-          </button>
-          <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-slate-400 sm:block" />
-          <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
-            {t("mentorReviews.mentorReviewReport")} #{review.id}
-          </h1>
+    <MentorDetailPage>
+      <MentorDetailHeader
+        onBack={goBack}
+        backLabel={t("general.back")}
+        parentLabel={`${t("common.interviewSession")} #${sessionId}`}
+        title={`${t("mentorReviews.mentorReviewReport")} #${review.id}`}
+        badge={
           <Badge
             variant="outline"
             className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
             {t("general.completed")}
           </Badge>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2 pl-11 sm:pl-0">
-          {editing ? (
+        }
+        actions={
+          editing ? (
             <>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={cancelEditing}
                 disabled={updateReviewMutation.isPending}
-                className="h-8 px-3 text-xs">
-                <X className="h-3.5 w-3.5" />
+                className="h-9 rounded-xl px-3">
+                <X className="h-4 w-4" />
                 {t("general.cancel")}
               </Button>
               <Button
                 size="sm"
                 onClick={saveReview}
                 disabled={updateReviewMutation.isPending}
-                className="h-8 bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
-                <Save className="h-3.5 w-3.5" />
+                className="h-9 rounded-xl bg-indigo-600 px-3 font-semibold text-white hover:bg-indigo-700">
+                <Save className="h-4 w-4" />
                 {t("common.save")}
               </Button>
             </>
@@ -366,88 +357,29 @@ export function MentorSessionReviewViewPage() {
               variant="outline"
               size="sm"
               onClick={() => startEditing()}
-              className="h-8 px-3 text-xs font-semibold">
-              <Pencil className="h-3.5 w-3.5" />
+              className="h-9 rounded-xl px-3 font-semibold">
+              <Pencil className="h-4 w-4" />
               {t("common.editReview")}
             </Button>
-          )}
-        </div>
-      </header>
+          )
+        }
+      />
 
-      <main className="flex-1 overflow-auto">
-        <section className="border-b border-slate-200 bg-white px-4 py-5 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex min-w-0 items-center gap-4">
-              <Avatar className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 dark:border-slate-700">
-                <AvatarImage src={studentAvatarUrl} alt={studentName} />
-                <AvatarFallback className="rounded-lg bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                  {studentName.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="truncate text-lg font-bold text-slate-900 dark:text-white">
-                  {studentName}
-                </p>
-                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                  {studentEmail && (
-                    <span className="inline-flex items-center gap-1.5">
-                      <Mail className="h-3.5 w-3.5" />
-                      {studentEmail}
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-1.5">
-                    <UserRound className="h-3.5 w-3.5" />
-                    {session.roomName || t("common.interviewSession")}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex min-w-[220px] flex-col gap-2 lg:items-end">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {t("mentorReviews.overallAssessment")}
-              </p>
-              <div className="flex items-center gap-3">
-                <span className="text-3xl font-bold text-slate-900 dark:text-white">
-                  {(editing ? draft.rating : review.rating || 0).toFixed(1)}
-                  <span className="ml-1 text-sm font-medium text-slate-500">/5</span>
-                </span>
-                <StarRating
-                  value={editing ? draft.rating : review.rating || 0}
-                  onChange={
-                    editing
-                      ? (rating) => setDraft((current) => ({ ...current, rating }))
-                      : undefined
-                  }
-                  readOnly={!editing}
-                  size="md"
-                />
-              </div>
-              {reviewEndedAt && !editing && (
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  <TimeAgo date={String(reviewEndedAt)} />
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
-
-        <div className="space-y-5 p-4 sm:p-6">
-          <section className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            <div className="border-b border-slate-200 px-5 py-3 dark:border-slate-800">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                {t("mentorReviews.detailedAssessmentStarMethod")}
-              </h2>
-            </div>
-            <div className="grid lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+        <div className="min-w-0 space-y-6 lg:col-span-8">
+          <MentorDetailPanel>
+            <MentorPanelHeading
+              icon={<ClipboardList className="h-4 w-4" />}
+              title={t("mentorReviews.detailedAssessmentStarMethod")}
+            />
+            <div className="relative space-y-5 p-5 pl-14 before:absolute before:top-8 before:bottom-8 before:left-[31px] before:w-px before:bg-slate-200 before:content-[''] dark:before:bg-slate-700">
               {STAR_SECTIONS.map((config, index) => (
                 <div
                   key={config.field}
-                  className={
-                    index % 2 === 0
-                      ? "lg:border-r lg:border-slate-100 dark:lg:border-slate-800"
-                      : ""
-                  }>
+                  className="relative rounded-xl border border-slate-200/90 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-950/40">
+                  <span className="absolute top-5 -left-[43px] z-10 flex h-8 w-8 items-center justify-center rounded-full border-4 border-white bg-indigo-600 text-xs font-bold text-white dark:border-slate-900">
+                    {"STAR"[index]}
+                  </span>
                   <EditableReviewSection
                     config={config}
                     value={draft[config.field]}
@@ -459,15 +391,14 @@ export function MentorSessionReviewViewPage() {
                 </div>
               ))}
             </div>
-          </section>
+          </MentorDetailPanel>
 
-          <section className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            <div className="border-b border-slate-200 px-5 py-3 dark:border-slate-800">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                {t("compReview.additionalCommentsOptional")}
-              </h2>
-            </div>
-            <div className="grid lg:grid-cols-3 lg:divide-x lg:divide-slate-100 dark:lg:divide-slate-800">
+          <MentorDetailPanel>
+            <MentorPanelHeading
+              icon={<Lightbulb className="h-4 w-4" />}
+              title={t("compReview.additionalCommentsOptional")}
+            />
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {ADDITIONAL_SECTIONS.map((config) => (
                 <EditableReviewSection
                   key={config.field}
@@ -480,9 +411,61 @@ export function MentorSessionReviewViewPage() {
                 />
               ))}
             </div>
-          </section>
+          </MentorDetailPanel>
         </div>
-      </main>
-    </div>
+
+        <aside className="min-w-0 space-y-6 lg:col-span-4">
+          <MentorDetailPanel className="p-5">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-14 w-14 shrink-0 border border-slate-200 dark:border-slate-700">
+                <AvatarImage src={studentAvatarUrl} alt={studentName} />
+                <AvatarFallback className="bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                  {studentName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate text-base font-bold text-slate-950 dark:text-white">
+                  {studentName}
+                </p>
+                {studentEmail && (
+                  <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                    <Mail className="h-3.5 w-3.5 shrink-0" />
+                    {studentEmail}
+                  </p>
+                )}
+                <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                  <UserRound className="h-3.5 w-3.5 shrink-0" />
+                  {session.roomName || t("common.interviewSession")}
+                </p>
+              </div>
+            </div>
+          </MentorDetailPanel>
+
+          <MentorDetailPanel className="p-5 lg:sticky lg:top-6">
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              {t("mentorReviews.overallAssessment")}
+            </p>
+            <p className="mt-3 text-4xl font-bold text-slate-950 dark:text-white">
+              {displayedRating.toFixed(1)}
+              <span className="text-base font-medium text-slate-400">/5</span>
+            </p>
+            <StarRating
+              value={displayedRating}
+              onChange={
+                editing ? (rating) => setDraft((current) => ({ ...current, rating })) : undefined
+              }
+              readOnly={!editing}
+              size="md"
+              className="mt-4"
+            />
+            {reviewEndedAt && !editing && (
+              <p className="mt-4 border-t border-slate-100 pt-4 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                <TimeAgo date={String(reviewEndedAt)} />
+              </p>
+            )}
+          </MentorDetailPanel>
+        </aside>
+      </div>
+    </MentorDetailPage>
   );
 }

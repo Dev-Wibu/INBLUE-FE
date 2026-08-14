@@ -244,6 +244,11 @@ function getMentorRouteRules(t: TFunction): RouteLabelRule[] {
       },
     },
     {
+      pattern: /^\/mentor\/feedback\/(?<feedbackId>[^/]+)$/,
+      label: t("common.feedbackDetails"),
+      tabType: "reviews",
+    },
+    {
       pattern: /^\/mentor\/students\/(?<userId>[^/]+)$/,
       label: t("general.studentDetails"),
       tabType: "students",
@@ -293,6 +298,7 @@ const USER_SEGMENT_TO_TAB: Record<string, string> = {
 const MENTOR_SEGMENT_TO_TAB: Record<string, string> = {
   sessions: "sessions",
   reviews: "reviews",
+  feedback: "reviews",
   students: "students",
   messenger: "messenger",
 };

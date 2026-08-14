@@ -6,8 +6,25 @@ import { useUserById } from "@/hooks/useApplication";
 import { useMentorById } from "@/hooks/useMentor";
 import { useMentorFeedbackById } from "@/hooks/useMentorFeedback";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { normalizeFiveStarRating } from "@/lib/rating";
+import {
+  MentorDetailHeader,
+  MentorDetailPage,
+  MentorDetailPanel,
+  MentorPanelHeading,
+} from "@/pages/Mentor/components/MentorDetailLayout";
 import { useAuthStore } from "@/stores/authStore";
-import { ArrowLeft, Building2, CalendarClock, ChevronRight, Inbox, Mail, User } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  CalendarClock,
+  ChevronRight,
+  FileText,
+  Inbox,
+  Mail,
+  MessageSquare,
+  User,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
@@ -98,7 +115,7 @@ export function MentorFeedbackDetailPage() {
     );
   }
 
-  const rating = feedback.rating || 0;
+  const rating = normalizeFiveStarRating(feedback.rating);
   const studentName =
     feedback.user?.name ||
     studentInfo?.name ||
@@ -128,145 +145,132 @@ export function MentorFeedbackDetailPage() {
   ];
 
   return (
-    <div className={pageShell}>
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex min-w-0 items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 shrink-0"
-            onClick={goBack}
-            title={t("common.backToTheList")}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {t("common.reviewAndFeedback")} · #{feedback.id}
+    <MentorDetailPage>
+      <MentorDetailHeader
+        onBack={goBack}
+        backLabel={t("general.back")}
+        parentLabel={t("common.reviewAndFeedback")}
+        title={`${t("common.feedbackDetails")} #${feedback.id}`}
+        actions={
+          sessionId ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 rounded-xl"
+              onClick={() =>
+                navigate(`/mentor/sessions/${sessionId}`, {
+                  state: { returnTo: `/mentor/feedback/${feedback.id}` },
+                })
+              }>
+              {t("common.viewSessionDetails")}
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : undefined
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+        <div className="min-w-0 space-y-6 lg:col-span-8">
+          <MentorDetailPanel>
+            <MentorPanelHeading
+              icon={<MessageSquare className="h-4 w-4" />}
+              title={t("mentorSessions.candidateFeedback")}
+              aside={<StarRating value={rating} readOnly size="sm" color="sky" />}
+            />
+            <p className="min-h-40 p-6 text-sm leading-8 whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+              {feedback.comment || t("mentorFeedback.studentsHaveNotLeftDetailed")}
             </p>
-            <h1 className="truncate text-lg font-bold text-slate-900 dark:text-white">
-              {t("common.feedbackDetails")}
-            </h1>
-          </div>
+          </MentorDetailPanel>
+
+          <MentorDetailPanel>
+            <MentorPanelHeading
+              icon={<FileText className="h-4 w-4" />}
+              title={t("common.sessionInformation")}
+            />
+            <dl className="grid divide-y divide-slate-100 px-5 md:grid-cols-2 md:divide-y-0 dark:divide-slate-800">
+              {sessionDetails.map((item) => (
+                <div
+                  key={item.label}
+                  className="border-b border-slate-100 py-5 md:odd:pr-6 md:even:pl-6 dark:border-slate-800">
+                  <dt className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    {item.label}
+                  </dt>
+                  <dd className="mt-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+                    {item.value || "—"}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </MentorDetailPanel>
         </div>
 
-        {sessionId && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9"
-            onClick={() =>
-              navigate(`/mentor/sessions/${sessionId}`, {
-                state: { returnTo: `/mentor/feedback/${feedback.id}` },
-              })
-            }>
-            {t("common.viewSessionDetails")}
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
-      </header>
-
-      <section className="border-b border-slate-200 bg-white px-4 py-5 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
-          <div className="flex min-w-0 items-center gap-4">
-            <Avatar className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 dark:border-slate-700">
-              <AvatarImage src={studentAvatarUrl} alt={studentName} />
-              <AvatarFallback className="rounded-lg bg-sky-50 font-semibold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
-                {studentName?.charAt(0)?.toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <h2 className="truncate text-base font-semibold text-slate-900 dark:text-white">
-                {studentName}
-              </h2>
-              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+        <aside className="min-w-0 space-y-6 lg:col-span-4">
+          <MentorDetailPanel className="p-5">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-14 w-14 shrink-0 border border-slate-200 dark:border-slate-700">
+                <AvatarImage src={studentAvatarUrl} alt={studentName} />
+                <AvatarFallback className="bg-sky-50 font-bold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+                  {studentName?.charAt(0)?.toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <h2 className="truncate text-base font-bold text-slate-950 dark:text-white">
+                  {studentName}
+                </h2>
                 {studentEmail && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5" />
+                  <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                    <Mail className="h-3.5 w-3.5 shrink-0" />
                     {studentEmail}
-                  </span>
+                  </p>
                 )}
-                {sessionId && <span>Session #{sessionId}</span>}
                 {receivedAt && (
-                  <span className="inline-flex items-center gap-1.5">
+                  <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                     <CalendarClock className="h-3.5 w-3.5" />
                     {formatDateTime(treatZuluAsVietnamLocal(receivedAt))}
-                  </span>
+                  </p>
                 )}
               </div>
             </div>
-          </div>
+          </MentorDetailPanel>
 
-          <div className="flex shrink-0 items-center gap-4 border-t border-slate-200 pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-6 dark:border-slate-700">
-            <div>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                {t("common.responseReceived")}
-              </p>
-              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
-                {rating.toFixed(1)}
-                <span className="text-sm font-medium text-slate-400">/5</span>
-              </p>
-            </div>
-            <StarRating value={rating} readOnly size="sm" color="sky" />
-          </div>
-        </div>
-      </section>
+          <MentorDetailPanel className="p-5">
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              {t("common.responseReceived")}
+            </p>
+            <p className="mt-3 text-4xl font-bold text-slate-950 dark:text-white">
+              {rating.toFixed(1)}
+              <span className="text-base font-medium text-slate-400">/5</span>
+            </p>
+            <StarRating value={rating} readOnly size="sm" color="sky" className="mt-4" />
+          </MentorDetailPanel>
 
-      <main className="px-4 sm:px-6 lg:px-8">
-        <section className="border-b border-slate-200 py-6 dark:border-slate-800">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-            {t("common.feedback")}
-          </h2>
-          <p className="mt-3 max-w-4xl text-sm leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-200">
-            {feedback.comment || t("mentorFeedback.studentsHaveNotLeftDetailed")}
-          </p>
-        </section>
-
-        <section className="border-b border-slate-200 py-6 dark:border-slate-800">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-            {t("common.sessionInformation")}
-          </h2>
-          <dl className="mt-4 grid gap-x-8 md:grid-cols-2">
-            {sessionDetails.map((item) => (
-              <div
-                key={item.label}
-                className="grid gap-2 border-t border-slate-100 py-4 sm:grid-cols-[140px_minmax(0,1fr)] dark:border-slate-800/80">
-                <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {item.label}
-                </dt>
-                <dd className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {item.value || "—"}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-
-        <section className="py-6">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-            {t("common.mentor")}
-          </h2>
-          <div className="mt-4 flex items-center gap-3">
-            <Avatar className="h-10 w-10 rounded-lg border border-slate-200 dark:border-slate-700">
-              <AvatarImage
-                src={feedback.mentor?.avatarUrl || mentorInfo?.avatarUrl}
-                alt={mentorName}
-              />
-              <AvatarFallback className="rounded-lg bg-emerald-50 font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                {mentorName.charAt(0).toUpperCase() || "M"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">{mentorName}</p>
-              {mentorCompany && (
-                <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                  <Building2 className="h-3.5 w-3.5" />
-                  {mentorCompany}
+          <MentorDetailPanel>
+            <MentorPanelHeading title={t("common.mentor")} />
+            <div className="flex items-center gap-3 p-5">
+              <Avatar className="h-11 w-11 border border-slate-200 dark:border-slate-700">
+                <AvatarImage
+                  src={feedback.mentor?.avatarUrl || mentorInfo?.avatarUrl}
+                  alt={mentorName}
+                />
+                <AvatarFallback className="bg-emerald-50 font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                  {mentorName.charAt(0).toUpperCase() || "M"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-slate-950 dark:text-white">
+                  {mentorName}
                 </p>
-              )}
+                {mentorCompany && (
+                  <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {mentorCompany}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        </section>
-      </main>
-    </div>
+          </MentorDetailPanel>
+        </aside>
+      </div>
+    </MentorDetailPage>
   );
 }

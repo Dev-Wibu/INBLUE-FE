@@ -19,6 +19,7 @@ import { useMentorReviews, type MentorReview } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate, toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { normalizeFiveStarRating } from "@/lib/rating";
 import { Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -112,7 +113,7 @@ export function MentorReviewsPage() {
         idSortValue: sessionId ?? review.id ?? 0,
         newestSortValue: getNewestTimestamp(review),
         candidateNameSortValue: review.user?.name?.toLowerCase() ?? "",
-        mentorRatingSortValue: review.rating ?? 0,
+        mentorRatingSortValue: normalizeFiveStarRating(review.rating),
       });
     });
 
@@ -130,7 +131,7 @@ export function MentorReviewsPage() {
         newestSortValue: getNewestTimestamp(review, feedback),
         candidateNameSortValue:
           review?.user?.name?.toLowerCase() ?? feedback.user?.name?.toLowerCase() ?? "",
-        mentorRatingSortValue: review?.rating ?? 0,
+        mentorRatingSortValue: normalizeFiveStarRating(review?.rating),
       });
     });
 
@@ -179,9 +180,10 @@ export function MentorReviewsPage() {
     pagination.goToFirstPage();
   };
   const averageMentorRating = reviews.length
-    ? (reviews.reduce((total, review) => total + (review.rating || 0), 0) / reviews.length).toFixed(
-        1
-      )
+    ? (
+        reviews.reduce((total, review) => total + normalizeFiveStarRating(review.rating), 0) /
+        reviews.length
+      ).toFixed(1)
     : "0.0";
   const feedbackCount = rows.filter((row) => row.feedback).length;
 
@@ -311,33 +313,33 @@ export function MentorReviewsPage() {
                   )}
                 </div>
               ) : (
-                <div className="min-w-[1120px] overflow-x-auto">
-                  <Table>
+                <div className="min-w-[1280px] overflow-x-auto">
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                        <TableHead className="w-[70px] min-w-[70px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[6%] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("idSortValue")}>{t("common.id")}</SortButton>
                         </TableHead>
-                        <TableHead className="w-[24%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[21%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.mentor")}
                         </TableHead>
-                        <TableHead className="w-[24%] min-w-[190px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[21%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("candidateNameSortValue")}>
                             {t("common.candidate")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[12%] min-w-[100px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[10%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.session")}
                         </TableHead>
-                        <TableHead className="w-[14%] min-w-[135px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[15%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("mentorRatingSortValue")}>
                             {t("mentorMentordashboard.reviewSent")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[14%] min-w-[135px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[15%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.responseReceived")}
                         </TableHead>
-                        <TableHead className="w-[12%] min-w-[125px] pr-6 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[12%] pr-6 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("newestSortValue")}>
                             {t("common.date")}
                           </SortButton>
@@ -364,7 +366,7 @@ export function MentorReviewsPage() {
                             <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                               #{row.sessionId ?? row.idSortValue}
                             </TableCell>
-                            <TableCell className="px-4 py-4">
+                            <TableCell className="px-5 py-4">
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
                                   <AvatarImage
@@ -381,7 +383,7 @@ export function MentorReviewsPage() {
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell className="px-4 py-4">
+                            <TableCell className="px-5 py-4">
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
                                   <AvatarImage
@@ -399,15 +401,15 @@ export function MentorReviewsPage() {
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell className="px-4 py-4">
+                            <TableCell className="px-5 py-4">
                               <Badge variant="outline" className="font-mono text-xs font-semibold">
                                 #{row.sessionId ?? "—"}
                               </Badge>
                             </TableCell>
-                            <TableCell className="px-4 py-4">
+                            <TableCell className="px-5 py-4">
                               {row.review ? (
                                 <StarRating
-                                  value={row.review.rating || 0}
+                                  value={normalizeFiveStarRating(row.review.rating)}
                                   readOnly
                                   size="sm"
                                   color="amber"
@@ -419,7 +421,7 @@ export function MentorReviewsPage() {
                               )}
                             </TableCell>
                             <TableCell
-                              className="px-4 py-4"
+                              className="px-5 py-4"
                               onClick={(event) => event.stopPropagation()}>
                               {row.feedback?.id ? (
                                 <button
@@ -432,7 +434,7 @@ export function MentorReviewsPage() {
                                     })
                                   }>
                                   <StarRating
-                                    value={row.feedback.rating || 0}
+                                    value={normalizeFiveStarRating(row.feedback.rating)}
                                     readOnly
                                     size="sm"
                                     color="sky"
@@ -440,7 +442,7 @@ export function MentorReviewsPage() {
                                 </button>
                               ) : row.feedback ? (
                                 <StarRating
-                                  value={row.feedback.rating || 0}
+                                  value={normalizeFiveStarRating(row.feedback.rating)}
                                   readOnly
                                   size="sm"
                                   color="sky"

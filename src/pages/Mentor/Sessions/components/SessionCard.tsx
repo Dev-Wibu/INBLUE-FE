@@ -14,13 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Session } from "@/interfaces";
-import {
-  formatDate,
-  formatDateTime,
-  formatTime,
-  toTimestamp,
-  treatZuluAsVietnamLocal,
-} from "@/lib/formatting";
+import { formatDate, formatDateTime, formatTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { getSessionJoinAvailability } from "@/lib/session-join";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
@@ -56,8 +51,6 @@ function buildStatusMap(t: (_key: string) => string): Record<string, StatusConfi
     CANCELED: { label: t("common.canceled"), tone: "canceled" },
   };
 }
-
-const EARLY_JOIN_WINDOW_MS = 15 * 60 * 1000;
 
 export interface SessionCardActionBag {
   onViewDetails: () => void;
@@ -102,15 +95,8 @@ export function SessionCard({
   const isCompleted = session.status === "COMPLETED";
   const isDraft = session.status === "DRAFT";
   const isCancelled = session.status === "CANCELED" || session.status === "REJECTED";
-  const joinTimestamp = toTimestamp(session.joinTime);
-  const isTimeReached = joinTimestamp ? joinTimestamp - EARLY_JOIN_WINDOW_MS <= now : true;
-  const canJoin =
-    (session.status === "PAID" || session.status === "ONGOING" || session.status === "SCHEDULED") &&
-    !isDraft &&
-    !isCancelled &&
-    !!session.roomUrl &&
-    session.roomUrl !== "OFFLINE" &&
-    isTimeReached;
+  const { canJoin, joinTimestamp, isBeforeJoinWindow } = getSessionJoinAvailability(session, now);
+  const isTimeReached = !isBeforeJoinWindow;
 
   const sessionTitle = session.roomName || t("common.interviewSession");
 

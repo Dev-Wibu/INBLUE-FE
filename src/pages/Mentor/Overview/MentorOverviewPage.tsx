@@ -8,6 +8,7 @@ import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useMentorSchedule } from "@/hooks/useMentorSchedule";
 import { formatDateTime, toVietnamDateKey } from "@/lib/formatting";
+import { getSessionJoinAvailability } from "@/lib/session-join";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
@@ -55,8 +56,7 @@ function AgendaSessionItem({
 }) {
   const { t } = useTranslation();
   const status = getMentorSessionStatusConfig(item.session.status);
-  const canJoinRoom =
-    (item.session.status === "PAID" || item.session.status === "ONGOING") && !!item.session.roomUrl;
+  const canJoinRoom = getSessionJoinAvailability(item.session).canJoin;
   const canReview = item.session.status === "COMPLETED";
 
   return (

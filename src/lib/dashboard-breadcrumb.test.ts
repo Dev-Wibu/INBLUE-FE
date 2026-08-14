@@ -201,6 +201,19 @@ describe("dashboard-breadcrumb — mentor routes", () => {
     expect(routeMatch?.dynamic?.id).toBe(99);
   });
 
+  it("maps mentor feedback details to Review & Feedback", () => {
+    const routeMatch = getDashboardRouteMatch("mentor", "/mentor/feedback/24", t);
+    expect(routeMatch?.tabType).toBe("reviews");
+
+    const tab = getDashboardTabFromPath({
+      role: "mentor",
+      pathname: "/mentor/feedback/24",
+      defaultTab: "overview",
+      t,
+    });
+    expect(tab).toBe("reviews");
+  });
+
   it("matches mentor students route", () => {
     const routeMatch = getDashboardRouteMatch("mentor", "/mentor/students/7", t);
     expect(routeMatch?.tabType).toBe("students");

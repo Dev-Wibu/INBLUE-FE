@@ -23,6 +23,7 @@ import { DeviceCheckDialog, VideoCallProvider, VideoCallRoom } from "@/component
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { SESSION_QUERY_KEYS, useJoinSession, useSessionById } from "@/hooks/useSession";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { getSessionJoinAvailability } from "@/lib/session-join";
 import { useAuthStore } from "@/stores/authStore";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -70,6 +71,7 @@ export function MentorSessionRoomPage() {
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
   const [displayName, setDisplayName] = useState("");
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
   const numericSessionId = Number(sessionId);
   const {
     data: session,
@@ -101,11 +103,14 @@ export function MentorSessionRoomPage() {
   // For Mentor Interview (RoundType.MENTROR_REVIEW) the session is created
   // with status SCHEDULED (see BE doc Phase 4). PAID/ONGOING are reserved
   // for paid mock-interview sessions, so we accept both shapes here.
-  const canJoin =
-    session &&
-    (session.status === "PAID" || session.status === "ONGOING" || session.status === "SCHEDULED") &&
-    session.roomUrl &&
-    user;
+  const canJoin = Boolean(
+    session && user && getSessionJoinAvailability(session, currentTime).canJoin
+  );
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   // Handle when mentor joins the call (callback from VideoCallRoom)
   const handleJoined = async (participantId: string) => {

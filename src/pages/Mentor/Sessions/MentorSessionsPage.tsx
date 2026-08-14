@@ -24,12 +24,14 @@ import { useMentorReviews, type MentorReview } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
+import { useUserProfilesByIds } from "@/hooks/useUserProfilesByIds";
 import type { Session } from "@/interfaces";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { getSessionJoinAvailability } from "@/lib/session-join";
 import { getSessionStatusBadge } from "@/lib/status-utils";
 import { useAuthStore } from "@/stores/authStore";
-import { Check, Pencil, Search, Video, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Check, LogIn, Pencil, Search, Video, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -58,6 +60,12 @@ export function MentorSessionsPage() {
   const user = useAuthStore((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<SessionStatus>("all");
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const {
     data: allSessions = [],
@@ -88,6 +96,16 @@ export function MentorSessionsPage() {
     });
   }, [allSessions, currentMentorProfile, user?.id]);
 
+  const candidateUserIds = useMemo(
+    () => mentorSessions.map((session) => session.userId),
+    [mentorSessions]
+  );
+  const {
+    profilesById: candidateProfilesById,
+    isRefetching: candidatesRefetching,
+    refetch: refetchCandidates,
+  } = useUserProfilesByIds(candidateUserIds);
+
   const reviewBySessionId = useMemo(() => {
     const map = new Map<number, MentorReview>();
     reviews.forEach((review) => {
@@ -100,7 +118,8 @@ export function MentorSessionsPage() {
     const query = searchQuery.trim().toLowerCase();
     return mentorSessions.filter((session) => {
       const candidate =
-        typeof session.id === "number" ? reviewBySessionId.get(session.id)?.user : null;
+        (typeof session.id === "number" ? reviewBySessionId.get(session.id)?.user : null) ||
+        (session.userId ? candidateProfilesById.get(session.userId) : null);
       const matchesSearch =
         !query ||
         session.id?.toString().includes(query) ||
@@ -111,7 +130,7 @@ export function MentorSessionsPage() {
         candidate?.email?.toLowerCase().includes(query);
       return matchesSearch && (statusFilter === "all" || session.status === statusFilter);
     });
-  }, [mentorSessions, reviewBySessionId, searchQuery, statusFilter]);
+  }, [candidateProfilesById, mentorSessions, reviewBySessionId, searchQuery, statusFilter]);
 
   const sortableSessions = useMemo<SortableSession[]>(
     () =>
@@ -146,7 +165,7 @@ export function MentorSessionsPage() {
     pagination.goToFirstPage();
   };
   const isLoading = sessionsLoading || reviewsLoading;
-  const isRefetching = sessionsRefetching || reviewsRefetching;
+  const isRefetching = sessionsRefetching || reviewsRefetching || candidatesRefetching;
 
   return (
     <div className="-m-4 min-h-[calc(100%+32px)] bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
@@ -163,15 +182,12 @@ export function MentorSessionsPage() {
                   {t("mentorSessions.interviewSessions")}
                 </h1>
                 <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-                  {t(
-                    "mentorSessions.manageInterviewSessions",
-                    "Manage schedules, join interviews, and complete candidate reviews"
-                  )}
+                  {t("mentorSessions.manageInterviewSessionsAndSend")}
                 </p>
               </div>
               <div className="flex items-center justify-center gap-5 sm:gap-6">
                 {[
-                  [mentorSessions.length, t("common.totalSessions")],
+                  [mentorSessions.length, t("mentorOverview.totalSessions")],
                   [completedCount, t("general.completed")],
                   [upcomingCount, t("common.upcoming")],
                 ].map(([value, label], index) => (
@@ -235,7 +251,7 @@ export function MentorSessionsPage() {
               </Select>
               <ReloadButton
                 onReload={async () => {
-                  await Promise.all([refetchSessions(), refetchReviews()]);
+                  await Promise.all([refetchSessions(), refetchReviews(), refetchCandidates()]);
                 }}
                 isLoading={isRefetching}
                 tooltip={t("mentorSessions.reloadInterviewSessionList")}
@@ -269,31 +285,31 @@ export function MentorSessionsPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[1120px]">
-                  <Table>
+                <div className="min-w-[1180px]">
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                        <TableHead className="w-[7%] min-w-[72px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[7%] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.id")}
                         </TableHead>
-                        <TableHead className="w-[23%] min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[24%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.candidate")}
                         </TableHead>
-                        <TableHead className="w-[24%] min-w-[240px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[23%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.session")}
                         </TableHead>
-                        <TableHead className="w-[16%] min-w-[170px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[16%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("sessionSortValue")}>
                             {t("common.time")}
                           </SortButton>
                         </TableHead>
-                        <TableHead className="w-[12%] min-w-[130px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[11%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.status")}
                         </TableHead>
-                        <TableHead className="w-[10%] min-w-[120px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[9%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.review")}
                         </TableHead>
-                        <TableHead className="w-[8%] min-w-[112px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[10%] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.actions")}
                         </TableHead>
                       </TableRow>
@@ -304,9 +320,13 @@ export function MentorSessionsPage() {
                           typeof session.id === "number"
                             ? reviewBySessionId.get(session.id)
                             : undefined;
-                        const candidate = review?.user;
+                        const candidate =
+                          review?.user ||
+                          (session.userId ? candidateProfilesById.get(session.userId) : undefined);
                         const statusBadge = getSessionStatusBadge(session.status);
                         const hasReview = Boolean(review?.id);
+                        const joinAvailability = getSessionJoinAvailability(session, now);
+                        const displayTime = session.joinTime || session.startTime1;
                         return (
                           <TableRow
                             key={session.id}
@@ -319,7 +339,7 @@ export function MentorSessionsPage() {
                             <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                               #{session.id}
                             </TableCell>
-                            <TableCell className="px-4 py-4">
+                            <TableCell className="px-5 py-4">
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
                                   <AvatarImage src={candidate?.avatarUrl} alt={candidate?.name} />
@@ -340,7 +360,7 @@ export function MentorSessionsPage() {
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="px-4 py-4">
+                            <TableCell className="px-5 py-4">
                               <p className="max-w-[260px] truncate font-semibold text-slate-900 dark:text-white">
                                 {session.roomName || t("common.interviewSession")}
                               </p>
@@ -348,39 +368,55 @@ export function MentorSessionsPage() {
                                 {session.roomUrl || "—"}
                               </p>
                             </TableCell>
-                            <TableCell className="px-4 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                              {session.startTime1
-                                ? formatDateTime(treatZuluAsVietnamLocal(session.startTime1))
+                            <TableCell className="px-5 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                              {displayTime
+                                ? formatDateTime(
+                                    session.joinTime
+                                      ? session.joinTime
+                                      : treatZuluAsVietnamLocal(session.startTime1)
+                                  )
                                 : "—"}
                             </TableCell>
-                            <TableCell className="px-4 py-4 text-center">
+                            <TableCell className="px-5 py-4 text-center">
                               <Badge
                                 variant={statusBadge.variant}
-                                className={`${statusBadge.className} inline-flex min-w-[96px] justify-center`}>
+                                className={`${statusBadge.className} inline-flex min-w-[88px] justify-center px-2.5`}>
                                 {statusBadge.label}
                               </Badge>
                             </TableCell>
-                            <TableCell className="px-4 py-4 text-center">
-                              <Badge
-                                variant="outline"
-                                className={`inline-flex min-w-[92px] justify-center ${
-                                  hasReview
-                                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                                    : session.status === "COMPLETED"
-                                      ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                                      : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800"
-                                }`}>
-                                {hasReview
-                                  ? t("common.done")
-                                  : session.status === "COMPLETED"
-                                    ? t("common.pending")
-                                    : "—"}
-                              </Badge>
+                            <TableCell className="px-5 py-4 text-center">
+                              {hasReview || session.status === "COMPLETED" ? (
+                                <Badge
+                                  variant="outline"
+                                  className={`inline-flex min-w-[84px] justify-center px-2.5 ${
+                                    hasReview
+                                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                                      : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                                  }`}>
+                                  {hasReview ? t("common.done") : t("common.pending")}
+                                </Badge>
+                              ) : (
+                                <span className="text-sm text-slate-400">—</span>
+                              )}
                             </TableCell>
                             <TableCell
                               className="py-4 pr-6"
                               onClick={(event) => event.stopPropagation()}>
                               <div className="flex min-h-8 items-center justify-end gap-2">
+                                {joinAvailability.canJoin && (
+                                  <Button
+                                    size="icon"
+                                    className="h-8 w-8 bg-emerald-600 text-white hover:bg-emerald-700"
+                                    title={t("common.enterTheInterviewRoom")}
+                                    aria-label={t("common.enterTheInterviewRoom")}
+                                    onClick={() =>
+                                      navigate(`/mentor/sessions/room/${session.id}`, {
+                                        state: { returnTo: "/mentor?tab=sessions" },
+                                      })
+                                    }>
+                                    <LogIn className="h-3.5 w-3.5" />
+                                  </Button>
+                                )}
                                 {session.status === "DRAFT" && (
                                   <>
                                     <Button
