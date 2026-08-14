@@ -76,4 +76,25 @@ describe("ChatComposer", () => {
     );
     expect(onApplyQuickCommand).toHaveBeenCalledWith("/camon");
   });
+
+  it("uses theme surfaces for the composer controls", () => {
+    render(
+      <ChatComposer
+        value="Tin nhan"
+        onChange={vi.fn()}
+        onSend={vi.fn()}
+        placeholder="Nhap tin nhan"
+      />
+    );
+
+    expect(screen.getByRole("textbox")).toHaveClass(
+      "border-slate-200",
+      "bg-slate-50",
+      "dark:bg-slate-800"
+    );
+    expect(screen.getByRole("button", { name: t("compShared.sendAMessage") })).toHaveClass(
+      "bg-indigo-600",
+      "dark:bg-indigo-500"
+    );
+  });
 });

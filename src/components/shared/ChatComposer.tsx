@@ -168,7 +168,7 @@ export function ChatComposer({
           <Button
             variant="outline"
             size="icon"
-            className="h-11 w-11 shrink-0 rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            className="h-11 w-11 shrink-0 rounded-xl border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             title={t("compShared.insertEmojis")}
             aria-label={t("compShared.insertEmojis")}
             disabled={disabled}>
@@ -179,7 +179,7 @@ export function ChatComposer({
         <DropdownMenuContent align="start" className="w-56 p-2">
           {recentEmojis.length > 0 && (
             <>
-              <p className="px-2 pb-1 text-xs font-semibold text-slate-500">
+              <p className="px-2 pb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {t("compShared.usedRecently")}
               </p>
               <div className="mb-2 grid grid-cols-4 gap-1">
@@ -195,7 +195,7 @@ export function ChatComposer({
             </>
           )}
 
-          <p className="px-2 pb-1 text-xs font-semibold text-slate-500">
+          <p className="px-2 pb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
             {t("compShared.quickEmoji")}
           </p>
           <div className="grid grid-cols-5 gap-1">
@@ -213,8 +213,8 @@ export function ChatComposer({
 
       <div className="flex-1">
         {visibleCommands.length > 0 && (
-          <div className="mb-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-            <p className="px-1 pb-1 text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+          <div className="mb-2 rounded-xl border border-slate-200 bg-white p-2 text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+            <p className="px-1 pb-1 text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
               {t("compShared.quickCommand")}
             </p>
             <div className="space-y-1">
@@ -222,7 +222,7 @@ export function ChatComposer({
                 <button
                   key={command.command}
                   type="button"
-                  className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs text-slate-600 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-blue-900/20 dark:hover:text-blue-300"
+                  className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs text-slate-600 transition hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
                   onClick={() => applyQuickCommand(command)}>
                   <span className="font-semibold">{command.command}</span>
                   <span className="truncate pl-2 text-[11px] text-slate-400">{command.label}</span>
@@ -242,9 +242,8 @@ export function ChatComposer({
           placeholder={placeholder}
           disabled={disabled}
           className={cn(
-            "max-h-[132px] min-h-11 w-full resize-none rounded-xl border bg-slate-50 px-3 py-2.5 text-sm leading-6 text-slate-900 transition outline-none dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400",
-            "focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:border-blue-700 dark:focus:ring-blue-900/40",
-            "border-slate-200 dark:border-slate-700",
+            "max-h-[132px] min-h-11 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm leading-6 text-slate-900 transition outline-none placeholder:text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400",
+            "focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
             disabled && "cursor-not-allowed opacity-60"
           )}
         />
@@ -253,7 +252,7 @@ export function ChatComposer({
       <Button
         onClick={onSend}
         size="icon"
-        className="h-11 w-11 shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700"
+        className="h-11 w-11 shrink-0 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
         disabled={!canSend}
         title={t("compShared.sendAMessage")}
         aria-label={t("compShared.sendAMessage")}>

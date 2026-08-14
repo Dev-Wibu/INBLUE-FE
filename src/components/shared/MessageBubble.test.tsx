@@ -124,4 +124,36 @@ describe("MessageBubble", () => {
 
     expect(screen.getByText(t("compShared.tryingToSendAgain"))).toBeInTheDocument();
   });
+
+  it("uses theme colors for sent and received messages", () => {
+    const { rerender } = render(
+      <MessageBubble
+        id="theme-user"
+        sender="user"
+        content="Tin nhan da gui"
+        timestamp="2026-04-13T10:20:30.000Z"
+      />
+    );
+
+    expect(screen.getByText("Tin nhan da gui")).toHaveClass(
+      "bg-indigo-600",
+      "text-white",
+      "dark:bg-indigo-500"
+    );
+
+    rerender(
+      <MessageBubble
+        id="theme-mentor"
+        sender="ai"
+        content="Tin nhan da nhan"
+        timestamp="2026-04-13T10:20:30.000Z"
+      />
+    );
+
+    expect(screen.getByText("Tin nhan da nhan")).toHaveClass(
+      "border-slate-200",
+      "bg-white",
+      "dark:bg-slate-800"
+    );
+  });
 });

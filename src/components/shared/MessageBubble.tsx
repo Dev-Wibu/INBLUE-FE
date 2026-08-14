@@ -52,7 +52,7 @@ const highlightContent = (content: string, searchQuery: string): ReactNode => {
       return (
         <mark
           key={`${part}-${index}`}
-          className="rounded-sm bg-amber-200/90 px-0.5 text-slate-900 dark:bg-amber-300/80">
+          className="rounded-sm bg-amber-200/90 px-0.5 text-amber-950 dark:bg-amber-300/80">
           {part}
         </mark>
       );
@@ -123,13 +123,13 @@ export function MessageBubble({
               sender !== "user" && isGroupedWithPrevious && "rounded-tl-md",
               sender !== "user" && isGroupedWithNext && "rounded-bl-md",
               sender === "user"
-                ? "bg-linear-to-br from-blue-600 via-indigo-600 to-violet-600 text-white shadow-blue-500/20"
-                : "border border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-[#1e293b] dark:text-slate-100"
+                ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                : "border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             )}>
             {highlightContent(content, searchQuery)}
           </div>
 
-          <div className="flex items-center gap-2 px-1 text-[11px] text-slate-400">
+          <div className="flex items-center gap-2 px-1 text-[11px] text-slate-400 dark:text-slate-500">
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="cursor-default">{relativeTime}</span>
