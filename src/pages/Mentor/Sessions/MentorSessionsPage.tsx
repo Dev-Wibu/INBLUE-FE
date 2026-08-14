@@ -305,7 +305,7 @@ export function MentorSessionsPage() {
       </div>
 
       {/* Main content grid */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_280px] lg:items-start">
         {/* Left - Table */}
         <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {isLoading ? (

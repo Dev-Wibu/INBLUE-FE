@@ -24,6 +24,8 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
+import { MentorQuickStat } from "@/pages/Mentor/Common";
+import type { LucideIcon } from "lucide-react";
 import { Search, Star, Trophy, Users, Video } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -274,21 +276,23 @@ export function MentorReviewsPage() {
       </div>
 
       {/* Main content grid */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_280px] lg:items-start">
         {/* Left - Table */}
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {isLoading ? (
-            <div className="p-4">
+            <div className="flex-1 p-4">
               <Skeleton className="h-12" />
               <Skeleton className="mt-2 h-12" />
               <Skeleton className="mt-2 h-12" />
             </div>
           ) : reviews.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                <Search className="h-6 w-6 text-slate-400" />
+            <div className="flex flex-1 items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <Search className="h-6 w-6 text-slate-400" />
+                </div>
+                <p className="text-sm font-medium text-slate-500">{t("common.noReviewsFound")}</p>
               </div>
-              <p className="text-sm font-medium text-slate-500">{t("common.noReviewsFound")}</p>
             </div>
           ) : (
             <>
@@ -435,31 +439,33 @@ export function MentorReviewsPage() {
         </div>
 
         {/* Right - Stats Panel */}
-        <aside className="flex flex-col gap-4">
-          {/* Rating Distribution */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-4 flex items-end justify-between">
+        <aside className="hidden lg:flex lg:w-[280px] lg:flex-col lg:gap-4 xl:sticky xl:top-4 xl:self-start">
+          {/* Rating Distribution card */}
+          <div className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+            <div className="flex items-end justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
                   {t("common.averageStarRating")}
                 </p>
-                <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  {avgStarRating}
-                  <span className="ml-1 text-base font-medium text-slate-400">/5</span>
+                <p className="mt-0.5 flex items-baseline gap-1.5">
+                  <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-white">
+                    {isLoading ? "—" : avgStarRating}
+                  </span>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">/5</span>
                 </p>
               </div>
-              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
             </div>
 
-            <div className="mt-4 flex flex-col gap-2">
+            <div className="mt-4 flex flex-col gap-1.5">
               {distribution.map((row) => (
                 <div key={row.star} className="flex items-center gap-2">
-                  <span className="w-5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  <span className="w-6 text-xs font-semibold text-slate-600 dark:text-slate-300">
                     {row.star}★
                   </span>
-                  <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800/60">
                     <div
-                      className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500"
+                      className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
                       style={{ width: `${row.pct}%` }}
                     />
                   </div>
@@ -471,39 +477,24 @@ export function MentorReviewsPage() {
             </div>
           </div>
 
-          {/* Quick Stats */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("common.summary")}
-            </p>
-            <div className="mt-4 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-slate-300">
-                  {t("common.totalReview")}
-                </span>
-                <span className="font-semibold text-slate-900 dark:text-white">
-                  {reviews.length}
-                </span>
-              </div>
-              <div className="h-px bg-slate-100 dark:bg-slate-800" />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-slate-300">
-                  {t("common.student")}
-                </span>
-                <span className="font-semibold text-slate-900 dark:text-white">
-                  {uniqueStudents.size}
-                </span>
-              </div>
-              <div className="h-px bg-slate-100 dark:bg-slate-800" />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-slate-300">
-                  {t("common.5StarRating")}
-                </span>
-                <span className="font-semibold text-amber-600 dark:text-amber-400">
-                  {fiveStarCount}
-                </span>
-              </div>
-            </div>
+          {/* 2 quick stats */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <MentorQuickStat
+              index={1}
+              icon={Star as LucideIcon}
+              label={t("common.totalRating")}
+              value={isLoading ? "—" : reviews.length}
+              caption={t("mentorReviews.reviewsYouVeSentTo")}
+              tone="indigo"
+            />
+            <MentorQuickStat
+              index={2}
+              icon={Trophy as LucideIcon}
+              label={t("common.5StarRating")}
+              value={isLoading ? "—" : fiveStarCount}
+              caption={t("common.fiveStars")}
+              tone="emerald"
+            />
           </div>
         </aside>
       </div>
