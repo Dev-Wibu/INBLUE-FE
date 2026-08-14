@@ -1288,6 +1288,8 @@
     "backToTheList": "一覧に戻る",
     "banner": "バナー",
     "basicInformation": "基本情報",
+    "writeReview": "レビューを書く",
+    "viewReview": "レビューを見る",
     "before": "以前",
     "begin": "開始：",
     "big": "大",
@@ -3330,6 +3332,7 @@
   "mentorReviews": {
     "action": "アクション",
     "additionalComments": "追加コメント",
+    "reviewDetail": "レビュー詳細",
     "detailedAssessmentStarMethod": "詳細評価（STARメソッド）",
     "noAdditionalComments": "追加コメントなし。",
     "overallAssessment": "総合評価",
@@ -3351,6 +3354,7 @@
   "mentorSessions": {
     "acceptInterviewSession": "面接セッションを承認",
     "allSessionsPendingApproval": "承認待ちのセッション",
+    "interviewSessions": "面接セッション",
     "canTWriteAReview": "まだレビューを書けません",
     "detailsOfMentorInterviewSession": "メンター面接セッションの詳細",
     "editReview1": "レビューを編集",

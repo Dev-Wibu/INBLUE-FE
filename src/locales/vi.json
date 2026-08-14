@@ -1351,6 +1351,8 @@
     "basicInformation": "Thông tin cơ bản",
     "firstFeedback": "Phản hồi đầu tiên",
     "viewSessionDetails": "Xem chi tiết phiên",
+    "writeReview": "Viết Đánh Giá",
+    "viewReview": "Xem Đánh Giá",
     "firstSession": "Phiên đầu tiên",
     "introduction": "Giới thiệu",
     "quickActions": "Thao tác nhanh",
@@ -3357,6 +3359,7 @@
   "mentorReviews": {
     "action": "Action (Hành động)",
     "additionalComments": "Nhận Xét Bổ Sung",
+    "reviewDetail": "Chi Tiết Đánh Giá",
     "detailedAssessmentStarMethod": "Đánh Giá Chi Tiết (STAR Method)",
     "noAdditionalComments": "Không có nhận xét bổ sung.",
     "overallAssessment": "Đánh Giá Tổng Quan",
@@ -3378,6 +3381,7 @@
   "mentorSessions": {
     "acceptInterviewSession": "Chấp nhận phiên phỏng vấn",
     "allSessionsPendingApproval": "Tất cả phiên chờ duyệt",
+    "interviewSessions": "Phiên Phỏng Vấn",
     "canTWriteAReview": "Chưa thể viết đánh giá",
     "detailsOfMentorInterviewSession": "Chi tiết phiên phỏng vấn mentor",
     "editReview1": "Chỉnh Sửa Đánh Giá",

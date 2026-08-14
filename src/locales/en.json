@@ -1356,6 +1356,8 @@
     "backToTheList": "Back to the list",
     "basicInformation": "Basic information",
     "viewSessionDetails": "View session details",
+    "writeReview": "Write Review",
+    "viewReview": "View Review",
     "firstFeedback": "First feedback",
     "firstSession": "First session",
     "introduction": "Introduction",
@@ -3361,6 +3363,7 @@
   "mentorReviews": {
     "action": "Action",
     "additionalComments": "Additional Comments",
+    "reviewDetail": "Review Detail",
     "detailedAssessmentStarMethod": "Detailed Assessment (STAR ​​Method)",
     "noAdditionalComments": "No additional comments.",
     "overallAssessment": "Overall Assessment",
@@ -3382,6 +3385,7 @@
   "mentorSessions": {
     "acceptInterviewSession": "Accept interview session",
     "allSessionsPendingApproval": "All sessions pending approval",
+    "interviewSessions": "Interview Sessions",
     "canTWriteAReview": "Can't write a review yet",
     "detailsOfMentorInterviewSession": "Details of mentor interview session",
     "editReview1": "Edit Review",
