@@ -26,11 +26,11 @@ import { Camera, CameraOff, Check, Mic, MicOff, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 interface DeviceCheckDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
   /** Called when user confirms devices are ready and wants to join */
   onConfirm?: (_selection: DeviceCheckSelection) => void;
   displayName?: string;
-  onDisplayNameChange?: (value: string) => void;
+  onDisplayNameChange?: (_value: string) => void;
   showDisplayName?: boolean;
 }
 export interface DeviceCheckSelection {
@@ -229,13 +229,13 @@ export function DeviceCheckDialog({
   };
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] gap-0 overflow-hidden p-0 sm:max-h-[90dvh] sm:max-w-[500px]">
+        <DialogHeader className="shrink-0 border-b border-slate-200 px-4 py-4 pr-12 text-left sm:px-6 dark:border-slate-800">
           <DialogTitle>{t("common.checkTheDevice")}</DialogTitle>
           <DialogDescription>{t("compVideoCall.checkTheCameraAndMicrophone")}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="min-h-0 space-y-4 overflow-y-auto px-4 py-4 sm:px-6">
           {showDisplayName && (
             <div className="space-y-1">
               <p className="text-xs text-slate-500">
@@ -262,19 +262,19 @@ export function DeviceCheckDialog({
               autoPlay
               playsInline
               muted
-              className={`h-60 w-full object-cover ${!isCameraOn ? "hidden" : ""}`}
+              className={`aspect-video max-h-60 w-full object-cover ${!isCameraOn ? "hidden" : ""}`}
             />
             {!isCameraOn && (
-              <div className="flex h-60 items-center justify-center">
+              <div className="flex aspect-video max-h-60 w-full items-center justify-center">
                 <CameraOff className="h-12 w-12 text-slate-500" />
               </div>
             )}
           </div>
 
           {/* Toggle & start buttons */}
-          <div className="flex justify-center gap-3">
+          <div className="flex flex-col justify-center gap-2 sm:flex-row sm:gap-3">
             {!isStreaming && (
-              <Button size="sm" onClick={handleRefresh} className="gap-2">
+              <Button size="sm" onClick={handleRefresh} className="w-full gap-2 sm:w-auto">
                 <RefreshCw className="h-4 w-4" />
                 {t("compVideoCall.startChecking")}
               </Button>
@@ -285,7 +285,7 @@ export function DeviceCheckDialog({
                   variant={isMicOn ? "default" : "destructive"}
                   size="sm"
                   onClick={handleToggleMic}
-                  className="gap-2">
+                  className="w-full min-w-0 gap-2 sm:w-auto">
                   {isMicOn ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
                   {isMicOn ? t("compVideoCall.micIsOn") : t("compVideoCall.micIsOff")}
                 </Button>
@@ -293,7 +293,7 @@ export function DeviceCheckDialog({
                   variant={isCameraOn ? "default" : "destructive"}
                   size="sm"
                   onClick={handleToggleCamera}
-                  className="gap-2">
+                  className="w-full min-w-0 gap-2 sm:w-auto">
                   {isCameraOn ? <Camera className="h-4 w-4" /> : <CameraOff className="h-4 w-4" />}
                   {isCameraOn ? t("compVideoCall.cameraTurnedOn") : t("compVideoCall.cameraIsOff")}
                 </Button>
@@ -369,8 +369,8 @@ export function DeviceCheckDialog({
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => handleClose(false)}>
+        <DialogFooter className="shrink-0 border-t border-slate-200 px-4 py-3 sm:px-6 dark:border-slate-800">
+          <Button variant="outline" onClick={() => handleClose(false)} className="w-full sm:w-auto">
             {onConfirm ? t("general.cancel") : t("general.close")}
           </Button>
           {onConfirm && (
@@ -384,7 +384,7 @@ export function DeviceCheckDialog({
                   isCameraOn,
                 });
               }}
-              className="gap-2 bg-green-600 hover:bg-green-700">
+              className="w-full gap-2 bg-green-600 hover:bg-green-700 sm:w-auto">
               <Check className="h-4 w-4" />
               {t("compVideoCall.confirmJoin")}
             </Button>
