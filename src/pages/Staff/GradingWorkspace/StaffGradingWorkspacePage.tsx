@@ -609,7 +609,7 @@ function StaffGradingWorkspaceHeaderCard({
   onSuccess?: () => void;
   onCancel?: () => void;
   onSafeClose: () => void;
-  onDirtyChange?: (dirty: boolean) => void;
+  onDirtyChange?: (_dirty: boolean) => void;
 }) {
   const { t } = useTranslation();
   const detail = staffActiveDetail;
@@ -1168,6 +1168,8 @@ export function StaffGradingWorkspacePage() {
   }, []);
 
   const handleGradingSuccess = useCallback(() => {
+    setIsGradingEditing(false);
+    setIsGradingDirty(false);
     // useHrScore already invalidates the /reviewer cache. Pinging it here
     // makes the workspace pull the freshly-graded detail immediately.
     void refetchReviewer();
