@@ -1,20 +1,11 @@
 /**
- * Student Detail Page (Mentor View) — v2 "Dossier Profile"
- *
- * UI-only refresh. Same data hooks (sessions / feedbacks / reviews /
- * candidate profile) and the same filtering / owner / completion logic.
- *
- * Visual language:
- * - Large hero profile with avatar halo + status badge + headline
- * - Bento KPI strip with mixed sizes (not 4 equal cards)
- * - Sticky summary panel on desktop
- * - Modern segmented control tabs (Sessions / Feedback / Reviews / Profile)
+ * Student detail for the mentor workspace.
+ * Data ownership and filtering stay scoped to the current mentor.
  */
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
@@ -66,30 +57,13 @@ import { useNavigate, useParams } from "react-router-dom";
 const GLASS_SURFACE =
   "rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900";
 
-type DatedItem = {
-  createdAt?: string;
-  session?: Pick<Session, "startTime1" | "endTime1">;
-};
-
-function activityTimestamp(item: DatedItem): number {
-  const value = item.createdAt ?? item.session?.endTime1 ?? item.session?.startTime1;
-  if (!value) return Number.POSITIVE_INFINITY;
-  const localizedValue = treatZuluAsVietnamLocal(value);
-  if (localizedValue == null) return Number.POSITIVE_INFINITY;
-  const timestamp = new Date(localizedValue).getTime();
-  return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
-}
-
-function firstActivity<T extends DatedItem>(items: T[]): T | undefined {
-  return [...items].sort((left, right) => activityTimestamp(left) - activityTimestamp(right))[0];
-}
-
 export function StudentDetailPage() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("sessions");
   const studentId = Number(userId);
+  const studentReturnState = { returnTo: `/mentor/students/${studentId}` };
 
   const { data: mentorProfile, isLoading: mentorLoading } = useCurrentMentorProfile();
   const mentorId = (mentorProfile as { id?: number } | null)?.id ?? 0;
@@ -134,98 +108,71 @@ export function StudentDetailPage() {
 
   // ---- stats ----
   const totalSessions = studentSessions.length;
-  const completedSessions = studentSessions.filter((s: Session) => s.status === "COMPLETED").length;
   const totalFeedbacks = studentFeedbacks.length;
   const totalReviews = studentReviews.length;
   const avgRating = calculateAverageRating(studentReviews);
 
-  // Rating distribution (1-5 stars)
-  const ratingDistribution = [5, 4, 3, 2, 1].map((star) => {
-    const count = studentReviews.filter(
-      (r: { rating?: number }) => (r.rating || 0) === star
-    ).length;
-    const ratedReviews = studentReviews.filter(
-      (r: { rating?: number }) => typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
-    );
-    return { star, count, pct: ratedReviews.length ? (count / ratedReviews.length) * 100 : 0 };
-  });
-
-  const firstSession = firstActivity(studentSessions.map((session) => ({ session })));
-  const firstFeedback = firstActivity(studentFeedbacks);
-  // The review endpoint often includes only a partial `session` object.
-  // Rehydrate it from the mentor's sessions so the review timeline has a
-  // reliable date even when `review.session.endTime1` is omitted.
-  const sessionsById = new Map(
-    studentSessions
-      .filter((session) => typeof session.id === "number")
-      .map((session) => [session.id!, session])
-  );
-  const firstReview = firstActivity(
-    studentReviews.map((review) => ({
-      ...review,
-      session:
-        (typeof review.session?.id === "number"
-          ? sessionsById.get(review.session.id)
-          : undefined) ?? review.session,
-    }))
-  );
-  const firstFeedbackDate =
-    firstFeedback?.createdAt ??
-    firstFeedback?.session?.endTime1 ??
-    firstFeedback?.session?.startTime1;
-  const firstReviewDate = firstReview?.session?.endTime1 ?? firstReview?.session?.startTime1;
-
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-6xl space-y-6">
-        <Skeleton className="h-9 w-40" />
-        <Skeleton className="h-44" />
-        <Skeleton className="h-24" />
-        <Skeleton className="h-96" />
+      <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+        <div className="flex h-16 items-center border-b border-slate-200 bg-white px-6 dark:border-slate-800 dark:bg-slate-900">
+          <Skeleton className="h-8 w-72" />
+        </div>
+        <div className="space-y-5 p-4 sm:p-6">
+          <Skeleton className="h-24" />
+          <Skeleton className="h-12" />
+          <Skeleton className="h-80" />
+        </div>
       </div>
     );
   }
 
   if (!studentInfo || totalSessions === 0) {
     return (
-      <div className="mx-auto w-full max-w-6xl space-y-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate("/mentor?tab=students")}
-          className="text-slate-600 dark:text-slate-300">
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          {t("general.back")}
-        </Button>
-        <Card className="border-slate-200 dark:border-slate-800">
-          <CardContent className="py-12 text-center">
-            <User className="mx-auto h-12 w-12 text-slate-400" />
-            <h3 className="mt-4 font-semibold">{t("mentorStudents.noStudentFound")}</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              {t("mentorStudents.thisStudentDoesNotExist")}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="-m-4 flex h-[calc(100%+32px)] items-center justify-center bg-slate-50 p-6 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+        <div className="flex max-w-md flex-col items-center gap-3 text-center">
+          <User className="h-10 w-10 text-slate-400" />
+          <h3 className="font-semibold text-slate-900 dark:text-white">
+            {t("mentorStudents.noStudentFound")}
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t("mentorStudents.thisStudentDoesNotExist")}
+          </p>
+          <Button variant="outline" size="sm" onClick={() => navigate("/mentor?tab=students")}>
+            <ArrowLeft className="h-4 w-4" />
+            {t("general.back")}
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-5 bg-slate-50 p-4 md:p-6 lg:p-8 dark:bg-slate-950">
-      {/* Header */}
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-        <Button
-          variant="outline"
-          size="sm"
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+      <header className="flex flex-none items-center gap-2 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+        <button
+          type="button"
           onClick={() => navigate("/mentor?tab=students")}
-          className="h-9 rounded-lg border-slate-200 text-xs font-medium dark:border-slate-700">
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          {t("common.backToTheList")}
-        </Button>
-      </div>
+          aria-label={t("common.backToTheList")}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:border-slate-700 dark:text-slate-300 dark:hover:bg-indigo-950/40">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/mentor?tab=students")}
+          className="hidden text-xs font-medium text-slate-500 hover:text-indigo-600 sm:block dark:text-slate-400 dark:hover:text-indigo-400">
+          {t("mentorStudents.student")}
+        </button>
+        <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-slate-400 sm:block" />
+        <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
+          {studentInfo.name || t("common.studentVar0", { var_0: studentId })}
+        </h1>
+        <Badge variant="outline" className="font-mono text-xs text-slate-500">
+          #{studentId}
+        </Badge>
+      </header>
 
-      {/* Profile Card - Admin Pattern */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <section className="flex-none border-b border-slate-200 bg-white p-4 sm:px-6 sm:py-5 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -235,9 +182,6 @@ export function StudentDetailPage() {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {t("common.student")}
-              </p>
               <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                 {studentInfo.name || t("common.studentVar0", { var_0: studentId })}
               </h1>
@@ -256,7 +200,7 @@ export function StudentDetailPage() {
           {totalReviews > 0 && (
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                   {t("common.averageStarRating")}
                 </p>
                 <p className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -268,129 +212,13 @@ export function StudentDetailPage() {
                   {totalReviews} {t("mentorStudents.studentReviews")}
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/15">
-                <Trophy className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </div>
             </div>
           )}
         </div>
-      </div>
+      </section>
 
-      {/* Stats Strip */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        {/* Total Sessions */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/15">
-              <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {t("common.totalSession")}
-              </p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalSessions}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {completedSessions} {t("general.completed")}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Feedback */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15">
-              <MessageSquare className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {t("common.totalResponse")}
-              </p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalFeedbacks}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{t("common.feedback")}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Reviews */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15">
-              <Star className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {t("common.totalReview")}
-              </p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalReviews}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{t("common.review")}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,300px)]">
+      <main className="flex-1 overflow-auto p-4 sm:p-6">
         <div className="flex flex-col gap-4">
-          {/* Bento KPI strip */}
-          <div className="grid gap-3 sm:grid-cols-3">
-            {/* Total Session Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                    {t("common.totalSession")}
-                  </p>
-                  <p className="mt-1 text-3xl font-bold text-slate-900 dark:text-white">
-                    {totalSessions}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    {completedSessions} {t("general.completed")}
-                  </p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/15">
-                  <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                </div>
-              </div>
-              {totalSessions > 0 && (
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                  <div
-                    className="h-full rounded-full bg-indigo-500"
-                    style={{ width: `${(completedSessions / totalSessions) * 100}%` }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Response Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {t("common.responseReceived")}
-              </p>
-              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
-                {totalFeedbacks}
-              </p>
-              <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <MessageSquare className="h-3 w-3" />
-                {t("mentorStudents.responseReceived1")}
-              </div>
-            </div>
-
-            {/* Review Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {t("mentorMentordashboard.reviewSent")}
-              </p>
-              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
-                {totalReviews}
-              </p>
-              <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <Star className="h-3 w-3 text-amber-500" />
-                {t("mentorStudents.submittedReview")}
-              </div>
-            </div>
-          </div>
-
           {/* Tabs */}
           <div className="space-y-4">
             <div
@@ -486,7 +314,9 @@ export function StudentDetailPage() {
                     <SessionRow
                       key={session.id}
                       session={session}
-                      onClick={() => navigate(`/mentor/sessions/${session.id}`)}
+                      onClick={() =>
+                        navigate(`/mentor/sessions/${session.id}`, { state: studentReturnState })
+                      }
                       t={t}
                     />
                   ))
@@ -521,7 +351,11 @@ export function StudentDetailPage() {
                         key={feedback.id}
                         feedback={feedback}
                         onClick={() => {
-                          if (feedback.id) navigate(`/mentor/feedback/${feedback.id}`);
+                          if (feedback.id) {
+                            navigate(`/mentor/feedback/${feedback.id}`, {
+                              state: studentReturnState,
+                            });
+                          }
                         }}
                         t={t}
                       />
@@ -563,7 +397,11 @@ export function StudentDetailPage() {
                         key={review.id}
                         review={review}
                         onClick={() => {
-                          if (review.id) navigate(`/mentor/reviews/${review.id}`);
+                          if (review.id) {
+                            navigate(`/mentor/reviews/${review.id}`, {
+                              state: studentReturnState,
+                            });
+                          }
                         }}
                         t={t}
                       />
@@ -593,127 +431,7 @@ export function StudentDetailPage() {
             )}
           </div>
         </div>
-
-        {/* Side summary */}
-        <aside className="flex flex-col gap-4">
-          {/* Reviews Summary Card */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("mentorStudents.studentReviews")}
-            </p>
-            {totalReviews > 0 ? (
-              <>
-                <p className="mt-1 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-slate-900 dark:text-white">
-                    {avgRating.toFixed(1)}
-                  </span>
-                  <span className="text-sm font-medium text-slate-400">/5</span>
-                </p>
-                <div className="mt-2">
-                  <StarRating value={avgRating} readOnly size="md" />
-                </div>
-                <div className="mt-3 flex flex-col gap-1.5">
-                  {ratingDistribution.map((row) => (
-                    <div key={row.star} className="flex items-center gap-2 text-xs">
-                      <span className="w-6 text-slate-600 dark:text-slate-300">{row.star}★</span>
-                      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
-                        <div
-                          className="absolute inset-y-0 left-0 h-full rounded-full bg-amber-500"
-                          style={{ width: `${row.pct}%` }}
-                        />
-                      </div>
-                      <span className="w-7 text-right text-slate-500 tabular-nums dark:text-slate-400">
-                        {row.count}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                {t("common.thereAreNoReviewsYet")}
-              </p>
-            )}
-          </div>
-
-          {/* Timeline Card */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("common.timeline")}
-            </p>
-            <div className="mt-3 flex flex-col gap-3">
-              <TimelineRow
-                icon={Calendar}
-                label={t("common.firstSession")}
-                value={
-                  firstSession?.session?.startTime1 ? (
-                    <TimeAgo
-                      date={String(treatZuluAsVietnamLocal(firstSession.session.startTime1))}
-                    />
-                  ) : (
-                    "—"
-                  )
-                }
-                tone="indigo"
-              />
-              <TimelineRow
-                icon={MessageSquare}
-                label={t("common.firstFeedback")}
-                value={
-                  firstFeedbackDate ? (
-                    <TimeAgo date={String(treatZuluAsVietnamLocal(firstFeedbackDate))} />
-                  ) : (
-                    "—"
-                  )
-                }
-                tone="emerald"
-              />
-              <TimelineRow
-                icon={Star}
-                label={t("mentorStudents.firstReview")}
-                value={
-                  firstReviewDate ? (
-                    <TimeAgo date={String(treatZuluAsVietnamLocal(firstReviewDate))} />
-                  ) : (
-                    "—"
-                  )
-                }
-                tone="amber"
-              />
-            </div>
-          </div>
-
-          {/* Quick Actions Card */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {t("common.quickActions")}
-            </p>
-            <div className="mt-3 flex flex-col gap-2">
-              {studentInfo.email && (
-                <a
-                  href={`mailto:${studentInfo.email}`}
-                  className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition-all hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10">
-                  <span className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-indigo-500" />
-                    {t("common.sendEmail")}
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-slate-400" />
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={() => navigate("/mentor?tab=sessions")}
-                className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition-all hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10">
-                <span className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-indigo-500" />
-                  {t("mentorStudents.bookANewInterview")}
-                </span>
-                <ChevronRight className="h-4 w-4 text-slate-400" />
-              </button>
-            </div>
-          </div>
-        </aside>
-      </div>
+      </main>
     </div>
   );
 }
@@ -770,39 +488,6 @@ function SessionRow({
         <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-indigo-500" />
       </div>
     </button>
-  );
-}
-
-// ---------- timeline row ----------
-function TimelineRow({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: typeof Calendar;
-  label: string;
-  value: React.ReactNode;
-  tone: "indigo" | "emerald" | "amber";
-}) {
-  return (
-    <div className="flex items-center gap-2 text-xs">
-      <span
-        className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-xl",
-          tone === "indigo" &&
-            "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300",
-          tone === "emerald" &&
-            "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300",
-          tone === "amber" && "bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300"
-        )}>
-        <Icon className="h-3.5 w-3.5" aria-hidden />
-      </span>
-      <div className="flex-1">
-        <p className="text-slate-500 dark:text-slate-400">{label}</p>
-        <p className="font-medium text-slate-900 dark:text-slate-100">{value}</p>
-      </div>
-    </div>
   );
 }
 
