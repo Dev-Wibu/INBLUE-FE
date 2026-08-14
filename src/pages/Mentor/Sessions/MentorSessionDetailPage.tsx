@@ -15,7 +15,7 @@
  * UI-only refresh. All data + access checks preserved exactly.
  */
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
@@ -27,7 +27,7 @@ import { formatCurrency, formatDateTime } from "@/lib/formatting";
 import { getSessionMentorId, isSessionMentor } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -80,6 +80,18 @@ const METRIC_TILE = cn(
 const CHIP_LABEL_CLS =
   "text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400";
 
+// ---------- motion variants ----------
+
+const childMotion = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: "easeOut" as const } },
+};
+
+const cardPop = {
+  hidden: { opacity: 0, y: 10, scale: 0.98 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.36, ease: "easeOut" as const } },
+};
+
 // ---------- KPI tiles ----------
 
 interface KpiTileProps {
@@ -88,7 +100,6 @@ interface KpiTileProps {
   value: React.ReactNode;
   accent?: "sky" | "indigo" | "emerald" | "amber" | "violet";
   meta?: React.ReactNode;
-  index: number;
 }
 
 const ACCENT_RING: Record<NonNullable<KpiTileProps["accent"]>, string> = {
@@ -373,14 +384,12 @@ export function MentorSessionDetailPage() {
           {/* KPI strip */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <KpiTile
-              index={1}
               icon={Calendar}
               label={t("common.appointmentTime")}
               value={formatDateTime(session.joinTime)}
               accent="indigo"
             />
             <KpiTile
-              index={2}
               icon={Timer}
               label={t("common.duration1")}
               value={
@@ -391,7 +400,6 @@ export function MentorSessionDetailPage() {
               accent="emerald"
             />
             <KpiTile
-              index={3}
               icon={CreditCard}
               label={t("common.totalPrice")}
               value={
@@ -403,7 +411,6 @@ export function MentorSessionDetailPage() {
               meta={session.transactionCode ?? undefined}
             />
             <KpiTile
-              index={4}
               icon={Hash}
               label={t("common.sessionCode")}
               value={`#${session.id || "—"}`}

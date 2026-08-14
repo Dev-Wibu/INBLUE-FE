@@ -62,6 +62,10 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
+// ---------- shared surfaces ----------
+const GLASS_SURFACE =
+  "rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900";
+
 type DatedItem = {
   createdAt?: string;
   session?: Pick<Session, "startTime1" | "endTime1">;
