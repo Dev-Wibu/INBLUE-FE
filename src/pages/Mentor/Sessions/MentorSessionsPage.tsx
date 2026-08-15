@@ -28,8 +28,8 @@ import { useUserProfilesByIds } from "@/hooks/useUserProfilesByIds";
 import type { Session } from "@/interfaces";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { getSessionJoinAvailability } from "@/lib/session-join";
+import { filterSessionsForMentor } from "@/lib/session-mentor";
 import { getSessionStatusBadge } from "@/lib/status-utils";
-import { useAuthStore } from "@/stores/authStore";
 import { Check, LogIn, Pencil, Search, Video, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -57,7 +57,6 @@ const getSessionSortValue = (session: Session): number => {
 export function MentorSessionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<SessionStatus>("all");
   const [now, setNow] = useState(() => Date.now());
@@ -84,17 +83,8 @@ export function MentorSessionsPage() {
 
   const mentorSessions = useMemo(() => {
     const mentorProfileId = Number(currentMentorProfile?.id);
-    const candidateIds = [user?.id, mentorProfileId].filter(
-      (id): id is number => typeof id === "number" && Number.isFinite(id) && id > 0
-    );
-    if (candidateIds.length === 0) return [];
-    return allSessions.filter((session) => {
-      const sessionIds = [session.userId, session.userId2, session.mentorId]
-        .filter((id): id is number => typeof id === "number")
-        .map(String);
-      return candidateIds.some((id) => sessionIds.includes(String(id)));
-    });
-  }, [allSessions, currentMentorProfile, user?.id]);
+    return filterSessionsForMentor(allSessions, mentorProfileId);
+  }, [allSessions, currentMentorProfile?.id]);
 
   const candidateUserIds = useMemo(
     () => mentorSessions.map((session) => session.userId),

@@ -15,6 +15,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { registerInblueMonacoThemes, useMonacoTheme } from "@/hooks/useMonacoTheme";
+import {
+  findCodingSubmissionForProblem,
+  pairCodingProblemsWithSubmissions,
+} from "@/lib/coding-submissions";
 import { cn } from "@/lib/utils";
 import {
   applicationDetailManager,
@@ -49,6 +53,7 @@ import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
+type CodeSubmission = components["schemas"]["CodeSubmission"];
 type CompilerLanguage = NonNullable<components["schemas"]["CompileRequest"]["language"]>;
 type CompilerResponse = components["schemas"]["CompilerResponseDto"];
 
@@ -125,6 +130,7 @@ interface CodingProblemVM {
   executionTimeLimitMs?: number;
   memoryLimitMb?: number;
   codeStubs: Partial<Record<CompilerLanguage, string>>;
+  submissionIndex?: number;
 }
 
 function parseExamples(
@@ -198,7 +204,11 @@ function parseCodeStubs(raw: unknown): Partial<Record<CompilerLanguage, string>>
   return {};
 }
 
-function getProblems(round: JdRound, titleForIndex: (_index: number) => string): CodingProblemVM[] {
+function getProblems(
+  round: JdRound,
+  titleForIndex: (_index: number) => string,
+  fallbackConfig?: components["schemas"]["RoundConfig"]
+): CodingProblemVM[] {
   // JdRound is a partial local shape — pull `codingProblems` off the full
   // BE round schema which is the source of truth for problem snapshots.
   const roundFull = round as JdRound & {
@@ -221,9 +231,23 @@ function getProblems(round: JdRound, titleForIndex: (_index: number) => string):
     };
   };
 
-  const raw = roundFull.configData?.codingProblems ?? [];
+  const embeddedConfig = roundFull.roundConfig as components["schemas"]["RoundConfig"] | undefined;
+  const raw = [
+    ...(fallbackConfig?.codingProblems ?? []),
+    ...(embeddedConfig?.codingProblems ?? []),
+    ...(roundFull.configData?.codingProblems ?? []),
+  ].filter(
+    (problem, index, allProblems) =>
+      allProblems.findIndex((candidate) => {
+        if (problem.problemId !== undefined && candidate.problemId !== undefined) {
+          return candidate.problemId === problem.problemId;
+        }
+        if (problem.title && candidate.title) return candidate.title === problem.title;
+        return candidate === problem;
+      }) === index
+  );
   return raw.map((p, index) => ({
-    problemId: p.problemId ?? 0,
+    problemId: p.problemId ?? -(index + 1),
     title: p.title ?? titleForIndex(index),
     difficulty: p.difficulty,
     problemStatement: p.problemStatement ?? "",
@@ -245,6 +269,43 @@ function getProblems(round: JdRound, titleForIndex: (_index: number) => string):
         (p as Record<string, unknown>).templates
     ),
   }));
+}
+
+function includeSubmissionOnlyProblems(
+  configuredProblems: CodingProblemVM[],
+  submissions: CodeSubmission[],
+  titleForIndex: (_index: number) => string
+): CodingProblemVM[] {
+  return pairCodingProblemsWithSubmissions(configuredProblems, submissions).map(
+    ({ problem, submission, submissionIndex }, index) => {
+      if (problem) {
+        return submissionIndex === undefined ? problem : { ...problem, submissionIndex };
+      }
+
+      return {
+        problemId:
+          submission?.problemId ?? -(configuredProblems.length + (submissionIndex ?? index) + 1),
+        title: titleForIndex(index),
+        difficulty: undefined,
+        problemStatement: "",
+        rulesAndConstraints: [],
+        visibleExamples: [],
+        codeStubs: {},
+        submissionIndex,
+      };
+    }
+  );
+}
+
+function getSubmissionForProblem(
+  submissions: CodeSubmission[],
+  problem: CodingProblemVM,
+  problemIndex: number
+): CodeSubmission | undefined {
+  if (problem.submissionIndex !== undefined) {
+    return submissions[problem.submissionIndex];
+  }
+  return findCodingSubmissionForProblem(submissions, problem.problemId, problemIndex);
 }
 
 const DEFAULT_STUBS: Partial<Record<CompilerLanguage, string>> = {
@@ -332,7 +393,7 @@ function extractSubmissionResults(
   const results: SampleResults = {};
   const persisted = targetDetail?.submissionData?.codeSubmissions ?? [];
   for (const [idx, p] of problemList.entries()) {
-    const sub = persisted[idx] ?? persisted[persisted.length - 1];
+    const sub = getSubmissionForProblem(persisted, p, idx);
     if (sub?.testCases) {
       results[p.problemId] = sub.testCases as unknown as CompilerResponse;
     }
@@ -349,16 +410,28 @@ export function CodingModule({
   onSuccess,
 }: CodingModuleProps) {
   const { t } = useTranslation();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const detailRoundConfig = (initialDetail as any)?.roundConfig;
+  const detailRoundConfig = (
+    initialDetail as ApplicationDetail & { roundConfig?: components["schemas"]["RoundConfig"] }
+  )?.roundConfig;
   const [submittedDetail, setSubmittedDetail] = useState<ApplicationDetail | null>(null);
   const detail = submittedDetail ?? initialDetail;
+  const configuredProblems = useMemo(
+    () =>
+      getProblems(
+        round,
+        (index) => t("userApplication.coding.problemNumber", { number: index + 1 }),
+        detailRoundConfig
+      ),
+    [detailRoundConfig, round, t]
+  );
   const problems = useMemo(
     () =>
-      getProblems(round, (index) =>
-        t("userApplication.coding.problemNumber", { number: index + 1 })
+      includeSubmissionOnlyProblems(
+        configuredProblems,
+        detail?.submissionData?.codeSubmissions ?? [],
+        (index) => t("userApplication.coding.problemNumber", { number: index + 1 })
       ),
-    [round, t]
+    [configuredProblems, detail?.submissionData?.codeSubmissions, t]
   );
 
   // ---- Per-problem editing state ------------------------------------------
@@ -370,9 +443,7 @@ export function CodingModule({
     const init: Record<number, ProblemSource> = {};
     const persisted = detail?.submissionData?.codeSubmissions ?? [];
     for (const [idx, p] of problems.entries()) {
-      // Re-use the candidate's last submission for the corresponding problem,
-      // in submission order. If a round only has 1 problem this is exact.
-      const submitted = persisted[idx] ?? persisted[persisted.length - 1];
+      const submitted = getSubmissionForProblem(persisted, p, idx);
       const lang = pickInitialLanguage(p, detail);
       const code =
         submitted?.sourceCode && submitted.sourceCode.length > 0
@@ -387,6 +458,9 @@ export function CodingModule({
     }
     return init;
   });
+  const problemsKey = problems
+    .map((problem) => `${problem.problemId}:${problem.submissionIndex ?? "configured"}`)
+    .join("|");
 
   // Re-seed when navigating to a different round (or after data re-load).
   useEffect(() => {
@@ -400,7 +474,7 @@ export function CodingModule({
           next[p.problemId] = existing;
           continue;
         }
-        const submitted = persisted[idx] ?? persisted[persisted.length - 1];
+        const submitted = getSubmissionForProblem(persisted, p, idx);
         const lang = existing?.language ?? pickInitialLanguage(p, detail);
         const code =
           submitted?.sourceCode && submitted.sourceCode.length > 0
@@ -415,10 +489,9 @@ export function CodingModule({
       }
       return next;
     });
-    // We intentionally only re-seed on round identity changes so candidate
-    // edits are preserved while typing.
+    // Preserve in-progress edits while re-seeding newly discovered review submissions.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roundKey, detailId]);
+  }, [roundKey, detailId, problemsKey]);
 
   const [runningId, setRunningId] = useState<number | null>(null);
   const [sampleResults, setSampleResults] = useState<SampleResults>(() => {
@@ -438,6 +511,10 @@ export function CodingModule({
 
   // Active problem tab index (for multi-problem navigation)
   const [currentProblemIdx, setCurrentProblemIdx] = useState(0);
+
+  useEffect(() => {
+    setCurrentProblemIdx((current) => Math.min(current, Math.max(problems.length - 1, 0)));
+  }, [problems.length]);
 
   // The BE grades the real submit synchronously and returns the detail.
   const [submitting, setSubmitting] = useState(false);

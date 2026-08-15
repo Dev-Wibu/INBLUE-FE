@@ -77,6 +77,51 @@ export class NotificationManager implements BaseManager<Notification> {
   }
 
   /**
+   * The backend has no global notification endpoint. Aggregate the per-user
+   * endpoint in small batches so the admin view remains complete without
+   * overloading the API when the user table is large.
+   */
+  async getByUserIds(userIds: Array<string | number>): Promise<ApiResponse<Notification[]>> {
+    const ids = Array.from(
+      new Set(userIds.map(Number).filter((id) => Number.isFinite(id) && id > 0))
+    );
+    if (ids.length === 0) return { success: true, data: [] };
+
+    const notifications: Notification[] = [];
+    let firstError: string | undefined;
+    const batchSize = 8;
+    for (let index = 0; index < ids.length; index += batchSize) {
+      const results = await Promise.all(
+        ids.slice(index, index + batchSize).map((id) => this.getByUserId(id))
+      );
+      results.forEach((result) => {
+        if (result.success && Array.isArray(result.data)) {
+          notifications.push(...result.data);
+        } else if (!firstError) {
+          firstError = result.error;
+        }
+      });
+    }
+
+    if (notifications.length === 0 && firstError) return { success: false, error: firstError };
+
+    const deduplicated = Array.from(
+      new Map(
+        notifications.map((notification) => [
+          notification.id != null
+            ? `id:${notification.id}`
+            : `fallback:${notification.user?.id}:${notification.createAt}:${notification.title}:${notification.message}`,
+          notification,
+        ])
+      ).values()
+    );
+    deduplicated.sort(
+      (a, b) => new Date(b.createAt || 0).getTime() - new Date(a.createAt || 0).getTime()
+    );
+    return { success: true, data: deduplicated };
+  }
+
+  /**
    * Get notification by ID
    * Note: The schema doesn't have a specific single notification endpoint
    */

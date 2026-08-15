@@ -54,8 +54,10 @@ export function AdminAccountPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password Form State
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
@@ -168,6 +170,10 @@ export function AdminAccountPage() {
   const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!currentPassword) {
+      toast.error(t("changePassword.currentPasswordIsRequired"));
+      return;
+    }
     if (!newPassword) {
       toast.error(t("changePassword.newPasswordIsRequired"));
       return;
@@ -176,21 +182,21 @@ export function AdminAccountPage() {
       toast.error(t("changePassword.newPasswordMinLength"));
       return;
     }
+    if (newPassword === currentPassword) {
+      toast.error(t("changePassword.newPasswordMustBeDifferent"));
+      return;
+    }
     if (newPassword !== confirmPassword) {
       toast.error(t("changePassword.confirmPasswordDoesNotMatch"));
       return;
     }
 
-    if (!profile?.id) {
-      toast.error("Profile ID not found");
-      return;
-    }
-
     setIsSavingPassword(true);
     try {
-      const result = await usersAdminManager.update(profile.id, { password: newPassword });
+      const result = await userManager.updatePassword(currentPassword, newPassword);
       if (result.success) {
         toast.success(t("changePassword.passwordUpdatedSuccessfully"));
+        setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       } else {
@@ -207,6 +213,7 @@ export function AdminAccountPage() {
     <button
       type="button"
       onClick={onClick}
+      aria-label={t(visible ? "common.hidePassword" : "common.showPassword")}
       className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center rounded text-slate-500 transition-colors hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-indigo-600/40 focus-visible:outline-none dark:text-slate-400 dark:hover:text-slate-200">
       {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
     </button>
@@ -480,6 +487,29 @@ export function AdminAccountPage() {
                   </div>
 
                   <form onSubmit={handleSavePassword} className="space-y-6">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor={`${passwordId}-current`}
+                        className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {t("changePassword.currentPassword")}
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id={`${passwordId}-current`}
+                          type={showCurrentPassword ? "text" : "password"}
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          className={cn(INPUT_CLASSES, "pr-10")}
+                          placeholder={t("changePassword.currentPasswordPlaceholder")}
+                          autoComplete="current-password"
+                          required
+                        />
+                        {renderPasswordToggle(
+                          () => setShowCurrentPassword(!showCurrentPassword),
+                          showCurrentPassword
+                        )}
+                      </div>
+                    </div>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label
@@ -493,8 +523,11 @@ export function AdminAccountPage() {
                             type={showNewPassword ? "text" : "password"}
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className={INPUT_CLASSES}
+                            className={cn(INPUT_CLASSES, "pr-10")}
                             placeholder={t("changePassword.newPasswordPlaceholder")}
+                            autoComplete="new-password"
+                            minLength={8}
+                            required
                           />
                           {renderPasswordToggle(
                             () => setShowNewPassword(!showNewPassword),
@@ -514,8 +547,11 @@ export function AdminAccountPage() {
                             type={showConfirmPassword ? "text" : "password"}
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className={INPUT_CLASSES}
+                            className={cn(INPUT_CLASSES, "pr-10")}
                             placeholder={t("changePassword.confirmPasswordPlaceholder")}
+                            autoComplete="new-password"
+                            minLength={8}
+                            required
                           />
                           {renderPasswordToggle(
                             () => setShowConfirmPassword(!showConfirmPassword),
@@ -527,7 +563,9 @@ export function AdminAccountPage() {
                     <div className="flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
                       <Button
                         type="submit"
-                        disabled={isSavingPassword || !newPassword || !confirmPassword}
+                        disabled={
+                          isSavingPassword || !currentPassword || !newPassword || !confirmPassword
+                        }
                         className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
                         {isSavingPassword ? (
                           <SpinnerBlock size="sm" className="mr-2 text-white/70" />

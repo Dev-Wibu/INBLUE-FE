@@ -119,8 +119,9 @@ function ModernGaugeClock({
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <span
-            className={`text-xl font-black tracking-tight ${hasData ? styles.text : "text-slate-500"}`}>
-            {hasData ? `${displayScore}%` : "--"}
+            className={`inline-flex items-baseline gap-0.5 font-black tracking-tight ${hasData ? styles.text : "text-slate-500"}`}>
+            <span className="text-xl">{hasData ? displayScore : "--"}</span>
+            {hasData && <span className="text-[9px] text-slate-500 dark:text-slate-400">/100</span>}
           </span>
           <span className="text-[8px] font-extrabold tracking-wider text-slate-400 uppercase">
             {label}

@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
@@ -12,19 +11,7 @@ import {
   useSettingsStore,
 } from "@/stores/settingsStore";
 import { applyTheme, type Theme, useThemeStore } from "@/stores/themeStore";
-import {
-  Bell,
-  ExternalLink,
-  Eye,
-  FileText,
-  HelpCircle,
-  Monitor,
-  Moon,
-  RotateCcw,
-  Shield,
-  Sun,
-  Zap,
-} from "lucide-react";
+import { Bell, Eye, Monitor, Moon, RotateCcw, Shield, Sun, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function SettingsTab() {
@@ -215,9 +202,9 @@ export function SettingsTab() {
         </div>
       </div>
 
-      {/* Right Column: Policies & Support */}
+      {/* Right Column: concise security context and reset action */}
       <aside className="hidden lg:col-span-4 lg:block">
-        <Card className="space-y-6 rounded-xl border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <Card className="space-y-5 rounded-xl border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="space-y-2">
             <h4 className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-slate-400">
               <Shield className="h-3 w-3" />{" "}
@@ -229,58 +216,8 @@ export function SettingsTab() {
                 "Your personal information and interview data are securely encrypted. The system does not share data with third parties."
               )}
             </p>
-            <a href="#" className="flex items-center gap-1 text-xs text-[#6366f1] hover:underline">
-              {t("userAccount.settingsPrivacyPolicy", "Privacy Policy")}{" "}
-              <ExternalLink className="h-3 w-3" />
-            </a>
           </div>
-
-          <Separator />
-
-          <div className="space-y-2">
-            <h4 className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-slate-400">
-              <FileText className="h-3 w-3" />{" "}
-              {t("userAccount.settingsTermsAndLegal", "TERMS & LEGAL")}
-            </h4>
-            <a
-              href="#"
-              className="block text-xs text-slate-500 transition-colors hover:text-[#6366f1]">
-              {t("userAccount.settingsTermsOfService", "Terms of Service")}{" "}
-              <ExternalLink className="inline h-3 w-3" />
-            </a>
-            <a
-              href="#"
-              className="block text-xs text-slate-500 transition-colors hover:text-[#6366f1]">
-              {t("userAccount.settingsAiUsagePolicy", "AI Usage Policy")}{" "}
-              <ExternalLink className="inline h-3 w-3" />
-            </a>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-2">
-            <h4 className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-slate-400">
-              <HelpCircle className="h-3 w-3" /> {t("userAccount.settingsSupport", "SUPPORT")}
-            </h4>
-            <a
-              href="#"
-              className="block text-xs text-slate-500 transition-colors hover:text-[#6366f1]">
-              {t("userAccount.settingsHelpCenter", "Help Center (FAQ)")}{" "}
-              <ExternalLink className="inline h-3 w-3" />
-            </a>
-            <a
-              href="#"
-              className="block text-xs text-slate-500 transition-colors hover:text-[#6366f1]">
-              {t("userAccount.settingsReportBug", "Report Bug / Feature Suggestion")}{" "}
-              <ExternalLink className="inline h-3 w-3" />
-            </a>
-          </div>
-
-          <div className="space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-            <div className="text-[10px] text-slate-400 italic">
-              ✨ {t("userAccount.settingsAutoSaved", "Settings are automatically saved")}
-            </div>
-            <div className="text-[10px] text-slate-400">INBLUE AI Platform • v1.2.0</div>
+          <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
             <Button
               variant="ghost"
               size="sm"

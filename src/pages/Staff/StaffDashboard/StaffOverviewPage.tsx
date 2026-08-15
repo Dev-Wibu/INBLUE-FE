@@ -3,8 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApplicationDetailsForReviewer } from "@/hooks/useApplicationDetails";
-import { cn, fixUtf8Mojibake } from "@/lib/utils";
+import type { Post } from "@/interfaces";
+import { cn, extractDataArray, fixUtf8Mojibake } from "@/lib/utils";
+import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
+import { useQuery } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import {
   ArrowRight,
@@ -14,6 +17,7 @@ import {
   Clock3,
   Gauge,
   Layers3,
+  Newspaper,
   Sparkles,
 } from "lucide-react";
 import { useMemo } from "react";
@@ -71,6 +75,13 @@ export function StaffOverviewPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const { data: rawReviews = [], isLoading } = useApplicationDetailsForReviewer(true);
+  const { data: posts = [], isLoading: postsLoading } = useQuery({
+    queryKey: ["staff", "posts", "overview"],
+    queryFn: async (): Promise<Post[]> => {
+      const response = await postManager.getAll();
+      return response.success ? extractDataArray<Post>(response) : [];
+    },
+  });
   const reviews = rawReviews as ReviewerItem[];
   const displayName = fixUtf8Mojibake(user?.name) || t("common.staff");
   const initials = displayName
@@ -136,6 +147,30 @@ export function StaffOverviewPage() {
         })
         .slice(0, 6),
     [reviews]
+  );
+
+  const postStatusData = useMemo(
+    () => [
+      {
+        status: "DRAFT",
+        name: t("common.draft"),
+        value: posts.filter((post) => post.status === "DRAFT").length,
+        fill: "#f59e0b",
+      },
+      {
+        status: "PUBLISHED",
+        name: t("common.published"),
+        value: posts.filter((post) => post.status === "PUBLISHED").length,
+        fill: "#10b981",
+      },
+      {
+        status: "ARCHIVED",
+        name: t("common.archived"),
+        value: posts.filter((post) => post.status === "ARCHIVED").length,
+        fill: "#64748b",
+      },
+    ],
+    [posts, t]
   );
 
   const openGrading = () => navigate(GRADING_PATH);
@@ -340,6 +375,76 @@ export function StaffOverviewPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section className="grid overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xs lg:grid-cols-[1fr_2fr] dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col justify-between border-b border-slate-200 p-5 lg:border-r lg:border-b-0 dark:border-slate-800">
+            <div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300">
+                <Newspaper className="h-5 w-5" />
+              </div>
+              <h2 className="mt-4 text-base font-bold text-slate-950 dark:text-white">
+                {t("staffOverview.contentModeration")}
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                {t("staffOverview.contentModerationHint", { count: posts.length })}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/staff?tab=articles")}
+              className="mt-5 w-fit border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950">
+              {t("staffOverview.openArticles")}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="p-5">
+            {postsLoading ? (
+              <Skeleton className="h-56 w-full" />
+            ) : posts.length === 0 ? (
+              <EmptyChart message={t("staffOverview.noPostData")} />
+            ) : (
+              <div className="h-56 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={postStatusData}
+                    margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#334155"
+                      opacity={0.18}
+                    />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{ borderRadius: 8, borderColor: "#cbd5e1", fontSize: 12 }}
+                    />
+                    <Bar
+                      dataKey="value"
+                      name={t("common.articlesCommunity")}
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={58}>
+                      {postStatusData.map((item) => (
+                        <Cell key={item.status} fill={item.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
         </section>
 

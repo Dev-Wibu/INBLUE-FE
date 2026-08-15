@@ -14,7 +14,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import {
   getAvailableRoundsTemplates,
   RoundCanvasEditorWorkspace,
 } from "@/components/shared/RoundCanvasEditor";
+import { TemplateDeleteDialog } from "./TemplateDeleteDialog";
 
 const getPassThresholdNumber = (val?: number | null): number => {
   if (val == null) return 80;
@@ -41,6 +42,7 @@ export function InterviewTemplateDetailPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<DetailResponse | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Editor states
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -75,19 +77,21 @@ export function InterviewTemplateDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const handleDeleteTemplate = async (id: number, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    if (!confirm(t("adminCompanymanagement.confirmDeleteTemplate"))) return;
-
+  const handleDeleteTemplate = async () => {
+    if (!selectedTemplate?.id) return;
     setIsDeleting(true);
-    const res = await interviewTemplateManager.deleteTemplate(id);
-    if (res.success) {
-      toast.success(t("adminCompanymanagement.deletedRecruitmentTemplateSuccessfully"));
-      navigate("/admin/interviewTemplates");
-    } else {
-      toast.error(res.error || t("adminCompanymanagement.unableToDeleteProcessTemplate"));
+    try {
+      const res = await interviewTemplateManager.deleteTemplate(selectedTemplate.id);
+      if (res.success) {
+        toast.success(t("adminCompanymanagement.deletedRecruitmentTemplateSuccessfully"));
+        setIsDeleteDialogOpen(false);
+        navigate("/admin/interviewTemplates");
+      } else {
+        toast.error(res.error || t("adminCompanymanagement.unableToDeleteProcessTemplate"));
+      }
+    } finally {
+      setIsDeleting(false);
     }
-    setIsDeleting(false);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -318,7 +322,7 @@ export function InterviewTemplateDetailPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={(e) => handleDeleteTemplate(selectedTemplate.id!, e)}
+                        onClick={() => setIsDeleteDialogOpen(true)}
                         disabled={isDeleting}
                         className="h-9 gap-1.5 rounded-xl border border-rose-200 bg-white px-3.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-950/50 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/50">
                         <Trash2 className="h-3.5 w-3.5" />
@@ -535,6 +539,13 @@ export function InterviewTemplateDetailPage() {
           )}
         </div>
       </div>
+      <TemplateDeleteDialog
+        open={isDeleteDialogOpen}
+        templateName={selectedTemplate?.name}
+        isDeleting={isDeleting}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteTemplate}
+      />
     </div>
   );
 }

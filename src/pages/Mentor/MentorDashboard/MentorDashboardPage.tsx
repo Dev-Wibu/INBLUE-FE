@@ -256,10 +256,9 @@ export function MentorDashboardPage() {
 
   // Sync authStore user state with actual mentor profile
   useEffect(() => {
-    if (!authUser?.id || authUser.role !== "MENTOR") return;
-    mentorManager.getById(authUser.id).then((res) => {
-      if (res.success && res.data) {
-        const m = res.data;
+    if (!authUser?.email || authUser.role !== "MENTOR") return;
+    mentorManager.findByEmail(authUser.email).then((m) => {
+      if (m) {
         if (
           m.name &&
           (m.name !== authUser.name ||
@@ -276,7 +275,7 @@ export function MentorDashboardPage() {
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authUser?.id, authUser?.role, authUser?.name, authUser?.email, authUser?.avatarUrl, setUser]);
+  }, [authUser?.role, authUser?.name, authUser?.email, authUser?.avatarUrl, setUser]);
 
   useEffect(() => {
     setIsSidebarCollapsed(sidebarBehavior === "auto-collapse");

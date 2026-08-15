@@ -23,13 +23,14 @@ import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { interviewTemplateManager } from "@/services/interview-template.manager";
 import { LayoutTemplate, PlusCircle, RotateCcw, Search, Trash2 } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import type { UIRound } from "@/components/shared/RoundCanvasEditor";
 import { RoundCanvasEditorWorkspace } from "@/components/shared/RoundCanvasEditor";
+import { TemplateDeleteDialog } from "./TemplateDeleteDialog";
 
 export function InterviewTemplateManagementPage() {
   const { t } = useTranslation();
@@ -40,6 +41,8 @@ export function InterviewTemplateManagementPage() {
   const [roundFilter, setRoundFilter] = useState<string>("ALL");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [isLoadingList, setIsLoadingList] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<SummaryResponse | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Editor states (only for creating)
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -62,16 +65,20 @@ export function InterviewTemplateManagementPage() {
     loadTemplates();
   }, []);
 
-  const handleDeleteTemplate = async (id: number, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    if (!confirm(t("adminCompanymanagement.confirmDeleteTemplate"))) return;
-
-    const res = await interviewTemplateManager.deleteTemplate(id);
-    if (res.success) {
-      toast.success(t("adminCompanymanagement.deletedRecruitmentTemplateSuccessfully"));
-      loadTemplates();
-    } else {
-      toast.error(res.error || t("adminCompanymanagement.unableToDeleteProcessTemplate"));
+  const handleDeleteTemplate = async () => {
+    if (!deleteTarget?.id) return;
+    setIsDeleting(true);
+    try {
+      const res = await interviewTemplateManager.deleteTemplate(deleteTarget.id);
+      if (res.success) {
+        toast.success(t("adminCompanymanagement.deletedRecruitmentTemplateSuccessfully"));
+        setDeleteTarget(null);
+        await loadTemplates();
+      } else {
+        toast.error(res.error || t("adminCompanymanagement.unableToDeleteProcessTemplate"));
+      }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -511,7 +518,10 @@ export function InterviewTemplateManagementPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={(e) => handleDeleteTemplate(tpl.id!, e)}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setDeleteTarget(tpl);
+                                }}
                                 className="h-8.5 w-8.5 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/60 dark:hover:text-rose-300"
                                 title={t("common.delete", "Xóa")}>
                                 <Trash2 className="h-4 w-4" />
@@ -542,6 +552,13 @@ export function InterviewTemplateManagementPage() {
           </div>
         </div>
       </div>
+      <TemplateDeleteDialog
+        open={deleteTarget !== null}
+        templateName={deleteTarget?.name}
+        isDeleting={isDeleting}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        onConfirm={handleDeleteTemplate}
+      />
     </div>
   );
 }

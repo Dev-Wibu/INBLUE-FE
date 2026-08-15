@@ -49,6 +49,19 @@ export function isSessionMentor(
 }
 
 /**
+ * Keeps only sessions owned by the resolved Mentor record.
+ * User.id and Mentor.id are independent sequences, so candidate user IDs
+ * must never participate in this ownership check.
+ */
+export function filterSessionsForMentor<T extends SessionLike>(
+  sessions: T[],
+  mentorId: number | string | null | undefined
+): T[] {
+  if (mentorId == null || Number(mentorId) <= 0 || !Number.isFinite(Number(mentorId))) return [];
+  return sessions.filter((session) => isSessionMentor(session, mentorId));
+}
+
+/**
  * Returns a label string for the mentor (e.g. "Mentor #4") or the provided
  * fallback when the mentor ID cannot be resolved.
  */

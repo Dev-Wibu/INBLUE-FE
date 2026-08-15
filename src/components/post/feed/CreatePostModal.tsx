@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
+import { cn } from "@/lib/utils";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { FileText, ImagePlus, Info, PenLine, Send, Tag, X } from "lucide-react";
@@ -32,6 +33,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [validationAttempted, setValidationAttempted] = useState(false);
 
   const resetForm = () => {
     setTitle("");
@@ -40,6 +42,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
     setTagInput("");
     setTags([]);
     setCoverFile(null);
+    setValidationAttempted(false);
     if (coverPreview) URL.revokeObjectURL(coverPreview);
     setCoverPreview(null);
   };
@@ -65,7 +68,20 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !content.trim()) return;
+    setValidationAttempted(true);
+    if (!coverFile) {
+      toast.error(t("compPost.coverImageRequired"));
+      return;
+    }
+    if (!title.trim()) {
+      toast.error(t("compPost.titleRequired"));
+      return;
+    }
+    if (!content.trim()) {
+      toast.error(t("compPost.contentRequired"));
+      return;
+    }
+
     if (!user?.id) return;
 
     setSubmitting(true);
@@ -169,7 +185,13 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-start">
+            <div
+              className={cn(
+                "flex items-center justify-start rounded-xl",
+                validationAttempted &&
+                  !coverFile &&
+                  "border border-rose-300 bg-rose-50/60 p-3 dark:border-rose-800 dark:bg-rose-950/20"
+              )}>
               <UniversalMediaUploader
                 preset="single-image"
                 enableWebcam={true}
@@ -185,6 +207,11 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
                   </Button>
                 }
               />
+              {validationAttempted && !coverFile && (
+                <p className="ml-3 text-xs font-medium text-rose-600 dark:text-rose-400">
+                  {t("compPost.coverImageRequired")}
+                </p>
+              )}
             </div>
           )}
 
@@ -194,8 +221,14 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
               placeholder={t("compPost.titleYourPost", "Tiêu đề bài viết...")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              aria-invalid={validationAttempted && !title.trim()}
               className="h-auto rounded-none border-0 bg-transparent px-0 py-1 text-2xl font-extrabold tracking-tight text-slate-900 placeholder:text-slate-300 focus-visible:ring-0 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
+            {validationAttempted && !title.trim() && (
+              <p className="text-xs font-medium text-rose-600 dark:text-rose-400">
+                {t("compPost.titleRequired")}
+              </p>
+            )}
           </div>
 
           <div className="border-b border-slate-100 dark:border-slate-800" />
@@ -209,9 +242,15 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
               )}
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              aria-invalid={validationAttempted && !content.trim()}
               rows={8}
               className="min-h-[220px] resize-y rounded-xl border-slate-200/80 bg-slate-50/40 p-4 text-base leading-relaxed text-slate-800 shadow-none placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700/70 dark:bg-slate-800/40 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-indigo-500 dark:focus:bg-slate-800/80"
             />
+            {validationAttempted && !content.trim() && (
+              <p className="text-xs font-medium text-rose-600 dark:text-rose-400">
+                {t("compPost.contentRequired")}
+              </p>
+            )}
           </div>
 
           {/* Metadata Cards: Summary & Tags */}
@@ -310,7 +349,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             <Button
               className="h-9 gap-2 rounded-xl bg-indigo-600 px-5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
               onClick={handleSubmit}
-              disabled={!title.trim() || !content.trim() || submitting}>
+              disabled={submitting}>
               {submitting ? <Spinner size="sm" tone="white" /> : <Send className="h-3.5 w-3.5" />}
               {t("compPost.post", "Đăng bài")}
             </Button>

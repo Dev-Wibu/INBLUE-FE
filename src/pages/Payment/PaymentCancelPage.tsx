@@ -17,6 +17,11 @@ import {
   type PaymentRecoveryContext,
   type PaymentRecoveryLookupSource,
 } from "@/lib";
+import {
+  clearPendingJdPurchase,
+  getJdPurchaseReturnPath,
+  getPendingJdPurchaseId,
+} from "@/lib/jd-payment";
 import { paymentManager } from "@/services/payment.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { AlertCircle } from "lucide-react";
@@ -53,12 +58,12 @@ export function PaymentCancelPage() {
   );
 
   const pendingJdId = useMemo(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const queryJdId = queryParams.get("jdId");
-    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
-    const parsed = Number(queryJdId || storedJdId);
-    return parsed && !isNaN(parsed) ? parsed : null;
+    return getPendingJdPurchaseId(window.location.search);
   }, []);
+  const pendingJdReturnPath = useMemo(
+    () => (pendingJdId ? getJdPurchaseReturnPath(pendingJdId) : null),
+    [pendingJdId]
+  );
 
   const getCancelPrimaryRedirect = (
     purpose?: PaymentPurpose,
@@ -69,7 +74,7 @@ export function PaymentCancelPage() {
   } => {
     if (pendingJdId) {
       return {
-        to: `/enterprise/job/${pendingJdId}`,
+        to: pendingJdReturnPath || `/user?tab=jobSearch&jobId=${pendingJdId}`,
         label: t("payment.returnToJobPosition", "Quay lại trang vị trí việc làm"),
       };
     }
@@ -153,7 +158,7 @@ export function PaymentCancelPage() {
         setResultMessage(
           t("payment.jdPurchaseCancelledMsg", "Bạn đã hủy giao dịch thanh toán mua gói JD.")
         );
-        localStorage.removeItem("pending_jd_purchase_id");
+        clearPendingJdPurchase();
         return;
       }
 
@@ -632,7 +637,9 @@ export function PaymentCancelPage() {
           </div>
           <div>
             <h1 className="font-['Poppins'] text-2xl font-bold text-amber-700 dark:text-amber-300">
-              {t("common.pay")}
+              {chainResult === "failed" || chainResult === "missing"
+                ? t("common.paymentCannotBeCanceled")
+                : t("paymentPaymentcancelpage.paymentHasBeenCancelled")}
             </h1>
             <p className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
               {t("paymentPaymentcancelpage.updatingPaymentStatus")}
@@ -673,7 +680,7 @@ export function PaymentCancelPage() {
           </Link>
           {pendingJdId && (
             <Link
-              to={`/enterprise/job/${pendingJdId}`}
+              to={pendingJdReturnPath || `/user?tab=jobSearch&jobId=${pendingJdId}`}
               className="rounded-xl bg-amber-600 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-amber-700">
               {t("payment.retryPayment", "Thử thanh toán lại")}
             </Link>

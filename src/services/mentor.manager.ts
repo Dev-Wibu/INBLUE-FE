@@ -16,6 +16,7 @@ import type {
   SchemaCreateMentorRequest,
 } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
+import { validateMentorData } from "@/lib/mentor-validation";
 
 // Re-export Mentor type for convenience
 export type { Mentor } from "@/interfaces";
@@ -39,6 +40,35 @@ function createEmptyFilePlaceholder(): File {
     type: "text/plain",
   });
 }
+
+type MentorApiShape = Mentor & { isActive?: boolean };
+
+function normalizeMentor(mentor: MentorApiShape): Mentor {
+  if (typeof mentor.active === "boolean") return mentor;
+  if (typeof mentor.isActive === "boolean") return { ...mentor, active: mentor.isActive };
+  return mentor;
+}
+
+function normalizeMentorResponse(
+  data: PaginatedResponse<Mentor> | Mentor[]
+): PaginatedResponse<Mentor> | Mentor[] {
+  if (Array.isArray(data)) return data.map((mentor) => normalizeMentor(mentor));
+  const response = data as PaginatedResponse<Mentor> & {
+    data?: Mentor[];
+    items?: Mentor[];
+  };
+  if (Array.isArray(response.data)) {
+    return { ...response, data: response.data.map((mentor) => normalizeMentor(mentor)) };
+  }
+  if (Array.isArray(response.items)) {
+    return {
+      ...response,
+      items: response.items.map((mentor) => normalizeMentor(mentor)),
+    } as unknown as PaginatedResponse<Mentor>;
+  }
+  return data;
+}
+
 export class MentorManager implements BaseManager<Mentor> {
   /**
    * Get all mentors
@@ -60,7 +90,7 @@ export class MentorManager implements BaseManager<Mentor> {
         }));
       return {
         success: true,
-        data: response.data as PaginatedResponse<Mentor> | Mentor[],
+        data: normalizeMentorResponse(response.data as PaginatedResponse<Mentor> | Mentor[]),
       };
     } catch (error) {
       return {
@@ -87,7 +117,7 @@ export class MentorManager implements BaseManager<Mentor> {
       }));
       return {
         success: true,
-        data: response.data as Mentor,
+        data: normalizeMentor(response.data as MentorApiShape),
       };
     } catch (error) {
       return {
@@ -114,7 +144,9 @@ export class MentorManager implements BaseManager<Mentor> {
 
     const list: Mentor[] = Array.isArray(result.data)
       ? result.data
-      : ((result.data as { items?: Mentor[] }).items ?? []);
+      : ((result.data as { data?: Mentor[]; items?: Mentor[] }).data ??
+        (result.data as { items?: Mentor[] }).items ??
+        []);
 
     const target = email.trim().toLowerCase();
     return list.find((m) => (m.email ?? "").trim().toLowerCase() === target) ?? null;
@@ -127,17 +159,11 @@ export class MentorManager implements BaseManager<Mentor> {
    */
   async create(_data: Partial<Mentor> | CreateMentorData): Promise<ApiResponse<Mentor>> {
     try {
-      // Validate required fields
-      if (!_data.name || !_data.name.trim()) {
+      const validationIssue = validateMentorData(_data, { requirePassword: true })[0];
+      if (validationIssue) {
         return {
           success: false,
-          error: t("general.nameIsRequiredToCreate"),
-        };
-      }
-      if (!_data.email || !_data.email.trim()) {
-        return {
-          success: false,
-          error: t("general.emailIsRequiredToCreate"),
+          error: t(validationIssue.messageKey, validationIssue.values),
         };
       }
 
@@ -208,12 +234,19 @@ export class MentorManager implements BaseManager<Mentor> {
         }));
       return {
         success: true,
-        data: response.data,
+        data: normalizeMentor(response.data as MentorApiShape),
       };
     } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (message.toLowerCase().includes("value too long")) {
+        return {
+          success: false,
+          error: t("adminMentormanagement.validation.serverValueTooLong"),
+        };
+      }
       return {
         success: false,
-        error: error instanceof Error ? error.message : t("common.cannotCreateMentor"),
+        error: message || t("common.cannotCreateMentor"),
       };
     }
   }
@@ -242,6 +275,17 @@ export class MentorManager implements BaseManager<Mentor> {
         }
       } catch {
         // Ignore
+      }
+
+      const validationIssue = validateMentorData(
+        { ...existingMentor, ..._data, password: _data.password },
+        { requirePassword: false }
+      )[0];
+      if (validationIssue) {
+        return {
+          success: false,
+          error: t(validationIssue.messageKey, validationIssue.values),
+        };
       }
 
       // Build CreateMentorRequest payload with id for update.
@@ -319,7 +363,7 @@ export class MentorManager implements BaseManager<Mentor> {
         }));
       return {
         success: true,
-        data: response.data,
+        data: normalizeMentor(response.data as MentorApiShape),
       };
     } catch (error) {
       return {
@@ -347,8 +391,7 @@ export class MentorManager implements BaseManager<Mentor> {
       }));
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch
-        data: response.data,
+        data: normalizeMentor(response.data as MentorApiShape),
       };
     } catch (error) {
       return {
@@ -392,7 +435,7 @@ export class MentorManager implements BaseManager<Mentor> {
 
       return {
         success: true,
-        data: response.data as Mentor,
+        data: normalizeMentor(response.data as MentorApiShape),
       };
     } catch (error) {
       return {

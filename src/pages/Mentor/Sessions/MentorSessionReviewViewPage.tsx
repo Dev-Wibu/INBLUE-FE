@@ -72,7 +72,7 @@ export function MentorSessionReviewViewPage() {
   const [activeField, setActiveField] = useState<MentorReviewTextField | null>(null);
   const [draft, setDraft] = useState<MentorReviewReportDraft>(() => createDraft(review));
   const hasInternalReturn = Boolean((location.state as MentorRouteState | null)?.returnTo);
-  const mentorId = Number(mentorProfile?.id || authUser?.id || 0);
+  const mentorId = Number(mentorProfile?.id || 0);
   const isSaving = createReviewMutation.isPending || updateReviewMutation.isPending;
 
   useEffect(() => {
@@ -127,6 +127,10 @@ export function MentorSessionReviewViewPage() {
     }
     if (!session.id || !session.userId) {
       toast.error(t("mentorSessions.missingStudentInformationInThe"));
+      return;
+    }
+    if (!Number.isFinite(draft.rating) || draft.rating < 1 || draft.rating > 5) {
+      toast.error(t("mentorSessions.ratingRequired"));
       return;
     }
 

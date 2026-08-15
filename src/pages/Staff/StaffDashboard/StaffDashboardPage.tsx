@@ -6,25 +6,33 @@ import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestora
 import { useTabsState } from "@/hooks/useTabsState";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { ClipboardCheck, Home, LayoutDashboard } from "lucide-react";
+import { ClipboardCheck, Home, LayoutDashboard, Newspaper } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ApplicationGradingPage } from "../../Admin/ApplicationGrading/ApplicationGradingPage";
+import { PostManagementPage } from "../../Admin/PostManagement/PostManagementPage";
 import { StaffAccountPage } from "../Account/StaffAccountPage";
 import { staffGradingWorkspacePage as StaffGradingWorkspacePage } from "../GradingWorkspace";
 import { StaffHomeFeedPage } from "../HomeFeed/StaffHomeFeedPage";
 import { StaffOverviewPage } from "./StaffOverviewPage";
 import { StaffHeader } from "./components/StaffHeader";
 
-type TabType = "home" | "dashboard" | "applicationGrading" | "grading-detail" | "account";
+type TabType =
+  | "home"
+  | "dashboard"
+  | "applicationGrading"
+  | "grading-detail"
+  | "articles"
+  | "account";
 
 const VALID_TAB_TYPES: TabType[] = [
   "home",
   "dashboard",
   "applicationGrading",
   "grading-detail",
+  "articles",
   "account",
 ];
 
@@ -44,6 +52,10 @@ const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; la
   {
     type: "applicationGrading",
     label: t("adminApplicationGrading.applicationGrading"),
+  },
+  {
+    type: "articles",
+    label: t("common.articlesCommunity"),
   },
   {
     type: "account",
@@ -83,6 +95,13 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         label: t("adminApplicationGrading.applicationGrading"),
         color: "text-indigo-600 dark:text-indigo-400",
         description: t("adminApplicationGrading.gradeApplications"),
+      },
+      {
+        type: "articles",
+        icon: Newspaper,
+        label: t("common.articlesCommunity"),
+        color: "text-emerald-600 dark:text-emerald-400",
+        description: t("staffOverview.manageCommunityPosts"),
       },
     ],
   },
@@ -199,6 +218,8 @@ export function StaffDashboardPage() {
         return <StaffOverviewPage />;
       case "applicationGrading":
         return <ApplicationGradingPage onOpenGradingDetail={openGradingTab} basePath="/staff" />;
+      case "articles":
+        return <PostManagementPage />;
       case "grading-detail": {
         return <StaffGradingWorkspacePage />;
       }

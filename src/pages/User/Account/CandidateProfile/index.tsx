@@ -19,7 +19,6 @@ import {
   FolderOpen,
   GraduationCap,
   Trophy,
-  User as UserIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -89,7 +88,7 @@ export function CandidateProfileTab() {
           </p>
         </div>
 
-        <Card className="border-emerald-100 dark:border-slate-800">
+        <Card className="border-emerald-100 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
           <CardContent className="py-12 text-center">
             <h3 className="text-lg font-semibold">{t("common.thereAreNoCandidateProfilesYet")}</h3>
             <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
@@ -214,14 +213,9 @@ export function CandidateProfileTab() {
         </div>
       </div>
 
-      {/* Introduction */}
-      {profile.introduction && (
-        <CollapsibleCard id="intro" title={t("common.introduce")} icon={UserIcon}>
-          <p className="text-base leading-relaxed text-slate-600 dark:text-slate-300">
-            {profile.introduction}
-          </p>
-        </CollapsibleCard>
-      )}
+      {/* Target role, level, and introduction are valid profile data even when
+          the optional skills/experience sections are still empty. */}
+      <BasicInfoSection mode="view" profile={profile} />
 
       {/* Skills & Tools */}
       <CollapsibleCard id="skills" title={t("common.technicalSkills")} icon={Code}>

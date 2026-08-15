@@ -300,6 +300,7 @@ export class UsersAdminManager implements BaseManager<User> {
         // Include id for update operation
         name: _data.name?.trim() || existingUser.name,
         email: _data.email?.trim() || existingUser.email,
+        password: _data.password,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         university: (_data as any).university || (existingUser as any).university,
 
@@ -410,19 +411,22 @@ export class UsersAdminManager implements BaseManager<User> {
    */
   async toggleActive(_id: string | number, userData?: Partial<User>): Promise<ApiResponse<void>> {
     try {
-      // If no user data provided, fetch it first to preserve existing data
-      let currentUserData = userData;
-      if (!currentUserData) {
-        const fetchResult = await this.getById(_id);
-        if (fetchResult.success && fetchResult.data) {
-          currentUserData = fetchResult.data;
-        } else {
-          // Không thể tải user data - cannot proceed with toggle
-          return {
-            success: false,
-            error: fetchResult.error || t("general.unableToLoadUserData"),
-          };
-        }
+      // Table rows are intentionally partial. Always load the detail record so
+      // password and profile fields survive the backend's full-row update.
+      const fetchResult = await this.getById(_id);
+      if (!fetchResult.success || !fetchResult.data) {
+        return {
+          success: false,
+          error: fetchResult.error || t("general.unableToLoadUserData"),
+        };
+      }
+      const currentUserData = { ...userData, ...fetchResult.data };
+      const existingPassword = (currentUserData as { password?: unknown }).password;
+      if (typeof existingPassword !== "string" || existingPassword.length === 0) {
+        return {
+          success: false,
+          error: t("adminUsermanagement.passwordCouldNotBePreserved"),
+        };
       }
 
       // Determine the new active status (toggle current status)
@@ -438,12 +442,21 @@ export class UsersAdminManager implements BaseManager<User> {
         id: Number(_id),
         name: currentUserData?.name?.trim(),
         email: currentUserData?.email?.trim(),
+        password: existingPassword,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         university: (currentUserData as any)?.university,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         major: normalizeMajor((currentUserData as any)?.major),
         role: currentUserData?.role,
         isActive: newActiveStatus,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        phone: (currentUserData as any)?.phone,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        address: (currentUserData as any)?.address,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        linkedInUrl: (currentUserData as any)?.linkedInUrl,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        githubUrl: (currentUserData as any)?.githubUrl,
         // Include Cloudinary public_id for avatar - required for update operations
         public_id: currentUserData?.public_id,
         // Include Cloudinary public_id for CV - required for update operations

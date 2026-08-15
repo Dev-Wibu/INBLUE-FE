@@ -27,8 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { formatCurrency } from "@/lib/formatting";
-
 import { useUsers } from "@/hooks/useApplication";
 
 import { cn } from "@/lib/utils";
@@ -54,7 +52,6 @@ import {
   Pencil,
   Plus,
   Sparkles,
-  Tag,
   Trash2,
   Users,
   X,
@@ -1096,44 +1093,7 @@ export function JobDescriptionDetailView({
                 )}
               </div>
 
-              {/* Row 3: Package Price / Giá gói mua */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                  <Tag className="h-4 w-4 text-purple-500" />
-                  Giá gói mua
-                </span>
-                {!isEditing ? (
-                  <span
-                    className={cn(
-                      "text-xs font-bold",
-                      currentJd.price && currentJd.price > 0
-                        ? "text-slate-800 dark:text-slate-100"
-                        : "text-emerald-600 dark:text-emerald-400"
-                    )}>
-                    {currentJd.price && currentJd.price > 0
-                      ? formatCurrency(currentJd.price)
-                      : "Miễn phí"}
-                  </span>
-                ) : (
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      min={0}
-                      value={editFormData.price ?? ""}
-                      onChange={(e) =>
-                        setEditFormData({
-                          ...editFormData,
-                          price: e.target.value === "" ? undefined : Number(e.target.value),
-                        })
-                      }
-                      placeholder="0 = Miễn phí"
-                      className="h-7.5 w-32 border-slate-200/80 bg-slate-100/60 text-right font-mono text-xs text-slate-900 focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Row 4: Level */}
+              {/* Row 3: Level */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Briefcase className="h-4 w-4 text-indigo-500" />
