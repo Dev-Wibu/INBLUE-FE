@@ -805,6 +805,11 @@ function ApplicationGradingTable({
               userMap.get(userId!) ??
               (userId ? t("adminApplicationGrading.userFallback", { id: userId }) : "-");
             const userAvatar = item.userAvatar ?? (userId ? userAvatarMap.get(userId) : undefined);
+            const positionName =
+              item.applicationName ??
+              (jdId != null
+                ? (jdMap?.get(jdId) ?? t("grading.noJobAttached"))
+                : t("grading.noJobAttached"));
             const statusCfg = STATUS_CONFIG[status ?? ""] ?? {
               label: status,
               className: "bg-slate-100 text-slate-600",
@@ -871,13 +876,12 @@ function ApplicationGradingTable({
                 </TableCell>
 
                 {/* Job Position / Application name */}
-                <TableCell>
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                <TableCell className="overflow-hidden">
+                  <span className="flex w-full min-w-0 items-center gap-1.5 overflow-hidden rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     <Briefcase className="h-3 w-3 shrink-0 text-indigo-500" />
-                    {item.applicationName ??
-                      (jdId != null
-                        ? (jdMap?.get(jdId) ?? t("grading.noJobAttached"))
-                        : t("grading.noJobAttached"))}
+                    <span className="min-w-0 truncate" title={positionName}>
+                      {positionName}
+                    </span>
                   </span>
                 </TableCell>
 

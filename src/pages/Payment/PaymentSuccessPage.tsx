@@ -16,6 +16,11 @@ import {
   type PaymentRecoveryLookupSource,
   upsertPaymentRecoveryContext,
 } from "@/lib";
+import {
+  clearPendingJdPurchase,
+  getJdPurchaseReturnPath,
+  getPendingJdPurchaseId,
+} from "@/lib/jd-payment";
 import { cn } from "@/lib/utils";
 import { userManager } from "@/services";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
@@ -110,12 +115,12 @@ export function PaymentSuccessPage() {
   };
 
   const pendingJdId = useMemo(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const queryJdId = queryParams.get("jdId");
-    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
-    const parsed = Number(queryJdId || storedJdId);
-    return parsed && !isNaN(parsed) ? parsed : null;
+    return getPendingJdPurchaseId(window.location.search);
   }, []);
+  const pendingJdReturnPath = useMemo(
+    () => (pendingJdId ? getJdPurchaseReturnPath(pendingJdId) : null),
+    [pendingJdId]
+  );
 
   const getPrimaryRedirect = (
     purpose?: PaymentPurpose
@@ -125,7 +130,7 @@ export function PaymentSuccessPage() {
   } => {
     if (pendingJdId) {
       return {
-        to: `/enterprise/job/${pendingJdId}`,
+        to: pendingJdReturnPath || `/user?tab=jobSearch&jobId=${pendingJdId}`,
         label: t("payment.returnToJobPosition", "Quay lại trang vị trí việc làm"),
       };
     }
@@ -162,6 +167,10 @@ export function PaymentSuccessPage() {
     () => getPendingSessionPaymentContext(currentUserId || undefined),
     [currentUserId]
   );
+  useEffect(() => {
+    if (!pendingJdId || paid) return;
+    window.location.replace(`/payment/cancel${window.location.search}`);
+  }, [paid, pendingJdId]);
   // JD purchase poll states (separate from subscription resolve states)
   const [jdPollStatus, setJdPollStatus] = useState<"checking" | "success" | "pending">("checking");
   const [resolveState, setResolveState] = useState<ResolveState>("checking");
@@ -558,7 +567,7 @@ export function PaymentSuccessPage() {
       void jdPurchaseManager.checkPurchased(pendingJdId).then((isSuccess) => {
         if (isSuccess) {
           clearInterval(pollInterval);
-          localStorage.removeItem("pending_jd_purchase_id");
+          clearPendingJdPurchase();
           setJdPollStatus("success");
           toast.success(
             t("payment.purchaseJdSuccess", "Mua gói JD thành công! Bạn có thể nộp đơn ngay.")
@@ -584,7 +593,7 @@ export function PaymentSuccessPage() {
     setJdPollStatus("checking");
     void jdPurchaseManager.checkPurchased(pendingJdId).then((isSuccess) => {
       if (isSuccess) {
-        localStorage.removeItem("pending_jd_purchase_id");
+        clearPendingJdPurchase();
         setJdPollStatus("success");
         toast.success(
           t("payment.purchaseJdSuccess", "Mua gói JD thành công! Bạn có thể nộp đơn ngay.")
@@ -962,7 +971,7 @@ export function PaymentSuccessPage() {
           {/* Action buttons */}
           <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:gap-4">
             <Link
-              to={`/enterprise/job/${pendingJdId}`}
+              to={pendingJdReturnPath || `/user?tab=jobSearch&jobId=${pendingJdId}`}
               className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 px-6 py-3 font-['Inter'] text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/40">
               <CreditCard className="h-4 w-4" />
               {t("payment.returnToJobPosition", "Quay lại trang vị trí việc làm")}

@@ -8,9 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
+import {
+  MENTOR_FIELD_LIMITS,
+  validateMentorData,
+  type MentorValidationField,
+} from "@/lib/mentor-validation";
+import { cn } from "@/lib/utils";
 import { ExternalLink, Eye, EyeOff, FileText, ImageIcon, Upload, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import type { Mentor, MentorFormData } from "../types";
 
 export interface ExtendedMentorFormData extends Partial<MentorFormData> {
@@ -132,6 +139,42 @@ export function MentorEditForm({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
+  const [validationAttempted, setValidationAttempted] = useState(false);
+  const isCreating = !selectedMentor;
+  const validationIssues = useMemo(
+    () => validateMentorData(formData, { requirePassword: isCreating }),
+    [formData, isCreating]
+  );
+  const validationByField = useMemo(
+    () => new Map(validationIssues.map((issue) => [issue.field, issue])),
+    [validationIssues]
+  );
+  const getError = (field: MentorValidationField) =>
+    validationAttempted ? validationByField.get(field) : undefined;
+  const renderError = (field: MentorValidationField) => {
+    const issue = getError(field);
+    if (!issue) return null;
+    return (
+      <p id={`${field}-error`} className="text-xs font-medium text-rose-600 dark:text-rose-400">
+        {t(issue.messageKey, issue.values)}
+      </p>
+    );
+  };
+  const errorClass = (field: MentorValidationField) =>
+    getError(field)
+      ? "border-rose-400 focus-visible:border-rose-500 focus-visible:ring-rose-500/20 dark:border-rose-700"
+      : undefined;
+
+  const handleValidatedSubmit = () => {
+    setValidationAttempted(true);
+    const firstIssue = validationIssues[0];
+    if (firstIssue) {
+      toast.error(t(firstIssue.messageKey, firstIssue.values));
+      document.getElementById(firstIssue.field)?.focus();
+      return;
+    }
+    onSubmit();
+  };
 
   useEffect(() => {
     return () => {
@@ -199,9 +242,10 @@ export function MentorEditForm({
       <div className="grid gap-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="name">{t("common.fullName1")}</Label>
+            <Label htmlFor="name">{t("common.fullName1")} *</Label>
             <Input
               id="name"
+              maxLength={MENTOR_FIELD_LIMITS.name}
               value={formData.name || ""}
               onChange={(e) =>
                 onFormChange({
@@ -210,13 +254,18 @@ export function MentorEditForm({
                 })
               }
               placeholder={t("adminMentormanagement.enterMentorName")}
+              aria-invalid={Boolean(getError("name"))}
+              aria-describedby={getError("name") ? "name-error" : undefined}
+              className={errorClass("name")}
             />
+            {renderError("name")}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="email">{t("common.email")} *</Label>
             <Input
               id="email"
               type="email"
+              maxLength={MENTOR_FIELD_LIMITS.email}
               value={formData.email || ""}
               onChange={(e) =>
                 onFormChange({
@@ -225,37 +274,54 @@ export function MentorEditForm({
                 })
               }
               placeholder={t("common.emailPlaceholder")}
+              aria-invalid={Boolean(getError("email"))}
+              aria-describedby={getError("email") ? "email-error" : undefined}
+              className={errorClass("email")}
             />
+            {renderError("email")}
           </div>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="password">{t("common.password")}</Label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={formData.password || ""}
-              onChange={(e) =>
-                onFormChange({
-                  ...formData,
-                  password: e.target.value,
-                })
-              }
-              placeholder={t("common.enterPassword")}
-              className="pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200">
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
+        {isCreating && (
+          <div className="space-y-1.5">
+            <Label htmlFor="password">{t("common.password")} *</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                minLength={8}
+                maxLength={MENTOR_FIELD_LIMITS.password}
+                value={formData.password || ""}
+                onChange={(e) =>
+                  onFormChange({
+                    ...formData,
+                    password: e.target.value,
+                  })
+                }
+                placeholder={t("common.enterPassword")}
+                aria-invalid={Boolean(getError("password"))}
+                aria-describedby={getError("password") ? "password-error" : undefined}
+                className={cn("pr-10", errorClass("password"))}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200">
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {renderError("password")}
           </div>
-        </div>
+        )}
         <div className="space-y-1.5">
-          <Label htmlFor="bio">{t("common.introduceYourself")}</Label>
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="bio">{t("common.introduceYourself")}</Label>
+            <span className="text-xs text-slate-400">
+              {(formData.bio || "").length}/{MENTOR_FIELD_LIMITS.bio}
+            </span>
+          </div>
           <Textarea
             id="bio"
+            maxLength={MENTOR_FIELD_LIMITS.bio}
             value={formData.bio || ""}
             onChange={(e) =>
               onFormChange({
@@ -265,12 +331,22 @@ export function MentorEditForm({
             }
             placeholder={t("adminMentormanagement.briefDescriptionYourExperienceSkills")}
             rows={3}
+            aria-invalid={Boolean(getError("bio"))}
+            aria-describedby={getError("bio") ? "bio-error" : undefined}
+            className={errorClass("bio")}
           />
+          {renderError("bio")}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="expertise">{t("common.expertise")}</Label>
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="expertise">{t("common.expertise")}</Label>
+            <span className="text-xs text-slate-400">
+              {(formData.expertise || "").length}/{MENTOR_FIELD_LIMITS.expertise}
+            </span>
+          </div>
           <Textarea
             id="expertise"
+            maxLength={MENTOR_FIELD_LIMITS.expertise}
             value={formData.expertise || ""}
             onChange={(e) =>
               onFormChange({
@@ -280,7 +356,11 @@ export function MentorEditForm({
             }
             placeholder={t("adminMentormanagement.forExampleReactNodeJs")}
             rows={2}
+            aria-invalid={Boolean(getError("expertise"))}
+            aria-describedby={getError("expertise") ? "expertise-error" : undefined}
+            className={errorClass("expertise")}
           />
+          {renderError("expertise")}
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -288,6 +368,8 @@ export function MentorEditForm({
             <Input
               id="yearsOfExperience"
               type="number"
+              min={0}
+              max={80}
               value={formData.yearsOfExperience || ""}
               onChange={(e) =>
                 onFormChange({
@@ -296,12 +378,19 @@ export function MentorEditForm({
                 })
               }
               placeholder="0"
+              aria-invalid={Boolean(getError("yearsOfExperience"))}
+              aria-describedby={
+                getError("yearsOfExperience") ? "yearsOfExperience-error" : undefined
+              }
+              className={errorClass("yearsOfExperience")}
             />
+            {renderError("yearsOfExperience")}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="currentCompany">{t("common.currentCompany")}</Label>
             <Input
               id="currentCompany"
+              maxLength={MENTOR_FIELD_LIMITS.currentCompany}
               value={formData.currentCompany || ""}
               onChange={(e) =>
                 onFormChange({
@@ -310,7 +399,11 @@ export function MentorEditForm({
                 })
               }
               placeholder={t("adminMentormanagement.companyName")}
+              aria-invalid={Boolean(getError("currentCompany"))}
+              aria-describedby={getError("currentCompany") ? "currentCompany-error" : undefined}
+              className={errorClass("currentCompany")}
             />
+            {renderError("currentCompany")}
           </div>
         </div>
         <div className="space-y-1.5">
@@ -319,6 +412,7 @@ export function MentorEditForm({
             id="pricePerMinute"
             type="number"
             min={0}
+            max={100000000}
             value={formData.pricePerMinute ?? ""}
             onChange={(e) =>
               onFormChange({
@@ -327,12 +421,17 @@ export function MentorEditForm({
               })
             }
             placeholder={t("adminMentormanagement.forExample5000")}
+            aria-invalid={Boolean(getError("pricePerMinute"))}
+            aria-describedby={getError("pricePerMinute") ? "pricePerMinute-error" : undefined}
+            className={errorClass("pricePerMinute")}
           />
+          {renderError("pricePerMinute")}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="linkedInUrl">{t("common.linkedinLink")}</Label>
           <Input
             id="linkedInUrl"
+            maxLength={MENTOR_FIELD_LIMITS.linkedInUrl}
             value={formData.linkedInUrl || ""}
             onChange={(e) =>
               onFormChange({
@@ -341,7 +440,11 @@ export function MentorEditForm({
               })
             }
             placeholder={t("common.linkedinPlaceholder")}
+            aria-invalid={Boolean(getError("linkedInUrl"))}
+            aria-describedby={getError("linkedInUrl") ? "linkedInUrl-error" : undefined}
+            className={errorClass("linkedInUrl")}
           />
+          {renderError("linkedInUrl")}
         </div>
         <div className="mt-2 border-t pt-4">
           <div className="grid grid-cols-2 gap-4">
@@ -386,7 +489,7 @@ export function MentorEditForm({
         <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
           {t("general.cancel")}
         </Button>
-        <Button onClick={onSubmit} disabled={isSubmitting}>
+        <Button onClick={handleValidatedSubmit} disabled={isSubmitting}>
           {submitLabel || t("general.save")}
         </Button>
       </div>

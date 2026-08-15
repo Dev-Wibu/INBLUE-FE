@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentRound } from "@/hooks/useRound";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
+import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { adminApplicationManager } from "@/services/admin-application.manager";
 import { applicationService } from "@/services/application.manager";
@@ -381,6 +382,21 @@ export function ApplicationWorkspacePage() {
             ? (raw as { data: ApplicationDetail[] }).data
             : [];
         setDetailsData(list);
+
+        // Keep the round modules in sync with this header-level refresh. They
+        // use dedicated React Query caches that otherwise keep stale assignment
+        // state and an old empty mentor proposal list for up to 30 seconds.
+        list.forEach((item) => {
+          if (!item.id) return;
+          queryClient.setQueryData<ApplicationDetail>(
+            ["applicationDetails", "byId", item.id],
+            (current) => ({ ...current, ...item })
+          );
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["assignedMentors"],
+          refetchType: "active",
+        });
       }
     } catch {
       toast.error(t("userApplicationhistory.workspaceLoadError"));

@@ -56,6 +56,14 @@ describe("MentorManager", () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe("Network error");
     });
+
+    it("normalizes the backend isActive alias used by some mentor responses", async () => {
+      mockGet.mockResolvedValueOnce({ data: [{ id: 3, name: "Mentor", isActive: false }] });
+
+      const result = await mentorManager.getAll();
+
+      expect(Array.isArray(result.data) && result.data[0]?.active).toBe(false);
+    });
   });
 
   describe("getById", () => {
@@ -99,6 +107,14 @@ describe("MentorManager", () => {
       const mentor = await mentorManager.findByEmail("x@y.com");
 
       expect(mentor).toEqual({ id: 5, email: "x@y.com" });
+    });
+
+    it("unwraps paginated responses that use a data collection", async () => {
+      mockGet.mockResolvedValueOnce({ data: { data: [{ id: 6, email: "data@y.com" }], total: 1 } });
+
+      const mentor = await mentorManager.findByEmail("data@y.com");
+
+      expect(mentor).toEqual({ id: 6, email: "data@y.com" });
     });
 
     it("returns null when no mentor matches the email", async () => {
@@ -156,6 +172,7 @@ describe("MentorManager", () => {
       const result = await mentorManager.create({
         name: "New Mentor",
         email: "new@test.com",
+        password: "password123",
       });
 
       expect(result.success).toBe(true);
@@ -167,41 +184,56 @@ describe("MentorManager", () => {
     });
 
     it("returns error when name is missing", async () => {
-      const result = await mentorManager.create({ email: "test@test.com" });
+      const result = await mentorManager.create({
+        email: "test@test.com",
+        password: "password123",
+      });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe(t("general.nameIsRequiredToCreate"));
+      expect(result.error).toBe(t("adminMentormanagement.validation.nameRequired"));
       expect(mockPost).not.toHaveBeenCalled();
     });
 
     it("returns error when name is empty string", async () => {
-      const result = await mentorManager.create({ name: "  ", email: "test@test.com" });
+      const result = await mentorManager.create({
+        name: "  ",
+        email: "test@test.com",
+        password: "password123",
+      });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe(t("general.nameIsRequiredToCreate"));
+      expect(result.error).toBe(t("adminMentormanagement.validation.nameRequired"));
       expect(mockPost).not.toHaveBeenCalled();
     });
 
     it("returns error when email is missing", async () => {
-      const result = await mentorManager.create({ name: "Mentor" });
+      const result = await mentorManager.create({ name: "Mentor", password: "password123" });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe(t("general.emailIsRequiredToCreate"));
+      expect(result.error).toBe(t("adminMentormanagement.validation.emailRequired"));
       expect(mockPost).not.toHaveBeenCalled();
     });
 
     it("returns error when email is empty string", async () => {
-      const result = await mentorManager.create({ name: "Mentor", email: "  " });
+      const result = await mentorManager.create({
+        name: "Mentor",
+        email: "  ",
+        password: "password123",
+      });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe(t("general.emailIsRequiredToCreate"));
+      expect(result.error).toBe(t("adminMentormanagement.validation.emailRequired"));
       expect(mockPost).not.toHaveBeenCalled();
     });
 
     it("returns error on POST failure", async () => {
       mockPost.mockRejectedValueOnce(new Error("Create failed"));
 
-      const result = await mentorManager.create({ name: "M", email: "m@test.com" });
+      const result = await mentorManager.create({
+        name: "M",
+        email: "m@test.com",
+        password: "password123",
+      });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Create failed");
@@ -291,7 +323,7 @@ describe("MentorManager", () => {
     });
 
     it("returns error on PUT failure", async () => {
-      mockGet.mockResolvedValueOnce({ data: { id: 1 } });
+      mockGet.mockResolvedValueOnce({ data: { id: 1, name: "X", email: "x@test.com" } });
       mockPut.mockRejectedValueOnce(new Error("Update failed"));
 
       const result = await mentorManager.update(1, { name: "X" });
@@ -301,7 +333,7 @@ describe("MentorManager", () => {
     });
 
     it("returns i18n fallback for non-Error throws", async () => {
-      mockGet.mockResolvedValueOnce({ data: { id: 1 } });
+      mockGet.mockResolvedValueOnce({ data: { id: 1, name: "X", email: "x@test.com" } });
       mockPut.mockRejectedValueOnce("string error");
 
       const result = await mentorManager.update(1, { name: "X" });

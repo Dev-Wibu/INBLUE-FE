@@ -28,8 +28,7 @@ import { useSortable } from "@/hooks/useSortable";
 import { useUserProfilesByIds } from "@/hooks/useUserProfilesByIds";
 import type { Session } from "@/interfaces";
 import { formatDate, toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
-import { isSessionMentor } from "@/lib/session-mentor";
-import { useAuthStore } from "@/stores/authStore";
+import { filterSessionsForMentor } from "@/lib/session-mentor";
 import { Check, Search, Star, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -66,7 +65,6 @@ function getRatingBadgeClass(rating: number, hasReview: boolean): string {
 export function StudentsListPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
   const [studentFilter, setStudentFilter] = useState<StudentFilter>("all");
 
@@ -78,7 +76,6 @@ export function StudentsListPage() {
   } = useSessions();
   const { data: mentorProfile } = useCurrentMentorProfile();
   const mentorId = (mentorProfile as { id?: number } | null)?.id ?? 0;
-  const userIdForReviews = mentorId || user?.id || 0;
   const {
     data: feedbacks = [],
     isLoading: feedbacksLoading,
@@ -90,10 +87,10 @@ export function StudentsListPage() {
     isLoading: reviewsLoading,
     isRefetching: reviewsRefetching,
     refetch: refetchReviews,
-  } = useMentorReviewsByMentor(userIdForReviews);
+  } = useMentorReviewsByMentor(mentorId);
   const mentorSessions = useMemo(
-    () => allSessions.filter((session: Session) => isSessionMentor(session, mentorId || user?.id)),
-    [allSessions, mentorId, user?.id]
+    () => filterSessionsForMentor(allSessions, mentorId),
+    [allSessions, mentorId]
   );
   const {
     profilesById,

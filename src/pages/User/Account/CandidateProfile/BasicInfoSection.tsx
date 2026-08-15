@@ -22,7 +22,7 @@ export function BasicInfoSection(props: BasicInfoSectionProps) {
   if (props.mode === "view") {
     const { profile } = props;
     return (
-      <div className="glass-card rounded-xl p-5">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="mb-4 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#dae2fd] dark:bg-[#0058be]/30">
             <Target className="h-5 w-5 text-[#0058be] dark:text-[#66B2FF]" />
@@ -32,7 +32,7 @@ export function BasicInfoSection(props: BasicInfoSectionProps) {
           </h3>
         </div>
         <div className="grid gap-5 md:grid-cols-2">
-          <div className="rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-4 dark:border-[rgba(255,255,255,0.08)] dark:bg-[#131b2e]">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/70">
             <p className="mb-1 text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
               {t("common.targetRole")}
             </p>
@@ -40,7 +40,7 @@ export function BasicInfoSection(props: BasicInfoSectionProps) {
               {profile.targetRole || "—"}
             </p>
           </div>
-          <div className="rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-4 dark:border-[rgba(255,255,255,0.08)] dark:bg-[#131b2e]">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/70">
             <p className="mb-1 text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
               {t("common.level")}
             </p>
@@ -51,7 +51,7 @@ export function BasicInfoSection(props: BasicInfoSectionProps) {
         </div>
         <div
           id="intro"
-          className="mt-4 rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-4 dark:border-[rgba(255,255,255,0.08)] dark:bg-[#131b2e]">
+          className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/70">
           <p className="mb-1 text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
             {t("common.introduce")}
           </p>

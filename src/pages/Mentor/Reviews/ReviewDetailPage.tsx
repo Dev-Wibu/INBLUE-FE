@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserById } from "@/hooks/useApplication";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorFeedbackBySession } from "@/hooks/useMentorFeedback";
 import { useMentorReviewById } from "@/hooks/useMentorReview";
 import { isSessionMentor } from "@/lib/session-mentor";
@@ -17,6 +18,7 @@ export function ReviewDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const currentUser = useAuthStore((state) => state.user);
+  const { data: mentorProfile, isLoading: mentorLoading } = useCurrentMentorProfile();
   const requestedReturnTo = (location.state as { returnTo?: string } | null)?.returnTo;
   const hasInternalReturn = Boolean(requestedReturnTo);
   const { data: review, isLoading } = useMentorReviewById(Number(id));
@@ -33,7 +35,7 @@ export function ReviewDetailPage() {
     navigate("/mentor?tab=reviews", { replace: true });
   };
 
-  if (isLoading) {
+  if (isLoading || mentorLoading) {
     return (
       <MentorDetailPage>
         <Skeleton className="h-20 rounded-[20px]" />
@@ -61,7 +63,7 @@ export function ReviewDetailPage() {
     );
   }
 
-  if (!currentUser?.id || !isSessionMentor(review.session, currentUser.id)) {
+  if (!mentorProfile?.id || !isSessionMentor(review.session, mentorProfile.id)) {
     return (
       <MentorDetailPage className="flex min-h-[520px] items-center justify-center">
         <div className="flex max-w-md flex-col items-center gap-3 text-center">

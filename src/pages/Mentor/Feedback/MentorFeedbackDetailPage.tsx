@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
 import { useUserById } from "@/hooks/useApplication";
-import { useMentorById } from "@/hooks/useMentor";
+import { useCurrentMentorProfile, useMentorById } from "@/hooks/useMentor";
 import { useMentorFeedbackById } from "@/hooks/useMentorFeedback";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { normalizeFiveStarRating } from "@/lib/rating";
@@ -48,6 +48,7 @@ export function MentorFeedbackDetailPage() {
     navigate(returnTo, { replace: true });
   };
   const currentUser = useAuthStore((state) => state.user);
+  const { data: currentMentorProfile, isLoading: mentorProfileLoading } = useCurrentMentorProfile();
 
   const { data: feedback, isLoading } = useMentorFeedbackById(Number(id));
   const studentId = feedback?.user?.id ?? feedback?.session?.userId;
@@ -57,7 +58,7 @@ export function MentorFeedbackDetailPage() {
   const pageShell =
     "-m-4 min-h-[calc(100%+32px)] bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950";
 
-  if (isLoading) {
+  if (isLoading || mentorProfileLoading) {
     return (
       <div className={pageShell}>
         <div className="border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
@@ -92,9 +93,7 @@ export function MentorFeedbackDetailPage() {
   }
 
   const isOwner =
-    !currentUser?.id ||
-    (mentorId && currentUser.id === mentorId) ||
-    (feedback.mentor?.id != null && currentUser.id === feedback.mentor.id);
+    currentMentorProfile?.id != null && Number(currentMentorProfile.id) === Number(mentorId);
   if (!isOwner) {
     return (
       <div className={pageShell}>

@@ -14,7 +14,16 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
-import { ClipboardCheck, Home, LayoutDashboard, Menu, Search, Settings, User } from "lucide-react";
+import {
+  ClipboardCheck,
+  Home,
+  LayoutDashboard,
+  Menu,
+  Newspaper,
+  Search,
+  Settings,
+  User,
+} from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -54,7 +63,13 @@ const STATIC_NAVIGATION: Array<{
     to: "/staff?tab=applicationGrading",
     icon: ClipboardCheck,
   },
-  { labelKey: "common.account", defaultLabel: "Tài khoản", to: "/staff/account", icon: User },
+  {
+    labelKey: "common.articlesCommunity",
+    defaultLabel: "Bài viết & Cộng đồng",
+    to: "/staff?tab=articles",
+    icon: Newspaper,
+  },
+  { labelKey: "common.account", defaultLabel: "Tài khoản", to: "/staff?tab=account", icon: User },
 ];
 
 export function StaffHeader({ title, parentTitle, category, onToggleSidebar }: StaffHeaderProps) {

@@ -30,6 +30,7 @@ import {
 } from "@/hooks/useMentorFeedback";
 import { useCreateRoundSession, useSessionById } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
+import { isMentorScheduleTimeValid } from "@/lib/mentor-schedule";
 import { cn } from "@/lib/utils";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -1096,12 +1097,24 @@ function ScheduleStep({
   const [joinDateTime, setJoinDateTime] = useState<Date | null>(defaultJoinDateTime);
   const [duration, setDuration] = useState<number>(45);
   const [offline, setOffline] = useState(false);
+  const hasInvalidJoinTime = Boolean(
+    joinDateTime && !isMentorScheduleTimeValid(joinDateTime, new Date())
+  );
 
   const handleSubmit = () => {
     if (readOnly) return;
     if (!joinDateTime) {
       toast.error(
         t("userApplicationhistory.mentorScheduleMissingDateTime", "Please select a date and time")
+      );
+      return;
+    }
+    if (!isMentorScheduleTimeValid(joinDateTime, new Date())) {
+      toast.error(
+        t(
+          "userApplicationhistory.mentorScheduleFutureDateTime",
+          "Please choose a start time at least 5 minutes from now"
+        )
       );
       return;
     }
@@ -1228,6 +1241,8 @@ function ScheduleStep({
             <div
               className={cn(
                 "relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900/40",
+                hasInvalidJoinTime &&
+                  "border-rose-400 ring-2 ring-rose-500/10 dark:border-rose-700",
                 readOnly && "pointer-events-none opacity-70"
               )}>
               <DateTimePicker
@@ -1251,6 +1266,17 @@ function ScheduleStep({
                 popoverClassName="overflow-hidden"
               />
             </div>
+            {hasInvalidJoinTime && (
+              <p
+                role="alert"
+                className="flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                {t(
+                  "userApplicationhistory.mentorScheduleFutureDateTime",
+                  "Please choose a start time at least 5 minutes from now"
+                )}
+              </p>
+            )}
           </section>
 
           {/* ===== HOW LONG: Duration pill cards ===== */}

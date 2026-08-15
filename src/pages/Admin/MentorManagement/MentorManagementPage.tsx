@@ -70,7 +70,7 @@ export function MentorManagementPage() {
         setFormData({
           name: found.name || "",
           email: found.email || "",
-          password: found.password || "",
+          password: "",
           bio: found.bio,
           expertise: found.expertise,
           yearsOfExperience: found.yearsOfExperience,

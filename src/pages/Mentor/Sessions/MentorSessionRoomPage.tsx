@@ -24,6 +24,7 @@ import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { SESSION_QUERY_KEYS, useJoinSession, useSessionById } from "@/hooks/useSession";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { getSessionJoinAvailability } from "@/lib/session-join";
+import { isSessionMentor } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -91,7 +92,7 @@ export function MentorSessionRoomPage() {
   //   FE deliberately does NOT POST any leave signal — attempting to do
   //   so just produces 404 noise. EndTime* will arrive via the webhook
   //   and become visible on the next 10s polling tick.
-  const { data: currentMentorProfile } = useCurrentMentorProfile();
+  const { data: currentMentorProfile, isLoading: mentorProfileLoading } = useCurrentMentorProfile();
   const mentorProfileId =
     currentMentorProfile?.id != null
       ? typeof currentMentorProfile.id === "string"
@@ -104,7 +105,10 @@ export function MentorSessionRoomPage() {
   // with status SCHEDULED (see BE doc Phase 4). PAID/ONGOING are reserved
   // for paid mock-interview sessions, so we accept both shapes here.
   const canJoin = Boolean(
-    session && user && getSessionJoinAvailability(session, currentTime).canJoin
+    session &&
+    user &&
+    isSessionMentor(session, mentorProfileId) &&
+    getSessionJoinAvailability(session, currentTime).canJoin
   );
 
   useEffect(() => {
@@ -114,7 +118,7 @@ export function MentorSessionRoomPage() {
 
   // Handle when mentor joins the call (callback from VideoCallRoom)
   const handleJoined = async (participantId: string) => {
-    if (hasJoinedTracking || !session?.roomName || !user?.id) return;
+    if (hasJoinedTracking || !session?.roomName || !mentorProfileId) return;
 
     // Track join via API. BE returns HTTP 200 with an empty body — we
     // invalidate the session-detail query so the page picks up the new
@@ -128,10 +132,9 @@ export function MentorSessionRoomPage() {
     //   userId against `session.mentorId` (which BE stores as Mentor.id,
     //   not User.id). Falls back to user.id if the profile hasn't loaded yet
     //   so we don't deadlock on race conditions.
-    const joinUserId = mentorProfileId ?? user.id;
     await joinSessionMutation.mutateAsync({
       sessionName: session.roomName,
-      userId: joinUserId,
+      userId: mentorProfileId,
       participantId,
       mentor: true,
       isMentor: true,
@@ -193,10 +196,14 @@ export function MentorSessionRoomPage() {
 
   // Redirect if session is not available
   useEffect(() => {
-    if (!isLoading && !session) {
-      navigate("/mentor?tab=sessions");
+    if (
+      !isLoading &&
+      !mentorProfileLoading &&
+      (!session || !isSessionMentor(session, mentorProfileId))
+    ) {
+      navigate("/mentor?tab=sessions", { replace: true });
     }
-  }, [isLoading, session, navigate]);
+  }, [isLoading, mentorProfileId, mentorProfileLoading, navigate, session]);
 
   // 2026-07-13 fix: polling backup — while inside the room, BE may flip
   //   status ONGOING -> COMPLETED at any moment (e.g. when peer leaves
@@ -271,7 +278,7 @@ export function MentorSessionRoomPage() {
   // written yet by the candidate's join-session call.
   const isWaitingForCandidate = sessionStatus === "ONGOING" && !peerStart && Boolean(myStart);
 
-  if (isLoading) {
+  if (isLoading || mentorProfileLoading) {
     return (
       <div className="container max-w-7xl py-6">
         <Skeleton className="h-9 w-64" />

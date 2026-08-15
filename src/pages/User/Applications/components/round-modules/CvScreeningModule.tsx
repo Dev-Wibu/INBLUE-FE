@@ -150,8 +150,9 @@ function ModernGaugeClock({
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <span
-            className={`text-xl font-black tracking-tight ${hasData ? styles.text : "text-slate-500"}`}>
-            {hasData ? `${displayScore}%` : "--"}
+            className={`inline-flex items-baseline gap-0.5 font-black tracking-tight ${hasData ? styles.text : "text-slate-500"}`}>
+            <span className="text-xl">{hasData ? displayScore : "--"}</span>
+            {hasData && <span className="text-[9px] text-slate-500 dark:text-slate-400">/100</span>}
           </span>
           <span className="text-[8px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
             {label}
@@ -674,7 +675,7 @@ export function CvScreeningModule({
                   <span>{t("userApplication.cvScreening.overallMatch")}</span>
                   <span className={`font-bold ${hasAiData ? "text-indigo-400" : "text-slate-500"}`}>
                     {hasAiData
-                      ? `${extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] ?? aiScoreVal}%`
+                      ? `${extraMetrics?.["Overall CV Match" as keyof typeof extraMetrics] ?? aiScoreVal}/100`
                       : "--"}
                   </span>
                 </div>
@@ -694,7 +695,7 @@ export function CvScreeningModule({
                   <span>{t("userApplication.cvScreening.skillsMatch")}</span>
                   <span className={`font-bold ${hasAiData ? "text-violet-400" : "text-slate-500"}`}>
                     {hasAiData
-                      ? `${extraMetrics?.["Skills Match Score" as keyof typeof extraMetrics] ?? 0}%`
+                      ? `${extraMetrics?.["Skills Match Score" as keyof typeof extraMetrics] ?? 0}/100`
                       : "--"}
                   </span>
                 </div>
@@ -714,7 +715,7 @@ export function CvScreeningModule({
                   <span>{t("userApplication.cvScreening.experienceMatch")}</span>
                   <span className={`font-bold ${hasAiData ? "text-amber-400" : "text-slate-500"}`}>
                     {hasAiData
-                      ? `${extraMetrics?.["Experience Match Score" as keyof typeof extraMetrics] ?? 0}%`
+                      ? `${extraMetrics?.["Experience Match Score" as keyof typeof extraMetrics] ?? 0}/100`
                       : "--"}
                   </span>
                 </div>
@@ -735,7 +736,7 @@ export function CvScreeningModule({
                   <span
                     className={`font-bold ${hasAiData ? "text-emerald-400" : "text-slate-500"}`}>
                     {hasAiData
-                      ? `${extraMetrics?.["Education Match Score" as keyof typeof extraMetrics] ?? 0}%`
+                      ? `${extraMetrics?.["Education Match Score" as keyof typeof extraMetrics] ?? 0}/100`
                       : "--"}
                   </span>
                 </div>
@@ -755,7 +756,7 @@ export function CvScreeningModule({
                   <span>{t("userApplication.cvScreening.presentationStructure")}</span>
                   <span className={`font-bold ${hasAiData ? "text-blue-400" : "text-slate-500"}`}>
                     {hasAiData
-                      ? `${extraMetrics?.["CV Readability Score" as keyof typeof extraMetrics] ?? 0}%`
+                      ? `${extraMetrics?.["CV Readability Score" as keyof typeof extraMetrics] ?? 0}/100`
                       : "--"}
                   </span>
                 </div>

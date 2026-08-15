@@ -75,11 +75,18 @@ export class PostManager implements BaseManager<Post> {
    */
   async createPost(data: PostCreateRequest): Promise<ApiResponse<Post>> {
     try {
+      if (!data.coverImg) {
+        return {
+          success: false,
+          error: t("compPost.coverImageRequired"),
+        };
+      }
+
       const formData = new FormData();
       if (data.title) formData.append("title", data.title);
       if (data.content) formData.append("content", data.content);
       if (data.summary) formData.append("summary", data.summary);
-      if (data.coverImg) formData.append("coverImg", data.coverImg);
+      formData.append("coverImg", data.coverImg);
       if (data.status) formData.append("status", data.status);
       if (data.tags) {
         data.tags.forEach((tag) => formData.append("tags", tag));

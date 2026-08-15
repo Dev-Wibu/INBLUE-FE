@@ -747,7 +747,7 @@ function AssignMentorDialog({
 
   const handleConfirm = () => {
     if (selectedMentorIds.length === 0) {
-      toast.error(t("adminMentorReviewAssignment.pleaseSelectMentor", "Vui lòng chọn Mentor"));
+      toast.error(t("adminMentorReviewAssignment.pleaseSelectMentor"));
       return;
     }
 
@@ -777,7 +777,7 @@ function AssignMentorDialog({
     ((detail as Record<string, unknown> | null)?.companyName as string) ||
     ((detail as Record<string, unknown> | null)?.company_name as string) ||
     ((detail as Record<string, unknown> | null)?.company as string) ||
-    "Công ty tuyển dụng";
+    t("adminMentorReviewAssignment.recruitingCompany");
 
   const companyLogo =
     ((detail as Record<string, unknown> | null)?.companyLogoUrl as string) ||
@@ -805,7 +805,7 @@ function AssignMentorDialog({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <DialogTitle className="truncate text-base font-bold text-slate-900 dark:text-white">
-                    {detail?.candidateName ?? "Ứng viên"}
+                    {detail?.candidateName ?? t("adminMentorReviewAssignment.candidate")}
                   </DialogTitle>
                   {detail?.id && (
                     <span className="font-mono text-xs font-semibold text-slate-400">
@@ -856,13 +856,17 @@ function AssignMentorDialog({
             <div className="flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex shrink-0 items-center justify-between">
                 <span className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-300">
-                  Danh sách Mentor ({filteredMentors.length})
+                  {t("adminMentorReviewAssignment.mentorListCount", {
+                    count: filteredMentors.length,
+                  })}
                 </span>
                 {selectedMentorIds.length > 0 && (
                   <Badge
                     variant="secondary"
                     className="bg-indigo-50 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                    Đã chọn: {selectedMentorIds.length}
+                    {t("adminMentorReviewAssignment.selectedCount", {
+                      count: selectedMentorIds.length,
+                    })}
                   </Badge>
                 )}
               </div>
@@ -871,7 +875,7 @@ function AssignMentorDialog({
               <div className="relative shrink-0">
                 <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                 <Input
-                  placeholder="Tìm theo tên, email, kỹ năng..."
+                  placeholder={t("adminMentorReviewAssignment.searchMentorDetailsPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-9.5 rounded-xl border-slate-200 bg-slate-50/50 pl-8.5 text-xs dark:border-slate-800 dark:bg-slate-950/80"
@@ -883,9 +887,7 @@ function AssignMentorDialog({
                 {filteredMentors.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                    <p className="mt-2 text-xs text-slate-500">
-                      {t("common.noResults", "Không tìm thấy mentor")}
-                    </p>
+                    <p className="mt-2 text-xs text-slate-500">{t("common.noResults")}</p>
                   </div>
                 ) : (
                   filteredMentors.map((mentor) => {
@@ -949,7 +951,9 @@ function AssignMentorDialog({
                   {selectedMentorsList.length > 1 && (
                     <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-slate-200/80 pb-3 dark:border-slate-800">
                       <span className="mr-1 text-xs font-semibold text-slate-500">
-                        Đã chọn ({selectedMentorsList.length}):
+                        {t("adminMentorReviewAssignment.selectedMentorChips", {
+                          count: selectedMentorsList.length,
+                        })}
                       </span>
                       {selectedMentorsList.map((m) => (
                         <Badge
@@ -996,7 +1000,7 @@ function AssignMentorDialog({
                             variant="outline"
                             className="border-emerald-200 bg-emerald-50 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/60 dark:text-emerald-300">
                             <CheckCircle2 className="mr-1 h-3 w-3" />
-                            Đã chọn
+                            {t("adminMentorReviewAssignment.selected")}
                           </Badge>
                         )}
                       </div>
@@ -1016,7 +1020,9 @@ function AssignMentorDialog({
                           previewMentor.pricePerMinute > 0 && (
                             <span className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400">
                               <BadgeDollarSign className="h-3.5 w-3.5" />
-                              {previewMentor.pricePerMinute.toLocaleString("vi-VN")}đ/phút
+                              {t("adminMentorReviewAssignment.pricePerMinute", {
+                                price: previewMentor.pricePerMinute.toLocaleString(),
+                              })}
                             </span>
                           )}
                         <span className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
@@ -1031,7 +1037,7 @@ function AssignMentorDialog({
                   {previewMentor.expertise && (
                     <div className="shrink-0">
                       <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                        Chuyên môn & Kỹ năng
+                        {t("adminMentorReviewAssignment.expertiseAndSkills")}
                       </span>
                       <div className="mt-1.5 flex flex-wrap gap-1.5">
                         {previewMentor.expertise.split(",").map((skill, idx) => (
@@ -1050,7 +1056,7 @@ function AssignMentorDialog({
                   {previewMentor.bio && (
                     <div className="shrink-0">
                       <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                        Giới thiệu bản thân
+                        {t("adminMentorReviewAssignment.mentorBio")}
                       </span>
                       <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                         {previewMentor.bio}
@@ -1063,13 +1069,13 @@ function AssignMentorDialog({
                     <Label
                       htmlFor="admin-assign-notes"
                       className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Ghi chú bổ sung (Không bắt buộc)
+                      {t("adminMentorReviewAssignment.optionalNotes")}
                     </Label>
                     <Textarea
                       id="admin-assign-notes"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Nhập ghi chú hoặc yêu cầu đối với Mentor..."
+                      placeholder={t("adminMentorReviewAssignment.notesPlaceholder")}
                       rows={2}
                       className="mt-1.5 resize-none rounded-xl border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-900"
                     />
@@ -1081,11 +1087,10 @@ function AssignMentorDialog({
                     <UserPlus className="h-6 w-6" />
                   </div>
                   <h5 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Vui lòng chọn Mentor
+                    {t("adminMentorReviewAssignment.selectMentorToPreview")}
                   </h5>
                   <p className="mt-1 max-w-xs text-xs text-slate-500 dark:text-slate-400">
-                    Nhấp vào một hoặc nhiều Mentor ở danh sách bên trái để xem thông tin chi tiết và
-                    thực hiện phân công.
+                    {t("adminMentorReviewAssignment.selectMentorToPreviewDescription")}
                   </p>
                 </div>
               )}
@@ -1100,7 +1105,7 @@ function AssignMentorDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}>
-            {t("common.cancel", "Hủy")}
+            {t("common.cancel")}
           </Button>
 
           <Button
@@ -1111,17 +1116,21 @@ function AssignMentorDialog({
             {isLoading ? (
               <>
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                <span>Đang xử lý...</span>
+                <span>{t("adminMentorReviewAssignment.processing")}</span>
               </>
             ) : selectedMentorIds.length > 1 ? (
               <>
                 <Users className="h-4 w-4" />
-                <span>Gửi Đề xuất ({selectedMentorIds.length} Mentor)</span>
+                <span>
+                  {t("adminMentorReviewAssignment.sendProposal", {
+                    count: selectedMentorIds.length,
+                  })}
+                </span>
               </>
             ) : (
               <>
                 <UserCheck className="h-4 w-4" />
-                <span>Xác nhận Gán Mentor</span>
+                <span>{t("adminMentorReviewAssignment.confirmAssignment")}</span>
               </>
             )}
           </Button>

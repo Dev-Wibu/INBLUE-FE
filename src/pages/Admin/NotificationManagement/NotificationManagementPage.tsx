@@ -217,29 +217,7 @@ export function NotificationManagementPage() {
     },
   ];
 
-  // Fetch all notifications
-  const {
-    data: allNotifications = [],
-    isLoading: notificationsLoading,
-    isRefetching: notificationsRefetching,
-    refetch: refetchNotifications,
-  } = useQuery({
-    queryKey: ["admin", "notifications", "all"],
-    queryFn: async (): Promise<Notification[]> => {
-      const response = await notificationManager.getAll();
-      if (response.success && response.data) {
-        if (Array.isArray(response.data)) {
-          return response.data as Notification[];
-        }
-        if ("items" in response.data) {
-          return (response.data.items || []) as Notification[];
-        }
-      }
-      return [];
-    },
-  });
-
-  // Fetch all users for sending notifications
+  // Load users first: the backend exposes notifications per user, not globally.
   const {
     data: users = [],
     isLoading: usersLoading,
@@ -259,6 +237,25 @@ export function NotificationManagementPage() {
       }
       return [];
     },
+  });
+
+  const userIds = useMemo(
+    () => users.map((user) => user.id).filter((id): id is number => typeof id === "number"),
+    [users]
+  );
+
+  const {
+    data: allNotifications = [],
+    isLoading: notificationsLoading,
+    isRefetching: notificationsRefetching,
+    refetch: refetchNotifications,
+  } = useQuery({
+    queryKey: ["admin", "notifications", "all", userIds],
+    queryFn: async (): Promise<Notification[]> => {
+      const response = await notificationManager.getByUserIds(userIds);
+      return response.success && response.data ? response.data : [];
+    },
+    enabled: !usersLoading,
   });
   const { mutate: createNotification, isPending: isCreating } = useCreateNotification();
   const [searchQuery, setSearchQuery] = useState("");

@@ -15,9 +15,9 @@ export interface CodingRoundConfig {
   codingProblems: CodingProblemSnapshot[];
 }
 
-export function useRoundConfig(jdId: number) {
+export function useRoundConfig(jdId: number, roundId?: number) {
   return useQuery({
-    queryKey: ["job-description", jdId, "coding-round-config"],
+    queryKey: ["job-description", jdId, "coding-round-config", roundId],
     queryFn: async (): Promise<CodingRoundConfig | null> => {
       const { fetchClient } = await import("@/lib/api");
       const result = await fetchClient.GET("/api/job-descriptions/{id}", {
@@ -36,7 +36,9 @@ export function useRoundConfig(jdId: number) {
         configData?: RoundConfig;
       }> = jd?.rounds ?? [];
 
-      const codingRound = rounds.find((r) => r.roundType === "CODING");
+      const codingRound = rounds.find(
+        (round) => round.roundType === "CODING" && (roundId === undefined || round.id === roundId)
+      );
       if (!codingRound || !codingRound.id) return null;
 
       const configData: RoundConfig | undefined = codingRound.configData as RoundConfig;

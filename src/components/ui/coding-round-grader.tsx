@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { useMonacoTheme } from "@/hooks/useMonacoTheme";
 import { useRoundConfig } from "@/hooks/useRoundConfig";
+import { pairCodingProblemsWithSubmissions } from "@/lib/coding-submissions";
 import { cn } from "@/lib/utils";
 import Editor from "@monaco-editor/react";
 import { useQuery } from "@tanstack/react-query";
@@ -20,7 +21,7 @@ import {
   Terminal,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { components } from "../../../schema-from-be";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
@@ -84,19 +85,48 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
   });
 
   // Fetch round config (CODING problems) from JD
-  const { data: roundConfig, isLoading: isConfigLoading } = useRoundConfig(jdId ?? 0);
+  const { data: roundConfig, isLoading: isConfigLoading } = useRoundConfig(
+    jdId ?? 0,
+    detail.roundId
+  );
 
   const submissionData = detail.submissionData as SubmissionData | undefined;
-  const codeSubmissions = submissionData?.codeSubmissions ?? [];
+  const codeSubmissions = useMemo(
+    () => submissionData?.codeSubmissions ?? [],
+    [submissionData?.codeSubmissions]
+  );
+  const detailWithConfig = detail as typeof detail & {
+    roundConfig?: components["schemas"]["RoundConfig"];
+  };
+  const embeddedRoundConfig = detailWithConfig.roundConfig;
 
   // language: try textContent first (backend may embed language info there), fallback to "java"
   const embeddedLanguage = submissionData?.textContent?.split("\n")[0]?.trim().toUpperCase() ?? "";
 
-  const problems = roundConfig?.codingProblems ?? [];
+  const problems = useMemo(() => {
+    const embeddedProblems = embeddedRoundConfig?.codingProblems;
+    return embeddedProblems && embeddedProblems.length > 0
+      ? embeddedProblems
+      : (roundConfig?.codingProblems ?? []);
+  }, [embeddedRoundConfig?.codingProblems, roundConfig?.codingProblems]);
+  const reviewItems = useMemo(
+    () => pairCodingProblemsWithSubmissions(problems, codeSubmissions),
+    [codeSubmissions, problems]
+  );
   const hasSubmissions = codeSubmissions.length > 0;
+  const isProblemConfigLoading = isConfigLoading && problems.length === 0;
+  const scoreConfig =
+    embeddedRoundConfig || roundConfig
+      ? { maxScore: embeddedRoundConfig?.maxScore ?? roundConfig?.maxScore ?? 100 }
+      : null;
 
-  const activeSubmission = codeSubmissions[activeProblemIdx] ?? codeSubmissions[0];
-  const activeProblem = problems[activeProblemIdx] ?? null;
+  const activeReviewItem = reviewItems[activeProblemIdx] ?? reviewItems[0];
+  const activeSubmission = activeReviewItem?.submission;
+  const activeProblem = activeReviewItem?.problem ?? null;
+
+  useEffect(() => {
+    setActiveProblemIdx((current) => Math.min(current, Math.max(reviewItems.length - 1, 0)));
+  }, [reviewItems.length]);
 
   const totalPassed = codeSubmissions.reduce(
     (sum, sub) => sum + (sub.testCases?.passedTestCases ?? 0),
@@ -119,11 +149,13 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
           </div>
           <div>
             <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
-              {roundConfig?.roundName ?? t("adminCodingProblem.programmingRound")}
+              {detail.roundName ??
+                roundConfig?.roundName ??
+                t("adminCodingProblem.programmingRound")}
             </span>
-            {problems.length > 0 && (
+            {reviewItems.length > 0 && (
               <span className="ml-2 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-                {problems.length} {t("common.problemCount")}
+                {reviewItems.length} {t("common.problemCount")}
               </span>
             )}
           </div>
@@ -135,7 +167,7 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
             <div className="flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1 dark:bg-purple-900/20">
               <Cpu className="h-3.5 w-3.5 text-purple-500" />
               <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">
-                AI: {detail.aiScore}
+                AI: {detail.aiScore}/100
               </span>
             </div>
           )}
@@ -143,7 +175,7 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
             <div className="flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 dark:bg-indigo-900/20">
               <CheckCircle2 className="h-3.5 w-3.5 text-indigo-500" />
               <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-                HR: {detail.hrScore}
+                HR: {detail.hrScore}/100
               </span>
             </div>
           )}
@@ -181,34 +213,34 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto py-1">
-            {isConfigLoading ? (
+            {isProblemConfigLoading ? (
               <div className="flex flex-col items-center gap-2 py-8">
                 <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
                 <span className="text-xs text-slate-400">
                   {t("adminCodingProblem.loadingProblem")}
                 </span>
               </div>
-            ) : problems.length > 0 ? (
-              problems.map((problem, idx) => (
-                <ProblemSidebarItem
-                  key={idx}
-                  problem={problem}
-                  idx={idx}
-                  isActive={activeProblemIdx === idx}
-                  submission={codeSubmissions[idx]}
-                  onClick={() => setActiveProblemIdx(idx)}
-                />
-              ))
-            ) : hasSubmissions ? (
-              codeSubmissions.map((sub, idx) => (
-                <SubmissionSidebarItem
-                  key={idx}
-                  idx={idx}
-                  submission={sub}
-                  isActive={activeProblemIdx === idx}
-                  onClick={() => setActiveProblemIdx(idx)}
-                />
-              ))
+            ) : reviewItems.length > 0 ? (
+              reviewItems.map((item, idx) =>
+                item.problem ? (
+                  <ProblemSidebarItem
+                    key={`problem-${item.problem.problemId ?? "unknown"}-${idx}`}
+                    problem={item.problem}
+                    idx={idx}
+                    isActive={activeProblemIdx === idx}
+                    submission={item.submission}
+                    onClick={() => setActiveProblemIdx(idx)}
+                  />
+                ) : item.submission ? (
+                  <SubmissionSidebarItem
+                    key={`submission-${item.submission.problemId ?? "unknown"}-${idx}`}
+                    idx={idx}
+                    submission={item.submission}
+                    isActive={activeProblemIdx === idx}
+                    onClick={() => setActiveProblemIdx(idx)}
+                  />
+                ) : null
+              )
             ) : (
               <div className="px-3 py-8 text-center">
                 <BookOpen className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600" />
@@ -362,14 +394,14 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
 
           <div className="flex-1 overflow-y-auto">
             {activeRightTab === "problem" && (
-              <ProblemDescriptionPanel problem={activeProblem} roundConfig={roundConfig ?? null} />
+              <ProblemDescriptionPanel problem={activeProblem} roundConfig={scoreConfig} />
             )}
             {activeRightTab === "test-results" && (
               <TestResultsPanel
                 submission={activeSubmission}
                 totalPassed={totalPassed}
                 totalTests={totalTests}
-                roundConfig={roundConfig ?? null}
+                roundConfig={scoreConfig}
               />
             )}
           </div>
@@ -533,7 +565,7 @@ function ProblemDescriptionPanel({
   roundConfig,
 }: {
   problem: CodingProblemSnapshot | null;
-  roundConfig: import("@/hooks/useRoundConfig").CodingRoundConfig | null;
+  roundConfig: { maxScore: number } | null;
 }) {
   const { t } = useTranslation();
   if (!problem) {
@@ -692,7 +724,7 @@ function TestResultsPanel({
   submission?: CodeSubmission;
   totalPassed: number;
   totalTests: number;
-  roundConfig: import("@/hooks/useRoundConfig").CodingRoundConfig | null;
+  roundConfig: { maxScore: number } | null;
 }) {
   const { t } = useTranslation();
   const testCases = submission?.testCases;

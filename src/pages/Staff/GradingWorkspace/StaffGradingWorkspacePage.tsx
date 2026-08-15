@@ -360,7 +360,7 @@ function InlineGradingForm({
             </label>
             <div className="flex h-9 items-center justify-center rounded-lg border-2 border-slate-200 bg-slate-50 text-base font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
               <Lock className="mr-1.5 h-3.5 w-3.5 text-slate-400" />
-              {detail.hrScore}
+              {detail.hrScore}/100
             </div>
           </div>
 
@@ -493,7 +493,7 @@ function InlineGradingForm({
               onClick={() => handleScoreChange(String(Math.round(detail.aiScore!)))}
               className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700 transition-all hover:bg-purple-100 dark:border-purple-500/30 dark:bg-purple-500/15 dark:text-purple-300">
               <Sparkles className="h-3 w-3" />
-              AI: {Math.round(detail.aiScore)}
+              AI: {Math.round(detail.aiScore)}/100
             </button>
           )}
         </div>

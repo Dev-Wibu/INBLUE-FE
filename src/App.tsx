@@ -413,7 +413,7 @@ function App() {
 
             {/* Staff Dashboard routes */}
             <Route element={<ProtectedRoute allowedRoles={["STAFF"]} />}>
-              <Route path="/staff" element={<StaffDashboardPage />} />
+              <Route path="/staff/*" element={<StaffDashboardPage />} />
             </Route>
 
             {/* Error pages */}

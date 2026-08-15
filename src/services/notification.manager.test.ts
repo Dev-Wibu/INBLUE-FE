@@ -54,6 +54,38 @@ describe("NotificationManager", () => {
     });
   });
 
+  describe("getByUserIds", () => {
+    it("aggregates, deduplicates, and sorts notifications across users", async () => {
+      mockGet
+        .mockResolvedValueOnce({
+          data: [{ id: 1, title: "Older", createAt: "2026-01-01T00:00:00Z" }],
+        })
+        .mockResolvedValueOnce({
+          data: [
+            { id: 1, title: "Older", createAt: "2026-01-01T00:00:00Z" },
+            { id: 2, title: "Newer", createAt: "2026-02-01T00:00:00Z" },
+          ],
+        });
+
+      const result = await notificationManager.getByUserIds([1, 2, 2]);
+
+      expect(result.success).toBe(true);
+      expect(result.data?.map((notification) => notification.id)).toEqual([2, 1]);
+      expect(mockGet).toHaveBeenCalledTimes(2);
+    });
+
+    it("keeps partial results when one user's inbox cannot be loaded", async () => {
+      mockGet
+        .mockResolvedValueOnce({ data: [{ id: 3, title: "Available" }] })
+        .mockRejectedValueOnce(new Error("Unavailable"));
+
+      const result = await notificationManager.getByUserIds([1, 2]);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(1);
+    });
+  });
+
   describe("create", () => {
     it("creates a notification with id:0 and default values", async () => {
       const notification = { id: 1, title: "New", message: "Created" };

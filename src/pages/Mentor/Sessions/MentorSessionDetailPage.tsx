@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserById } from "@/hooks/useApplication";
-import { useMentorById } from "@/hooks/useMentor";
+import { useCurrentMentorProfile, useMentorById } from "@/hooks/useMentor";
 import { useMentorFeedbackBySession } from "@/hooks/useMentorFeedback";
 import { useMentorReviewBySession } from "@/hooks/useMentorReview";
 import { useSessionById } from "@/hooks/useSession";
@@ -53,6 +53,7 @@ export function MentorSessionDetailPage() {
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
   const user = useAuthStore((state) => state.user);
+  const { data: currentMentorProfile, isLoading: mentorProfileLoading } = useCurrentMentorProfile();
   const numericSessionId = Number(sessionId);
   const { data: session, isLoading: sessionLoading } = useSessionById(numericSessionId);
   const mentorId = session ? getSessionMentorId(session) : undefined;
@@ -61,7 +62,7 @@ export function MentorSessionDetailPage() {
     useMentorReviewBySession(numericSessionId);
   const { data: candidateFeedback } = useMentorFeedbackBySession(numericSessionId);
   const { data: studentInfo } = useUserById(session?.userId ?? 0, !!session?.userId);
-  const isAllowed = isSessionMentor(session, user?.id);
+  const isAllowed = isSessionMentor(session, currentMentorProfile?.id);
   const returnTo = getSafeReturnTo(location.state);
   const hasInternalReturn = Boolean((location.state as MentorRouteState | null)?.returnTo);
   const currentSessionPath = `/mentor/sessions/${numericSessionId}`;
@@ -76,11 +77,11 @@ export function MentorSessionDetailPage() {
   };
 
   useEffect(() => {
-    if (sessionLoading) return;
+    if (sessionLoading || mentorProfileLoading) return;
     if (!session || !isAllowed) navigate("/mentor?tab=sessions", { replace: true });
-  }, [isAllowed, navigate, session, sessionLoading]);
+  }, [isAllowed, mentorProfileLoading, navigate, session, sessionLoading]);
 
-  if (sessionLoading) {
+  if (sessionLoading || mentorProfileLoading) {
     return (
       <MentorDetailPage>
         <Skeleton className="h-20 rounded-[20px]" />
