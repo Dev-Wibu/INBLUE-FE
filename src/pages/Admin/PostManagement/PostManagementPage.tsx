@@ -40,6 +40,8 @@ import { postManager, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft,
+  BadgeCheck,
+  Ban,
   BookOpen,
   CalendarDays,
   CheckCircle2,
@@ -82,6 +84,7 @@ type PostDetailPayload = {
 export function PostManagementPage() {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const isStaff = user?.role === "STAFF";
   const [view, setView] = useState<ViewState>({
     mode: "list",
   });
@@ -761,7 +764,7 @@ export function PostManagementPage() {
                               className="pr-6 text-right"
                               onClick={(e) => e.stopPropagation()}>
                               <div className="flex justify-end gap-1">
-                                {post.postId && (
+                                {post.postId && !isStaff && (
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -771,7 +774,9 @@ export function PostManagementPage() {
                                         mode: "detail",
                                         postId: post.postId!,
                                       })
-                                    }>
+                                    }
+                                    aria-label={t("common.viewDetails")}
+                                    title={t("common.viewDetails")}>
                                     <Eye className="h-4 w-4" />
                                   </Button>
                                 )}
@@ -781,7 +786,7 @@ export function PostManagementPage() {
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                                      className="h-8 w-8 border border-transparent p-0 text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:border-emerald-800 dark:hover:bg-emerald-950"
                                       onClick={() =>
                                         void updateStatus(
                                           post.postId!,
@@ -789,13 +794,19 @@ export function PostManagementPage() {
                                           t("adminPostmanagement.theArticleHasBeenApproved")
                                         )
                                       }
-                                      disabled={statusUpdatingId === post.postId}>
-                                      <CheckCircle2 className="h-4 w-4" />
+                                      disabled={statusUpdatingId === post.postId}
+                                      aria-label={t("common.accept")}
+                                      title={t("common.accept")}>
+                                      {isStaff ? (
+                                        <BadgeCheck className="h-4 w-4" />
+                                      ) : (
+                                        <CheckCircle2 className="h-4 w-4" />
+                                      )}
                                     </Button>
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                      className="h-8 w-8 border border-transparent p-0 text-rose-600 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:hover:border-rose-800 dark:hover:bg-rose-950"
                                       onClick={() =>
                                         void updateStatus(
                                           post.postId!,
@@ -803,8 +814,14 @@ export function PostManagementPage() {
                                           t("common.postRejected")
                                         )
                                       }
-                                      disabled={statusUpdatingId === post.postId}>
-                                      <XCircle className="h-4 w-4" />
+                                      disabled={statusUpdatingId === post.postId}
+                                      aria-label={t("common.reject")}
+                                      title={t("common.reject")}>
+                                      {isStaff ? (
+                                        <Ban className="h-4 w-4" />
+                                      ) : (
+                                        <XCircle className="h-4 w-4" />
+                                      )}
                                     </Button>
                                   </>
                                 )}

@@ -9,11 +9,20 @@ import { cn } from "@/lib/utils";
 import { mentorManager } from "@/services/mentor.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { Calendar, LayoutDashboard, MessageSquare, Newspaper, Star, Users } from "lucide-react";
+import {
+  BarChart3,
+  Calendar,
+  LayoutDashboard,
+  MessageSquare,
+  Newspaper,
+  Star,
+  Users,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { MentorAccountPage } from "../Account";
+import { MentorAnalyticsDashboardPage } from "../Dashboard/MentorAnalyticsDashboardPage";
 import { MentorHomeFeedPage } from "../HomeFeed";
 import { MentorKioskEntryPage } from "../MentorKioskEntryPage";
 import { MessengerPage } from "../Messenger";
@@ -25,6 +34,7 @@ import { StudentsListPage } from "../Students";
 import { MentorHeader } from "./components/MentorHeader";
 type TabType =
   | "homeFeed"
+  | "dashboard"
   | "overview"
   | "sessions"
   | "students"
@@ -37,6 +47,7 @@ type TabType =
 
 const VALID_TAB_TYPES: TabType[] = [
   "homeFeed",
+  "dashboard",
   "overview",
   "sessions",
   "students",
@@ -60,6 +71,10 @@ const getAvailableTabs = (
   {
     type: "homeFeed",
     label: _t("common.home"),
+  },
+  {
+    type: "dashboard",
+    label: _t("common.dashboard"),
   },
   {
     type: "overview",
@@ -114,6 +129,12 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
     label: t("common.profession"),
     items: [
       {
+        type: "dashboard",
+        icon: BarChart3,
+        label: t("common.dashboard"),
+        color: "text-indigo-600",
+      },
+      {
         type: "overview",
         icon: LayoutDashboard,
         label: t("common.overview"),
@@ -156,7 +177,7 @@ const MENTOR_SIDEBAR_LOGO_COLLAPSED = (
     <img src={icon2} alt="INBLUE AI" className="h-8 w-8 shrink-0 object-contain" />
   </a>
 );
-const DEFAULT_TAB: TabType = "overview";
+const DEFAULT_TAB: TabType = "dashboard";
 export function MentorDashboardPage() {
   const { t } = useTranslation();
   const MENTOR_SIDEBAR_LOGO = useMemo(
@@ -296,6 +317,8 @@ export function MentorDashboardPage() {
     switch (typedActiveTab) {
       case "homeFeed":
         return <MentorHomeFeedPage />;
+      case "dashboard":
+        return <MentorAnalyticsDashboardPage />;
       case "overview":
         return <MentorOverviewPage />;
       case "sessions":

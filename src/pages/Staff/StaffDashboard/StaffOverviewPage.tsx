@@ -59,6 +59,46 @@ interface ReviewerItem {
   updatedAt?: string;
 }
 
+interface DashboardTooltipEntry {
+  color?: string;
+  name?: string;
+  value?: number | string;
+}
+
+function DashboardChartTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: DashboardTooltipEntry[];
+  label?: string | number;
+}) {
+  if (!active || !payload?.length) return null;
+
+  return (
+    <div className="min-w-32 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-lg dark:border-slate-700 dark:bg-slate-950">
+      {label !== undefined && (
+        <p className="mb-1 text-xs font-semibold text-slate-900 dark:text-slate-100">{label}</p>
+      )}
+      {payload.map((entry, index) => (
+        <div
+          key={`${entry.name || "value"}-${index}`}
+          className="flex items-center justify-between gap-4 text-xs">
+          <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: entry.color || "#6366f1" }}
+            />
+            {entry.name}
+          </span>
+          <span className="font-semibold text-slate-950 dark:text-white">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const scoreOf = (item: ReviewerItem) => item.hrScore ?? item.finalScore ?? item.aiScore;
 
 const statusLabel = (status: string, t: TFunction) => {
@@ -299,9 +339,7 @@ export function StaffOverviewPage() {
                       axisLine={false}
                       tickLine={false}
                     />
-                    <Tooltip
-                      contentStyle={{ borderRadius: 8, borderColor: "#cbd5e1", fontSize: 12 }}
-                    />
+                    <Tooltip content={<DashboardChartTooltip />} />
                     <Bar
                       dataKey="assigned"
                       name={t("staffOverview.assigned")}
@@ -348,9 +386,7 @@ export function StaffOverviewPage() {
                         <Cell key={item.status} fill={STATUS_COLORS[item.status] || "#64748b"} />
                       ))}
                     </Pie>
-                    <Tooltip
-                      contentStyle={{ borderRadius: 8, borderColor: "#cbd5e1", fontSize: 12 }}
-                    />
+                    <Tooltip content={<DashboardChartTooltip />} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
@@ -429,9 +465,7 @@ export function StaffOverviewPage() {
                       axisLine={false}
                       tickLine={false}
                     />
-                    <Tooltip
-                      contentStyle={{ borderRadius: 8, borderColor: "#cbd5e1", fontSize: 12 }}
-                    />
+                    <Tooltip content={<DashboardChartTooltip />} />
                     <Bar
                       dataKey="value"
                       name={t("common.articlesCommunity")}
