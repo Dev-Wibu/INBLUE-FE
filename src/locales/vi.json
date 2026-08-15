@@ -3511,7 +3511,18 @@
     "endTime": "Thời gian kết thúc",
     "youHaventSubmittedAReview": "Bạn chưa gửi đánh giá cho session này.",
     "reviewOfSession": "Đánh giá của session",
-    "youScoredCandidateWith": "Bạn đã chấm candidate {{var_0}} / 5"
+    "youScoredCandidateWith": "Bạn đã chấm ứng viên {{var_0}} / 100",
+    "sessionTimeline": "Dòng thời gian tham gia",
+    "sessionTimelineDescription": "Thời điểm vào, rời phòng và thời lượng tham gia thực tế của từng người.",
+    "candidateAttendance": "Ứng viên tham gia",
+    "mentorAttendance": "Mentor tham gia",
+    "notRecorded": "Không có bản ghi",
+    "reviewStatus": "Trạng thái đánh giá",
+    "reviewStatusDescription": "Tóm tắt mức độ hoàn tất của phiên. Mở Đánh giá & Phản hồi để xem toàn bộ nội dung.",
+    "mentorReviewSubmitted": "Đánh giá của Mentor",
+    "candidateFeedbackReceived": "Phản hồi của ứng viên",
+    "openReviewDetails": "Xem đánh giá",
+    "openFeedbackDetails": "Xem phản hồi"
   },
   "mentorStudents": {
     "allStudents": "Tất cả học viên",
@@ -3945,7 +3956,7 @@
     "moderateTheReviewsSentBy": "Kiểm duyệt đánh giá mentor gửi",
     "noReviewsFoundThatNeeded": "Không tìm thấy đánh giá nào cần kiểm duyệt.",
     "reviewAndModerateMentorReviews": "Xem xét và kiểm duyệt các đánh giá mentor gửi cho ứng viên, đặc biệt là đánh giá thấp",
-    "reviewsWithARatingOf": "đánh giá với rating 1-2 sao cần được kiểm tra",
+    "reviewsWithARatingOf": "Đánh giá của Mentor dưới 60 điểm cần được kiểm tra",
     "searchByMentorNameCandidate": "Tìm theo tên mentor, ứng viên, nội dung đánh giá...",
     "weaknessesAreStated": "Điểm yếu được nêu",
     "weaknessesNeedToConsider": "Điểm yếu (Cần xem xét)"
@@ -3965,6 +3976,53 @@
     "unableToLoadInterviewSession": "Không thể tải danh sách phiên phỏng vấn",
     "userId": "Người dùng (ID):",
     "waitingForApproval": "chờ duyệt"
+  },
+  "mentorScoring": {
+    "candidateScore": "Điểm ứng viên",
+    "scoreInputHint": "Nhập số nguyên từ 1 đến 100. Bạn cũng có thể bổ sung nhận xét chi tiết.",
+    "scoreRequired": "Vui lòng nhập điểm ứng viên từ 1 đến 100.",
+    "scoreOutOf100": "Điểm ứng viên: {{score}} trên 100",
+    "averageCandidateScore": "Điểm ứng viên trung bình",
+    "highestCandidateScore": "Điểm ứng viên cao nhất",
+    "excellentScores": "Điểm xuất sắc",
+    "band": {
+      "excellent": "Xuất sắc",
+      "strong": "Tốt",
+      "meets": "Đạt yêu cầu",
+      "developing": "Đang phát triển",
+      "low": "Cần cải thiện"
+    },
+    "range": {
+      "excellent": "90-100 điểm",
+      "strong": "75-89 điểm",
+      "meets": "60-74 điểm",
+      "developing": "Dưới 60 điểm"
+    }
+  },
+  "mentorDashboardAnalytics": {
+    "greeting": "Bảng điều khiển Mentor",
+    "subtitle": "Theo dõi buổi phỏng vấn, điểm ứng viên và phản hồi tại một nơi.",
+    "totalSessions": "Tổng buổi phỏng vấn",
+    "completedSessions": "Buổi đã hoàn thành",
+    "upcomingCount": "{{count}} buổi sắp tới",
+    "averageMentorRating": "Đánh giá từ ứng viên",
+    "openReviews": "Mở trang đánh giá",
+    "openSessions": "Mở danh sách buổi phỏng vấn",
+    "recentCandidateScores": "Điểm ứng viên gần đây",
+    "recentCandidateScoresHint": "10 lần chấm ứng viên gần nhất trên thang điểm 100",
+    "sessionStatus": "Trạng thái buổi phỏng vấn",
+    "sessionStatusHint": "Phân bố các buổi phỏng vấn hiện tại của bạn",
+    "scoreDistribution": "Phân bố điểm ứng viên",
+    "scoreDistributionHint": "Chất lượng đánh giá trong toàn bộ nhận xét Mentor đã gửi",
+    "noData": "Chưa có dữ liệu để hiển thị",
+    "status": {
+      "completed": "Đã hoàn thành",
+      "ongoing": "Đang diễn ra",
+      "scheduled": "Đã lên lịch",
+      "paid": "Đã thanh toán",
+      "canceled": "Đã hủy",
+      "other": "Khác"
+    }
   },
   "staffOverview": {
     "activitySummary": "Tóm tắt hoạt động",

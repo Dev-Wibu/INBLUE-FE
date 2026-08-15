@@ -11,6 +11,7 @@
  * are all preserved exactly. The form's public props are unchanged.
  */
 
+import { MentorScoreDisplay } from "@/components/review/MentorScoreDisplay";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -21,8 +22,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { MentorReview } from "@/services/mentor-review.manager";
@@ -441,11 +442,8 @@ function LivePreviewRail({
         <p className="text-[10px] font-semibold tracking-[0.08em] text-slate-500 uppercase dark:text-slate-400">
           {t("compReview.overallRatingOptional")}
         </p>
-        <div className="mt-1.5 flex items-center gap-2">
-          <StarRating value={rating} readOnly size="md" />
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-            {rating > 0 ? `${rating.toFixed(1)} / 5` : "—"}
-          </span>
+        <div className="mt-1.5">
+          <MentorScoreDisplay value={rating} showBand showProgress />
         </div>
 
         <div className="mt-3 space-y-1.5 border-t border-slate-200/60 pt-3 dark:border-slate-700/60">
@@ -542,7 +540,9 @@ export function MentorReviewForm({
 
   const reviewSchema = z
     .object({
-      rating: z.number().min(0).max(5),
+      rating: z.number().refine((value) => value >= 1 && value <= 100, {
+        message: t("mentorScoring.scoreRequired"),
+      }),
       situationNote: z.string().optional(),
       taskNote: z.string().optional(),
       actionNote: z.string().optional(),
@@ -663,25 +663,34 @@ export function MentorReviewForm({
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                       <FormLabel className="text-base font-semibold tracking-[-0.01em]">
-                        {t("compReview.overallRatingOptional")}
+                        {t("mentorScoring.candidateScore")}
                       </FormLabel>
                       <FormDescription className="mt-0.5 text-xs">
-                        {t("compReview.youCanChooseTheNumber")}
+                        {t("mentorScoring.scoreInputHint")}
                       </FormDescription>
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
-                        {field.value && field.value > 0 ? field.value.toFixed(1) : "—"}
+                        {field.value && field.value > 0 ? field.value.toFixed(0) : "—"}
                       </span>
                       <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                        /5
+                        /100
                       </span>
                     </div>
                   </div>
                   <FormControl>
-                    <div className="flex items-center gap-3 rounded-xl px-1 py-2">
-                      <StarRating value={field.value} onChange={field.onChange} size="2xl" />
-                    </div>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={100}
+                      step={1}
+                      inputMode="numeric"
+                      value={field.value || ""}
+                      onChange={(event) =>
+                        field.onChange(event.target.value === "" ? 0 : Number(event.target.value))
+                      }
+                      className="h-12 max-w-48 text-lg font-semibold tabular-nums"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

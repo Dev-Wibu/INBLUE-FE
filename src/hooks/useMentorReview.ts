@@ -7,6 +7,7 @@ const t = i18n.t.bind(i18n);
 
 import type { Mentor, User } from "@/interfaces";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
+import { calculateAverageMentorReviewScore } from "@/lib/mentor-review-score";
 import type {
   CreateMentorReviewRequest,
   MentorReview,
@@ -329,19 +330,9 @@ export const useDeleteMentorReview = () => {
   });
 };
 
-/**
- * Calculate average star rating from reviews (1-5 scale only)
- */
-export const calculateAverageRating = (reviews: MentorReview[]): number => {
-  if (!reviews.length) return 0;
-  // Filter only valid star ratings (1-5)
-  const starReviews = reviews.filter(
-    (r) => typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
-  );
-  if (!starReviews.length) return 0;
-  const total = starReviews.reduce((sum, review) => sum + (review.rating || 0), 0);
-  return total / starReviews.length;
-};
+/** Calculate the mentor's average candidate score on the backend 0-100 scale. */
+export const calculateAverageMentorScore = (reviews: MentorReview[]): number =>
+  calculateAverageMentorReviewScore(reviews);
 
 // Re-export types for convenience
 export type { CreateMentorReviewRequest, MentorReview, UpdateMentorReviewRequest };

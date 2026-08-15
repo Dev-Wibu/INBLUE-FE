@@ -1,3 +1,4 @@
+import { MentorScoreDisplay } from "@/components/review/MentorScoreDisplay";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,11 @@ import {
   ArrowLeft,
   Calendar,
   ChevronRight,
+  Gauge,
   Lightbulb,
   MessageSquare,
   MessageSquareQuote,
   Sparkles,
-  Star,
   Target,
   ThumbsUp,
   TrendingUp,
@@ -30,7 +31,7 @@ interface ReviewDetailViewProps {
   onBack: () => void;
 }
 
-const getRatingLabel = (rating: number) => {
+const getCandidateRatingLabel = (rating: number) => {
   if (rating >= 5) return "Xuất sắc";
   if (rating >= 4) return "Rất tốt";
   if (rating >= 3) return "Đạt yêu cầu";
@@ -170,9 +171,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                     <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                     <span>Đánh giá từ Mentor (Mô hình STAR)</span>
                   </h2>
-                  <Badge className="bg-indigo-50 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                    Mentor chấm {review.rating || 0}.0/5
-                  </Badge>
+                  <MentorScoreDisplay value={review.rating} showBand />
                 </div>
 
                 {starItems.length === 0 ? (
@@ -303,7 +302,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                         <Badge
                           variant="outline"
                           className="border-sky-200/80 bg-sky-50/80 text-xs font-bold text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/60 dark:text-sky-300">
-                          {getRatingLabel(matchingCandidateFeedback.rating || 0)}
+                          {getCandidateRatingLabel(matchingCandidateFeedback.rating || 0)}
                         </Badge>
                       </div>
                     </div>
@@ -342,7 +341,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
           {/* Dual Rating Interactive Tab Selectors */}
           <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/60">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              <Gauge className="h-4 w-4 text-indigo-500" />
               <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 Đánh giá tổng quan phiên (Chọn tab)
               </h3>
@@ -355,25 +354,16 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                 onClick={() => setActiveView("mentor")}
                 className={`flex w-full cursor-pointer items-center justify-between rounded-2xl p-3.5 text-left transition-all ${
                   activeView === "mentor"
-                    ? "border-2 border-amber-500 bg-white shadow-xs ring-2 ring-amber-400/25 dark:border-amber-400 dark:bg-slate-900 dark:ring-amber-400/20"
-                    : "border border-slate-200/90 bg-slate-50/60 hover:border-amber-300 dark:border-slate-800/80 dark:bg-slate-950/40 dark:hover:border-amber-500/50"
+                    ? "border-2 border-indigo-500 bg-white shadow-xs ring-2 ring-indigo-400/25 dark:border-indigo-400 dark:bg-slate-900 dark:ring-indigo-400/20"
+                    : "border border-slate-200/90 bg-slate-50/60 hover:border-indigo-300 dark:border-slate-800/80 dark:bg-slate-950/40 dark:hover:border-indigo-500/50"
                 }`}>
                 <div className="space-y-1">
-                  <p className="text-[11px] font-extrabold text-amber-700 uppercase dark:text-amber-400">
+                  <p className="text-[11px] font-extrabold text-indigo-700 uppercase dark:text-indigo-400">
                     Mentor chấm Ứng viên
                   </p>
-                  <div className="flex items-center gap-2">
-                    <StarRating value={review.rating || 5} readOnly size="sm" color="amber" />
-                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
-                      {review.rating || 0}.0/5
-                    </span>
-                  </div>
+                  <MentorScoreDisplay value={review.rating} showProgress />
                 </div>
-                <Badge
-                  variant="outline"
-                  className="border-amber-200/80 bg-amber-50/80 text-[11px] font-bold text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/60 dark:text-amber-300">
-                  {getRatingLabel(review.rating || 0)}
-                </Badge>
+                <Gauge className="h-5 w-5 shrink-0 text-indigo-500" />
               </button>
 
               {/* TAB SELECTOR B: Candidate rating */}
@@ -411,7 +401,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                   <Badge
                     variant="outline"
                     className="border-sky-200/80 bg-sky-50/80 text-[11px] font-bold text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/60 dark:text-sky-300">
-                    {getRatingLabel(matchingCandidateFeedback.rating || 0)}
+                    {getCandidateRatingLabel(matchingCandidateFeedback.rating || 0)}
                   </Badge>
                 ) : (
                   <Badge

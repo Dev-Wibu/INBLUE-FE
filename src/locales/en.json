@@ -3511,7 +3511,18 @@
     "endTime": "End time",
     "youHaventSubmittedAReview": "You haven't submitted a review for this session yet.",
     "reviewOfSession": "Review of session",
-    "youScoredCandidateWith": "You scored this candidate {{var_0}} / 5"
+    "youScoredCandidateWith": "You scored this candidate {{var_0}} / 100",
+    "sessionTimeline": "Participant timeline",
+    "sessionTimelineDescription": "Actual join, leave, and attendance duration recorded for this session.",
+    "candidateAttendance": "Candidate attendance",
+    "mentorAttendance": "Mentor attendance",
+    "notRecorded": "No recording",
+    "reviewStatus": "Review status",
+    "reviewStatusDescription": "Completion summary for this session. Open Review & Feedback to read the full content.",
+    "mentorReviewSubmitted": "Mentor review",
+    "candidateFeedbackReceived": "Candidate feedback",
+    "openReviewDetails": "View review",
+    "openFeedbackDetails": "View feedback"
   },
   "mentorStudents": {
     "allStudents": "All students",
@@ -3945,7 +3956,7 @@
     "moderateTheReviewsSentBy": "Moderate the reviews sent by mentors",
     "noReviewsFoundThatNeeded": "No reviews found that needed moderation.",
     "reviewAndModerateMentorReviews": "Review and moderate mentor reviews sent to candidates, especially low reviews",
-    "reviewsWithARatingOf": "Reviews with a rating of 1-2 stars should be checked",
+    "reviewsWithARatingOf": "Mentor reviews below 60 points should be checked",
     "searchByMentorNameCandidate": "Search by mentor name, candidate, review content...",
     "weaknessesAreStated": "Weaknesses are stated",
     "weaknessesNeedToConsider": "Weaknesses (Need to consider)"
@@ -3965,6 +3976,53 @@
     "unableToLoadInterviewSession": "Unable to load interview session list",
     "userId": "User (ID):",
     "waitingForApproval": "waiting for approval"
+  },
+  "mentorScoring": {
+    "candidateScore": "Candidate score",
+    "scoreInputHint": "Enter a whole number from 1 to 100. You can also add detailed notes.",
+    "scoreRequired": "Please enter a candidate score from 1 to 100.",
+    "scoreOutOf100": "Candidate score: {{score}} out of 100",
+    "averageCandidateScore": "Average candidate score",
+    "highestCandidateScore": "Highest candidate score",
+    "excellentScores": "Excellent scores",
+    "band": {
+      "excellent": "Excellent",
+      "strong": "Strong",
+      "meets": "Meets expectations",
+      "developing": "Developing",
+      "low": "Needs improvement"
+    },
+    "range": {
+      "excellent": "90-100 points",
+      "strong": "75-89 points",
+      "meets": "60-74 points",
+      "developing": "Below 60 points"
+    }
+  },
+  "mentorDashboardAnalytics": {
+    "greeting": "Mentor dashboard",
+    "subtitle": "Track your sessions, candidate scores, and feedback in one place.",
+    "totalSessions": "Total sessions",
+    "completedSessions": "Completed sessions",
+    "upcomingCount": "{{count}} upcoming",
+    "averageMentorRating": "Rating from candidates",
+    "openReviews": "Open reviews",
+    "openSessions": "Open sessions",
+    "recentCandidateScores": "Recent candidate scores",
+    "recentCandidateScoresHint": "The last 10 candidate assessments on the 100-point scale",
+    "sessionStatus": "Session status",
+    "sessionStatusHint": "Your current interview session distribution",
+    "scoreDistribution": "Candidate score distribution",
+    "scoreDistributionHint": "Assessment quality across all submitted mentor reviews",
+    "noData": "No data is available yet",
+    "status": {
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "scheduled": "Scheduled",
+      "paid": "Paid",
+      "canceled": "Canceled",
+      "other": "Other"
+    }
   },
   "staffOverview": {
     "activitySummary": "Activity Summary",

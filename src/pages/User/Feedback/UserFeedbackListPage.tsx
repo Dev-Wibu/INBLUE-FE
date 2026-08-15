@@ -21,6 +21,12 @@ import { useMentorReviewsByUser, type MentorReview } from "@/hooks/useMentorRevi
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { toTimestamp } from "@/lib/formatting";
+import {
+  calculateAverageMentorReviewScore,
+  matchesMentorReviewScoreRange,
+  normalizeMentorReviewScore,
+  type MentorReviewScoreRange,
+} from "@/lib/mentor-review-score";
 import { useAuthStore } from "@/stores/authStore";
 import { MessageSquare, Search } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -47,7 +53,7 @@ export function UserFeedbackListPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
-  const [ratingFilter, setRatingFilter] = useState<"all" | "high" | "medium" | "low">("all");
+  const [ratingFilter, setRatingFilter] = useState<MentorReviewScoreRange>("all");
   const {
     data: reviews = [],
     isLoading,
@@ -66,14 +72,7 @@ export function UserFeedbackListPage() {
           return false;
         }
       }
-      const rating = review.rating || 0;
-      if (ratingFilter === "high" && rating < 5) {
-        return false;
-      }
-      if (ratingFilter === "medium" && (rating < 3 || rating > 4)) {
-        return false;
-      }
-      if (ratingFilter === "low" && rating > 2) {
+      if (!matchesMentorReviewScoreRange(review.rating, ratingFilter)) {
         return false;
       }
       return true;
@@ -146,39 +145,21 @@ export function UserFeedbackListPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>{t("common.averageStarRating")}</CardDescription>
+            <CardDescription>{t("mentorScoring.averageCandidateScore")}</CardDescription>
             <CardTitle className="text-2xl text-[#0047AB]">
-              {(() => {
-                const starReviews = reviews.filter(
-                  (r: { rating?: number }) =>
-                    typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
-                );
-                return starReviews.length > 0
-                  ? (
-                      starReviews.reduce(
-                        (sum: number, r: { rating?: number }) => sum + (r.rating || 0),
-                        0
-                      ) / starReviews.length
-                    ).toFixed(1)
-                  : "N/A";
-              })()}
+              {reviews.length > 0 ? calculateAverageMentorReviewScore(reviews).toFixed(1) : "N/A"}
+              <span className="ml-1 text-sm font-medium text-slate-500">/100</span>
             </CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>{t("userFeedback.highestRating")}</CardDescription>
+            <CardDescription>{t("mentorScoring.highestCandidateScore")}</CardDescription>
             <CardTitle className="text-2xl text-green-600">
-              {(() => {
-                const starReviews = reviews.filter(
-                  (r: { rating?: number }) =>
-                    typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
-                );
-                return starReviews.length > 0
-                  ? Math.max(...starReviews.map((r: { rating?: number }) => r.rating || 0))
-                  : 0;
-              })()}{" "}
-              ★
+              {reviews.length > 0
+                ? Math.max(...reviews.map((review) => normalizeMentorReviewScore(review.rating)))
+                : 0}
+              <span className="ml-1 text-sm font-medium text-slate-500">/100</span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -213,7 +194,7 @@ export function UserFeedbackListPage() {
             <Select
               value={ratingFilter}
               onValueChange={(value) => {
-                setRatingFilter(value as "all" | "high" | "medium" | "low");
+                setRatingFilter(value as MentorReviewScoreRange);
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-[180px]">
@@ -221,9 +202,10 @@ export function UserFeedbackListPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("common.allPoints")}</SelectItem>
-                <SelectItem value="high">{t("common.fiveStars")}</SelectItem>
-                <SelectItem value="medium">{t("common.threeToFourStars")}</SelectItem>
-                <SelectItem value="low">{t("common.oneToTwoStars")}</SelectItem>
+                <SelectItem value="excellent">{t("mentorScoring.range.excellent")}</SelectItem>
+                <SelectItem value="strong">{t("mentorScoring.range.strong")}</SelectItem>
+                <SelectItem value="meets">{t("mentorScoring.range.meets")}</SelectItem>
+                <SelectItem value="developing">{t("mentorScoring.range.developing")}</SelectItem>
               </SelectContent>
             </Select>
           </div>

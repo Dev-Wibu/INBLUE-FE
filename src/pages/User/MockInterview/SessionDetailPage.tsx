@@ -7,7 +7,7 @@
  */
 
 import { FeedbackCard } from "@/components/feedback";
-import { ReviewCard } from "@/components/review";
+import { MentorScoreDisplay, ReviewCard } from "@/components/review";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -852,17 +852,7 @@ export function SessionDetailPage() {
                 <Skeleton className="h-36 rounded-xl" />
               ) : mentorReview ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-slate-900 dark:text-slate-100">
-                        {mentorRating.toFixed(1)}
-                      </span>
-                      <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                        /5
-                      </span>
-                    </div>
-                    <StarRating value={mentorRating} readOnly size="md" />
-                  </div>
+                  <MentorScoreDisplay value={mentorRating} showBand showProgress />
 
                   {starRows.some((r) => r.summary) && (
                     <div className="space-y-2 rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">

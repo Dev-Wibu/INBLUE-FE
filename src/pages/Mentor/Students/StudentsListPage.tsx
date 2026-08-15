@@ -1,3 +1,4 @@
+import { MentorScoreDisplay } from "@/components/review/MentorScoreDisplay";
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorFeedbacksByMentor } from "@/hooks/useMentorFeedback";
-import { calculateAverageRating, useMentorReviewsByMentor } from "@/hooks/useMentorReview";
+import { calculateAverageMentorScore, useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
@@ -29,7 +30,7 @@ import { useUserProfilesByIds } from "@/hooks/useUserProfilesByIds";
 import type { Session } from "@/interfaces";
 import { formatDate, toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { filterSessionsForMentor } from "@/lib/session-mentor";
-import { Check, Search, Star, Users } from "lucide-react";
+import { Check, Search, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -43,20 +44,20 @@ interface StudentInfo {
   sessionCount: number;
   feedbackCount: number;
   reviewCount: number;
-  avgRating: number;
+  avgScore: number;
   lastSessionDate?: string;
 }
 
 type StudentFilter = "all" | "reviewed" | "feedbacked" | "noReview";
 
-function getRatingBadgeClass(rating: number, hasReview: boolean): string {
+function getScoreBadgeClass(score: number, hasReview: boolean): string {
   if (!hasReview) {
     return "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:border-slate-500/35 dark:bg-slate-500/15 dark:text-slate-300";
   }
-  if (rating >= 4) {
+  if (score >= 75) {
     return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-500/15 dark:text-emerald-300";
   }
-  if (rating >= 3) {
+  if (score >= 60) {
     return "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:border-amber-500/35 dark:bg-amber-500/15 dark:text-amber-300";
   }
   return "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:border-rose-500/35 dark:bg-rose-500/15 dark:text-rose-300";
@@ -126,7 +127,7 @@ export function StudentsListPage() {
           sessionCount: 0,
           feedbackCount: 0,
           reviewCount: 0,
-          avgRating: 0,
+          avgScore: 0,
           lastSessionDate: undefined,
         });
       }
@@ -163,7 +164,7 @@ export function StudentsListPage() {
       const studentReviews = reviews.filter(
         (review: { user?: { id?: number } }) => review.user?.id === student.id
       );
-      student.avgRating = calculateAverageRating(studentReviews);
+      student.avgScore = calculateAverageMentorScore(studentReviews);
     });
     return Array.from(map.values()).sort((a, b) => {
       const aTimestamp = toTimestamp(treatZuluAsVietnamLocal(a.lastSessionDate)) ?? 0;
@@ -358,7 +359,7 @@ export function StudentsListPage() {
                           {t("common.review")}
                         </TableHead>
                         <TableHead className="w-[11%] px-5 font-semibold text-slate-700 dark:text-slate-200">
-                          <SortButton {...getSortProps("avgRating")}>
+                          <SortButton {...getSortProps("avgScore")}>
                             {t("common.evaluate")}
                           </SortButton>
                         </TableHead>
@@ -428,10 +429,7 @@ export function StudentsListPage() {
                           </TableCell>
                           <TableCell className="px-5 py-4">
                             {student.reviewCount > 0 ? (
-                              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-700 dark:text-amber-400">
-                                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                                {student.avgRating.toFixed(1)}
-                              </span>
+                              <MentorScoreDisplay value={student.avgScore} />
                             ) : (
                               <span className="text-slate-400">—</span>
                             )}
@@ -444,8 +442,8 @@ export function StudentsListPage() {
                           <TableCell className="py-4 pr-6 text-center">
                             <Badge
                               variant="outline"
-                              className={`min-w-[96px] justify-center px-2.5 ${getRatingBadgeClass(
-                                student.avgRating,
+                              className={`min-w-[96px] justify-center px-2.5 ${getScoreBadgeClass(
+                                student.avgScore,
                                 student.reviewCount > 0
                               )}`}>
                               {student.reviewCount > 0 && <Check className="h-3 w-3" />}

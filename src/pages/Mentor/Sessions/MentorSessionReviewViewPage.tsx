@@ -129,8 +129,8 @@ export function MentorSessionReviewViewPage() {
       toast.error(t("mentorSessions.missingStudentInformationInThe"));
       return;
     }
-    if (!Number.isFinite(draft.rating) || draft.rating < 1 || draft.rating > 5) {
-      toast.error(t("mentorSessions.ratingRequired"));
+    if (!Number.isFinite(draft.rating) || draft.rating < 1 || draft.rating > 100) {
+      toast.error(t("mentorScoring.scoreRequired"));
       return;
     }
 

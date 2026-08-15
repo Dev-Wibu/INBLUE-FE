@@ -1,3 +1,4 @@
+import { MentorScoreDisplay } from "@/components/review";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -493,11 +494,6 @@ function MentorReviewCard({ review }: { review: MentorInterviewHubProps["mentorR
   const { t } = useTranslation();
   if (!review) return null;
 
-  const ratingValue =
-    typeof review.rating === "number" && review.rating > 0
-      ? Math.max(0, Math.min(5, review.rating / 2))
-      : 0;
-
   const starRows = [
     { label: t("userApplicationhistory.situation"), value: review.situationNote },
     { label: t("userApplicationhistory.task"), value: review.taskNote },
@@ -517,14 +513,7 @@ function MentorReviewCard({ review }: { review: MentorInterviewHubProps["mentorR
             {t("userApplicationhistory.mentorReviewFromMentor")}
           </p>
         </div>
-        {ratingValue > 0 && (
-          <div className="flex items-center gap-1">
-            <StarRating value={ratingValue} size="sm" readOnly />
-            <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
-              {ratingValue.toFixed(1)}/5
-            </span>
-          </div>
-        )}
+        <MentorScoreDisplay value={review.rating} />
       </div>
       {hasAnyNote && (
         <div className="space-y-2">

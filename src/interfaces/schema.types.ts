@@ -214,6 +214,7 @@ export interface Session {
 
 /** Mentor review of student (filled by mentor after session) */
 export interface MentorReview {
+  /** Mentor-to-candidate assessment score on a 0-100 scale. */
   rating?: number;
   situationNote?: string;
   taskNote?: string;
@@ -228,6 +229,7 @@ export interface MentorReview {
 export interface MentorFeedback {
   /** Backend assigns this on POST; FE needs it to decide POST vs PUT. */
   id?: number;
+  /** Candidate-to-mentor rating on a 1-5 star scale. */
   rating?: number;
   comment?: string;
   createdAt?: string;

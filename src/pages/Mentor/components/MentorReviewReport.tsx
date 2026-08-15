@@ -1,5 +1,7 @@
+import { MentorScoreDisplay } from "@/components/review/MentorScoreDisplay";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/formatting";
@@ -10,11 +12,11 @@ import type { TFunction } from "i18next";
 import {
   AlertTriangle,
   Calendar,
+  Gauge,
   Lightbulb,
   MessageSquare,
   MessageSquareQuote,
   Sparkles,
-  Star,
   Target,
   ThumbsUp,
   TrendingUp,
@@ -193,9 +195,7 @@ export function MentorReviewReport({
                   <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   <span>{t("mentorReviews.detailedAssessmentStarMethod")}</span>
                 </h2>
-                <Badge className="bg-indigo-50 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                  {t("common.mentor")} {mentorRating.toFixed(1)}/5
-                </Badge>
+                <MentorScoreDisplay value={mentorRating} showBand />
               </div>
 
               {visibleStarItems.length === 0 ? (
@@ -315,24 +315,21 @@ export function MentorReviewReport({
       <aside className="min-w-0 space-y-6 lg:col-span-4">
         <section className="flex flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/60">
-            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+            <Gauge className="h-4 w-4 text-indigo-500" />
             <h3 className="text-xs font-bold text-slate-500 uppercase dark:text-slate-400">
               {t("mentorReviews.overallAssessment")}
             </h3>
           </div>
-          <RatingSelector
+          <MentorScoreSelector
             active={activeView === "mentor"}
-            tone="amber"
             label={t("common.reviewFromMentor")}
             rating={mentorRating}
             editable={editing}
             onClick={() => setActiveView("mentor")}
             onRatingChange={onRatingChange}
-            t={t}
           />
           <RatingSelector
             active={activeView === "candidate"}
-            tone="sky"
             label={t("common.responseReceived")}
             rating={candidateRating}
             empty={!candidateFeedback}
@@ -465,23 +462,17 @@ function LabeledPerson({
 
 function RatingSelector({
   active,
-  tone,
   label,
   rating,
   empty,
-  editable,
   onClick,
-  onRatingChange,
   t,
 }: {
   active: boolean;
-  tone: "amber" | "sky";
   label: string;
   rating: number;
   empty?: boolean;
-  editable?: boolean;
   onClick: () => void;
-  onRatingChange?: (_rating: number) => void;
   t: TFunction;
 }) {
   return (
@@ -490,12 +481,7 @@ function RatingSelector({
       onClick={onClick}
       className={cn(
         "flex w-full items-center justify-between gap-3 rounded-2xl p-3.5 text-left transition-all",
-        active &&
-          tone === "amber" &&
-          "border-2 border-amber-500 bg-white ring-2 ring-amber-400/20 dark:bg-slate-900",
-        active &&
-          tone === "sky" &&
-          "border-2 border-sky-500 bg-white ring-2 ring-sky-400/20 dark:bg-slate-900",
+        active && "border-2 border-sky-500 bg-white ring-2 ring-sky-400/20 dark:bg-slate-900",
         !active &&
           "border border-slate-200 bg-slate-50/60 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/40"
       )}>
@@ -503,25 +489,15 @@ function RatingSelector({
         <p
           className={cn(
             "truncate text-[11px] font-extrabold uppercase",
-            tone === "amber"
-              ? "text-amber-700 dark:text-amber-400"
-              : "text-sky-700 dark:text-sky-400"
+            "text-sky-700 dark:text-sky-400"
           )}>
           {label}
         </p>
         {empty ? (
           <span className="text-xs text-slate-400 italic">{t("common.noResponseYet")}</span>
         ) : (
-          <div
-            className="flex items-center gap-2"
-            onClick={(event) => editable && event.stopPropagation()}>
-            <StarRating
-              value={rating}
-              readOnly={!editable}
-              onChange={editable ? onRatingChange : undefined}
-              size="sm"
-              color={tone}
-            />
+          <div className="flex items-center gap-2">
+            <StarRating value={rating} readOnly size="sm" color="sky" />
             <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
               {rating.toFixed(1)}/5
             </span>
@@ -533,13 +509,63 @@ function RatingSelector({
           variant="outline"
           className={cn(
             "shrink-0 text-[10px] font-bold",
-            tone === "amber"
-              ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300"
-              : "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900 dark:bg-sky-950 dark:text-sky-300"
+            "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900 dark:bg-sky-950 dark:text-sky-300"
           )}>
           {ratingLabel(rating, t)}
         </Badge>
       )}
+    </button>
+  );
+}
+
+function MentorScoreSelector({
+  active,
+  label,
+  rating,
+  editable,
+  onClick,
+  onRatingChange,
+}: {
+  active: boolean;
+  label: string;
+  rating: number;
+  editable?: boolean;
+  onClick: () => void;
+  onRatingChange?: (_rating: number) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex w-full items-center justify-between gap-3 rounded-2xl p-3.5 text-left transition-all",
+        active && "border-2 border-indigo-500 bg-white ring-2 ring-indigo-400/20 dark:bg-slate-900",
+        !active &&
+          "border border-slate-200 bg-slate-50/60 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/40"
+      )}>
+      <div className="min-w-0 flex-1 space-y-2">
+        <p className="truncate text-[11px] font-extrabold text-indigo-700 uppercase dark:text-indigo-400">
+          {label}
+        </p>
+        {editable ? (
+          <div className="flex items-center gap-2" onClick={(event) => event.stopPropagation()}>
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              step={1}
+              value={rating > 0 ? rating : ""}
+              onChange={(event) => onRatingChange?.(Number(event.target.value) || 0)}
+              className="h-9 w-24 border-indigo-200 bg-white text-right font-mono font-bold tabular-nums dark:border-indigo-800 dark:bg-slate-950"
+              aria-label={label}
+            />
+            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/100</span>
+          </div>
+        ) : (
+          <MentorScoreDisplay value={rating} showBand showProgress />
+        )}
+      </div>
+      <Gauge className="h-5 w-5 shrink-0 text-indigo-500" aria-hidden="true" />
     </button>
   );
 }
