@@ -1,6 +1,7 @@
 import { CommentSection, LikeButton, LikeListModal } from "@/components/post";
-import { PaginationControl, ReloadButton } from "@/components/shared";
+import { PaginationControl, ReloadButton, TruncatedScrollText } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +41,9 @@ import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft,
   BookOpen,
+  CalendarDays,
   CheckCircle2,
+  ChevronRight,
   Eye,
   MessageSquare,
   Plus,
@@ -300,15 +303,21 @@ export function PostManagementPage() {
   }
   if (view.mode === "detail") {
     return (
-      <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-        <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-4">
+      <div className="-m-4 flex min-h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
+        <div className="m-5 mb-6 flex flex-none flex-col gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:m-6 sm:mb-6 sm:flex-row sm:items-center sm:justify-between md:mx-8 dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <button
               onClick={() => setView({ mode: "list" })}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
-              <ArrowLeft className="h-5 w-5" />
+              className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              <ArrowLeft className="h-4 w-4" />
+              {t("common.back", "Quay lại")}
             </button>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            <div className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-700" />
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {t("common.articlesCommunity")}
+            </span>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            <h2 className="truncate text-base font-bold text-slate-900 dark:text-white">
               {t("adminPostmanagement.articleDetails")}
             </h2>
           </div>
@@ -342,7 +351,7 @@ export function PostManagementPage() {
           )}
         </div>
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto px-5 pb-6 sm:px-6 md:px-8">
           {detailLoading ? (
             <div className="flex h-64 items-center justify-center">
               <SpinnerBlock size="lg" />
@@ -352,10 +361,10 @@ export function PostManagementPage() {
               <p className="text-muted-foreground">{t("common.noArticlesFound")}</p>
             </div>
           ) : (
-            <div className="mx-auto max-w-3xl space-y-4 p-6">
-              <Card>
+            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+              <Card className="overflow-hidden rounded-2xl border-slate-200 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 {detailPost.coverImgUrl && (
-                  <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+                  <div className="aspect-[16/7] max-h-[420px] w-full overflow-hidden border-b border-slate-200 dark:border-slate-800">
                     <img
                       src={detailPost.coverImgUrl}
                       alt={detailPost.title}
@@ -363,7 +372,7 @@ export function PostManagementPage() {
                     />
                   </div>
                 )}
-                <CardHeader className="space-y-3">
+                <CardHeader className="space-y-4 p-6 sm:p-8">
                   <div className="flex flex-wrap gap-2">
                     <StatusBadge {...getPostStatusBadge(detailPost.status)} />
                     {detailPost.tags?.map((tag) => (
@@ -372,21 +381,30 @@ export function PostManagementPage() {
                       </Badge>
                     ))}
                   </div>
-                  <CardTitle className="text-2xl">{detailPost.title}</CardTitle>
-                  <div className="text-muted-foreground text-sm">
+                  <CardTitle className="text-2xl leading-tight text-slate-900 dark:text-white">
+                    {detailPost.title}
+                  </CardTitle>
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <span className="text-foreground font-medium">
                       {detailPost.author?.name || t("common.anonymous")}
                     </span>
-                    <span className="mx-2">•</span>
-                    <span>{formatDate(detailPost.creationDate)}</span>
+                    <span>•</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {formatDate(detailPost.creationDate)}
+                    </span>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6 px-6 pb-8 sm:px-8">
                   {detailPost.summary && (
-                    <p className="text-muted-foreground italic">{detailPost.summary}</p>
+                    <p className="border-l-2 border-indigo-500 pl-4 text-sm leading-6 font-medium text-slate-600 italic dark:text-slate-300">
+                      {detailPost.summary}
+                    </p>
                   )}
                   {detailPost.content && (
-                    <p className="whitespace-pre-wrap">{detailPost.content}</p>
+                    <p className="text-[15px] leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                      {detailPost.content}
+                    </p>
                   )}
 
                   <div className="flex flex-wrap items-center gap-4 border-t pt-4">
@@ -419,8 +437,8 @@ export function PostManagementPage() {
               </Card>
 
               {detailPost.postId && (
-                <Card>
-                  <CardHeader>
+                <Card className="rounded-2xl border-slate-200 shadow-sm xl:sticky xl:top-6 dark:border-slate-800 dark:bg-slate-900">
+                  <CardHeader className="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
                     <CardTitle className="text-lg">
                       {t("adminPostmanagement.commentsFeedback")}
                     </CardTitle>
@@ -648,129 +666,155 @@ export function PostManagementPage() {
                       </Button>
                     </div>
                   )}
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                        <TableHead className="w-16 pl-6 font-medium text-slate-500">
-                          {t("common.id", "ID")}
-                        </TableHead>
-                        <TableHead className="font-medium text-slate-500">
-                          {t("common.title")}
-                        </TableHead>
-                        <TableHead className="font-medium text-slate-500">
-                          {t("adminPostmanagement.author")}
-                        </TableHead>
-                        <TableHead className="font-medium text-slate-500">
-                          {t("common.status")}
-                        </TableHead>
-                        <TableHead className="font-medium text-slate-500">
-                          {t("common.creationDate")}
-                        </TableHead>
-                        <TableHead className="font-medium text-slate-500">
-                          {t("adminPostmanagement.likes")}
-                        </TableHead>
-                        <TableHead className="font-medium text-slate-500">
-                          {t("common.comment1")}
-                        </TableHead>
-                        <TableHead className="pr-6 text-right font-medium text-slate-500">
-                          {t("common.operation")}
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pageItems.map((post, index) => (
-                        <TableRow
-                          key={getPostKey(post, index)}
-                          onClick={() =>
-                            post.postId &&
-                            setView({
-                              mode: "detail",
-                              postId: post.postId,
-                            })
-                          }
-                          className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                          <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                            <div className="flex items-center gap-2">
-                              <span>#{post.postId}</span>
-                              {/* Dummy element to force row height alignment */}
-                              <div
-                                className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
-                                aria-hidden="true">
-                                <div className="h-3.5 w-3.5"></div>
-                                <div className="h-3.5 w-3.5"></div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="max-w-[260px]">
-                            <p className="truncate font-medium">{post.title || "—"}</p>
-                            <p className="text-muted-foreground truncate text-xs">
-                              {post.summary || post.content || ""}
-                            </p>
-                          </TableCell>
-                          <TableCell>{post.author?.name || "—"}</TableCell>
-                          <TableCell>
-                            <StatusBadge {...getPostStatusBadge(post.status)} />
-                          </TableCell>
-                          <TableCell>{formatDate(post.creationDate)}</TableCell>
-                          <TableCell>{post.likeCount ?? 0}</TableCell>
-                          <TableCell>{post.commentCount ?? 0}</TableCell>
-                          <TableCell
-                            className="pr-6 text-right"
-                            onClick={(e) => e.stopPropagation()}>
-                            <div className="flex justify-end gap-1">
-                              {post.postId && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() =>
-                                    setView({
-                                      mode: "detail",
-                                      postId: post.postId!,
-                                    })
-                                  }>
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {/* Edit functionality temporarily disabled on BE */}
-                              {post.postId && post.status === "DRAFT" && (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                                    onClick={() =>
-                                      void updateStatus(
-                                        post.postId!,
-                                        "PUBLISHED",
-                                        t("adminPostmanagement.theArticleHasBeenApproved")
-                                      )
-                                    }
-                                    disabled={statusUpdatingId === post.postId}>
-                                    <CheckCircle2 className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                                    onClick={() =>
-                                      void updateStatus(
-                                        post.postId!,
-                                        "ARCHIVED",
-                                        t("common.postRejected")
-                                      )
-                                    }
-                                    disabled={statusUpdatingId === post.postId}>
-                                    <XCircle className="h-4 w-4" />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table className="min-w-[1120px] table-fixed">
+                      <TableHeader>
+                        <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                          <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.id", "ID")}
+                          </TableHead>
+                          <TableHead className="w-[30%] min-w-[300px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.title")}
+                          </TableHead>
+                          <TableHead className="w-[190px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                            {t("adminPostmanagement.author")}
+                          </TableHead>
+                          <TableHead className="w-[135px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.status")}
+                          </TableHead>
+                          <TableHead className="w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.creationDate")}
+                          </TableHead>
+                          <TableHead className="w-[95px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
+                            {t("adminPostmanagement.likes")}
+                          </TableHead>
+                          <TableHead className="w-[105px] px-4 text-center font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.comment1")}
+                          </TableHead>
+                          <TableHead className="w-[120px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.operation")}
+                          </TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {pageItems.map((post, index) => (
+                          <TableRow
+                            key={getPostKey(post, index)}
+                            onClick={() =>
+                              post.postId &&
+                              setView({
+                                mode: "detail",
+                                postId: post.postId,
+                              })
+                            }
+                            className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                            <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                              <div className="flex items-center gap-2">
+                                <span>#{post.postId}</span>
+                                {/* Dummy element to force row height alignment */}
+                                <div
+                                  className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                                  aria-hidden="true">
+                                  <div className="h-3.5 w-3.5"></div>
+                                  <div className="h-3.5 w-3.5"></div>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="min-w-[300px] px-4 py-4">
+                              <TruncatedScrollText text={post.title || "—"} />
+                              <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                                {post.summary || post.content || ""}
+                              </p>
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-9 w-9 shrink-0 border border-slate-200 dark:border-slate-700">
+                                  <AvatarImage
+                                    src={post.author?.avatarUrl || undefined}
+                                    alt={post.author?.name || t("common.anonymous")}
+                                  />
+                                  <AvatarFallback className="bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
+                                    {(post.author?.name || "?").charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                  {post.author?.name || "—"}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="px-4 py-4">
+                              <StatusBadge {...getPostStatusBadge(post.status)} />
+                            </TableCell>
+                            <TableCell className="px-4 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                              <span className="inline-flex items-center gap-2">
+                                <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+                                {formatDate(post.creationDate)}
+                              </span>
+                            </TableCell>
+                            <TableCell className="px-4 py-4 text-center font-mono text-sm font-semibold text-slate-700 dark:text-slate-200">
+                              {post.likeCount ?? 0}
+                            </TableCell>
+                            <TableCell className="px-4 py-4 text-center font-mono text-sm font-semibold text-slate-700 dark:text-slate-200">
+                              {post.commentCount ?? 0}
+                            </TableCell>
+                            <TableCell
+                              className="pr-6 text-right"
+                              onClick={(e) => e.stopPropagation()}>
+                              <div className="flex justify-end gap-1">
+                                {post.postId && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() =>
+                                      setView({
+                                        mode: "detail",
+                                        postId: post.postId!,
+                                      })
+                                    }>
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                {/* Edit functionality temporarily disabled on BE */}
+                                {post.postId && post.status === "DRAFT" && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                                      onClick={() =>
+                                        void updateStatus(
+                                          post.postId!,
+                                          "PUBLISHED",
+                                          t("adminPostmanagement.theArticleHasBeenApproved")
+                                        )
+                                      }
+                                      disabled={statusUpdatingId === post.postId}>
+                                      <CheckCircle2 className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                      onClick={() =>
+                                        void updateStatus(
+                                          post.postId!,
+                                          "ARCHIVED",
+                                          t("common.postRejected")
+                                        )
+                                      }
+                                      disabled={statusUpdatingId === post.postId}>
+                                      <XCircle className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                   {filteredPosts.length > 0 && (
                     <div className="flex flex-none items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-t-slate-800 dark:bg-slate-900">
                       <PaginationControl

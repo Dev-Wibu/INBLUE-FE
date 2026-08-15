@@ -84,7 +84,11 @@
     "roundFallback": "Round {{order}}",
     "roundDisplay": "Round {{order}}: {{name}}",
     "aiScore": "AI: {{score}}",
-    "aiScoreWithMax": "AI: {{score}}/100"
+    "aiScoreWithMax": "AI: {{score}}/100",
+    "assignedTotal": "Total assigned",
+    "pendingGrading": "Needs grading",
+    "gradedTotal": "Graded",
+    "averageScore": "Average score"
   },
   "adminKiosk": {
     "bookingRequests": "Kiosk Booking Requests",

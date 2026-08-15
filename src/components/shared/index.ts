@@ -1,5 +1,6 @@
 // Shared Components - Reusable UI components across the application
 
+export { ActiveStatusButton } from "./ActiveStatusButton";
 export { ApplicationDetailDrawer } from "./ApplicationDetailDrawer";
 export { ChatComposer } from "./ChatComposer";
 export { DashboardBreadcrumb } from "./DashboardBreadcrumb";
@@ -60,5 +61,6 @@ export type { SocketConnectionState } from "./SocketStatusBadge";
 export { SortButton } from "./SortButton";
 export type { SortDirection } from "./SortButton";
 export { TabContentWrapper } from "./TabContentWrapper";
+export { TruncatedScrollText } from "./TruncatedScrollText";
 export { WeeklySlotCalendar } from "./WeeklySlotCalendar";
 export type { WeeklySlot, WeeklySlotCalendarProps } from "./WeeklySlotCalendar";

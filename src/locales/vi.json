@@ -84,7 +84,11 @@
     "roundFallback": "Vòng {{order}}",
     "roundDisplay": "Vòng {{order}}: {{name}}",
     "aiScore": "AI: {{score}}",
-    "aiScoreWithMax": "AI: {{score}}/100"
+    "aiScoreWithMax": "AI: {{score}}/100",
+    "assignedTotal": "Tổng được giao",
+    "pendingGrading": "Cần chấm",
+    "gradedTotal": "Đã chấm",
+    "averageScore": "Điểm trung bình"
   },
   "adminKiosk": {
     "bookingRequests": "Yêu cầu đặt lịch Kiosk",

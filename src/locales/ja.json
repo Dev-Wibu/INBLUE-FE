@@ -45,7 +45,11 @@
     "roundFallback": "ラウンド{{order}}",
     "roundDisplay": "ラウンド{{order}}: {{name}}",
     "aiScore": "AI: {{score}}",
-    "aiScoreWithMax": "AI: {{score}}/100"
+    "aiScoreWithMax": "AI: {{score}}/100",
+    "assignedTotal": "割り当て総数",
+    "pendingGrading": "採点待ち",
+    "gradedTotal": "採点済み",
+    "averageScore": "平均スコア"
   },
   "adminKiosk": {
     "bookingRequests": "キオスク予約リクエスト",

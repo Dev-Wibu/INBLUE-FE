@@ -1,3 +1,4 @@
+import { ActiveStatusButton, TruncatedScrollText } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -7,10 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Circle, Search } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { QuestionBank, QuestionCategory } from "../types";
 
@@ -18,7 +17,7 @@ interface QuestionBankTableProps {
   questions: QuestionBank[];
   categories?: QuestionCategory[];
   onEdit: (_question: QuestionBank) => void;
-  onToggleStatus?: (problem: QuestionBank, isActive: boolean) => void;
+  onToggleStatus?: (_problem: QuestionBank, _isActive: boolean) => void;
 }
 
 const DIFF_CONFIG = {
@@ -46,60 +45,6 @@ function formatDate(s?: string | Date) {
   } catch {
     return null;
   }
-}
-
-/**
- * Smart Component: Calculates exact pixel difference (scrollWidth - clientWidth)
- * to smoothly translate 100% of the text to its very last character on hover,
- * with fast & sleek speed.
- */
-function TruncatedScrollText({ text }: { text: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLSpanElement>(null);
-  const [scrollOffset, setScrollOffset] = useState<number>(0);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const checkOverflow = () => {
-    if (containerRef.current && textRef.current) {
-      const diff = textRef.current.scrollWidth - containerRef.current.clientWidth;
-      setScrollOffset(diff > 0 ? diff + 16 : 0);
-    }
-  };
-
-  useEffect(() => {
-    checkOverflow();
-    const handleResize = () => checkOverflow();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [text]);
-
-  const isOverflowing = scrollOffset > 0;
-  // Sleek & faster speed calculation
-  const durationMs = Math.max(1200, Math.round(scrollOffset * 10));
-
-  return (
-    <div
-      ref={containerRef}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative w-full overflow-hidden">
-      <div
-        className="inline-block whitespace-nowrap transition-transform ease-linear"
-        style={{
-          transform:
-            isHovered && isOverflowing ? `translateX(-${scrollOffset}px)` : "translateX(0px)",
-          transitionDuration: isHovered && isOverflowing ? `${durationMs}ms` : "250ms",
-        }}>
-        <span
-          ref={textRef}
-          className={`text-sm font-bold text-slate-900 dark:text-slate-100 ${
-            !isOverflowing ? "block truncate" : "inline-block"
-          }`}>
-          {text}
-        </span>
-      </div>
-    </div>
-  );
 }
 
 export function QuestionBankTable({
@@ -223,35 +168,10 @@ export function QuestionBankTable({
                 </TableCell>
 
                 <TableCell className="w-[160px] px-4 py-4" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={isActive}
-                    aria-label={
-                      isActive
-                        ? t("common.clickToDisable", "Nhấp để tắt")
-                        : t("common.clickToEnable", "Nhấp để bật")
-                    }
-                    title={
-                      isActive
-                        ? t("common.clickToDisable", "Nhấp để tắt")
-                        : t("common.clickToEnable", "Nhấp để bật")
-                    }
-                    onClick={() => onToggleStatus?.(q, !isActive)}
-                    className={cn(
-                      "group/toggle relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
-                      isActive
-                        ? "bg-emerald-500 hover:bg-emerald-600"
-                        : "bg-slate-300 hover:bg-slate-400 dark:bg-slate-700 dark:hover:bg-slate-600"
-                    )}>
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                        isActive ? "translate-x-5" : "translate-x-0"
-                      )}
-                    />
-                  </button>
+                  <ActiveStatusButton
+                    active={isActive}
+                    onToggle={onToggleStatus ? () => onToggleStatus(q, !isActive) : undefined}
+                  />
                 </TableCell>
 
                 <TableCell className="w-[140px] py-4 pr-6 text-right text-sm font-medium text-slate-600 dark:text-slate-300">

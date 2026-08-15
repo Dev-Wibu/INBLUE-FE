@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { codingProblemManager, type CodingProblem } from "@/services/coding-problem.manager";
 import Editor from "@monaco-editor/react";
 import {
+  ArrowLeft,
   ChevronRight,
   Code2,
   FileText,
@@ -241,16 +242,20 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
     );
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-slate-50/50 dark:bg-slate-950">
-      {/* ── SINGLE UNIFIED TOP HEADER ──────────────────────────────────────────── */}
-      <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+    <div className="flex h-full flex-col overflow-y-auto bg-slate-50/50 dark:bg-slate-950">
+      <div className="m-5 mb-0 flex flex-none flex-col justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:m-6 sm:mb-0 sm:flex-row sm:items-center sm:justify-between md:mx-8 dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={onBack}
-            className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-            {t("adminAdmindashboard.codingProblems", "Vòng Coding")}
+            className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+            <ArrowLeft className="h-4 w-4" />
+            {t("common.back", "Quay lại")}
           </button>
+          <div className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-700" />
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {t("adminAdmindashboard.codingProblems", "Vòng Coding")}
+          </span>
           <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
           <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
             {formData.title ||
@@ -275,7 +280,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
         {/* Tab switcher & Back action inline inside header */}
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+          <div className="flex max-w-full items-center overflow-x-auto rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
             {[
               {
                 id: "general",
@@ -321,10 +326,6 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
               );
             })}
           </div>
-
-          <Button variant="outline" size="sm" onClick={onBack} className="h-8 text-xs">
-            {t("common.back", "Quay lại")}
-          </Button>
         </div>
       </div>
 
@@ -332,10 +333,10 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
       <div className="flex-1 overflow-hidden">
         {/* ═══ GENERAL TAB — 2-column layout ══════════════════════════════════ */}
         {activeTab === "general" && (
-          <div className="flex h-full p-6">
-            <div className="mx-auto flex h-full w-full max-w-7xl gap-6">
+          <div className="h-full overflow-y-auto p-4 sm:p-6">
+            <div className="flex min-h-full w-full flex-col gap-6 xl:flex-row">
               {/* LEFT: Markdown editor or AI Config */}
-              <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
+              <div className="flex min-h-[520px] flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
                 {isAiMode ? (
                   <>
                     <div className="flex flex-none items-center justify-between border-b border-indigo-100 bg-indigo-50/50 px-5 py-3 dark:border-indigo-800/50 dark:bg-indigo-900/20">
@@ -474,7 +475,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
               </div>
 
               {/* RIGHT: Configuration */}
-              <div className="flex w-[480px] shrink-0 flex-col overflow-y-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
+              <div className="flex w-full shrink-0 flex-col overflow-y-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm xl:w-[480px] dark:border-slate-800/60 dark:bg-slate-900">
                 <div className="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-900/50">
                   <div className="flex items-center gap-2">
                     <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
@@ -935,7 +936,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
         {/* ═══ TEST CASES TAB ══════════════════════════════════════════════════ */}
         {activeTab === "testcases" && (
           <div className="flex h-full flex-col bg-slate-50/30 p-6 dark:bg-slate-950/30">
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
+            <div className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
               {/* Full-width toolbar */}
               <div className="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800/50 dark:bg-slate-900/50">
                 <div className="flex items-center gap-4">
@@ -1138,7 +1139,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
         {/* ═══ CODE STUBS TAB ═════════════════════════════════════════════════ */}
         {activeTab === "codestubs" && (
           <div className="flex h-full flex-col bg-slate-50/30 p-6 dark:bg-slate-950/30">
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
+            <div className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
               <div className="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800/50 dark:bg-slate-900/50">
                 <div className="flex items-center gap-4">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">

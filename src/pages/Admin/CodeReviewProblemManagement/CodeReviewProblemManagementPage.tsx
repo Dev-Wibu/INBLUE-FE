@@ -20,6 +20,7 @@ import {
 } from "@/services/code-review-problem.manager";
 import {
   AlertTriangle,
+  ArrowLeft,
   ChevronRight,
   FileCode2,
   Lightbulb,
@@ -293,16 +294,20 @@ export function CodeReviewProblemManagementPage() {
 
   if (view.mode === "detail" && selectedProblem) {
     return (
-      <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-        {/* SINGLE UNIFIED TOP HEADER */}
-        <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+      <div className="-m-4 flex min-h-[calc(100%+32px)] flex-col overflow-y-auto bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950">
+        <div className="m-5 mb-6 flex flex-none flex-col justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:m-6 sm:mb-6 sm:flex-row sm:items-center sm:justify-between md:mx-8 dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={handleBack}
-              className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-              {t("adminAdmindashboard.codeReviewProblems", "Bài tập Code Review")}
+              className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              <ArrowLeft className="h-4 w-4" />
+              {t("common.back", "Quay lại")}
             </button>
+            <div className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-700" />
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {t("adminAdmindashboard.codeReviewProblems", "Bài tập Code Review")}
+            </span>
             <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
             <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
               {selectedProblem.title}
@@ -332,15 +337,12 @@ export function CodeReviewProblemManagementPage() {
               <Pencil className="h-3.5 w-3.5" />
               {t("general.edit", "Chỉnh sửa")}
             </Button>
-            <Button variant="outline" size="sm" onClick={handleBack} className="h-8 text-xs">
-              {t("common.back", "Quay lại")}
-            </Button>
           </div>
         </div>
 
-        <div className="flex flex-1 overflow-hidden bg-slate-50 dark:bg-slate-950">
+        <div className="mx-5 mb-6 grid min-h-[680px] flex-1 gap-6 sm:mx-6 md:mx-8 lg:grid-cols-[380px_minmax(0,1fr)]">
           {/* Read-only Sidebar */}
-          <div className="flex w-[420px] shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/40">
+          <div className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div className="flex-1 overflow-y-auto p-5">
               <div className="space-y-6">
                 <div>
@@ -390,7 +392,7 @@ export function CodeReviewProblemManagementPage() {
           </div>
 
           {/* Read-only IDE */}
-          <div className="relative flex min-w-0 flex-1 flex-col bg-slate-100 dark:bg-[#0f111a]">
+          <div className="relative flex min-h-[560px] min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm dark:border-slate-800 dark:bg-[#0f111a]">
             {selectedProblem.files && selectedProblem.files.length > 0 ? (
               <>
                 {/* File Tabs */}

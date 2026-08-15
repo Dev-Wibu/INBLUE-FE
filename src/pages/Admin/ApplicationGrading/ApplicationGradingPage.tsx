@@ -714,16 +714,15 @@ function ApplicationGradingTable({
     <div
       className={cn(
         "overflow-x-auto",
-        isStaff
-          ? "border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950"
-          : "rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40"
+        !isStaff &&
+          "rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40"
       )}>
       <Table className="min-w-[920px] table-fixed">
         <TableHeader
           className={cn(
             "border-b",
             isStaff
-              ? "border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50"
+              ? "border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900"
               : "border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90"
           )}>
           <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
@@ -731,7 +730,7 @@ function ApplicationGradingTable({
               className={cn(
                 "h-12 w-[80px] pl-6 text-xs",
                 isStaff
-                  ? "font-medium text-slate-500 dark:text-slate-400"
+                  ? "font-semibold text-slate-700 dark:text-slate-200"
                   : "font-bold text-slate-800 dark:text-slate-200"
               )}>
               {t("adminApplicationGrading.tableHeaderCode")}
@@ -740,7 +739,7 @@ function ApplicationGradingTable({
               className={cn(
                 "h-12 w-[200px] text-xs",
                 isStaff
-                  ? "font-medium text-slate-500 dark:text-slate-400"
+                  ? "font-semibold text-slate-700 dark:text-slate-200"
                   : "font-bold text-slate-800 dark:text-slate-200"
               )}>
               {t("adminApplicationGrading.tableHeaderCandidate")}
@@ -749,7 +748,7 @@ function ApplicationGradingTable({
               className={cn(
                 "h-12 w-[180px] text-xs",
                 isStaff
-                  ? "font-medium text-slate-500 dark:text-slate-400"
+                  ? "font-semibold text-slate-700 dark:text-slate-200"
                   : "font-bold text-slate-800 dark:text-slate-200"
               )}>
               {t("adminApplicationGrading.tableHeaderPosition")}
@@ -758,7 +757,7 @@ function ApplicationGradingTable({
               className={cn(
                 "h-12 w-[150px] text-xs",
                 isStaff
-                  ? "font-medium text-slate-500 dark:text-slate-400"
+                  ? "font-semibold text-slate-700 dark:text-slate-200"
                   : "font-bold text-slate-800 dark:text-slate-200"
               )}>
               {t("adminApplicationGrading.tableHeaderRound")}
@@ -767,7 +766,7 @@ function ApplicationGradingTable({
               className={cn(
                 "h-12 w-[125px] text-xs",
                 isStaff
-                  ? "font-medium text-slate-500 dark:text-slate-400"
+                  ? "font-semibold text-slate-700 dark:text-slate-200"
                   : "font-bold text-slate-800 dark:text-slate-200"
               )}>
               {t("adminApplicationGrading.tableHeaderStatus")}
@@ -776,7 +775,7 @@ function ApplicationGradingTable({
               className={cn(
                 "h-12 w-[120px] text-xs",
                 isStaff
-                  ? "font-medium text-slate-500 dark:text-slate-400"
+                  ? "font-semibold text-slate-700 dark:text-slate-200"
                   : "font-bold text-slate-800 dark:text-slate-200"
               )}>
               {t("adminApplicationGrading.tableHeaderScore")}
@@ -785,7 +784,7 @@ function ApplicationGradingTable({
               className={cn(
                 "h-12 w-[80px] pr-6 text-right text-xs",
                 isStaff
-                  ? "font-medium text-slate-500 dark:text-slate-400"
+                  ? "font-semibold text-slate-700 dark:text-slate-200"
                   : "font-bold text-slate-800 dark:text-slate-200"
               )}>
               {t("adminApplicationGrading.tableHeaderActions")}
@@ -1229,6 +1228,28 @@ export function ApplicationGradingPage({
     [sortedData, pagination.startIndex, pagination.endIndex]
   );
 
+  const staffSummary = useMemo(() => {
+    const gradedItems = staffItems.filter(
+      (item) => item.detail?.hrScore !== undefined && item.detail?.hrScore !== null
+    );
+    const needsGradingItems = staffItems.filter((item) => {
+      const hasAiScore = item.detail?.aiScore !== undefined && item.detail?.aiScore !== null;
+      const hasNoHrScore = item.detail?.hrScore === undefined || item.detail?.hrScore === null;
+      return item.detailStatus === "AI_EVALUATED" && hasAiScore && hasNoHrScore;
+    });
+    const averageScore = gradedItems.length
+      ? gradedItems.reduce((total, item) => total + Number(item.detail?.hrScore ?? 0), 0) /
+        gradedItems.length
+      : 0;
+
+    return {
+      total: staffItems.length,
+      needsGrading: needsGradingItems.length,
+      graded: gradedItems.length,
+      averageScore: averageScore.toFixed(1),
+    };
+  }, [staffItems]);
+
   const handleOpenGrading = useCallback(
     (_appId: number, detailId?: number, item?: GradingListItem) => {
       if (onOpenGradingDetail) {
@@ -1262,27 +1283,62 @@ export function ApplicationGradingPage({
     <div
       className={cn(
         isStaff
-          ? "-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950"
+          ? "-m-4 flex min-h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:min-h-[calc(100%+48px)] lg:-m-8 lg:min-h-[calc(100%+64px)] dark:bg-slate-950"
           : "flex min-h-full flex-col bg-slate-50 dark:bg-slate-950"
       )}>
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div
         className={cn(
-          "flex flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900",
-          !isStaff && "bg-white/95 backdrop-blur-sm dark:bg-slate-950/95"
+          "flex flex-col bg-white dark:bg-slate-900",
+          isStaff
+            ? "m-5 mb-6 rounded-[20px] border border-slate-200 p-6 shadow-sm sm:m-6 sm:mb-6 md:mx-8 dark:border-slate-800 dark:shadow-md dark:shadow-slate-950/40"
+            : "gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-950/95"
         )}>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {t("adminApplicationGrading.pageTitle")}
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t("adminApplicationGrading.pageDescription")}
-          </p>
+        <div
+          className={cn(
+            isStaff && "flex flex-col justify-between gap-6 md:flex-row md:items-start"
+          )}>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {t("adminApplicationGrading.pageTitle")}
+            </h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {t("adminApplicationGrading.pageDescription")}
+            </p>
+          </div>
+          {isStaff && (
+            <div className="grid grid-cols-2 gap-x-5 gap-y-4 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-6">
+              {[
+                [staffSummary.total, t("adminApplicationGrading.assignedTotal")],
+                [staffSummary.needsGrading, t("adminApplicationGrading.pendingGrading")],
+                [staffSummary.graded, t("adminApplicationGrading.gradedTotal")],
+                [staffSummary.averageScore, t("adminApplicationGrading.averageScore")],
+              ].map(([value, label], index) => (
+                <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
+                  {index > 0 && (
+                    <div className="hidden h-7 w-px bg-slate-200 sm:block dark:bg-slate-800" />
+                  )}
+                  <div className="flex min-w-[72px] flex-col items-center text-center">
+                    <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
+                      {value}
+                    </span>
+                    <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                      {label}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-3",
+            isStaff && "mt-6 border-t border-slate-200 pt-5 dark:border-slate-800"
+          )}>
           {/* Search */}
-          <div className="relative w-full sm:w-56">
+          <div className={cn("relative w-full sm:w-56", isStaff && "sm:flex-1")}>
             <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <Input
               type="text"
@@ -1292,7 +1348,11 @@ export function ApplicationGradingPage({
                 setSearchQuery(e.target.value);
                 pagination.setPage(1);
               }}
-              className="h-9 border-slate-200 bg-white pl-9 text-xs dark:border-slate-700 dark:bg-slate-900"
+              className={cn(
+                "border-slate-200 bg-white pl-9 text-xs dark:border-slate-700 dark:bg-slate-900",
+                isStaff &&
+                  "h-[46px] rounded-xl bg-slate-50/70 pl-11 text-[14.5px] dark:bg-slate-950/70"
+              )}
             />
           </div>
 
@@ -1303,7 +1363,8 @@ export function ApplicationGradingPage({
               setStatusFilter(value);
               pagination.setPage(1);
             }}>
-            <SelectTrigger className="h-9 w-[200px] text-xs">
+            <SelectTrigger
+              className={cn("h-9 w-[200px] text-xs", isStaff && "h-[46px] rounded-xl")}>
               <div className="flex items-center gap-2">
                 <Filter className="h-3.5 w-3.5 text-slate-400" />
                 <SelectValue placeholder={t("common.filterByStatus")} />
@@ -1322,7 +1383,8 @@ export function ApplicationGradingPage({
 
           {/* Sort Order */}
           <Select value={sortBy} onValueChange={(value: typeof sortBy) => setSortBy(value)}>
-            <SelectTrigger className="h-9 w-[150px] text-xs">
+            <SelectTrigger
+              className={cn("h-9 w-[150px] text-xs", isStaff && "h-[46px] rounded-xl")}>
               <SelectValue placeholder={t("common.sortBy")} />
             </SelectTrigger>
             <SelectContent>
@@ -1376,13 +1438,17 @@ export function ApplicationGradingPage({
               }
             }}
             tooltip={t("common.reload")}
-            className="h-9 w-9"
+            className={cn("h-9 w-9", isStaff && "h-[46px] w-[46px] rounded-xl")}
           />
         </div>
       </div>
 
       {/* ── CARD GRID CONTENT ──────────────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div
+        className={cn(
+          "flex flex-1 flex-col bg-slate-50 dark:bg-slate-950",
+          !isStaff && "overflow-hidden"
+        )}>
         {paginatedData.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 px-4 py-20">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -1400,16 +1466,33 @@ export function ApplicationGradingPage({
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col duration-300">
             {viewMode === "table" ? (
-              <div className={cn(isStaff ? "flex-1 overflow-auto" : "flex-1 p-4 sm:p-6")}>
-                <ApplicationGradingTable
-                  items={paginatedData}
-                  userMap={userMap}
-                  userAvatarMap={userAvatarMap}
-                  jdMap={jdMap}
-                  roundMap={roundMap}
-                  onOpenGrading={handleOpenGrading}
-                  isStaff={isStaff}
-                />
+              <div
+                className={cn(isStaff ? "flex-1 px-5 pb-6 sm:px-6 md:px-8" : "flex-1 p-4 sm:p-6")}>
+                {isStaff ? (
+                  <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <ApplicationGradingTable
+                      items={paginatedData}
+                      userMap={userMap}
+                      userAvatarMap={userAvatarMap}
+                      jdMap={jdMap}
+                      roundMap={roundMap}
+                      onOpenGrading={handleOpenGrading}
+                      isStaff
+                    />
+                    <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+                      <PaginationControl pagination={pagination} />
+                    </div>
+                  </div>
+                ) : (
+                  <ApplicationGradingTable
+                    items={paginatedData}
+                    userMap={userMap}
+                    userAvatarMap={userAvatarMap}
+                    jdMap={jdMap}
+                    roundMap={roundMap}
+                    onOpenGrading={handleOpenGrading}
+                  />
+                )}
               </div>
             ) : (
               /* Card Grid */
@@ -1567,15 +1650,11 @@ export function ApplicationGradingPage({
             )}
 
             {/* Pagination */}
-            <div
-              className={cn(
-                "flex flex-none items-center px-4 py-3 sm:px-6",
-                isStaff
-                  ? "justify-end border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
-                  : "justify-between border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950"
-              )}>
-              <PaginationControl pagination={pagination} />
-            </div>
+            {!isStaff && (
+              <div className="flex flex-none items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                <PaginationControl pagination={pagination} />
+              </div>
+            )}
           </div>
         )}
       </div>

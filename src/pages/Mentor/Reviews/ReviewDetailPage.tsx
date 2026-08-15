@@ -7,7 +7,7 @@ import { isSessionMentor } from "@/lib/session-mentor";
 import { MentorDetailHeader, MentorDetailPage } from "@/pages/Mentor/components/MentorDetailLayout";
 import { MentorReviewReport } from "@/pages/Mentor/components/MentorReviewReport";
 import { useAuthStore } from "@/stores/authStore";
-import { ChevronRight, Pencil, Star, User } from "lucide-react";
+import { Pencil, Star, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
@@ -93,20 +93,6 @@ export function ReviewDetailPage() {
         title={`${t("common.sessionDetail")} #${sessionId || review.id}`}
         actions={
           <>
-            {sessionId > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 rounded-xl"
-                onClick={() =>
-                  navigate(`/mentor/sessions/${sessionId}`, {
-                    state: { returnTo: `/mentor/reviews/${review.id}` },
-                  })
-                }>
-                {t("common.viewSessionDetails")}
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            )}
             <Button
               size="sm"
               className="h-9 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
