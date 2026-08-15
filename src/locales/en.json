@@ -4942,6 +4942,8 @@
     "mentorSessionCountdownLabel": "Starts in",
     "mentorSessionReady": "Ready to join",
     "mentorSessionReadyHint": "You can join the room now",
+    "mentorSessionWindowClosed": "Join window closed",
+    "mentorSessionWindowClosedHint": "The room was available until 15 minutes after the scheduled start.",
     "mentorSessionOpensBeforeHint": "Room opens 15 minutes before {{time}}",
     "mentorSessionOfflineToast": "This is an offline session. Please contact the mentor using the information below.",
     "mentorSessionJoinOngoing": "Continue joining room",

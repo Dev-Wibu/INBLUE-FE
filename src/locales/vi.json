@@ -4942,6 +4942,8 @@
     "mentorSessionCountdownLabel": "Còn",
     "mentorSessionReady": "Sẵn sàng vào",
     "mentorSessionReadyHint": "Bạn có thể vào phòng ngay bây giờ",
+    "mentorSessionWindowClosed": "Đã hết thời gian vào phòng",
+    "mentorSessionWindowClosedHint": "Phòng chỉ mở đến 15 phút sau giờ bắt đầu đã lên lịch.",
     "mentorSessionOpensBeforeHint": "Phòng mở 15 phút trước {{time}}",
     "mentorSessionOfflineToast": "Đây là phiên Offline. Hãy liên hệ mentor qua thông tin bên dưới.",
     "mentorSessionJoinOngoing": "Tiếp tục vào phòng",

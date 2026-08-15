@@ -164,6 +164,19 @@ function normalizeFormattedCode(raw?: string | null): string {
   return text;
 }
 
+const LEGACY_CODE_REVIEW_INSTRUCTION = "review đoạn mã nguồn sau và chỉ ra các điểm cần tối ưu";
+
+function isLegacyCodeReviewInstruction(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  return (
+    value
+      .trim()
+      .toLocaleLowerCase("vi-VN")
+      .replace(/\s+/g, " ")
+      .replace(/[.!?]+$/, "") === LEGACY_CODE_REVIEW_INSTRUCTION
+  );
+}
+
 function normalizeProblemSnapshot(problem: CodeReviewProblemSnapshot): CodeReviewProblemSnapshot {
   return {
     ...problem,
@@ -226,6 +239,10 @@ export function CodeReviewModule({
 
   const timeLimitMinutes = configData?.timeLimitMinutes ?? 45;
   const maxScore = configData?.maxScore ?? 100;
+  const configuredInstruction = mergedConfigData?.instruction || round.configData?.instruction;
+  const instructionText = isLegacyCodeReviewInstruction(configuredInstruction)
+    ? t("task.reviewSourceCode")
+    : configuredInstruction || t("userApplication.codeReview.codeReviewInstructions");
   const roundId = round.id ?? 0;
 
   // 1. Extract raw problems from round snapshot
@@ -708,11 +725,7 @@ export function CodeReviewModule({
               )}
             </div>
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
-              {isFinished
-                ? t("userApplication.codeReview.codeReviewCompleted")
-                : mergedConfigData?.instruction ||
-                  round.configData?.instruction ||
-                  t("userApplication.codeReview.codeReviewInstructions")}
+              {isFinished ? t("userApplication.codeReview.codeReviewCompleted") : instructionText}
             </p>
           </div>
         </div>
@@ -948,9 +961,9 @@ export function CodeReviewModule({
               </div>
             </Card>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-200/60 dark:border-indigo-500/40 dark:bg-[#030712] dark:shadow-2xl dark:ring-indigo-500/20">
               {/* Header: File Switcher Tabs */}
-              <div className="flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
+              <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
@@ -978,8 +991,8 @@ export function CodeReviewModule({
                           className={cn(
                             "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
                             isActive
-                              ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-200 shadow-xs shadow-indigo-950/50 dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-200"
-                              : "border border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-800/60 hover:text-slate-200 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
+                              ? "border border-indigo-200 bg-indigo-100 text-indigo-700 shadow-xs dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-200 dark:shadow-indigo-950/50"
+                              : "border border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
                           )}>
                           <FileCode2 className="h-3.5 w-3.5" />
                           <span>{filenameShort(file.filename ?? "")}</span>
@@ -1223,13 +1236,13 @@ function renderSyntaxTokens(line: string): React.ReactNode[] {
 
     if (token.startsWith('"') || token.startsWith("'")) {
       parts.push(
-        <span key={key} className="font-medium text-emerald-300">
+        <span key={key} className="font-medium text-emerald-700 dark:text-emerald-300">
           {token}
         </span>
       );
     } else if (token.startsWith("@")) {
       parts.push(
-        <span key={key} className="font-bold text-amber-400">
+        <span key={key} className="font-bold text-amber-700 dark:text-amber-400">
           {token}
         </span>
       );
@@ -1241,7 +1254,7 @@ function renderSyntaxTokens(line: string): React.ReactNode[] {
       );
     } else if (/^[{}()[\]]$/.test(token)) {
       parts.push(
-        <span key={key} className="font-extrabold text-amber-300">
+        <span key={key} className="font-extrabold text-amber-700 dark:text-amber-300">
           {token}
         </span>
       );
@@ -1253,7 +1266,7 @@ function renderSyntaxTokens(line: string): React.ReactNode[] {
       );
     } else if (/^\d+$/.test(token)) {
       parts.push(
-        <span key={key} className="font-bold text-cyan-300">
+        <span key={key} className="font-bold text-cyan-700 dark:text-cyan-300">
           {token}
         </span>
       );
@@ -1265,13 +1278,13 @@ function renderSyntaxTokens(line: string): React.ReactNode[] {
         .startsWith("(")
     ) {
       parts.push(
-        <span key={key} className="font-bold text-sky-300">
+        <span key={key} className="font-bold text-sky-700 dark:text-sky-300">
           {token}
         </span>
       );
     } else {
       parts.push(
-        <span key={key} className="font-bold text-purple-400">
+        <span key={key} className="font-bold text-violet-700 dark:text-purple-400">
           {token}
         </span>
       );
@@ -1335,7 +1348,7 @@ function CodeViewPane({
   }, [issues]);
 
   return (
-    <div className="overflow-x-auto bg-[#030712] font-mono text-xs leading-relaxed text-slate-200">
+    <div className="overflow-x-auto bg-white font-mono text-xs leading-relaxed text-slate-800 dark:bg-[#030712] dark:text-slate-200">
       <div className="min-w-[700px]">
         {fileLines.map((line, idx) => {
           const lineNo = idx + 1;
@@ -1368,18 +1381,19 @@ function CodeViewPane({
                 }}
                 className={cn(
                   "group flex items-stretch transition-colors select-none",
-                  editable && "cursor-pointer hover:bg-indigo-500/10",
+                  editable && "cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-500/10",
                   hasIssues && cn(tok?.bg, "border-l-4", tok?.border),
-                  isEditingThisLine && "border-l-4 border-indigo-500 bg-indigo-500/15"
+                  isEditingThisLine &&
+                    "border-l-4 border-indigo-500 bg-indigo-100/70 dark:bg-indigo-500/15"
                 )}>
                 {/* Gutter / Line Number */}
                 <div
                   className={cn(
                     "flex w-14 shrink-0 items-center justify-between border-r px-2 py-0.5 text-xs tabular-nums select-none",
-                    "border-slate-800/80 bg-slate-950/90 text-slate-500 group-hover:bg-slate-900 group-hover:text-indigo-300",
+                    "border-slate-200 bg-slate-50 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-700 dark:border-slate-800/80 dark:bg-slate-950/90 dark:group-hover:bg-slate-900 dark:group-hover:text-indigo-300",
                     hasIssues && cn("font-bold", tok?.text),
                     isEditingThisLine &&
-                      "border-indigo-500/50 bg-indigo-950/60 font-bold text-indigo-300"
+                      "border-indigo-300 bg-indigo-100 font-bold text-indigo-700 dark:border-indigo-500/50 dark:bg-indigo-950/60 dark:text-indigo-300"
                   )}>
                   <span className="w-full pr-2 text-right">{lineNo}</span>
                   {editable && (
@@ -1387,7 +1401,7 @@ function CodeViewPane({
                       className={cn(
                         "transition-opacity",
                         isEditingThisLine
-                          ? "text-indigo-300 opacity-100"
+                          ? "text-indigo-700 opacity-100 dark:text-indigo-300"
                           : "text-indigo-400 opacity-0 group-hover:opacity-100"
                       )}>
                       <Plus className="h-3 w-3" />
@@ -1396,14 +1410,14 @@ function CodeViewPane({
                 </div>
 
                 {/* Code Content */}
-                <div className="flex-1 px-4 py-0.5 font-mono text-xs whitespace-pre text-slate-200 select-text group-hover:text-white">
+                <div className="flex-1 px-4 py-0.5 font-mono text-xs whitespace-pre text-slate-800 select-text group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white">
                   {renderedTokens.length > 0 ? renderedTokens : " "}
                 </div>
               </div>
 
               {/* Inline Issue Annotations attached directly below this line */}
               {hasIssues && (
-                <div className="ml-14 space-y-2 border-l-4 border-slate-800 bg-slate-900/90 px-4 py-2 dark:border-slate-800 dark:bg-slate-900/90">
+                <div className="ml-14 space-y-2 border-l-4 border-slate-200 bg-slate-50 px-4 py-2 dark:border-slate-800 dark:bg-slate-900/90">
                   {lineIssues.map((iss, iIdx) => {
                     const issTok = SEVERITY_TOKENS[iss.severity];
                     const Icon = issTok.icon;
@@ -1440,7 +1454,7 @@ function CodeViewPane({
                                   e.stopPropagation();
                                   onEditIssue(globalIdx);
                                 }}
-                                className="h-6 gap-1 px-2 text-[10px] font-bold text-indigo-300 hover:bg-indigo-500/20">
+                                className="h-6 gap-1 px-2 text-[10px] font-bold text-indigo-700 hover:bg-indigo-100 dark:text-indigo-300 dark:hover:bg-indigo-500/20">
                                 <Pencil className="h-3 w-3" />
                                 <span>{t("userApplication.codeReview.edit", "Sửa")}</span>
                               </Button>
@@ -1452,7 +1466,7 @@ function CodeViewPane({
                                   e.stopPropagation();
                                   onDeleteIssue(globalIdx);
                                 }}
-                                className="h-6 gap-1 px-2 text-[10px] font-bold text-rose-400 hover:bg-rose-500/20">
+                                className="h-6 gap-1 px-2 text-[10px] font-bold text-rose-700 hover:bg-rose-100 dark:text-rose-400 dark:hover:bg-rose-500/20">
                                 <Trash2 className="h-3 w-3" />
                                 <span>{t("userApplication.codeReview.delete", "Xóa")}</span>
                               </Button>
@@ -1460,7 +1474,7 @@ function CodeViewPane({
                           )}
                         </div>
 
-                        <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-300 select-text">
+                        <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-700 select-text dark:text-slate-300">
                           {iss.description}
                         </p>
                       </div>
@@ -1475,14 +1489,14 @@ function CodeViewPane({
                 onChangeInlineEditor &&
                 onSaveInlineIssue &&
                 onCloseInlineEditor && (
-                  <div className="animate-in fade-in zoom-in-98 my-2 ml-14 rounded-xl border border-indigo-500/50 bg-slate-900/98 p-4 shadow-2xl ring-1 ring-indigo-500/30 duration-150">
+                  <div className="animate-in fade-in zoom-in-98 my-2 ml-14 rounded-xl border border-indigo-300 bg-white p-4 shadow-lg ring-1 ring-indigo-100 duration-150 dark:border-indigo-500/50 dark:bg-slate-900/98 dark:shadow-2xl dark:ring-indigo-500/30">
                     {/* Header of Inline Box */}
                     <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500/20 text-indigo-300">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">
                           <MessageSquarePlus className="h-3.5 w-3.5" />
                         </div>
-                        <span className="text-xs font-bold text-white">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
                           {inlineEditor.editingIndex !== null
                             ? t(
                                 "userApplication.codeReview.editCommentOnLine",
@@ -1500,7 +1514,7 @@ function CodeViewPane({
                       <button
                         type="button"
                         onClick={onCloseInlineEditor}
-                        className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white">
+                        className="rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">
                         <X className="h-4 w-4" />
                       </button>
                     </div>
@@ -1528,7 +1542,7 @@ function CodeViewPane({
                                     sTok.text,
                                     "shadow-xs ring-2 ring-indigo-500/50"
                                   )
-                                : "border border-slate-200 bg-slate-50/70 text-slate-400 hover:border-slate-700 hover:text-slate-200 dark:border-slate-800 dark:bg-slate-950/60"
+                                : "border border-slate-200 bg-slate-50/70 text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200"
                             )}>
                             <Icon className={cn("h-3.5 w-3.5", sTok.text)} />
                             <span>{SEVERITY_KEYS[s].label}</span>
@@ -1556,7 +1570,7 @@ function CodeViewPane({
                           "userApplication.codeReview.descriptionPlaceholder",
                           "Mô tả chi tiết vấn đề (ví dụ: Thiếu kiểm tra null, SQL Injection, N+1 query...)"
                         )}
-                        className="w-full resize-y rounded-xl border border-slate-700/80 bg-slate-950/90 p-3 font-sans text-xs leading-relaxed text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/25 focus:outline-hidden"
+                        className="w-full resize-y rounded-xl border border-slate-300 bg-white p-3 font-sans text-xs leading-relaxed text-slate-900 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/25 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-950/90 dark:text-slate-100"
                       />
                     </div>
 
@@ -1575,7 +1589,7 @@ function CodeViewPane({
                           variant="ghost"
                           size="sm"
                           onClick={onCloseInlineEditor}
-                          className="h-8 rounded-lg px-3 text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-white">
+                          className="h-8 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">
                           {t("userApplication.codeReview.cancel", "Hủy")}
                         </Button>
                         <Button
@@ -2074,8 +2088,8 @@ function GradedResultView({
       </div>
 
       {/* ── FULL-WIDTH CODE VIEWER WITH SUBMITTED ISSUES ── */}
-      <div className="overflow-hidden rounded-2xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
-        <div className="flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-200/60 dark:border-indigo-500/40 dark:bg-[#030712] dark:shadow-2xl dark:ring-indigo-500/20">
+        <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-800/80 dark:bg-slate-950">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
@@ -2085,7 +2099,7 @@ function GradedResultView({
 
             <div className="flex items-center gap-2">
               <FileCode2 className="h-4 w-4 text-indigo-400" />
-              <span className="text-xs font-bold text-slate-300 dark:text-slate-300">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 {t(
                   "userApplicationhistory.codeReviewSubmittedSourceTitle",
                   "Mã nguồn & ghi chú bạn đã nộp"
@@ -2103,8 +2117,8 @@ function GradedResultView({
                     className={cn(
                       "rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
                       activeProblemIdx === idx
-                        ? "border border-indigo-500/40 bg-indigo-500/20 text-indigo-200 dark:text-indigo-200"
-                        : "border border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-800/60 hover:text-slate-200 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
+                        ? "border border-indigo-200 bg-indigo-100 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-200"
+                        : "border border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
                     )}>
                     #{idx + 1}{" "}
                     {p.title || t("userApplication.codeReview.problemNumber", { number: idx + 1 })}
@@ -2123,8 +2137,8 @@ function GradedResultView({
                 className={cn(
                   "rounded-md px-2.5 py-1 text-xs font-medium transition-all",
                   (activeFilename || currentFiles[0]?.filename) === file.filename
-                    ? "border border-slate-700 bg-slate-800 font-bold text-white"
-                    : "border border-slate-800 text-slate-400 hover:text-slate-200 dark:text-slate-400 dark:hover:text-slate-200"
+                    ? "border border-indigo-200 bg-white font-bold text-indigo-700 shadow-xs dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    : "border border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                 )}>
                 {filenameShort(file.filename ?? "")}
               </button>

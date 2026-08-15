@@ -4887,6 +4887,8 @@
     "mentorSessionCountdownLabel": "開始まで",
     "mentorSessionReady": "入室可能",
     "mentorSessionReadyHint": "今すぐ入室できます",
+    "mentorSessionWindowClosed": "入室可能時間が終了しました",
+    "mentorSessionWindowClosedHint": "部屋は予定開始時刻の15分後まで入室できます。",
     "mentorSessionOpensBeforeHint": "部屋は{{time}}の15分前に開きます",
     "mentorSessionOfflineToast": "これはオフラインセッションです。下記の情報でメンターに連絡してください。",
     "mentorSessionJoinOngoing": "入室を続行",

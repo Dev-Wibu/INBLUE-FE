@@ -764,7 +764,7 @@ export function PostManagementPage() {
                               className="pr-6 text-right"
                               onClick={(e) => e.stopPropagation()}>
                               <div className="flex justify-end gap-1">
-                                {post.postId && !isStaff && (
+                                {post.postId && post.status !== "DRAFT" && (
                                   <Button
                                     size="sm"
                                     variant="ghost"

@@ -32,6 +32,7 @@ import {
 import { useCreateRoundSession, useSessionById } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import { isMentorScheduleTimeValid } from "@/lib/mentor-schedule";
+import { getSessionJoinAvailability } from "@/lib/session-join";
 import { cn } from "@/lib/utils";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -1873,9 +1874,9 @@ function SessionRoomStep({
     );
   }
 
-  const joinAt = session.joinTime ? new Date(session.joinTime).getTime() : 0;
-  const minutesUntilStart = Math.floor((joinAt - now) / 60_000);
-  const canEnter = minutesUntilStart <= 15 && minutesUntilStart > -(session.duration ?? 0);
+  const joinAvailability = getSessionJoinAvailability(session, now);
+  const joinAt = joinAvailability.joinTimestamp ?? 0;
+  const canEnter = joinAvailability.canJoin;
   const isCompleted = readOnly ? viewStep === "RESULT" : session.status === "COMPLETED";
   const mentorName = sessionMentor?.name?.trim();
   const mentorDisplayName =
@@ -2004,24 +2005,30 @@ function SessionRoomStep({
               </div>
             </div>
 
-            {session.status === "PAID" && joinAt > 0 && (
+            {joinAt > 0 && (
               <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50/60 p-4 dark:border-sky-900/60 dark:bg-sky-950/25">
                 <div className="text-[10px] font-semibold tracking-wide text-sky-600 uppercase dark:text-sky-400">
-                  {canEnter
-                    ? t("userApplicationhistory.mentorSessionRoomOpen")
-                    : t("userApplicationhistory.mentorSessionCountdownLabel")}
+                  {joinAvailability.isAfterJoinWindow
+                    ? t("userApplicationhistory.mentorSessionWindowClosed")
+                    : canEnter
+                      ? t("userApplicationhistory.mentorSessionRoomOpen")
+                      : t("userApplicationhistory.mentorSessionCountdownLabel")}
                 </div>
                 <div className="mt-2 text-3xl font-black text-sky-700 tabular-nums dark:text-sky-200">
-                  {canEnter
-                    ? t("userApplicationhistory.mentorSessionReady")
-                    : formatCountdown(Math.max(0, joinAt - now))}
+                  {joinAvailability.isAfterJoinWindow
+                    ? t("userApplicationhistory.mentorSessionWindowClosed")
+                    : canEnter
+                      ? t("userApplicationhistory.mentorSessionReady")
+                      : formatCountdown(Math.max(0, (joinAvailability.opensAt ?? joinAt) - now))}
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-sky-700/80 dark:text-sky-300/80">
-                  {canEnter
-                    ? t("userApplicationhistory.mentorSessionReadyHint")
-                    : t("userApplicationhistory.mentorSessionOpensBeforeHint", {
-                        time: session.joinTime ? formatTimeOnly(session.joinTime) : "",
-                      })}
+                  {joinAvailability.isAfterJoinWindow
+                    ? t("userApplicationhistory.mentorSessionWindowClosedHint")
+                    : canEnter
+                      ? t("userApplicationhistory.mentorSessionReadyHint")
+                      : t("userApplicationhistory.mentorSessionOpensBeforeHint", {
+                          time: session.joinTime ? formatTimeOnly(session.joinTime) : "",
+                        })}
                 </p>
               </div>
             )}
@@ -2038,12 +2045,14 @@ function SessionRoomStep({
                     toast.info(t("userApplicationhistory.mentorSessionOfflineToast"));
                   }
                 }}
-                disabled={readOnly || (!canEnter && session.status === "PAID")}
+                disabled={readOnly || !canEnter}
                 className="h-11 flex-1 gap-2 bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
                 <LogIn className="h-4 w-4" />
-                {session.status === "ONGOING"
-                  ? t("userApplicationhistory.mentorSessionJoinOngoing")
-                  : t("userApplicationhistory.mentorSessionJoinVideoCall")}
+                {joinAvailability.isAfterJoinWindow
+                  ? t("userApplicationhistory.mentorSessionWindowClosed")
+                  : session.status === "ONGOING"
+                    ? t("userApplicationhistory.mentorSessionJoinOngoing")
+                    : t("userApplicationhistory.mentorSessionJoinVideoCall")}
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <Button

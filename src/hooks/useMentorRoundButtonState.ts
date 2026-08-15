@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
+import { getSessionJoinAvailability } from "@/lib/session-join";
 import { sessionManager } from "@/services/session.manager";
 
 export type MentorRoundButtonState =
@@ -29,12 +30,6 @@ const SESSION_DETAIL_POLL_MS = 5_000;
 
 const TERMINAL_STATUSES = new Set(["COMPLETED", "CANCELED", "REJECTED"]);
 
-function isJoinable(status: string | undefined | null): boolean {
-  if (!status) return false;
-  // Student can join as long as the session has a room and is not done.
-  return status === "SCHEDULED" || status === "PAID" || status === "ONGOING";
-}
-
 function buildView(raw: unknown): MentorRoundSessionView | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
@@ -60,14 +55,8 @@ function computeState(view: MentorRoundSessionView | null): MentorRoundButtonSta
   const status = view.status;
   if (status === "CANCELED" || status === "REJECTED") return "NOT_YET";
   const now = Date.now();
-  const joinTs = view.joinTime ? new Date(view.joinTime).getTime() : NaN;
   const studentJoined = !!view.startTime1;
   const studentLeft = !!view.endTime1;
-
-  // Future joinTime and not yet completed → hide everything behind a countdown.
-  if (Number.isFinite(joinTs) && now < joinTs && status !== "COMPLETED") {
-    return "NOT_YET";
-  }
 
   // Session is COMPLETED — drive state off the review/feedback flags.
   if (status === "COMPLETED") {
@@ -76,17 +65,19 @@ function computeState(view: MentorRoundSessionView | null): MentorRoundButtonSta
     return "DONE";
   }
 
-  // Active session: student hasn't left yet → rejoin.
-  if (studentJoined && !studentLeft && status === "ONGOING") {
+  const canJoin = getSessionJoinAvailability(view, now).canJoin;
+
+  // Rejoin is available only while the session remains inside the allowed window.
+  if (canJoin && studentJoined && !studentLeft && status === "ONGOING") {
     return "IN_SESSION";
   }
 
   // Student has joined but BE hasn't marked COMPLETED yet (webhook pending).
-  if (studentLeft && !TERMINAL_STATUSES.has(status)) {
+  if (canJoin && studentLeft && !TERMINAL_STATUSES.has(status)) {
     return "CAN_JOIN";
   }
 
-  if (isJoinable(status)) return "CAN_JOIN";
+  if (canJoin) return "CAN_JOIN";
   return "NOT_YET";
 }
 

@@ -27,6 +27,8 @@ interface MentorDetailHeaderProps {
   backLabel: string;
   parentLabel: string;
   title: string;
+  leading?: ReactNode;
+  subtitle?: ReactNode;
   badge?: ReactNode;
   actions?: ReactNode;
   description?: ReactNode;
@@ -37,6 +39,8 @@ export function MentorDetailHeader({
   backLabel,
   parentLabel,
   title,
+  leading,
+  subtitle,
   badge,
   actions,
   description,
@@ -59,8 +63,18 @@ export function MentorDetailHeader({
             {parentLabel}
           </span>
           <ChevronRight className="hidden h-4 w-4 shrink-0 text-slate-400 sm:block" />
-          <h1 className="min-w-0 text-base font-bold text-slate-950 dark:text-white">{title}</h1>
-          {badge}
+          {leading}
+          <div className="min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h1 className="truncate text-base font-bold text-slate-950 dark:text-white">
+                {title}
+              </h1>
+              {badge}
+            </div>
+            {subtitle && (
+              <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{subtitle}</div>
+            )}
+          </div>
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>

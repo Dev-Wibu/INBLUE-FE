@@ -73,6 +73,7 @@ export function MentorSessionRoomPage() {
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const [authorizedSessionId, setAuthorizedSessionId] = useState<number | null>(null);
   const numericSessionId = Number(sessionId);
   const {
     data: session,
@@ -104,17 +105,24 @@ export function MentorSessionRoomPage() {
   // For Mentor Interview (RoundType.MENTROR_REVIEW) the session is created
   // with status SCHEDULED (see BE doc Phase 4). PAID/ONGOING are reserved
   // for paid mock-interview sessions, so we accept both shapes here.
+  const joinAvailability = session ? getSessionJoinAvailability(session, currentTime) : null;
   const canJoin = Boolean(
     session &&
     user &&
     isSessionMentor(session, mentorProfileId) &&
-    getSessionJoinAvailability(session, currentTime).canJoin
+    joinAvailability?.hasJoinableStatus &&
+    joinAvailability.hasRoom &&
+    (joinAvailability.canJoin || authorizedSessionId === numericSessionId)
   );
 
   useEffect(() => {
-    const timer = window.setInterval(() => setCurrentTime(Date.now()), 30_000);
+    const timer = window.setInterval(() => setCurrentTime(Date.now()), 1_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (joinAvailability?.canJoin) setAuthorizedSessionId(numericSessionId);
+  }, [joinAvailability?.canJoin, numericSessionId]);
 
   // Handle when mentor joins the call (callback from VideoCallRoom)
   const handleJoined = async (participantId: string) => {

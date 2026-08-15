@@ -171,56 +171,41 @@ export function StudentDetailPage() {
         backLabel={t("general.back")}
         parentLabel={t("mentorStudents.student")}
         title={studentInfo.name || t("common.studentVar0", { var_0: studentId })}
+        leading={
+          <Avatar className="h-11 w-11 shrink-0 rounded-xl border border-slate-200 dark:border-slate-700">
+            <AvatarImage src={studentInfo.avatarUrl} alt={studentInfo.name} />
+            <AvatarFallback className="rounded-xl bg-indigo-100 text-sm font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+              {studentInfo.name?.charAt(0) || "U"}
+            </AvatarFallback>
+          </Avatar>
+        }
+        subtitle={
+          studentInfo.email ? (
+            <span className="flex min-w-0 items-center gap-1.5">
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{studentInfo.email}</span>
+            </span>
+          ) : undefined
+        }
         badge={
           <Badge variant="outline" className="font-mono text-xs text-slate-500">
             #{studentId}
           </Badge>
         }
+        actions={
+          totalReviews > 0 ? (
+            <div className="text-left sm:text-right">
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                {t("mentorScoring.averageCandidateScore")}
+              </p>
+              <p className="text-xl font-bold text-slate-900 dark:text-white">
+                {avgScore.toFixed(1)}
+                <span className="ml-1 text-xs font-medium text-slate-400">/100</span>
+              </p>
+            </div>
+          ) : undefined
+        }
       />
-
-      <MentorDetailPanel className="p-5 sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 rounded-xl border border-slate-100 dark:border-slate-800">
-              <AvatarImage src={studentInfo.avatarUrl} alt={studentInfo.name} />
-              <AvatarFallback className="rounded-xl bg-indigo-100 text-xl font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
-                {studentInfo.name?.charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                {studentInfo.name || t("common.studentVar0", { var_0: studentId })}
-              </h1>
-              <div className="mt-1 flex flex-col gap-0.5 text-sm text-slate-500 dark:text-slate-400">
-                {studentInfo.email && (
-                  <p className="flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5" />
-                    {studentInfo.email}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Rating display */}
-          {totalReviews > 0 && (
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {t("mentorScoring.averageCandidateScore")}
-                </p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                  {avgScore.toFixed(1)}
-                  <span className="ml-1 text-base font-medium text-slate-400">/100</span>
-                </p>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  {totalReviews} {t("mentorStudents.studentReviews")}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </MentorDetailPanel>
 
       <section>
         <div className="grid gap-4 sm:grid-cols-3">
