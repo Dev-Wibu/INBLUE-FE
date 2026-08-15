@@ -9,7 +9,7 @@ export type KioskSchedule = components["schemas"]["KioskSchedule"];
 export type SlotDto = components["schemas"]["SlotDto"];
 export type PickSlotDtoRequest = components["schemas"]["PickSlotDtoRequest"];
 export type MentorInterviewBooking = components["schemas"]["KioskBooking"];
-export type KioskEnterDtoRequest = { sessionKey: string; kioskId?: number };
+export type KioskEnterDtoRequest = { sessionKey: string; kioskId: number };
 export type KioskEnterDtoResponse = components["schemas"]["KioskEnterDtoResponse"] & {
   roomUrl?: string;
 };
@@ -349,10 +349,10 @@ export class KioskManager {
             path: {
               sessionKey: body.sessionKey,
             },
+            query: {
+              kioskId: body.kioskId,
+            },
           },
-          body: {
-            kioskId: body.kioskId,
-          } as never,
         })
         .then((res) => ({
           data: res.data,
