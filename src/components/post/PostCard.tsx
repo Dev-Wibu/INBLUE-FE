@@ -33,7 +33,10 @@ export function PostCard({ post, onClick }: PostCardProps) {
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={post.author?.avatarUrl} alt={post.author?.name} />
+            <AvatarImage
+              src={post.author?.avatar || post.author?.avatarUrl}
+              alt={post.author?.name}
+            />
             <AvatarFallback className="text-xs">{authorInitials || "?"}</AvatarFallback>
           </Avatar>
           <span className="text-muted-foreground text-sm">

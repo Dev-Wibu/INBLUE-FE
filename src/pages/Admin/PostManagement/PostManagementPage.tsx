@@ -730,7 +730,7 @@ export function PostManagementPage() {
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9 shrink-0 border border-slate-200 dark:border-slate-700">
                                   <AvatarImage
-                                    src={post.author?.avatarUrl || undefined}
+                                    src={post.author?.avatar || post.author?.avatarUrl || undefined}
                                     alt={post.author?.name || t("common.anonymous")}
                                   />
                                   <AvatarFallback className="bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">

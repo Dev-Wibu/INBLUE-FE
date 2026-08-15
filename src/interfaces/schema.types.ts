@@ -267,6 +267,11 @@ export interface SessionFormData {
  */
 export type PostStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
+export interface PostAuthor extends Partial<User> {
+  /** AuthorResponse uses `avatar`; full User responses use `avatarUrl`. */
+  avatar?: string;
+}
+
 /**
  * Post type based on backend schema
  */
@@ -276,7 +281,7 @@ export interface Post {
   content?: string;
   summary?: string;
   status?: PostStatus;
-  author?: User;
+  author?: PostAuthor;
   creationDate?: string;
   lastModifiedDate?: string;
   coverImgUrl?: string;
