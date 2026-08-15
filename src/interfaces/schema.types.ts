@@ -266,8 +266,11 @@ export interface SessionFormData {
  * Post status enum
  */
 export type PostStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+export type PostActorRole = UserRole | (string & {});
 
-export interface PostAuthor extends Partial<User> {
+export interface PostAuthor extends Omit<Partial<User>, "role"> {
+  id?: number;
+  role?: PostActorRole;
   /** AuthorResponse uses `avatar`; full User responses use `avatarUrl`. */
   avatar?: string;
 }
@@ -312,7 +315,6 @@ export interface PostCreateRequest {
   title?: string;
   content?: string;
   summary?: string;
-  authorId?: number;
   coverImg?: File;
   tags?: string[];
   status?: PostStatus;
@@ -325,6 +327,7 @@ export interface PostCommentResponse {
   id?: number;
   postId?: number;
   userId?: number;
+  role?: PostActorRole;
   userName?: string;
   userAvatar?: string;
   content?: string;
@@ -338,9 +341,8 @@ export interface PostCommentResponse {
  */
 export interface PostCommentRequest {
   postId?: number;
-  userId?: number;
   content?: string;
-  parentCommentId?: number;
+  parentCommentId?: number | null;
 }
 
 /**
@@ -348,7 +350,6 @@ export interface PostCommentRequest {
  */
 export interface PostLikeRequest {
   postId?: number;
-  userId?: number;
 }
 
 /**
@@ -358,6 +359,7 @@ export interface PostLikeResponse {
   id?: number;
   postId?: number;
   userId?: number;
+  role?: PostActorRole;
   userName?: string;
   userAvatar?: string;
   createdAt?: string;

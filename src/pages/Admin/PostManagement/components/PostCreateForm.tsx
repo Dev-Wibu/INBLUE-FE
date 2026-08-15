@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import type { PostStatus } from "@/interfaces/schema.types";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -27,7 +26,6 @@ interface PostCreateFormProps {
 export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  const { data: currentMentorProfile } = useCurrentMentorProfile();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
@@ -74,19 +72,7 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
       toast.error(t("adminPostmanagement.theTitleCannotBeBlank"));
       return;
     }
-    // User.id from JWT (sub) is NOT the same as Mentor.id. For MENTOR role,
-    // BE stores posts against Mentor.id.
-    const authorId =
-      user?.role === "MENTOR" && currentMentorProfile?.id != null
-        ? typeof currentMentorProfile.id === "string"
-          ? parseInt(currentMentorProfile.id, 10)
-          : currentMentorProfile.id
-        : typeof user?.id === "number"
-          ? user.id
-          : user?.id != null
-            ? parseInt(String(user.id), 10)
-            : undefined;
-    if (!authorId) {
+    if (!user?.id) {
       toast.error(t("adminPostmanagement.unableToDetermineAuthor"));
       return;
     }
@@ -97,7 +83,6 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
         title: title.trim(),
         content: content.trim() || undefined,
         summary: summary.trim() || undefined,
-        authorId,
         coverImg: coverFile ?? undefined,
         tags: finalTags.length > 0 ? finalTags : undefined,
         status,

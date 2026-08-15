@@ -30,7 +30,10 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
   const commentCount = item.commentCount ?? 0;
   const { data: likedData } = useCheckLiked(postId, user?.id ?? 0, !!user?.id && postId > 0);
   const [localLikeAdjust, setLocalLikeAdjust] = useState(0);
-  const rawLiked = Object.values(likedData ?? {})[0] as string | boolean | undefined;
+  const rawLiked =
+    typeof likedData === "boolean"
+      ? likedData
+      : (Object.values(likedData ?? {})[0] as string | boolean | undefined);
   const isLiked = rawLiked === true || rawLiked === "true";
   const likeCount = (item.likeCount ?? 0) + localLikeAdjust;
   const [modalOpen, setModalOpen] = useState(false);

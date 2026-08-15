@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
 import { toTimestamp } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
@@ -306,22 +305,7 @@ export function CommentSection({
 }: CommentSectionProps) {
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  const { data: currentMentorProfile } = useCurrentMentorProfile();
-  // User.id from JWT (sub) is NOT the same as Mentor.id. For MENTOR role,
-  // BE stores comments against Mentor.id, so use that for the API payload.
-  // currentUserId is still used for UI (delete button visibility) — that
-  // stays as user.id from JWT.
   const currentUserId = user?.id;
-  const apiUserId =
-    user?.role === "MENTOR" && currentMentorProfile?.id != null
-      ? typeof currentMentorProfile.id === "string"
-        ? parseInt(currentMentorProfile.id, 10)
-        : currentMentorProfile.id
-      : currentUserId != null
-        ? typeof currentUserId === "string"
-          ? parseInt(currentUserId, 10)
-          : currentUserId
-        : null;
   const { data: commentsData } = usePostComments(postId, !externalComments);
   const createComment = useCreateComment();
   const commentTree = useMemo(() => {
@@ -365,13 +349,13 @@ export function CommentSection({
   };
   const handleCommentSubmit = () => {
     const content = newContent.trim();
-    if (!content || apiUserId == null) return;
+    if (!content || !user?.id) return;
     createComment.mutate(
       {
         body: {
           postId,
-          userId: apiUserId,
           content,
+          parentCommentId: null,
         },
       } as never,
       {
@@ -389,14 +373,13 @@ export function CommentSection({
   };
   const handleReplySubmit = (parentCommentId: number) => {
     const content = replyContent.trim();
-    if (!content || apiUserId == null) return;
+    if (!content || !user?.id) return;
     const parentUser = commentById.get(parentCommentId)?.userName;
     const contentWithMention = parentUser ? `@${parentUser} ${content}` : content;
     createComment.mutate(
       {
         body: {
           postId,
-          userId: apiUserId,
           content: contentWithMention,
           parentCommentId,
         },
@@ -486,7 +469,7 @@ export function CommentSection({
           <Button
             className="self-end"
             onClick={handleCommentSubmit}
-            disabled={!newContent.trim() || createComment.isPending || !apiUserId}>
+            disabled={!newContent.trim() || createComment.isPending || !user?.id}>
             <Send className="mr-1 h-4 w-4" />
             {t("compPost.send")}
           </Button>

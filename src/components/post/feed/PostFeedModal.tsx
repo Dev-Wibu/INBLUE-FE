@@ -65,15 +65,14 @@ export function PostFeedModal({
 
   const handleCommentSubmit = () => {
     const content = newComment.trim();
-    const numericUserId = typeof user?.id === "string" ? parseInt(user.id, 10) : user?.id;
-    if (!content || !numericUserId) return;
+    if (!content || !user?.id) return;
 
     createComment.mutate(
       {
         body: {
           postId,
-          userId: numericUserId,
           content,
+          parentCommentId: null,
         },
       } as never,
       {
@@ -87,7 +86,10 @@ export function PostFeedModal({
     );
   };
 
-  const rawLiked = Object.values(likedData ?? {})[0] as string | boolean | undefined;
+  const rawLiked =
+    typeof likedData === "boolean"
+      ? likedData
+      : (Object.values(likedData ?? {})[0] as string | boolean | undefined);
   const isLiked = rawLiked === true || rawLiked === "true";
   const likeCount = live?.likeCount ?? item.likeCount ?? 0;
 

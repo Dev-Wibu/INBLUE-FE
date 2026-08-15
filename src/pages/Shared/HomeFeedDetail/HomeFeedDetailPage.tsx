@@ -94,7 +94,10 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
     [authorName]
   );
 
-  const rawLiked = Object.values(likedData ?? {})[0] as string | boolean | undefined;
+  const rawLiked =
+    typeof likedData === "boolean"
+      ? likedData
+      : (Object.values(likedData ?? {})[0] as string | boolean | undefined);
   const isLiked = rawLiked === true || rawLiked === "true";
   const likeCount = live?.likeCount ?? 0;
   const liveCommentCount = live?.commentCount ?? 0;
@@ -143,15 +146,14 @@ export function HomeFeedDetailPage({ backTo }: HomeFeedDetailPageProps) {
 
   const handleCommentSubmit = () => {
     const content = newComment.trim();
-    const numericUserId = typeof user?.id === "string" ? parseInt(user.id, 10) : user?.id;
-    if (!content || !numericUserId) return;
+    if (!content || !user?.id) return;
 
     createComment.mutate(
       {
         body: {
           postId,
-          userId: numericUserId,
           content,
+          parentCommentId: null,
         },
       } as never,
       {

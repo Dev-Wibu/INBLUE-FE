@@ -79,8 +79,6 @@ export class PostManager implements BaseManager<Post> {
       if (data.title) formData.append("title", data.title);
       if (data.content) formData.append("content", data.content);
       if (data.summary) formData.append("summary", data.summary);
-      const authorIdNum = parseInt(String(data.authorId ?? ""), 10);
-      if (!isNaN(authorIdNum) && authorIdNum > 0) formData.append("authorId", String(authorIdNum));
       if (data.coverImg) formData.append("coverImg", data.coverImg);
       if (data.status) formData.append("status", data.status);
       if (data.tags) {
@@ -175,8 +173,14 @@ export class PostManager implements BaseManager<Post> {
    */
   async createComment(data: PostCommentRequest): Promise<ApiResponse<PostCommentResponse>> {
     try {
+      const body: PostCommentRequest = {
+        postId: data.postId,
+        content: data.content,
+        parentCommentId: data.parentCommentId ?? null,
+      };
       const response = await fetchClient
-        .POST("/api/posts/comments", { body: data })
+        // @ts-expect-error: Backend accepts parentCommentId: null for root comments.
+        .POST("/api/posts/comments", { body })
         .then((res) => ({
           data: res.data,
           status: res.response?.status,
@@ -315,7 +319,8 @@ export class PostManager implements BaseManager<Post> {
    */
   async likePost(data: PostLikeRequest): Promise<ApiResponse<PostLikeResponse>> {
     try {
-      const response = await fetchClient.POST("/api/posts/likes", { body: data }).then((res) => ({
+      const body: PostLikeRequest = { postId: data.postId };
+      const response = await fetchClient.POST("/api/posts/likes", { body }).then((res) => ({
         data: res.data,
         status: res.response?.status,
         headers: res.response?.headers,
@@ -389,14 +394,13 @@ export class PostManager implements BaseManager<Post> {
   }
 
   /**
-   * Check if user liked a post
-   * GET /api/posts/likes/{postId}/check/{userId}
+   * Check if current JWT actor liked a post
+   * GET /api/posts/likes/{postId}/check
    */
-  async checkLiked(postId: number, userId: number): Promise<ApiResponse<boolean>> {
+  async checkLiked(postId: number): Promise<ApiResponse<boolean>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.POSTS.CHECK_LIKED, {
         postId,
-        userId,
       });
       // @ts-expect-error: Backend Swagger schema mismatch
       const response = await fetchClient.GET(endpoint, {}).then((res) => ({
@@ -418,14 +422,13 @@ export class PostManager implements BaseManager<Post> {
   }
 
   /**
-   * Unlike a post
-   * DELETE /api/posts/likes/{postId}/{userId}
+   * Unlike a post as the current JWT actor
+   * DELETE /api/posts/likes/{postId}
    */
-  async unlikePost(postId: number, userId: number): Promise<ApiResponse<void>> {
+  async unlikePost(postId: number): Promise<ApiResponse<void>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.POSTS.UNLIKE, {
         postId,
-        userId,
       });
       // @ts-expect-error: Backend Swagger schema mismatch
       await fetchClient.DELETE(endpoint, {}).then((res) => ({
@@ -603,9 +606,6 @@ export class PostManager implements BaseManager<Post> {
       if (data.title) formData.append("title", data.title);
       if (data.content) formData.append("content", data.content);
       if (data.summary) formData.append("summary", data.summary);
-      const updateAuthorIdNum = parseInt(String(data.authorId ?? ""), 10);
-      if (!isNaN(updateAuthorIdNum) && updateAuthorIdNum > 0)
-        formData.append("authorId", String(updateAuthorIdNum));
       if (data.coverImg) {
         formData.append("coverImg", data.coverImg);
       } else {
@@ -670,7 +670,7 @@ export const postManager = new PostManager();
 
 // React Query hooks using $api
 import { $api, fetchClient } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useCreatePost = () => $api.useMutation("post", "/api/posts");
 export const usePostComments = (postId: number, enabled = true) =>
@@ -691,7 +691,23 @@ export const usePostCommentsCount = (postId: number) =>
     },
     enabled: postId > 0,
   });
-export const useCreateComment = () => $api.useMutation("post", "/api/posts/comments");
+type MutationPayload<T> = T | { body?: T; params?: { path?: Record<string, unknown> } };
+
+const getMutationBody = <T>(payload: MutationPayload<T>): T => {
+  if (payload && typeof payload === "object" && "body" in payload) {
+    return (payload as { body?: T }).body ?? ({} as T);
+  }
+  return payload as T;
+};
+
+export const useCreateComment = () =>
+  useMutation({
+    mutationFn: async (payload: MutationPayload<PostCommentRequest>) => {
+      const response = await postManager.createComment(getMutationBody(payload));
+      if (!response.success) throw new Error(response.error);
+      return response.data;
+    },
+  });
 export const useCommentDetail = (commentId: number) =>
   useQuery({
     queryKey: ["commentDetail", commentId],
@@ -712,7 +728,14 @@ export const useCommentReplies = (parentCommentId: number) =>
     },
     enabled: parentCommentId > 0,
   });
-export const useLikePost = () => $api.useMutation("post", "/api/posts/likes");
+export const useLikePost = () =>
+  useMutation({
+    mutationFn: async (payload: MutationPayload<PostLikeRequest>) => {
+      const response = await postManager.likePost(getMutationBody(payload));
+      if (!response.success) throw new Error(response.error);
+      return response.data;
+    },
+  });
 export const usePostLikes = (postId: number) =>
   useQuery({
     queryKey: ["postLikes", postId],
@@ -731,23 +754,27 @@ export const usePostLikesCount = (postId: number, enabled = true) =>
     },
     enabled: enabled && postId > 0,
   });
-export const useCheckLiked = (postId: number, userId: number, enabled = true) =>
-  $api.useQuery(
-    "get",
-    "/api/posts/likes/{postId}/check/{userId}",
-    {
-      params: {
-        path: {
-          postId,
-          userId,
-        },
-      },
+export const useCheckLiked = (postId: number, _userId?: number, enabled = true) =>
+  useQuery({
+    queryKey: ["postLiked", postId, _userId],
+    queryFn: async () => {
+      const res = await postManager.checkLiked(postId);
+      return res.data ?? false;
     },
-    {
-      enabled: enabled && postId > 0 && userId > 0,
-    }
-  );
-export const useUnlikePost = () => $api.useMutation("delete", "/api/posts/likes/{postId}/{userId}");
+    enabled: enabled && postId > 0,
+  });
+export const useUnlikePost = () =>
+  useMutation({
+    mutationFn: async (payload: MutationPayload<{ postId: number }>) => {
+      const body = getMutationBody(payload);
+      const postId =
+        body.postId ??
+        Number((payload as { params?: { path?: { postId?: number } } }).params?.path?.postId);
+      const response = await postManager.unlikePost(postId);
+      if (!response.success) throw new Error(response.error);
+      return response.data;
+    },
+  });
 export const usePublishedPosts = () => $api.useQuery("get", "/api/posts/published");
 export const useChangePostStatus = () =>
   $api.useMutation("get", "/api/posts/change-status/{postId}");

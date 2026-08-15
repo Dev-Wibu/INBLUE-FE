@@ -311,8 +311,8 @@ export const API_ENDPOINTS = {
   // POST /api/posts/likes - likePost
   // GET /api/posts/likes/{postId} - getLikesByPostId
   // GET /api/posts/likes/{postId}/count - countLikes
-  // GET /api/posts/likes/{postId}/check/{userId} - checkLiked
-  // DELETE /api/posts/likes/{postId}/{userId} - unlikePost
+  // GET /api/posts/likes/{postId}/check - checkLiked
+  // DELETE /api/posts/likes/{postId} - unlikePost
   POSTS: {
     LIST: "/api/posts",
     DETAIL: "/api/posts/:postId",
@@ -331,8 +331,8 @@ export const API_ENDPOINTS = {
     LIKE: "/api/posts/likes",
     LIKES_BY_POST: "/api/posts/likes/:postId",
     LIKES_COUNT: "/api/posts/likes/:postId/count",
-    CHECK_LIKED: "/api/posts/likes/:postId/check/:userId",
-    UNLIKE: "/api/posts/likes/:postId/:userId",
+    CHECK_LIKED: "/api/posts/likes/:postId/check",
+    UNLIKE: "/api/posts/likes/:postId",
   },
 
   // Companies endpoints - Based on schema-from-be.d.ts
@@ -468,8 +468,6 @@ const PUBLIC_GET_ENDPOINTS = new Set<string>([
 const PUBLIC_GET_ENDPOINT_PATTERNS: RegExp[] = [
   // GET /api/posts/{postId} - get individual post
   /^\/api\/posts\/[^/]+$/,
-  // GET /api/posts/likes/{postId}/check/{userId} - check if user liked post
-  /^\/api\/posts\/likes\/[^/]+\/check\/[^/]+$/,
   // Any GET to /api/posts/* (including /api/posts/published)
   /^\/api\/posts/,
 ];
@@ -535,6 +533,10 @@ export const isPublicAuthRequest = (url?: string, method?: string): boolean => {
   const normalizedMethod = (method || "get").toLowerCase();
   const requestPath = normalizeRequestPath(url);
   if (!requestPath) {
+    return false;
+  }
+
+  if (normalizedMethod === "get" && /^\/api\/posts\/likes\/[^/]+\/check$/.test(requestPath)) {
     return false;
   }
 

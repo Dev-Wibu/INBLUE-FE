@@ -30,7 +30,10 @@ export function LikeButton({
   const { data: countData } = usePostLikesCount(postId, externalLikeCount === undefined);
   const likeMutation = useLikePost();
   const unlikeMutation = useUnlikePost();
-  const rawLiked = Object.values(likedData ?? {})[0] as string | boolean | undefined;
+  const rawLiked =
+    typeof likedData === "boolean"
+      ? likedData
+      : (Object.values(likedData ?? {})[0] as string | boolean | undefined);
   const liked = rawLiked === true || rawLiked === "true";
   const count = externalLikeCount !== undefined ? externalLikeCount : (countData ?? 0);
   const [optimisticLiked, setOptimisticLiked] = useState<boolean | null>(null);
@@ -39,18 +42,7 @@ export function LikeButton({
   const likeCount = optimisticCount !== null ? optimisticCount : count;
   const invalidateQueries = () => {
     queryClient.invalidateQueries({
-      queryKey: [
-        "get",
-        "/api/posts/likes/{postId}/check/{userId}",
-        {
-          params: {
-            path: {
-              postId,
-              userId: numericUserId,
-            },
-          },
-        },
-      ],
+      queryKey: ["postLiked", postId, numericUserId],
     });
     queryClient.invalidateQueries({
       queryKey: [
@@ -75,7 +67,6 @@ export function LikeButton({
           params: {
             path: {
               postId,
-              userId: numericUserId,
             },
           },
         } as never,
@@ -100,7 +91,6 @@ export function LikeButton({
         {
           body: {
             postId,
-            userId: numericUserId,
           },
         } as never,
         {

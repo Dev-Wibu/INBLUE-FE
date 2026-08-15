@@ -13,10 +13,8 @@ import {
 } from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import type { PostStatus } from "@/interfaces/schema.types";
 import { postManager } from "@/services/post.manager";
-import { useAuthStore } from "@/stores/authStore";
 import { Upload, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,8 +26,6 @@ interface PostEditFormProps {
 }
 export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps) {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
-  const { data: currentMentorProfile } = useCurrentMentorProfile();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
@@ -100,23 +96,12 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
       return;
     }
     const finalTags = tagInput.trim() ? [...tags, tagInput.trim()] : tags;
-    const authorId =
-      user?.role === "MENTOR" && currentMentorProfile?.id != null
-        ? typeof currentMentorProfile.id === "string"
-          ? parseInt(currentMentorProfile.id, 10)
-          : currentMentorProfile.id
-        : typeof user?.id === "number"
-          ? user.id
-          : user?.id != null
-            ? parseInt(String(user.id), 10)
-            : undefined;
     setSubmitting(true);
     try {
       const result = await postManager.updatePost(postId, {
         title: title.trim(),
         content: content.trim() || undefined,
         summary: summary.trim() || undefined,
-        authorId,
         tags: finalTags.length > 0 ? finalTags : undefined,
         status,
         coverImg: coverFile ?? undefined,
