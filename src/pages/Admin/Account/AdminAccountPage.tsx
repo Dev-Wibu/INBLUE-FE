@@ -88,8 +88,8 @@ export function AdminAccountPage() {
         });
         setName(authUser.name || "");
       }
-    } catch (error) {
-      console.error("Error fetching admin profile:", error);
+    } catch {
+      // Intentionally ignored.
     } finally {
       setIsLoading(false);
     }

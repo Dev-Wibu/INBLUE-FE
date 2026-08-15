@@ -56,7 +56,6 @@ export class KioskManager {
         data: (response.data ?? []) as Kiosk[],
       };
     } catch (error) {
-      console.error("[KioskManager] getActiveKiosks error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -84,7 +83,6 @@ export class KioskManager {
         data: response.data as Kiosk,
       };
     } catch (error) {
-      console.error("[KioskManager] createKiosk error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -112,7 +110,6 @@ export class KioskManager {
         data: response.data as Kiosk,
       };
     } catch (error) {
-      console.error("[KioskManager] updateKiosk error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -136,7 +133,6 @@ export class KioskManager {
         data: (response.data ?? []) as KioskSchedule[],
       };
     } catch (error) {
-      console.error("[KioskManager] getSchedulesByKiosk error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -167,7 +163,6 @@ export class KioskManager {
         data: response.data as KioskSchedule,
       };
     } catch (error) {
-      console.error("[KioskManager] createSchedule error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -202,7 +197,6 @@ export class KioskManager {
         data: response.data as KioskSchedule,
       };
     } catch (error) {
-      console.error("[KioskManager] updateSchedule error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -222,7 +216,6 @@ export class KioskManager {
       }
       return { success: true };
     } catch (error) {
-      console.error("[KioskManager] deleteSchedule error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -246,7 +239,6 @@ export class KioskManager {
         data: (response.data ?? []) as SlotDto[],
       };
     } catch (error) {
-      console.error("[KioskManager] getAvailableSlots error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -275,7 +267,6 @@ export class KioskManager {
         data: response.data as MentorInterviewBooking,
       };
     } catch (error) {
-      console.error("[KioskManager] pickSlot error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -300,7 +291,6 @@ export class KioskManager {
       const data = await parseJson(response);
       return { success: true, data: (data ?? null) as MentorInterviewBooking };
     } catch (error) {
-      console.error("[KioskManager] getBooking error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -344,7 +334,6 @@ export class KioskManager {
       }
       return { success: true, data: (data ?? null) as MentorInterviewBooking | null };
     } catch (error) {
-      console.error("[KioskManager] getBookingByApplicationDetail error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -375,7 +364,6 @@ export class KioskManager {
         data: response.data as KioskEnterDtoResponse,
       };
     } catch (error) {
-      console.error("[KioskManager] enterKiosk error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -399,7 +387,6 @@ export class KioskManager {
         data: (response.data ?? []) as KioskHistoryResponseDto[],
       };
     } catch (error) {
-      console.error("[KioskManager] getKioskHistory error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),

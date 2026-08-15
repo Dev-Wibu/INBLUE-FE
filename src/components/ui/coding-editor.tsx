@@ -370,8 +370,7 @@ export const CodingEditor = React.forwardRef<
         } else {
           toast.error(res.error || t("adminCodeReviewProblem.cannotGenerateAutomatically"));
         }
-      } catch (e) {
-        console.error(e);
+      } catch {
         toast.error(t("adminCodeReviewProblem.errorGenerateByAi"));
       } finally {
         setIsGenerating(false);
@@ -434,8 +433,7 @@ export const CodingEditor = React.forwardRef<
           toast.error(res.error || t("adminCodeReviewProblem.cannotSaveProblem"));
           return false;
         }
-      } catch (e) {
-        console.error(e);
+      } catch {
         toast.error(t("adminCodeReviewProblem.errorSaveProblem"));
         return false;
       }
@@ -454,8 +452,7 @@ export const CodingEditor = React.forwardRef<
         } else {
           toast.error(res.error || t("adminCodingProblem.cannotLoadList"));
         }
-      } catch (e) {
-        console.error(e);
+      } catch {
         toast.error(t("adminCodeReviewProblem.errorLoadList"));
       } finally {
         setIsLoadingBank(false);

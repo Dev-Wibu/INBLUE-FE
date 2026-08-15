@@ -343,8 +343,8 @@ export function CompanySearchPage() {
                     : (jobsRes.data as { data?: JobDescription[] }).data || [];
                   return { ...c, jobDescriptions: jobs };
                 }
-              } catch (err) {
-                console.error("[CompanySearchPage] Error fetching jobs for company", c.id, err);
+              } catch {
+                // Intentionally ignored.
               }
             }
             return c;
@@ -356,8 +356,7 @@ export function CompanySearchPage() {
         setHasError(true);
         setCompanies([]);
       }
-    } catch (err) {
-      console.error("[CompanySearchPage] Search error:", err);
+    } catch {
       setHasError(true);
       setCompanies([]);
     } finally {

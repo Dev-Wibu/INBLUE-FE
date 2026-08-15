@@ -160,8 +160,7 @@ export function QuestionBankManagementPage() {
       if (catRes.success && catRes.data) {
         setCategories(extractDataArray(catRes as unknown as ApiResponse<QuestionCategory[]>));
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error(t("common.unableToDownloadData"));
     } finally {
       setIsLoading(false);

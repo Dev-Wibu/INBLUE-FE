@@ -278,9 +278,7 @@ export function CodeReviewModule({
         });
         setFetchedProblems(loaded);
       })
-      .catch((err) => {
-        console.error("Failed to load full code review problems", err);
-      })
+      .catch(() => undefined)
       .finally(() => {
         if (isMounted) setIsLoadingProblems(false);
       });
@@ -599,7 +597,6 @@ export function CodeReviewModule({
 
       onSuccess?.();
     } catch (err) {
-      console.error("[CodeReviewModule] Submit error:", err);
       const message =
         err instanceof Error ? err.message : t("userApplication.codeReview.submitFailedHint");
       toast.error(message);

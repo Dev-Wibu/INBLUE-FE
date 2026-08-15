@@ -109,7 +109,6 @@ export class ApplicationDetailManager {
         data: response.data as SubmissionResult,
       };
     } catch (error) {
-      console.error("[ApplicationDetailManager] submit error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -159,7 +158,7 @@ export class ApplicationDetailManager {
           data: undefined as unknown as ApplicationDetail,
         };
       }
-      console.error("[ApplicationDetailManager] hrScore error:", error);
+
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -190,7 +189,6 @@ export class ApplicationDetailManager {
         data: list,
       };
     } catch (error) {
-      console.error("[ApplicationDetailManager] getByApplicationId error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -212,7 +210,6 @@ export class ApplicationDetailManager {
         data: response.data as ApplicationDetail,
       };
     } catch (error) {
-      console.error("[ApplicationDetailManager] getById error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -243,7 +240,6 @@ export class ApplicationDetailManager {
         data: response.data as SubmissionResult,
       };
     } catch (error) {
-      console.error("[ApplicationDetailManager] submitCodeReview error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -269,7 +265,6 @@ export class ApplicationDetailManager {
         data: list,
       };
     } catch (error) {
-      console.error("[ApplicationDetailManager] getForReviewer error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -297,7 +292,6 @@ export class ApplicationDetailManager {
         data: response.data as ApplicationDetail,
       };
     } catch (error) {
-      console.error("[ApplicationDetailManager] assignMentor error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -326,7 +320,6 @@ export class ApplicationDetailManager {
         data: response.data as ApplicationDetail,
       };
     } catch (error) {
-      console.error("[ApplicationDetailManager] assignMentors error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -349,7 +342,6 @@ export class ApplicationDetailManager {
         data: response.data as unknown[],
       };
     } catch (error) {
-      console.error("[ApplicationDetailManager] getAssignedMentors error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -377,7 +369,6 @@ export class ApplicationDetailManager {
         data: response.data as ApplicationDetail,
       };
     } catch (error) {
-      console.error("[ApplicationDetailManager] selectMentor error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),

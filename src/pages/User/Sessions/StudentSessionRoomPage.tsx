@@ -173,12 +173,7 @@ export function StudentSessionRoomPage() {
   //   matches how BE has historically distinguished the two flows.
   const handleJoined = async (participantId: string) => {
     if (hasJoinedTracking || !session?.roomName || !user?.id) return;
-    console.log("[StudentSessionRoomPage] handleJoined", {
-      sessionName: session.roomName,
-      userId: user.id,
-      participantId,
-      isMentor: false,
-    });
+
     try {
       await joinSessionMutation.mutateAsync({
         sessionName: session.roomName,
@@ -187,9 +182,7 @@ export function StudentSessionRoomPage() {
         mentor: false,
         isMentor: false,
       });
-      console.log("[StudentSessionRoomPage] join-session SUCCESS");
-    } catch (err) {
-      console.error("[StudentSessionRoomPage] join-session FAILED", err);
+    } catch {
       // mutation toast handles errors; we still want to record that we tried
     }
     queryClient.invalidateQueries({
@@ -236,12 +229,9 @@ export function StudentSessionRoomPage() {
     navigate("/user?tab=applicationHistory");
   };
 
-  const handleError = (errorMessage: string) => {
-    console.error("[StudentSessionRoomPage] video call error:", errorMessage);
-  };
+  const handleError = () => undefined;
 
-  const handleRoomUnavailable = (reason: string) => {
-    console.warn("[StudentSessionRoomPage] room-unavailable, refetching", { reason });
+  const handleRoomUnavailable = () => {
     void refetchSession();
   };
 
@@ -336,7 +326,6 @@ export function StudentSessionRoomPage() {
             variant="ghost"
             size="sm"
             onClick={() => {
-              console.log("[StudentSessionRoomPage] Back clicked, navigating to /user/sessions");
               navigate("/user?tab=applicationHistory");
             }}
             className="gap-2">

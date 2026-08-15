@@ -1,10 +1,7 @@
 import { API_BASE_URL } from "@/constants/api.config";
-import i18n from "@/lib/i18n";
 import { useAuthStore } from "@/stores/authStore";
 import { Client, type Message } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-
-const t = i18n.t.bind(i18n);
 
 export type SocketConnectionState = "connecting" | "connected" | "disconnected";
 
@@ -37,15 +34,14 @@ class SocketService {
     this.stompClient = new Client({
       webSocketFactory: () => new SockJS(socketUrl),
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
-      debug: (str) => console.log("STOMP: " + str),
+      debug: () => undefined,
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
 
-    this.stompClient.onConnect = (frame) => {
+    this.stompClient.onConnect = () => {
       this.setConnectionState("connected");
-      console.log("Connected to STOMP: " + frame);
 
       const subUserId = this.currentUserId || userId;
       const topics = [`/user/${subUserId}/queue/messages`, `/user/${subUserId}/topic/messages`];
@@ -55,27 +51,24 @@ class SocketService {
           if (message.body && this.onMessageReceived) {
             try {
               this.onMessageReceived(JSON.parse(message.body));
-            } catch (e) {
-              console.error("STOMP parse error", e);
+            } catch {
+              // Intentionally ignored.
             }
           }
         });
       });
     };
 
-    this.stompClient.onStompError = (frame) => {
+    this.stompClient.onStompError = () => {
       this.setConnectionState("disconnected");
-      console.error("STOMP broker error", frame.headers["message"], frame.body);
     };
 
-    this.stompClient.onWebSocketClose = (event) => {
+    this.stompClient.onWebSocketClose = () => {
       this.setConnectionState("disconnected");
-      console.warn("WebSocket closed", event.code);
     };
 
-    this.stompClient.onWebSocketError = (event) => {
+    this.stompClient.onWebSocketError = () => {
       this.setConnectionState("disconnected");
-      console.error("WebSocket error", event);
     };
 
     this.stompClient.onDisconnect = () => {
@@ -117,7 +110,6 @@ class SocketService {
     }
 
     if (!this.stompClient?.connected) {
-      console.warn("Socket not connected, activating...");
       this.setConnectionState("connecting");
       if (!this.stompClient?.active) {
         this.stompClient?.activate();
@@ -137,16 +129,13 @@ class SocketService {
       content: content,
     };
 
-    console.log("DEBUG: Sending Payload:", chatDto);
-
     try {
       this.stompClient.publish({
         destination: "/app/chat",
         body: JSON.stringify(chatDto),
       });
       return true;
-    } catch (error) {
-      console.error(t("general.cannotSendMessage"), error);
+    } catch {
       this.setConnectionState("disconnected");
       return false;
     }
@@ -156,7 +145,6 @@ class SocketService {
     if (this.stompClient) {
       this.stompClient.deactivate();
       this.setConnectionState("disconnected");
-      console.log("Disconnected from STOMP");
     }
   }
 

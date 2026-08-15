@@ -531,7 +531,6 @@ export function CodingModule({
         })
       );
     } catch (err) {
-      console.error("[CodingModule] Run sample error:", err);
       toast.error(err instanceof Error ? err.message : t("userApplication.coding.runSampleFailed"));
     } finally {
       setRunningId(null);
@@ -615,7 +614,6 @@ export function CodingModule({
       );
       onSuccess?.();
     } catch (err) {
-      console.error("[CodingModule] Submit error:", err);
       toast.error(err instanceof Error ? err.message : t("userApplication.coding.submitFailed"));
     } finally {
       setSubmitting(false);

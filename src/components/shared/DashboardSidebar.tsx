@@ -214,8 +214,7 @@ export function DashboardSidebar({
       setIsMobileOpen(false);
       toast.success(t("common.loggedOutSuccessfully"));
       navigate("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
+    } catch {
       clearAuth();
       setIsMobileOpen(false);
       navigate("/login");

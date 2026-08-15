@@ -87,8 +87,7 @@ export function KioskBookingManagementPage() {
         if (mentorsRes.success && mentorsRes.data) {
           setMentors(mentorsRes.data);
         }
-      } catch (error) {
-        console.error("Error loading data:", error);
+      } catch {
         toast.error(t("adminKiosk.unableToLoadBookings"));
       } finally {
         setIsInitialLoading(false);
@@ -153,8 +152,7 @@ export function KioskBookingManagementPage() {
       } else {
         toast.error(response.error || t("adminKiosk.unableToAssignMentor"));
       }
-    } catch (error) {
-      console.error("Error assigning mentor:", error);
+    } catch {
       toast.error(t("adminKiosk.unableToAssignMentor"));
     } finally {
       setIsAssigning(false);

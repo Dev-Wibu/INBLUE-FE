@@ -330,8 +330,7 @@ export function JobSearchPage() {
           });
 
         setJobs(enriched);
-      } catch (err) {
-        console.error("[JobSearchPage] Failed to load jobs:", err);
+      } catch {
         if (isMounted) setIsError(true);
       } finally {
         if (isMounted) setIsLoading(false);

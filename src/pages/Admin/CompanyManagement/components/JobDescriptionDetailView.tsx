@@ -321,8 +321,7 @@ export function JobDescriptionDetailView({
       } else {
         toast.error(res.error || t("errors.cannotUpdateJobDescription", "Cập nhật thất bại"));
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error(t("errors.cannotUpdateJobDescription", "Cập nhật thất bại"));
     } finally {
       setIsSavingJd(false);
@@ -454,7 +453,6 @@ export function JobDescriptionDetailView({
         throw new Error();
       }
     } catch (err) {
-      console.error(err);
       toast.error(t("errors.cannotUpdateInterviewRounds"));
       throw err;
     } finally {
@@ -524,8 +522,7 @@ export function JobDescriptionDetailView({
       } else {
         toast.error(res.error || t("errors.cannotUpdateInterviewRounds"));
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error(t("errors.cannotUpdateInterviewRounds"));
     } finally {
       setIsSaving(false);

@@ -510,7 +510,6 @@ export class AuthManager {
         data: payload,
       };
     } catch (error) {
-      console.error("Login error:", error);
       return {
         success: false,
         error: getNormalizedErrorMessage(error, t("common.loginFailed")),
@@ -694,7 +693,6 @@ export class AuthManager {
         },
       };
     } catch (error) {
-      console.error("Signup error:", error);
       return {
         success: false,
         error: getNormalizedErrorMessage(error, t("common.registrationFailed")),
@@ -890,7 +888,6 @@ export class AuthManager {
         },
       };
     } catch (error) {
-      console.error("Mentor registration error:", error);
       const response = isRecord(error) && isRecord(error.response) ? error.response : undefined;
       const status = typeof response?.status === "number" ? response.status : undefined;
       const payload = response?.data;

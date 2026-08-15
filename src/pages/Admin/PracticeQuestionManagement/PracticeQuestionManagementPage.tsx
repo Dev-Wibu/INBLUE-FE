@@ -101,8 +101,7 @@ export function PracticeQuestionManagementPage() {
           const arr = Array.isArray(raw) ? raw : "data" in raw ? raw.data : [];
           setCategories(arr as QuestionCategory[]);
         }
-      } catch (error) {
-        console.error("Error loading data:", error);
+      } catch {
         toast.error(t("common.unableToDownloadData"));
       } finally {
         if (showReloading) {
@@ -198,8 +197,7 @@ export function PracticeQuestionManagementPage() {
       } else {
         toast.error(response.error || t("common.cannotCreateQuestion"));
       }
-    } catch (error) {
-      console.error("Error creating question:", error);
+    } catch {
       toast.error(t("common.cannotCreateQuestion"));
     }
   };
@@ -233,8 +231,7 @@ export function PracticeQuestionManagementPage() {
       } else {
         toast.error(response.error || t("common.unableToUpdateQuestion"));
       }
-    } catch (error) {
-      console.error("Error updating question:", error);
+    } catch {
       toast.error(t("common.unableToUpdateQuestion"));
     }
   };
@@ -249,8 +246,7 @@ export function PracticeQuestionManagementPage() {
       } else {
         toast.error(response.error || t("common.questionCannotBeDeleted"));
       }
-    } catch (error) {
-      console.error("Error deleting question:", error);
+    } catch {
       toast.error(t("common.questionCannotBeDeleted"));
     }
   };

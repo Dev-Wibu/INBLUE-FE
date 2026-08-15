@@ -776,11 +776,10 @@ export function HoloboxExperienceRobotPreviewPage({
         viewport.dataset.modelState = "ready";
         viewport.setAttribute("aria-busy", "false");
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         if (disposed) return;
         viewport.dataset.modelState = "error";
         viewport.setAttribute("aria-busy", "false");
-        console.error("Unable to load the Experience Day robot model.", error);
       });
 
     const shadowTexture = createSoftShadowTexture(0.76, 0.34);
@@ -932,10 +931,9 @@ export function HoloboxExperienceRobotPreviewPage({
         }
         await audio.play();
         setSpeaking(true);
-      } catch (error) {
+      } catch {
         narrationActivatedByRobot = false;
         motionState = "idle";
-        console.error("Unable to play the Holobox narration audio.", error);
       }
     };
     audio.addEventListener("ended", () => {

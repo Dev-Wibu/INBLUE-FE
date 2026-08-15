@@ -15,17 +15,26 @@ import { mentorManager } from "./mentor.manager";
 
 const mockGet = fetchClient.GET as ReturnType<typeof vi.fn>;
 const mockPost = fetchClient.POST as ReturnType<typeof vi.fn>;
+const mockPut = fetchClient.PUT as ReturnType<typeof vi.fn>;
 
-// Capture the JSON payload that the update implementation logs via
-// `console.log("Update mentor payload:", ...)` — used by the password-preservation
-// tests below since Node FormData doesn't expose the underlying Blob bytes
-// the way the browser does.
-const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+async function readLastUpdatePayload(): Promise<Record<string, unknown>> {
+  const request = mockPut.mock.calls.at(-1)?.[1] as { body?: FormData } | undefined;
+  const dataPart = request?.body?.get("data");
+  if (!(dataPart instanceof Blob)) {
+    throw new Error("Expected mentor update payload to contain a JSON Blob");
+  }
+  const json = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(String(reader.result ?? "")));
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.readAsText(dataPart);
+  });
+  return JSON.parse(json) as Record<string, unknown>;
+}
 
 describe("MentorManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    logSpy.mockClear();
   });
 
   describe("getAll", () => {
@@ -209,14 +218,14 @@ describe("MentorManager", () => {
         active: true,
       };
       mockGet.mockResolvedValueOnce({ data: existing });
-      mockPost.mockResolvedValueOnce({ data: { id: 1, name: "New" } });
+      mockPut.mockResolvedValueOnce({ data: { id: 1, name: "New" } });
 
       const result = await mentorManager.update(1, { name: "New" });
 
       expect(result.success).toBe(true);
       expect(mockGet).toHaveBeenCalledTimes(1); // getById
-      expect(mockPost).toHaveBeenCalledWith(
-        "/api/mentors",
+      expect(mockPut).toHaveBeenCalledWith(
+        "/api/mentors/1",
         expect.objectContaining({ body: expect.any(FormData) })
       );
     });
@@ -227,17 +236,13 @@ describe("MentorManager", () => {
       // GET endpoint returned.
       const existing = { id: 1, name: "M", email: "e@t.com", password: "$2a$10$hash" };
       mockGet.mockResolvedValueOnce({ data: existing });
-      mockPost.mockResolvedValueOnce({ data: { id: 1 } });
+      mockPut.mockResolvedValueOnce({ data: { id: 1 } });
 
       await mentorManager.update(1, { name: "Updated" });
 
-      expect(mockPost).toHaveBeenCalledTimes(1);
+      expect(mockPut).toHaveBeenCalledTimes(1);
 
-      // Read the JSON payload via the `console.log` spy in the implementation.
-      // (Node test env FormData stores Blob with toString -> "[object File]".)
-      const lastLogCall = logSpy.mock.calls.at(-1);
-      const lastPayloadArg = lastLogCall?.[1] as string | undefined;
-      const parsed = JSON.parse(lastPayloadArg ?? "{}");
+      const parsed = await readLastUpdatePayload();
       expect(parsed.password).toBe("$2a$10$hash");
       expect(parsed.name).toBe("Updated");
     });
@@ -247,49 +252,47 @@ describe("MentorManager", () => {
       // payload must not invent one — we have nothing safe to send.
       const existing = { id: 1, name: "M", email: "e@t.com" };
       mockGet.mockResolvedValueOnce({ data: existing });
-      mockPost.mockResolvedValueOnce({ data: { id: 1 } });
+      mockPut.mockResolvedValueOnce({ data: { id: 1 } });
 
       await mentorManager.update(1, { name: "Updated" });
 
-      const lastLogCall = logSpy.mock.calls.at(-1);
-      const lastPayloadArg = lastLogCall?.[1] as string | undefined;
-      const parsed = JSON.parse(lastPayloadArg ?? "{}");
+      const parsed = await readLastUpdatePayload();
       expect(parsed).not.toHaveProperty("password");
     });
 
     it("preserves active field from _data when provided", async () => {
       const existing = { id: 1, name: "M", email: "e@t.com", active: false };
       mockGet.mockResolvedValueOnce({ data: existing });
-      mockPost.mockResolvedValueOnce({ data: { id: 1 } });
+      mockPut.mockResolvedValueOnce({ data: { id: 1 } });
 
       await mentorManager.update(1, { name: "M", active: true });
 
-      expect(mockPost).toHaveBeenCalledTimes(1);
+      expect(mockPut).toHaveBeenCalledTimes(1);
     });
 
     it("falls back to existing active when _data.active is not set", async () => {
       const existing = { id: 1, name: "M", email: "e@t.com", active: true };
       mockGet.mockResolvedValueOnce({ data: existing });
-      mockPost.mockResolvedValueOnce({ data: { id: 1 } });
+      mockPut.mockResolvedValueOnce({ data: { id: 1 } });
 
       await mentorManager.update(1, { name: "M" });
 
-      expect(mockPost).toHaveBeenCalledTimes(1);
+      expect(mockPut).toHaveBeenCalledTimes(1);
     });
 
     it("proceeds when getById fails (ignores fetch error)", async () => {
       mockGet.mockRejectedValueOnce(new Error("Not found"));
-      mockPost.mockResolvedValueOnce({ data: { id: 1 } });
+      mockPut.mockResolvedValueOnce({ data: { id: 1 } });
 
       const result = await mentorManager.update(1, { name: "New", email: "n@t.com" });
 
       expect(result.success).toBe(true);
-      expect(mockPost).toHaveBeenCalledTimes(1);
+      expect(mockPut).toHaveBeenCalledTimes(1);
     });
 
-    it("returns error on POST failure", async () => {
+    it("returns error on PUT failure", async () => {
       mockGet.mockResolvedValueOnce({ data: { id: 1 } });
-      mockPost.mockRejectedValueOnce(new Error("Update failed"));
+      mockPut.mockRejectedValueOnce(new Error("Update failed"));
 
       const result = await mentorManager.update(1, { name: "X" });
 
@@ -299,7 +302,7 @@ describe("MentorManager", () => {
 
     it("returns i18n fallback for non-Error throws", async () => {
       mockGet.mockResolvedValueOnce({ data: { id: 1 } });
-      mockPost.mockRejectedValueOnce("string error");
+      mockPut.mockRejectedValueOnce("string error");
 
       const result = await mentorManager.update(1, { name: "X" });
 

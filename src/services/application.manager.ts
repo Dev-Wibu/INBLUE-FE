@@ -73,7 +73,6 @@ class ApplicationService {
         data: response.data,
       };
     } catch (error) {
-      console.error("[ApplicationService] Apply error:", error);
       const message = this.extractErrorMessage(error);
       return {
         success: false,
@@ -99,7 +98,6 @@ class ApplicationService {
         data: response.data,
       };
     } catch (error) {
-      console.error("[ApplicationService] GetAll error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -131,7 +129,6 @@ class ApplicationService {
         data: response.data,
       };
     } catch (error) {
-      console.error("[ApplicationService] GetById error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
@@ -156,7 +153,6 @@ class ApplicationService {
         data: response.data,
       };
     } catch (error) {
-      console.warn("[ApplicationService] getMyApplications /me failed, trying fallback:", error);
       const errorStatus =
         (error as { status?: number }).status ??
         (error as { response?: { status?: number } }).response?.status;
@@ -169,21 +165,11 @@ class ApplicationService {
             const { useAuthStore } = await import("@/stores/authStore");
             const currentUserId = useAuthStore.getState().user?.id;
             const filtered = (all as Application[]).filter((a) => a.userId === currentUserId);
-            console.log(
-              "[ApplicationService] getMyApplications fallback: fetched",
-              all.length,
-              "apps, filtered to",
-              filtered.length,
-              "for userId",
-              currentUserId
-            );
+
             return { success: true, data: filtered };
           }
-        } catch (fallbackError) {
-          console.error(
-            "[ApplicationService] getMyApplications fallback also failed:",
-            fallbackError
-          );
+        } catch {
+          // Intentionally ignored.
         }
       }
       return {

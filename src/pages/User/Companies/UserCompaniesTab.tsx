@@ -217,8 +217,8 @@ export function UserCompaniesTab() {
                       : (jobsRes.data as { data?: JobDescription[] }).data || [];
                     return { ...c, jobDescriptions: jobs };
                   }
-                } catch (err) {
-                  console.error("[UserCompaniesTab] Error fetching jobs for company", c.id, err);
+                } catch {
+                  // Intentionally ignored.
                 }
               }
               return c;
@@ -227,8 +227,8 @@ export function UserCompaniesTab() {
 
           setCompanies(list);
         }
-      } catch (err) {
-        console.error("[UserCompaniesTab] Error fetching companies:", err);
+      } catch {
+        // Intentionally ignored.
       } finally {
         setIsLoading(false);
       }

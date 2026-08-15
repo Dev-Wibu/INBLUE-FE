@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 import { withTranslation, type WithTranslation } from "react-i18next";
 
 interface Props {
@@ -24,10 +24,6 @@ class ErrorBoundaryInner extends Component<Props & WithTranslation, State> {
       hasError: true,
       error,
     };
-  }
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ErrorBoundary caught:", error, errorInfo);
-    // Future: Send to monitoring service (Sentry, etc.)
   }
   render() {
     if (this.state.hasError) {

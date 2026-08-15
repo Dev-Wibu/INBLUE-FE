@@ -63,8 +63,7 @@ export function PracticeSetManagementPage() {
         if (majorsResponse.success) {
           setMajors(extractDataArray<Major>(majorsResponse));
         }
-      } catch (error) {
-        console.error("Error loading data:", error);
+      } catch {
         toast.error(t("common.unableToDownloadData"));
       } finally {
         if (showReloading) {
@@ -163,8 +162,7 @@ export function PracticeSetManagementPage() {
       } else {
         toast.error(response.error || t("adminPracticesetmanagement.unableToCreateQuestionSet"));
       }
-    } catch (error) {
-      console.error("Error creating practice set:", error);
+    } catch {
       toast.error(t("adminPracticesetmanagement.unableToCreateQuestionSet"));
     } finally {
       setIsSubmitting(false);
@@ -191,8 +189,7 @@ export function PracticeSetManagementPage() {
       } else {
         toast.error(response.error || t("adminPracticesetmanagement.unableToUpdateQuestionSet"));
       }
-    } catch (error) {
-      console.error("Error updating practice set:", error);
+    } catch {
       toast.error(t("adminPracticesetmanagement.unableToUpdateQuestionSet"));
     }
   };
@@ -207,8 +204,7 @@ export function PracticeSetManagementPage() {
       } else {
         toast.error(response.error || t("adminPracticesetmanagement.cannotDeleteQuestionSet"));
       }
-    } catch (error) {
-      console.error("Error deleting practice set:", error);
+    } catch {
       toast.error(t("adminPracticesetmanagement.cannotDeleteQuestionSet"));
     }
   };

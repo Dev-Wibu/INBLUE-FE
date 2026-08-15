@@ -93,14 +93,14 @@ export const useAuthStore = create<AuthState>()(
           .then(({ queryClient: client }) => {
             client.clear();
           })
-          .catch(console.error);
+          .catch(() => undefined);
 
         // Disconnect socket using dynamic import to avoid circular dependency
         import("@/services/socket.manager")
           .then(({ socketService }) => {
             socketService.disconnect();
           })
-          .catch(console.error);
+          .catch(() => undefined);
 
         set({
           isLoggedIn: false,

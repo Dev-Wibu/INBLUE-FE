@@ -436,8 +436,8 @@ export function QuizModule({
       });
       toast.success(t("userApplication.quiz.submitSuccess"));
       onSuccess?.();
-    } catch (err) {
-      console.error("[QuizModule] Submit error:", err);
+    } catch {
+      // Intentionally ignored.
     }
   }, [applicationId, questions, selectedAnswers, submitMutation, onSuccess, t]);
 

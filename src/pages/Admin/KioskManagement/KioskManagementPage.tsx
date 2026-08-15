@@ -69,8 +69,7 @@ export function KioskManagementPage() {
       setKiosks(
         raw.map((kiosk) => ({ ...kiosk, scheduleCount: countMap.get(kiosk.id ?? null) ?? 0 }))
       );
-    } catch (error) {
-      console.error("Error loading kiosks:", error);
+    } catch {
       toast.error(t("adminKioskManagement.unableToLoadKiosks"));
     } finally {
       setIsInitialLoading(false);
@@ -113,8 +112,7 @@ export function KioskManagementPage() {
       } else {
         toast.error(result.error || t("common.unableToSave"));
       }
-    } catch (error) {
-      console.error("Error saving kiosk:", error);
+    } catch {
       toast.error(t("common.unableToSave"));
     } finally {
       setIsSubmitting(false);
@@ -132,8 +130,7 @@ export function KioskManagementPage() {
       });
       if (result.success) await loadData();
       else toast.error(result.error || t("adminKioskManagement.unableToUpdateKiosk"));
-    } catch (error) {
-      console.error("Error toggling kiosk:", error);
+    } catch {
       toast.error(t("common.unableToSave"));
     }
   };

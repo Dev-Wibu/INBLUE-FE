@@ -250,8 +250,8 @@ export function JobSearchTab() {
         const validJobs = result.data.filter((job) => !job.isDeleted && job.status === "OPEN");
         setJobs(validJobs);
       }
-    } catch (error) {
-      console.error("Failed to fetch jobs:", error);
+    } catch {
+      // Intentionally ignored.
     } finally {
       setIsLoading(false);
     }

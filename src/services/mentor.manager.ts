@@ -283,7 +283,6 @@ export class MentorManager implements BaseManager<Mentor> {
       if (typeof existingPassword === "string" && existingPassword.length > 0) {
         mentorInfo.password = existingPassword;
       }
-      console.log("Update mentor payload:", JSON.stringify(mentorInfo, null, 2));
 
       // Append the 'data' field as a Blob with application/json content type
       // This matches the curl format: --form 'data="...";type=application/json'
@@ -323,16 +322,6 @@ export class MentorManager implements BaseManager<Mentor> {
         data: response.data,
       };
     } catch (error) {
-      console.error("Update mentor error:", error);
-      // Log full error response for debugging
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as {
-          response?: {
-            data?: unknown;
-          };
-        };
-        console.error("Backend error response:", axiosError.response?.data);
-      }
       return {
         success: false,
         error: error instanceof Error ? error.message : t("common.unableToUpdateMentor"),

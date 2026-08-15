@@ -382,8 +382,7 @@ export function ApplicationWorkspacePage() {
             : [];
         setDetailsData(list);
       }
-    } catch (err) {
-      console.error("[Workspace] Failed to load data:", err);
+    } catch {
       toast.error(t("userApplicationhistory.workspaceLoadError"));
     } finally {
       setLoading(false);

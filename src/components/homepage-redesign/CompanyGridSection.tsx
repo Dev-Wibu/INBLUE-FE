@@ -59,8 +59,8 @@ export function CompanyGridSection() {
       try {
         const result = await companyManager.getAll();
         if (result.success) setCompanies(normalizeCompanies(result.data));
-      } catch (err) {
-        console.error("[CompanyGridSection] Fetch error:", err);
+      } catch {
+        // Intentionally ignored.
       } finally {
         setIsLoading(false);
       }

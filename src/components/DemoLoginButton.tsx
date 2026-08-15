@@ -70,7 +70,6 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
       setTimeout(() => setCopiedField(null), 2000);
     } catch {
       // Fallback for browsers that don't support clipboard API
-      console.log("Failed to copy to clipboard");
     }
   };
 

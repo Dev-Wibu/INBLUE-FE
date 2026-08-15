@@ -136,8 +136,7 @@ export function KioskSlotsPage() {
           setApplicationDetails(details);
         }
       })
-      .catch((err) => {
-        console.error("[KioskSlotsPage] load application details error:", err);
+      .catch(() => {
         if (!cancelled) {
           setApplicationDetails([]);
         }

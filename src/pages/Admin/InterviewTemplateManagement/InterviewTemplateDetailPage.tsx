@@ -201,7 +201,6 @@ export function InterviewTemplateDetailPage() {
         throw new Error();
       }
     } catch (err) {
-      console.error(err);
       toast.error(t("adminCompanymanagement.errorOccurredWhileSavingTemplate"));
       throw err;
     } finally {

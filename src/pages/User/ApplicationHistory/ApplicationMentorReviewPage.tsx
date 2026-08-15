@@ -139,15 +139,10 @@ function bookingStatusFromDetail(
 // We use this for polling because `GET /api/mentor-bookings/{id}` is only
 // available as DELETE on the BE side (controller doesn't expose GET).
 async function fetchApplicationDetail(detailId: number): Promise<ApplicationDetail> {
-  try {
-    const { data } = await fetchClient.GET("/api/application-details/{id}", {
-      params: { path: { id: detailId } },
-    });
-    return (data as ApplicationDetail | undefined) ?? {};
-  } catch (err) {
-    console.error("[MentorReviewPage] fetchApplicationDetail failed:", err);
-    throw err;
-  }
+  const { data } = await fetchClient.GET("/api/application-details/{id}", {
+    params: { path: { id: detailId } },
+  });
+  return (data as ApplicationDetail | undefined) ?? {};
 }
 
 // ============================================================
@@ -1035,14 +1030,6 @@ function ReviewFormStep({
   onSubmitSuccess: () => void;
 }) {
   const { t } = useTranslation();
-  // 2026-07-18: surface prop identity on every mount so we can see whether
-  // the parent rendered the form with complete identity (sessionId + mentorId
-  // + userId) or with holes that would silently kill the POST.
-  console.log("[MentorReviewPage] ReviewFormStep mounted with props", {
-    sessionId,
-    mentorId,
-    userId,
-  });
   const [rating, setRating] = useState<number>(0);
   const [situationNote, setSituationNote] = useState("");
   const [taskNote, setTaskNote] = useState("");
@@ -1061,36 +1048,10 @@ function ReviewFormStep({
       resultNote.trim().length > 0);
 
   const handleSubmit = async () => {
-    // 2026-07-18: verbose logging — student reported "An error has occurred"
-    // with no API call visible. Surface every input + decision so we can see
-    // whether we're bailing out client-side, hitting a 4xx, or getting 0
-    // network activity.
-    console.log("[MentorReviewPage] submit clicked", {
-      sessionId,
-      mentorId,
-      userId,
-      rating,
-      canSubmit,
-      hasComment: !!(
-        situationNote.trim() ||
-        taskNote.trim() ||
-        actionNote.trim() ||
-        resultNote.trim() ||
-        strength.trim() ||
-        weakness.trim() ||
-        improve.trim()
-      ),
-    });
     if (!canSubmit) {
-      console.warn("[MentorReviewPage] submit blocked: canSubmit=false", { rating });
       return;
     }
     if (!sessionId || !mentorId || !userId) {
-      console.error("[MentorReviewPage] submit blocked: missing identity", {
-        sessionId,
-        mentorId,
-        userId,
-      });
       toast.error(t("common.anErrorHasOccurred"));
       return;
     }
@@ -1107,23 +1068,12 @@ function ReviewFormStep({
       ]
         .filter(Boolean)
         .join("\n\n") || undefined;
-    console.log("[MentorReviewPage] POST /api/mentor-feedbacks", {
-      sessionId,
-      mentorId,
-      userId,
-      rating,
-      commentLen: commentText?.length ?? 0,
-    });
+
     try {
       const { response } = await fetchClient.POST("/api/mentor-feedbacks", {
         body: { sessionId, mentorId, userId, rating, comment: commentText },
       });
-      console.log("[MentorReviewPage] POST response", {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url,
-      });
+
       if (!response.ok) {
         let errBody: unknown = null;
         try {
@@ -1135,15 +1085,14 @@ function ReviewFormStep({
             errBody = "<unreadable>";
           }
         }
-        console.error("[MentorReviewPage] POST failed body:", errBody);
+
         const errData = (errBody ?? {}) as { message?: string };
         toast.error(errData?.message ?? t("common.anErrorHasOccurred"));
         return;
       }
       toast.success(t("userApplicationhistory.reviewSubmittedSuccessfully"));
       onSubmitSuccess();
-    } catch (err) {
-      console.error("[MentorReviewPage] submit feedback threw:", err);
+    } catch {
       toast.error(t("common.anErrorHasOccurred"));
     } finally {
       setIsSubmitting(false);
@@ -1426,29 +1375,7 @@ export function ApplicationMentorReviewPage() {
             }
           }
 
-          if (typeof window !== "undefined") {
-            console.debug("[MentorReviewPage] detail selection", {
-              applicationId,
-              currentRoundId,
-              currentRoundType: currentRound.roundType,
-              detailCount: details.length,
-              detailRoundIds: details.map((d) => d.roundId),
-              detailStatuses: details.map((d) => d.status),
-              bookingIds: details.map((d) => d.bookingId),
-              sessionIds: details.map((d) => d.sessionId),
-              resolvedDetailId: currentDetail?.id ?? null,
-              resolvedDetailStatus: currentDetail?.status ?? null,
-              resolvedDetailBookingId: currentDetail?.bookingId ?? null,
-            });
-          }
-
           if (!currentDetail) {
-            console.warn("[MentorReviewPage] no ApplicationDetail for current round", {
-              currentRoundId,
-              currentRoundType: currentRound.roundType,
-              detailCount: details.length,
-              detailRoundIds: details.map((d) => d.roundId),
-            });
             _setDetailMissing(true);
           }
 
@@ -1525,8 +1452,8 @@ export function ApplicationMentorReviewPage() {
             }
           }
         }
-      } catch (err) {
-        console.error("[MentorReviewPage] fetch error:", err);
+      } catch {
+        // Intentionally ignored.
       } finally {
         setLoading(false);
       }
@@ -1602,8 +1529,8 @@ export function ApplicationMentorReviewPage() {
             setSessionInfoLoading(false);
           }
         }
-      } catch (err) {
-        console.error("[MentorReviewPage] refresh detail failed:", err);
+      } catch {
+        // Intentionally ignored.
       }
     }, 5000);
 
@@ -1720,26 +1647,6 @@ export function ApplicationMentorReviewPage() {
     }
   };
 
-  // Cancel booking
-  // 2026-07-18: in the new Mentor Interview flow `booking.id` is *always*
-  // null (BE confirmed bookingId is unused). Until BE exposes a proper
-  // cancel-session endpoint we no-op + warn instead of deleting a
-  // non-existent booking — otherwise the user gets a silent 404 every
-  // time. TODO: hook this up once POST /api/sessions/{id}/cancel exists.
-  /*
-  const _handleCancelBooking = async () => {
-    if (typeof window !== "undefined") {
-      console.warn(
-        "[MentorReviewPage] cancel requested but BE has not exposed an endpoint for the new Mentor Interview flow; awaiting BE ticket."
-      );
-    }
-    toast.error(
-      t("userKiosk.bookingCancelledSuccessfully") +
-        " (tính năng tạm thời chưa khả dụng — đang chờ BE bổ sung API cancel)"
-    );
-  };
-  */
-
   // 2026-07-18: when ApplicationDetail carries a sessionId but the
   // local roomUrl / sessionTiming caches are still empty (e.g. hard
   // reload before the first poll, or SlotSelectionStep completed in
@@ -1813,41 +1720,6 @@ export function ApplicationMentorReviewPage() {
     (mentorReviewReceived && !isReviewed) || applicationDetail?.status === "COMPLETED";
   const isWrongRound =
     !currentRoundLoading && !!currentRound && currentRound.roundType !== "MENTROR_REVIEW";
-
-  // 2026-07-18: debug snapshot to make triage easier when the form fails to
-  // appear. One-liner so the dev console doesn't drown in noise.
-  if (typeof window !== "undefined") {
-    console.log("[MentorReviewPage]", {
-      applicationId,
-      detailId: applicationDetail?.id,
-      detailStatus: applicationDetail?.status,
-      detailSessionId: applicationDetail?.sessionId,
-      detailNestedSessionId: applicationDetail?.sessionInfo?.sessionId,
-      detailMentorId: applicationDetail?.mentorId,
-      detailMeetingType: applicationDetail?.sessionInfo?.meetingType,
-      detailMentorReview: !!applicationDetail?.mentorReview,
-      detailMentorFeedback: !!applicationDetail?.mentorFeedback,
-      bookingId: booking?.id,
-      bookingStatus: booking?.status,
-      sessionMentorReview: !!sessionRef.current?.mentorReview,
-      sessionStatus: sessionRef.current?.status,
-      roomUrl: roomUrl ? roomUrl.slice(0, 40) : null,
-      sessionTiming: sessionTiming
-        ? {
-            startTime1: sessionTiming.startTime1,
-            endTime1: sessionTiming.endTime1,
-            startTime2: sessionTiming.startTime2,
-            endTime2: sessionTiming.endTime2,
-          }
-        : null,
-      mentorReviewReceived,
-      isReviewed,
-      showFeedbackForm,
-      isWrongRound,
-      currentRoundId: currentRound?.id,
-      currentRoundType: currentRound?.roundType,
-    });
-  }
 
   // ============================================================
   // Render

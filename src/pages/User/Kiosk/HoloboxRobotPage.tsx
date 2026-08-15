@@ -527,8 +527,8 @@ export function HoloboxRobotPage() {
         try {
           await unlockAudio();
           await audio.play();
-        } catch (error) {
-          console.info("Holobox audio could not play on this device.", error);
+        } catch {
+          // Intentionally ignored.
         }
         return;
       }

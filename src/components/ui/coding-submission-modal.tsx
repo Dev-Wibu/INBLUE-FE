@@ -369,8 +369,7 @@ export function CodingSubmissionModal({
       if (polled.status === "COMPLETED" && polled.compilerStatus !== "COMPILE_ERROR") {
         toast.success(t("compCodingSubmissionModal.runTestsSuccess"));
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
       toast.error(t("common.anErrorHasOccurred") ?? t("compCodingSubmissionModal.errorOccurred"));
     } finally {
       setIsRunning(false);
@@ -435,8 +434,7 @@ export function CodingSubmissionModal({
             t("compCodingSubmissionModal.errorOccurred")
         );
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
       toast.error(t("common.anErrorHasOccurred") ?? t("compCodingSubmissionModal.errorOccurred"));
     } finally {
       setIsSubmitting(false);

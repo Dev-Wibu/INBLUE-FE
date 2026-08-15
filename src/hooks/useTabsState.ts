@@ -97,12 +97,7 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
 
   // Read active tab from URL, validate and fallback to default if invalid
   const urlTabParam = searchParams.get("tab");
-  console.log(
-    "[DEBUG useTabsState] urlTabParam:",
-    urlTabParam,
-    "availableTabs:",
-    availableTabs.map((t) => t.type)
-  );
+
   const activeTab = (() => {
     // Special case: grading-detail is always valid (dynamic tabs)
     if (urlTabParam === "grading-detail") return urlTabParam;
@@ -114,7 +109,6 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
     let initialTabs: Tab[] = [];
 
     const activeTabFromUrl = searchParams.get("tab");
-    console.log("[DEBUG createInitialTabs] activeTabFromUrl:", activeTabFromUrl);
 
     try {
       const saved = localStorage.getItem(fullStorageKey);
@@ -131,8 +125,8 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
           initialTabs = validTabs;
         }
       }
-    } catch (e) {
-      console.warn("Failed to load tabs state from localStorage:", e);
+    } catch {
+      // Intentionally ignored.
     }
 
     // Default: create a tab for the default tab type if no valid tabs found
@@ -154,20 +148,14 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
       // Special case: grading-detail is a dynamic tab type, always valid if present in URL
       if (activeTabFromUrl === "grading-detail") return activeTabFromUrl;
       const isValid = isValidTabType(activeTabFromUrl, availableTabs);
-      console.log("[DEBUG createInitialTabs] isValid:", isValid, "for:", activeTabFromUrl);
+
       return isValid ? activeTabFromUrl : defaultTab;
     })();
 
     const activeTabExists = initialTabs.some((tab) => tab.type === effectiveActiveTab);
-    console.log(
-      "[DEBUG createInitialTabs] activeTabExists:",
-      activeTabExists,
-      "effectiveActiveTab:",
-      effectiveActiveTab
-    );
+
     if (!activeTabExists) {
       if (effectiveActiveTab === "grading-detail") {
-        console.log("[DEBUG createInitialTabs] Adding grading-detail tab");
         const appId = searchParams.get("appId");
         initialTabs = [
           ...initialTabs,
@@ -193,7 +181,6 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
       }
     }
 
-    console.log("[DEBUG createInitialTabs] returning:", JSON.stringify(initialTabs));
     return initialTabs;
   }, [availableTabs, defaultTab, fullStorageKey, searchParams]);
 
@@ -218,8 +205,8 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
         version: 1,
       };
       localStorage.setItem(fullStorageKey, JSON.stringify(stateToSave));
-    } catch (e) {
-      console.warn("Failed to save tabs state to localStorage:", e);
+    } catch {
+      // Intentionally ignored.
     }
   }, [openTabs, activeTab, fullStorageKey]);
 
@@ -228,7 +215,6 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
     (tabType: string, preventUrlUpdate = false) => {
       // Special case: grading-detail is a dynamic tab type — allow it
       if (tabType !== "grading-detail" && !isValidTabType(tabType, availableTabs)) {
-        console.warn(`Invalid tab type: ${tabType}`);
         return;
       }
 
@@ -263,7 +249,6 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
     (tabType: string) => {
       const tabConfig = availableTabs.find((t) => t.type === tabType);
       if (!tabConfig) {
-        console.warn(`Invalid tab type: ${tabType}`);
         return;
       }
 
@@ -358,7 +343,6 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
   const resetTabsTo = useCallback(
     (tabType: string, preventUrlUpdate = false) => {
       if (!isValidTabType(tabType, availableTabs)) {
-        console.warn(`Invalid tab type: ${tabType}`);
         return;
       }
 

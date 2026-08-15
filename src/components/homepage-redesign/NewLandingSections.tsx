@@ -476,8 +476,8 @@ export function JobDescriptionSlice() {
                       : (jobsRes.data as { data?: JobDescription[] }).data || [];
                     return { ...c, jobDescriptions: jobs };
                   }
-                } catch (err) {
-                  console.error("[JobDescriptionSlice] Error fetching jobs for company", c.id, err);
+                } catch {
+                  // Intentionally ignored.
                 }
               }
               return c;
@@ -497,8 +497,8 @@ export function JobDescriptionSlice() {
 
           setCompanies(filteredList);
         }
-      } catch (err) {
-        console.error("[JobDescriptionSlice] Error fetching companies:", err);
+      } catch {
+        // Intentionally ignored.
       } finally {
         if (isMounted) setIsLoading(false);
       }

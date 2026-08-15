@@ -41,8 +41,7 @@ export function JobDescriptionDetailPage() {
         } else {
           setError(t("enterpriseJobdescriptiondetailpage.noVacancyInformationFound"));
         }
-      } catch (err) {
-        console.error("[JobDescriptionDetailPage] Error:", err);
+      } catch {
         setError(t("enterpriseJobdescriptiondetailpage.errorLoadingInfo"));
       } finally {
         setIsLoading(false);

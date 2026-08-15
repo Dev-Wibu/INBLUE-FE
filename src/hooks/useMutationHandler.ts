@@ -11,7 +11,7 @@ const t = i18n.t.bind(i18n);
  * @example
  * const { mutate } = useMutationHandler({
  *   mutationFn: createAccount,
- *   onSuccess: () => console.log("Success"),
+ *   onSuccess: () => showSuccessNotification(),
  *   successMessage: "Account created successfully",
  * });
  */

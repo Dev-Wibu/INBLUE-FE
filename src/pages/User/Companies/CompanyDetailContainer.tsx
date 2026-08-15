@@ -46,8 +46,8 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
           : (jobsResult.data as { data?: JobDescription[] }).data || [];
         setJobs(jobList);
       }
-    } catch (err) {
-      console.error("[CompanyDetailContainer] Error refreshing jobs:", err);
+    } catch {
+      // Intentionally ignored.
     }
   };
 
@@ -72,8 +72,7 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
             setSelectedJobId(jobList[0].id);
           }
         }
-      } catch (err) {
-        console.error("[CompanyDetailContainer] Fetch error:", err);
+      } catch {
         setError(t("common.unableToLoadCompanyInformation", "Không thể tải thông tin công ty."));
       } finally {
         setIsLoading(false);

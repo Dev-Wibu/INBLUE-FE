@@ -92,8 +92,8 @@ export function QuizEditor({
           : ((raw as { data?: QuestionCategory[] }).data ?? []);
         setBankCategories(list);
       }
-    } catch (err) {
-      console.error("Failed to load question bank:", err);
+    } catch {
+      // Intentionally ignored.
     } finally {
       setIsLoadingBank(false);
       setHasFetchedBank(true);

@@ -24,7 +24,7 @@ import {
   Star,
   Video,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -150,17 +150,6 @@ function deriveHubStatus(props: {
     sessionStatus,
   } = props;
 
-  console.log("[DEBUG][deriveHubStatus] props:", {
-    status,
-    mentorId,
-    sessionId,
-    sessionInfo,
-    mentorReview,
-    mentorFeedback,
-    sessionEnded,
-    sessionStatus,
-  });
-
   // If user already submitted feedback -> COMPLETED.
   // The backend may return the feedback object without an explicit `id` field,
   // so fall back to checking for any rating/comment content.
@@ -170,44 +159,35 @@ function deriveHubStatus(props: {
       mentorFeedback.rating !== undefined ||
       mentorFeedback.comment !== undefined)
   ) {
-    console.log("[DEBUG][deriveHubStatus] -> COMPLETED (mentorFeedback exists)");
     return "COMPLETED";
   }
 
   // If mentor has reviewed -> show review and prompt user to rate mentor
   if (mentorReview && (mentorReview.id || mentorReview.rating)) {
-    console.log("[DEBUG][deriveHubStatus] -> RATE_MENTOR (mentorReview exists)");
     return "RATE_MENTOR";
   }
 
   // If session is COMPLETED (meeting ended) but no mentor review yet -> wait for mentor review
   // Only check sessionEnded flag if sessionStatus wasn't explicitly set
   if (sessionStatus === "COMPLETED") {
-    console.log("[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_REVIEW (sessionStatus === COMPLETED)");
     return "AWAITING_MENTOR_REVIEW";
   }
   if (sessionEnded && !sessionStatus) {
-    console.log(
-      "[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_REVIEW (sessionEnded && !sessionStatus)"
-    );
     return "AWAITING_MENTOR_REVIEW";
   }
 
   // If mentor has session and meeting time set (ONLINE) -> room ready
   if (sessionInfo?.meetingType === "ONLINE" && sessionId && sessionInfo?.startTime) {
-    console.log("[DEBUG][deriveHubStatus] -> ROOM_READY");
     return "ROOM_READY";
   }
 
   // If offline confirmed
   if (sessionInfo?.meetingType === "OFFLINE" && sessionId) {
-    console.log("[DEBUG][deriveHubStatus] -> OFFLINE_CONFIRMED");
     return "OFFLINE_CONFIRMED";
   }
 
   // If session exists or slot picked
   if (sessionId || status === "SLOT_PICKED") {
-    console.log("[DEBUG][deriveHubStatus] -> SCHEDULE_CONFIRMED");
     return "SCHEDULE_CONFIRMED";
   }
 
@@ -216,19 +196,14 @@ function deriveHubStatus(props: {
   // mentor's post-interview feedback). Keep these as two distinct states so
   // the progress step indicator and content cards stay accurate.
   if (status === "AWAITING_MENTOR" || !mentorId) {
-    console.log(
-      "[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_ASSIGNMENT (status === AWAITING_MENTOR || !mentorId)"
-    );
     return "AWAITING_MENTOR_ASSIGNMENT";
   }
 
   // No session yet
   if (status === "PENDING") {
-    console.log("[DEBUG][deriveHubStatus] -> NO_SLOT (status === PENDING)");
     return "NO_SLOT";
   }
 
-  console.log("[DEBUG][deriveHubStatus] -> NO_SLOT (fallback)");
   return "NO_SLOT";
 }
 
@@ -763,17 +738,6 @@ export function MentorInterviewHub({
   const [refreshKey, setRefreshKey] = useState(0);
   const [isEditingFeedback, setIsEditingFeedback] = useState(false);
 
-  // Debug: log when props change
-  useEffect(() => {
-    console.log("[DEBUG][MentorInterviewHub] Props changed:", {
-      status,
-      sessionId,
-      sessionInfo,
-      sessionEnded,
-      sessionStatus,
-    });
-  }, [status, sessionId, sessionInfo, sessionEnded, sessionStatus]);
-
   const hubStatus = deriveHubStatus({
     status,
     mentorId,
@@ -784,9 +748,6 @@ export function MentorInterviewHub({
     sessionEnded,
     sessionStatus,
   });
-
-  // Debug: log computed hubStatus
-  console.log("[DEBUG][MentorInterviewHub] computed hubStatus:", hubStatus);
 
   const progressStep = (() => {
     switch (hubStatus) {

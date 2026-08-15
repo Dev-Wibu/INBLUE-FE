@@ -121,8 +121,7 @@ export function AccountPage() {
           createdAt: new Date().toISOString(),
         });
       }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
+    } catch {
       if (currentAuthUser) {
         setUserProfile({
           id: String(currentAuthUser.id),

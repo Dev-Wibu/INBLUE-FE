@@ -7,9 +7,9 @@
  * Example:
  * const result = await authManager.login({ email: 'user@example.com', password: 'password' });
  * if (result.success) {
- *   console.log('Logged in:', result.data);
+ *   handleSuccessfulLogin(result.data);
  * } else {
- *   console.error('Login failed:', result.error);
+ *   showLoginError(result.error);
  * }
  */
 

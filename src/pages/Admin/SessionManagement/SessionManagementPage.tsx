@@ -49,8 +49,7 @@ export function SessionManagementPage() {
         } else {
           toast.error(response.error || t("adminSessionmanagement.unableToLoadSessionList"));
         }
-      } catch (error) {
-        console.error("Error loading sessions:", error);
+      } catch {
         toast.error(t("adminSessionmanagement.unableToLoadSessionList"));
       } finally {
         if (showReloading) {

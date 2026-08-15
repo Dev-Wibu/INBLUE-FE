@@ -76,8 +76,8 @@ export function StaffAccountPage() {
         });
         setName(authUser.name || "");
       }
-    } catch (error) {
-      console.error("Error fetching staff profile:", error);
+    } catch {
+      // Intentionally ignored.
     } finally {
       setIsLoading(false);
     }

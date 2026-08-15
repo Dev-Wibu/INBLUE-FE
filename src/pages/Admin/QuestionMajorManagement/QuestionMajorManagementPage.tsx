@@ -48,8 +48,7 @@ export function QuestionMajorManagementPage() {
         } else {
           toast.error(response.error || t("adminQuestionmajormanagement.unableToLoadMajorList"));
         }
-      } catch (error) {
-        console.error("Error loading majors:", error);
+      } catch {
         toast.error(t("adminQuestionmajormanagement.unableToLoadMajorList"));
       } finally {
         if (showReloading) {
@@ -133,8 +132,7 @@ export function QuestionMajorManagementPage() {
       } else {
         toast.error(response.error || t("adminQuestionmajormanagement.cannotCreateMajor"));
       }
-    } catch (error) {
-      console.error("Error creating major:", error);
+    } catch {
       toast.error(t("adminQuestionmajormanagement.cannotCreateMajor"));
     }
   };
@@ -149,8 +147,7 @@ export function QuestionMajorManagementPage() {
       } else {
         toast.error(response.error || t("adminQuestionmajormanagement.unableToUpdateMajors"));
       }
-    } catch (error) {
-      console.error("Error updating major:", error);
+    } catch {
       toast.error(t("adminQuestionmajormanagement.unableToUpdateMajors"));
     }
   };
@@ -165,8 +162,7 @@ export function QuestionMajorManagementPage() {
       } else {
         toast.error(response.error || t("adminQuestionmajormanagement.majorsCannotBeDeleted"));
       }
-    } catch (error) {
-      console.error("Error deleting major:", error);
+    } catch {
       toast.error(t("adminQuestionmajormanagement.majorsCannotBeDeleted"));
     }
   };

@@ -53,6 +53,24 @@ cypress/screenshots/
 # Local tool config
 .cursor/mcp.json
 
+# Generated local review and visual QA artifacts
+/artifacts/
+/.impeccable/critique/
+/.git-commit-msg.txt
+/pr-body.md
+/eslint_*.txt
+/lint_*.txt
+/temp.txt
+/company-detail-render-check.png
+/holobox-kiosk-preview.png
+/clean_user_detail_view.cjs
+/commit-push.cjs
+/refactor_user_*.cjs
+/remove_use_state.cjs
+/rewrite_page*.cjs
+/update_profile*.cjs
+/swagger.json
+
 # Dependency directories
 package-lock.json
 yarn.lock

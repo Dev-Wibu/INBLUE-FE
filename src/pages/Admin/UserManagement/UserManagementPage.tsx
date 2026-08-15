@@ -47,8 +47,7 @@ export function UserManagementPage() {
       } else {
         toast.error(response.error || t("common.unableToLoadUserList"));
       }
-    } catch (error) {
-      console.error("Error loading users:", error);
+    } catch {
       toast.error(t("common.unableToLoadUserList"));
     } finally {
       setIsInitialLoading(false);
@@ -183,8 +182,7 @@ export function UserManagementPage() {
         );
         toast.error(response.error || t("adminUsermanagement.userStatusCannotBeChanged"));
       }
-    } catch (error) {
-      console.error("Error changing user status:", error);
+    } catch {
       // Revert on failure
       setUsers((prev) =>
         prev.map((u) => (u.id === user.id ? { ...u, isActive: previousStatus } : u))
@@ -203,8 +201,7 @@ export function UserManagementPage() {
       } else {
         toast.error(response.error || t("common.unableToCreateUser"));
       }
-    } catch (error) {
-      console.error("Error creating user:", error);
+    } catch {
       toast.error(t("common.unableToCreateUser"));
     }
   };
@@ -225,8 +222,7 @@ export function UserManagementPage() {
       } else {
         toast.error(response.error || t("common.unableToUpdateUser"));
       }
-    } catch (error) {
-      console.error("Error updating user:", error);
+    } catch {
       toast.error(t("common.unableToUpdateUser"));
     }
   };

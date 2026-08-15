@@ -50,8 +50,7 @@ export function MentorManagementPage() {
       } else {
         toast.error(response.error || t("common.unableToLoadMentorList"));
       }
-    } catch (error) {
-      console.error("Error loading mentors:", error);
+    } catch {
       toast.error(t("common.unableToLoadMentorList"));
     } finally {
       setIsInitialLoading(false);
@@ -163,8 +162,7 @@ export function MentorManagementPage() {
       } else {
         toast.error(response.error || t("common.cannotCreateMentor"));
       }
-    } catch (error) {
-      console.error("Error creating mentor:", error);
+    } catch {
       toast.error(t("common.cannotCreateMentor"));
     }
   };
@@ -182,8 +180,7 @@ export function MentorManagementPage() {
       } else {
         toast.error(response.error || t("common.unableToUpdateMentor"));
       }
-    } catch (error) {
-      console.error("Error updating mentor:", error);
+    } catch {
       toast.error(t("common.unableToUpdateMentor"));
     }
   };
@@ -216,8 +213,7 @@ export function MentorManagementPage() {
       } else {
         toast.error(response.error || t("adminMentormanagement.mentorStatusCannotBeChanged"));
       }
-    } catch (error) {
-      console.error("Error toggling mentor status:", error);
+    } catch {
       toast.error(t("adminMentormanagement.mentorStatusCannotBeChanged"));
     } finally {
       setIsToggling(false);

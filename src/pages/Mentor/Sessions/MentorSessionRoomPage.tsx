@@ -164,15 +164,12 @@ export function MentorSessionRoomPage() {
   };
 
   // Handle errors from video call
-  const handleError = (errorMessage: string) => {
-    console.error("Video call error:", errorMessage);
-  };
+  const handleError = () => undefined;
 
   // 2026-07-13 v063: same as student page — when Daily.co reports the
   //   room URL is dead, BE may have handed us a stale roomUrl. Force a
   //   refetch so the page can flip to "session has ended" without F5.
-  const handleRoomUnavailable = (reason: string) => {
-    console.warn("[MentorSessionRoomPage] room-unavailable, refetching session", { reason });
+  const handleRoomUnavailable = () => {
     void refetchSession();
   };
 

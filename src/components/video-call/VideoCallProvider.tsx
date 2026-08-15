@@ -249,10 +249,7 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
             isUnavailableByType || isUnavailableByMessage
               ? t("compVideoCall.thisMeetingRoomIsNo")
               : rawErrorMessage;
-          console.error("[Daily.co] init/join error", {
-            roomUrl: normalizedRoomUrl,
-            event,
-          });
+
           // 2026-07-13 v063: expose machine-readable reason alongside
           //   the message so the page can auto-refetch the session
           //   when the stale roomUrl was returned by BE.

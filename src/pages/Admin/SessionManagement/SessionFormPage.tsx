@@ -137,8 +137,7 @@ export function SessionFormPage() {
       } else {
         toast.error(response.error || t("adminSessionmanagement.unableToBrowseSession"));
       }
-    } catch (error) {
-      console.error("Error approving session:", error);
+    } catch {
       toast.error(t("adminSessionmanagement.unableToBrowseSession"));
     }
   };
@@ -153,8 +152,7 @@ export function SessionFormPage() {
       } else {
         toast.error(response.error || t("adminSessionmanagement.sessionCannotBeRejected"));
       }
-    } catch (error) {
-      console.error("Error rejecting session:", error);
+    } catch {
       toast.error(t("adminSessionmanagement.sessionCannotBeRejected"));
     }
   };
@@ -173,8 +171,7 @@ export function SessionFormPage() {
       } else {
         toast.error(response.error || t("adminSessionmanagement.sessionsCannotBeCanceled"));
       }
-    } catch (error) {
-      console.error("Error canceling session:", error);
+    } catch {
       toast.error(t("adminSessionmanagement.sessionsCannotBeCanceled"));
     }
   };
@@ -226,8 +223,7 @@ export function SessionFormPage() {
             toast.error(response.error || t("adminSessionmanagement.unableToLoadSessionList"));
             navigate("/admin/sessions");
           }
-        } catch (error) {
-          console.error("Error loading session:", error);
+        } catch {
           toast.error(t("adminSessionmanagement.unableToLoadSessionList"));
           navigate("/admin/sessions");
         } finally {
@@ -295,8 +291,7 @@ export function SessionFormPage() {
           toast.error(response.error || t("adminSessionmanagement.unableToCreateSession"));
         }
       }
-    } catch (error) {
-      console.error("Error submitting session:", error);
+    } catch {
       toast.error(
         isEditMode
           ? t("adminSessionmanagement.unableToUpdateSession")

@@ -1,7 +1,0 @@
-chore: restore .git-commit-msg.txt accidentally clobbered by previous commit
-
-The previous fix(mentor-review) commit used `.git-commit-msg.txt` as a
-Heredoc workaround for PowerShell and inadvertently staged an overwrite
-of that file. This commit restores the file to its previous content so
-`main` is functionally identical to the original (the 6 application
-files in the parent commit are unchanged).

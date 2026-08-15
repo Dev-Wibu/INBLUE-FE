@@ -41,8 +41,7 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
           toast.error(res.error || t("common.unableToLoadData"));
           setHistory([]);
         }
-      } catch (err) {
-        console.error("[KioskHistoryTab] Error fetching history:", err);
+      } catch {
         toast.error(t("common.unableToLoadData"));
       } finally {
         setLoading(false);

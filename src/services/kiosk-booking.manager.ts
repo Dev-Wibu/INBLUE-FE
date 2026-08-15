@@ -20,7 +20,6 @@ export class KioskBookingManager {
         error: String(response.data),
       };
     } catch (error) {
-      console.error("[KioskBookingManager] getAllBookings error:", error);
       return { success: false, error: String(error) };
     }
   }
@@ -43,7 +42,6 @@ export class KioskBookingManager {
         error: String(response.data),
       };
     } catch (error) {
-      console.error("[KioskBookingManager] getBookingsByUser error:", error);
       return { success: false, error: String(error) };
     }
   }
@@ -62,7 +60,6 @@ export class KioskBookingManager {
         error: String(response.data),
       };
     } catch (error) {
-      console.error("[KioskBookingManager] getMentors error:", error);
       return { success: false, error: String(error) };
     }
   }
@@ -89,7 +86,6 @@ export class KioskBookingManager {
         error: String(response.data),
       };
     } catch (error) {
-      console.error("[KioskBookingManager] assignMentor error:", error);
       return { success: false, error: String(error) };
     }
   }
@@ -110,7 +106,6 @@ export class KioskBookingManager {
         error: response.status === 204 || response.status === 200 ? "" : String(response.data),
       };
     } catch (error) {
-      console.error("[KioskBookingManager] cancelBooking error:", error);
       return { success: false, error: String(error) };
     }
   }

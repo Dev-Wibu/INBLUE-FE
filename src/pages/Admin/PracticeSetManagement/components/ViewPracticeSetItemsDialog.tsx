@@ -72,8 +72,7 @@ export function ViewPracticeSetItemsDialog({
       } else {
         toast.error(response.error || t("common.unableToLoadQuestionList"));
       }
-    } catch (error) {
-      console.error("Error loading practice set items:", error);
+    } catch {
       toast.error(t("common.unableToDownloadData"));
     } finally {
       setLoading(false);
@@ -88,8 +87,8 @@ export function ViewPracticeSetItemsDialog({
         const arr = Array.isArray(raw) ? raw : "data" in raw ? raw.data : [];
         setAllQuestions(arr as unknown as PracticeQuestion[]);
       }
-    } catch (error) {
-      console.error("Error loading questions:", error);
+    } catch {
+      // Intentionally ignored.
     } finally {
       setQuestionsLoading(false);
     }
@@ -139,8 +138,7 @@ export function ViewPracticeSetItemsDialog({
       } else {
         toast.error(response.error || t("common.questionCannotBeDeleted"));
       }
-    } catch (error) {
-      console.error("Error removing item:", error);
+    } catch {
       toast.error(t("common.questionCannotBeDeleted"));
     } finally {
       setRemovingId(null);
@@ -164,8 +162,7 @@ export function ViewPracticeSetItemsDialog({
       } else {
         toast.error(response.error || t("adminPracticesetmanagement.cannotAddQuestion"));
       }
-    } catch (error) {
-      console.error("Error adding question:", error);
+    } catch {
       toast.error(t("adminPracticesetmanagement.cannotAddQuestion"));
     } finally {
       setAddingQuestionId(null);
@@ -207,8 +204,7 @@ export function ViewPracticeSetItemsDialog({
           response.error || t("adminPracticesetmanagement.cannotCreateAutomaticQuestions")
         );
       }
-    } catch (error) {
-      console.error("Error auto-generating:", error);
+    } catch {
       toast.error(t("adminPracticesetmanagement.cannotCreateAutomaticQuestions"));
     } finally {
       setIsGenerating(false);

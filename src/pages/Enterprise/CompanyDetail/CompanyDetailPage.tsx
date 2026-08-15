@@ -51,8 +51,7 @@ export function CompanyDetailPage() {
             setSelectedJobId(jobList[0].id);
           }
         }
-      } catch (err) {
-        console.error("[CompanyDetailPage] Fetch error:", err);
+      } catch {
         setError(t("common.unableToLoadCompanyInformation"));
       }
       setIsLoading(false);

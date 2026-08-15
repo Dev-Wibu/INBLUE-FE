@@ -44,8 +44,7 @@ export class AdminApplicationManager {
         success: false,
         error: "Không thể lấy danh sách JD mở",
       };
-    } catch (err) {
-      console.error(err);
+    } catch {
       return {
         success: false,
         error: "Lỗi kết nối máy chủ",
@@ -76,8 +75,7 @@ export class AdminApplicationManager {
         success: false,
         error: "Không thể lấy danh sách ứng viên nộp đơn",
       };
-    } catch (err) {
-      console.error(err);
+    } catch {
       return {
         success: false,
         error: "Lỗi kết nối máy chủ",
@@ -110,8 +108,7 @@ export class AdminApplicationManager {
         success: false,
         error: "Không thể lấy chi tiết đơn ứng tuyển",
       };
-    } catch (err) {
-      console.error(err);
+    } catch {
       return {
         success: false,
         error: "Lỗi kết nối máy chủ",
@@ -147,8 +144,7 @@ export class AdminApplicationManager {
         success: false,
         error: "Không thể lấy danh sách ApplicationDetail",
       };
-    } catch (err) {
-      console.error(err);
+    } catch {
       return {
         success: false,
         error: "Lỗi kết nối máy chủ",

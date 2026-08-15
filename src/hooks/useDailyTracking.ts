@@ -93,7 +93,7 @@ export function useDailyTracking({
           } catch {
             // body may be empty
           }
-          console.error("[useDailyTracking] join-session failed:", msg);
+
           setJoinError(msg);
           return;
         }
@@ -101,7 +101,7 @@ export function useDailyTracking({
         setJoinError(null);
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Network error";
-        console.error("[useDailyTracking] join-session exception:", msg);
+
         setJoinError(msg);
       }
     },
@@ -134,7 +134,7 @@ export function useDailyTracking({
 
     const handleError = (err: unknown) => {
       const msg = err instanceof Error ? err.message : "Daily call error";
-      console.error("[useDailyTracking] daily error:", msg);
+
       setJoinError(msg);
     };
 
@@ -145,7 +145,7 @@ export function useDailyTracking({
     if (!manualJoin) {
       void call.join().catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : "Unable to join Daily room";
-        console.error("[useDailyTracking] join() failed:", msg);
+
         setJoinError(msg);
       });
     }

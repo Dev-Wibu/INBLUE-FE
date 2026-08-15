@@ -41,8 +41,7 @@ export function useJdPurchaseStatus(jdId: number | undefined) {
       setHasPurchased(purchased);
       setHasApplied(Boolean(activeApplication));
       setApplicationId(activeApplication?.id);
-    } catch (err) {
-      console.error("[useJdPurchaseStatus] Error checking status:", err);
+    } catch {
       setHasPurchased(false);
       setHasApplied(false);
       setApplicationId(undefined);

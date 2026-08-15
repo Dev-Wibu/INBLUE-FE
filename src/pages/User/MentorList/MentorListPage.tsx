@@ -35,8 +35,7 @@ export function MentorListPage() {
         } else {
           toast.error(t("userMentorlist.unableToLoadMentorList"));
         }
-      } catch (error) {
-        console.error("Error fetching mentors:", error);
+      } catch {
         toast.error(t("userMentorlist.anErrorOccurredWhileLoading"));
       } finally {
         hasLoadedRef.current = true;

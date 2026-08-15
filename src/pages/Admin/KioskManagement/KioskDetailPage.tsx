@@ -65,8 +65,7 @@ export function KioskDetailPage() {
           toast.error(schedulesRes.error || t("adminKioskManagement.unableToLoadSchedules"));
           setSchedules([]);
         }
-      } catch (error) {
-        console.error("Error loading kiosk detail:", error);
+      } catch {
         toast.error(t("common.unableToLoadData"));
       } finally {
         setIsLoading(false);
@@ -122,8 +121,7 @@ export function KioskDetailPage() {
       } else {
         toast.error(result.error || t("adminKioskManagement.unableToUpdateKiosk"));
       }
-    } catch (error) {
-      console.error("Error updating kiosk:", error);
+    } catch {
       toast.error(t("common.unableToSave"));
     } finally {
       setIsSubmitting(false);
@@ -144,8 +142,7 @@ export function KioskDetailPage() {
       } else {
         toast.error(result.error || t("adminKioskManagement.unableToUpdateKiosk"));
       }
-    } catch (error) {
-      console.error("Error toggling kiosk:", error);
+    } catch {
       toast.error(t("common.unableToSave"));
     }
   };
@@ -192,8 +189,7 @@ export function KioskDetailPage() {
           toast.error(result.error || t("adminKioskManagement.unableToCreateSchedule"));
         }
       }
-    } catch (error) {
-      console.error("Error saving schedule:", error);
+    } catch {
       toast.error(t("common.unableToSave"));
     } finally {
       setScheduleSubmitting(false);
@@ -220,8 +216,7 @@ export function KioskDetailPage() {
         toast.error(result.error || t("adminKioskManagement.unableToUpdateSchedule"));
         return false;
       }
-    } catch (error) {
-      console.error("Error toggling schedule:", error);
+    } catch {
       toast.error(t("common.unableToSave"));
       return false;
     }

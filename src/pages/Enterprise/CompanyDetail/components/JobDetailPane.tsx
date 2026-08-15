@@ -130,8 +130,7 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
           ? `/user?tab=applicationHistory&appId=${applicationId}`
           : "/user?tab=applicationHistory"
       );
-    } catch (error) {
-      console.error("[JobDetailPane] Purchase/apply error:", error);
+    } catch {
       toast.error(
         t("common.anErrorOccurredPleaseTryAgain", "Something went wrong. Please try again.")
       );

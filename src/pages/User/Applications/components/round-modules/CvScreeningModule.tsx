@@ -299,8 +299,7 @@ export function CvScreeningModule({
       } else {
         toast.error(res.error || t("general.anUnknownErrorHasOccurred", "Gửi CV không thành công"));
       }
-    } catch (err) {
-      console.error("[CvScreeningModule] Submit error:", err);
+    } catch {
       toast.error(t("userApplication.cvScreening.submitError"));
     } finally {
       setAnalyzing(false);

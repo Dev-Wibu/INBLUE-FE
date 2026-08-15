@@ -102,8 +102,7 @@ export function JdPurchaseHistoryTab() {
         if (cancelled) return;
         setPurchases(rawPurchases || []);
         setLoadState("ready");
-      } catch (error) {
-        console.error("Error fetching purchases:", error);
+      } catch {
         if (!cancelled) {
           setLoadState("error");
         }

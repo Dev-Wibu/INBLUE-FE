@@ -29,7 +29,7 @@ const fetchClient = createFetchClient<paths>({
   },
 });
 
-// Add middleware to include JWT token in Authorization header and log requests/responses
+// Add middleware to include the JWT token and normalize API responses.
 fetchClient.use({
   async onRequest({ request }) {
     // Dynamically import to avoid circular dependency
@@ -41,32 +41,9 @@ fetchClient.use({
       request.headers.set("Authorization", `Bearer ${token}`);
     }
 
-    // Generate unique request ID for debugging
+    // Preserve request correlation without exposing request data in the browser console.
     const requestId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     request.headers.set("X-Request-ID", requestId);
-
-    // Log API request (development only)
-    if (import.meta.env.DEV) {
-      console.log("🚀 API Request:", {
-        method: request.method,
-        url: request.url,
-        headers: Object.fromEntries(request.headers.entries()),
-        timestamp: new Date().toISOString(),
-      });
-
-      // Log request body if present (for POST/PUT requests)
-      if (request.method === "POST" || request.method === "PUT") {
-        try {
-          const clonedRequest = request.clone();
-          const body = await clonedRequest.text();
-          if (body) {
-            console.log("📦 Request Body:", JSON.parse(body));
-          }
-        } catch {
-          console.log("📦 Request Body: (unable to parse)");
-        }
-      }
-    }
 
     return request;
   },
@@ -115,20 +92,9 @@ fetchClient.use({
           Object.defineProperty(newResponse, "url", { value: response.url });
           finalResponse = newResponse;
 
-          // Use unwrapped payload for subsequent usage/logging
+          // Use the unwrapped payload for subsequent processing.
           payload = unwrappedPayload;
         }
-      }
-
-      // Log successful API response (development only)
-      if (import.meta.env.DEV) {
-        console.log("✅ API Response:", {
-          status: finalResponse.status,
-          statusText: finalResponse.statusText,
-          url: finalResponse.url,
-          data: hasJson ? payload : "(non-JSON response)",
-          timestamp: new Date().toISOString(),
-        });
       }
     } else {
       // Failed response handling
@@ -149,18 +115,6 @@ fetchClient.use({
         errorDescriptor,
         t("general.anErrorOccurredWhileCalling")
       );
-
-      // ALWAYS log failed API requests with traceId in all environments
-      console.error(`❌ API Error [Trace ID: ${normalizedError.traceId || "N/A"}]:`, {
-        status: response.status,
-        url: response.url,
-        message: normalizedError.message,
-        traceId: normalizedError.traceId,
-        payload,
-      });
-      if (normalizedError.traceId) {
-        console.error(`[COPY TRACE ID] ${normalizedError.traceId}`);
-      }
 
       // Auto-logout on 401 (token expired or invalid)
       if (response.status === 401) {

@@ -89,16 +89,13 @@ export function SessionRoomPage() {
   };
 
   // Handle errors from video call
-  const handleError = (errorMessage: string) => {
-    console.error("Video call error:", errorMessage);
-  };
+  const handleError = () => undefined;
 
   // 2026-07-13 v063: when Daily.co reports the room URL is dead
   //   (exp-room / "no longer available"), BE may have handed us a stale
   //   roomUrl from a previous session. Force a refetch so the page can
   //   flip to "session has ended" without the user pressing F5.
-  const handleRoomUnavailable = (reason: string) => {
-    console.warn("[SessionRoomPage] room-unavailable, refetching session", { reason });
+  const handleRoomUnavailable = () => {
     void refetchSession();
   };
 
