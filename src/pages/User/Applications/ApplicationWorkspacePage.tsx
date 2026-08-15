@@ -39,6 +39,10 @@ import { HorizontalPipeline, type JdRound } from "./components/HorizontalPipelin
 import { RoundWorkspaceDispatcher } from "./components/RoundWorkspaceDispatcher";
 import { areAllRoundsCompleted } from "./components/applicationProgress";
 import { applicationTheme } from "./components/applicationTheme";
+import {
+  localizeRoundInstruction,
+  localizeRoundName,
+} from "./components/round-modules/round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 type JobDescription = components["schemas"]["JobDescription"];
@@ -1018,9 +1022,18 @@ export function ApplicationWorkspacePage() {
         }}
         applicationId={applicationId}
         roundId={submissionRound?.id}
-        roundName={submissionRound?.name || submissionRound?.roundType}
+        roundName={
+          localizeRoundName(submissionRound?.name, submissionRound?.roundType, t) ||
+          (submissionRound?.roundType
+            ? t(`common.roundType.${submissionRound.roundType.replace("MENTROR", "MENTOR")}`)
+            : undefined)
+        }
         roundType={submissionRound?.roundType}
-        instruction={submissionRound?.configData?.instruction}
+        instruction={localizeRoundInstruction(
+          submissionRound?.configData?.instruction,
+          submissionRound?.roundType,
+          t
+        )}
         onSuccess={() => {
           setSubmissionOpen(false);
           loadData();

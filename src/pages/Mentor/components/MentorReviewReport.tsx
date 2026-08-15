@@ -556,7 +556,7 @@ function MentorScoreSelector({
               step={1}
               value={rating > 0 ? rating : ""}
               onChange={(event) => onRatingChange?.(Number(event.target.value) || 0)}
-              className="h-9 w-24 border-indigo-200 bg-white text-right font-mono font-bold tabular-nums dark:border-indigo-800 dark:bg-slate-950"
+              className="h-9 w-24 border-indigo-200 bg-white text-right font-mono font-bold text-slate-900 tabular-nums placeholder:text-slate-400 focus-visible:ring-indigo-500 dark:border-indigo-700 dark:bg-slate-800 dark:text-slate-100 dark:[color-scheme:dark] dark:placeholder:text-slate-500"
               aria-label={label}
             />
             <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/100</span>

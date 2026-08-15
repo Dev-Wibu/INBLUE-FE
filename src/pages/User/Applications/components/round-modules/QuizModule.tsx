@@ -40,6 +40,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
+import { localizeRoundInstruction } from "./round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -492,6 +493,9 @@ export function QuizModule({
   const answeredCount = Object.keys(selectedAnswers).length;
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentIndex] || questions[0];
+  const configuredInstruction =
+    detailRoundConfig?.instruction || quizConfig?.instruction || round.configData?.instruction;
+  const localizedInstruction = localizeRoundInstruction(configuredInstruction, round.roundType, t);
 
   const formatTimer = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -524,10 +528,7 @@ export function QuizModule({
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
                 ? t("userApplication.quiz.examCompletedMessage")
-                : detailRoundConfig?.instruction ||
-                  quizConfig?.instruction ||
-                  round.configData?.instruction ||
-                  t("userApplication.quiz.examInstructionsDefault")}
+                : localizedInstruction || t("userApplication.quiz.examInstructionsDefault")}
             </p>
           </div>
         </div>
@@ -759,10 +760,7 @@ export function QuizModule({
                       {t("userApplication.quiz.confirmStartExamTitle")}
                     </h3>
                     <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                      {detailRoundConfig?.instruction ||
-                        quizConfig?.instruction ||
-                        round.configData?.instruction ||
-                        t("userApplication.quiz.confirmStartExamHint")}
+                      {localizedInstruction || t("userApplication.quiz.confirmStartExamHint")}
                     </p>
                   </div>
                 </div>

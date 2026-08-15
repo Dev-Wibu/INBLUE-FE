@@ -178,7 +178,7 @@ export function EmailPreviewDialog({
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
                     <div className="flex items-center gap-2">
                       <span className="w-12 font-mono text-[10px] font-bold text-slate-400 uppercase">
-                        Người gửi:
+                        {t("uiLabels.sender")}
                       </span>
                       <span className="font-mono font-bold text-indigo-300">
                         {email.senderEmail || t("emailPreview.unknownSender", "Chưa xác định")}
@@ -195,7 +195,7 @@ export function EmailPreviewDialog({
 
                   <div className="flex items-center gap-2 pt-0.5">
                     <span className="w-12 font-mono text-[10px] font-bold text-slate-400 uppercase">
-                      Người nhận:
+                      {t("uiLabels.recipient")}
                     </span>
                     <span className="font-mono text-slate-300">
                       {t("emailPreview.toAddress", "hanptse184261@fpt.edu.vn")}
@@ -206,7 +206,7 @@ export function EmailPreviewDialog({
                 {/* Email Body Editor Frame */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                    <span>NỘI DUNG EMAIL BÀI THI</span>
+                    <span>{t("uiLabels.examEmailContent")}</span>
                     <span className="flex items-center gap-1 font-mono text-[10px] font-normal text-emerald-400">
                       <ShieldCheck className="h-3 w-3" /> Captured Body
                     </span>

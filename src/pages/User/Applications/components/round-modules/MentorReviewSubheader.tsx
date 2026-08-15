@@ -2,6 +2,7 @@ import { Calendar, CheckCircle2, Clock, Hourglass, Users, Video, X } from "lucid
 import { useTranslation } from "react-i18next";
 import type { components } from "../../../../../../schema-from-be";
 import { applicationTheme } from "../applicationTheme";
+import { localizeRoundInstruction, localizeRoundName } from "./round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -38,6 +39,9 @@ export function MentorReviewSubheader({
     detail?.status === "COMPLETED" ||
     detail?.status === "AI_EVALUATED";
 
+  const localizedRoundName = localizeRoundName(roundLabel, "MENTOR_REVIEW", t);
+  const localizedInstruction = localizeRoundInstruction(instruction, "MENTOR_REVIEW", t);
+
   const renderIcon = () => {
     switch (activeStep) {
       case "IN_CALL":
@@ -59,7 +63,7 @@ export function MentorReviewSubheader({
     if (isFinished) {
       return t("userApplication.mentorReview.mentorEvaluationReport");
     }
-    const name = roundLabel || t("userApplication.mentorReview.mentorReview");
+    const name = localizedRoundName || t("userApplication.mentorReview.mentorReview");
     return `${t("userApplication.roundNumber", { number: roundOrder })}: ${name.toUpperCase()} • ${t("userApplication.mentorReview.onlineInterviewStation", { defaultValue: "ONLINE INTERVIEW STATION" })}`;
   };
 
@@ -78,7 +82,7 @@ export function MentorReviewSubheader({
         return t("userApplication.mentorReview.selectMentor");
       case "AWAITING_MENTOR":
       default:
-        return instruction || t("userApplication.mentorReview.awaitingMentor");
+        return localizedInstruction || t("userApplication.mentorReview.awaitingMentor");
     }
   };
 

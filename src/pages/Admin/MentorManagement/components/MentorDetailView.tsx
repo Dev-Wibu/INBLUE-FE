@@ -244,7 +244,9 @@ export function MentorDetailView({
                     </div>
                     <div className="mt-1.5 text-xl font-bold text-slate-900 dark:text-white">
                       {mentor.yearsOfExperience || 0}{" "}
-                      <span className="text-xs font-normal text-slate-500">năm</span>
+                      <span className="text-xs font-normal text-slate-500">
+                        {t("adminLabels.mentorYears")}
+                      </span>
                     </div>
                   </div>
 
@@ -255,7 +257,9 @@ export function MentorDetailView({
                     </div>
                     <div className="mt-1.5 text-xl font-bold text-slate-900 dark:text-white">
                       {mentor.totalSession || 0}{" "}
-                      <span className="text-xs font-normal text-slate-500">buổi</span>
+                      <span className="text-xs font-normal text-slate-500">
+                        {t("adminLabels.mentorSessions")}
+                      </span>
                     </div>
                   </div>
 

@@ -334,8 +334,8 @@ export function UserDetailView({
                                     value={String(p.id)}
                                     className="text-xs font-medium">
                                     {p.applicationId
-                                      ? `Hồ sơ ứng tuyển #${p.applicationId}`
-                                      : `Bộ hồ sơ #${p.id}`}
+                                      ? t("adminLabels.applicationProfile", { id: p.applicationId })
+                                      : t("adminLabels.profileBundle", { id: p.id })}
                                     {p.targetRole ? ` (${p.targetRole})` : ""}
                                   </SelectItem>
                                 ))}

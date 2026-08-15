@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
+import { formatAiInterviewScore } from "@/lib/ai-interview-score";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Award, Check, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../../../../schema-from-be";
 import { areAllRoundsCompleted } from "./applicationProgress";
+import { localizeRoundName } from "./round-modules/round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -136,14 +138,26 @@ export function HorizontalPipeline({
             overallStatus === "SOFT_FAILED" && detail?.finalResult === "FAILED";
 
           const roundTypeNormalized = round.roundType?.replace("MENTROR", "MENTOR") ?? "";
-          const roundName = roundTypeNormalized
-            ? t(
-                `common.roundType.${roundTypeNormalized}`,
-                round.name || `${t("userApplicationhistory.round", "Vòng")} ${roundOrder}`
-              )
-            : round.name || `${t("userApplicationhistory.round", "Vòng")} ${roundOrder}`;
+          const localizedRoundName = localizeRoundName(round.name, roundTypeNormalized, t);
+          const roundName =
+            localizedRoundName ||
+            (roundTypeNormalized
+              ? t(
+                  `common.roundType.${roundTypeNormalized}`,
+                  `${t("userApplicationhistory.round")} ${roundOrder}`
+                )
+              : `${t("userApplicationhistory.round")} ${roundOrder}`);
 
-          const score = detail?.finalScore ?? detail?.aiScore ?? detail?.hrScore;
+          const isAiInterviewRound =
+            roundTypeNormalized === "AI_INTERVIEW" ||
+            /ai\s*interview|phỏng\s*vấn\s*ai/i.test(round.name ?? "");
+          const rawScore = detail?.hrScore ?? detail?.finalScore ?? detail?.aiScore;
+          const score =
+            isAiInterviewRound && detail?.hrScore == null && detail?.finalScore != null
+              ? formatAiInterviewScore(detail.finalScore, "auto")
+              : isAiInterviewRound && detail?.hrScore == null && detail?.aiScore != null
+                ? formatAiInterviewScore(detail.aiScore, "auto")
+                : rawScore;
 
           return (
             <div key={round.id ?? idx} className="flex items-center gap-2.5 sm:gap-3.5">

@@ -224,10 +224,10 @@ export function CommunityFeedPage() {
           <div className="flex hidden items-center justify-between px-1">
             <div>
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
-                Bài viết cộng đồng
+                {t("uiLabels.communityTitle")}
               </h2>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                Cập nhật mới nhất từ mọi người
+                {t("uiLabels.communitySubtitle")}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -361,7 +361,7 @@ function CommunityChatRail() {
           </div>
           <button
             type="button"
-            aria-label="Mở Messenger"
+            aria-label={t("uiLabels.openMessenger")}
             onClick={() => navigate("/user?tab=messenger")}
             className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800 dark:hover:text-indigo-300">
             <MoreHorizontal className="h-4 w-4" />
@@ -404,7 +404,7 @@ function CommunityChatRail() {
           type="button"
           onClick={() => navigate("/user?tab=messenger")}
           className="mt-3 w-full border-t border-slate-200 pt-3 text-center text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:border-slate-800 dark:text-indigo-300 dark:hover:text-indigo-200">
-          Xem tất cả tin nhắn
+          {t("uiLabels.viewAllMessages")}
         </button>
       </Card>
 
@@ -442,6 +442,7 @@ function CommunityChatWindow({
   onClose,
   onOpenMessenger,
 }: CommunityChatWindowProps) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<FloatingChatMessage[]>([]);
   const [draft, setDraft] = useState("");
 
@@ -489,11 +490,11 @@ function CommunityChatWindow({
         </span>
         <button type="button" onClick={onOpenMessenger} className="min-w-0 flex-1 text-left">
           <p className="truncate text-sm font-bold text-white">{contact.name}</p>
-          <p className="text-[11px] text-indigo-100">Đang hoạt động</p>
+          <p className="text-[11px] text-indigo-100">{t("uiLabels.online")}</p>
         </button>
         <button
           type="button"
-          aria-label="Đóng cuộc trò chuyện"
+          aria-label={t("uiLabels.closeConversation")}
           onClick={onClose}
           className="rounded-lg p-1.5 text-indigo-100 transition-colors hover:bg-white/15 hover:text-white">
           <X className="h-4 w-4" />
@@ -515,7 +516,7 @@ function CommunityChatWindow({
           ))
         ) : (
           <div className="m-auto max-w-[220px] text-center text-xs leading-relaxed text-slate-400">
-            Bắt đầu cuộc trò chuyện với {contact.name}
+            {t("uiLabels.startConversationWith")} {contact.name}
           </div>
         )}
       </div>
@@ -527,12 +528,12 @@ function CommunityChatWindow({
           onKeyDown={(event) => {
             if (event.key === "Enter") handleSend();
           }}
-          placeholder="Nhập tin nhắn..."
+          placeholder={t("uiLabels.messagePlaceholder")}
           className="h-10 min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.07] px-3 text-xs text-white transition-colors outline-none placeholder:text-slate-500 focus:border-indigo-400"
         />
         <button
           type="button"
-          aria-label="Gửi tin nhắn"
+          aria-label={t("uiLabels.sendMessage")}
           onClick={handleSend}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-500 text-white transition-colors hover:bg-indigo-400">
           <Send className="h-3.5 w-3.5" />

@@ -38,6 +38,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { components } from "../../../../schema-from-be";
+import { localizeRoundName } from "../Applications/components/round-modules/round-localization";
 
 // ============================================================
 // Types
@@ -234,12 +235,12 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
   // Active round type
   const activeRoundObj = application.rounds?.find((r) => r.roundOrder === currentRoundOrder);
   const currentRoundType = activeRoundObj?.roundType?.replace("MENTROR", "MENTOR") ?? "";
-  const stepName = currentRoundType
-    ? t(
-        `common.roundType.${currentRoundType}`,
-        activeRoundObj?.name || t("userApplicationhistory.roundInProgress", "Đang thực hiện")
-      )
-    : activeRoundObj?.name || t("userApplicationhistory.roundInProgress", "Đang thực hiện");
+  const localizedActiveRoundName = localizeRoundName(activeRoundObj?.name, currentRoundType, t);
+  const stepName =
+    localizedActiveRoundName ||
+    (currentRoundType
+      ? t(`common.roundType.${currentRoundType}`)
+      : t("userApplicationhistory.roundInProgress"));
 
   const progressPercent = useMemo(() => {
     if (totalRounds <= 0) return 0;

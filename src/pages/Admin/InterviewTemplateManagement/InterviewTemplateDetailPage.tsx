@@ -306,7 +306,9 @@ export function InterviewTemplateDetailPage() {
 
                       <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-100/80 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200">
                         <Layers className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
-                        {selectedTemplate.rounds?.length || 0} vòng
+                        {t("adminLabels.roundCount", {
+                          count: selectedTemplate.rounds?.length || 0,
+                        })}
                       </span>
                     </div>
 
@@ -353,8 +355,11 @@ export function InterviewTemplateDetailPage() {
                           <Layers className="h-3.5 w-3.5" />
                         </div>
                         <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                          {t("template.processContains", "Cấu trúc các vòng phỏng vấn")} (
-                          {selectedTemplate.rounds?.length || 0} vòng)
+                          {t("template.processContains", "Interview rounds")} (
+                          {t("adminLabels.roundCount", {
+                            count: selectedTemplate.rounds?.length || 0,
+                          })}
+                          )
                         </h2>
                       </div>
                     </div>
@@ -448,25 +453,29 @@ export function InterviewTemplateDetailPage() {
                     {/* Summary Stats Card */}
                     <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                       <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                        Tổng quan kịch bản
+                        {t("adminLabels.templateOverview")}
                       </h3>
 
                       <div className="mt-4 space-y-3">
                         <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 dark:bg-slate-950/50">
                           <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                            Số vòng phỏng vấn
+                            {t("adminLabels.interviewRounds")}
                           </span>
                           <span className="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                            {selectedTemplate.rounds?.length || 0} vòng
+                            {t("adminLabels.roundCount", {
+                              count: selectedTemplate.rounds?.length || 0,
+                            })}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 dark:bg-slate-950/50">
                           <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                            Tổng thời gian ước tính
+                            {t("adminLabels.estimatedTotalDuration")}
                           </span>
                           <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
-                            {totalMinutes > 0 ? `${totalMinutes} phút` : "Không giới hạn"}
+                            {totalMinutes > 0
+                              ? `${totalMinutes} ${t("adminLabels.minutes")}`
+                              : t("adminLabels.unlimited")}
                           </span>
                         </div>
                       </div>
@@ -475,7 +484,7 @@ export function InterviewTemplateDetailPage() {
                       {roundTypeDistribution.length > 0 && (
                         <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
                           <h4 className="mb-3 text-[11px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                            Phân bổ hình thức
+                            {t("adminLabels.formatDistribution")}
                           </h4>
                           <div className="flex flex-wrap gap-2">
                             {roundTypeDistribution.map(({ type, count, meta }) => (
@@ -502,17 +511,17 @@ export function InterviewTemplateDetailPage() {
                     <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-slate-50 p-5 shadow-xs dark:border-indigo-900/50 dark:from-indigo-950/30 dark:to-slate-900">
                       <div className="flex items-center gap-2 text-xs font-bold text-indigo-700 dark:text-indigo-300">
                         <Sparkles className="h-4 w-4" />
-                        <span>Canvas Studio Sơ đồ</span>
+                        <span>{t("adminLabels.canvasDiagram")}</span>
                       </div>
                       <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                        Chỉnh sửa kéo thả trực quan sơ đồ các vòng và cấu hình tiêu chuẩn đánh giá.
+                        {t("adminLabels.canvasDescription")}
                       </p>
                       <Button
                         type="button"
                         onClick={() => handleEditClick(selectedTemplate)}
                         className="mt-4 w-full gap-2 rounded-xl bg-indigo-600 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
                         <Sparkles className="h-3.5 w-3.5" />
-                        <span>Mở Sơ đồ Canvas Studio</span>
+                        <span>{t("adminLabels.openCanvasDiagram")}</span>
                       </Button>
                     </div>
                   </div>

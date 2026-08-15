@@ -1,7 +1,9 @@
+import { formatAiInterviewScore } from "@/lib/ai-interview-score";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Check, Lock, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../../../../schema-from-be";
+import { localizeRoundName } from "../../../User/Applications/components/round-modules/round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -27,7 +29,7 @@ interface StaffHorizontalPipelineProps {
   details: ApplicationDetail[];
   currentRoundOrder: number;
   overallStatus?: string;
-  onSelectRound?: (roundOrder: number) => void;
+  onSelectRound?: (_roundOrder: number) => void;
   selectedRoundOrder?: number;
 }
 
@@ -66,15 +68,29 @@ export function StaffHorizontalPipeline({
             overallStatus === "SOFT_FAILED" && detail?.finalResult === "FAILED";
 
           const roundTypeNormalized = round.roundType?.replace("MENTROR", "MENTOR") ?? "";
-          const roundName = roundTypeNormalized
-            ? t(
-                `common.roundType.${roundTypeNormalized}`,
-                round.name || `${t("userApplicationhistory.round", "Vòng")} ${roundOrder}`
-              )
-            : round.name || `${t("userApplicationhistory.round", "Vòng")} ${roundOrder}`;
+          const localizedRoundName = localizeRoundName(round.name, roundTypeNormalized, t);
+          const roundName =
+            localizedRoundName ||
+            (roundTypeNormalized
+              ? t(
+                  `common.roundType.${roundTypeNormalized}`,
+                  `${t("userApplicationhistory.round")} ${roundOrder}`
+                )
+              : `${t("userApplicationhistory.round")} ${roundOrder}`);
 
-          // Staff-specific: prioritize hrScore (staff grading), then aiScore, then finalScore
-          const staffScore = detail?.hrScore ?? detail?.aiScore ?? detail?.finalScore;
+          const isAiInterviewRound = roundTypeNormalized === "AI_INTERVIEW";
+          const normalizedAiScore =
+            isAiInterviewRound && detail?.aiScore != null
+              ? formatAiInterviewScore(detail.aiScore, "auto")
+              : detail?.aiScore;
+          const normalizedFinalScore =
+            isAiInterviewRound && detail?.hrScore == null && detail?.finalScore != null
+              ? formatAiInterviewScore(detail.finalScore, "auto")
+              : detail?.finalScore;
+
+          // Staff-specific: preserve HR/final scores on 100 and normalize only
+          // the legacy AI Interview detail score stored on 10.
+          const staffScore = detail?.hrScore ?? normalizedFinalScore ?? normalizedAiScore;
           const hasStaffGraded = detail?.hrScore !== undefined && detail?.hrScore !== null;
           const hasAIScored = detail?.aiScore !== undefined && detail?.aiScore !== null;
 
@@ -149,24 +165,20 @@ export function StaffHorizontalPipeline({
                   </div>
                   <span className="font-mono text-[10px] font-medium whitespace-nowrap opacity-80">
                     {isFailedNeedsImprove
-                      ? t("userApplicationhistory.needsImprove", "Cần cải thiện")
+                      ? t("userApplicationhistory.needsImprove")
                       : isCompleted
                         ? hasStaffGraded
-                          ? // Staff has graded - show HR score (use defaultValue form so the
-                            //   string is the literal fallback if the key is missing).
-                            t("staffGrading.yourScore", `Bạn chấm: ${staffScore}/100`, {
+                          ? t("staffGrading.yourScore", {
                               score: staffScore,
                             })
                           : hasAIScored
-                            ? // Only AI scored - show AI score
-                              t("staffGrading.aiScore", `AI: ${detail?.aiScore ?? 0}/100`, {
-                                score: detail?.aiScore ?? 0,
+                            ? t("staffGrading.aiScore", {
+                                score: normalizedAiScore ?? 0,
                               })
-                            : // No score yet
-                              t("staffGrading.completedNoScore", "Đã hoàn thành")
+                            : t("staffGrading.completedNoScore")
                         : isCurrent
-                          ? t("staffGrading.pendingGrading", "Chờ bạn chấm")
-                          : t("userApplicationhistory.roundUnopened", "Chưa mở")}
+                          ? t("staffGrading.pendingGrading")
+                          : t("userApplicationhistory.roundUnopened")}
                   </span>
                 </div>
 

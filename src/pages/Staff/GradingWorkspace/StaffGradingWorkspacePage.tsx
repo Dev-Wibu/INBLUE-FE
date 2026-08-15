@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUsers } from "@/hooks/useApplication";
 import { useApplicationDetailsForReviewer, useHrScore } from "@/hooks/useApplicationDetails";
 import { useJobDescriptions } from "@/hooks/useJobDescription";
+import { formatAiInterviewScore } from "@/lib/ai-interview-score";
 import { inferRoundType } from "@/lib/application-detail-utils";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ import type { components } from "../../../../schema-from-be";
 import { type JdRound } from "../../User/Applications/components/HorizontalPipeline";
 import { RoundWorkspaceDispatcher } from "../../User/Applications/components/RoundWorkspaceDispatcher";
 import { applicationTheme } from "../../User/Applications/components/applicationTheme";
+import { localizeRoundName } from "../../User/Applications/components/round-modules/round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -160,14 +162,13 @@ function AiInterviewPendingNotice({ status }: { status: string }) {
         <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
         <div>
           <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
-            {t("pendingAicvGrading", "Ứng viên chưa hoàn thành vòng AI Interview")}
+            {t("pendingAicvGrading")}
           </p>
           <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-            {t(
-              "pendingAicvGradingHint",
-              "Vòng AI Interview hiện đang ở trạng thái chờ. Không có bài nộp để chấm."
-            )}{" "}
-            <span className="font-semibold">(Trạng thái: {status || "PENDING"})</span>
+            {t("pendingAicvGradingHint")}{" "}
+            <span className="font-semibold">
+              ({t("uiLabels.statusPrefix")} {status || "PENDING"})
+            </span>
           </p>
         </div>
       </div>
@@ -185,12 +186,14 @@ function InlineGradingForm({
   isEditing,
   onCancel,
   onDirtyChange,
+  aiScoreScale,
 }: {
   detail: ApplicationDetail;
   onSuccess: () => void;
   isEditing: boolean;
   onCancel: () => void;
   onDirtyChange?: (_isDirty: boolean) => void;
+  aiScoreScale?: "auto" | "hundred";
 }) {
   const { t } = useTranslation();
   const hasExistingGrade = detail.hrScore !== undefined && detail.hrScore !== null;
@@ -199,7 +202,7 @@ function InlineGradingForm({
     hasExistingGrade
       ? String(detail.hrScore)
       : detail.aiScore !== undefined && detail.aiScore !== null
-        ? String(Math.round(detail.aiScore))
+        ? (formatAiInterviewScore(detail.aiScore, aiScoreScale ?? "auto") ?? "0")
         : "0"
   );
   const [note, setNote] = useState(detail.hrNote ?? "");
@@ -324,7 +327,7 @@ function InlineGradingForm({
               ) : (
                 <XCircle className="h-3 w-3" />
               )}
-              {detail.finalResult === "PASSED" ? "PASSED" : "FAILED"}
+              {detail.finalResult === "PASSED" ? t("resultPass") : t("resultFail")}
             </div>
           </div>
         </div>
@@ -348,7 +351,9 @@ function InlineGradingForm({
         {/* Header */}
         <div className="flex items-center gap-2">
           <ClipboardCheck className="h-4 w-4 text-indigo-600" />
-          <h4 className="text-xs font-bold text-slate-900 dark:text-white">Edit Evaluation</h4>
+          <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+            {t("grading.editScore")}
+          </h4>
         </div>
 
         {/* 2 Columns: Overall Score (readonly) | Recommendation */}
@@ -356,7 +361,7 @@ function InlineGradingForm({
           {/* Left: Overall Score (readonly) */}
           <div className="space-y-2">
             <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-              Overall Score
+              {t("grading.hrScore")}
             </label>
             <div className="flex h-9 items-center justify-center rounded-lg border-2 border-slate-200 bg-slate-50 text-base font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
               <Lock className="mr-1.5 h-3.5 w-3.5 text-slate-400" />
@@ -368,7 +373,7 @@ function InlineGradingForm({
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
               <Lock className="h-3 w-3" />
-              Recommendation
+              {t("grading.decision")}
             </div>
             <div className="flex gap-2">
               <button
@@ -384,7 +389,7 @@ function InlineGradingForm({
                 <CheckCircle2
                   className={cn("h-4 w-4", isPass ? "text-emerald-500" : "text-slate-400")}
                 />
-                Pass
+                {t("userApplicationhistory.passed")}
               </button>
               <button
                 type="button"
@@ -397,7 +402,7 @@ function InlineGradingForm({
                     : "border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500"
                 )}>
                 <XCircle className={cn("h-4 w-4", !isPass ? "text-rose-500" : "text-slate-400")} />
-                Reject
+                {t("userApplicationhistory.failed")}
               </button>
             </div>
           </div>
@@ -406,13 +411,13 @@ function InlineGradingForm({
         {/* Comments & Notes */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-            Comments & Notes
+            {t("general.notes")}
           </label>
           <Textarea
             value={note}
             onChange={(e) => handleNoteChange(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
-            placeholder="Add any notes about this candidate..."
+            placeholder={t("grading.enterHrNotes")}
             rows={2}
             className="resize-none rounded-lg border border-slate-200 text-xs dark:border-slate-700 dark:bg-slate-900"
           />
@@ -424,7 +429,7 @@ function InlineGradingForm({
             variant="outline"
             onClick={onCancel}
             className="h-8 rounded-lg border-slate-200 px-4 text-xs font-medium dark:border-slate-700">
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -436,12 +441,12 @@ function InlineGradingForm({
             {isSubmitting ? (
               <>
                 <Spinner className="h-3 w-3 text-white" />
-                Saving...
+                {t("common.saving")}
               </>
             ) : (
               <>
                 <Save className="h-3 w-3" />
-                Save Changes
+                {t("common.saveChanges")}
               </>
             )}
           </Button>
@@ -456,7 +461,9 @@ function InlineGradingForm({
       {/* Header */}
       <div className="flex items-center gap-2">
         <ClipboardCheck className="h-4 w-4 text-indigo-600" />
-        <h4 className="text-xs font-bold text-slate-900 dark:text-white">Staff Evaluation</h4>
+        <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+          {t("grading.hrGrading")}
+        </h4>
       </div>
 
       {/* 2 Columns: Overall Score | Recommendation */}
@@ -464,7 +471,7 @@ function InlineGradingForm({
         {/* Left: Overall Score */}
         <div className="space-y-2">
           <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-            Overall Score
+            {t("grading.hrScore")}
           </label>
           <Input
             type="number"
@@ -490,10 +497,16 @@ function InlineGradingForm({
           {detail.aiScore !== undefined && detail.status !== "PENDING" && (
             <button
               type="button"
-              onClick={() => handleScoreChange(String(Math.round(detail.aiScore!)))}
+              onClick={() =>
+                handleScoreChange(
+                  formatAiInterviewScore(detail.aiScore, aiScoreScale ?? "auto") ?? "0"
+                )
+              }
               className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700 transition-all hover:bg-purple-100 dark:border-purple-500/30 dark:bg-purple-500/15 dark:text-purple-300">
               <Sparkles className="h-3 w-3" />
-              AI: {Math.round(detail.aiScore)}/100
+              {t("staffGrading.aiScore", {
+                score: formatAiInterviewScore(detail.aiScore, aiScoreScale ?? "auto") ?? 0,
+              })}
             </button>
           )}
         </div>
@@ -501,7 +514,7 @@ function InlineGradingForm({
         {/* Right: Recommendation */}
         <div className="space-y-2">
           <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-            Recommendation
+            {t("grading.decision")}
           </label>
           <div className="flex gap-2">
             <button
@@ -516,7 +529,7 @@ function InlineGradingForm({
               <CheckCircle2
                 className={cn("h-4 w-4", isPass ? "text-emerald-500" : "text-slate-400")}
               />
-              Pass
+              {t("userApplicationhistory.passed")}
             </button>
             <button
               type="button"
@@ -528,7 +541,7 @@ function InlineGradingForm({
                   : "border-slate-200 bg-white text-slate-500 hover:border-rose-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
               )}>
               <XCircle className={cn("h-4 w-4", !isPass ? "text-rose-500" : "text-slate-400")} />
-              Reject
+              {t("userApplicationhistory.failed")}
             </button>
           </div>
         </div>
@@ -537,13 +550,13 @@ function InlineGradingForm({
       {/* Comments & Notes */}
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-          Comments & Notes
+          {t("general.notes")}
         </label>
         <Textarea
           value={note}
           onChange={(e) => handleNoteChange(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
-          placeholder="Add any notes about this candidate..."
+          placeholder={t("grading.enterHrNotes")}
           rows={2}
           className="resize-none rounded-lg border border-slate-200 text-xs dark:border-slate-700 dark:bg-slate-900"
         />
@@ -555,7 +568,7 @@ function InlineGradingForm({
           variant="outline"
           onClick={onCancel}
           className="h-8 rounded-lg border-slate-200 px-4 text-xs font-medium dark:border-slate-700">
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Button
           onClick={handleSubmit}
@@ -567,12 +580,12 @@ function InlineGradingForm({
           {isSubmitting ? (
             <>
               <Spinner className="h-3 w-3 text-white" />
-              Saving...
+              {t("common.saving")}
             </>
           ) : (
             <>
               <Send className="h-3 w-3" />
-              Save Evaluation
+              {t("grading.saveResult")}
             </>
           )}
         </Button>
@@ -629,8 +642,24 @@ function StaffGradingWorkspaceHeaderCard({
 
   const inferredType = detail ? inferRoundType(detail) : null;
   const typeKey = activeRound?.roundType || inferredType;
+  const isAiInterviewRound =
+    String(typeKey ?? "")
+      .replace("MENTROR", "MENTOR")
+      .toUpperCase()
+      .includes("AI_INTERVIEW") ||
+    String(activeRound?.name ?? "")
+      .toUpperCase()
+      .includes("AI");
+  const normalizedAiScore = isAiInterviewRound
+    ? formatAiInterviewScore(aiScore, "auto")
+    : aiScore != null
+      ? String(Math.round(aiScore))
+      : null;
   const translatedType = typeKey ? t(`common.roundType.${typeKey}`, typeKey) : null;
-  const roundName = activeRound?.name || translatedType || `Vòng ${selectedRoundOrder}`;
+  const roundName =
+    localizeRoundName(activeRound?.name, typeKey, t) ||
+    translatedType ||
+    `${t("uiLabels.round")} ${selectedRoundOrder}`;
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
@@ -651,8 +680,10 @@ function StaffGradingWorkspaceHeaderCard({
                 const typeKey = activeRound?.roundType || inferredType;
                 const translatedType = typeKey ? t(`common.roundType.${typeKey}`, typeKey) : null;
                 const displayType =
-                  activeRound?.name || translatedType || `Vòng ${selectedRoundOrder}`;
-                return `Vòng ${selectedRoundOrder}: ${displayType}`;
+                  localizeRoundName(activeRound?.name, typeKey, t) ||
+                  translatedType ||
+                  `${t("uiLabels.round")} ${selectedRoundOrder}`;
+                return `${t("uiLabels.round")} ${selectedRoundOrder}: ${displayType}`;
               })()}
             </span>
 
@@ -666,9 +697,7 @@ function StaffGradingWorkspaceHeaderCard({
                     : "bg-rose-500/15 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
                 )}>
                 <BadgeCheck className="h-3.5 w-3.5" />
-                {isPass
-                  ? `${t("staffGrading.roundPassed", "ĐẠT")} (PASSED)`
-                  : `${t("staffGrading.roundFailed", "KHÔNG ĐẠT")} (FAILED)`}
+                {isPass ? t("staffGrading.roundPassed") : t("staffGrading.roundFailed")}
               </span>
             ) : needsGrading ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-extrabold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
@@ -681,10 +710,10 @@ function StaffGradingWorkspaceHeaderCard({
               </span>
             )}
 
-            {aiScore !== undefined && detail?.status !== "PENDING" && (
+            {normalizedAiScore !== null && detail?.status !== "PENDING" && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/15 px-3 py-1 text-xs font-bold text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">
                 <Star className="h-3.5 w-3.5 text-purple-500" />
-                {`AI: ${Math.round(aiScore)}/100`}
+                {t("staffGrading.aiScore", { score: normalizedAiScore })}
               </span>
             )}
           </div>
@@ -693,19 +722,13 @@ function StaffGradingWorkspaceHeaderCard({
           <div>
             <h2 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">
               {hasHrScore
-                ? `${t("staffGrading.gradingSpaceTitle", "Kết Quả Đánh Giá")} ${roundName}`
-                : `${t("staffGrading.gradingSpaceTitle", "Không Gian Đánh Giá & Chấm Điểm")} - ${roundName}`}
+                ? `${t("staffGrading.gradingSpaceTitle")} ${roundName}`
+                : `${t("staffGrading.gradingSpaceTitle")} - ${roundName}`}
             </h2>
             <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
               {hasHrScore
-                ? t(
-                    "staffGrading.staffGradedResult",
-                    "Kết quả đánh giá bài làm đã được Staff thẩm định và ghi nhận trên hệ thống."
-                  )
-                : t(
-                    "staffGrading.viewSubmissionAndEnter",
-                    "Xem bài làm của ứng viên trong giao diện bên dưới và nhập điểm số & nhận xét HR."
-                  )}
+                ? t("staffGrading.staffGradedResult")
+                : t("staffGrading.viewSubmissionAndEnter")}
             </p>
           </div>
 
@@ -759,7 +782,7 @@ function StaffGradingWorkspaceHeaderCard({
                 <button
                   onClick={onSafeClose}
                   className="text-[10px] font-semibold text-slate-400 hover:text-slate-600">
-                  Đóng
+                  {t("common.close")}
                 </button>
               </div>
               <div className="p-4">
@@ -771,6 +794,7 @@ function StaffGradingWorkspaceHeaderCard({
                   isEditing={true}
                   onCancel={onCancel ?? (() => {})}
                   onDirtyChange={onDirtyChange ?? (() => {})}
+                  aiScoreScale={isAiInterviewRound ? "auto" : "hundred"}
                 />
               </div>
             </div>
@@ -814,7 +838,7 @@ function StaffGradingWorkspaceHeaderCard({
                     : t("staffGrading.roundScore", "ĐIỂM ĐÁNH GIÁ")}
                 </span>
                 <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[9px] font-extrabold text-white/90 uppercase">
-                  STAFF
+                  {t("common.staff")}
                 </span>
               </div>
 
@@ -827,14 +851,14 @@ function StaffGradingWorkspaceHeaderCard({
                     </span>
                     <span className="text-sm font-bold text-white/60">/100</span>
                   </div>
-                ) : aiScore !== undefined && detail?.status !== "PENDING" ? (
+                ) : normalizedAiScore !== null && detail?.status !== "PENDING" ? (
                   <div className="flex flex-col items-center justify-center">
                     <span className="text-[10px] font-extrabold tracking-wider text-purple-200 uppercase">
                       {t("staffGrading.referenceAi", "Tham chiếu AI")}
                     </span>
                     <div className="flex items-baseline justify-center gap-1">
                       <span className="text-3xl font-black tracking-tight text-purple-100">
-                        {Math.round(aiScore)}
+                        {normalizedAiScore}
                       </span>
                       <span className="text-xs font-bold text-purple-300/60">/100</span>
                     </div>
@@ -1207,9 +1231,20 @@ export function StaffGradingWorkspacePage() {
   const roundDisplayName = activeRound?.roundType
     ? t(
         `common.roundType.${activeRound.roundType.replace("MENTROR", "MENTOR")}`,
-        activeRound.name || ""
+        localizeRoundName(activeRound.name, activeRound.roundType, t) || ""
       )
-    : activeRound?.name || "Bài làm ứng viên";
+    : activeRound?.name || t("uiLabels.candidateSubmission");
+  const displayedFinalScore =
+    staffActiveDetail.finalScore != null
+      ? isAiInterviewRound
+        ? formatAiInterviewScore(staffActiveDetail.finalScore, "auto")
+        : String(Math.round(Number(staffActiveDetail.finalScore)))
+      : null;
+  const skillTags = (jdInfo?.requirements ?? "")
+    .split(/[\n,;|]/)
+    .map((skill) => skill.replace(/^[\s•*-]+/, "").trim())
+    .filter(Boolean)
+    .slice(0, 4);
 
   return (
     <div className={applicationTheme.page}>
@@ -1355,18 +1390,17 @@ export function StaffGradingWorkspacePage() {
                         </div>
                       </div>
 
-                      {staffActiveDetail?.finalScore !== undefined &&
-                        staffActiveDetail?.finalScore !== null && (
-                          <div className="text-right">
-                            <span className="text-[10px] font-semibold text-slate-400 uppercase">
-                              {t("userApplicationhistory.scoreLabel", "Điểm số")}
-                            </span>
-                            <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
-                              {staffActiveDetail.finalScore}
-                              <span className="text-xs font-normal text-slate-400">/100</span>
-                            </p>
-                          </div>
-                        )}
+                      {displayedFinalScore !== null && (
+                        <div className="text-right">
+                          <span className="text-[10px] font-semibold text-slate-400 uppercase">
+                            {t("userApplicationhistory.scoreLabel", "Điểm số")}
+                          </span>
+                          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                            {displayedFinalScore}
+                            <span className="text-xs font-normal text-slate-400">/100</span>
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1464,20 +1498,17 @@ export function StaffGradingWorkspacePage() {
                       {t("staffGrading.skillsAndRequirements", "Kỹ năng & Yêu cầu vị trí")}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                      ReactJS / TypeScript
-                    </span>
-                    <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                      Java Spring Boot
-                    </span>
-                    <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                      PostgreSQL / Redis
-                    </span>
-                    <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                      RESTful API Architecture
-                    </span>
-                  </div>
+                  {skillTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {skillTags.map((skill) => (
+                        <span
+                          key={skill}
+                          className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </Card>
 
                 {/* Widget 3: Active Round Benchmark */}

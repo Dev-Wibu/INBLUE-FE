@@ -1,5 +1,6 @@
 import type { ApiResponse } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
+import i18n from "@/lib/i18n";
 import type { components } from "../../schema-from-be";
 
 export type AdminOpenJdResponseDto = components["schemas"]["AdminOpenJdResponseDto"];
@@ -42,12 +43,12 @@ export class AdminApplicationManager {
 
       return {
         success: false,
-        error: "Không thể lấy danh sách JD mở",
+        error: i18n.t("serviceErrors.openJdListFailed"),
       };
     } catch {
       return {
         success: false,
-        error: "Lỗi kết nối máy chủ",
+        error: i18n.t("serviceErrors.serverConnection"),
       };
     }
   }
@@ -73,12 +74,12 @@ export class AdminApplicationManager {
 
       return {
         success: false,
-        error: "Không thể lấy danh sách ứng viên nộp đơn",
+        error: i18n.t("serviceErrors.applicationListFailed"),
       };
     } catch {
       return {
         success: false,
-        error: "Lỗi kết nối máy chủ",
+        error: i18n.t("serviceErrors.serverConnection"),
       };
     }
   }
@@ -106,12 +107,12 @@ export class AdminApplicationManager {
 
       return {
         success: false,
-        error: "Không thể lấy chi tiết đơn ứng tuyển",
+        error: i18n.t("serviceErrors.applicationDetailFailed"),
       };
     } catch {
       return {
         success: false,
-        error: "Lỗi kết nối máy chủ",
+        error: i18n.t("serviceErrors.serverConnection"),
       };
     }
   }
@@ -142,12 +143,12 @@ export class AdminApplicationManager {
 
       return {
         success: false,
-        error: "Không thể lấy danh sách ApplicationDetail",
+        error: i18n.t("serviceErrors.applicationDetailsListFailed"),
       };
     } catch {
       return {
         success: false,
-        error: "Lỗi kết nối máy chủ",
+        error: i18n.t("serviceErrors.serverConnection"),
       };
     }
   }

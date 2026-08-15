@@ -210,7 +210,7 @@ export function QuestionBankCategoryTab({
     <div className="animate-in fade-in slide-in-from-left-4 flex flex-col space-y-4 duration-300">
       <div className="flex items-center justify-between">
         <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-          Danh sách chuyên mục ({categories.length})
+          {t("adminLabels.questionCategories", { count: categories.length })}
         </span>
       </div>
 
@@ -235,7 +235,7 @@ export function QuestionBankCategoryTab({
                     onKeyDown={onCreateKeyDown}
                     onBlur={handleSaveCreate}
                     disabled={isSubmitting}
-                    placeholder="Nhập tên chuyên mục..."
+                    placeholder={t("adminLabels.enterCategoryName")}
                     className="h-8 border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-900 shadow-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
@@ -290,7 +290,7 @@ export function QuestionBankCategoryTab({
                       <Badge
                         variant="secondary"
                         className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                        {count} câu hỏi
+                        {t("adminLabels.questionsCount", { count })}
                       </Badge>
                     </div>
                   </div>

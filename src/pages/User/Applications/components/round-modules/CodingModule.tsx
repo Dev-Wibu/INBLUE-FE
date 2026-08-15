@@ -51,6 +51,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
+import { localizeRoundInstruction } from "./round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 type CodeSubmission = components["schemas"]["CodeSubmission"];
@@ -775,8 +776,11 @@ export function CodingModule({
             <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-200">
               {isFinished
                 ? t("userApplication.coding.examCompletedStatus")
-                : (detailRoundConfig ?? round.configData)?.instruction ||
-                  t("userApplication.coding.examInstructions")}
+                : localizeRoundInstruction(
+                    (detailRoundConfig ?? round.configData)?.instruction,
+                    round.roundType,
+                    t
+                  ) || t("userApplication.coding.examInstructions")}
             </p>
           </div>
         </div>

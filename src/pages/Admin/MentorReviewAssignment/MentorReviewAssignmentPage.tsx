@@ -104,7 +104,7 @@ function renderStatusBadge(detail: AdminDetailItem, t: TranslateFn) {
         variant="outline"
         className="w-fit gap-1 border-indigo-200/80 bg-indigo-50/80 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/60 dark:text-indigo-300">
         <Sparkles className="h-3 w-3 text-indigo-500" />
-        <span>AI đã chấm</span>
+        <span>{t("adminLabels.aiEvaluated")}</span>
       </Badge>
     );
   }
@@ -114,7 +114,7 @@ function renderStatusBadge(detail: AdminDetailItem, t: TranslateFn) {
         variant="outline"
         className="w-fit gap-1 border-purple-200/80 bg-purple-50/80 text-purple-700 dark:border-purple-900/50 dark:bg-purple-950/60 dark:text-purple-300">
         <CheckCircle2 className="h-3 w-3 text-purple-500" />
-        <span>Đã nộp bài</span>
+        <span>{t("adminLabels.submitted")}</span>
       </Badge>
     );
   }
@@ -124,7 +124,7 @@ function renderStatusBadge(detail: AdminDetailItem, t: TranslateFn) {
         variant="outline"
         className="w-fit gap-1 border-emerald-200/80 bg-emerald-50/80 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/60 dark:text-emerald-300">
         <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-        <span>Hoàn thành</span>
+        <span>{t("adminLabels.completed")}</span>
       </Badge>
     );
   }
@@ -132,7 +132,7 @@ function renderStatusBadge(detail: AdminDetailItem, t: TranslateFn) {
     <Badge
       variant="outline"
       className="w-fit border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-      {status ?? "Đang xử lý"}
+      {status ?? t("adminLabels.processing")}
     </Badge>
   );
 }
@@ -426,7 +426,7 @@ export function MentorReviewAssignmentPage() {
                     {t("adminMentorReviewAssignment.candidate", "Ứng viên")}
                   </TableHead>
                   <TableHead className="w-[26%] min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-                    Công ty & Vị trí tuyển dụng
+                    {t("adminLabels.companyAndJob")}
                   </TableHead>
                   <TableHead className="w-[16%] min-w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                     {t("adminMentorReviewAssignment.roundName", "Vòng & Điểm AI")}
@@ -450,7 +450,7 @@ export function MentorReviewAssignmentPage() {
                     ((detail as Record<string, unknown>).companyName as string) ||
                     ((detail as Record<string, unknown>).company_name as string) ||
                     ((detail as Record<string, unknown>).company as string) ||
-                    "Công ty tuyển dụng";
+                    t("adminLabels.hiringCompany");
 
                   const companyLogo =
                     ((detail as Record<string, unknown>).companyLogoUrl as string) ||
@@ -540,7 +540,7 @@ export function MentorReviewAssignmentPage() {
                           <div className="flex items-center gap-1.5">
                             {detail.roundOrder && (
                               <span className="text-xs text-slate-500 dark:text-slate-400">
-                                Vòng {detail.roundOrder}
+                                {t("adminLabels.round")} {detail.roundOrder}
                               </span>
                             )}
                             {detail.aiScore != null && (

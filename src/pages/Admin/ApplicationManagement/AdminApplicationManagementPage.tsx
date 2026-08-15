@@ -487,7 +487,7 @@ export function AdminApplicationManagementPage() {
           <div className="mt-4 flex flex-col gap-4 xl:flex-row xl:items-center">
             <div className="flex flex-wrap items-center gap-2">
               <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
-                Công ty:
+                {t("adminLabels.companyFilter")}
               </span>
               <Select
                 value={selectedCompanyId}
@@ -497,10 +497,10 @@ export function AdminApplicationManagementPage() {
                   pagination.goToFirstPage();
                 }}>
                 <SelectTrigger className="h-9 w-44 rounded-full border-slate-200 bg-white px-4 text-[13.5px] dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200">
-                  <SelectValue placeholder="Tất cả" />
+                  <SelectValue placeholder={t("adminLabels.all")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">Tất cả</SelectItem>
+                  <SelectItem value="ALL">{t("adminLabels.all")}</SelectItem>
                   {companyOptions.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
@@ -512,13 +512,13 @@ export function AdminApplicationManagementPage() {
             <div className="hidden h-5 w-px bg-slate-200 xl:block dark:bg-slate-800" />
             <div className="flex flex-wrap items-center gap-2">
               <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
-                Trạng thái:
+                {t("adminLabels.statusFilter")}
               </span>
               {[
-                ["ALL", "Tất cả"],
-                ["IN_PROGRESS", "Đang xử lý"],
-                ["PASSED", "Đạt"],
-                ["FAILED", "Trượt"],
+                ["ALL", t("adminLabels.all")],
+                ["IN_PROGRESS", t("adminLabels.inProgress")],
+                ["PASSED", t("adminLabels.passed")],
+                ["FAILED", t("adminLabels.failed")],
               ].map(([id, label]) => (
                 <button
                   key={id}

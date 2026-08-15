@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
+import i18n from "@/lib/i18n";
 import { getSessionJoinAvailability } from "@/lib/session-join";
 import { sessionManager } from "@/services/session.manager";
 
@@ -165,15 +166,15 @@ export function formatCountdownUntil(joinTime: string | null | undefined): strin
   const minutes = Math.floor((totalSeconds % 3_600) / 60);
   const seconds = totalSeconds % 60;
   if (days > 0) {
-    return `${days} ngày ${hours} giờ`;
+    return `${days} ${i18n.t("uiLabels.day")} ${hours} ${i18n.t("uiLabels.hour")}`;
   }
   if (hours > 0) {
-    return `${hours} giờ ${minutes} phút`;
+    return `${hours} ${i18n.t("uiLabels.hour")} ${minutes} ${i18n.t("common.minute")}`;
   }
   if (minutes > 0) {
-    return `${minutes} phút ${seconds} giây`;
+    return `${minutes} ${i18n.t("common.minute")} ${seconds} ${i18n.t("uiLabels.second")}`;
   }
-  return `${seconds} giây`;
+  return `${seconds} ${i18n.t("uiLabels.second")}`;
 }
 
 export const __testables = { computeState, buildView };

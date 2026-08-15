@@ -84,6 +84,7 @@ import {
   resolveSelectedMentor,
 } from "./mentorReview.utils";
 import { MentorReviewSubheader } from "./MentorReviewSubheader";
+import { localizeRoundName } from "./round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -263,7 +264,10 @@ export function MentorReviewModule({
     <div className="space-y-6">
       <MentorReviewSubheader
         roundOrder={roundOrder}
-        roundLabel={round.name || t("userApplicationhistory.mentorRoundTitle", "Đánh giá Mentor")}
+        roundLabel={
+          localizeRoundName(round.name, round.roundType, t) ||
+          t("userApplicationhistory.mentorRoundTitle")
+        }
         activeStep={activeStep}
         detail={detail}
         isCompleted={isCompleted}

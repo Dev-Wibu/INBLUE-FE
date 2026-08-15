@@ -281,7 +281,7 @@ export function QuestionBankManagementPage() {
       <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <SpinnerBlock size="lg" label="Đang tải ngân hàng câu hỏi..." />
+            <SpinnerBlock size="lg" label={t("adminLabels.loadingQuestionBank")} />
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
@@ -314,7 +314,7 @@ export function QuestionBankManagementPage() {
                         </span>
                       </div>
                       <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-                        Danh sách câu hỏi phỏng vấn thuộc chuyên mục{" "}
+                        {t("adminLabels.categoryQuestions")}{" "}
                         {selectedCategoryForDrilldown.categoryName}
                       </p>
                     </div>
@@ -393,7 +393,7 @@ export function QuestionBankManagementPage() {
                   <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                   <Input
                     type="text"
-                    placeholder="Tìm kiếm theo nội dung, ID câu hỏi..."
+                    placeholder={t("adminLabels.searchQuestions")}
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -437,13 +437,13 @@ export function QuestionBankManagementPage() {
               {(activeTab === "questions" || selectedCategoryForDrilldown) && (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <span className="mr-1 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
-                    Mức độ:
+                    {t("adminLabels.difficulty")}
                   </span>
                   {[
-                    ["ALL", "Tất cả mức độ"],
-                    ["EASY", "Dễ (Easy)"],
-                    ["MEDIUM", "Trung bình"],
-                    ["HARD", "Khó (Hard)"],
+                    ["ALL", t("adminLabels.allDifficulty")],
+                    ["EASY", t("adminLabels.easy")],
+                    ["MEDIUM", t("adminLabels.medium")],
+                    ["HARD", t("adminLabels.hard")],
                   ].map(([val, label]) => (
                     <button
                       key={val}
@@ -465,7 +465,7 @@ export function QuestionBankManagementPage() {
                     <>
                       <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-800" />
                       <span className="mr-1 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
-                        Chuyên mục:
+                        {t("adminLabels.categoryFilter")}
                       </span>
                       <Select
                         value={selectedCategory}
@@ -474,10 +474,10 @@ export function QuestionBankManagementPage() {
                           pagination.goToFirstPage();
                         }}>
                         <SelectTrigger className="h-[36px] min-w-[170px] rounded-full border border-slate-200/90 bg-white text-[13.5px] font-medium shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-                          <SelectValue placeholder="Tất cả chuyên mục" />
+                          <SelectValue placeholder={t("adminLabels.allCategories")} />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
-                          <SelectItem value="ALL">Tất cả chuyên mục</SelectItem>
+                          <SelectItem value="ALL">{t("adminLabels.allCategories")}</SelectItem>
                           {categories.map((cat) => (
                             <SelectItem key={cat.id} value={String(cat.id)}>
                               {cat.categoryName}
@@ -490,7 +490,8 @@ export function QuestionBankManagementPage() {
 
                   {isFilterActive && (
                     <span className="ml-auto text-xs font-semibold text-slate-500 dark:text-slate-400">
-                      Hiển thị {pageItems.length}/{filteredQuestions.length} kết quả
+                      {t("adminLabels.showingResults")} {pageItems.length}/
+                      {filteredQuestions.length} {t("adminLabels.results")}
                     </span>
                   )}
                 </div>

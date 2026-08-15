@@ -162,7 +162,9 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
           {
             id: generateTabId("grading-detail"),
             type: "grading-detail",
-            label: appId ? `Đơn #${appId}` : t("application.details"),
+            label: appId
+              ? t("adminLabels.applicationNumber", { id: appId })
+              : t("application.details"),
             appId: appId ?? undefined,
           },
         ];
@@ -291,8 +293,8 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
             id: generateTabId(gradingType),
             type: gradingType,
             label: extraData.candidateName
-              ? `Đơn #${appId} - ${extraData.candidateName}`
-              : `Đơn #${appId}`,
+              ? `${t("adminLabels.applicationNumber", { id: appId })} - ${extraData.candidateName}`
+              : t("adminLabels.applicationNumber", { id: appId }),
             appId: String(appId),
             candidateName: extraData.candidateName,
             jdId: extraData.jdId,

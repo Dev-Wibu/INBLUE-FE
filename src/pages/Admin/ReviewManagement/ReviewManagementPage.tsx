@@ -147,7 +147,7 @@ export function ReviewManagementPage() {
     if (isLoading) {
       return (
         <div className="flex h-64 items-center justify-center">
-          <SpinnerBlock label={t("common.loadingData", "Đang tải dữ liệu...")} />
+          <SpinnerBlock label={t("common.loadingData")} />
         </div>
       );
     }
@@ -155,10 +155,10 @@ export function ReviewManagementPage() {
       return (
         <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
           <p className="text-sm font-semibold text-slate-500">
-            {t("common.noDataAvailable", "Không tìm thấy thông tin đánh giá này.")}
+            {t("adminReviewmanagement.reviewNotFound")}
           </p>
           <Button variant="outline" size="sm" onClick={() => navigate("/admin/reviews")}>
-            {t("common.back", "Quay lại danh sách")}
+            {t("common.back")}
           </Button>
         </div>
       );
@@ -184,16 +184,15 @@ export function ReviewManagementPage() {
               <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    Đánh giá & Phản hồi phỏng vấn
+                    {t("adminReviewmanagement.title")}
                   </h2>
                   <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-                    Quản lý tổng hợp đánh giá từ Mentor và phản hồi từ Ứng viên theo từng phiên
-                    phỏng vấn
+                    {t("adminReviewmanagement.description")}
                   </p>
                 </div>
                 <div className="flex items-center justify-center gap-5 sm:gap-6">
                   {[
-                    [stats.total, t("adminReviewmanagement.totalReviews", "Tổng phiên phỏng vấn")],
+                    [stats.total, t("adminReviewmanagement.totalReviews")],
                     [`${stats.averageScore}/100`, t("mentorScoring.averageCandidateScore")],
                     [stats.excellentCount, t("mentorScoring.excellentScores")],
                   ].map(([value, label], index) => (
@@ -233,7 +232,7 @@ export function ReviewManagementPage() {
                   type="submit"
                   className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                   <Search className="mr-2 h-[18px] w-[18px]" />
-                  {t("common.search", "Tìm kiếm")}
+                  {t("common.search")}
                 </Button>
                 <ReloadButton
                   onReload={async () => {
@@ -248,10 +247,10 @@ export function ReviewManagementPage() {
               {/* Rating filter pills */}
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
-                  {t("common.evaluate", "Đánh giá")}:
+                  {t("common.evaluate")}:
                 </span>
                 {[
-                  ["all", t("common.allStatus", "Tất cả")],
+                  ["all", t("common.allStatus")],
                   ["excellent", t("mentorScoring.range.excellent")],
                   ["strong", t("mentorScoring.range.strong")],
                   ["meets", t("mentorScoring.range.meets")],
@@ -306,24 +305,24 @@ export function ReviewManagementPage() {
                           {t("common.id")}
                         </TableHead>
                         <TableHead className="w-[24%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-                          Mentor phỏng vấn
+                          {t("adminReviewmanagement.mentorInterviewer")}
                         </TableHead>
                         <TableHead className="w-[24%] min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-                          Ứng viên tham gia
+                          {t("adminReviewmanagement.candidateParticipant")}
                         </TableHead>
                         <TableHead className="w-[12%] min-w-[100px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.session")}
                         </TableHead>
                         <TableHead className="w-[14%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                           <SortButton {...getSortProps("rating" as keyof MentorReview)}>
-                            Mentor chấm
+                            {t("adminReviewmanagement.mentorScore")}
                           </SortButton>
                         </TableHead>
                         <TableHead className="w-[14%] min-w-[130px] px-4 font-semibold text-slate-700 dark:text-slate-200">
-                          Ứng viên chấm
+                          {t("adminReviewmanagement.candidateScore")}
                         </TableHead>
                         <TableHead className="w-[12%] min-w-[120px] pr-6 font-semibold text-slate-700 dark:text-slate-200">
-                          {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
+                          {t("adminUsermanagement.joinedDate")}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -370,7 +369,9 @@ export function ReviewManagementPage() {
                                 <span className="font-semibold text-slate-900 dark:text-white">
                                   {review.mentor?.name ||
                                     (review.mentor?.id
-                                      ? `Mentor #${review.mentor.id}`
+                                      ? t("adminReviewmanagement.mentorWithId", {
+                                          id: review.mentor.id,
+                                        })
                                       : t("common.noDataAvailable"))}
                                 </span>
                               </div>
@@ -390,7 +391,9 @@ export function ReviewManagementPage() {
                                 <span className="font-semibold text-slate-900 dark:text-white">
                                   {review.user?.name ||
                                     (review.user?.id
-                                      ? `Candidate #${review.user.id}`
+                                      ? t("adminReviewmanagement.candidateWithId", {
+                                          id: review.user.id,
+                                        })
                                       : t("common.noDataAvailable"))}
                                 </span>
                               </div>
@@ -412,7 +415,9 @@ export function ReviewManagementPage() {
                                   color="sky"
                                 />
                               ) : (
-                                <span className="text-xs text-slate-400 italic">Chưa phản hồi</span>
+                                <span className="text-xs text-slate-400 italic">
+                                  {t("adminReviewmanagement.noCandidateFeedback")}
+                                </span>
                               )}
                             </TableCell>
                             <TableCell className="py-4 pr-6 text-sm font-medium text-slate-600 dark:text-slate-300">

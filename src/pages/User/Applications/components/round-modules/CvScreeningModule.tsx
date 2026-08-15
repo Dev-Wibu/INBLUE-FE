@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
 import type { JdInfoPayload } from "../RoundWorkspaceDispatcher";
+import { localizeRoundInstruction } from "./round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -199,6 +200,8 @@ export function CvScreeningModule({
   const submissionData = detail?.submissionData as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const detailRoundConfig = (detail as any)?.roundConfig;
+  const configuredInstruction = detailRoundConfig?.instruction ?? round.configData?.instruction;
+  const localizedInstruction = localizeRoundInstruction(configuredInstruction, round.roundType, t);
   const fileUrl = submissionData?.fileUrl || submissionData?.url || null;
   const isAlreadySubmitted =
     hasSubmitted ||
@@ -332,8 +335,7 @@ export function CvScreeningModule({
                 ? detail?.finalResult === "PASSED" || isCompleted
                   ? t("userApplication.cvScreening.passedMessage")
                   : t("userApplication.cvScreening.submittedMessage")
-                : detailRoundConfig?.instruction ||
-                  round.configData?.instruction ||
+                : localizedInstruction ||
                   t(
                     "userApplicationhistory.cvInstructionDefault",
                     "Please upload your CV in PDF format. The AI system will automatically analyze your profile and compare your Match Score with the recruitment requirements."

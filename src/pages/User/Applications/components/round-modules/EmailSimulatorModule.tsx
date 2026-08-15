@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
 import type { JdInfoPayload } from "../RoundWorkspaceDispatcher";
+import { localizeRoundInstruction } from "./round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -432,9 +433,11 @@ export function EmailSimulatorModule({
                   </span>
                 </div>
                 <h3 className="mt-1 text-sm leading-snug font-bold text-slate-900 dark:text-slate-100">
-                  {detailRoundConfig?.instruction ||
-                    round.configData?.instruction ||
-                    t("userApplication.emailSimulator.emailInstructionDefault")}
+                  {localizeRoundInstruction(
+                    detailRoundConfig?.instruction ?? round.configData?.instruction,
+                    round.roundType,
+                    t
+                  ) || t("userApplication.emailSimulator.emailInstructionDefault")}
                 </h3>
               </div>
 
@@ -887,8 +890,11 @@ export function EmailSimulatorModule({
               </div>
               <div className="space-y-2.5">
                 <p className="text-xs leading-relaxed font-bold text-slate-900 dark:text-slate-100">
-                  {detailRoundConfig?.instruction ||
-                    round.configData?.instruction ||
+                  {localizeRoundInstruction(
+                    detailRoundConfig?.instruction ?? round.configData?.instruction,
+                    round.roundType,
+                    t
+                  ) ||
                     t(
                       "userApplication.emailSimulator.emailInstructionDefault",
                       "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng."

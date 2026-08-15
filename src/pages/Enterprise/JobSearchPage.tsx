@@ -128,7 +128,7 @@ function JobCard({ job, t }: { job: EnrichedJob; t: TFunction }) {
       return { text: `${fmt(min)}+ VND`, hasIcon: false };
     }
     if (max) {
-      return { text: `Tối đa ${fmt(max)} VND`, hasIcon: false };
+      return { text: `${t("uiLabels.maximum")} ${fmt(max)} VND`, hasIcon: false };
     }
     return { text: t("enterpriseCompanydetail.negotiate", "Thỏa thuận"), hasIcon: false };
   };
@@ -154,7 +154,7 @@ function JobCard({ job, t }: { job: EnrichedJob; t: TFunction }) {
             </div>
             <div>
               <h4 className="line-clamp-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {job.companyName || "Công ty tuyển dụng"}
+                {job.companyName || t("uiLabels.hiringCompany")}
               </h4>
               {job.companyIndustry && (
                 <p className="line-clamp-1 text-[11px] text-slate-400 dark:text-slate-500">
@@ -323,7 +323,7 @@ export function JobSearchPage() {
             const comp = j.companyId ? companyMap.get(j.companyId) : undefined;
             return {
               ...j,
-              companyName: comp?.name || j.companyName || "Công ty đối tác",
+              companyName: comp?.name || j.companyName || t("uiLabels.partnerCompany"),
               companyLogoUrl: comp?.logoUrl,
               companyIndustry: comp?.industry,
             };

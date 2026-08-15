@@ -31,14 +31,6 @@ interface ReviewDetailViewProps {
   onBack: () => void;
 }
 
-const getCandidateRatingLabel = (rating: number) => {
-  if (rating >= 5) return "Xuất sắc";
-  if (rating >= 4) return "Rất tốt";
-  if (rating >= 3) return "Đạt yêu cầu";
-  if (rating >= 2) return "Cần cố gắng";
-  return "Chưa đạt";
-};
-
 export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
   const { t } = useTranslation();
   const [activeView, setActiveView] = useState<"mentor" | "candidate">("mentor");
@@ -93,7 +85,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
     {
       key: "situation",
       letter: "S",
-      title: t("common.situation", "Bối cảnh (Situation)"),
+      title: t("adminReviewmanagement.starSituation"),
       icon: MessageSquare,
       content: review.situationNote,
       color:
@@ -102,7 +94,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
     {
       key: "task",
       letter: "T",
-      title: t("common.mission", "Nhiệm vụ (Task)"),
+      title: t("adminReviewmanagement.starTask"),
       icon: Target,
       content: review.taskNote,
       color:
@@ -111,7 +103,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
     {
       key: "action",
       letter: "A",
-      title: t("common.act", "Hành động (Action)"),
+      title: t("adminReviewmanagement.starAction"),
       icon: Zap,
       content: review.actionNote,
       color:
@@ -120,7 +112,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
     {
       key: "result",
       letter: "R",
-      title: t("common.result", "Kết quả (Result)"),
+      title: t("adminReviewmanagement.starResult"),
       icon: TrendingUp,
       content: review.resultNote,
       color:
@@ -139,7 +131,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
             onClick={onBack}
             className="h-9 gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800">
             <ArrowLeft className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-            <span>{t("common.back", "Quay lại")}</span>
+            <span>{t("common.back")}</span>
           </Button>
 
           <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-800" />
@@ -147,13 +139,15 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
           <span
             onClick={onBack}
             className="cursor-pointer text-xs font-semibold text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-            {t("common.reviewFromMentor", "Đánh giá & Phản hồi")}
+            {t("common.reviewFromMentor")}
           </span>
 
           <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
 
           <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
-            Chi tiết phiên phỏng vấn #{review.session?.id || review.id}
+            {t("adminReviewmanagement.sessionDetailTitle", {
+              id: review.session?.id || review.id,
+            })}
           </h1>
         </div>
       </div>
@@ -169,14 +163,14 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                 <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800/80">
                   <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                     <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                    <span>Đánh giá từ Mentor (Mô hình STAR)</span>
+                    <span>{t("adminReviewmanagement.mentorStarReview")}</span>
                   </h2>
                   <MentorScoreDisplay value={review.rating} showBand />
                 </div>
 
                 {starItems.length === 0 ? (
                   <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Chưa có ghi chú STAR cho đánh giá này.
+                    {t("adminReviewmanagement.noStarNotes")}
                   </p>
                 ) : (
                   <div className="relative space-y-6 pl-8 before:absolute before:top-3 before:bottom-3 before:left-3.5 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
@@ -211,7 +205,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
               <div className="space-y-5">
                 <h2 className="flex items-center gap-2 border-b border-slate-200/80 pb-3 text-base font-bold text-slate-900 dark:border-slate-800/80 dark:text-white">
                   <User className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                  <span>Nhận xét chuyên sâu & Định hướng phát triển</span>
+                  <span>{t("adminReviewmanagement.feedbackAndDevelopment")}</span>
                 </h2>
 
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -219,7 +213,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                     <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
                       <div className="mb-2.5 flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                         <ThumbsUp className="h-4 w-4" />
-                        <span>Điểm mạnh nổi bật</span>
+                        <span>{t("adminReviewmanagement.keyStrengths")}</span>
                       </div>
                       <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                         {review.strength}
@@ -231,7 +225,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                     <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
                       <div className="mb-2.5 flex items-center gap-2 text-xs font-bold text-rose-600 dark:text-rose-400">
                         <AlertTriangle className="h-4 w-4" />
-                        <span>Điểm cần cải thiện</span>
+                        <span>{t("adminReviewmanagement.improvementAreas")}</span>
                       </div>
                       <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                         {review.weakness}
@@ -244,7 +238,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                   <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
                     <div className="mb-2.5 flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
                       <Lightbulb className="h-4 w-4" />
-                      <span>Đề xuất lộ trình phát triển</span>
+                      <span>{t("adminReviewmanagement.developmentPlan")}</span>
                     </div>
                     <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                       {review.improve}
@@ -260,11 +254,13 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                 <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800/80">
                   <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                     <MessageSquareQuote className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-                    <span>Phản hồi & Cảm nhận từ Ứng viên</span>
+                    <span>{t("adminReviewmanagement.candidateFeedbackTitle")}</span>
                   </h2>
                   {matchingCandidateFeedback && (
                     <Badge className="bg-sky-50 text-xs font-bold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
-                      Ứng viên chấm {matchingCandidateFeedback.rating || 0}.0/5
+                      {t("adminReviewmanagement.candidateScoreOutOfFive", {
+                        score: matchingCandidateFeedback.rating || 0,
+                      })}
                     </Badge>
                   )}
                 </div>
@@ -284,10 +280,10 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                         </Avatar>
                         <div>
                           <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                            {matchingCandidateFeedback.user?.name || "Ứng viên"}
+                            {matchingCandidateFeedback.user?.name || t("common.candidate")}
                           </h3>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Khảo sát chất lượng phiên phỏng vấn
+                            {t("adminReviewmanagement.interviewQualitySurvey")}
                           </p>
                         </div>
                       </div>
@@ -302,7 +298,19 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                         <Badge
                           variant="outline"
                           className="border-sky-200/80 bg-sky-50/80 text-xs font-bold text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/60 dark:text-sky-300">
-                          {getCandidateRatingLabel(matchingCandidateFeedback.rating || 0)}
+                          {t(
+                            `adminReviewmanagement.candidateRating.${
+                              (matchingCandidateFeedback.rating || 0) >= 5
+                                ? "excellent"
+                                : (matchingCandidateFeedback.rating || 0) >= 4
+                                  ? "veryGood"
+                                  : (matchingCandidateFeedback.rating || 0) >= 3
+                                    ? "meets"
+                                    : (matchingCandidateFeedback.rating || 0) >= 2
+                                      ? "needsImprovement"
+                                      : "notMet"
+                            }`
+                          )}
                         </Badge>
                       </div>
                     </div>
@@ -314,8 +322,9 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                         </blockquote>
                       ) : (
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                          Ứng viên đã hoàn tất chấm điểm {matchingCandidateFeedback.rating}/5 sao và
-                          không để lại nhận xét thêm.
+                          {t("adminReviewmanagement.candidateCompletedRating", {
+                            score: matchingCandidateFeedback.rating,
+                          })}
                         </p>
                       )}
                     </div>
@@ -324,10 +333,10 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                   <div className="flex h-56 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
                     <MessageSquareQuote className="h-10 w-10 text-slate-400" />
                     <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                      Chưa có phản hồi từ Ứng viên
+                      {t("adminReviewmanagement.noCandidateFeedbackTitle")}
                     </h3>
                     <p className="max-w-md text-xs text-slate-500 dark:text-slate-400">
-                      Ứng viên chưa hoàn tất mẫu khảo sát đánh giá cho phiên phỏng vấn này.
+                      {t("adminReviewmanagement.noCandidateFeedbackDescription")}
                     </p>
                   </div>
                 )}
@@ -343,7 +352,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/60">
               <Gauge className="h-4 w-4 text-indigo-500" />
               <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                Đánh giá tổng quan phiên (Chọn tab)
+                {t("adminReviewmanagement.overallReviewTabs")}
               </h3>
             </div>
 
@@ -359,7 +368,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                 }`}>
                 <div className="space-y-1">
                   <p className="text-[11px] font-extrabold text-indigo-700 uppercase dark:text-indigo-400">
-                    Mentor chấm Ứng viên
+                    {t("adminReviewmanagement.mentorScoresCandidate")}
                   </p>
                   <MentorScoreDisplay value={review.rating} showProgress />
                 </div>
@@ -377,7 +386,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                 }`}>
                 <div className="space-y-1">
                   <p className="text-[11px] font-extrabold text-sky-700 uppercase dark:text-sky-400">
-                    Ứng viên chấm Mentor
+                    {t("adminReviewmanagement.candidateScoresMentor")}
                   </p>
                   <div className="flex items-center gap-2">
                     {matchingCandidateFeedback ? (
@@ -393,7 +402,9 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                         </span>
                       </>
                     ) : (
-                      <span className="text-xs text-slate-400 italic">Chưa đánh giá</span>
+                      <span className="text-xs text-slate-400 italic">
+                        {t("adminReviewmanagement.notRated")}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -401,13 +412,25 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                   <Badge
                     variant="outline"
                     className="border-sky-200/80 bg-sky-50/80 text-[11px] font-bold text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/60 dark:text-sky-300">
-                    {getCandidateRatingLabel(matchingCandidateFeedback.rating || 0)}
+                    {t(
+                      `adminReviewmanagement.candidateRating.${
+                        (matchingCandidateFeedback.rating || 0) >= 5
+                          ? "excellent"
+                          : (matchingCandidateFeedback.rating || 0) >= 4
+                            ? "veryGood"
+                            : (matchingCandidateFeedback.rating || 0) >= 3
+                              ? "meets"
+                              : (matchingCandidateFeedback.rating || 0) >= 2
+                                ? "needsImprovement"
+                                : "notMet"
+                      }`
+                    )}
                   </Badge>
                 ) : (
                   <Badge
                     variant="outline"
                     className="border-slate-200 bg-slate-100 text-[10px] text-slate-500 dark:border-slate-800 dark:bg-slate-900">
-                    Chưa có
+                    {t("adminReviewmanagement.noCandidateFeedbackShort")}
                   </Badge>
                 )}
               </button>
@@ -418,7 +441,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
           <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs dark:border-slate-800/80 dark:bg-slate-900">
             <h3 className="mb-5 flex items-center gap-2 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               <Video className="h-4 w-4 text-indigo-500" />
-              <span>Thông tin phiên & Đối tượng</span>
+              <span>{t("adminReviewmanagement.sessionAndParticipants")}</span>
             </h3>
 
             <div className="space-y-6">
@@ -426,7 +449,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
               <div className="space-y-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4.5 dark:border-slate-800/80 dark:bg-slate-950/60">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Mã phiên phỏng vấn
+                    {t("adminReviewmanagement.interviewSessionId")}
                   </span>
                   <span className="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 font-mono text-xs font-bold text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/60 dark:text-indigo-300">
                     #{review.session?.id || review.id}
@@ -435,7 +458,9 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
 
                 {review.session?.roomName && (
                   <div className="flex flex-col gap-1 text-xs">
-                    <span className="text-slate-500 dark:text-slate-400">Phòng phỏng vấn</span>
+                    <span className="text-slate-500 dark:text-slate-400">
+                      {t("adminReviewmanagement.interviewRoom")}
+                    </span>
                     <span className="truncate font-mono font-bold text-slate-900 dark:text-white">
                       {review.session.roomName}
                     </span>
@@ -445,7 +470,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                 <div className="flex items-center justify-between text-xs">
                   <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                     <Calendar className="h-3.5 w-3.5 text-indigo-500" />
-                    <span>Thời gian tham gia</span>
+                    <span>{t("adminReviewmanagement.joinTime")}</span>
                   </span>
                   <span className="font-semibold text-slate-900 dark:text-slate-200">
                     {formattedDate}
@@ -457,10 +482,10 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                    Mentor phỏng vấn
+                    {t("adminReviewmanagement.mentorInterviewer")}
                   </span>
                   <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                    Chấm thi
+                    {t("adminReviewmanagement.reviewerRole")}
                   </span>
                 </div>
                 <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-950/50">
@@ -476,7 +501,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                   </Avatar>
                   <div className="min-w-0">
                     <h4 className="truncate text-sm font-bold text-slate-900 dark:text-white">
-                      {review.mentor?.name || "Mentor"}
+                      {review.mentor?.name || t("common.mentor")}
                     </h4>
                     <p className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">
                       {review.mentor?.email || `ID: #${review.mentor?.id || "—"}`}
@@ -489,10 +514,10 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                    Ứng viên tham gia
+                    {t("adminReviewmanagement.candidateParticipant")}
                   </span>
                   <span className="rounded-md bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
-                    Phỏng vấn
+                    {t("adminReviewmanagement.interviewRole")}
                   </span>
                 </div>
                 <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-950/50">
@@ -508,7 +533,7 @@ export function ReviewDetailView({ review, onBack }: ReviewDetailViewProps) {
                   </Avatar>
                   <div className="min-w-0">
                     <h4 className="truncate text-sm font-bold text-slate-900 dark:text-white">
-                      {review.user?.name || "Ứng viên"}
+                      {review.user?.name || t("common.candidate")}
                     </h4>
                     <p className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">
                       {review.user?.email || `ID: #${review.user?.id || "—"}`}

@@ -122,7 +122,7 @@ export class CodingProblemManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Cập nhật bài tập thất bại",
+        error: error instanceof Error ? error.message : i18n.t("serviceErrors.codingUpdateFailed"),
       };
     }
   }

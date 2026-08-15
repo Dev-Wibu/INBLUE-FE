@@ -36,6 +36,7 @@ import { useEmailSubmission } from "@/hooks/useEmailSubmission";
 import { useJobDescription, useJobDescriptions } from "@/hooks/useJobDescription";
 import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import { normalizeAiInterviewScore } from "@/lib/ai-interview-score";
 import {
   filterOutAutoGradedRounds,
   inferRoundType,
@@ -45,6 +46,7 @@ import { formatDateTime } from "@/lib/formatting";
 import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
+import type { TFunction } from "i18next";
 import {
   AlertTriangle,
   ArrowRight,
@@ -73,12 +75,50 @@ import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
+import { localizeRoundName } from "../../User/Applications/components/round-modules/round-localization";
 const t = (k: string, opts?: string | Record<string, unknown>): string =>
   i18n.t(k, opts as string) as unknown as string;
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 type SubmissionData = components["schemas"]["SubmissionData"];
 type AiFeedback = components["schemas"]["AiFeedback"];
+
+function isAiInterviewDetail(detail?: ApplicationDetail): boolean {
+  if (!detail) return false;
+  const type = String(
+    (detail as ApplicationDetail & { roundType?: string }).roundType ?? inferRoundType(detail) ?? ""
+  )
+    .replace("MENTROR", "MENTOR")
+    .toUpperCase();
+  return (
+    type === "AI_INTERVIEW" ||
+    String((detail as { roundName?: string }).roundName ?? "")
+      .toLowerCase()
+      .includes("ai")
+  );
+}
+
+function getDisplayScore(detail?: ApplicationDetail): number | undefined {
+  if (!detail) return undefined;
+  if (detail.hrScore != null) return Number(detail.hrScore);
+  const raw = detail.finalScore ?? detail.aiScore;
+  if (raw == null) return undefined;
+  return isAiInterviewDetail(detail)
+    ? (normalizeAiInterviewScore(raw, "auto") ?? undefined)
+    : Number(raw);
+}
+
+function getDisplayAiScoreValue(detail?: ApplicationDetail): number | undefined {
+  if (detail?.aiScore == null) return undefined;
+  return isAiInterviewDetail(detail)
+    ? (normalizeAiInterviewScore(detail.aiScore, "auto") ?? undefined)
+    : Number(detail.aiScore);
+}
+
+function getDisplayAiScore(detail?: ApplicationDetail): string | null {
+  const score = getDisplayAiScoreValue(detail);
+  return score == null ? null : String(Math.round(score));
+}
 
 // Unified display type for both Admin and Staff
 interface GradingListItem {
@@ -176,7 +216,7 @@ function EmbeddedCVViewer({ fileUrl }: { fileUrl: string }) {
           <div className="min-w-0">
             <p className="truncate text-xs font-bold text-slate-900 dark:text-white">{fileName}</p>
             <span className="inline-block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
-              {fileExt.toUpperCase()} Document
+              {fileExt.toUpperCase()} {t("common.details")}
             </span>
           </div>
         </div>
@@ -577,7 +617,7 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
               <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                 {overallMatch}
               </span>
-              <span className="mt-0.5 text-xs text-slate-500">Overall</span>
+              <span className="mt-0.5 text-xs text-slate-500">{t("grading.overallMatch")}</span>
             </div>
           )}
           {skillsMatch !== null && (
@@ -585,7 +625,7 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
               <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {skillsMatch}
               </span>
-              <span className="mt-0.5 text-xs text-slate-500">Skills</span>
+              <span className="mt-0.5 text-xs text-slate-500">{t("grading.skillsMatch")}</span>
             </div>
           )}
           {experienceMatch !== null && (
@@ -593,7 +633,7 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
               <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {experienceMatch}
               </span>
-              <span className="mt-0.5 text-xs text-slate-500">Experience</span>
+              <span className="mt-0.5 text-xs text-slate-500">{t("grading.experience")}</span>
             </div>
           )}
           {educationMatch !== null && (
@@ -601,7 +641,7 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
               <span className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {educationMatch}
               </span>
-              <span className="mt-0.5 text-xs text-slate-500">Education</span>
+              <span className="mt-0.5 text-xs text-slate-500">{t("grading.education")}</span>
             </div>
           )}
           {cvReadability !== null && (
@@ -609,7 +649,7 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
               <span className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
                 {cvReadability}
               </span>
-              <span className="mt-0.5 text-xs text-slate-500">Readability</span>
+              <span className="mt-0.5 text-xs text-slate-500">{t("grading.readability")}</span>
             </div>
           )}
         </div>
@@ -710,6 +750,7 @@ function ApplicationGradingTable({
   onOpenGrading: (_appId: number, _detailId?: number, _item?: GradingListItem) => void;
   isStaff?: boolean;
 }) {
+  const translate = i18n.t.bind(i18n) as TFunction;
   return (
     <div
       className={cn(
@@ -796,7 +837,7 @@ function ApplicationGradingTable({
           {items.map((item) => {
             const status = item.detailStatus ?? item.status;
             const score = item.overallScore;
-            const aiScore = item.detail?.aiScore;
+            const displayAiScore = getDisplayAiScore(item.detail);
             const hrScore = item.detail?.hrScore;
             const jdId = item.jdId;
             const userId = item.userId;
@@ -834,14 +875,25 @@ function ApplicationGradingTable({
 
             // Staff mode: ưu tiên dùng roundName từ reviewer API
             // Nếu roundName có sẵn thì chỉ hiển thị tên, không cần prefix roundId
+            const localizedReviewerRoundName = localizeRoundName(
+              roundNameFromReviewer,
+              roundTypeInferred,
+              translate
+            );
+            const localizedJdRoundName = localizeRoundName(
+              roundNameFromJd,
+              roundTypeInferred,
+              translate
+            );
             const finalRoundName =
-              roundNameFromReviewer ||
+              localizedReviewerRoundName ||
+              localizedJdRoundName ||
               roundNameFromJd ||
               roundTypeLabel ||
               t("adminApplicationGrading.roundFallback", { order: roundOrder });
             // Nếu có roundName từ API thì hiển thị trực tiếp, không cần thêm "Vòng X:"
             const roundDisplay =
-              roundNameFromReviewer || roundNameFromJd
+              localizedReviewerRoundName || localizedJdRoundName
                 ? finalRoundName
                 : t("adminApplicationGrading.roundDisplay", {
                     order: roundOrder,
@@ -913,21 +965,21 @@ function ApplicationGradingTable({
                     <div className="flex items-center gap-1.5">
                       <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                       <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400">
-                        {hrScore ?? score}
+                        {hrScore ?? (score != null ? Math.round(score) : score)}
                       </span>
                       <span className="text-[10px] font-normal text-slate-400">/100</span>
-                      {aiScore !== undefined && (
+                      {displayAiScore !== null && (
                         <span className="ml-1 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
-                          {t("adminApplicationGrading.aiScore", { score: Math.round(aiScore) })}
+                          {t("adminApplicationGrading.aiScore", { score: displayAiScore })}
                         </span>
                       )}
                     </div>
-                  ) : aiScore !== undefined ? (
+                  ) : displayAiScore !== null ? (
                     <div className="flex items-center gap-1">
                       <Sparkles className="h-3.5 w-3.5 text-purple-500" />
                       <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
                         {t("adminApplicationGrading.aiScoreWithMax", {
-                          score: Math.round(aiScore),
+                          score: displayAiScore,
                         })}
                       </span>
                     </div>
@@ -1098,7 +1150,7 @@ export function ApplicationGradingPage({
       return {
         id: applicationId!,
         status: detail.status ?? "PENDING",
-        overallScore: detail.finalScore ?? undefined,
+        overallScore: getDisplayScore(detail),
         userId,
         userName,
         userAvatar: userId != null ? userAvatarMap.get(userId) : undefined,
@@ -1530,8 +1582,10 @@ export function ApplicationGradingPage({
                         <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
                           <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                             <User className="h-3 w-3 text-indigo-500" />
-                            Đơn #{item.id}
-                            {jdId != null ? ` · ${jdMap.get(jdId) ?? `Vị trí #${jdId}`}` : ""}
+                            {t("adminLabels.applicationNumber")}#{item.id}
+                            {jdId != null
+                              ? ` · ${jdMap.get(jdId) ?? `${t("adminLabels.position")}${jdId}`}`
+                              : ""}
                           </span>
 
                           <span
@@ -1560,7 +1614,7 @@ export function ApplicationGradingPage({
                               {userName}
                             </h3>
                             <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
-                              Candidate Evaluation Workspace
+                              {t("staffGrading.gradingSpaceTitle")}
                             </p>
                           </div>
                         </div>
@@ -1685,11 +1739,12 @@ function StaffGradingHeaderCard({
   if (!detail) return null;
 
   const hrScore = detail.hrScore;
-  const aiScore = detail.aiScore;
   const hasHrScore = hrScore !== undefined && hrScore !== null;
   const isPass = detail.finalResult === "PASSED";
   const needsGrading = needsHrScoring(detail) && !hasHrScore;
   const roundTypeStr = inferRoundType(detail);
+  const translate = i18n.t.bind(i18n) as TFunction;
+  const displayAiScore = getDisplayAiScore(detail);
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
@@ -1717,9 +1772,12 @@ function StaffGradingHeaderCard({
                 {(() => {
                   // Ưu tiên dùng roundName từ API (BE trả đầy đủ)
                   const apiRoundName = (d as { roundName?: string }).roundName;
-                  if (apiRoundName) {
-                    return apiRoundName;
-                  }
+                  const localizedApiName = localizeRoundName(
+                    apiRoundName,
+                    inferRoundType(d),
+                    translate
+                  );
+                  if (localizedApiName) return localizedApiName;
                   // Fallback: infer từ submission data
                   let dType = inferRoundType(d);
                   const order = d.roundId ?? idx + 1;
@@ -1728,8 +1786,10 @@ function StaffGradingHeaderCard({
                     else if (order === 2) dType = "CODING";
                     else if (order === 3) dType = "MENTOR_REVIEW";
                   }
-                  const name = dType ? i18n.t(`common.roundType.${dType}`, dType) : `Vòng ${order}`;
-                  return `Vòng ${order}: ${name}`;
+                  const name = dType
+                    ? i18n.t(`common.roundType.${dType}`, dType)
+                    : `${t("adminLabels.round")} ${order}`;
+                  return `${t("adminLabels.round")} ${order}: ${name}`;
                 })()}
               </button>
             ))}
@@ -1748,9 +1808,12 @@ function StaffGradingHeaderCard({
               {(() => {
                 // Ưu tiên dùng roundName từ API (BE trả đầy đủ)
                 const apiRoundName = (detail as { roundName?: string }).roundName;
-                if (apiRoundName) {
-                  return apiRoundName;
-                }
+                const localizedApiName = localizeRoundName(
+                  apiRoundName,
+                  inferRoundType(detail),
+                  translate
+                );
+                if (localizedApiName) return localizedApiName;
                 // Fallback: infer từ submission data
                 let dType = inferRoundType(detail);
                 const order = detail.roundId ?? 1;
@@ -1760,7 +1823,7 @@ function StaffGradingHeaderCard({
                   else if (order === 3) dType = "MENTOR_REVIEW";
                 }
                 const name = dType ? i18n.t(`common.roundType.${dType}`, dType) : roundTypeStr;
-                return `Vòng ${order}: ${name}`;
+                return `${t("adminLabels.round")} ${order}: ${name}`;
               })()}
             </span>
 
@@ -1787,10 +1850,10 @@ function StaffGradingHeaderCard({
               </span>
             )}
 
-            {aiScore !== undefined && (
+            {displayAiScore !== null && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/15 px-3 py-1 text-xs font-bold text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">
                 <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-                {t("aiReference", { score: Math.round(aiScore) })}
+                {t("aiReference", { score: displayAiScore })}
               </span>
             )}
           </div>
@@ -1872,7 +1935,7 @@ function StaffGradingHeaderCard({
                   {hasHrScore ? t("staffGrading.gradeResult") : t("staffGrading.gradeScore")}
                 </span>
                 <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[9px] font-extrabold text-white/90 uppercase">
-                  STAFF
+                  {t("common.staff")}
                 </span>
               </div>
 
@@ -1885,14 +1948,14 @@ function StaffGradingHeaderCard({
                     </span>
                     <span className="text-sm font-bold text-white/60">/100</span>
                   </div>
-                ) : aiScore !== undefined ? (
+                ) : displayAiScore !== null ? (
                   <div className="flex flex-col items-center justify-center">
                     <span className="text-[10px] font-extrabold tracking-wider text-purple-200 uppercase">
-                      Tham chiếu AI
+                      {t("adminLabels.aiReference")}
                     </span>
                     <div className="flex items-baseline justify-center gap-1">
                       <span className="text-3xl font-black tracking-tight text-purple-100">
-                        {Math.round(aiScore)}
+                        {displayAiScore}
                       </span>
                       <span className="text-xs font-bold text-purple-300/60">/100</span>
                     </div>
@@ -1900,7 +1963,9 @@ function StaffGradingHeaderCard({
                 ) : (
                   <div className="text-center">
                     <span className="text-2xl font-black text-white/40">---</span>
-                    <p className="text-[10px] font-semibold text-white/60">Chưa nhập điểm</p>
+                    <p className="text-[10px] font-semibold text-white/60">
+                      {t("adminLabels.scoreMissing")}
+                    </p>
                   </div>
                 )}
               </div>
@@ -2148,7 +2213,7 @@ export function ApplicationGradingDetailPage({
                   </h1>
                   <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 dark:ring-1 dark:ring-indigo-400/30">
                     <User className="h-3 w-3" />
-                    ID #{applicationId || numericId}
+                    {t("adminLabels.applicationNumber")}#{applicationId || numericId}
                   </span>
                 </div>
 
@@ -2295,10 +2360,12 @@ export function ApplicationGradingDetailPage({
                       </div>
                     </div>
 
-                    {activeDetail.aiScore !== undefined && (
+                    {getDisplayAiScore(activeDetail) !== null && (
                       <span className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3 py-1 text-sm font-extrabold text-white shadow-xs">
                         <Star className="h-4 w-4 fill-white" />
-                        AI: {activeDetail.aiScore}/100
+                        {t("adminApplicationGrading.aiScore", {
+                          score: getDisplayAiScore(activeDetail),
+                        })}
                       </span>
                     )}
                   </div>
@@ -2306,7 +2373,7 @@ export function ApplicationGradingDetailPage({
                   <div className="rounded-xl border border-purple-100 bg-purple-50/60 p-4 dark:border-purple-500/15 dark:bg-purple-500/5">
                     <AIFeedbackPanel
                       feedback={activeDetail.aiFeedback}
-                      score={activeDetail.aiScore}
+                      score={getDisplayAiScoreValue(activeDetail)}
                     />
                   </div>
                 </div>
@@ -2350,14 +2417,16 @@ function ActiveRoundGradingPanel({
 }) {
   const { mutate: submitScore, isPending: isSubmitting } = useHrScore();
   const hasExistingGrade = detail.hrScore !== undefined;
+  const displayAiScore = getDisplayAiScore(detail);
+  const displayScore = getDisplayScore(detail);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isPass, setIsPass] = useState(detail.finalResult === "PASSED");
   const [score, setScore] = useState(
     detail.hrScore !== undefined
       ? String(detail.hrScore)
-      : detail.aiScore !== undefined
-        ? String(Math.round(detail.aiScore))
+      : displayScore !== undefined
+        ? String(Math.round(displayScore))
         : ""
   );
   const [note, setNote] = useState(detail.hrNote ?? "");
@@ -2366,7 +2435,7 @@ function ActiveRoundGradingPanel({
   const handleScoreChange = (val: string) => {
     setScore(val);
     if (val.trim() === "") {
-      setScoreError("Vui lòng nhập điểm số");
+      setScoreError(t("adminLabels.scoreRequired"));
       return;
     }
     const num = parseFloat(val);
@@ -2384,7 +2453,7 @@ function ActiveRoundGradingPanel({
   const handleSubmit = () => {
     const scoreNum = parseFloat(score);
     if (isNaN(scoreNum) || score.trim() === "") {
-      setScoreError("Vui lòng nhập điểm số hợp lệ từ 0 đến 100");
+      setScoreError(t("adminLabels.scoreRange"));
       toast.error(t("grading.invalidScore"));
       return;
     }
@@ -2426,7 +2495,9 @@ function ActiveRoundGradingPanel({
                   : t("grading.hrResult")
                 : t("grading.hrGrading")}
             </h3>
-            <p className="text-[11px] font-medium text-slate-400">Round #{detail.roundId}</p>
+            <p className="text-[11px] font-medium text-slate-400">
+              {t("adminLabels.round")} #{detail.roundId}
+            </p>
           </div>
         </div>
 
@@ -2436,7 +2507,7 @@ function ActiveRoundGradingPanel({
             size="sm"
             onClick={() => {
               setIsEditing(false);
-              setScore(String(detail.hrScore ?? detail.aiScore ?? ""));
+              setScore(String(detail.hrScore ?? displayScore ?? ""));
               setNote(detail.hrNote ?? "");
               setScoreError(null);
             }}
@@ -2484,7 +2555,7 @@ function ActiveRoundGradingPanel({
               <div className="space-y-1.5">
                 <h5 className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
                   <FileText className="h-3.5 w-3.5 text-indigo-500" />
-                  {t("general.notes")} HR
+                  {t("grading.hrNotes")}
                 </h5>
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-800/40">
                   <p className="text-xs whitespace-pre-wrap text-slate-700 dark:text-slate-300">
@@ -2505,14 +2576,14 @@ function ActiveRoundGradingPanel({
           /* Interactive Grading Form */
           <div className="space-y-4">
             {/* AI Reference Score Pill */}
-            {detail.aiScore !== undefined && (
+            {displayAiScore !== null && (
               <div className="flex items-center justify-between rounded-xl border border-purple-100 bg-purple-50/70 px-3.5 py-2.5 dark:border-purple-500/20 dark:bg-purple-500/5">
                 <span className="flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300">
                   <Sparkles className="h-3.5 w-3.5 text-purple-500" />
                   {t("grading.aiScoreReference")}
                 </span>
                 <span className="text-sm font-extrabold text-purple-600 dark:text-purple-400">
-                  {detail.aiScore} / 100
+                  {displayAiScore} / 100
                 </span>
               </div>
             )}
@@ -2558,12 +2629,12 @@ function ActiveRoundGradingPanel({
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {t("grading.hrScore")}
                 </label>
-                {detail.aiScore !== undefined && (
+                {displayAiScore !== null && (
                   <button
                     type="button"
-                    onClick={() => handleScoreChange(String(Math.round(detail.aiScore!)))}
+                    onClick={() => handleScoreChange(String(Math.round(displayScore ?? 0)))}
                     className="text-[11px] font-semibold text-purple-600 hover:underline dark:text-purple-400">
-                    {t("useAiScore", { score: Math.round(detail.aiScore) })}
+                    {t("useAiScore", { score: displayAiScore })}
                   </button>
                 )}
               </div>

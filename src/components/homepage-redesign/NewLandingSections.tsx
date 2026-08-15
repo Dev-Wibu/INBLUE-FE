@@ -96,6 +96,7 @@ export function NewHomepageHero() {
 }
 
 export function AIInterviewHeroConsoleMockup() {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(true);
@@ -138,13 +139,12 @@ export function AIInterviewHeroConsoleMockup() {
             <div className="mb-2 flex items-center justify-center gap-3">
               <span className="h-px w-12 bg-[#008dff]/45" />
               <span className="text-[10px] font-black tracking-[0.28em] text-[#28b9ff]">
-                CÂU HỎI HIỆN TẠI
+                {t("homepageMock.currentQuestion")}
               </span>
               <span className="h-px w-12 bg-[#008dff]/45" />
             </div>
             <p className="text-xs leading-5 font-semibold text-white">
-              Chào bạn, rất vui được gặp bạn trong buổi phỏng vấn hôm nay. Hãy giới thiệu ngắn gọn
-              về bản thân và kinh nghiệm làm việc của mình nhé.
+              {t("homepageMock.interviewGreeting")}
             </p>
           </div>
 
@@ -182,13 +182,11 @@ export function AIInterviewHeroConsoleMockup() {
           <div className="relative mx-auto mt-4 max-w-[28rem] rounded-lg border border-[#008dff]/30 bg-[#07111f]/90 p-3">
             <div className="mb-2 flex items-center justify-between gap-3">
               <span className="text-[10px] font-black tracking-[0.2em] text-[#28b9ff]">
-                BẢN DỊCH TRỰC TIẾP
+                {t("homepageMock.liveTranscript")}
               </span>
-              <span className="text-[10px] font-bold text-slate-400">CHỈNH SỬA</span>
+              <span className="text-[10px] font-bold text-slate-400">{t("homepageMock.edit")}</span>
             </div>
-            <p className="text-xs leading-5 text-slate-100">
-              Nhấn mic để bắt đầu trả lời bằng giọng nói.
-            </p>
+            <p className="text-xs leading-5 text-slate-100">{t("homepageMock.tapMic")}</p>
             <div className="mt-3 flex items-center justify-between">
               <span className="text-[10px] font-bold tracking-[0.22em] text-slate-500">
                 VOICE READY
@@ -197,7 +195,7 @@ export function AIInterviewHeroConsoleMockup() {
                 type="button"
                 onClick={() => setIsSpeaking((value) => !value)}
                 className="rounded-md border border-[#008dff]/30 bg-[#0d233b] px-3 py-1.5 text-[10px] font-bold text-[#9ccfff] transition-colors hover:border-[#66B2FF]/60 hover:text-white">
-                Gửi phản hồi
+                {t("homepageMock.sendFeedback")}
               </button>
             </div>
           </div>
@@ -205,9 +203,11 @@ export function AIInterviewHeroConsoleMockup() {
 
         <aside className="hidden flex-col bg-[#06101d] lg:flex">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-            <span className="text-xs font-bold text-white">Lịch sử Trao đổi</span>
+            <span className="text-xs font-bold text-white">
+              {t("homepageMock.conversationHistory")}
+            </span>
             <span className="rounded-full bg-[#008dff]/20 px-2 py-0.5 text-[10px] font-bold text-[#9ccfff]">
-              1 tin nhắn
+              {t("homepageMock.messageCount")}
             </span>
           </div>
           <div className="flex-1 p-3">
@@ -216,14 +216,13 @@ export function AIInterviewHeroConsoleMockup() {
                 INBLUE AI
               </p>
               <p className="text-[11px] leading-5 text-slate-100">
-                Chào bạn, rất vui được gặp bạn trong buổi phỏng vấn hôm nay. Hãy dành khoảng 1-2
-                phút giới thiệu ngắn gọn về bản thân nhé.
+                {t("homepageMock.followupGreeting")}
               </p>
               <p className="mt-3 text-right text-[10px] font-semibold text-slate-500">02:09 PM</p>
             </div>
           </div>
           <div className="border-t border-white/10 px-4 py-3 text-[10px] font-black tracking-[0.2em] text-[#66B2FF]/65">
-            THANH LAN IS TYPING...
+            {t("homepageMock.typing")}
           </div>
         </aside>
       </div>

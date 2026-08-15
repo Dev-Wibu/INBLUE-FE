@@ -212,7 +212,7 @@ export function CompanyFormDialog({
                     }
                     className="flex h-7 items-center gap-1 rounded-lg bg-black/50 px-2 text-[11px] font-semibold text-white backdrop-blur-md transition-colors hover:bg-black/70">
                     <ExternalLink className="h-3 w-3" />
-                    <span>Xem ảnh</span>
+                    <span>{t("adminLabels.imagePreview")}</span>
                   </button>
                 )}
 
@@ -224,7 +224,11 @@ export function CompanyFormDialog({
                       type="button"
                       className="flex h-7 items-center gap-1.5 rounded-lg bg-indigo-600/90 px-2.5 text-[11px] font-semibold text-white shadow-xs backdrop-blur-md transition-all hover:bg-indigo-600">
                       <Camera className="h-3.5 w-3.5" />
-                      <span>{displayBannerUrl ? "Đổi banner" : "Tải banner"}</span>
+                      <span>
+                        {displayBannerUrl
+                          ? t("adminLabels.changeBanner")
+                          : t("adminLabels.uploadBanner")}
+                      </span>
                     </button>
                   }
                 />
@@ -293,7 +297,7 @@ export function CompanyFormDialog({
                       )
                     }
                     className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
-                    <span>Xem phóng to logo</span>
+                    <span>{t("adminLabels.enlargeLogo")}</span>
                     <ExternalLink className="h-3 w-3" />
                   </button>
                 )}

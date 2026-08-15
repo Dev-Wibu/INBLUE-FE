@@ -431,7 +431,7 @@ export const CodeReviewEditor = React.forwardRef<
           const systemProblem = bankProblems.find((p) => p.id === id);
           newProblems.push({
             problemId: id,
-            title: systemProblem?.title || `Bài tập #${id}`,
+            title: systemProblem?.title || t("uiLabels.assignmentNumber", { id }),
             difficulty: systemProblem?.difficulty || "EASY",
             language: systemProblem?.language || "Java",
           });
@@ -657,7 +657,7 @@ export const CodeReviewEditor = React.forwardRef<
                       </span>
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="truncate text-xs font-semibold text-slate-700 dark:text-slate-200">
-                          {problem.title || `Bài tập #${id}`}
+                          {problem.title || t("uiLabels.assignmentNumber", { id })}
                         </div>
                         <div className="flex items-center gap-1.5">
                           {difficultyBadge(problem.difficulty)}

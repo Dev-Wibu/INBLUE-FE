@@ -10,6 +10,7 @@ import {
   useKioskSlots,
   usePickKioskSlot,
 } from "@/hooks/useKiosk";
+import { normalizeAiInterviewScore } from "@/lib/ai-interview-score";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { kioskManager, type Kiosk, type KioskSchedule } from "@/services/kiosk.manager";
@@ -63,6 +64,7 @@ import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
 import type { JdInfoPayload } from "../RoundWorkspaceDispatcher";
+import { localizeRoundInstruction } from "./round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 type KioskBooking = components["schemas"]["KioskBooking"];
@@ -1507,34 +1509,24 @@ function AiInterviewResultView({
 
   const sessionData = fetchedSessionData ?? matchedSessionFromUser;
 
-  const rawAiScore = sessionData?.overallScore ?? detail?.aiScore ?? detail?.finalScore;
-  const aiScoreVal = rawAiScore != null ? rawAiScore : null;
-  const aiScorePercent =
-    aiScoreVal != null
-      ? aiScoreVal <= 10
-        ? Math.min(100, Math.max(0, aiScoreVal * 10))
-        : Math.min(100, Math.max(0, aiScoreVal))
-      : 0;
-  const aiScoreDisplay =
-    aiScoreVal != null
-      ? aiScoreVal <= 10
-        ? `${aiScoreVal.toFixed(1)}/10`
-        : `${Math.round(aiScoreVal)}/100`
-      : "--";
+  const aiScoreVal =
+    sessionData?.overallScore != null
+      ? normalizeAiInterviewScore(sessionData.overallScore, "ten")
+      : detail?.aiScore != null
+        ? normalizeAiInterviewScore(detail.aiScore, "auto")
+        : normalizeAiInterviewScore(
+            detail?.finalScore,
+            detail?.hrScore != null ? "hundred" : "auto"
+          );
+  const aiScorePercent = aiScoreVal ?? 0;
+  const aiScoreDisplay = aiScoreVal != null ? `${Math.round(aiScoreVal)}/100` : "--";
 
   const hrScoreVal = detail?.hrScore ?? null;
   const hasHrScore = hrScoreVal != null && hrScoreVal > 0;
-  const hrScorePercent =
-    hrScoreVal != null
-      ? hrScoreVal <= 10
-        ? Math.min(100, Math.max(0, hrScoreVal * 10))
-        : Math.min(100, Math.max(0, hrScoreVal))
-      : 0;
+  const hrScorePercent = normalizeAiInterviewScore(hrScoreVal, "hundred") ?? 0;
   const hrScoreDisplay =
     hrScoreVal != null
-      ? hrScoreVal <= 10
-        ? `${hrScoreVal.toFixed(1)}/10`
-        : `${Math.round(hrScoreVal)}/100`
+      ? `${Math.round(hrScorePercent)}/100`
       : t("userApplication.aiInterview.notGraded");
 
   const resultVerdict = sessionData?.result ?? "REJECT";
@@ -2132,7 +2124,11 @@ function StaffAiInterviewWaitingView({
   // Get instruction from roundConfig (staff grader API) or round.configData fallback
 
   const configData = (round.roundConfig as any) ?? round.configData;
-  const instruction = configData?.instruction ?? round.configData?.instruction;
+  const instruction = localizeRoundInstruction(
+    configData?.instruction ?? round.configData?.instruction,
+    round.roundType,
+    t
+  );
   const timeLimitMinutes = configData?.timeLimitMinutes ?? round.configData?.timeLimitMinutes;
   const maxScore = configData?.maxScore ?? round.configData?.maxScore;
 
@@ -2217,13 +2213,13 @@ function StaffAiInterviewWaitingView({
         <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
           <h4 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
             <Bot className="h-4 w-4 text-indigo-500" />
-            {t("staffGrading.aiInterview.roundConfig", "Cấu hình vòng AI Interview")}
+            {t("staffGrading.aiInterview.roundConfig")}
           </h4>
           <div className="space-y-3 text-xs">
             {instruction && (
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/40">
                 <span className="mb-1 block font-bold text-slate-500 uppercase dark:text-slate-400">
-                  {t("staffGrading.instruction", "Hướng dẫn")}:
+                  {t("staffGrading.instruction")}:
                 </span>
                 <p className="leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-200">
                   {instruction}
@@ -2233,17 +2229,17 @@ function StaffAiInterviewWaitingView({
             {timeLimitMinutes != null && (
               <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/40">
                 <span className="font-semibold text-slate-500 dark:text-slate-400">
-                  {t("staffGrading.timeLimit", "Thời gian quy định")}:
+                  {t("staffGrading.timeLimit")}:
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white">
-                  {timeLimitMinutes} {t("staffGrading.minutes", "phút")}
+                  {timeLimitMinutes} {t("staffGrading.minutes")}
                 </span>
               </div>
             )}
             {maxScore != null && (
               <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/40">
                 <span className="font-semibold text-slate-500 dark:text-slate-400">
-                  {t("staffGrading.maxScore", "Điểm tối đa")}:
+                  {t("staffGrading.maxScore")}:
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white">{maxScore}</span>
               </div>
@@ -2751,19 +2747,19 @@ export function AiInterviewModule({
                   />
                   <SummaryItem
                     icon={<Clock3 className="h-4 w-4" />}
-                    label={t("userApplication.aiInterview.duration", "Duration")}
+                    label={t("userApplication.aiInterview.duration")}
                     value={
                       selectedDuration
                         ? t("userApplication.aiInterview.durationValue", {
                             minutes: selectedDuration,
                           })
-                        : t("userApplication.aiInterview.perSlot", "Per slot")
+                        : t("userApplication.aiInterview.perSlot")
                     }
                   />
                   <SummaryItem
                     icon={<Cpu className="h-4 w-4" />}
-                    label={t("userApplication.aiInterview.position", "Vị trí")}
-                    value={jdInfo?.title ?? "AI Interview"}
+                    label={t("userApplication.aiInterview.position")}
+                    value={jdInfo?.title ?? t("common.roundType.AI_INTERVIEW")}
                   />
                 </div>
 
@@ -2771,16 +2767,13 @@ export function AiInterviewModule({
                   <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center dark:border-emerald-900/60 dark:bg-emerald-950/30">
                     <KeyRound className="mx-auto h-5 w-5 text-emerald-700 dark:text-emerald-300" />
                     <p className="mt-2 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                      {t("userApplication.aiInterview.kioskPinCode", "Mã PIN vào Kiosk")}
+                      {t("userApplication.aiInterview.kioskPinCode")}
                     </p>
                     <p className="mt-1 font-mono text-3xl font-black tracking-[0.24em] text-emerald-800 dark:text-emerald-200">
                       {activeBooking.sessionKey}
                     </p>
                     <p className="mt-2 text-xs leading-5 text-emerald-700/80 dark:text-emerald-300/80">
-                      {t(
-                        "userApplication.aiInterview.keepPinHint",
-                        "Giữ mã này để nhập tại trạm Kiosk. Mã cũng được gửi qua thông báo."
-                      )}
+                      {t("userApplication.aiInterview.keepPinHint")}
                     </p>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       <Button

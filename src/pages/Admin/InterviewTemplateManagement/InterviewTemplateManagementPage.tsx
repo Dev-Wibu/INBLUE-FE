@@ -361,7 +361,7 @@ export function InterviewTemplateManagementPage() {
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Lọc số vòng:
+                  {t("adminLabels.filterRounds")}
                 </span>
                 <Select
                   value={roundFilter}
@@ -370,21 +370,21 @@ export function InterviewTemplateManagementPage() {
                     pagination.goToFirstPage();
                   }}>
                   <SelectTrigger className="h-9 w-[160px] rounded-xl border border-slate-200/90 bg-white text-xs font-semibold text-slate-800 shadow-2xs focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                    <SelectValue placeholder="Tất cả số vòng" />
+                    <SelectValue placeholder={t("adminLabels.allRoundCounts")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">Tất cả số vòng</SelectItem>
-                    <SelectItem value="1">1 vòng phỏng vấn</SelectItem>
-                    <SelectItem value="2">2 vòng phỏng vấn</SelectItem>
-                    <SelectItem value="3">3 vòng phỏng vấn</SelectItem>
-                    <SelectItem value="4+">4+ vòng phỏng vấn</SelectItem>
+                    <SelectItem value="ALL">{t("adminLabels.allRoundCounts")}</SelectItem>
+                    <SelectItem value="1">{t("adminLabels.oneInterviewRound")}</SelectItem>
+                    <SelectItem value="2">{t("adminLabels.twoInterviewRounds")}</SelectItem>
+                    <SelectItem value="3">{t("adminLabels.threeInterviewRounds")}</SelectItem>
+                    <SelectItem value="4+">{t("adminLabels.fourPlusInterviewRounds")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Danh mục:
+                  {t("adminLabels.categoryFilter")}
                 </span>
                 <Select
                   value={categoryFilter}
@@ -393,10 +393,10 @@ export function InterviewTemplateManagementPage() {
                     pagination.goToFirstPage();
                   }}>
                   <SelectTrigger className="h-9 w-[170px] rounded-xl border border-slate-200/90 bg-white text-xs font-semibold text-slate-800 shadow-2xs focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                    <SelectValue placeholder="Tất cả danh mục" />
+                    <SelectValue placeholder={t("adminLabels.allCategories")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">Tất cả danh mục</SelectItem>
+                    <SelectItem value="ALL">{t("adminLabels.allCategories")}</SelectItem>
                     {categories.map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat}
@@ -418,7 +418,7 @@ export function InterviewTemplateManagementPage() {
                   }}
                   className="h-9 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">
                   <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-                  Đặt lại bộ lọc
+                  {t("adminLabels.resetFilters")}
                 </Button>
               )}
             </div>
@@ -457,7 +457,7 @@ export function InterviewTemplateManagementPage() {
                         {t("adminInterviewTemplate.category", "Danh mục")}
                       </TableHead>
                       <TableHead className="w-[110px] text-center font-semibold text-slate-700 dark:text-slate-200">
-                        Số vòng
+                        {t("adminLabels.rounds")}
                       </TableHead>
                       <TableHead className="min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminInterviewTemplate.description", "Mô tả")}

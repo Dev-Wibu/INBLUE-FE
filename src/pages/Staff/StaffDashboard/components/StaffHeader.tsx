@@ -46,30 +46,26 @@ interface QuickSearchResult {
 
 const STATIC_NAVIGATION: Array<{
   labelKey: string;
-  defaultLabel: string;
   to: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { labelKey: "common.home", defaultLabel: "Trang chủ", to: "/staff?tab=home", icon: Home },
+  { labelKey: "common.home", to: "/staff?tab=home", icon: Home },
   {
     labelKey: "common.dashboard",
-    defaultLabel: "Tổng quan",
     to: "/staff?tab=dashboard",
     icon: LayoutDashboard,
   },
   {
     labelKey: "adminApplicationGrading.applicationGrading",
-    defaultLabel: "Chấm bài ứng tuyển",
     to: "/staff?tab=applicationGrading",
     icon: ClipboardCheck,
   },
   {
     labelKey: "common.articlesCommunity",
-    defaultLabel: "Bài viết & Cộng đồng",
     to: "/staff?tab=articles",
     icon: Newspaper,
   },
-  { labelKey: "common.account", defaultLabel: "Tài khoản", to: "/staff?tab=account", icon: User },
+  { labelKey: "common.account", to: "/staff?tab=account", icon: User },
 ];
 
 export function StaffHeader({ title, parentTitle, category, onToggleSidebar }: StaffHeaderProps) {
@@ -95,11 +91,11 @@ export function StaffHeader({ title, parentTitle, category, onToggleSidebar }: S
     if (!debouncedSearch.trim()) return [];
     const q = debouncedSearch.toLowerCase();
     return STATIC_NAVIGATION.filter((n) => {
-      const label = t(n.labelKey, n.defaultLabel);
+      const label = t(n.labelKey);
       return label.toLowerCase().includes(q);
     }).map<QuickSearchResult>((n) => ({
       id: n.to,
-      label: t(n.labelKey, n.defaultLabel),
+      label: t(n.labelKey),
       type: "navigation",
       to: n.to,
     }));

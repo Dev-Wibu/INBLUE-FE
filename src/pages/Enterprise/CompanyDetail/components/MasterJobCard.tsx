@@ -150,7 +150,9 @@ export function MasterJobCard({
           ) : (
             <span className="inline-flex items-center gap-1">
               <Clock className="h-3 w-3 shrink-0 text-slate-400" />
-              <span>{job.createdAt ? formatUtcNaiveDateTime(job.createdAt) : "Mới đăng"}</span>
+              <span>
+                {job.createdAt ? formatUtcNaiveDateTime(job.createdAt) : t("uiLabels.newlyPosted")}
+              </span>
             </span>
           )}
         </div>

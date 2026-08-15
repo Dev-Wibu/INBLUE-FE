@@ -44,6 +44,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
+import { localizeRoundInstruction } from "./round-localization";
 
 type CodeReviewProblemSnapshot = components["schemas"]["CodeReviewProblemSnapshot"];
 type CodeFile = components["schemas"]["CodeFile"];
@@ -240,9 +241,14 @@ export function CodeReviewModule({
   const timeLimitMinutes = configData?.timeLimitMinutes ?? 45;
   const maxScore = configData?.maxScore ?? 100;
   const configuredInstruction = mergedConfigData?.instruction || round.configData?.instruction;
-  const instructionText = isLegacyCodeReviewInstruction(configuredInstruction)
-    ? t("task.reviewSourceCode")
-    : configuredInstruction || t("userApplication.codeReview.codeReviewInstructions");
+  const instructionText =
+    localizeRoundInstruction(
+      isLegacyCodeReviewInstruction(configuredInstruction)
+        ? t("task.reviewSourceCode")
+        : configuredInstruction,
+      round.roundType,
+      t
+    ) || t("userApplication.codeReview.codeReviewInstructions");
   const roundId = round.id ?? 0;
 
   // 1. Extract raw problems from round snapshot

@@ -77,7 +77,7 @@ export function JobSearchSection() {
     const fmt = (num: number): string => num.toLocaleString("en-US");
     if (min && max) return { text: `${fmt(min)} - ${fmt(max)} VND`, hasIcon: false };
     if (min) return { text: `${fmt(min)}+ VND`, hasIcon: false };
-    if (max) return { text: `Tối đa ${fmt(max)} VND`, hasIcon: false };
+    if (max) return { text: `${t("uiLabels.maximum")} ${fmt(max)} VND`, hasIcon: false };
     return { text: t("common.agree", "Thỏa thuận"), hasIcon: false };
   };
 

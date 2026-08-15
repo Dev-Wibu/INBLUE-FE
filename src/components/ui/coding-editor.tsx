@@ -498,7 +498,7 @@ export const CodingEditor = React.forwardRef<
           const systemProblem = bankProblems.find((p) => p.id === id);
           newProblems.push({
             problemId: id,
-            title: systemProblem?.title || `Bài tập #${id}`,
+            title: systemProblem?.title || t("uiLabels.assignmentNumber", { id }),
             difficulty: systemProblem?.difficulty || "EASY",
           });
         }
@@ -611,7 +611,9 @@ export const CodingEditor = React.forwardRef<
                       onClick={() => setEditingTime(true)}
                       className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400">
                       <Timer className="h-4 w-4 text-slate-400" />
-                      {timeLimitMinutes > 0 ? `${timeLimitMinutes} phút` : t("common.unlimited")}
+                      {timeLimitMinutes > 0
+                        ? `${timeLimitMinutes} ${t("adminLabels.minutes")}`
+                        : t("common.unlimited")}
                     </button>
                   )}
                 </div>
@@ -707,7 +709,7 @@ export const CodingEditor = React.forwardRef<
                       </span>
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="dark:text-slate-250 truncate text-xs font-semibold text-slate-800">
-                          {problem.title || `Bài tập #${id}`}
+                          {problem.title || t("uiLabels.assignmentNumber", { id })}
                         </div>
                         <div className="flex items-center gap-2">
                           {difficultyBadge(problem.difficulty)}
@@ -759,7 +761,7 @@ export const CodingEditor = React.forwardRef<
                     <div>
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                         {codingProblems[selectedIndex]?.title ||
-                          `Bài tập #${codingProblemsId[selectedIndex]}`}
+                          t("uiLabels.assignmentNumber", { id: codingProblemsId[selectedIndex] })}
                       </h3>
                       <div className="mt-0.5 flex items-center gap-2">
                         {difficultyBadge(codingProblems[selectedIndex]?.difficulty)}

@@ -283,9 +283,15 @@ export function UserManagementPage() {
                 </div>
                 <div className="flex items-center justify-center gap-5 sm:gap-6">
                   {[
-                    [users.length, "Tổng người dùng"],
-                    [users.filter((user) => user.isActive !== false).length, "Đang hoạt động"],
-                    [new Set(users.map((user) => user.role).filter(Boolean)).size, "Vai trò"],
+                    [users.length, t("adminLabels.totalUsers")],
+                    [
+                      users.filter((user) => user.isActive !== false).length,
+                      t("adminLabels.activeUsers"),
+                    ],
+                    [
+                      new Set(users.map((user) => user.role).filter(Boolean)).size,
+                      t("adminLabels.roles"),
+                    ],
                   ].map(([value, label], index) => (
                     <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
                       {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
@@ -322,7 +328,7 @@ export function UserManagementPage() {
                   type="submit"
                   className="h-[46px] rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                   <Search className="mr-2 h-[18px] w-[18px]" />
-                  Tìm kiếm
+                  {t("adminLabels.search")}
                 </Button>
                 <Button
                   type="button"
@@ -335,7 +341,7 @@ export function UserManagementPage() {
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
-                  Trạng thái:
+                  {t("adminLabels.userStatus")}
                 </span>
                 {[
                   ["active", t("common.active")],

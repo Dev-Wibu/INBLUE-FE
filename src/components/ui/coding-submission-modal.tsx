@@ -388,9 +388,7 @@ export function CodingSubmissionModal({
     });
 
     if (emptyProblems.length > 0) {
-      toast.warning(
-        `Vui lòng nhập code cho tất cả bài. Còn ${emptyProblems.length} bài chưa có nội dung.`
-      );
+      toast.warning(t("uiLabels.missingCode", { count: emptyProblems.length }));
       return;
     }
 
@@ -470,7 +468,7 @@ export function CodingSubmissionModal({
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-400">
                     {problems.length > 0
-                      ? `${problems.length} bài tập · ${LANGUAGES.find((l) => l.value === language)?.label}`
+                      ? `${t("uiLabels.exerciseCount", { count: problems.length })} · ${LANGUAGES.find((l) => l.value === language)?.label}`
                       : t("adminCodingProblem.noProblem")}
                   </span>
                 </div>
@@ -627,7 +625,7 @@ export function CodingSubmissionModal({
                             )}
                           </div>
                           <p className="mt-0.5 line-clamp-2 text-xs leading-snug font-medium">
-                            {problem.title ?? `Bài #${idx + 1}`}
+                            {problem.title ?? t("uiLabels.problemNumber", { id: idx + 1 })}
                           </p>
                           {(problem.executionTimeLimitMs || problem.memoryLimitMb) && (
                             <div className="mt-1 flex items-center gap-2">
@@ -788,7 +786,7 @@ export function CodingSubmissionModal({
             <div className="border-b border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-900">
               <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                 {activeProblem
-                  ? `Đề bài #${activeProblemIdx + 1}`
+                  ? t("uiLabels.statementNumber", { id: activeProblemIdx + 1 })
                   : t("compCodingSubmissionModal.noProblemContent")}
               </span>
             </div>
