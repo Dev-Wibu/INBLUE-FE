@@ -9,7 +9,7 @@ import { useCurrentMentorProfile, useMentorById } from "@/hooks/useMentor";
 import { useMentorFeedbackBySession } from "@/hooks/useMentorFeedback";
 import { useMentorReviewBySession } from "@/hooks/useMentorReview";
 import { useSessionById } from "@/hooks/useSession";
-import { formatCurrency, formatDateTime } from "@/lib/formatting";
+import { formatCurrency, formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { normalizeFiveStarRating } from "@/lib/rating";
 import { getSessionJoinAvailability } from "@/lib/session-join";
 import { getSessionMentorId, isSessionMentor } from "@/lib/session-mentor";
@@ -32,7 +32,7 @@ import {
   UsersRound,
   Video,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
@@ -75,6 +75,7 @@ export function MentorSessionDetailPage() {
   const hasInternalReturn = Boolean((location.state as MentorRouteState | null)?.returnTo);
   const currentSessionPath = `/mentor/sessions/${numericSessionId}`;
   const nestedRouteState = { returnTo: currentSessionPath } satisfies MentorRouteState;
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
 
   const goBack = () => {
     if (hasInternalReturn) {
@@ -83,6 +84,11 @@ export function MentorSessionDetailPage() {
     }
     navigate(returnTo, { replace: true });
   };
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (sessionLoading || mentorProfileLoading) return;
@@ -104,7 +110,7 @@ export function MentorSessionDetailPage() {
   if (!session || !isAllowed) return null;
 
   const statusBadge = getSessionStatusBadge(session.status);
-  const canJoinRoom = getSessionJoinAvailability(session).canJoin;
+  const canJoinRoom = getSessionJoinAvailability(session, currentTime).canJoin;
   const canReview = session.status === "COMPLETED";
   const parentLabel = returnTo.includes("/students/")
     ? t("common.students")
@@ -446,12 +452,12 @@ function AttendanceRow({
       <AttendanceMetric
         icon={LogIn}
         label={t("mentorSessions.startTime")}
-        value={formatDateTime(startTime)}
+        value={formatDateTime(treatZuluAsVietnamLocal(startTime))}
       />
       <AttendanceMetric
         icon={LogOut}
         label={t("mentorSessions.endTime")}
-        value={formatDateTime(endTime)}
+        value={formatDateTime(treatZuluAsVietnamLocal(endTime))}
       />
       <AttendanceMetric
         icon={Timer}

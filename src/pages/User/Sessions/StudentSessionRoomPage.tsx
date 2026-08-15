@@ -32,6 +32,7 @@ import {
   useSessionById,
 } from "@/hooks/useSession";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { getSessionJoinAvailability } from "@/lib/session-join";
 import { useAuthStore } from "@/stores/authStore";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -87,6 +88,8 @@ export function StudentSessionRoomPage() {
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
   const [displayName, setDisplayName] = useState("");
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const [authorizedSessionId, setAuthorizedSessionId] = useState<number | null>(null);
   const numericSessionId = Number(sessionId);
   const {
     data: session,
@@ -97,11 +100,14 @@ export function StudentSessionRoomPage() {
   const joinSessionMutation = useJoinSession();
   const leaveSessionMutation = useLeaveSession();
 
-  const canJoin =
+  const joinAvailability = session ? getSessionJoinAvailability(session, currentTime) : null;
+  const canJoin = Boolean(
     session &&
-    (session.status === "PAID" || session.status === "ONGOING" || session.status === "SCHEDULED") &&
-    session.roomUrl &&
-    user;
+    user &&
+    joinAvailability?.hasJoinableStatus &&
+    joinAvailability.hasRoom &&
+    (joinAvailability.canJoin || authorizedSessionId === numericSessionId)
+  );
 
   const sessionStatus = (session?.status ?? "DRAFT") as StatusKey;
   const statusStyle = STATUS_STYLES[sessionStatus] ?? STATUS_STYLES.DRAFT;
@@ -246,6 +252,15 @@ export function StudentSessionRoomPage() {
   };
 
   useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (joinAvailability?.canJoin) setAuthorizedSessionId(numericSessionId);
+  }, [joinAvailability?.canJoin, numericSessionId]);
+
+  useEffect(() => {
     if (!isLoading && !session) {
       navigate("/user?tab=applicationHistory");
     }
@@ -292,17 +307,23 @@ export function StudentSessionRoomPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>{t("common.unableToParticipate")}</AlertTitle>
           <AlertDescription>
-            {session.status === "DRAFT" && t("common.theInterviewSessionHasNotBeenAppro")}
-            {session.status === "SCHEDULED" && t("mentorSessions.theInterviewSessionHasNot1")}
-            {session.status === "REJECTED" && t("common.thisInterviewSessionHasBeenDeclined")}
-            {session.status === "COMPLETED" && t("common.thisInterviewSessionHasEnded")}
-            {session.status === "CANCELED" && t("common.thisInterviewSessionHasBeenCancelle")}
-            {!session.roomUrl &&
-              session.status !== "DRAFT" &&
-              session.status !== "REJECTED" &&
-              session.status !== "COMPLETED" &&
-              session.status !== "CANCELED" &&
-              t("common.theMeetingRoomHasNotBeenCreatedYe")}
+            {joinAvailability?.isBeforeJoinWindow
+              ? t("userApplicationhistory.mentorSessionOpensBeforeHint", {
+                  time: session.joinTime ? formatDateTime(session.joinTime) : "",
+                })
+              : joinAvailability?.isAfterJoinWindow
+                ? t("userApplicationhistory.mentorSessionWindowClosedHint")
+                : !joinAvailability?.hasRoom
+                  ? t("common.theMeetingRoomHasNotBeenCreatedYe")
+                  : session.status === "DRAFT"
+                    ? t("common.theInterviewSessionHasNotBeenAppro")
+                    : session.status === "REJECTED"
+                      ? t("common.thisInterviewSessionHasBeenDeclined")
+                      : session.status === "COMPLETED"
+                        ? t("common.thisInterviewSessionHasEnded")
+                        : session.status === "CANCELED"
+                          ? t("common.thisInterviewSessionHasBeenCancelle")
+                          : t("mentorSessions.theInterviewSessionHasNot1")}
           </AlertDescription>
         </Alert>
         <Button className="mt-4" variant="outline" onClick={() => navigate(-1)}>

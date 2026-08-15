@@ -15,6 +15,7 @@ import {
 import { useCurrentRound } from "@/hooks/useRound";
 import { useCreateRoundSession } from "@/hooks/useSession";
 import { fetchClient } from "@/lib/api";
+import { getSessionJoinAvailability } from "@/lib/session-join";
 import {
   ArrowLeft,
   Briefcase,
@@ -345,6 +346,21 @@ function RoomReadyStep({
   onJoinRoom: () => void;
 }) {
   const { t, i18n } = useTranslation();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const joinAvailability = getSessionJoinAvailability(
+    {
+      joinTime: booking.scheduledStart,
+      roomUrl,
+      status: "SCHEDULED",
+    },
+    now
+  );
 
   const scheduledTime = booking.scheduledStart
     ? new Date(booking.scheduledStart).toLocaleString(i18n.resolvedLanguage || i18n.language, {
@@ -382,7 +398,7 @@ function RoomReadyStep({
       </Card>
 
       {/* Daily.co room link */}
-      {roomUrl && (
+      {roomUrl && joinAvailability.canJoin && (
         <Card className="border-[#0047AB]/30 bg-[#0047AB]/5">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -402,11 +418,21 @@ function RoomReadyStep({
       {/* Join Daily.co room */}
       <Button
         onClick={onJoinRoom}
+        disabled={!joinAvailability.canJoin}
         size="lg"
-        className="w-full gap-2 bg-green-600 text-white hover:bg-green-700">
+        className="w-full gap-2 bg-green-600 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60">
         <Video className="h-5 w-5" />
-        {t("userMentorReview.joinOnlineRoom")}
+        {joinAvailability.isAfterJoinWindow
+          ? t("userApplicationhistory.mentorSessionWindowClosed")
+          : t("userMentorReview.joinOnlineRoom")}
       </Button>
+      {!joinAvailability.canJoin && (
+        <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+          {joinAvailability.isAfterJoinWindow
+            ? t("userApplicationhistory.mentorSessionWindowClosedHint")
+            : t("userApplication.mentorReview.roomOpensHint")}
+        </p>
+      )}
     </div>
   );
 }
@@ -843,6 +869,7 @@ function InProgressStep({
 }: {
   roomUrl?: string;
   sessionTiming?: {
+    joinTime?: string | null;
     startTime1?: string | null;
     startTime2?: string | null;
     endTime1?: string | null;
@@ -853,7 +880,25 @@ function InProgressStep({
   onJoinRoom?: () => void;
 }) {
   const { t } = useTranslation();
-  const canRejoin = !!roomUrl && !!onJoinRoom;
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const canRejoin = Boolean(
+    roomUrl &&
+    onJoinRoom &&
+    getSessionJoinAvailability(
+      {
+        joinTime: sessionTiming?.joinTime,
+        roomUrl,
+        status: "ONGOING",
+      },
+      now
+    ).canJoin
+  );
   return (
     <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
       <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
@@ -1267,6 +1312,7 @@ export function ApplicationMentorReviewPage() {
   // `endTime1/2` is processed by BE; we can show the user the
   // progress in real-time without touching Daily's iframe lifecycle).
   const [sessionTiming, setSessionTiming] = useState<{
+    joinTime?: string | null;
     startTime1?: string | null;
     startTime2?: string | null;
     endTime1?: string | null;
@@ -1427,6 +1473,7 @@ export function ApplicationMentorReviewPage() {
               });
               const live = (sessionRefetch.data ?? null) as {
                 roomUrl?: string;
+                joinTime?: string | null;
                 startTime1?: string | null;
                 startTime2?: string | null;
                 endTime1?: string | null;
@@ -1504,6 +1551,7 @@ export function ApplicationMentorReviewPage() {
             });
             const live = (sessionRefetch.data ?? null) as {
               roomUrl?: string;
+              joinTime?: string | null;
               participantId1?: string | null;
               participantId2?: string | null;
               startTime1?: string | null;
@@ -1616,6 +1664,7 @@ export function ApplicationMentorReviewPage() {
         (data as
           | {
               roomUrl?: string;
+              joinTime?: string | null;
               participantId1?: string | null;
               participantId2?: string | null;
               startTime1?: string | null;
@@ -1688,6 +1737,8 @@ export function ApplicationMentorReviewPage() {
           sessionId: effectiveSessionId,
           mentorId: applicationDetail.mentorId,
           status: bookingStatusFromDetail(applicationDetail.status) ?? "ROOM_CREATED",
+          scheduledStart:
+            sessionTiming?.joinTime ?? applicationDetail.sessionInfo?.startTime ?? undefined,
         } as MentorInterviewBooking)
       : null);
 

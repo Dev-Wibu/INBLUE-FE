@@ -71,26 +71,26 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
 
   const langBadgeStyle =
     normalizedLang === "java" || normalizedLang === "cpp"
-      ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+      ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
       : normalizedLang === "php"
-        ? "border-purple-500/30 bg-purple-500/10 text-purple-300"
+        ? "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-500/30 dark:bg-purple-500/10 dark:text-purple-300"
         : normalizedLang === "js" ||
             normalizedLang === "javascript" ||
             normalizedLang === "ts" ||
             normalizedLang === "typescript"
-          ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
+          ? "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-500/30 dark:bg-yellow-500/10 dark:text-yellow-300"
           : normalizedLang === "python"
-            ? "border-blue-500/30 bg-blue-500/10 text-blue-300"
+            ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
             : normalizedLang === "sql"
-              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-              : "border-indigo-500/30 bg-indigo-500/10 text-indigo-300";
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+              : "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300";
 
   const lines = code.split("\n");
 
   return (
-    <div className="my-4 overflow-hidden rounded-xl border border-indigo-500/40 bg-[#030712] shadow-2xl ring-1 ring-indigo-500/20">
+    <div className="my-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-200/60 dark:border-indigo-500/40 dark:bg-[#030712] dark:shadow-2xl dark:ring-indigo-500/20">
       {/* IDE Code Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2 text-xs dark:border-slate-800/80">
+      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs dark:border-slate-800/80 dark:bg-slate-950">
         <div className="flex items-center gap-2.5">
           {/* Mac window dots */}
           <div className="flex items-center gap-1.5">
@@ -107,7 +107,7 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-slate-400 transition-colors hover:border-slate-700 hover:text-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200">
+          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200">
           {copied ? (
             <>
               <Check className="h-3 w-3 text-emerald-400" />
@@ -142,13 +142,15 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
 
               if (token.startsWith('"') || token.startsWith("'")) {
                 parts.push(
-                  <span key={match.index} className="font-medium text-emerald-300">
+                  <span
+                    key={match.index}
+                    className="font-medium text-emerald-700 dark:text-emerald-300">
                     {token}
                   </span>
                 );
               } else if (token.startsWith("@")) {
                 parts.push(
-                  <span key={match.index} className="font-bold text-amber-400">
+                  <span key={match.index} className="font-bold text-amber-700 dark:text-amber-400">
                     {token}
                   </span>
                 );
@@ -160,19 +162,21 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
                 );
               } else if (/^[{}()[\]]$/.test(token)) {
                 parts.push(
-                  <span key={match.index} className="font-extrabold text-amber-300">
+                  <span
+                    key={match.index}
+                    className="font-extrabold text-amber-700 dark:text-amber-300">
                     {token}
                   </span>
                 );
               } else if (/^[;=.+*/,<>]$/.test(token)) {
                 parts.push(
-                  <span key={match.index} className="font-bold text-slate-300">
+                  <span key={match.index} className="font-bold text-slate-700 dark:text-slate-300">
                     {token}
                   </span>
                 );
               } else if (/^\d+$/.test(token)) {
                 parts.push(
-                  <span key={match.index} className="font-bold text-cyan-300">
+                  <span key={match.index} className="font-bold text-cyan-700 dark:text-cyan-300">
                     {token}
                   </span>
                 );
@@ -184,13 +188,15 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
                   .startsWith("(")
               ) {
                 parts.push(
-                  <span key={match.index} className="font-bold text-sky-300">
+                  <span key={match.index} className="font-bold text-sky-700 dark:text-sky-300">
                     {token}
                   </span>
                 );
               } else {
                 parts.push(
-                  <span key={match.index} className="font-bold text-purple-400">
+                  <span
+                    key={match.index}
+                    className="font-bold text-violet-700 dark:text-purple-400">
                     {token}
                   </span>
                 );
@@ -205,10 +211,10 @@ function CodeBlockView({ code, lang }: { code: string; lang?: string }) {
 
             return (
               <div key={lineIdx} className="table-row">
-                <span className="table-cell border-r border-slate-800/60 pr-4 text-right font-mono text-[11px] text-slate-600 select-none">
+                <span className="table-cell border-r border-slate-200 pr-4 text-right font-mono text-[11px] text-slate-500 select-none dark:border-slate-800/60 dark:text-slate-600">
                   {lineIdx + 1}
                 </span>
-                <span className="table-cell pl-4 font-mono text-xs whitespace-pre text-slate-200">
+                <span className="table-cell pl-4 font-mono text-xs whitespace-pre text-slate-800 dark:text-slate-200">
                   {parts.length > 0 ? parts : " "}
                 </span>
               </div>
