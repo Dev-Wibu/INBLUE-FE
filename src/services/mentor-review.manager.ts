@@ -44,6 +44,7 @@ export interface MentorReview {
   session?: Session;
   mentor?: Mentor;
   user?: User;
+  /** Mentor-to-candidate assessment score on a 0-100 scale. */
   rating?: number;
   situationNote?: string;
   taskNote?: string;
@@ -61,6 +62,7 @@ export interface CreateMentorReviewRequest {
   sessionId?: number;
   mentorId?: number;
   userId?: number;
+  /** Mentor-to-candidate assessment score on a 0-100 scale. */
   rating?: number;
   situationNote?: string;
   taskNote?: string;
@@ -76,6 +78,7 @@ export interface CreateMentorReviewRequest {
  */
 export interface UpdateMentorReviewRequest {
   id?: number;
+  /** Mentor-to-candidate assessment score on a 0-100 scale. */
   rating?: number;
   situationNote?: string;
   taskNote?: string;

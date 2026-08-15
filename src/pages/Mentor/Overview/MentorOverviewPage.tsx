@@ -1,3 +1,4 @@
+import { MentorScoreDisplay } from "@/components/review";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Clock, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -664,10 +665,7 @@ export function MentorOverviewPage() {
                       {t("common.student")}
                     </p>
                   </div>
-                  <span className="flex items-center gap-1 text-xs font-medium text-yellow-600">
-                    <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
-                    {typeof review.rating === "number" ? review.rating.toFixed(1) : "-"}
-                  </span>
+                  <MentorScoreDisplay value={review.rating} />
                 </button>
               ))}
             </div>

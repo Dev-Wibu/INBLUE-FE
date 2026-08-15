@@ -92,7 +92,7 @@ export function ReviewDetailPage() {
         onBack={goBack}
         backLabel={t("general.back")}
         parentLabel={t("common.reviewAndFeedback")}
-        title={`${t("common.sessionDetail")} #${sessionId || review.id}`}
+        title={`${t("mentorReviews.mentorReviewReport")} #${review.id}`}
         actions={
           <>
             <Button

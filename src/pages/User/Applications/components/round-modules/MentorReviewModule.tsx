@@ -1,4 +1,5 @@
-﻿import { DateTimePicker } from "@/components/shared";
+﻿import { MentorScoreDisplay } from "@/components/review";
+import { DateTimePicker } from "@/components/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -2268,19 +2269,7 @@ function CompletedResultView({
                 <h3 className="text-lg font-bold text-slate-950 dark:text-white">
                   {t("userApplicationhistory.mentorSessionReviewTitle")}
                 </h3>
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "h-5 w-5 transition-all",
-                        i < Math.round(review.rating ?? 0)
-                          ? "fill-amber-400 text-amber-500 drop-shadow-sm"
-                          : "text-slate-300 dark:text-slate-700"
-                      )}
-                    />
-                  ))}
-                </div>
+                <MentorScoreDisplay value={review.rating} showBand showProgress />
               </div>
 
               <div className="space-y-4">

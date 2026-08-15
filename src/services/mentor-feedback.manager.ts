@@ -20,6 +20,7 @@ export interface MentorFeedback {
   session?: Session;
   mentor?: Mentor;
   user?: User;
+  /** Candidate-to-mentor rating on a 1-5 star scale. */
   rating?: number;
   comment?: string;
   createdAt?: string;
@@ -33,6 +34,7 @@ export interface CreateMentorFeedbackRequest {
   sessionId?: number;
   mentorId?: number;
   userId?: number;
+  /** Candidate-to-mentor rating on a 1-5 star scale. */
   rating?: number;
   comment?: string;
 }
@@ -42,6 +44,7 @@ export interface CreateMentorFeedbackRequest {
  */
 export interface UpdateMentorFeedbackRequest {
   id?: number;
+  /** Candidate-to-mentor rating on a 1-5 star scale. */
   rating?: number;
   comment?: string;
 }

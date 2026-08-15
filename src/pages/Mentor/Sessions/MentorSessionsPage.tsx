@@ -1,4 +1,4 @@
-import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
+import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,6 @@ import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import { useUserProfilesByIds } from "@/hooks/useUserProfilesByIds";
 import type { Session } from "@/interfaces";
-import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { getSessionJoinAvailability } from "@/lib/session-join";
 import { filterSessionsForMentor } from "@/lib/session-mentor";
 import { getSessionStatusBadge } from "@/lib/status-utils";
@@ -130,7 +129,7 @@ export function MentorSessionsPage() {
       })),
     [filteredSessions]
   );
-  const { sortedData, getSortProps } = useSortable(sortableSessions, {
+  const { sortedData } = useSortable(sortableSessions, {
     defaultSort: { key: "sessionSortValue", direction: "desc" },
     noSortBehavior: "preserve",
     tieBreaker: { key: "sessionSortValue", direction: "desc" },
@@ -275,31 +274,26 @@ export function MentorSessionsPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[1180px]">
+                <div className="min-w-[980px]">
                   <Table className="table-fixed">
                     <TableHeader>
                       <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                        <TableHead className="w-[7%] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[8%] pl-6 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.id")}
                         </TableHead>
-                        <TableHead className="w-[24%] px-5 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[29%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.candidate")}
                         </TableHead>
-                        <TableHead className="w-[23%] px-5 font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[27%] px-5 font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.session")}
                         </TableHead>
-                        <TableHead className="w-[16%] px-5 font-semibold text-slate-700 dark:text-slate-200">
-                          <SortButton {...getSortProps("sessionSortValue")}>
-                            {t("common.time")}
-                          </SortButton>
-                        </TableHead>
-                        <TableHead className="w-[11%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[14%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.status")}
                         </TableHead>
-                        <TableHead className="w-[9%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[10%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.review")}
                         </TableHead>
-                        <TableHead className="w-[10%] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
+                        <TableHead className="w-[12%] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
                           {t("common.actions")}
                         </TableHead>
                       </TableRow>
@@ -316,7 +310,6 @@ export function MentorSessionsPage() {
                         const statusBadge = getSessionStatusBadge(session.status);
                         const hasReview = Boolean(review?.id);
                         const joinAvailability = getSessionJoinAvailability(session, now);
-                        const displayTime = session.joinTime || session.startTime1;
                         return (
                           <TableRow
                             key={session.id}
@@ -357,15 +350,6 @@ export function MentorSessionsPage() {
                               <p className="mt-0.5 max-w-[260px] truncate text-xs text-slate-500 dark:text-slate-400">
                                 {session.roomUrl || "—"}
                               </p>
-                            </TableCell>
-                            <TableCell className="px-5 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                              {displayTime
-                                ? formatDateTime(
-                                    session.joinTime
-                                      ? session.joinTime
-                                      : treatZuluAsVietnamLocal(session.startTime1)
-                                  )
-                                : "—"}
                             </TableCell>
                             <TableCell className="px-5 py-4 text-center">
                               <Badge

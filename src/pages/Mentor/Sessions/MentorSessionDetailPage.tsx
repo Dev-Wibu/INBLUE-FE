@@ -1,28 +1,35 @@
+import { MentorScoreDisplay } from "@/components/review/MentorScoreDisplay";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StarRating } from "@/components/ui/star-rating";
 import { useUserById } from "@/hooks/useApplication";
 import { useCurrentMentorProfile, useMentorById } from "@/hooks/useMentor";
 import { useMentorFeedbackBySession } from "@/hooks/useMentorFeedback";
 import { useMentorReviewBySession } from "@/hooks/useMentorReview";
 import { useSessionById } from "@/hooks/useSession";
 import { formatCurrency, formatDateTime } from "@/lib/formatting";
+import { normalizeFiveStarRating } from "@/lib/rating";
 import { getSessionJoinAvailability } from "@/lib/session-join";
 import { getSessionMentorId, isSessionMentor } from "@/lib/session-mentor";
 import { getSessionStatusBadge } from "@/lib/status-utils";
 import { MentorDetailHeader, MentorDetailPage } from "@/pages/Mentor/components/MentorDetailLayout";
-import { MentorReviewReport } from "@/pages/Mentor/components/MentorReviewReport";
 import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowUpRight,
   Calendar,
+  CheckCircle2,
   Clock3,
   CreditCard,
   Hash,
+  LogIn,
+  LogOut,
+  MessageSquareText,
   Pencil,
-  Play,
+  Timer,
   UserRound,
+  UsersRound,
   Video,
 } from "lucide-react";
 import { useEffect } from "react";
@@ -60,7 +67,8 @@ export function MentorSessionDetailPage() {
   const { data: mentorInfo } = useMentorById(mentorId || 0);
   const { data: mentorReview, isLoading: reviewLoading } =
     useMentorReviewBySession(numericSessionId);
-  const { data: candidateFeedback } = useMentorFeedbackBySession(numericSessionId);
+  const { data: candidateFeedback, isLoading: feedbackLoading } =
+    useMentorFeedbackBySession(numericSessionId);
   const { data: studentInfo } = useUserById(session?.userId ?? 0, !!session?.userId);
   const isAllowed = isSessionMentor(session, currentMentorProfile?.id);
   const returnTo = getSafeReturnTo(location.state);
@@ -163,102 +171,199 @@ export function MentorSessionDetailPage() {
         }
       />
 
-      {reviewLoading ? (
-        <div className="grid gap-8 lg:grid-cols-12">
-          <Skeleton className="h-[620px] lg:col-span-8" />
-          <Skeleton className="h-[480px] lg:col-span-4" />
-        </div>
-      ) : mentorReview ? (
-        <MentorReviewReport
-          review={mentorReview}
-          sessionId={session.id || numericSessionId}
-          roomName={session.roomName}
-          joinedAt={session.joinTime || session.startTime1}
-          mentor={mentor}
-          candidate={candidate}
-          candidateFeedback={candidateFeedback}
-        />
-      ) : (
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          <div className="space-y-8 lg:col-span-8">
-            <section className="space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800/80">
-                <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                  <Video className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                  {t("common.sessionInformation")}
-                </h2>
-                <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                  #{session.id}
-                </span>
-              </div>
-              <div className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-900">
-                <SessionMetric
-                  icon={Calendar}
-                  label={t("common.appointmentTime")}
-                  value={formatDateTime(session.joinTime)}
-                />
-                <SessionMetric
-                  icon={Play}
-                  label={t("mentorSessions.startTime")}
-                  value={formatDateTime(session.startTime1)}
-                />
-                <SessionMetric
-                  icon={Clock3}
-                  label={t("common.duration1")}
-                  value={formatDuration(session.duration, session.durationSeconds1)}
-                />
-                <SessionMetric
-                  icon={CreditCard}
-                  label={t("common.totalPrice")}
-                  value={
-                    typeof session.totalPrice === "number" && session.totalPrice > 0
-                      ? formatCurrency(session.totalPrice)
-                      : "-"
-                  }
-                />
-              </div>
-            </section>
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex min-w-0 items-center gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
-                  <Hash className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-slate-500">{t("common.room")}</p>
-                  <p className="mt-1 truncate font-mono text-sm font-bold text-slate-900 dark:text-white">
-                    {session.roomName || "-"}
-                  </p>
-                </div>
-                {session.recordUrl && (
-                  <a
-                    href={session.recordUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ml-auto inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
-                    {t("common.open")}
-                    <ArrowUpRight className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
-            </section>
-          </div>
-          <aside className="space-y-6 lg:col-span-4">
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-xs font-bold text-slate-500 uppercase dark:text-slate-400">
-                {t("common.status")}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <div className="space-y-8 lg:col-span-8">
+          <section className="space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800/80">
+              <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                <Video className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                {t("common.sessionInformation")}
+              </h2>
+              <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                #{session.id}
+              </span>
+            </div>
+            <div className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-900">
+              <SessionMetric
+                icon={Calendar}
+                label={t("common.appointmentTime")}
+                value={formatDateTime(session.joinTime)}
+              />
+              <SessionMetric
+                icon={Clock3}
+                label={t("common.duration1")}
+                value={formatDuration(session.duration)}
+              />
+              <SessionMetric
+                icon={CreditCard}
+                label={t("common.totalPrice")}
+                value={
+                  typeof session.totalPrice === "number" && session.totalPrice > 0
+                    ? formatCurrency(session.totalPrice)
+                    : "-"
+                }
+              />
+              <SessionMetric
+                icon={CheckCircle2}
+                label={t("common.status")}
+                value={statusBadge.label}
+              />
+            </div>
+          </section>
+
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+              <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                <UsersRound className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                {t("mentorSessions.sessionTimeline")}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                {t("mentorSessions.sessionTimelineDescription")}
               </p>
-              <div className="mt-4 flex items-center justify-between gap-4">
-                <Badge variant={statusBadge.variant} className={statusBadge.className}>
-                  {statusBadge.label}
-                </Badge>
-                <span className="text-xs text-slate-500">{formatDateTime(session.joinTime)}</span>
+            </div>
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              <AttendanceRow
+                label={t("mentorSessions.candidateAttendance")}
+                startTime={session.startTime1}
+                endTime={session.endTime1}
+                duration={session.durationSeconds1}
+              />
+              <AttendanceRow
+                label={t("mentorSessions.mentorAttendance")}
+                startTime={session.startTime2}
+                endTime={session.endTime2}
+                duration={session.durationSeconds2}
+              />
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
+                <Hash className="h-5 w-5" />
               </div>
-            </section>
-            <PersonPanel label={t("common.candidate")} person={candidate} tone="sky" />
-            <PersonPanel label={t("common.mentor")} person={mentor} tone="indigo" />
-          </aside>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-slate-500">{t("common.room")}</p>
+                <p className="mt-1 truncate font-mono text-sm font-bold text-slate-900 dark:text-white">
+                  {session.roomName || "-"}
+                </p>
+              </div>
+              {session.recordUrl ? (
+                <a
+                  href={session.recordUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="ml-auto inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
+                  {t("mentorSessions.recording")}
+                  <ArrowUpRight className="h-4 w-4" />
+                </a>
+              ) : (
+                <span className="ml-auto text-xs font-medium text-slate-400">
+                  {t("mentorSessions.notRecorded")}
+                </span>
+              )}
+            </div>
+          </section>
         </div>
-      )}
+
+        <aside className="space-y-6 lg:col-span-4">
+          <PersonPanel label={t("common.candidate")} person={candidate} tone="sky" />
+          <PersonPanel label={t("common.mentor")} person={mentor} tone="indigo" />
+
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                <MessageSquareText className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                {t("mentorSessions.reviewStatus")}
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                {t("mentorSessions.reviewStatusDescription")}
+              </p>
+            </div>
+
+            {reviewLoading || feedbackLoading ? (
+              <div className="space-y-4 p-5">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="space-y-3 p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        {t("mentorSessions.mentorReviewSubmitted")}
+                      </p>
+                      <div className="mt-2">
+                        {mentorReview ? (
+                          <MentorScoreDisplay value={mentorReview.rating} />
+                        ) : (
+                          <span className="text-sm font-semibold text-slate-400">
+                            {t("common.pending")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {mentorReview && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 shrink-0 px-2 text-indigo-600 dark:text-indigo-400"
+                        onClick={() =>
+                          navigate(`/mentor/reviews/${mentorReview.id}`, {
+                            state: nestedRouteState,
+                          })
+                        }>
+                        {t("mentorSessions.openReviewDetails")}
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-3 p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        {t("mentorSessions.candidateFeedbackReceived")}
+                      </p>
+                      <div className="mt-2">
+                        {candidateFeedback ? (
+                          <StarRating
+                            value={normalizeFiveStarRating(candidateFeedback.rating)}
+                            readOnly
+                            size="sm"
+                            showValue
+                            color="sky"
+                          />
+                        ) : (
+                          <span className="text-sm font-semibold text-slate-400">
+                            {t("common.pending")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {candidateFeedback?.id && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 shrink-0 px-2 text-indigo-600 dark:text-indigo-400"
+                        onClick={() =>
+                          navigate(`/mentor/feedback/${candidateFeedback.id}`, {
+                            state: nestedRouteState,
+                          })
+                        }>
+                        {t("mentorSessions.openFeedbackDetails")}
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        </aside>
+      </div>
     </MentorDetailPage>
   );
 }
@@ -319,5 +424,62 @@ function PersonPanel({
         </div>
       </div>
     </section>
+  );
+}
+
+function AttendanceRow({
+  label,
+  startTime,
+  endTime,
+  duration,
+}: {
+  label: string;
+  startTime?: string;
+  endTime?: string;
+  duration?: number;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="grid gap-4 px-5 py-4 sm:grid-cols-[minmax(150px,1fr)_repeat(3,minmax(0,1fr))] sm:items-center">
+      <p className="text-sm font-bold text-slate-900 dark:text-white">{label}</p>
+      <AttendanceMetric
+        icon={LogIn}
+        label={t("mentorSessions.startTime")}
+        value={formatDateTime(startTime)}
+      />
+      <AttendanceMetric
+        icon={LogOut}
+        label={t("mentorSessions.endTime")}
+        value={formatDateTime(endTime)}
+      />
+      <AttendanceMetric
+        icon={Timer}
+        label={t("common.duration1")}
+        value={formatDuration(undefined, duration)}
+      />
+    </div>
+  );
+}
+
+function AttendanceMetric({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof LogIn;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase">
+        <Icon className="h-3.5 w-3.5" />
+        {label}
+      </p>
+      <p className="mt-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-200">
+        {value}
+      </p>
+    </div>
   );
 }

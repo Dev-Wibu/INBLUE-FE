@@ -3500,7 +3500,18 @@
     "endTime": "終了時刻",
     "youHaventSubmittedAReview": "このセッションにはまだレビューを送信していません。",
     "reviewOfSession": "セッションのレビュー",
-    "youScoredCandidateWith": "この候補者を {{var_0}} / 5 で評価しました"
+    "youScoredCandidateWith": "この候補者を {{var_0}} / 100 で評価しました",
+    "sessionTimeline": "参加者タイムライン",
+    "sessionTimelineDescription": "このセッションで記録された入室、退室、実際の参加時間です。",
+    "candidateAttendance": "候補者の参加状況",
+    "mentorAttendance": "メンターの参加状況",
+    "notRecorded": "録画なし",
+    "reviewStatus": "レビュー状況",
+    "reviewStatusDescription": "このセッションの完了状況です。全文はレビューとフィードバックで確認できます。",
+    "mentorReviewSubmitted": "メンター評価",
+    "candidateFeedbackReceived": "候補者フィードバック",
+    "openReviewDetails": "評価を見る",
+    "openFeedbackDetails": "フィードバックを見る"
   },
   "mentorStudents": {
     "allStudents": "すべての学生",
@@ -3934,7 +3945,7 @@
     "moderateTheReviewsSentBy": "メンターから送信されたレビューをモデレート",
     "noReviewsFoundThatNeeded": "モデレーションが必要なレビューは見つかりませんでした。",
     "reviewAndModerateMentorReviews": "候補者に送信されたメンターレビューを確認・モデレート。特に低いレビューに注意",
-    "reviewsWithARatingOf": "1〜2星の評価のレビューは確認が必要です",
+    "reviewsWithARatingOf": "60点未満のメンターレビューは確認が必要です",
     "searchByMentorNameCandidate": "メンター名、候補者、レビュー内容で検索...",
     "weaknessesAreStated": "弱みが記述されています",
     "weaknessesNeedToConsider": "弱み（要検討）"
@@ -3954,6 +3965,53 @@
     "unableToLoadInterviewSession": "面接セッション一覧を読み込めません",
     "userId": "ユーザー（ID）:",
     "waitingForApproval": "承認待ち"
+  },
+  "mentorScoring": {
+    "candidateScore": "候補者スコア",
+    "scoreInputHint": "1から100までの整数を入力してください。詳細なコメントも追加できます。",
+    "scoreRequired": "候補者スコアを1から100で入力してください。",
+    "scoreOutOf100": "候補者スコア: 100点中{{score}}点",
+    "averageCandidateScore": "候補者の平均スコア",
+    "highestCandidateScore": "候補者の最高スコア",
+    "excellentScores": "優秀なスコア",
+    "band": {
+      "excellent": "優秀",
+      "strong": "良好",
+      "meets": "期待を満たす",
+      "developing": "成長中",
+      "low": "改善が必要"
+    },
+    "range": {
+      "excellent": "90-100点",
+      "strong": "75-89点",
+      "meets": "60-74点",
+      "developing": "60点未満"
+    }
+  },
+  "mentorDashboardAnalytics": {
+    "greeting": "メンターダッシュボード",
+    "subtitle": "セッション、候補者スコア、フィードバックをまとめて確認できます。",
+    "totalSessions": "総セッション数",
+    "completedSessions": "完了セッション",
+    "upcomingCount": "今後{{count}}件",
+    "averageMentorRating": "候補者からの評価",
+    "openReviews": "レビューを開く",
+    "openSessions": "セッションを開く",
+    "recentCandidateScores": "最近の候補者スコア",
+    "recentCandidateScoresHint": "100点満点で評価した直近10件",
+    "sessionStatus": "セッション状況",
+    "sessionStatusHint": "現在の面接セッションの分布",
+    "scoreDistribution": "候補者スコアの分布",
+    "scoreDistributionHint": "提出済みメンターレビュー全体の評価分布",
+    "noData": "表示できるデータはまだありません",
+    "status": {
+      "completed": "完了",
+      "ongoing": "進行中",
+      "scheduled": "予定済み",
+      "paid": "支払い済み",
+      "canceled": "キャンセル",
+      "other": "その他"
+    }
   },
   "staffOverview": {
     "activitySummary": "アクティビティサマリー",

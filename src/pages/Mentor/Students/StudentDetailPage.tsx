@@ -3,6 +3,7 @@
  * Data ownership and filtering stay scoped to the current mentor.
  */
 
+import { MentorScoreDisplay } from "@/components/review/MentorScoreDisplay";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import { TimeAgo } from "@/components/ui/time-ago";
 import { useUserById } from "@/hooks/useApplication";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorFeedbacksByMentor } from "@/hooks/useMentorFeedback";
-import { calculateAverageRating, useMentorReviewsByMentor } from "@/hooks/useMentorReview";
+import { calculateAverageMentorScore, useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import type { CandidateProfile } from "@/interfaces/schema.types";
@@ -126,7 +127,7 @@ export function StudentDetailPage() {
   ).length;
   const totalFeedbacks = studentFeedbacks.length;
   const totalReviews = studentReviews.length;
-  const avgRating = calculateAverageRating(studentReviews);
+  const avgScore = calculateAverageMentorScore(studentReviews);
 
   if (isLoading) {
     return (
@@ -206,13 +207,12 @@ export function StudentDetailPage() {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {t("common.averageStarRating")}
+                  {t("mentorScoring.averageCandidateScore")}
                 </p>
                 <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                  {avgRating.toFixed(1)}
-                  <span className="ml-1 text-base font-medium text-slate-400">/5</span>
+                  {avgScore.toFixed(1)}
+                  <span className="ml-1 text-base font-medium text-slate-400">/100</span>
                 </p>
-                <StarRating value={avgRating} readOnly size="sm" />
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {totalReviews} {t("mentorStudents.studentReviews")}
                 </p>
@@ -245,7 +245,7 @@ export function StudentDetailPage() {
               icon: Star,
               value: totalReviews,
               label: t("adminReviewmanagement.totalReviews"),
-              detail: totalReviews > 0 ? `${avgRating.toFixed(1)}/5` : "—",
+              detail: totalReviews > 0 ? `${avgScore.toFixed(1)}/100` : "—",
               tone: "text-amber-600 dark:text-amber-300",
               surface: "bg-amber-50 dark:bg-amber-950/50",
             },
@@ -801,13 +801,13 @@ function MentorReviewListRow({
 }) {
   const rating = review.rating || 0;
   const tone =
-    rating >= 5
+    rating >= 90
       ? "emerald"
-      : rating >= 4
+      : rating >= 75
         ? "teal"
-        : rating >= 3
+        : rating >= 60
           ? "sky"
-          : rating >= 2
+          : rating >= 40
             ? "amber"
             : "rose";
   const accentClass = {
@@ -859,8 +859,7 @@ function MentorReviewListRow({
                 "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset",
                 accentClass
               )}>
-              <Star className="h-3 w-3 fill-current" aria-hidden />
-              {rating}/5 · {t("mentorMentordashboard.reviewSent")}
+              {rating}/100 · {t("mentorMentordashboard.reviewSent")}
             </span>
           </div>
           <p className="mt-1.5 flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -874,7 +873,7 @@ function MentorReviewListRow({
           )}
         </div>
         <div className="flex items-center gap-3">
-          <StarRating value={rating} readOnly size="sm" />
+          <MentorScoreDisplay value={rating} />
           <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-500" />
         </div>
       </div>

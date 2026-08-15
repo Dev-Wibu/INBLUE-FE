@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  calculateAverageRating,
+  calculateAverageMentorScore,
   useCreateMentorReview,
   useDeleteMentorReview,
   useMentorReviewById,
@@ -518,26 +518,26 @@ describe("useMentorReview hooks", () => {
     });
   });
 
-  describe("calculateAverageRating", () => {
+  describe("calculateAverageMentorScore", () => {
     it("returns 0 for empty array", () => {
-      expect(calculateAverageRating([])).toBe(0);
+      expect(calculateAverageMentorScore([])).toBe(0);
     });
 
     it("calculates average correctly", () => {
       const reviews = [
-        { id: 1, rating: 4 } as unknown as Parameters<typeof calculateAverageRating>[0][0],
-        { id: 2, rating: 5 } as unknown as Parameters<typeof calculateAverageRating>[0][0],
-        { id: 3, rating: 3 } as unknown as Parameters<typeof calculateAverageRating>[0][0],
+        { id: 1, rating: 80 } as unknown as Parameters<typeof calculateAverageMentorScore>[0][0],
+        { id: 2, rating: 100 } as unknown as Parameters<typeof calculateAverageMentorScore>[0][0],
+        { id: 3, rating: 60 } as unknown as Parameters<typeof calculateAverageMentorScore>[0][0],
       ];
-      expect(calculateAverageRating(reviews)).toBe(4);
+      expect(calculateAverageMentorScore(reviews)).toBe(80);
     });
 
-    it("treats missing rating as 0", () => {
+    it("ignores missing ratings", () => {
       const reviews = [
-        { id: 1 } as unknown as Parameters<typeof calculateAverageRating>[0][0],
-        { id: 2, rating: 4 } as unknown as Parameters<typeof calculateAverageRating>[0][0],
+        { id: 1 } as unknown as Parameters<typeof calculateAverageMentorScore>[0][0],
+        { id: 2, rating: 80 } as unknown as Parameters<typeof calculateAverageMentorScore>[0][0],
       ];
-      expect(calculateAverageRating(reviews)).toBe(2);
+      expect(calculateAverageMentorScore(reviews)).toBe(80);
     });
   });
 });

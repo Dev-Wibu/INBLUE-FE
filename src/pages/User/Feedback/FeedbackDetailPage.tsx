@@ -7,10 +7,10 @@
  * and sticky side summary.
  */
 
+import { MentorScoreDisplay } from "@/components/review";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
 import { useMentorById } from "@/hooks/useMentor";
 import { useMentorReviewById } from "@/hooks/useMentorReview";
@@ -157,17 +157,6 @@ export function FeedbackDetailPage() {
     : null;
 
   const rating = review.rating || 0;
-  const ratingTone =
-    rating >= 5
-      ? "emerald"
-      : rating >= 4
-        ? "teal"
-        : rating >= 3
-          ? "sky"
-          : rating >= 2
-            ? "amber"
-            : "rose";
-
   const starCards: Array<{
     key: "situation" | "task" | "action" | "result";
     label: string;
@@ -280,11 +269,7 @@ export function FeedbackDetailPage() {
               <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
                 {t("common.overallRating")}
               </p>
-              <p className="text-[44px] leading-none font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
-                {rating}
-                <span className="ml-0.5 text-base font-medium text-slate-400">/5</span>
-              </p>
-              <StarRating value={rating} readOnly size="sm" />
+              <MentorScoreDisplay value={rating} showBand />
               {reviewEndedAt && (
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   <TimeAgo date={String(reviewEndedAt)} />
@@ -294,23 +279,9 @@ export function FeedbackDetailPage() {
             <div
               className={cn(
                 "rounded-2xl p-3 ring-1 backdrop-blur-md ring-inset",
-                ratingTone === "emerald" &&
-                  "bg-emerald-500/15 ring-emerald-400/30 dark:bg-emerald-500/20",
-                ratingTone === "teal" && "bg-teal-500/15 ring-teal-400/30 dark:bg-teal-500/20",
-                ratingTone === "sky" && "bg-sky-500/15 ring-sky-400/30 dark:bg-sky-500/20",
-                ratingTone === "amber" && "bg-amber-500/15 ring-amber-400/30 dark:bg-amber-500/20",
-                ratingTone === "rose" && "bg-rose-500/15 ring-rose-400/30 dark:bg-rose-500/20"
+                "bg-indigo-500/15 ring-indigo-400/30 dark:bg-indigo-500/20"
               )}>
-              <Trophy
-                className={cn(
-                  "h-8 w-8",
-                  ratingTone === "emerald" && "fill-emerald-400 text-emerald-400",
-                  ratingTone === "teal" && "fill-teal-400 text-teal-400",
-                  ratingTone === "sky" && "fill-sky-400 text-sky-400",
-                  ratingTone === "amber" && "fill-amber-400 text-amber-400",
-                  ratingTone === "rose" && "fill-rose-400 text-rose-400"
-                )}
-              />
+              <Trophy className={cn("h-8 w-8", "text-indigo-500 dark:text-indigo-300")} />
             </div>
           </div>
         </div>
@@ -475,26 +446,9 @@ export function FeedbackDetailPage() {
             <p className="text-[10px] font-semibold tracking-[0.06em] text-slate-500 uppercase dark:text-slate-400">
               {t("common.overallRating")}
             </p>
-            <p className="mt-1 flex items-baseline gap-1">
-              <span className="text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
-                {rating}
-              </span>
-              <span className="text-sm font-medium text-slate-400">/5</span>
-            </p>
             <div className="mt-2">
-              <StarRating value={rating} readOnly size="md" />
+              <MentorScoreDisplay value={rating} showBand showProgress />
             </div>
-            {[5, 4, 3, 2, 1].map((star) => (
-              <div key={star} className="mt-1.5 flex items-center gap-2 text-xs" aria-hidden>
-                <span className="w-5 text-slate-500 dark:text-slate-400">{star}★</span>
-                <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                  <div
-                    className="absolute inset-y-0 left-0 rounded-full bg-indigo-500"
-                    style={{ width: `${rating === star ? 100 : 0}%` }}
-                  />
-                </div>
-              </div>
-            ))}
           </div>
 
           {/* Timeline Card */}

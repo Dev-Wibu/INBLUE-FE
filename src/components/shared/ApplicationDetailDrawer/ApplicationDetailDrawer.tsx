@@ -169,7 +169,7 @@ function renderSubmissionSummary(round: any, t: any) {
       <div className="rounded-lg border border-slate-100 bg-white p-2.5 text-xs dark:border-slate-800 dark:bg-slate-950/50">
         <div className="font-semibold text-slate-800 dark:text-slate-200">
           {t("adminApplicationManagement.mentorReview", "Mentor Review")}
-          {mentorReview.rating ? `: ${mentorReview.rating}/10` : ""}
+          {mentorReview.rating ? `: ${mentorReview.rating}/100` : ""}
         </div>
         <div className="mt-2 space-y-1 text-slate-600 dark:text-slate-300">
           {mentorReview.strength && <p>{mentorReview.strength}</p>}

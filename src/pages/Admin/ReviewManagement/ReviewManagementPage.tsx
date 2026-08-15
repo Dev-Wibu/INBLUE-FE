@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
  * Allows admin to view and moderate all mentor reviews for candidates
  */
 
+import { MentorScoreDisplay } from "@/components/review/MentorScoreDisplay";
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,10 @@ import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate } from "@/lib/formatting";
+import {
+  calculateAverageMentorReviewScore,
+  matchesMentorReviewScoreRange,
+} from "@/lib/mentor-review-score";
 import { cn } from "@/lib/utils";
 import { Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -85,18 +90,10 @@ export function ReviewManagementPage() {
   // Stats calculation
   const stats = useMemo(() => {
     const total = reviews.length;
-    const averageRating =
-      total > 0
-        ? Number(
-            (reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) / total).toFixed(1)
-          )
-        : 0;
-    const fiveStarCount = reviews.filter((r) => r.rating === 5).length;
-    return { total, averageRating, fiveStarCount };
+    const averageScore = Number(calculateAverageMentorReviewScore(reviews).toFixed(1));
+    const excellentCount = reviews.filter((review) => (review.rating ?? 0) >= 90).length;
+    return { total, averageScore, excellentCount };
   }, [reviews]);
-
-  // Convert rating filter once for efficiency
-  const numericRatingFilter = ratingFilter !== "all" ? Number(ratingFilter) : null;
 
   // Filter reviews
   const filteredReviews = useMemo(() => {
@@ -111,13 +108,17 @@ export function ReviewManagementPage() {
         if (!matchesSearch) return false;
       }
 
-      // Rating filter
-      if (numericRatingFilter !== null && review.rating !== numericRatingFilter) {
+      if (
+        !matchesMentorReviewScoreRange(
+          review.rating,
+          ratingFilter as "all" | "excellent" | "strong" | "meets" | "developing"
+        )
+      ) {
         return false;
       }
       return true;
     });
-  }, [reviews, searchQuery, numericRatingFilter]);
+  }, [reviews, searchQuery, ratingFilter]);
   const hasActiveFilters = searchQuery.trim().length > 0 || ratingFilter !== "all";
 
   // Sorting
@@ -193,11 +194,8 @@ export function ReviewManagementPage() {
                 <div className="flex items-center justify-center gap-5 sm:gap-6">
                   {[
                     [stats.total, t("adminReviewmanagement.totalReviews", "Tổng phiên phỏng vấn")],
-                    [
-                      stats.averageRating,
-                      t("adminReviewmanagement.averageRating", "Trung bình Mentor chấm"),
-                    ],
-                    [stats.fiveStarCount, t("common.fiveStars", "5 sao")],
+                    [`${stats.averageScore}/100`, t("mentorScoring.averageCandidateScore")],
+                    [stats.excellentCount, t("mentorScoring.excellentScores")],
                   ].map(([value, label], index) => (
                     <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
                       {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
@@ -254,11 +252,10 @@ export function ReviewManagementPage() {
                 </span>
                 {[
                   ["all", t("common.allStatus", "Tất cả")],
-                  ["5", t("common.fiveStars", "5 sao")],
-                  ["4", t("common.fourStars", "4 sao")],
-                  ["3", t("common.threeStars", "3 sao")],
-                  ["2", t("common.twoStars", "2 sao")],
-                  ["1", t("common.oneStar", "1 sao")],
+                  ["excellent", t("mentorScoring.range.excellent")],
+                  ["strong", t("mentorScoring.range.strong")],
+                  ["meets", t("mentorScoring.range.meets")],
+                  ["developing", t("mentorScoring.range.developing")],
                 ].map(([value, label]) => (
                   <button
                     key={value}
@@ -404,12 +401,7 @@ export function ReviewManagementPage() {
                               </Badge>
                             </TableCell>
                             <TableCell className="px-4 py-4">
-                              <StarRating
-                                value={review.rating || 0}
-                                readOnly
-                                size="sm"
-                                color="amber"
-                              />
+                              <MentorScoreDisplay value={review.rating} />
                             </TableCell>
                             <TableCell className="px-4 py-4">
                               {candidateFeedback ? (

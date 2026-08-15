@@ -6,11 +6,11 @@ import { useTranslation } from "react-i18next";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
 import { cn } from "@/lib/utils";
 import type { MentorReview } from "@/services/mentor-review.manager";
 import { Calendar, Edit, Trash2, User } from "lucide-react";
+import { MentorScoreDisplay } from "./MentorScoreDisplay";
 interface ReviewCardProps {
   review: MentorReview;
   showMentor?: boolean;
@@ -81,9 +81,9 @@ export function ReviewCard({
           </div>
         </div>
 
-        {/* Rating */}
+        {/* Mentor-to-candidate score */}
         <div className="flex flex-col items-end gap-1">
-          <StarRating value={review.rating || 0} readOnly size="sm" />
+          <MentorScoreDisplay value={review.rating} />
           {occurredAt && (
             <TimeAgo date={occurredAt} className="text-xs text-slate-500 dark:text-slate-400" />
           )}

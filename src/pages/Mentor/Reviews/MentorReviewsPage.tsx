@@ -1,3 +1,4 @@
+import { MentorScoreDisplay } from "@/components/review/MentorScoreDisplay";
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,13 +20,18 @@ import { useMentorReviews, type MentorReview } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate, toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import {
+  calculateAverageMentorReviewScore,
+  matchesMentorReviewScoreRange,
+  normalizeMentorReviewScore,
+} from "@/lib/mentor-review-score";
 import { normalizeFiveStarRating } from "@/lib/rating";
 import { Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-type RatingFilter = "all" | "5" | "4" | "3" | "2" | "1";
+type RatingFilter = "all" | "excellent" | "strong" | "meets" | "developing";
 
 type ReviewFeedbackRow = {
   key: string;
@@ -113,7 +119,7 @@ export function MentorReviewsPage() {
         idSortValue: sessionId ?? review.id ?? 0,
         newestSortValue: getNewestTimestamp(review),
         candidateNameSortValue: review.user?.name?.toLowerCase() ?? "",
-        mentorRatingSortValue: normalizeFiveStarRating(review.rating),
+        mentorRatingSortValue: normalizeMentorReviewScore(review.rating),
       });
     });
 
@@ -131,7 +137,7 @@ export function MentorReviewsPage() {
         newestSortValue: getNewestTimestamp(review, feedback),
         candidateNameSortValue:
           review?.user?.name?.toLowerCase() ?? feedback.user?.name?.toLowerCase() ?? "",
-        mentorRatingSortValue: normalizeFiveStarRating(review?.rating),
+        mentorRatingSortValue: normalizeMentorReviewScore(review?.rating),
       });
     });
 
@@ -140,7 +146,6 @@ export function MentorReviewsPage() {
 
   const filteredRows = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    const rating = ratingFilter === "all" ? null : Number(ratingFilter);
     return rows.filter((row) => {
       const candidate = row.review?.user ?? row.feedback?.user;
       const session = row.review?.session ?? row.feedback?.session;
@@ -153,7 +158,7 @@ export function MentorReviewsPage() {
       ) {
         return false;
       }
-      return rating == null || row.review?.rating === rating;
+      return matchesMentorReviewScoreRange(row.review?.rating, ratingFilter);
     });
   }, [ratingFilter, rows, searchQuery]);
 
@@ -179,12 +184,7 @@ export function MentorReviewsPage() {
     setRatingFilter("all");
     pagination.goToFirstPage();
   };
-  const averageMentorRating = reviews.length
-    ? (
-        reviews.reduce((total, review) => total + normalizeFiveStarRating(review.rating), 0) /
-        reviews.length
-      ).toFixed(1)
-    : "0.0";
+  const averageMentorScore = calculateAverageMentorReviewScore(reviews).toFixed(1);
   const feedbackCount = rows.filter((row) => row.feedback).length;
 
   return (
@@ -212,7 +212,7 @@ export function MentorReviewsPage() {
                 <div className="flex items-center justify-center gap-5 sm:gap-6">
                   {[
                     [rows.length, t("adminReviewmanagement.totalReviews")],
-                    [averageMentorRating, t("adminReviewmanagement.averageRating")],
+                    [`${averageMentorScore}/100`, t("mentorScoring.averageCandidateScore")],
                     [feedbackCount, t("common.responseReceived")],
                   ].map(([value, label], index) => (
                     <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
@@ -268,11 +268,10 @@ export function MentorReviewsPage() {
                 </span>
                 {[
                   ["all", t("common.allStatus")],
-                  ["5", t("common.fiveStars")],
-                  ["4", t("common.fourStars")],
-                  ["3", t("common.threeStars")],
-                  ["2", t("common.twoStars")],
-                  ["1", t("common.oneStar")],
+                  ["excellent", t("mentorScoring.range.excellent")],
+                  ["strong", t("mentorScoring.range.strong")],
+                  ["meets", t("mentorScoring.range.meets")],
+                  ["developing", t("mentorScoring.range.developing")],
                 ].map(([value, label]) => (
                   <button
                     key={value}
@@ -408,12 +407,7 @@ export function MentorReviewsPage() {
                             </TableCell>
                             <TableCell className="px-5 py-4">
                               {row.review ? (
-                                <StarRating
-                                  value={normalizeFiveStarRating(row.review.rating)}
-                                  readOnly
-                                  size="sm"
-                                  color="amber"
-                                />
+                                <MentorScoreDisplay value={row.review.rating} />
                               ) : (
                                 <span className="text-xs text-slate-400 italic">
                                   {t("common.noReview")}
