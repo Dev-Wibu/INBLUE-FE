@@ -2278,14 +2278,64 @@ function CompletedResultView({
         <div className="space-y-5">
           {review ? (
             <Card className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-              <div className="mb-6 flex flex-col items-center gap-4 text-center">
-                <div className="flex w-full items-center justify-center gap-2 border-b border-slate-100 pb-3.5 dark:border-slate-800">
+              <div className="flex w-full items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+                <div className="flex items-center gap-2">
                   <Award className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                     {t("userApplicationhistory.mentorSessionReviewTitle", "Đánh giá của Mentor")}
                   </h3>
                 </div>
-                <MentorScoreDisplay value={review.rating} variant="circle" showBand />
+                <span className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800/60 dark:bg-indigo-950/40 dark:text-indigo-300">
+                  STAR Evaluation
+                </span>
+              </div>
+
+              <div className="mt-5 grid items-center gap-6 md:grid-cols-3">
+                {/* Left Column: Rating & Band Badge */}
+                <div className="flex flex-col items-center justify-center space-y-2.5 text-center md:items-start md:text-left">
+                  <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+                    {t("userApplication.mentorReview.ratingTitle", "Xếp loại tổng quan")}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  </div>
+                  <MentorScoreDisplay value={review.rating} showBand={true} variant="inline" />
+                </div>
+
+                {/* Center Column: SVG Circular Ring Gauge */}
+                <div className="flex justify-center">
+                  <MentorScoreDisplay value={review.rating} variant="circle" showBand={false} />
+                </div>
+
+                {/* Right Column: Mentor & Review Status */}
+                <div className="flex flex-col justify-center space-y-3 rounded-xl border border-slate-100 bg-slate-50/60 p-4 dark:border-slate-800/60 dark:bg-slate-950/30">
+                  <div className="flex items-center gap-2.5">
+                    <UserCheck className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-extrabold text-slate-400 uppercase">
+                        Mentor đánh giá
+                      </p>
+                      <p className="truncate text-xs font-bold text-slate-900 dark:text-white">
+                        {mentorDisplayName}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-extrabold text-slate-400 uppercase">
+                        Phương pháp STAR
+                      </p>
+                      <p className="truncate text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        Đã hoàn thành 100%
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4">
