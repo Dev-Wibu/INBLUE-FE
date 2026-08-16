@@ -591,7 +591,7 @@ export function JobDescriptionDetailView({
 
   if (isEditorOpen) {
     return (
-      <div className="fixed inset-0 z-50 flex h-screen w-screen flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         <RoundCanvasEditorWorkspace
           isOpen={isEditorOpen}
           onClose={() => setIsEditorOpen(false)}
