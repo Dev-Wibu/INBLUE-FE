@@ -1,4 +1,4 @@
-﻿import { MentorScoreDisplay } from "@/components/review";
+import { MentorScoreDisplay } from "@/components/review";
 import { DateTimePicker } from "@/components/shared";
 import {
   AlertDialog,
@@ -2277,12 +2277,12 @@ function CompletedResultView({
 
         <div className="space-y-5">
           {review ? (
-            <Card className="rounded-2xl border border-slate-200 bg-white p-4 pt-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-              <div className="mb-2 flex flex-col items-center gap-2 text-center">
-                <h3 className="text-lg font-bold text-slate-950 dark:text-white">
-                  {t("userApplicationhistory.mentorSessionReviewTitle")}
+            <Card className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+              <div className="mb-4 flex flex-col items-center gap-3 text-center">
+                <h3 className="text-sm font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  {t("userApplicationhistory.mentorSessionReviewTitle", "Đánh giá của Mentor")}
                 </h3>
-                <MentorScoreDisplay value={review.rating} showBand showProgress />
+                <MentorScoreDisplay value={review.rating} variant="circle" showBand />
               </div>
 
               <div className="space-y-4">
