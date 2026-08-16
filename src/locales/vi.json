@@ -8094,6 +8094,7 @@
     "subtitle": "Đánh giá tổng hợp năng lực ứng viên sau toàn bộ quá trình tuyển dụng.",
     "levelQuestionPrompt": "Đánh giá trình độ hiện tại đang ở cấp độ nào?",
     "overallScoreLabel": "Điểm tổng thể",
+    "radarAverageLabel": "TRUNG BÌNH KỸ NĂNG",
     "scoreOutOfHundred": "",
     "hardSkills": "Kỹ năng chuyên môn",
     "softSkills": "Kỹ năng mềm & thái độ",

@@ -696,8 +696,8 @@ export function FinalCompetencyReportNodeView({
                   </ResponsiveContainer>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 text-center dark:border-indigo-400/25 dark:bg-indigo-500/[0.08]">
-                  <p className="text-[11px] font-bold tracking-[0.18em] text-indigo-700 dark:text-indigo-300">
-                    {t("competencyReport.overviewLabel", "TỔNG QUAN")}
+                  <p className="text-[10px] font-extrabold tracking-[0.12em] text-indigo-700 uppercase dark:text-indigo-300">
+                    {t("competencyReport.radarAverageLabel", "TRUNG BÌNH KỸ NĂNG")}
                   </p>
                   <p
                     className={`mt-3 text-4xl leading-none font-black tabular-nums ${scoreColor(radarOverallScore).text}`}>

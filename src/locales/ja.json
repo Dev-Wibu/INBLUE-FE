@@ -8093,6 +8093,7 @@
     "subtitle": "採用プロセス全体を通しての候補者の総合的な能力評価。",
     "levelQuestionPrompt": "現在の能力レベルはどの段階ですか?",
     "overallScoreLabel": "総合スコア",
+    "radarAverageLabel": "平均スキルスコア",
     "scoreOutOfHundred": "",
     "hardSkills": "専門スキル",
     "softSkills": "ソフトスキル & 態度",
