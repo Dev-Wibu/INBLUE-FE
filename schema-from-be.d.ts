@@ -4188,9 +4188,9 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
@@ -4426,10 +4426,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            applicationName?: string;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             /** Format: int64 */
             startupDate?: number;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
+            applicationName?: string;
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -4530,18 +4530,18 @@ export interface components {
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
-            isXml?: string;
-            includePreludes?: string[];
-            trimDirectiveWhitespaces?: string;
+            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
-            errorOnELNotFound?: string;
+            includePreludes?: string[];
             includeCodas?: string[];
-            errorOnUndeclaredNamespace?: string;
-            urlPatterns?: string[];
-            defaultContentType?: string;
+            trimDirectiveWhitespaces?: string;
             deferredSyntaxAllowedAsLiteral?: string;
+            isXml?: string;
+            errorOnUndeclaredNamespace?: string;
+            defaultContentType?: string;
+            urlPatterns?: string[];
+            elIgnored?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -4576,8 +4576,11 @@ export interface components {
             };
         };
         ServletContext: {
-            serverInfo?: string;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
@@ -4591,13 +4594,10 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            virtualServerName?: string;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -4678,9 +4678,9 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
-            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
+            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -4689,8 +4689,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */
