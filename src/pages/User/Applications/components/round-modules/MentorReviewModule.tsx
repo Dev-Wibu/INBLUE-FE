@@ -31,6 +31,7 @@ import {
 } from "@/hooks/useMentorFeedback";
 import { useCreateRoundSession, useSessionById } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
+import { getMentorReviewScoreBand, normalizeMentorReviewScore } from "@/lib/mentor-review-score";
 import { isMentorScheduleTimeValid } from "@/lib/mentor-schedule";
 import { getSessionJoinAvailability } from "@/lib/session-join";
 import { cn } from "@/lib/utils";
@@ -65,7 +66,6 @@ import {
   Send,
   Sparkles,
   Star,
-  StarHalf,
   Target,
   UserCheck,
   Users,
@@ -1060,12 +1060,29 @@ function DynamicStarRating({ score }: { score: number }) {
         const halfThreshold = starIndex * 20 - 10;
 
         if (score >= fullThreshold) {
-          return <Star key={starIndex} className="h-5 w-5 fill-amber-400 text-amber-400" />;
+          return (
+            <Star
+              key={starIndex}
+              className="drop-shadow-2xs h-5 w-5 fill-amber-400 text-amber-400"
+            />
+          );
         }
         if (score >= halfThreshold) {
-          return <StarHalf key={starIndex} className="h-5 w-5 fill-amber-400 text-amber-400" />;
+          return (
+            <div key={starIndex} className="relative h-5 w-5">
+              <Star className="h-5 w-5 fill-slate-200 text-slate-300 dark:fill-slate-800 dark:text-slate-700" />
+              <div className="absolute inset-0 w-1/2 overflow-hidden">
+                <Star className="drop-shadow-2xs h-5 w-5 fill-amber-400 text-amber-400" />
+              </div>
+            </div>
+          );
         }
-        return <Star key={starIndex} className="h-5 w-5 text-slate-300 dark:text-slate-700" />;
+        return (
+          <Star
+            key={starIndex}
+            className="h-5 w-5 fill-slate-200 text-slate-300 dark:fill-slate-800 dark:text-slate-700"
+          />
+        );
       })}
     </div>
   );
@@ -2295,26 +2312,48 @@ function CompletedResultView({
         <div className="space-y-5">
           {review ? (
             <Card className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-              <div className="flex w-full items-center gap-2 border-b border-slate-100 pb-4 dark:border-slate-800">
+              <div className="flex w-full items-center justify-center gap-2 border-b border-slate-100 pb-4 dark:border-slate-800">
                 <Award className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   {t("userApplicationhistory.mentorSessionReviewTitle", "Đánh giá của Mentor")}
                 </h3>
               </div>
 
-              <div className="mt-5 flex flex-col items-center justify-between gap-6 sm:flex-row sm:px-4">
-                {/* Left Column: Xếp loại tổng quan + Dynamic Star Rating + Sparkles Pill Badge */}
-                <div className="flex flex-col items-center space-y-3 text-center sm:items-start sm:text-left">
+              <div className="my-5 flex flex-wrap items-center gap-6 sm:gap-8 sm:px-2">
+                {/* 1. Leftmost: SVG Circular Ring Gauge */}
+                <div className="flex shrink-0 items-center justify-center">
+                  <MentorScoreDisplay value={review.rating} variant="circle" showBand={false} />
+                </div>
+
+                {/* 2. Immediately next to it on the Right: Xếp loại tổng quan + 5 Stars + Sparkles Pill Badge */}
+                <div className="flex flex-col items-start space-y-2.5 text-left">
                   <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                     {t("userApplication.mentorReview.ratingTitle", "Xếp loại tổng quan")}
                   </span>
                   <DynamicStarRating score={review.rating} />
-                  <MentorScoreDisplay value={review.rating} showBand={true} variant="inline" />
-                </div>
-
-                {/* Right Column: SVG Circular Ring Gauge */}
-                <div className="flex shrink-0 items-center justify-center">
-                  <MentorScoreDisplay value={review.rating} variant="circle" showBand={false} />
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-xs font-extrabold shadow-2xs transition-all",
+                      getMentorReviewScoreBand(normalizeMentorReviewScore(review.rating)) ===
+                        "excellent"
+                        ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-300"
+                        : getMentorReviewScoreBand(normalizeMentorReviewScore(review.rating)) ===
+                            "strong"
+                          ? "border-indigo-500/30 bg-indigo-500/15 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-300"
+                          : getMentorReviewScoreBand(normalizeMentorReviewScore(review.rating)) ===
+                              "meets"
+                            ? "border-sky-500/30 bg-sky-500/15 text-sky-700 dark:border-sky-500/40 dark:bg-sky-500/20 dark:text-sky-300"
+                            : getMentorReviewScoreBand(
+                                  normalizeMentorReviewScore(review.rating)
+                                ) === "developing"
+                              ? "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/20 dark:text-amber-300"
+                              : "border-rose-500/30 bg-rose-500/15 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/20 dark:text-rose-300"
+                    )}>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {t(
+                      `mentorScoring.band.${getMentorReviewScoreBand(normalizeMentorReviewScore(review.rating))}`
+                    )}
+                  </span>
                 </div>
               </div>
 
