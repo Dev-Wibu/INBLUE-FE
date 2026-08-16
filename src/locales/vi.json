@@ -7506,6 +7506,13 @@
   "template": {
     "description": "Mô tả mẫu",
     "dragToCenter": "Kéo thả vòng vào tâm để thêm",
+    "clickToApply": "Nhấp vào mẫu quy trình để áp dụng ngay",
+    "tabCustom": "Tự tạo",
+    "tabPresets": "Template có sẵn",
+    "roundsCount": "vòng",
+    "appliedSuccess": "Đã áp dụng mẫu: {{name}} ({{count}} vòng)",
+    "customSavedDescription": "Quy trình đã lưu trên hệ thống",
+    "emptyRoundsError": "Mẫu quy trình này chưa có vòng tuyển dụng nào.",
     "categoryRequired": "Vui lòng chọn danh mục",
     "descriptionPlaceholder": "Nhập mô tả mẫu phỏng vấn...",
     "emptyTemplate": "Mẫu phỏng vấn trống",

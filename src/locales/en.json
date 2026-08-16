@@ -7506,6 +7506,13 @@
   "template": {
     "description": "Template Description",
     "dragToCenter": "Drag and drop rounds to the center to add",
+    "clickToApply": "Click a template to apply instantly",
+    "tabCustom": "Custom",
+    "tabPresets": "Pre-built Templates",
+    "roundsCount": "rounds",
+    "appliedSuccess": "Applied template: {{name}} ({{count}} rounds)",
+    "customSavedDescription": "System saved workflow template",
+    "emptyRoundsError": "This template does not contain any rounds.",
     "categoryRequired": "Please select a category",
     "descriptionPlaceholder": "Enter interview template description...",
     "emptyTemplate": "Empty interview template",

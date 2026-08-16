@@ -7505,6 +7505,13 @@
   "template": {
     "description": "テンプレートの説明",
     "dragToCenter": "ラウンドを中央にドラッグ＆ドロップして追加",
+    "clickToApply": "テンプレートをクリックしてすぐに適用",
+    "tabCustom": "カスタム作成",
+    "tabPresets": "既存テンプレート",
+    "roundsCount": "ラウンド",
+    "appliedSuccess": "テンプレートを適用しました: {{name}} ({{count}} ラウンド)",
+    "customSavedDescription": "システムに保存されたフロー",
+    "emptyRoundsError": "このテンプレートにはラウンドが含まれていません。",
     "categoryRequired": "カテゴリを選択してください",
     "descriptionPlaceholder": "面接テンプレートの説明を入力...",
     "emptyTemplate": "空の面接テンプレート",

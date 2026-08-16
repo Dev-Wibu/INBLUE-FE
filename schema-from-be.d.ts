@@ -4170,10 +4170,10 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
@@ -4426,10 +4426,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -4526,20 +4526,20 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
-            scriptingInvalid?: string;
-            includePreludes?: string[];
+            errorOnUndeclaredNamespace?: string;
             includeCodas?: string[];
+            includePreludes?: string[];
             elIgnored?: string;
             isXml?: string;
             deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
+            pageEncoding?: string;
+            scriptingInvalid?: string;
             trimDirectiveWhitespaces?: string;
+            errorOnELNotFound?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
             buffer?: string;
@@ -4579,7 +4579,8 @@ export interface components {
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
-            serverInfo?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -4594,8 +4595,7 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
             initParameterNames?: unknown;
@@ -4689,8 +4689,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */

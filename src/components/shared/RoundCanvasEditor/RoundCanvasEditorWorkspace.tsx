@@ -21,11 +21,13 @@ import {
   ChevronLeft,
   Clock,
   FileText,
+  Layers,
   RotateCcw,
   Save,
   Sparkles,
   Trash2,
   Users,
+  Wand2,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -33,7 +35,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { getAvailableRoundsTemplates } from "./constants";
+import { interviewTemplateManager } from "@/services/interview-template.manager";
+import {
+  getAvailableRoundsTemplates,
+  getPrebuiltProcessTemplates,
+  type PrebuiltProcessTemplate,
+} from "./constants";
 import type { RoundType, UIRound, UIRoundConfig } from "./types";
 import { getBestConnection, getDistanceToSegment, getLocalizedRoundName } from "./utils";
 
@@ -104,6 +111,57 @@ export function RoundCanvasEditorWorkspace({
 }: RoundCanvasEditorWorkspaceProps) {
   const { t } = useTranslation();
   const AVAILABLE_ROUNDS_TEMPLATES = useMemo(() => getAvailableRoundsTemplates(t), [t]);
+  const PREBUILT_TEMPLATES = useMemo(() => getPrebuiltProcessTemplates(t), [t]);
+
+  const [sidebarTab, setSidebarTab] = useState<"custom" | "templates">("custom");
+  const [customServerTemplates, setCustomServerTemplates] = useState<PrebuiltProcessTemplate[]>([]);
+
+  useEffect(() => {
+    if (isOpen && sidebarTab === "templates") {
+      interviewTemplateManager.getAllTemplates().then((res) => {
+        if (res.success && res.data) {
+          const mapped: PrebuiltProcessTemplate[] = res.data.map((tmpl) => ({
+            id: tmpl.id,
+            name: tmpl.name,
+            category: tmpl.category || "Custom",
+            description:
+              tmpl.description ||
+              t("template.customSavedDescription", "Quy trình đã lưu trên hệ thống"),
+            roundCount: tmpl.rounds?.length || 0,
+            badgeColor:
+              "bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-800",
+            rounds: (tmpl.rounds || []).map((r, idx) => ({
+              roundOrder: r.roundOrder || idx + 1,
+              name: r.name,
+              roundType: r.roundType as RoundType,
+              passThreshold: r.passThreshold,
+              configData: r.configData,
+            })),
+          }));
+          setCustomServerTemplates(mapped);
+        }
+      });
+    }
+  }, [isOpen, sidebarTab, t]);
+
+  const handleApplyPrebuiltTemplate = (template: PrebuiltProcessTemplate) => {
+    if (!template.rounds || template.rounds.length === 0) {
+      toast.error(t("template.emptyRoundsError", "Mẫu quy trình này chưa có vòng tuyển dụng nào."));
+      return;
+    }
+    const newRounds = template.rounds.map((r, index) => ({
+      ...r,
+      roundOrder: index + 1,
+    }));
+    setPositions([]);
+    setRounds(newRounds);
+    toast.success(
+      t("template.appliedSuccess", "Đã áp dụng mẫu: {{name}} ({{count}} vòng)", {
+        name: template.name,
+        count: template.roundCount || newRounds.length,
+      })
+    );
+  };
 
   const [templateName, setTemplateName] = useState(initialMetadata.name);
   const [templateCategory, setTemplateCategory] = useState(initialMetadata.category);
@@ -488,41 +546,99 @@ export function RoundCanvasEditorWorkspace({
     <div className="relative flex h-full w-full flex-1 flex-row gap-0 overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* 1. Toolbox Sidebar (Left) */}
       <div className="flex h-full w-[28%] max-w-[340px] min-w-[300px] shrink-0 flex-col border-r border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="flex h-[64px] shrink-0 flex-col justify-center border-b border-slate-200 bg-slate-100/50 px-5 dark:border-slate-800 dark:bg-slate-900/30">
-          <h3 className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-400">
-            {t("adminCompanymanagement.recruitmentRoundTemplate")}
-          </h3>
-          <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-500">
-            {t("template.dragToCenter")}
+        {/* Tab switcher header */}
+        <div className="flex shrink-0 flex-col border-b border-slate-200 bg-slate-100/60 p-2.5 dark:border-slate-800 dark:bg-slate-900/40">
+          <div className="grid grid-cols-2 rounded-lg bg-slate-200/80 p-1 dark:bg-slate-800/80">
+            <button
+              type="button"
+              onClick={() => setSidebarTab("custom")}
+              className={cn(
+                "flex cursor-pointer items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-bold transition-all",
+                sidebarTab === "custom"
+                  ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-950 dark:text-indigo-400"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+              )}>
+              <Wand2 className="h-3.5 w-3.5" />
+              {t("template.tabCustom", "Tự tạo")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSidebarTab("templates")}
+              className={cn(
+                "flex cursor-pointer items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-bold transition-all",
+                sidebarTab === "templates"
+                  ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-950 dark:text-indigo-400"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+              )}>
+              <Layers className="h-3.5 w-3.5" />
+              {t("template.tabPresets", "Template có sẵn")}
+            </button>
+          </div>
+          <p className="mt-2 text-center text-[11px] font-medium text-slate-500 dark:text-slate-400">
+            {sidebarTab === "custom"
+              ? t("template.dragToCenter", "Kéo thả vòng vào tâm để thêm")
+              : t("template.clickToApply", "Nhấp vào mẫu quy trình để áp dụng ngay")}
           </p>
         </div>
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
-          <div className="my-auto space-y-3 py-2">
-            {AVAILABLE_ROUNDS_TEMPLATES.map((template) => (
-              <div
-                key={template.type}
-                draggable
-                onDragStart={() => setActiveDragType(template.type)}
-                onDragEnd={() => setActiveDragType(null)}
-                className={cn(
-                  "group flex cursor-grab items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 transition-all duration-200 hover:border-indigo-300 hover:bg-slate-50 hover:shadow-md active:cursor-grabbing dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900",
-                  template.bgColor,
-                  template.color
-                )}>
-                <div className="mt-0.5 shrink-0 rounded-xl bg-slate-100 p-2 shadow-inner dark:bg-black/40">
-                  {template.icon}
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
+          {sidebarTab === "custom" ? (
+            <div className="space-y-3 py-1">
+              {AVAILABLE_ROUNDS_TEMPLATES.map((template) => (
+                <div
+                  key={template.type}
+                  draggable
+                  onDragStart={() => setActiveDragType(template.type)}
+                  onDragEnd={() => setActiveDragType(null)}
+                  className={cn(
+                    "group flex cursor-grab items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 transition-all duration-200 hover:border-indigo-300 hover:bg-slate-50 hover:shadow-md active:cursor-grabbing dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900",
+                    template.bgColor,
+                    template.color
+                  )}>
+                  <div className="mt-0.5 shrink-0 rounded-xl bg-slate-100 p-2 shadow-inner dark:bg-black/40">
+                    {template.icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-sm leading-tight font-bold text-slate-800 transition-colors group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white">
+                      {template.title}
+                    </h4>
+                    <p className="mt-1 text-xs leading-normal text-slate-500 group-hover:text-slate-600 dark:text-slate-400 dark:group-hover:text-slate-300">
+                      {template.description}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-sm leading-tight font-bold text-slate-800 transition-colors group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white">
-                    {template.title}
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3 py-1">
+              {[...PREBUILT_TEMPLATES, ...customServerTemplates].map((tmpl) => (
+                <div
+                  key={tmpl.id}
+                  onClick={() => handleApplyPrebuiltTemplate(tmpl)}
+                  className="group cursor-pointer rounded-xl border border-slate-200 bg-white p-3.5 transition-all duration-200 hover:border-indigo-500 hover:bg-indigo-50/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/30">
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className={cn(
+                        "rounded-md border px-2 py-0.5 text-[10px] font-extrabold uppercase",
+                        tmpl.badgeColor ||
+                          "border-indigo-200 bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                      )}>
+                      {tmpl.category || "Template"}
+                    </span>
+                    <span className="text-[11px] font-bold text-indigo-600 group-hover:underline dark:text-indigo-400">
+                      {tmpl.roundCount} {t("template.roundsCount", "vòng")} →
+                    </span>
+                  </div>
+                  <h4 className="mt-2 text-xs font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                    {tmpl.name}
                   </h4>
-                  <p className="mt-1 text-xs leading-normal text-slate-500 group-hover:text-slate-600 dark:text-slate-400 dark:group-hover:text-slate-300">
-                    {template.description}
+                  <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                    {tmpl.description}
                   </p>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
