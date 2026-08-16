@@ -35,6 +35,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { FormattedMarkdownText } from "../Applications/components/round-modules/AiInterviewModule";
 import { SelectRoadmapModal } from "./components/SelectRoadmapModal";
 
 function ResultSkeleton() {
@@ -701,9 +702,7 @@ export function AIInterviewResultPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-                {blueprint.strategy_analysis}
-              </p>
+              <FormattedMarkdownText content={blueprint.strategy_analysis} />
             </CardContent>
           </Card>
         )}
@@ -722,9 +721,7 @@ export function AIInterviewResultPage() {
             </CardHeader>
             <CardContent>
               {detail?.aiOverviewFeedback ? (
-                <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-                  {detail.aiOverviewFeedback}
-                </p>
+                <FormattedMarkdownText content={detail.aiOverviewFeedback} />
               ) : (
                 <p className="text-muted-foreground text-sm italic">
                   {t("userAiinterview.noCommentsYet")}
@@ -745,9 +742,7 @@ export function AIInterviewResultPage() {
             </CardHeader>
             <CardContent>
               {detail?.improvementPlan ? (
-                <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-                  {detail.improvementPlan}
-                </p>
+                <FormattedMarkdownText content={detail.improvementPlan} />
               ) : // @ts-expect-error: Backend Swagger schema mismatch - type mismatch on existingPracticeSets
               existingPracticeSets.length === 0 ? (
                 <p className="text-muted-foreground text-sm italic">

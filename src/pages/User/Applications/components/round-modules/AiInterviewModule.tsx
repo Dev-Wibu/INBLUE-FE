@@ -211,6 +211,107 @@ function ModernGaugeClock({
   );
 }
 
+function renderInlineMarkdown(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      const inner = part.slice(2, -2);
+      return (
+        <strong key={idx} className="font-bold text-slate-900 dark:text-white">
+          {inner}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
+/**
+ * Renders Markdown-formatted feedback text cleanly with proper linebreaks,
+ * section headers (**1. Title:**), bold inline text (**text**), and bulleted lists (- item).
+ */
+export function FormattedMarkdownText({
+  content,
+  className,
+}: {
+  content?: string | null;
+  className?: string;
+}) {
+  if (!content) return null;
+
+  const paragraphs = content.split(/\r?\n\r?\n/);
+
+  return (
+    <div
+      className={cn(
+        "space-y-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-200",
+        className
+      )}>
+      {paragraphs.map((para, pIdx) => {
+        const lines = para.split(/\r?\n/).filter((l) => l.trim().length > 0);
+        if (lines.length === 0) return null;
+
+        const isBulletBlock = lines.every((l) => /^[-*]\s+/.test(l.trim()));
+
+        if (isBulletBlock) {
+          return (
+            <ul key={pIdx} className="my-2 space-y-2 pl-1">
+              {lines.map((line, lIdx) => {
+                const cleanLine = line.trim().replace(/^[-*]\s+/, "");
+                return (
+                  <li key={lIdx} className="flex items-start gap-2.5">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500 dark:bg-indigo-400" />
+                    <span className="flex-1">{renderInlineMarkdown(cleanLine)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          );
+        }
+
+        return (
+          <div key={pIdx} className="space-y-1.5">
+            {lines.map((line, lIdx) => {
+              const trimmed = line.trim();
+
+              if (/^[-*]\s+/.test(trimmed)) {
+                const cleanLine = trimmed.replace(/^[-*]\s+/, "");
+                return (
+                  <div key={lIdx} className="my-1 flex items-start gap-2.5 pl-1">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500 dark:bg-indigo-400" />
+                    <span className="flex-1">{renderInlineMarkdown(cleanLine)}</span>
+                  </div>
+                );
+              }
+
+              const isHeading =
+                /^\*\*\d+\..*\*\*$/.test(trimmed) ||
+                /^\d+\.\s+\*\*.*:\*\*$/.test(trimmed) ||
+                /^\*\*\d+\..*:\*\*/.test(trimmed);
+
+              if (isHeading) {
+                return (
+                  <div
+                    key={lIdx}
+                    className="mt-3.5 mb-1 flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
+                    {renderInlineMarkdown(trimmed)}
+                  </div>
+                );
+              }
+
+              return (
+                <p key={lIdx} className="leading-relaxed whitespace-pre-wrap">
+                  {renderInlineMarkdown(trimmed)}
+                </p>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function AiInterviewSubheader({
   round,
   isCompleted,
@@ -1902,14 +2003,18 @@ function AiInterviewResultView({
                   </p>
                 </div>
               </div>
-              <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
-                {parsedResultDetail?.aiOverviewFeedback ||
-                  parsedResultDetail?.ai_overview_feedback ||
-                  (typeof detail?.aiFeedback === "string"
-                    ? detail.aiFeedback
-                    : detail?.aiFeedback?.generalComment) ||
-                  t("userApplication.aiInterview.noDataYet")}
-              </p>
+              <div className="mt-4">
+                <FormattedMarkdownText
+                  content={
+                    parsedResultDetail?.aiOverviewFeedback ||
+                    parsedResultDetail?.ai_overview_feedback ||
+                    (typeof detail?.aiFeedback === "string"
+                      ? detail.aiFeedback
+                      : detail?.aiFeedback?.generalComment) ||
+                    t("userApplication.aiInterview.noDataYet")
+                  }
+                />
+              </div>
             </Card>
 
             {/* Improvement Plan Card */}
@@ -1923,9 +2028,13 @@ function AiInterviewResultView({
                     {t("userApplication.aiInterview.improvementPlan")}
                   </h4>
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
-                  {parsedResultDetail?.improvementPlan || parsedResultDetail?.improvement_plan}
-                </p>
+                <div className="mt-4">
+                  <FormattedMarkdownText
+                    content={
+                      parsedResultDetail?.improvementPlan || parsedResultDetail?.improvement_plan
+                    }
+                  />
+                </div>
               </Card>
             )}
 
@@ -1943,8 +2052,8 @@ function AiInterviewResultView({
               </div>
 
               {detail?.hrNote ? (
-                <div className="rounded-xl border-l-2 border-emerald-500 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 italic dark:bg-slate-950/60 dark:text-slate-200">
-                  "{detail.hrNote}"
+                <div className="rounded-xl border-l-2 border-emerald-500 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:bg-slate-950/60 dark:text-slate-200">
+                  <FormattedMarkdownText content={detail.hrNote} />
                 </div>
               ) : (
                 <p className="text-xs text-slate-400 italic">
@@ -1962,9 +2071,9 @@ function AiInterviewResultView({
                     {t("userApplication.aiInterview.strategyAnalysis")}
                   </h4>
                 </div>
-                <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                  {sessionData.blueprint.strategy_analysis}
-                </p>
+                <div className="mt-3">
+                  <FormattedMarkdownText content={sessionData.blueprint.strategy_analysis} />
+                </div>
               </Card>
             )}
           </div>
