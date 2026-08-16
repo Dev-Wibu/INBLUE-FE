@@ -2336,7 +2336,7 @@ function CompletedResultView({
                     {t("userApplication.mentorReview.ratingTitle", "Xếp loại tổng quan")}
                   </span>
                   <div className="flex items-center gap-2.5">
-                    <DynamicStarRating score={review.rating} />
+                    <DynamicStarRating score={normalizeMentorReviewScore(review.rating)} />
                     <span className="text-xs font-extrabold text-amber-500">
                       {(normalizeMentorReviewScore(review.rating) / 20).toFixed(1)}/5
                     </span>

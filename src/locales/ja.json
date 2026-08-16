@@ -3329,6 +3329,7 @@
     "retry": "再試行",
     "anErrorHasOccurred": "エラーが発生しました",
     "mentorReviewAlreadyExists": "メンターレビューはすでに存在します",
+    "mentorReviewNoteTooLong": "レビュー項目が長すぎます。各項目を255文字以内にして、もう一度お試しください。",
     "second": "秒",
     "language": "言語",
     "difficulty": "難易度",
@@ -3672,7 +3673,9 @@
     "mentorReviewSubmitted": "メンター評価",
     "candidateFeedbackReceived": "候補者フィードバック",
     "openReviewDetails": "評価を見る",
-    "openFeedbackDetails": "フィードバックを見る"
+    "openFeedbackDetails": "フィードバックを見る",
+    "reviewNoteMaxLength": "各レビュー項目は{{max}}文字以内で入力してください。",
+    "reviewNoteCharacterCount": "{{count}}/{{max}}文字"
   },
   "mentorStudents": {
     "allStudents": "すべての学生",
@@ -5422,6 +5425,7 @@
       "kioskSchedule": "キオスクスケジュール",
       "cannotLoadSlots": "枠を読み込めません",
       "noSlotsForDay": "この日は空きがありません",
+      "pastSlotError": "この時間枠はすでに過ぎています。後の時間を選択してください。",
       "kioskPinCode": "キオスクPINコード",
       "keepPinHint": "PINを大切に保管",
       "kioskOnlyNote": "この面接はキオスクでのみ受けられます",
@@ -6424,6 +6428,7 @@
     "danceSpinHint": "ロボットを回転させる"
   },
   "userKiosk": {
+    "pastSlotError": "この時間枠はすでに過ぎています。後の時間を選択してください。",
     "selectKioskTitle": "Kioskを選択",
     "selectKioskDescription": "面接をスケジュールするアクティブなKioskを選択してください。",
     "unableToLoadKiosks": "Kioskを読み込めません。",

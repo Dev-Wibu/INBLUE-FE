@@ -458,7 +458,7 @@ export function FinalCompetencyReportNodeView({
                       {chart.overallScore.toFixed(1)}
                     </span>
                     <span className="text-xs text-slate-600 dark:text-slate-400">
-                      {t("competencyReport.overallScoreLabel", "Điểm tổng thể")}
+                      {t("competencyReport.overallScoreLabel")}
                     </span>
                   </div>
                 </div>
@@ -689,7 +689,7 @@ export function FinalCompetencyReportNodeView({
                         }}
                         formatter={(v) => [
                           `${Number(v).toFixed(0)}`,
-                          t("competencyReport.tooltipScoreLabel", "Điểm"),
+                          t("competencyReport.tooltipScoreLabel"),
                         ]}
                       />
                     </RadarChart>
@@ -697,7 +697,7 @@ export function FinalCompetencyReportNodeView({
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 text-center dark:border-indigo-400/25 dark:bg-indigo-500/[0.08]">
                   <p className="text-[10px] font-extrabold tracking-[0.12em] text-indigo-700 uppercase dark:text-indigo-300">
-                    {t("competencyReport.radarAverageLabel", "TRUNG BÌNH KỸ NĂNG")}
+                    {t("competencyReport.radarAverageLabel")}
                   </p>
                   <p
                     className={`mt-3 text-4xl leading-none font-black tabular-nums ${scoreColor(radarOverallScore).text}`}>

@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { MENTOR_REVIEW_NOTE_MAX_LENGTH } from "@/lib/mentor-review-validation";
 import { cn } from "@/lib/utils";
 import type { MentorReview } from "@/services/mentor-review.manager";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -205,7 +206,7 @@ const HUE_ACCENT: Record<
   },
 };
 
-const CHAR_TARGET = 280;
+const CHAR_TARGET = MENTOR_REVIEW_NOTE_MAX_LENGTH;
 
 // ---------- Card primitives ----------
 
@@ -543,13 +544,34 @@ export function MentorReviewForm({
       rating: z.number().refine((value) => value >= 1 && value <= 100, {
         message: t("mentorScoring.scoreRequired"),
       }),
-      situationNote: z.string().optional(),
-      taskNote: z.string().optional(),
-      actionNote: z.string().optional(),
-      resultNote: z.string().optional(),
-      strength: z.string().optional(),
-      weakness: z.string().optional(),
-      improve: z.string().optional(),
+      situationNote: z
+        .string()
+        .max(CHAR_TARGET, t("mentorSessions.reviewNoteMaxLength", { max: CHAR_TARGET }))
+        .optional(),
+      taskNote: z
+        .string()
+        .max(CHAR_TARGET, t("mentorSessions.reviewNoteMaxLength", { max: CHAR_TARGET }))
+        .optional(),
+      actionNote: z
+        .string()
+        .max(CHAR_TARGET, t("mentorSessions.reviewNoteMaxLength", { max: CHAR_TARGET }))
+        .optional(),
+      resultNote: z
+        .string()
+        .max(CHAR_TARGET, t("mentorSessions.reviewNoteMaxLength", { max: CHAR_TARGET }))
+        .optional(),
+      strength: z
+        .string()
+        .max(CHAR_TARGET, t("mentorSessions.reviewNoteMaxLength", { max: CHAR_TARGET }))
+        .optional(),
+      weakness: z
+        .string()
+        .max(CHAR_TARGET, t("mentorSessions.reviewNoteMaxLength", { max: CHAR_TARGET }))
+        .optional(),
+      improve: z
+        .string()
+        .max(CHAR_TARGET, t("mentorSessions.reviewNoteMaxLength", { max: CHAR_TARGET }))
+        .optional(),
     })
     .superRefine((value, ctx) => {
       const hasRating = (value.rating || 0) > 0;
@@ -735,6 +757,7 @@ export function MentorReviewForm({
                             counter={{ value: (field.value ?? "").length, max: CHAR_TARGET }}
                             index={index}>
                             <Textarea
+                              maxLength={CHAR_TARGET}
                               placeholder={t(cfg.placeholderKey)}
                               className="min-h-32 resize-y border-slate-200 bg-white/80 text-sm leading-relaxed dark:border-slate-700 dark:bg-slate-900/60"
                               {...field}
@@ -773,6 +796,7 @@ export function MentorReviewForm({
                             counter={{ value: (field.value ?? "").length, max: CHAR_TARGET }}
                             index={index + STAR_CARDS.length}>
                             <Textarea
+                              maxLength={CHAR_TARGET}
                               placeholder={t(cfg.placeholderKey)}
                               className="min-h-32 resize-y border-slate-200 bg-white/80 text-sm leading-relaxed dark:border-slate-700 dark:bg-slate-900/60"
                               {...field}

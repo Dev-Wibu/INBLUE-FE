@@ -21,6 +21,10 @@ export function normalizeAiInterviewScore(
   return Math.min(SCORE_MAX, Math.max(SCORE_MIN, scoreOnHundred));
 }
 
+export function normalizeAiInterviewSessionScore(value: unknown): number | null {
+  return normalizeAiInterviewScore(value, "hundred");
+}
+
 export function formatAiInterviewScore(
   value: unknown,
   scale: AiInterviewScoreScale = "ten"

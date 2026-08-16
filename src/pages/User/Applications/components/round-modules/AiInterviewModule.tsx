@@ -10,8 +10,12 @@ import {
   useKioskSlots,
   usePickKioskSlot,
 } from "@/hooks/useKiosk";
-import { normalizeAiInterviewScore } from "@/lib/ai-interview-score";
+import {
+  normalizeAiInterviewScore,
+  normalizeAiInterviewSessionScore,
+} from "@/lib/ai-interview-score";
 import { formatDateTime } from "@/lib/formatting";
+import { isFutureKioskSlot } from "@/lib/kiosk-slot";
 import { cn } from "@/lib/utils";
 import { kioskManager, type Kiosk, type KioskSchedule } from "@/services/kiosk.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -1612,7 +1616,7 @@ function AiInterviewResultView({
 
   const aiScoreVal =
     sessionData?.overallScore != null
-      ? normalizeAiInterviewScore(sessionData.overallScore, "ten")
+      ? normalizeAiInterviewSessionScore(sessionData.overallScore)
       : detail?.aiScore != null
         ? normalizeAiInterviewScore(detail.aiScore, "auto")
         : normalizeAiInterviewScore(
@@ -2543,6 +2547,7 @@ export function AiInterviewModule({
     () =>
       rawSlots
         .filter((slot) => typeof slot.startTime === "string" && typeof slot.endTime === "string")
+        .filter((slot) => isFutureKioskSlot(slot.startTime as string))
         .map((slot) => ({
           startTime: slot.startTime as string,
           endTime: slot.endTime as string,
@@ -2563,6 +2568,7 @@ export function AiInterviewModule({
     Boolean(applicationDetailId) &&
     Boolean(selectedKioskId) &&
     Boolean(selectedSlot) &&
+    Boolean(selectedSlot && isFutureKioskSlot(selectedSlot.startTime)) &&
     !hasBookedSlot &&
     !pickSlotMutation.isPending;
 
@@ -2576,6 +2582,11 @@ export function AiInterviewModule({
 
   const handleBookSlot = async () => {
     if (!applicationDetailId || !selectedKioskId || !selectedSlot) return;
+    if (!isFutureKioskSlot(selectedSlot.startTime)) {
+      setSelectedSlot(null);
+      toast.error(t("userApplication.aiInterview.pastSlotError"));
+      return;
+    }
 
     const booking = await pickSlotMutation.mutateAsync({
       applicationDetailId,

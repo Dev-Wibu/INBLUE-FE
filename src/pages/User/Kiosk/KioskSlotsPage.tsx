@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useKioskSlots, usePickKioskSlot } from "@/hooks/useKiosk";
 import { fetchClient } from "@/lib/api";
+import { isFutureKioskSlot } from "@/lib/kiosk-slot";
 import { applicationService } from "@/services/application.manager";
 import { ArrowLeft, MapPin, Sparkles, Video } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -156,7 +157,9 @@ export function KioskSlotsPage() {
     () =>
       (slots ?? []).filter(
         (slot): slot is SlotCalendarSlot =>
-          typeof slot.startTime === "string" && typeof slot.endTime === "string"
+          typeof slot.startTime === "string" &&
+          typeof slot.endTime === "string" &&
+          isFutureKioskSlot(slot.startTime)
       ),
     [slots]
   );
@@ -170,6 +173,11 @@ export function KioskSlotsPage() {
 
   const handleBook = async () => {
     if (!parsedKioskId || !selectedSlot) return;
+    if (!isFutureKioskSlot(selectedSlot.startTime)) {
+      setSelectedSlot(null);
+      toast.error(t("userKiosk.pastSlotError"));
+      return;
+    }
     const detailId = Number(selectedApplicationDetailId);
     if (!Number.isFinite(detailId) || detailId <= 0) {
       toast.error(t("userKiosk.invalidApplicationDetailId"));

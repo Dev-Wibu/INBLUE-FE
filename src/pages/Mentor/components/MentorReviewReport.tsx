@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/formatting";
+import { MENTOR_REVIEW_NOTE_MAX_LENGTH } from "@/lib/mentor-review-validation";
 import { cn } from "@/lib/utils";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import type { MentorReview } from "@/services/mentor-review.manager";
@@ -90,6 +91,10 @@ function ReviewTextPanel({
   onActivate?: (_field: MentorReviewTextField) => void;
   onChange?: (_field: MentorReviewTextField, _value: string) => void;
 }) {
+  const { t } = useTranslation();
+  const characterCount = value?.length ?? 0;
+  const isOverLimit = characterCount > MENTOR_REVIEW_NOTE_MAX_LENGTH;
+
   return (
     <div
       className={cn(
@@ -105,6 +110,7 @@ function ReviewTextPanel({
       {editing ? (
         <Textarea
           value={value || ""}
+          maxLength={MENTOR_REVIEW_NOTE_MAX_LENGTH}
           onFocus={() => onActivate?.(field)}
           onChange={(event) => onChange?.(field, event.target.value)}
           className="min-h-24 resize-y border-slate-200 bg-slate-50/70 text-sm leading-relaxed focus-visible:border-indigo-400 focus-visible:ring-indigo-400/20 dark:border-slate-800 dark:bg-slate-950/60"
@@ -113,6 +119,20 @@ function ReviewTextPanel({
         <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
           {value || "-"}
         </p>
+      )}
+      {editing && (
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className={cn("text-xs", isOverLimit ? "text-rose-600" : "text-slate-500")}>
+            {isOverLimit
+              ? t("mentorSessions.reviewNoteMaxLength", {
+                  max: MENTOR_REVIEW_NOTE_MAX_LENGTH,
+                })
+              : t("mentorSessions.reviewNoteCharacterCount", {
+                  count: characterCount,
+                  max: MENTOR_REVIEW_NOTE_MAX_LENGTH,
+                })}
+          </p>
+        </div>
       )}
     </div>
   );
