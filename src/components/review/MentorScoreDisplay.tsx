@@ -106,7 +106,6 @@ export function MentorScoreDisplay({
             <span className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
               {formatMentorReviewScore(score)}
             </span>
-            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">/100</span>
           </div>
         </div>
       </div>
@@ -138,7 +137,6 @@ export function MentorScoreDisplay({
           )}>
           <Gauge className="h-3.5 w-3.5" aria-hidden="true" />
           {formatMentorReviewScore(score)}
-          <span className="font-sans font-semibold opacity-75">/100</span>
         </span>
         {showBand && (
           <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">

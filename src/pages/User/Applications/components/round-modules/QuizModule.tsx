@@ -340,7 +340,6 @@ function ModernGaugeClock({
           <span className={`font-mono text-xl font-black ${styles.text}`}>
             {hasData ? `${Math.round(displayScore)}` : "--"}
           </span>
-          <span className="text-[10px] font-bold text-slate-400">/ 100</span>
         </div>
       </div>
       <span className="mt-1 text-xs font-bold text-slate-600 dark:text-slate-300">{label}</span>

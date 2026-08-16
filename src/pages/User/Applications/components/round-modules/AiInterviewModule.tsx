@@ -1620,14 +1620,14 @@ function AiInterviewResultView({
             detail?.hrScore != null ? "hundred" : "auto"
           );
   const aiScorePercent = aiScoreVal ?? 0;
-  const aiScoreDisplay = aiScoreVal != null ? `${Math.round(aiScoreVal)}/100` : "--";
+  const aiScoreDisplay = aiScoreVal != null ? `${Math.round(aiScoreVal)}` : "--";
 
   const hrScoreVal = detail?.hrScore ?? null;
   const hasHrScore = hrScoreVal != null && hrScoreVal > 0;
   const hrScorePercent = normalizeAiInterviewScore(hrScoreVal, "hundred") ?? 0;
   const hrScoreDisplay =
     hrScoreVal != null
-      ? `${Math.round(hrScorePercent)}/100`
+      ? `${Math.round(hrScorePercent)}`
       : t("userApplication.aiInterview.notGraded");
 
   const resultVerdict = sessionData?.result ?? "REJECT";
