@@ -128,7 +128,6 @@ function ScoreBar({ score }: { score: number }) {
 // ─── Compact donut gauge ──────────────────────────────────────────────────────
 
 function Gauge({ score, size = 96 }: { score: number; size?: number }) {
-  const { t } = useTranslation();
   const r = 38;
   const circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
@@ -162,9 +161,6 @@ function Gauge({ score, size = 96 }: { score: number; size?: number }) {
       <div className="absolute flex flex-col items-center">
         <span className={`text-xl leading-none font-bold tabular-nums ${text}`}>
           {Math.round(score)}
-        </span>
-        <span className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-          {t("competencyReport.scoreOutOfHundred", "/100")}
         </span>
       </div>
     </div>
@@ -462,7 +458,7 @@ export function FinalCompetencyReportNodeView({
                       {chart.overallScore.toFixed(1)}
                     </span>
                     <span className="text-xs text-slate-600 dark:text-slate-400">
-                      {t("competencyReport.overallScoreLabel", "Điểm tổng thể /100")}
+                      {t("competencyReport.overallScoreLabel", "Điểm tổng thể")}
                     </span>
                   </div>
                 </div>
@@ -692,7 +688,7 @@ export function FinalCompetencyReportNodeView({
                           fontSize: 12,
                         }}
                         formatter={(v) => [
-                          `${Number(v).toFixed(0)}/100`,
+                          `${Number(v).toFixed(0)}`,
                           t("competencyReport.tooltipScoreLabel", "Điểm"),
                         ]}
                       />
