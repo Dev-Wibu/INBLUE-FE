@@ -121,22 +121,16 @@ export function RoundCanvasEditorWorkspace({
       interviewTemplateManager.getAllTemplates().then((res) => {
         if (res.success && res.data) {
           const mapped: PrebuiltProcessTemplate[] = res.data.map((tmpl) => ({
-            id: tmpl.id,
-            name: tmpl.name,
+            id: tmpl.id!,
+            name: tmpl.name || "",
             category: tmpl.category || "Custom",
             description:
               tmpl.description ||
               t("template.customSavedDescription", "Quy trình đã lưu trên hệ thống"),
-            roundCount: tmpl.rounds?.length || 0,
+            roundCount: tmpl.totalRounds || 0,
             badgeColor:
               "bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-            rounds: (tmpl.rounds || []).map((r, idx) => ({
-              roundOrder: r.roundOrder || idx + 1,
-              name: r.name,
-              roundType: r.roundType as RoundType,
-              passThreshold: r.passThreshold,
-              configData: r.configData,
-            })),
+            rounds: [],
           }));
           setCustomServerTemplates(mapped);
         }
@@ -144,12 +138,67 @@ export function RoundCanvasEditorWorkspace({
     }
   }, [isOpen, sidebarTab, t]);
 
-  const handleApplyPrebuiltTemplate = (template: PrebuiltProcessTemplate) => {
-    if (!template.rounds || template.rounds.length === 0) {
+  const handleApplyPrebuiltTemplate = async (template: PrebuiltProcessTemplate) => {
+    let rawRounds = template.rounds;
+
+    if ((!rawRounds || rawRounds.length === 0) && template.id) {
+      const loadingToast = toast.loading(
+        t("template.loadingDetails", "Đang tải cấu hình mẫu quy trình...")
+      );
+      try {
+        const res = await interviewTemplateManager.getTemplateById(template.id);
+        toast.dismiss(loadingToast);
+        if (res.success && res.data && res.data.rounds) {
+          const sorted = [...(res.data.rounds || [])].sort(
+            (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
+          );
+          rawRounds = sorted.map((r, idx) => ({
+            name: r.name,
+            roundOrder: r.roundOrder || idx + 1,
+            roundType: r.roundType as RoundType,
+            passThreshold:
+              r.passThreshold != null
+                ? r.passThreshold <= 1
+                  ? Math.round(r.passThreshold * 100)
+                  : Math.round(r.passThreshold)
+                : 80,
+            configData: {
+              ...r.configData,
+              codingProblemsId:
+                r.configData?.codingProblems
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  ?.map((cp: any) => cp.problemId)
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  .filter((id: any): id is number => id !== undefined) ?? [],
+              codingProblems: r.configData?.codingProblems ?? [],
+              codeReviewProblemsId:
+                r.configData?.codeReviewProblems
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  ?.map((cp: any) => cp.problemId)
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  .filter((id: any): id is number => id !== undefined) ?? [],
+              codeReviewProblems: r.configData?.codeReviewProblems ?? [],
+            },
+          }));
+        } else {
+          toast.error(
+            res.error || t("template.unableToLoadDetails", "Không thể tải chi tiết mẫu này.")
+          );
+          return;
+        }
+      } catch {
+        toast.dismiss(loadingToast);
+        toast.error(t("template.unableToLoadDetails", "Không thể tải chi tiết mẫu này."));
+        return;
+      }
+    }
+
+    if (!rawRounds || rawRounds.length === 0) {
       toast.error(t("template.emptyRoundsError", "Mẫu quy trình này chưa có vòng tuyển dụng nào."));
       return;
     }
-    const newRounds = template.rounds.map((r, index) => ({
+
+    const newRounds = rawRounds.map((r, index) => ({
       ...r,
       roundOrder: index + 1,
     }));
