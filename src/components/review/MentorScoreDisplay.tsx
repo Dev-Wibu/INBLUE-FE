@@ -22,26 +22,31 @@ const SCORE_TONES = {
     badge: "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
     ring: "text-emerald-500 dark:text-emerald-400",
     text: "text-emerald-600 dark:text-emerald-400",
+    bg: "border-emerald-200 bg-emerald-50/60 dark:border-emerald-500/20 dark:bg-emerald-950/20",
   },
   strong: {
     badge: "border-indigo-500/25 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
     ring: "text-indigo-500 dark:text-indigo-400",
     text: "text-indigo-600 dark:text-indigo-400",
+    bg: "border-indigo-200 bg-indigo-50/60 dark:border-indigo-500/20 dark:bg-indigo-950/20",
   },
   meets: {
     badge: "border-sky-500/25 bg-sky-500/10 text-sky-700 dark:text-sky-300",
     ring: "text-sky-500 dark:text-sky-400",
     text: "text-sky-600 dark:text-sky-400",
+    bg: "border-sky-200 bg-sky-50/60 dark:border-sky-500/20 dark:bg-sky-950/20",
   },
   developing: {
     badge: "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
     ring: "text-amber-500 dark:text-amber-400",
     text: "text-amber-600 dark:text-amber-400",
+    bg: "border-amber-200 bg-amber-50/60 dark:border-amber-500/20 dark:bg-amber-950/20",
   },
   low: {
     badge: "border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300",
     ring: "text-rose-500 dark:text-rose-400",
     text: "text-rose-600 dark:text-rose-400",
+    bg: "border-rose-200 bg-rose-50/60 dark:border-rose-500/20 dark:bg-rose-950/20",
   },
 } as const;
 
@@ -60,14 +65,19 @@ export function MentorScoreDisplay({
   const tone = SCORE_TONES[band];
 
   if (variant === "circle" || showProgress) {
-    const radius = 42;
+    const radius = 40;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (score / 100) * circumference;
 
-    const dimensions = size === "sm" ? "h-28 w-28" : size === "lg" ? "h-40 w-40" : "h-36 w-36";
+    const dimensions = size === "sm" ? "h-24 w-24" : size === "lg" ? "h-32 w-32" : "h-28 w-28";
 
     return (
-      <div className={cn("flex flex-col items-center justify-center text-center", className)}>
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center rounded-2xl border p-4 text-center shadow-2xs transition-all",
+          tone.bg,
+          className
+        )}>
         <div className={cn("relative flex items-center justify-center", dimensions)}>
           <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 transform">
             <circle
@@ -75,7 +85,7 @@ export function MentorScoreDisplay({
               cy="50"
               r={radius}
               stroke="currentColor"
-              strokeWidth="7"
+              strokeWidth="6"
               className="text-slate-200 dark:text-slate-800/80"
               fill="transparent"
             />
@@ -84,7 +94,7 @@ export function MentorScoreDisplay({
               cy="50"
               r={radius}
               stroke="currentColor"
-              strokeWidth="7"
+              strokeWidth="6"
               className={cn(tone.ring, "transition-all duration-1000 ease-out")}
               fill="transparent"
               strokeDasharray={circumference}
@@ -94,15 +104,15 @@ export function MentorScoreDisplay({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
             <div className="flex items-baseline justify-center gap-0.5">
-              <span className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+              <span className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">
                 {formatMentorReviewScore(score)}
               </span>
-              <span className="text-xs font-bold text-slate-400 dark:text-slate-500">/100</span>
+              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">/100</span>
             </div>
             {(label || showBand) && (
               <span
                 className={cn(
-                  "mt-1 text-[11px] font-extrabold tracking-wider uppercase",
+                  "mt-0.5 text-[10px] font-extrabold tracking-wider uppercase",
                   tone.text
                 )}>
                 {label || t(`mentorScoring.band.${band}`)}
