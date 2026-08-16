@@ -4,7 +4,7 @@ import {
   normalizeMentorReviewScore,
 } from "@/lib/mentor-review-score";
 import { cn } from "@/lib/utils";
-import { Gauge, Sparkles } from "lucide-react";
+import { Gauge } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface MentorScoreDisplayProps {
@@ -13,6 +13,7 @@ interface MentorScoreDisplayProps {
   showProgress?: boolean;
   variant?: "inline" | "circle";
   size?: "sm" | "md" | "lg";
+  noContainer?: boolean;
   className?: string;
 }
 
@@ -60,6 +61,7 @@ export function MentorScoreDisplay({
   showProgress = false,
   variant = "inline",
   size = "md",
+  noContainer = false,
   className,
 }: MentorScoreDisplayProps) {
   const { t } = useTranslation();
@@ -72,62 +74,56 @@ export function MentorScoreDisplay({
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (score / 100) * circumference;
 
-    const dimensions = size === "sm" ? "h-24 w-24" : size === "lg" ? "h-32 w-32" : "h-28 w-28";
+    const dimensions = size === "sm" ? "h-24 w-24" : size === "lg" ? "h-36 w-36" : "h-28 w-28";
 
-    return (
-      <div className={cn("flex flex-col items-center justify-center gap-3 text-center", className)}>
-        <div
-          className={cn(
-            "flex flex-col items-center justify-center rounded-2xl border p-4 text-center shadow-2xs transition-all",
-            tone.bg
-          )}>
-          <div className={cn("relative flex items-center justify-center", dimensions)}>
-            <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 transform">
-              <circle
-                cx="50"
-                cy="50"
-                r={radius}
-                stroke="currentColor"
-                strokeWidth="6"
-                className="text-slate-200 dark:text-slate-800/80"
-                fill="transparent"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r={radius}
-                stroke="currentColor"
-                strokeWidth="6"
-                className={cn(tone.ring, "transition-all duration-1000 ease-out")}
-                fill="transparent"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
-              <div className="flex items-baseline justify-center gap-0.5">
-                <span className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-                  {formatMentorReviewScore(score)}
-                </span>
-                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">
-                  /100
-                </span>
-              </div>
-            </div>
+    const content = (
+      <div className={cn("relative flex items-center justify-center", dimensions)}>
+        <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 transform">
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth="6"
+            className="text-slate-200 dark:text-slate-800/80"
+            fill="transparent"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth="6"
+            className={cn(tone.ring, "transition-all duration-1000 ease-out")}
+            fill="transparent"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
+          <div className="flex items-baseline justify-center gap-0.5">
+            <span className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+              {formatMentorReviewScore(score)}
+            </span>
+            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">/100</span>
           </div>
         </div>
+      </div>
+    );
 
-        {showBand && (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-xs font-extrabold shadow-2xs transition-all",
-              tone.badge
-            )}>
-            <Sparkles className="h-3.5 w-3.5" />
-            {t(`mentorScoring.band.${band}`)}
-          </span>
-        )}
+    if (noContainer) {
+      return content;
+    }
+
+    return (
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center rounded-2xl border p-4 text-center shadow-2xs transition-all",
+          tone.bg,
+          className
+        )}>
+        {content}
       </div>
     );
   }

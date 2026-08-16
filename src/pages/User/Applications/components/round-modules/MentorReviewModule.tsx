@@ -2319,18 +2319,28 @@ function CompletedResultView({
                 </h3>
               </div>
 
-              <div className="my-5 flex flex-wrap items-center gap-6 sm:gap-8 sm:px-2">
-                {/* 1. Leftmost: SVG Circular Ring Gauge */}
+              <div className="my-5 flex flex-col items-center justify-center gap-6 rounded-2xl border border-slate-200/80 bg-slate-50/60 p-6 sm:flex-row sm:gap-10 dark:border-slate-800/80 dark:bg-slate-950/40">
+                {/* 1. Left: Floating SVG Circular Ring Gauge */}
                 <div className="flex shrink-0 items-center justify-center">
-                  <MentorScoreDisplay value={review.rating} variant="circle" showBand={false} />
+                  <MentorScoreDisplay
+                    value={review.rating}
+                    variant="circle"
+                    showBand={false}
+                    noContainer={true}
+                  />
                 </div>
 
-                {/* 2. Immediately next to it on the Right: Xếp loại tổng quan + 5 Stars + Sparkles Pill Badge */}
-                <div className="flex flex-col items-start space-y-2.5 text-left">
+                {/* 2. Right: Xếp loại tổng quan + 5 Stars + Sparkles Pill Badge */}
+                <div className="flex flex-col items-center space-y-3 text-center sm:items-start sm:text-left">
                   <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                     {t("userApplication.mentorReview.ratingTitle", "Xếp loại tổng quan")}
                   </span>
-                  <DynamicStarRating score={review.rating} />
+                  <div className="flex items-center gap-2.5">
+                    <DynamicStarRating score={review.rating} />
+                    <span className="text-xs font-extrabold text-amber-500">
+                      {(normalizeMentorReviewScore(review.rating) / 20).toFixed(1)}/5
+                    </span>
+                  </div>
                   <span
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-xs font-extrabold shadow-2xs transition-all",
