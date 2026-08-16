@@ -218,6 +218,7 @@ export function CompanyFormDialog({
 
                 <UniversalMediaUploader
                   preset="single-image"
+                  hideFileList
                   onFilesChange={(files) => handleBannerChange(files[0])}
                   customTrigger={
                     <button
@@ -266,6 +267,7 @@ export function CompanyFormDialog({
 
                   <UniversalMediaUploader
                     preset="single-image"
+                    hideFileList
                     onFilesChange={(files) => handleLogoChange(files[0])}
                     customTrigger={
                       <button

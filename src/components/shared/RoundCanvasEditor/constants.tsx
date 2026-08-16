@@ -1,6 +1,6 @@
 import { Bot, Code2, Eye, FileText, HelpCircle, Mail, UserCheck } from "lucide-react";
 import React from "react";
-import type { RoundType, UIRoundConfig } from "./types";
+import type { RoundType, UIRound, UIRoundConfig } from "./types";
 
 export const getAvailableRoundsTemplates = (
   t: (key: string) => string
