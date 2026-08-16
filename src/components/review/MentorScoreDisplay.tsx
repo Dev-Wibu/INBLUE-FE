@@ -14,7 +14,6 @@ interface MentorScoreDisplayProps {
   variant?: "inline" | "circle";
   size?: "sm" | "md" | "lg";
   className?: string;
-  label?: string;
 }
 
 const SCORE_TONES = {
@@ -62,7 +61,6 @@ export function MentorScoreDisplay({
   variant = "inline",
   size = "md",
   className,
-  label,
 }: MentorScoreDisplayProps) {
   const { t } = useTranslation();
   const score = normalizeMentorReviewScore(value);
@@ -116,9 +114,6 @@ export function MentorScoreDisplay({
                   /100
                 </span>
               </div>
-              <span className="mt-0.5 text-[9px] font-extrabold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                {label || t("userApplication.mentorReview.mentorScoreLabel", "ĐIỂM MENTOR")}
-              </span>
             </div>
           </div>
         </div>
