@@ -160,7 +160,7 @@ function Gauge({ score, size = 96 }: { score: number; size?: number }) {
       </svg>
       <div className="absolute flex flex-col items-center">
         <span className={`text-xl leading-none font-bold tabular-nums ${text}`}>
-          {Math.round(score)}
+          {Number.isInteger(score) ? score : score.toFixed(1)}
         </span>
       </div>
     </div>
