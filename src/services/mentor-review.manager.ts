@@ -36,6 +36,17 @@ function responseMessageFromError(err: unknown): string | undefined {
   return undefined;
 }
 
+function friendlyWriteError(error: unknown, fallbackKey: string): string {
+  const rawMessage = error instanceof Error ? error.message : "";
+  const responseMessage = responseMessageFromError(error) ?? "";
+  if (
+    /value too long for type character varying\(255\)/i.test(`${rawMessage} ${responseMessage}`)
+  ) {
+    return t("general.mentorReviewNoteTooLong");
+  }
+  return responseMessage || rawMessage || t(fallbackKey);
+}
+
 /**
  * MentorReview type based on backend schema
  */
@@ -211,7 +222,7 @@ export class MentorReviewManager implements BaseManager<MentorReview> {
       }
       return {
         success: false,
-        error: rawMessage || t("general.unableToCreateMentorReview"),
+        error: friendlyWriteError(error, "general.unableToCreateMentorReview"),
       };
     }
   }
@@ -243,7 +254,7 @@ export class MentorReviewManager implements BaseManager<MentorReview> {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : t("general.unableToUpdateMentorRating"),
+        error: friendlyWriteError(error, "general.unableToUpdateMentorRating"),
       };
     }
   }

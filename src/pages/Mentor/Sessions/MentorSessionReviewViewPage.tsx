@@ -11,6 +11,10 @@ import {
   type MentorReview,
 } from "@/hooks/useMentorReview";
 import { useSessionById } from "@/hooks/useSession";
+import {
+  MENTOR_REVIEW_NOTE_MAX_LENGTH,
+  hasOverlongMentorReviewNote,
+} from "@/lib/mentor-review-validation";
 import { isSessionMentor } from "@/lib/session-mentor";
 import { MentorDetailHeader, MentorDetailPage } from "@/pages/Mentor/components/MentorDetailLayout";
 import {
@@ -131,6 +135,10 @@ export function MentorSessionReviewViewPage() {
     }
     if (!Number.isFinite(draft.rating) || draft.rating < 1 || draft.rating > 100) {
       toast.error(t("mentorScoring.scoreRequired"));
+      return;
+    }
+    if (hasOverlongMentorReviewNote(draft)) {
+      toast.error(t("mentorSessions.reviewNoteMaxLength", { max: MENTOR_REVIEW_NOTE_MAX_LENGTH }));
       return;
     }
 

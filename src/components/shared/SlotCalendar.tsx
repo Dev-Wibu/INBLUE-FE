@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { isFutureKioskSlot } from "@/lib/kiosk-slot";
 import { cn } from "@/lib/utils";
 import { format, isSameDay, isToday } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -108,7 +109,7 @@ export function SlotCalendar({
 
   const availableSlotsForSelectedDay = useMemo(() => {
     const key = startOfDayLocal(selectedDate).toDateString();
-    return slotsByDay.get(key) ?? [];
+    return (slotsByDay.get(key) ?? []).filter((slot) => isFutureKioskSlot(slot.startTime));
   }, [slotsByDay, selectedDate]);
 
   const monthLabel = useMemo(
@@ -203,7 +204,9 @@ export function SlotCalendar({
           const isSelected = isSameDay(cell, selectedDate);
           const cellToday = isToday(cell);
           const slotsForCell = slotsByDay.get(cell.toDateString()) ?? [];
-          const hasSlots = slotsForCell.some((slot) => slot.available);
+          const hasSlots = slotsForCell.some(
+            (slot) => slot.available && isFutureKioskSlot(slot.startTime)
+          );
 
           const baseClasses = cn(
             "group relative flex min-h-10 flex-col items-center justify-center gap-0 border-r border-b border-border/60 transition-colors",

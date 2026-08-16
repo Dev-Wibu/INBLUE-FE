@@ -3347,6 +3347,7 @@
     "retry": "Thử lại",
     "anErrorHasOccurred": "Đã xảy ra lỗi",
     "mentorReviewAlreadyExists": "Đánh giá Mentor đã tồn tại",
+    "mentorReviewNoteTooLong": "Một hoặc nhiều nội dung đánh giá quá dài. Vui lòng giữ mỗi nội dung trong 255 ký tự rồi thử lại.",
     "second": "Giây",
     "language": "Ngôn ngữ",
     "difficulty": "Độ khó",
@@ -3683,7 +3684,9 @@
     "mentorReviewSubmitted": "Đánh giá của Mentor",
     "candidateFeedbackReceived": "Phản hồi của ứng viên",
     "openReviewDetails": "Xem đánh giá",
-    "openFeedbackDetails": "Xem phản hồi"
+    "openFeedbackDetails": "Xem phản hồi",
+    "reviewNoteMaxLength": "Mỗi nội dung đánh giá không được vượt quá {{max}} ký tự.",
+    "reviewNoteCharacterCount": "{{count}}/{{max}} ký tự"
   },
   "mentorStudents": {
     "allStudents": "Tất cả học viên",
@@ -5807,6 +5810,7 @@
       "kioskSchedule": "Lịch kiosk",
       "cannotLoadSlots": "Không thể tải khung giờ",
       "noSlotsForDay": "Không có khung giờ cho ngày này",
+      "pastSlotError": "Khung giờ này đã qua. Vui lòng chọn một giờ muộn hơn.",
       "kioskPinCode": "Mã PIN kiosk",
       "keepPinHint": "Giữ mã PIN cẩn thận",
       "kioskOnlyNote": "Buổi phỏng vấn này chỉ có thể thực hiện tại kiosk",
@@ -6436,6 +6440,7 @@
     "danceSpinHint": "Cho robot xoay"
   },
   "userKiosk": {
+    "pastSlotError": "Khung giờ này đã qua. Vui lòng chọn một giờ muộn hơn.",
     "selectKioskTitle": "Chọn Kiosk",
     "selectKioskDescription": "Chọn trạm kiosk đang hoạt động để đặt lịch phỏng vấn.",
     "unableToLoadKiosks": "Không thể tải danh sách kiosk.",

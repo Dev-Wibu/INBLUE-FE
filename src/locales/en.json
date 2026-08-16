@@ -3346,6 +3346,7 @@
     "retry": "Retry",
     "anErrorHasOccurred": "An error has occurred",
     "mentorReviewAlreadyExists": "Mentor review already exists",
+    "mentorReviewNoteTooLong": "One or more review notes are too long. Please keep each note within 255 characters and try again.",
     "second": "Second",
     "language": "Language",
     "difficulty": "Difficulty",
@@ -3683,7 +3684,9 @@
     "mentorReviewSubmitted": "Mentor review",
     "candidateFeedbackReceived": "Candidate feedback",
     "openReviewDetails": "View review",
-    "openFeedbackDetails": "View feedback"
+    "openFeedbackDetails": "View feedback",
+    "reviewNoteMaxLength": "Each review note must not exceed {{max}} characters.",
+    "reviewNoteCharacterCount": "{{count}}/{{max}} characters"
   },
   "mentorStudents": {
     "allStudents": "All students",
@@ -5808,6 +5811,7 @@
       "kioskSchedule": "Kiosk schedule",
       "cannotLoadSlots": "Cannot load slots",
       "noSlotsForDay": "No slots for this day",
+      "pastSlotError": "This time slot has already passed. Please choose a later time.",
       "kioskPinCode": "Kiosk PIN code",
       "keepPinHint": "Keep this PIN safe",
       "kioskOnlyNote": "This interview can only be done at a kiosk",
@@ -6436,6 +6440,7 @@
     "danceSpinHint": "Make the robot spin"
   },
   "userKiosk": {
+    "pastSlotError": "This time slot has already passed. Please choose a later time.",
     "selectKioskTitle": "Select Kiosk",
     "selectKioskDescription": "Choose an active kiosk to schedule your interview.",
     "unableToLoadKiosks": "Unable to load kiosks.",

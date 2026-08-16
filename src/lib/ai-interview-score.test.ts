@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatAiInterviewScore, normalizeAiInterviewScore } from "./ai-interview-score";
+import {
+  formatAiInterviewScore,
+  normalizeAiInterviewScore,
+  normalizeAiInterviewSessionScore,
+} from "./ai-interview-score";
 
 describe("AI Interview score normalization", () => {
   it("converts legacy detail scores from ten to hundred", () => {
@@ -8,7 +12,8 @@ describe("AI Interview score normalization", () => {
   });
 
   it("keeps session scores that are already on hundred", () => {
-    expect(normalizeAiInterviewScore(58.125, "hundred")).toBe(58.125);
+    expect(normalizeAiInterviewSessionScore(33)).toBe(33);
+    expect(normalizeAiInterviewSessionScore(58.125)).toBe(58.125);
     expect(formatAiInterviewScore(58.125, "hundred")).toBe("58");
   });
 
