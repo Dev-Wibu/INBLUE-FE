@@ -489,6 +489,7 @@
     "noLimit": "制限なし",
     "minimumPassingScore": "合格最低点",
     "submissionFormat": "提出形式",
+    "fixedFormat": "固定",
     "pdfFile": "PDFファイル（.pdf）",
     "wordFile": "Wordファイル（.doc、.docx）",
     "allDocumentFormats": "すべての文書形式",
@@ -3542,6 +3543,7 @@
   },
   "mentorFeedback": {
     "averageScoreForEvaluation": "評価の平均スコア",
+    "feedbackDetail": "フィードバック詳細",
     "feedbackFrom": "からのフィードバック",
     "feedbackFromStudentsSentTo": "各面接セッション後に学生から送信されるフィードバック",
     "feedbackReceived": "受信したフィードバック",
@@ -5126,7 +5128,7 @@
     "openCompetencyReport": "能力レポートを開く",
     "workspaceLoadError": "応募ワークスペースを読み込めません",
     "cvUploadTitle": "応募用履歴書を提出",
-    "cvUploadFormatHint": "対応形式: PDF、DOCX（最大10MB）",
+    "cvUploadFormatHint": "対応形式: PDF（最大10MB）",
     "cvAiFitScore": "AI適合スコア",
     "cvCompatibilityLevel": "履歴書の適合度",
     "cvSkillBreakdown": "履歴書のスキル分析",
@@ -5480,7 +5482,7 @@
       "cvUploadFailed": "履歴書送信に失敗しました",
       "unknownError": "不明なエラーが発生しました",
       "submitError": "履歴書送信中にエラーが発生しました",
-      "fileFormatHint": "PDF、DOCX形式に対応（最大10MB）",
+      "fileFormatHint": "PDF形式に対応（最大10MB）",
       "selectFileToSubmit": "履歴書ファイルを選択して提出",
       "analyzingAi": "AIで分析中...",
       "submitCvGradeAi": "履歴書を提出＆AI採点",
@@ -5962,6 +5964,7 @@
       "line": "行"
     },
     "mentorReview": {
+      "ratingTitle": "総合評価",
       "aiReportTitle": "AIメンター面接レポート",
       "aiRecommendation": "AI推奨事項",
       "noDataUpdating": "分析レポートを更新中...",
@@ -7534,6 +7537,8 @@
     "candidateInstructions": "応募者への指示",
     "configured": "設定済み",
     "failedToLoadDetails": "面接テンプレートの詳細を読み込めませんでした",
+    "loadingDetails": "プロセステンプレート設定を読み込み中...",
+    "unableToLoadDetails": "このテンプレートの詳細を読み込めません。",
     "selectFromList": "リストから面接テンプレートを選択してください",
     "noTemplateFound": "面接テンプレートが見つかりません"
   },

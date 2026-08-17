@@ -528,6 +528,7 @@
     "noLimit": "Không hạn chế",
     "minimumPassingScore": "Điểm đạt tối thiểu",
     "submissionFormat": "Định dạng nộp hồ sơ",
+    "fixedFormat": "Cố định",
     "pdfFile": "Tệp PDF (.pdf)",
     "wordFile": "Tệp Word (.doc, .docx)",
     "allDocumentFormats": "Tất cả định dạng tài liệu",
@@ -3553,6 +3554,7 @@
   },
   "mentorFeedback": {
     "averageScoreForEvaluation": "Điểm TB đánh giá",
+    "feedbackDetail": "Chi tiết phản hồi",
     "feedbackFrom": "Phản hồi từ",
     "feedbackFromStudentsSentTo": "Các phản hồi học viên gửi cho bạn sau mỗi phiên phỏng vấn",
     "feedbackReceived": "Phản Hồi Nhận Được",
@@ -4791,7 +4793,7 @@
     "codeReviewCreateIssue": "Tạo issue mới",
     "codeReviewEditIssue": "Sửa issue",
     "cvUploadTitle": "Nộp Hồ sơ CV Ứng tuyển",
-    "cvUploadFormatHint": "Hỗ trợ định dạng PDF, DOCX (Tối đa 10MB)",
+    "cvUploadFormatHint": "Hỗ trợ định dạng PDF (Tối đa 10MB)",
     "cvAiFitScore": "Điểm phù hợp từ AI",
     "cvCompatibilityLevel": "Mức độ tương thích CV",
     "cvSkillBreakdown": "Phân tích kỹ năng từ CV",
@@ -5255,7 +5257,7 @@
       "cvUploadFailed": "Gửi CV không thành công",
       "unknownError": "Một lỗi không xác định đã xảy ra",
       "submitError": "Có lỗi xảy ra khi nộp CV",
-      "fileFormatHint": "Hỗ trợ định dạng PDF, DOCX (Tối đa 10MB)",
+      "fileFormatHint": "Hỗ trợ định dạng PDF (Tối đa 10MB)",
       "selectFileToSubmit": "Chọn file CV để nộp",
       "analyzingAi": "Đang chấm AI...",
       "submitCvGradeAi": "Gửi CV & Chấm điểm AI",
@@ -5974,6 +5976,7 @@
       "line": "Dòng"
     },
     "mentorReview": {
+      "ratingTitle": "Xếp loại tổng quan",
       "aiReportTitle": "BÁO CÁO PHỎNG VẤN AI MENTOR",
       "aiRecommendation": "ĐỀ XUẤT TỪ AI",
       "noDataUpdating": "Báo cáo phân tích đang được cập nhật...",
@@ -7535,6 +7538,8 @@
     "candidateInstructions": "Hướng dẫn ứng viên",
     "configured": "Đã cấu hình",
     "failedToLoadDetails": "Không thể tải chi tiết mẫu phỏng vấn",
+    "loadingDetails": "Đang tải cấu hình mẫu quy trình...",
+    "unableToLoadDetails": "Không thể tải chi tiết mẫu này.",
     "selectFromList": "Vui lòng chọn một mẫu phỏng vấn từ danh sách",
     "noTemplateFound": "Không tìm thấy mẫu phỏng vấn nào"
   },

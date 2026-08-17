@@ -254,6 +254,13 @@ export function CvScreeningModule({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!file.type.includes("pdf") && !file.name.toLowerCase().endsWith(".pdf")) {
+        toast.error(t("compUi.onlyAcceptPdfFilesPlease"));
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
       setSelectedFile(file);
       setSelectedFileName(file.name);
     }
@@ -440,7 +447,7 @@ export function CvScreeningModule({
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept=".pdf,.docx,.doc"
+                      accept=".pdf,application/pdf"
                       onChange={handleFileChange}
                       className="absolute inset-0 cursor-pointer opacity-0"
                     />

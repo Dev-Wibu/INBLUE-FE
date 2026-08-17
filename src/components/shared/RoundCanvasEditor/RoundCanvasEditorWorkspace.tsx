@@ -1454,26 +1454,15 @@ export function RoundCanvasEditorWorkspace({
                           <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                             {t("adminCompanymanagement.submissionFormat")}
                           </Label>
-                          <Select
-                            value={selectedRound.configData?.submissionFormat || "pdf"}
-                            onValueChange={(val) =>
-                              updateRoundConfigField(selectedRoundIndex, "submissionFormat", val)
-                            }>
-                            <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                              <SelectItem value="pdf">
-                                {t("adminCompanymanagement.pdfFile")}
-                              </SelectItem>
-                              <SelectItem value="doc">
-                                {t("adminCompanymanagement.wordFile")}
-                              </SelectItem>
-                              <SelectItem value="any">
-                                {t("adminCompanymanagement.allDocumentFormats")}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="flex h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300">
+                            <span className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
+                              <FileText className="h-4 w-4 text-rose-500" />
+                              {t("adminCompanymanagement.pdfFile")}
+                            </span>
+                            <span className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+                              {t("adminCompanymanagement.fixedFormat")}
+                            </span>
+                          </div>
                         </div>
                       )}
                     </div>

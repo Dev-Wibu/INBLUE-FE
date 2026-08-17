@@ -1,5 +1,53 @@
 [
   {
+    "file": "src/components/shared/RoundCanvasEditor/constants.tsx",
+    "line": 122,
+    "character": 11,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Quy trình Full-Stack Tiêu chuẩn"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/constants.tsx",
+    "line": 188,
+    "character": 11,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Quy trình Lập trình viên Backend / Frontend"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/constants.tsx",
+    "line": 247,
+    "character": 11,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Quy trình Fresher / Intern Developer"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/constants.tsx",
+    "line": 249,
+    "character": 18,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "CV → Quiz → Phỏng vấn AI → Mentor"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/constants.tsx",
+    "line": 290,
+    "character": 11,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Quy trình Tuyển dụng Rút gọn"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/constants.tsx",
+    "line": 326,
+    "character": 11,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Quy trình Đánh giá Kỹ năng Mềm"
+  },
+  {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
     "line": 138,
     "character": 14,
@@ -161,7 +209,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
-    "line": 1820,
+    "line": 1819,
     "character": 29,
     "type": "StringLiteral",
     "category": "vietnamese",

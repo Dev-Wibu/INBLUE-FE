@@ -617,7 +617,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorDialog.tsx",
-    "line": 1277,
+    "line": 1432,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -625,7 +625,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorWorkspace.tsx",
-    "line": 1414,
+    "line": 1568,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -1833,7 +1833,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/CompanyFormDialog.tsx",
-    "line": 254,
+    "line": 255,
     "character": 25,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -1929,7 +1929,7 @@
   },
   {
     "file": "src/pages/Admin/InterviewTemplateManagement/InterviewTemplateDetailPage.tsx",
-    "line": 501,
+    "line": 517,
     "character": 35,
     "type": "JsxText",
     "category": "english",
@@ -2409,7 +2409,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 896,
+    "line": 900,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2417,7 +2417,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 899,
+    "line": 903,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2425,7 +2425,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 902,
+    "line": 906,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2433,7 +2433,7 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 905,
+    "line": 909,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2441,7 +2441,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
-    "line": 813,
+    "line": 918,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2521,7 +2521,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 426,
+    "line": 425,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -2529,7 +2529,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
-    "line": 558,
+    "line": 557,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -2537,7 +2537,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1330,
+    "line": 1368,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -2545,7 +2545,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1502,
+    "line": 1540,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -2553,7 +2553,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1502,
+    "line": 1540,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -2561,7 +2561,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 1521,
+    "line": 1559,
     "character": 27,
     "type": "JsxText",
     "category": "english",
@@ -2569,7 +2569,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2555,
+    "line": 2641,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -2577,7 +2577,7 @@
   },
   {
     "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
-    "line": 2555,
+    "line": 2641,
     "character": 42,
     "type": "JsxText",
     "category": "english",

@@ -528,6 +528,7 @@
     "noLimit": "No limit",
     "minimumPassingScore": "Minimum passing score",
     "submissionFormat": "Submission format",
+    "fixedFormat": "Fixed",
     "pdfFile": "PDF File (.pdf)",
     "wordFile": "Word File (.doc, .docx)",
     "allDocumentFormats": "All document formats",
@@ -3553,6 +3554,7 @@
   },
   "mentorFeedback": {
     "averageScoreForEvaluation": "Average score for evaluation",
+    "feedbackDetail": "Feedback detail",
     "feedbackFrom": "Feedback from",
     "feedbackFromStudentsSentTo": "Feedback from students sent to you after each interview session",
     "feedbackReceived": "Feedback Received",
@@ -4795,7 +4797,7 @@
     "codeReviewEditIssue": "Edit issue",
     "codeReviewModalDesc": "Pick a severity and describe the problem in detail.",
     "cvUploadTitle": "Submit Application CV",
-    "cvUploadFormatHint": "Supported formats: PDF, DOCX (Max 10MB)",
+    "cvUploadFormatHint": "Supported format: PDF (Max 10MB)",
     "cvAiFitScore": "AI Fit Score",
     "cvCompatibilityLevel": "CV compatibility level",
     "cvSkillBreakdown": "Skill breakdown from CV",
@@ -5253,7 +5255,7 @@
       "cvUploadFailed": "Failed to submit CV",
       "unknownError": "An unknown error occurred",
       "submitError": "An error occurred while submitting the CV",
-      "fileFormatHint": "Supports PDF, DOCX formats (Max 10MB)",
+      "fileFormatHint": "Supports PDF format (Max 10MB)",
       "selectFileToSubmit": "Select CV file to submit",
       "analyzingAi": "Analyzing with AI...",
       "submitCvGradeAi": "Submit CV & Grade with AI",
@@ -5974,6 +5976,7 @@
       "line": "Line"
     },
     "mentorReview": {
+      "ratingTitle": "Overall rating",
       "aiReportTitle": "AI MENTOR INTERVIEW REPORT",
       "aiRecommendation": "AI RECOMMENDATION",
       "noDataUpdating": "Analysis report is being updated...",
@@ -7535,6 +7538,8 @@
     "candidateInstructions": "Candidate instructions",
     "configured": "Configured",
     "failedToLoadDetails": "Failed to load interview template details",
+    "loadingDetails": "Loading process template configuration...",
+    "unableToLoadDetails": "Unable to load details for this template.",
     "selectFromList": "Please select an interview template from the list",
     "noTemplateFound": "No interview template found"
   },
