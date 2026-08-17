@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import type { DetailResponse } from "@/interfaces";
+import type { DetailResponse, UpsertTemplateRequest } from "@/interfaces";
 import { cn } from "@/lib/utils";
 import { interviewTemplateManager } from "@/services/interview-template.manager";
 import {
@@ -99,28 +99,38 @@ export function InterviewTemplateDetailPage() {
     const sortedRounds = [...(rounds || [])].sort(
       (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
     );
-    return sortedRounds.map((r) => ({
-      name: r.name,
-      roundType: r.roundType as RoundType,
-      passThreshold: getPassThresholdNumber(r.passThreshold),
-      configData: {
-        ...r.configData,
-        codingProblemsId:
-          r.configData?.codingProblems
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ?.map((cp: any) => cp.problemId)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((id: any): id is number => id !== undefined) ?? [],
-        codingProblems: r.configData?.codingProblems ?? [],
-        codeReviewProblemsId:
-          r.configData?.codeReviewProblems
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ?.map((cp: any) => cp.problemId)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((id: any): id is number => id !== undefined) ?? [],
-        codeReviewProblems: r.configData?.codeReviewProblems ?? [],
-      },
-    }));
+    return sortedRounds.map((r) => {
+      const codingProblemIds =
+        r.configData?.codingProblems
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ?.map((cp: any) => cp.problemId)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .filter((problemId: any): problemId is number => problemId !== undefined) ?? [];
+      const codeReviewProblemIds =
+        r.configData?.codeReviewProblems
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ?.map((cp: any) => cp.problemId)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .filter((problemId: any): problemId is number => problemId !== undefined) ?? [];
+
+      return {
+        name: r.name,
+        roundType: r.roundType as RoundType,
+        passThreshold: getPassThresholdNumber(r.passThreshold),
+        configData: {
+          ...r.configData,
+          // Prefer snapshots, but preserve ID-only responses as a fallback.
+          codingProblemsId: codingProblemIds.length
+            ? codingProblemIds
+            : (r.configData?.codingProblemsId ?? []),
+          codingProblems: r.configData?.codingProblems ?? [],
+          codeReviewProblemsId: codeReviewProblemIds.length
+            ? codeReviewProblemIds
+            : (r.configData?.codeReviewIds ?? []),
+          codeReviewProblems: r.configData?.codeReviewProblems ?? [],
+        },
+      };
+    });
   };
 
   const handleEditClick = (template: DetailResponse) => {
@@ -156,6 +166,8 @@ export function InterviewTemplateDetailPage() {
 
     setIsSaving(true);
     try {
+      // The API DTO exposes the ID lists, while the backend stores the
+      // selected problem snapshots in RoundConfig. Keep both in the JSON.
       const payload = {
         name: metadata.name.trim(),
         category: metadata.category.trim(),
@@ -181,9 +193,13 @@ export function InterviewTemplateDetailPage() {
             })),
             codingProblemsId: r.configData?.codingProblemsId ?? [],
             codeReviewIds: r.configData?.codeReviewProblemsId ?? [],
+            // The backend persists RoundConfig snapshots, so retain the
+            // selected problem data alongside the ID lists.
+            codingProblems: r.configData?.codingProblems ?? [],
+            codeReviewProblems: r.configData?.codeReviewProblems ?? [],
           },
         })),
-      };
+      } as UpsertTemplateRequest;
 
       let res;
       if (editorMode === "create") {
