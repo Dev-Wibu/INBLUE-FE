@@ -100,6 +100,12 @@ const HoloboxExperienceRobotPreviewPage = lazy(() =>
   }))
 );
 
+const StandaloneKioskPage = lazy(() =>
+  import("@/pages/KioskApp").then((module) => ({
+    default: module.StandaloneKioskPage,
+  }))
+);
+
 /** Preserves the path suffix after a given prefix when redirecting /dashboard/* → /user/* */
 function DashboardSubRedirect({ prefix }: { prefix: string }) {
   const { pathname, search } = useLocation();
@@ -173,6 +179,24 @@ function App() {
               element={
                 <Suspense fallback={null}>
                   <HoloboxExperienceRobotPreviewPage />
+                </Suspense>
+              }
+            />
+
+            {/* Standalone Mobile Kiosk Preview (Isolated Test Routes) */}
+            <Route
+              path="/kiosk-preview"
+              element={
+                <Suspense fallback={null}>
+                  <StandaloneKioskPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/kiosk-app"
+              element={
+                <Suspense fallback={null}>
+                  <StandaloneKioskPage />
                 </Suspense>
               }
             />
