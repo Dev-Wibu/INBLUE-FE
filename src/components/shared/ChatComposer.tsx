@@ -168,7 +168,7 @@ export function ChatComposer({
           <Button
             variant="outline"
             size="icon"
-            className="h-11 w-11 shrink-0 rounded-xl border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+            className="h-11 w-11 shrink-0 rounded-xl border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-slate-50 dark:border-white/[0.08] dark:bg-white/[0.045] dark:text-slate-200 dark:hover:bg-white/[0.08]"
             title={t("compShared.insertEmojis")}
             aria-label={t("compShared.insertEmojis")}
             disabled={disabled}>
@@ -213,7 +213,7 @@ export function ChatComposer({
 
       <div className="flex-1">
         {visibleCommands.length > 0 && (
-          <div className="mb-2 rounded-xl border border-slate-200 bg-white p-2 text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+          <div className="mb-2 rounded-xl border border-slate-200/80 bg-white/95 p-2 text-slate-900 shadow-lg shadow-slate-900/5 dark:border-white/[0.08] dark:bg-[#1c2128] dark:text-slate-100">
             <p className="px-1 pb-1 text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
               {t("compShared.quickCommand")}
             </p>
@@ -242,7 +242,7 @@ export function ChatComposer({
           placeholder={placeholder}
           disabled={disabled}
           className={cn(
-            "max-h-[132px] min-h-11 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm leading-6 text-slate-900 transition outline-none placeholder:text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400",
+            "max-h-[132px] min-h-11 w-full resize-none rounded-xl border border-slate-200/80 bg-white px-3 py-2.5 text-sm leading-6 text-slate-900 shadow-sm transition outline-none placeholder:text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.045] dark:text-slate-100 dark:placeholder:text-slate-400",
             "focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
             disabled && "cursor-not-allowed opacity-60"
           )}
@@ -252,7 +252,7 @@ export function ChatComposer({
       <Button
         onClick={onSend}
         size="icon"
-        className="h-11 w-11 shrink-0 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+        className="h-11 w-11 shrink-0 rounded-xl bg-indigo-600 text-white shadow-sm shadow-indigo-600/25 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
         disabled={!canSend}
         title={t("compShared.sendAMessage")}
         aria-label={t("compShared.sendAMessage")}>

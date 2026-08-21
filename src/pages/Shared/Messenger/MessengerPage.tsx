@@ -1072,7 +1072,7 @@ export function MessengerPage() {
   const shouldShowSidebar = !isMobile || !selectedContact;
   const shouldShowConversation = !isMobile || !!selectedContact;
   return (
-    <div className="h-full w-full overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="h-full w-full overflow-hidden bg-[#f7f9fc] text-slate-900 dark:bg-[#0f1419] dark:text-slate-100">
       <div
         className={cn(
           "grid h-full w-full overflow-hidden",
@@ -1081,12 +1081,8 @@ export function MessengerPage() {
             : "grid-cols-1"
         )}>
         {shouldShowSidebar && (
-          <aside
-            className={cn(
-              "flex min-h-0 flex-col bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100",
-              isMobile ? "" : "border-r border-slate-200 dark:border-slate-800"
-            )}>
-            <div className="border-b border-slate-200 px-5 py-5 dark:border-slate-800">
+          <aside className="flex min-h-0 flex-col bg-white/90 text-slate-900 shadow-[inset_-1px_0_0_rgba(15,23,42,0.06)] backdrop-blur-sm dark:bg-[#161b22]/90 dark:text-slate-100 dark:shadow-[inset_-1px_0_0_rgba(255,255,255,0.06)]">
+            <div className="border-b border-slate-200/70 bg-white/60 px-5 py-5 dark:border-white/[0.06] dark:bg-[#161b22]/70">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
@@ -1130,14 +1126,14 @@ export function MessengerPage() {
                       ? t("sharedMessenger.findMentorByName")
                       : t("sharedMessenger.searchContact")
                   }
-                  className="h-10 rounded-xl border-slate-200/90 bg-slate-50/80 pl-10 text-sm text-slate-900 shadow-2xs transition-colors placeholder:text-slate-500 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
+                  className="h-10 rounded-xl border-slate-200/70 bg-slate-100/80 pl-10 text-sm text-slate-900 shadow-inner shadow-slate-900/[0.02] transition-colors placeholder:text-slate-500 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/20 dark:border-white/[0.08] dark:bg-white/[0.045] dark:text-slate-100 dark:placeholder:text-slate-400"
                   value={contactSearchQuery}
                   onChange={(event) => setContactSearchQuery(event.target.value)}
                 />
               </div>
             </div>
 
-            <div className="custom-scrollbar flex-1 overflow-y-auto p-4">
+            <div className="custom-scrollbar flex-1 overflow-y-auto p-3.5">
               <div className="space-y-1.5">
                 {showMentorList ? (
                   loadingMentors ? (
@@ -1257,10 +1253,10 @@ export function MessengerPage() {
                         key={contact.id}
                         onClick={() => openConversation(contact)}
                         className={cn(
-                          "group w-full rounded-xl border px-3 py-3 text-left transition-colors",
+                          "group relative w-full rounded-xl border px-3 py-3 text-left transition-colors",
                           isActive
-                            ? "border-indigo-200 bg-indigo-50/80 dark:border-indigo-500/55 dark:bg-indigo-950/65"
-                            : "border-transparent bg-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-800 dark:hover:bg-slate-800/60"
+                            ? "border-indigo-200/70 bg-indigo-50/65 shadow-sm before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-indigo-500 dark:border-indigo-400/30 dark:bg-indigo-400/[0.10]"
+                            : "border-transparent bg-transparent hover:border-slate-200/70 hover:bg-slate-50/80 dark:hover:border-white/[0.06] dark:hover:bg-white/[0.045]"
                         )}>
                         <div className="flex items-center gap-3">
                           <div className="relative">
@@ -1311,12 +1307,12 @@ export function MessengerPage() {
 
         {shouldShowConversation && (
           <section
-            className="relative flex min-h-0 flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100"
+            className="relative flex min-h-0 flex-col bg-[#f7f9fc] text-slate-900 dark:bg-[#0f1419] dark:text-slate-100"
             onTouchStart={handleConversationTouchStart}
             onTouchEnd={handleConversationTouchEnd}>
             {selectedContact ? (
               <>
-                <div className="border-b border-slate-200 bg-white px-4 py-3.5 md:px-6 dark:border-slate-800 dark:bg-slate-900">
+                <div className="border-b border-slate-200/70 bg-white/80 px-4 py-3.5 shadow-sm shadow-slate-900/[0.03] backdrop-blur-sm md:px-6 dark:border-white/[0.06] dark:bg-[#161b22]/85 dark:shadow-black/10">
                   <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2.5 md:gap-3">
                       {isMobile && (
@@ -1462,19 +1458,19 @@ export function MessengerPage() {
                         </div>
                       </>
                     ) : messages.length === 0 ? (
-                      <div className="flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
-                        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                      <div className="flex min-h-[280px] flex-col items-center justify-center px-8 text-center">
+                        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[22px] bg-indigo-500/10 text-indigo-600 ring-8 ring-indigo-500/[0.04] dark:text-indigo-300">
                           <MessageSquare className="h-8 w-8" />
                         </div>
-                        <p className="text-base font-bold text-slate-900 dark:text-white">
+                        <p className="text-[15px] font-semibold text-slate-900 dark:text-white">
                           {t("sharedMessenger.startAConversation")}
                         </p>
-                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500 dark:text-slate-400">
                           {t("sharedMessenger.sendTheFirstMessageTo")}
                         </p>
                       </div>
                     ) : visibleMessages.length === 0 ? (
-                      <div className="flex min-h-[220px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
+                      <div className="flex min-h-[220px] flex-col items-center justify-center px-8 text-center">
                         <Search className="mb-3 h-8 w-8 text-slate-400" />
                         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                           {t("sharedMessenger.noContentMatchingKeywordsWas")}
@@ -1535,7 +1531,7 @@ export function MessengerPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-slate-200 bg-white px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-6 md:py-4 dark:border-slate-800 dark:bg-slate-900">
+                <div className="border-t border-slate-200/70 bg-white/80 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-24px_rgba(15,23,42,0.4)] backdrop-blur-sm md:px-6 md:py-4 dark:border-white/[0.06] dark:bg-[#161b22]/85 dark:shadow-black/20">
                   <div className="mx-auto mb-2 flex w-full max-w-5xl items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">
                       {t("sharedMessenger.messagesAreAutomaticallySavedAs")}
@@ -1564,7 +1560,7 @@ export function MessengerPage() {
               </>
             ) : (
               <div className="hidden h-full flex-col items-center justify-center px-8 text-center md:flex">
-                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] bg-indigo-500/10 text-indigo-600 ring-8 ring-indigo-500/[0.04] dark:text-indigo-300">
                   <MessageSquare className="h-8 w-8" />
                 </div>
                 <h3 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">

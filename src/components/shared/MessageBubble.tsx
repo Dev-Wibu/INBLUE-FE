@@ -116,15 +116,15 @@ export function MessageBubble({
           )}>
           <div
             className={cn(
-              "px-3.5 py-2.5 text-sm leading-6 wrap-break-word whitespace-pre-wrap shadow-sm",
+              "px-3.5 py-2.5 text-sm leading-6 wrap-break-word whitespace-pre-wrap shadow-[0_4px_16px_-12px_rgba(15,23,42,0.3)]",
               sender === "user" ? "rounded-2xl" : "rounded-2xl",
               sender === "user" && isGroupedWithPrevious && "rounded-tr-md",
               sender === "user" && isGroupedWithNext && "rounded-br-md",
               sender !== "user" && isGroupedWithPrevious && "rounded-tl-md",
               sender !== "user" && isGroupedWithNext && "rounded-bl-md",
               sender === "user"
-                ? "bg-indigo-600 text-white dark:bg-indigo-500"
-                : "border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                ? "bg-indigo-600 text-white shadow-indigo-600/20 dark:bg-indigo-500"
+                : "border border-slate-200/80 bg-white/90 text-slate-700 dark:border-white/[0.08] dark:bg-[#1c2128] dark:text-slate-100"
             )}>
             {highlightContent(content, searchQuery)}
           </div>
