@@ -8181,7 +8181,9 @@
     "linksCompanies": "企業"
   },
   "adminTopDevImport": {
-    "sidebarLabel": "JDインポート",
+    "sidebarLabel": "TopDevからJDをインポート",
+    "pageTitle": "TopDevからJDをインポート",
+    "pageDescription": "求人を検索・確認し、システムへすばやく追加します。",
     "keyword": "キーワード",
     "keywordPlaceholder": "例: Java、React、DevOps",
     "level": "レベル",
@@ -8200,6 +8202,8 @@
     "importing": "残り{{remaining}}件をインポート中...",
     "importSuccess": "{{count}}件のJDをインポートしました。",
     "importPartial": "{{success}}件完了、{{failed}}件失敗しました。",
+    "importSummaryTitle": "インポート結果",
+    "importSummary": "{{success}}件をインポートしました。{{failed}}件は確認が必要です。",
     "select": "選択",
     "selectJob": "{{title}}を選択",
     "positionCompany": "ポジション・企業",
@@ -8211,6 +8215,7 @@
     "imported": "インポート済み",
     "available": "利用可能",
     "page": "ページ {{page}}",
+    "pageSize": "行数",
     "description": "仕事内容",
     "requirements": "応募条件",
     "benefits": "福利厚生",
