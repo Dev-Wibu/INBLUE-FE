@@ -19,14 +19,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import type { AppApiError } from "@/lib/error-normalizer";
 import { jobDescriptionManager, topDevJobImportManager, type TopDevJobPreview } from "@/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,12 +31,13 @@ import {
   ChevronRight,
   CircleDollarSign,
   ExternalLink,
+  Layers3,
   Loader2,
   MapPin,
   RefreshCw,
   Search,
 } from "lucide-react";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -53,7 +46,6 @@ import {
   resolveDisplayedLevel,
   splitSkills,
   toImportPayload,
-  TOPDEV_API_PAGE_SIZE,
   TOPDEV_PAGE_SIZE,
 } from "./topdev-job-import.utils";
 
@@ -91,7 +83,16 @@ export function TopDevJobImportPage() {
   const [searchError, setSearchError] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [preview, setPreview] = useState<TopDevJobPreview | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [importingIds, setImportingIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   const displaySalary = (salary?: string) =>
     !salary?.trim() || isNegotiableSalary(salary) ? t("adminTopDevImport.negotiable") : salary;
@@ -149,21 +150,13 @@ export function TopDevJobImportPage() {
     setSearchError("");
     setSelectedIds(new Set());
     try {
-      const backendPages = Math.max(1, Math.ceil(requestedLimit / TOPDEV_API_PAGE_SIZE));
-      const firstBackendPage = (targetPage - 1) * backendPages + 1;
-      const resultsByPage = await Promise.all(
-        Array.from({ length: backendPages }, (_, offset) =>
-          topDevJobImportManager.search({
-            keyword: filters.keyword.trim() || undefined,
-            level: filters.level === "ALL" ? undefined : filters.level,
-            jobCategoriesIds:
-              filters.categoryId === "ALL" ? undefined : [Number(filters.categoryId)],
-            page: firstBackendPage + offset,
-            limit: TOPDEV_API_PAGE_SIZE,
-          })
-        )
-      );
-      const results = resultsByPage.flat().slice(0, requestedLimit);
+      const results = await topDevJobImportManager.search({
+        keyword: filters.keyword.trim() || undefined,
+        level: filters.level === "ALL" ? undefined : filters.level,
+        jobCategoriesIds: filters.categoryId === "ALL" ? undefined : [Number(filters.categoryId)],
+        page: targetPage,
+        limit: requestedLimit,
+      });
       const requestedLevel = filters.level === "ALL" ? undefined : filters.level;
       setItems(
         results.map((result) => ({
@@ -287,21 +280,6 @@ export function TopDevJobImportPage() {
         )
       );
     }
-  };
-
-  const renderSkills = (skills?: string) => {
-    const values = splitSkills(skills);
-    if (values.length === 0) return <span className="text-slate-400">—</span>;
-    return (
-      <div className="flex max-w-[280px] flex-wrap gap-1">
-        {values.slice(0, 3).map((skill) => (
-          <Badge key={skill} variant="secondary" className="rounded-md px-1.5 py-0 text-[11px]">
-            {skill}
-          </Badge>
-        ))}
-        {values.length > 3 && <span className="text-xs text-slate-500">+{values.length - 3}</span>}
-      </div>
-    );
   };
 
   return (
@@ -489,14 +467,15 @@ export function TopDevJobImportPage() {
 
           {items.length > 0 && (
             <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex flex-wrap items-center justify-end gap-3 border-b border-slate-200/80 bg-slate-50/50 px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950/30">
+              <div className="flex flex-wrap items-center justify-end gap-3 border-b border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={toggleAllAvailable}
-                    disabled={availableIds.length === 0 || importingIds.size > 0}>
+                    disabled={availableIds.length === 0 || importingIds.size > 0}
+                    className="h-9 rounded-xl border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                     <Checkbox checked={allAvailableSelected} tabIndex={-1} aria-hidden="true" />
                     {t("adminTopDevImport.selectAvailable", "Chọn tất cả khả dụng")}
                   </Button>
@@ -505,7 +484,7 @@ export function TopDevJobImportPage() {
                     size="sm"
                     onClick={() => void importSelected()}
                     disabled={selectedJobs.length === 0 || importingIds.size > 0}
-                    className="bg-indigo-600 hover:bg-indigo-700">
+                    className="h-9 rounded-xl border border-indigo-600 bg-indigo-600 shadow-xs hover:bg-indigo-700">
                     {importingIds.size > 0 ? (
                       <Loader2 className="animate-spin" />
                     ) : (
@@ -522,110 +501,189 @@ export function TopDevJobImportPage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <Table className="min-w-[980px]">
-                  <TableHeader>
-                    <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                      <TableHead className="w-12 pl-6">
-                        <span className="sr-only">{t("adminTopDevImport.select", "Chọn")}</span>
-                      </TableHead>
-                      <TableHead className="min-w-[340px] font-semibold text-slate-700 dark:text-slate-200">
-                        {t("adminTopDevImport.positionCompany", "Vị trí & công ty")}
-                      </TableHead>
-                      <TableHead className="min-w-[150px] font-semibold text-slate-700 dark:text-slate-200">
-                        {t("adminTopDevImport.locationSalary", "Địa điểm & lương")}
-                      </TableHead>
-                      <TableHead className="min-w-[220px] font-semibold text-slate-700 dark:text-slate-200">
-                        {t("adminTopDevImport.skills", "Kỹ năng")}
-                      </TableHead>
-                      <TableHead className="w-32 font-semibold text-slate-700 dark:text-slate-200">
-                        {t("adminTopDevImport.postedAt", "Ngày đăng")}
-                      </TableHead>
-                      <TableHead className="w-32 pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
-                        {t("common.status", "Trạng thái")}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {items.map((job) => {
-                      const id = jobKey(job);
-                      const isImporting = importingIds.has(id);
-                      return (
-                        <TableRow
-                          key={id}
-                          className="group cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/50"
-                          onClick={() => setPreview(job)}>
-                          <TableCell className="pl-6" onClick={(event) => event.stopPropagation()}>
-                            <Checkbox
-                              checked={selectedIds.has(id)}
-                              disabled={job.isExist || isImporting || !id}
-                              onCheckedChange={() => toggleSelected(id)}
-                              aria-label={t("adminTopDevImport.selectJob", "Chọn {{title}}", {
-                                title: job.title,
-                              })}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-100 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                                {job.companyName?.slice(0, 2).toUpperCase() || "TD"}
-                                {job.companyLogo && (
-                                  <img
-                                    src={job.companyLogo}
-                                    alt=""
-                                    className="absolute inset-0 h-full w-full bg-white object-contain"
-                                  />
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                <button
-                                  type="button"
-                                  className="block max-w-[380px] truncate text-left text-sm font-semibold text-slate-900 group-hover:text-indigo-700 dark:text-white dark:group-hover:text-indigo-300">
-                                  {job.title || t("common.unspecified", "Chưa xác định")}
-                                </button>
-                                <p className="mt-0.5 max-w-[360px] truncate text-xs text-slate-500 dark:text-slate-400">
-                                  {job.companyName || t("common.unspecified", "Chưa xác định")}
-                                </p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1 text-xs">
-                              <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300">
-                                <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                                {job.location || t("adminTopDevImport.notProvided")}
-                              </span>
-                              <span className="font-medium text-emerald-700 dark:text-emerald-400">
-                                {displaySalary(job.salary)}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{renderSkills(job.skills)}</TableCell>
-                          <TableCell className="text-xs text-slate-600 dark:text-slate-400">
-                            {formatDate(job.postedAt, i18n.language)}
-                          </TableCell>
-                          <TableCell className="pr-6 text-right">
-                            {isImporting ? (
-                              <Badge variant="secondary">
-                                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                                {t("adminTopDevImport.importingShort", "Đang nhập")}
-                              </Badge>
-                            ) : job.isExist ? (
-                              <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-300">
-                                <CheckCircle2 className="mr-1 h-3 w-3" />
-                                {t("adminTopDevImport.imported", "Đã import")}
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline">
-                                {t("adminTopDevImport.available", "Khả dụng")}
-                              </Badge>
+              <div className="grid gap-0 bg-slate-50/70 lg:grid-cols-[minmax(360px,0.88fr)_minmax(520px,1.45fr)] dark:bg-slate-950/60">
+                <div className="space-y-3 border-r border-slate-200/80 p-3 sm:p-4 dark:border-slate-800">
+                  <div className="flex items-center justify-between px-1 text-xs text-slate-500 dark:text-slate-400">
+                    <span>{t("adminTopDevImport.jobList", "Danh sách việc làm")}</span>
+                    <span>
+                      {items.length} / {limit}
+                    </span>
+                  </div>
+                  {items.map((job) => {
+                    const id = jobKey(job);
+                    const isImporting = importingIds.has(id);
+                    const benefits = plainText(job.benefits)
+                      .split(/\n+/)
+                      .map((line) => line.replace(/^[-*•\d+. ]+/, "").trim())
+                      .filter(Boolean)
+                      .slice(0, 3);
+                    return (
+                      <article
+                        key={id}
+                        className={`group cursor-pointer rounded-2xl border-2 bg-white p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900 ${
+                          preview && jobKey(preview) === id
+                            ? "border-indigo-500 ring-2 ring-indigo-500/15"
+                            : job.isExist
+                              ? "border-emerald-200 dark:border-emerald-900"
+                              : "border-slate-200 dark:border-slate-800"
+                        }`}
+                        onClick={() => setPreview(job)}>
+                        <div className="flex gap-3">
+                          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-800">
+                            {job.companyName?.slice(0, 2).toUpperCase() || "TD"}
+                            {job.companyLogo && (
+                              <img
+                                src={job.companyLogo}
+                                alt=""
+                                className="absolute inset-0 h-full w-full bg-white object-contain p-1"
+                              />
                             )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="line-clamp-2 text-base leading-5 font-bold text-[#3158b8] group-hover:text-indigo-700 dark:text-blue-300">
+                                {job.title || t("common.unspecified", "Chưa xác định")}
+                              </h3>
+                              <div onClick={(event) => event.stopPropagation()}>
+                                <Checkbox
+                                  checked={selectedIds.has(id)}
+                                  disabled={job.isExist || isImporting || !id}
+                                  onCheckedChange={() => toggleSelected(id)}
+                                  aria-label={t("adminTopDevImport.selectJob", "Chọn {{title}}", {
+                                    title: job.title,
+                                  })}
+                                />
+                              </div>
+                            </div>
+                            <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400">
+                              {job.companyName || t("common.unspecified", "Chưa xác định")}
+                            </p>
+                            <p className="mt-2 font-semibold text-[#d31375]">
+                              <CircleDollarSign className="mr-1 inline h-4 w-4" />
+                              {displaySalary(job.salary)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-2 grid grid-cols-1 gap-1 text-xs text-slate-600 sm:grid-cols-2 dark:text-slate-300">
+                          <span className="flex min-w-0 items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                            <span className="truncate">
+                              {job.location || t("adminTopDevImport.notProvided")}
+                            </span>
+                          </span>
+                          <span className="flex min-w-0 items-center gap-1">
+                            <Layers3 className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                            <span className="truncate">{displayLevel(job.requestedLevel)}</span>
+                          </span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {splitSkills(job.skills)
+                            .slice(0, 3)
+                            .map((skill) => (
+                              <Badge
+                                key={skill}
+                                variant="outline"
+                                className="rounded-full border-indigo-200 px-2 py-0.5 text-[11px] text-indigo-700 dark:border-indigo-800 dark:text-indigo-300">
+                                {skill}
+                              </Badge>
+                            ))}
+                          {splitSkills(job.skills).length > 3 && (
+                            <Badge
+                              variant="outline"
+                              className="rounded-full px-2 py-0.5 text-[11px]">
+                              +{splitSkills(job.skills).length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                        {benefits.length > 0 && (
+                          <ul className="mt-3 space-y-1 border-t border-slate-100 pt-3 text-xs leading-4 text-slate-600 dark:border-slate-800 dark:text-slate-300">
+                            {benefits.map((benefit) => (
+                              <li key={benefit} className="line-clamp-1 list-inside list-disc">
+                                {benefit}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2 text-[11px] text-slate-400 dark:border-slate-800">
+                          <span>{formatDate(job.postedAt, i18n.language)}</span>
+                          {isImporting ? (
+                            <Badge variant="secondary">
+                              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                              {t("adminTopDevImport.importingShort", "Đang nhập")}
+                            </Badge>
+                          ) : job.isExist ? (
+                            <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                              <CheckCircle2 className="mr-1 h-3 w-3" />
+                              {t("adminTopDevImport.imported", "Đã import")}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">
+                              {t("adminTopDevImport.available", "Khả dụng")}
+                            </Badge>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+                <div className="hidden min-h-[620px] bg-white p-5 lg:block dark:bg-slate-900">
+                  {preview ? (
+                    <div className="h-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+                      <div className="border-b border-slate-200 pb-4 dark:border-slate-800">
+                        <h3 className="text-xl font-bold text-[#3158b8] dark:text-blue-300">
+                          {preview.title}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-500">{preview.companyName}</p>
+                        <p className="mt-2 font-semibold text-[#d31375]">
+                          <CircleDollarSign className="mr-1 inline h-4 w-4" />
+                          {displaySalary(preview.salary)}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                          <MapPin className="mr-1 inline h-4 w-4" />
+                          {preview.location || t("adminTopDevImport.notProvided")}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {splitSkills(preview.skills).map((skill) => (
+                            <Badge
+                              key={skill}
+                              variant="outline"
+                              className="rounded-full border-indigo-200 text-indigo-700 dark:border-indigo-800 dark:text-indigo-300">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-4 pt-4">
+                        {[
+                          [
+                            t("adminTopDevImport.description", "Mô tả công việc"),
+                            preview.description,
+                          ],
+                          [t("adminTopDevImport.requirements", "Yêu cầu"), preview.requirements],
+                          [t("adminTopDevImport.benefits", "Quyền lợi"), preview.benefits],
+                        ].map(([title, content]) =>
+                          content ? (
+                            <section key={title}>
+                              <h4 className="mb-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-[#3158b8] dark:bg-slate-800 dark:text-blue-300">
+                                {title}
+                              </h4>
+                              <p className="text-sm leading-6 whitespace-pre-line text-slate-600 dark:text-slate-300">
+                                {plainText(content)}
+                              </p>
+                            </section>
+                          ) : null
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex h-full flex-col items-center justify-center text-center text-slate-400">
+                      <BriefcaseBusiness className="h-9 w-9" />
+                      <p className="mt-3 text-sm">
+                        {t("adminTopDevImport.selectJobHint", "Chọn một JD để xem chi tiết")}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex w-full flex-wrap items-center justify-between gap-2 border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
@@ -674,7 +732,9 @@ export function TopDevJobImportPage() {
         </div>
       </div>
 
-      <Sheet open={Boolean(preview)} onOpenChange={(open) => !open && setPreview(null)}>
+      <Sheet
+        open={Boolean(preview) && !isDesktop}
+        onOpenChange={(open) => !open && setPreview(null)}>
         <SheetContent className="w-full gap-0 overflow-y-auto border-l-slate-200 bg-[#f8f9fc] p-0 sm:max-w-3xl sm:rounded-l-[28px] lg:max-w-[62vw] dark:border-l-slate-800 dark:bg-slate-950">
           {preview && (
             <>
