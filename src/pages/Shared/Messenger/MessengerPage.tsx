@@ -142,14 +142,11 @@ const buildTimelineItems = (
   if (messages.length === 0) {
     return [];
   }
-  const sortedMessages = [...messages].sort(
-    (a, b) => getTimestampValue(a.timestamp) - getTimestampValue(b.timestamp)
-  );
   const timeline: TimelineItem[] = [];
-  for (let index = 0; index < sortedMessages.length; index += 1) {
-    const message = sortedMessages[index];
-    const previous = sortedMessages[index - 1];
-    const next = sortedMessages[index + 1];
+  for (let index = 0; index < messages.length; index += 1) {
+    const message = messages[index];
+    const previous = messages[index - 1];
+    const next = messages[index + 1];
     const previousDayKey = previous ? getDayKey(previous.timestamp) : "";
     const currentDayKey = getDayKey(message.timestamp);
     if (!previous || previousDayKey !== currentDayKey) {
