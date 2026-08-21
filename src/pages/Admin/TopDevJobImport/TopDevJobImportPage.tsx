@@ -34,14 +34,11 @@ import {
   AlertCircle,
   ArrowDownToLine,
   BriefcaseBusiness,
-  Building2,
-  CalendarDays,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   CircleDollarSign,
   ExternalLink,
-  Layers3,
   Loader2,
   MapPin,
   RefreshCw,
@@ -56,6 +53,7 @@ import {
   resolveDisplayedLevel,
   splitSkills,
   toImportPayload,
+  TOPDEV_API_PAGE_SIZE,
   TOPDEV_PAGE_SIZE,
 } from "./topdev-job-import.utils";
 
@@ -94,11 +92,6 @@ export function TopDevJobImportPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [preview, setPreview] = useState<TopDevJobPreview | null>(null);
   const [importingIds, setImportingIds] = useState<Set<string>>(new Set());
-  const [importedCount, setImportedCount] = useState(0);
-  const [lastImportSummary, setLastImportSummary] = useState<{
-    success: number;
-    failed: number;
-  } | null>(null);
 
   const displaySalary = (salary?: string) =>
     !salary?.trim() || isNegotiableSalary(salary) ? t("adminTopDevImport.negotiable") : salary;
@@ -122,9 +115,6 @@ export function TopDevJobImportPage() {
     staleTime: 30_000,
   });
 
-  const previewLevelLabel = preview?.isExist
-    ? t("adminTopDevImport.savedLevel", "Level đã lưu")
-    : t("adminTopDevImport.levelOnImport", "Level khi import");
   const previewLevelValue =
     preview?.isExist && existingJdQuery.isLoading
       ? t("common.loading", "Đang tải...")
@@ -147,7 +137,6 @@ export function TopDevJobImportPage() {
     setHasSearched(false);
     setSearchError("");
     setSelectedIds(new Set());
-    setLastImportSummary(null);
   };
 
   const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
@@ -160,13 +149,21 @@ export function TopDevJobImportPage() {
     setSearchError("");
     setSelectedIds(new Set());
     try {
-      const results = await topDevJobImportManager.search({
-        keyword: filters.keyword.trim() || undefined,
-        level: filters.level === "ALL" ? undefined : filters.level,
-        jobCategoriesIds: filters.categoryId === "ALL" ? undefined : [Number(filters.categoryId)],
-        page: targetPage,
-        limit: requestedLimit,
-      });
+      const backendPages = Math.max(1, Math.ceil(requestedLimit / TOPDEV_API_PAGE_SIZE));
+      const firstBackendPage = (targetPage - 1) * backendPages + 1;
+      const resultsByPage = await Promise.all(
+        Array.from({ length: backendPages }, (_, offset) =>
+          topDevJobImportManager.search({
+            keyword: filters.keyword.trim() || undefined,
+            level: filters.level === "ALL" ? undefined : filters.level,
+            jobCategoriesIds:
+              filters.categoryId === "ALL" ? undefined : [Number(filters.categoryId)],
+            page: firstBackendPage + offset,
+            limit: TOPDEV_API_PAGE_SIZE,
+          })
+        )
+      );
+      const results = resultsByPage.flat().slice(0, requestedLimit);
       const requestedLevel = filters.level === "ALL" ? undefined : filters.level;
       setItems(
         results.map((result) => ({
@@ -190,7 +187,7 @@ export function TopDevJobImportPage() {
 
   const handleLimitChange = (value: string) => {
     const nextLimit = Number(value);
-    if (nextLimit < 1 || nextLimit > 5) return;
+    if (![5, 10].includes(nextLimit)) return;
     setLimit(nextLimit);
     if (hasSearched) {
       void searchPage(1, nextLimit);
@@ -220,7 +217,6 @@ export function TopDevJobImportPage() {
   const importSelected = async () => {
     if (selectedJobs.length === 0 || importingIds.size > 0) return;
 
-    setLastImportSummary(null);
     const pendingIds = new Set(selectedJobs.map(jobKey));
     setImportingIds(pendingIds);
     let succeeded = 0;
@@ -272,8 +268,6 @@ export function TopDevJobImportPage() {
       }
     }
 
-    setImportedCount((current) => current + succeeded);
-    setLastImportSummary({ success: succeeded, failed });
     if (succeeded > 0) {
       void queryClient.invalidateQueries({ queryKey: ["admin", "all-jds"] });
       void queryClient.invalidateQueries({ queryKey: ["admin", "companies"] });
@@ -326,16 +320,6 @@ export function TopDevJobImportPage() {
                 )}
               </p>
             </div>
-            {importedCount > 0 && (
-              <Badge className="w-fit rounded-full border-emerald-500/30 bg-emerald-50 px-3 py-1 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                {t(
-                  "adminTopDevImport.importedThisSession",
-                  "{{count}} JD đã nhập trong phiên này",
-                  { count: importedCount }
-                )}
-              </Badge>
-            )}
           </div>
           <form onSubmit={handleSearch} className="mt-6">
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -470,11 +454,11 @@ export function TopDevJobImportPage() {
           )}
 
           {isSearching && items.length === 0 && (
-            <div className="border-y border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-              {[0, 1, 2, 3, 4].map((row) => (
+            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              {Array.from({ length: limit }, (_, row) => (
                 <div
                   key={row}
-                  className="flex h-20 items-center gap-4 border-b border-slate-100 px-6 last:border-0 dark:border-slate-800">
+                  className="flex h-[74px] items-center gap-4 border-b border-slate-100 px-6 last:border-0 dark:border-slate-800">
                   <Skeleton className="h-4 w-4" />
                   <Skeleton className="h-10 w-10" />
                   <div className="flex-1 space-y-2">
@@ -501,20 +485,6 @@ export function TopDevJobImportPage() {
                 )}
               </p>
             </div>
-          )}
-
-          {lastImportSummary && !isSearching && (
-            <Alert className="mb-4 border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
-              <CheckCircle2 />
-              <AlertTitle>{t("adminTopDevImport.importSummaryTitle", "Kết quả import")}</AlertTitle>
-              <AlertDescription>
-                {t(
-                  "adminTopDevImport.importSummary",
-                  "Đã import {{success}} JD thành công; {{failed}} JD cần kiểm tra lại.",
-                  lastImportSummary
-                )}
-              </AlertDescription>
-            </Alert>
           )}
 
           {items.length > 0 && (
@@ -555,23 +525,23 @@ export function TopDevJobImportPage() {
               <div className="overflow-x-auto">
                 <Table className="min-w-[980px]">
                   <TableHeader>
-                    <TableRow className="bg-slate-50/70 hover:bg-slate-50/70 dark:bg-slate-950/60 dark:hover:bg-slate-950/60">
+                    <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
                       <TableHead className="w-12 pl-6">
                         <span className="sr-only">{t("adminTopDevImport.select", "Chọn")}</span>
                       </TableHead>
-                      <TableHead className="min-w-[340px] text-slate-500">
+                      <TableHead className="min-w-[340px] font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminTopDevImport.positionCompany", "Vị trí & công ty")}
                       </TableHead>
-                      <TableHead className="min-w-[150px] text-slate-500">
+                      <TableHead className="min-w-[150px] font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminTopDevImport.locationSalary", "Địa điểm & lương")}
                       </TableHead>
-                      <TableHead className="min-w-[220px] text-slate-500">
+                      <TableHead className="min-w-[220px] font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminTopDevImport.skills", "Kỹ năng")}
                       </TableHead>
-                      <TableHead className="w-32 text-slate-500">
+                      <TableHead className="w-32 font-semibold text-slate-700 dark:text-slate-200">
                         {t("adminTopDevImport.postedAt", "Ngày đăng")}
                       </TableHead>
-                      <TableHead className="w-32 pr-6 text-right text-slate-500">
+                      <TableHead className="w-32 pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
                         {t("common.status", "Trạng thái")}
                       </TableHead>
                     </TableRow>
@@ -671,7 +641,7 @@ export function TopDevJobImportPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {[3, 5].map((size) => (
+                      {[5, 10].map((size) => (
                         <SelectItem key={size} value={String(size)} className="text-xs">
                           {size} / {t("adminTopDevImport.pageSize", "dòng")}
                         </SelectItem>
@@ -705,110 +675,86 @@ export function TopDevJobImportPage() {
       </div>
 
       <Sheet open={Boolean(preview)} onOpenChange={(open) => !open && setPreview(null)}>
-        <SheetContent className="w-full gap-0 overflow-y-auto border-l-slate-200 bg-slate-50 sm:max-w-3xl sm:rounded-l-[28px] lg:max-w-[58vw] dark:border-l-slate-800 dark:bg-slate-950">
+        <SheetContent className="w-full gap-0 overflow-y-auto border-l-slate-200 bg-[#f8f9fc] p-0 sm:max-w-3xl sm:rounded-l-[28px] lg:max-w-[62vw] dark:border-l-slate-800 dark:bg-slate-950">
           {preview && (
             <>
-              <SheetHeader className="border-b border-slate-200 bg-white px-5 py-5 pr-14 sm:px-7 sm:py-6 dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex items-start gap-4">
-                  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {preview.companyName?.slice(0, 2).toUpperCase() || "TD"}
-                    {preview.companyLogo && (
-                      <img
-                        src={preview.companyLogo}
-                        alt=""
-                        className="absolute inset-0 h-full w-full bg-white object-contain p-1.5"
-                      />
-                    )}
+              <SheetHeader className="border-b border-slate-200 bg-white px-5 py-5 pr-14 sm:px-8 sm:py-7 dark:border-slate-800 dark:bg-slate-900">
+                <div className="rounded-xl border border-[#5276e8] bg-white p-4 shadow-xs sm:p-5 dark:bg-slate-900">
+                  <div className="flex items-start gap-4">
+                    <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-sm font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      {preview.companyName?.slice(0, 2).toUpperCase() || "TD"}
+                      {preview.companyLogo && (
+                        <img
+                          src={preview.companyLogo}
+                          alt=""
+                          className="absolute inset-0 h-full w-full bg-white object-contain p-1.5"
+                        />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <SheetTitle className="text-lg leading-6 font-bold text-[#3158b8] sm:text-xl dark:text-blue-300">
+                        {preview.title}
+                      </SheetTitle>
+                      <SheetDescription className="mt-1 text-sm font-medium text-slate-500">
+                        {preview.companyName}
+                      </SheetDescription>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                        <span className="font-semibold text-[#d31375]">
+                          <CircleDollarSign className="mr-1 inline h-4 w-4" />
+                          {displaySalary(preview.salary)}
+                        </span>
+                        <span className="text-slate-600 dark:text-slate-300">
+                          <MapPin className="mr-1 inline h-4 w-4" />
+                          {preview.location || t("adminTopDevImport.notProvided")}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="rounded-full border-slate-300 px-2.5 py-0.5 text-xs">
+                          {previewLevelValue}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <Badge className="border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
-                        <BriefcaseBusiness />
-                        {t("adminTopDevImport.jobDetail", "Chi tiết JD")}
-                      </Badge>
-                      {preview.isExist && (
-                        <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
-                          <CheckCircle2 />
-                          {t("adminTopDevImport.imported", "Đã import")}
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+                    <div className="flex flex-wrap gap-1.5">
+                      {splitSkills(preview.skills)
+                        .slice(0, 4)
+                        .map((skill) => (
+                          <Badge
+                            key={skill}
+                            variant="outline"
+                            className="rounded-full border-[#5276e8] px-2.5 py-0.5 text-xs text-[#3158b8] dark:text-blue-300">
+                            {skill}
+                          </Badge>
+                        ))}
+                      {splitSkills(preview.skills).length > 4 && (
+                        <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs">
+                          +{splitSkills(preview.skills).length - 4}
                         </Badge>
                       )}
                     </div>
-                    <SheetTitle className="text-xl leading-7 font-bold text-slate-950 dark:text-white">
-                      {preview.title}
-                    </SheetTitle>
-                    <SheetDescription className="mt-1 flex items-center gap-1.5 text-sm font-medium text-slate-500">
-                      <Building2 className="h-4 w-4" />
-                      {preview.companyName}
-                    </SheetDescription>
+                    <div className="flex items-center gap-2">
+                      {preview.isExist && (
+                        <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                          {t("adminTopDevImport.imported", "Đã import")}
+                        </Badge>
+                      )}
+                      {preview.sourceUrl && (
+                        <Button
+                          asChild
+                          size="sm"
+                          className="h-9 rounded-md bg-[#5276e8] px-5 hover:bg-[#3f63d0]">
+                          <a href={preview.sourceUrl} target="_blank" rel="noreferrer">
+                            {t("adminTopDevImport.openSource", "Mở JD nguồn")}
+                            <ExternalLink />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </SheetHeader>
-              <div className="space-y-5 p-5 sm:p-7">
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {(
-                    [
-                      [
-                        MapPin,
-                        t("adminTopDevImport.location"),
-                        preview.location || t("adminTopDevImport.notProvided"),
-                        "text-indigo-600 bg-indigo-50 dark:bg-indigo-950 dark:text-indigo-300",
-                      ],
-                      [
-                        CircleDollarSign,
-                        t("adminTopDevImport.salary"),
-                        displaySalary(preview.salary),
-                        "text-emerald-600 bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-300",
-                      ],
-                      [
-                        Layers3,
-                        previewLevelLabel,
-                        previewLevelValue,
-                        "text-violet-600 bg-violet-50 dark:bg-violet-950 dark:text-violet-300",
-                      ],
-                      [
-                        CalendarDays,
-                        t("adminTopDevImport.postedAt", "Ngày đăng"),
-                        formatDate(preview.postedAt, i18n.language),
-                        "text-amber-600 bg-amber-50 dark:bg-amber-950 dark:text-amber-300",
-                      ],
-                    ] as Array<[typeof MapPin, string, string, string]>
-                  ).map(([Icon, label, value, iconClass]) => (
-                    <div
-                      key={String(label)}
-                      className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                      <div
-                        className={`mb-3 flex h-8 w-8 items-center justify-center rounded-xl ${iconClass}`}>
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
-                        {label}
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-sm leading-5 font-semibold text-slate-700 dark:text-slate-200">
-                        {value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {splitSkills(preview.skills).length > 0 && (
-                  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-                      <Layers3 className="h-4 w-4 text-indigo-500" />
-                      {t("adminTopDevImport.skills", "Kỹ năng")}
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {splitSkills(preview.skills).map((skill) => (
-                        <Badge
-                          key={skill}
-                          variant="secondary"
-                          className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
+              <div className="space-y-5 p-5 sm:p-8">
                 {[
                   [t("adminTopDevImport.description", "Mô tả công việc"), preview.description],
                   [t("adminTopDevImport.requirements", "Yêu cầu"), preview.requirements],
@@ -822,27 +768,15 @@ export function TopDevJobImportPage() {
                     content && (
                       <section
                         key={title}
-                        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-                        <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-slate-950 dark:text-white">
-                          <span className="h-5 w-1 rounded-full bg-indigo-500" />
+                        className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                        <h3 className="border-b border-slate-100 bg-slate-50 px-4 py-2.5 text-base font-semibold text-[#3158b8] dark:border-slate-800 dark:bg-slate-800/70 dark:text-blue-300">
                           {title}
                         </h3>
-                        <p className="text-sm leading-7 whitespace-pre-line text-slate-600 dark:text-slate-300">
+                        <p className="px-4 py-4 text-sm leading-7 whitespace-pre-line text-slate-600 dark:text-slate-300">
                           {plainText(content)}
                         </p>
                       </section>
                     )
-                )}
-                {preview.sourceUrl && (
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="h-11 w-full rounded-xl border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                    <a href={preview.sourceUrl} target="_blank" rel="noreferrer">
-                      {t("adminTopDevImport.openSource", "Mở JD nguồn")}
-                      <ExternalLink />
-                    </a>
-                  </Button>
                 )}
               </div>
             </>

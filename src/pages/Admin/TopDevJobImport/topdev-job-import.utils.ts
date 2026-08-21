@@ -1,6 +1,10 @@
 import type { TopDevJobImportRequest, TopDevJobPreview, TopDevSearchParams } from "@/services";
 
-export const TOPDEV_PAGE_SIZE = 5;
+/** Backend accepts at most five records per request. The admin view groups two
+ * backend pages so the default table page can show ten records like the other
+ * management screens. */
+export const TOPDEV_API_PAGE_SIZE = 5;
+export const TOPDEV_PAGE_SIZE = 10;
 
 export function toImportPayload(
   job: TopDevJobPreview,
