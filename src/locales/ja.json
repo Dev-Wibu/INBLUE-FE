@@ -8180,6 +8180,19 @@
   "homepageFooter": {
     "linksCompanies": "企業"
   },
+  "adminJobDescriptionManagement": {
+    "sidebarLabel": "JD管理",
+    "title": "JD管理",
+    "description": "システムの求人票を管理し、新しい求人票を作成します。",
+    "total": "JD総数",
+    "systemTab": "システムJD",
+    "createTab": "JDを作成",
+    "create": "JDを作成",
+    "manual": "手動で作成",
+    "import": "JDをインポート",
+    "createPrompt": "JDの作成方法を選択",
+    "createPromptDescription": "手動で作成するか、採用ソースからインポートします。"
+  },
   "adminTopDevImport": {
     "sidebarLabel": "JDインポート",
     "pageTitle": "JDインポート",
