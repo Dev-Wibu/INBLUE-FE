@@ -357,6 +357,12 @@ export const API_ENDPOINTS = {
     TOGGLE: "/api/job-descriptions/toggle/:id",
   },
 
+  JOB_IMPORT: {
+    TOPDEV_CATEGORIES: "/api/admin/job-import/topdev/categories",
+    TOPDEV_SEARCH: "/api/admin/job-import/topdev/search",
+    TOPDEV_IMPORT: "/api/admin/job-import/topdev/import",
+  },
+
   // Interview rounds endpoints (Job Description rounds)
   ROUNDS: {
     SETUP_JD: "/api/rounds/jd/:jdId",

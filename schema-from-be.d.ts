@@ -1264,6 +1264,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/job-import/topdev/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import a selected TopDev JD into Company and JobDescription */
+        post: operations["importTopDevJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/interview/voices": {
         parameters: {
             query?: never;
@@ -2541,6 +2558,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/job-import/topdev/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search and crawl TopDev job previews */
+        get: operations["searchTopDevJobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/job-import/topdev/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get supported TopDev job categories */
+        get: operations["getTopDevCategories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/jds/{jdId}/applications": {
         parameters: {
             query?: never;
@@ -3190,6 +3241,7 @@ export interface components {
             description?: string;
             requirements?: string;
             benefits?: string;
+            sourceJobId?: string;
             /** @enum {string} */
             level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: double */
@@ -3775,6 +3827,7 @@ export interface components {
             description?: string;
             requirements?: string;
             benefits?: string;
+            sourceJobId?: string;
             /** @enum {string} */
             level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: double */
@@ -4054,6 +4107,34 @@ export interface components {
             roundId?: number;
             submissions?: components["schemas"]["CodeReviewSubmission"][];
         };
+        TopDevJobImportRequest: {
+            title: string;
+            companyName: string;
+            companyLogo?: string;
+            companyDescription?: string;
+            description?: string;
+            requirements?: string;
+            benefits?: string;
+            skills?: string;
+            location?: string;
+            salary?: string;
+            source?: string;
+            sourceUrl?: string;
+            sourceJobId?: string;
+            /** @enum {string} */
+            requestedLevel?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+        };
+        TopDevJobImportResponse: {
+            /** Format: int64 */
+            companyId?: number;
+            /** Format: int64 */
+            jobDescriptionId?: number;
+            companyName?: string;
+            jobDescriptionTitle?: string;
+            /** @enum {string} */
+            jobDescriptionStatus?: "OPEN" | "CLOSED" | "DRAFT";
+            companyCreated?: boolean;
+        };
         VoiceResponse: {
             id?: string;
             name?: string;
@@ -4175,10 +4256,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -4188,19 +4269,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
+            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -4426,9 +4507,9 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
+            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
@@ -4526,22 +4607,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
-            isXml?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            includePreludes?: string[];
-            includeCodas?: string[];
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
+            includePreludes?: string[];
+            includeCodas?: string[];
+            elIgnored?: string;
+            isXml?: string;
             trimDirectiveWhitespaces?: string;
-            defaultContentType?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
             urlPatterns?: string[];
+            defaultContentType?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -4576,6 +4657,11 @@ export interface components {
             };
         };
         ServletContext: {
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            requestCharacterEncoding?: string;
+            responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
@@ -4588,16 +4674,11 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            requestCharacterEncoding?: string;
-            responseCharacterEncoding?: string;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -4689,8 +4770,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */
@@ -4758,6 +4839,36 @@ export interface components {
             logoUrl?: string;
             bannerUrl?: string;
             status?: string;
+        };
+        TopDevJobPreviewResponse: {
+            source?: string;
+            sourceUrl?: string;
+            sourceJobId?: string;
+            isExist?: boolean;
+            /** Format: int64 */
+            existingJobDescriptionId?: number;
+            title?: string;
+            companyName?: string;
+            companyLogo?: string;
+            companyDescription?: string;
+            location?: string;
+            description?: string;
+            requirements?: string;
+            benefits?: string;
+            skills?: string;
+            salary?: string;
+            /** Format: date */
+            postedAt?: string;
+            /** Format: date */
+            validThrough?: string;
+            /** @enum {string} */
+            requestedLevel?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+        };
+        TopDevJobCategoryResponse: {
+            code?: string;
+            /** Format: int32 */
+            id?: number;
+            displayName?: string;
         };
         AdminApplicationSummaryDto: {
             /** Format: int64 */
@@ -7388,6 +7499,30 @@ export interface operations {
             };
         };
     };
+    importTopDevJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TopDevJobImportRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TopDevJobImportResponse"];
+                };
+            };
+        };
+    };
     getAvailableVoices: {
         parameters: {
             query?: never;
@@ -9084,6 +9219,52 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminOpenJdResponseDto"][];
+                };
+            };
+        };
+    };
+    searchTopDevJobs: {
+        parameters: {
+            query?: {
+                keyword?: string;
+                level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+                jobCategoriesIds?: number[];
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TopDevJobPreviewResponse"][];
+                };
+            };
+        };
+    };
+    getTopDevCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TopDevJobCategoryResponse"][];
                 };
             };
         };
