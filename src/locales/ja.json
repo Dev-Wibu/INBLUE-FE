@@ -8181,13 +8181,15 @@
     "linksCompanies": "企業"
   },
   "adminTopDevImport": {
-    "sidebarLabel": "TopDevからJDをインポート",
-    "pageTitle": "TopDevからJDをインポート",
+    "sidebarLabel": "JDインポート",
+    "pageTitle": "JDインポート",
     "pageDescription": "求人を検索・確認し、システムへすばやく追加します。",
     "keyword": "キーワード",
     "keywordPlaceholder": "例: Java、React、DevOps",
     "level": "レベル",
+    "allLevels": "すべてのレベル",
     "category": "職種カテゴリー",
+    "allCategories": "すべての職種カテゴリー",
     "search": "JDを検索",
     "searchError": "TopDevのJDを検索できませんでした。もう一度お試しください。",
     "searchFailed": "結果を読み込めませんでした",

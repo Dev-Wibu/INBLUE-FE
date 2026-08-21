@@ -8182,13 +8182,15 @@
     "linksCompanies": "Công ty"
   },
   "adminTopDevImport": {
-    "sidebarLabel": "Nhập JD từ TopDev",
-    "pageTitle": "Import JD từ TopDev",
+    "sidebarLabel": "Import JD",
+    "pageTitle": "Import JD",
     "pageDescription": "Tìm, xem trước và nhập nhanh vị trí tuyển dụng vào hệ thống.",
     "keyword": "Từ khóa",
     "keywordPlaceholder": "Ví dụ: Java, React, DevOps",
     "level": "Cấp độ",
+    "allLevels": "Tất cả cấp độ",
     "category": "Nhóm nghề",
+    "allCategories": "Tất cả nhóm nghề",
     "search": "Tìm JD",
     "searchError": "Không thể tìm JD từ TopDev. Vui lòng thử lại.",
     "searchFailed": "Không tải được kết quả",

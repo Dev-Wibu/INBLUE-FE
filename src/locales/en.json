@@ -8182,13 +8182,15 @@
     "linksCompanies": "Companies"
   },
   "adminTopDevImport": {
-    "sidebarLabel": "Import JD from TopDev",
-    "pageTitle": "Import JD from TopDev",
+    "sidebarLabel": "Import JD",
+    "pageTitle": "Import JD",
     "pageDescription": "Find, preview, and quickly add job openings to the system.",
     "keyword": "Keyword",
     "keywordPlaceholder": "For example: Java, React, DevOps",
     "level": "Level",
+    "allLevels": "All levels",
     "category": "Job category",
+    "allCategories": "All job categories",
     "search": "Search jobs",
     "searchError": "Could not search TopDev jobs. Please try again.",
     "searchFailed": "Could not load results",

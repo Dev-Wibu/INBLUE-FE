@@ -120,7 +120,7 @@ export function TopDevJobImportPage() {
     clearResults();
   };
 
-  const searchPage = async (targetPage: number) => {
+  const searchPage = async (targetPage: number, requestedLimit = limit) => {
     setIsSearching(true);
     setSearchError("");
     setSelectedIds(new Set());
@@ -130,7 +130,7 @@ export function TopDevJobImportPage() {
         level: filters.level === "ALL" ? undefined : filters.level,
         jobCategoriesIds: filters.categoryId === "ALL" ? undefined : [Number(filters.categoryId)],
         page: targetPage,
-        limit,
+        limit: requestedLimit,
       });
       setItems(results);
       setPage(targetPage);
@@ -151,7 +151,11 @@ export function TopDevJobImportPage() {
     const nextLimit = Number(value);
     if (nextLimit < 1 || nextLimit > 5) return;
     setLimit(nextLimit);
-    clearResults();
+    if (hasSearched) {
+      void searchPage(1, nextLimit);
+    } else {
+      clearResults();
+    }
   };
 
   const handleSearch = (event: FormEvent) => {
@@ -298,37 +302,51 @@ export function TopDevJobImportPage() {
                 className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:placeholder:text-slate-500"
               />
             </div>
-            <Select
-              value={filters.level}
-              onValueChange={(value) => updateFilter("level", value as Level)}>
-              <SelectTrigger className="h-[46px] w-full rounded-xl border-slate-200/90 bg-slate-50/70 text-[14px] sm:w-40 dark:border-slate-800 dark:bg-slate-950/70">
-                <SelectValue placeholder={t("adminTopDevImport.level", "Cấp độ")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t("common.all", "Tất cả")}</SelectItem>
-                {(["INTERN", "FRESHER", "JUNIOR", "MIDDLE"] as const).map((level) => (
-                  <SelectItem key={level} value={level}>
-                    {level}
+            <div className="w-full sm:w-40">
+              <Label className="mb-1.5 block text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {t("adminTopDevImport.level", "Cấp độ")}
+              </Label>
+              <Select
+                value={filters.level}
+                onValueChange={(value) => updateFilter("level", value as Level)}>
+                <SelectTrigger className="h-[42px] w-full rounded-xl border-slate-200/90 bg-slate-50/70 text-[14px] dark:border-slate-800 dark:bg-slate-950/70">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">
+                    {t("adminTopDevImport.allLevels", "Tất cả cấp độ")}
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.categoryId}
-              onValueChange={(value) => updateFilter("categoryId", value)}
-              disabled={categoriesQuery.isLoading}>
-              <SelectTrigger className="h-[46px] w-full rounded-xl border-slate-200/90 bg-slate-50/70 text-[14px] sm:w-56 dark:border-slate-800 dark:bg-slate-950/70">
-                <SelectValue placeholder={t("adminTopDevImport.category", "Nhóm nghề")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t("common.all", "Tất cả")}</SelectItem>
-                {(categoriesQuery.data ?? []).map((category) => (
-                  <SelectItem key={category.id} value={String(category.id)}>
-                    {category.displayName}
+                  {(["INTERN", "FRESHER", "JUNIOR", "MIDDLE"] as const).map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-full sm:w-56">
+              <Label className="mb-1.5 block text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {t("adminTopDevImport.category", "Nhóm nghề")}
+              </Label>
+              <Select
+                value={filters.categoryId}
+                onValueChange={(value) => updateFilter("categoryId", value)}
+                disabled={categoriesQuery.isLoading}>
+                <SelectTrigger className="h-[42px] w-full rounded-xl border-slate-200/90 bg-slate-50/70 text-[14px] dark:border-slate-800 dark:bg-slate-950/70">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">
+                    {t("adminTopDevImport.allCategories", "Tất cả nhóm nghề")}
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  {(categoriesQuery.data ?? []).map((category) => (
+                    <SelectItem key={category.id} value={String(category.id)}>
+                      {category.displayName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             {categoriesQuery.isError && (
               <Button
                 type="button"
@@ -387,7 +405,7 @@ export function TopDevJobImportPage() {
             </div>
           )}
 
-          {isSearching && (
+          {isSearching && items.length === 0 && (
             <div className="border-y border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
               {[0, 1, 2, 3, 4].map((row) => (
                 <div
@@ -435,7 +453,7 @@ export function TopDevJobImportPage() {
             </Alert>
           )}
 
-          {items.length > 0 && !isSearching && (
+          {items.length > 0 && (
             <>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-4 md:px-6">
                 <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
@@ -456,18 +474,6 @@ export function TopDevJobImportPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Select value={String(limit)} onValueChange={handleLimitChange}>
-                    <SelectTrigger className="h-8 w-[112px] rounded-lg text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[3, 5].map((size) => (
-                        <SelectItem key={size} value={String(size)} className="text-xs">
-                          {size} / {t("adminTopDevImport.pageSize", "dòng")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <Button
                     type="button"
                     variant="outline"
@@ -605,23 +611,44 @@ export function TopDevJobImportPage() {
                 </Table>
               </div>
 
-              <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex items-center gap-2">
+              <div className="flex w-full flex-wrap items-center justify-between gap-2 border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {t("adminTopDevImport.pageResults", "{{count}} kết quả · Trang {{page}}", {
+                    count: items.length,
+                    page,
+                  })}
+                </p>
+                <div className="flex items-center gap-1">
+                  <Select value={String(limit)} onValueChange={handleLimitChange}>
+                    <SelectTrigger className="h-7 w-[104px] text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[3, 5].map((size) => (
+                        <SelectItem key={size} value={String(size)} className="text-xs">
+                          {size} / {t("adminTopDevImport.pageSize", "dòng")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="icon"
+                    className="h-7 w-7"
                     onClick={() => void searchPage(page - 1)}
                     disabled={page === 1 || isSearching || importingIds.size > 0}>
-                    <ChevronLeft />
-                    {t("common.previous", "Trước")}
+                    <ChevronLeft className="h-3.5 w-3.5" />
                   </Button>
+                  <span className="min-w-8 text-center text-xs font-medium text-slate-600 dark:text-slate-300">
+                    {page}
+                  </span>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="icon"
+                    className="h-7 w-7"
                     onClick={() => void searchPage(page + 1)}
                     disabled={items.length < limit || isSearching || importingIds.size > 0}>
-                    {t("common.next", "Sau")}
-                    <ChevronRight />
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
@@ -631,7 +658,7 @@ export function TopDevJobImportPage() {
       </div>
 
       <Sheet open={Boolean(preview)} onOpenChange={(open) => !open && setPreview(null)}>
-        <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-xl">
+        <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-3xl lg:max-w-[58vw]">
           {preview && (
             <>
               <SheetHeader className="border-b border-slate-200 pr-12 dark:border-slate-800">
