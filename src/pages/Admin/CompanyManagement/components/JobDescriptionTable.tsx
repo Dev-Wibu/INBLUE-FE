@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SortButton, type SortDirection } from "@/components/shared";
+import { SortButton, TruncatedScrollText, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -67,10 +67,10 @@ export function JobDescriptionTable({
 
   return (
     <div className="overflow-x-auto">
-      <Table>
+      <Table className="w-full table-fixed">
         <TableHeader>
           <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[64px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               {getSortProps ? (
                 <SortButton {...getSortProps("idSortValue")}>{t("common.id", "ID")}</SortButton>
               ) : (
@@ -78,34 +78,34 @@ export function JobDescriptionTable({
               )}
             </TableHead>
             {showCompany && (
-              <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+              <TableHead className="w-[16%] px-4 font-semibold text-slate-700 dark:text-slate-200">
                 {t("adminCompanymanagement.companyName", "Công ty")}
               </TableHead>
             )}
-            <TableHead className="w-[120px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[9%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {getSortProps ? (
                 <SortButton {...getSortProps("levelSortValue")}>{t("common.level")}</SortButton>
               ) : (
                 t("common.level")
               )}
             </TableHead>
-            <TableHead className="min-w-[180px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[20%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {getSortProps ? (
                 <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
               ) : (
                 t("common.title")
               )}
             </TableHead>
-            <TableHead className="w-[160px] min-w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[13%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.location", "Địa điểm")}
             </TableHead>
-            <TableHead className="w-[140px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[10%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCompanymanagement.rounds", "Các vòng phỏng vấn")}
             </TableHead>
-            <TableHead className="w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[11%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCompanymanagement.totalApplications", "Tổng lượt ứng tuyển")}
             </TableHead>
-            <TableHead className="w-[150px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[10%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {getSortProps ? (
                 <SortButton {...getSortProps("updatedAtSortValue")}>
                   {t("adminCompanymanagement.deadline")}
@@ -114,10 +114,10 @@ export function JobDescriptionTable({
                 t("adminCompanymanagement.deadline")
               )}
             </TableHead>
-            <TableHead className="w-[150px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[10%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.createdAt", "Ngày tạo")}
             </TableHead>
-            <TableHead className="w-[110px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[10%] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
               {getSortProps ? (
                 <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
               ) : (
@@ -152,7 +152,7 @@ export function JobDescriptionTable({
                 className={`group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80 ${
                   isClosed ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
-                <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                <TableCell className="py-3 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <span>#{job.id}</span>
                     <div
@@ -164,7 +164,7 @@ export function JobDescriptionTable({
                   </div>
                 </TableCell>
                 {showCompany && (
-                  <TableCell className="px-4 py-4">
+                  <TableCell className="min-w-0 px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 shrink-0 rounded-[14px] border border-slate-100 dark:border-slate-800">
                         <AvatarImage src={compLogo} alt={compName} className="object-cover" />
@@ -172,22 +172,29 @@ export function JobDescriptionTable({
                           {compName?.charAt(0)?.toUpperCase() || "C"}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                        {compName}
-                      </span>
+                      <TruncatedScrollText
+                        text={compName}
+                        className="text-sm font-semibold text-slate-900 dark:text-white"
+                      />
                     </div>
                   </TableCell>
                 )}
                 <TableCell className="px-4 py-4">
                   {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
                 </TableCell>
-                <TableCell className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-white">
-                  {job.title || "—"}
+                <TableCell className="min-w-0 px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white">
+                  <TruncatedScrollText
+                    text={job.title || "—"}
+                    className="text-sm font-semibold text-slate-900 dark:text-white"
+                  />
                 </TableCell>
-                <TableCell className="px-4 py-4">
+                <TableCell className="min-w-0 px-4 py-3">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
                     <MapPin className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
-                    <span>{locationText}</span>
+                    <TruncatedScrollText
+                      text={locationText}
+                      className="text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    />
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
@@ -218,7 +225,7 @@ export function JobDescriptionTable({
                     <span>{formatDate(createdDate)}</span>
                   </div>
                 </TableCell>
-                <TableCell className="py-4 pr-6 text-center" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="py-3 pr-6 text-center" onClick={(e) => e.stopPropagation()}>
                   {job.status === "OPEN" ? (
                     <button
                       type="button"

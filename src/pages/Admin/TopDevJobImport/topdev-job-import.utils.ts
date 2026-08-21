@@ -1,6 +1,7 @@
 import type { TopDevJobImportRequest, TopDevJobPreview, TopDevSearchParams } from "@/services";
 
-export const TOPDEV_PAGE_SIZE = 5;
+/** Default page size mirrors the admin TopDev search API contract. */
+export const TOPDEV_PAGE_SIZE = 10;
 
 export function toImportPayload(
   job: TopDevJobPreview,

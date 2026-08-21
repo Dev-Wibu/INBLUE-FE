@@ -37,6 +37,7 @@ import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
 import { InterviewTemplateDetailPage } from "../InterviewTemplateManagement/InterviewTemplateDetailPage";
 import { InterviewTemplateManagementPage } from "../InterviewTemplateManagement/InterviewTemplateManagementPage";
+import { JobDescriptionManagementPage } from "../JobDescriptionManagement";
 import { KioskDetailPage, KioskManagementPage } from "../KioskManagement";
 import { MentorManagementPage } from "../MentorManagement";
 import { NotificationManagementPage } from "../NotificationManagement";
@@ -86,6 +87,12 @@ const getSidebarMenuGroups = (t: TranslateFn): SidebarMenuGroup[] => [
         icon: Building2,
         label: t("common.company"),
         color: "text-indigo-600 dark:text-indigo-500",
+      },
+      {
+        type: "job-descriptions",
+        icon: FileCheck2,
+        label: t("adminJobDescriptionManagement.sidebarLabel", "Quản lý JD"),
+        color: "text-cyan-600 dark:text-cyan-500",
       },
       {
         type: "kiosk-management",
@@ -382,6 +389,7 @@ export function AdminDashboardPage() {
             <Route path="posts" element={<PostManagementPage />} />
             <Route path="companies" element={<CompanyManagementPage />} />
             <Route path="companies/:companyId" element={<CompanyManagementPage />} />
+            <Route path="job-descriptions" element={<JobDescriptionManagementPage />} />
             <Route path="applications" element={<AdminApplicationManagementPage />} />
             <Route path="topdev-job-import" element={<TopDevJobImportPage />} />
             <Route

@@ -8181,6 +8181,19 @@
   "homepageFooter": {
     "linksCompanies": "Companies"
   },
+  "adminJobDescriptionManagement": {
+    "sidebarLabel": "JD management",
+    "title": "JD management",
+    "description": "Manage system job descriptions and create new openings.",
+    "total": "Total JDs",
+    "systemTab": "System JDs",
+    "createTab": "Create JD",
+    "create": "Create JD",
+    "manual": "Create manually",
+    "import": "Import JD",
+    "createPrompt": "Choose how to create a JD",
+    "createPromptDescription": "Create manually or import from a recruitment source."
+  },
   "adminTopDevImport": {
     "sidebarLabel": "Import JD",
     "pageTitle": "Import JD",
@@ -8220,6 +8233,9 @@
     "page": "Page {{page}}",
     "pageSize": "Rows",
     "jobDetail": "Job details",
+    "jobList": "Job listings",
+    "detailHint": "Viewing job details",
+    "selectJobHint": "Select a job to view details",
     "location": "Location",
     "salary": "Salary",
     "notProvided": "Not provided",

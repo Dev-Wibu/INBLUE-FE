@@ -8181,6 +8181,19 @@
   "homepageFooter": {
     "linksCompanies": "Công ty"
   },
+  "adminJobDescriptionManagement": {
+    "sidebarLabel": "Quản lý JD",
+    "title": "Quản lý JD",
+    "description": "Quản lý các vị trí tuyển dụng trong hệ thống và tạo JD mới.",
+    "total": "Tổng JD",
+    "systemTab": "JD hệ thống",
+    "createTab": "Tạo JD",
+    "create": "Tạo JD",
+    "manual": "Tạo thủ công",
+    "import": "Import JD",
+    "createPrompt": "Chọn cách tạo JD",
+    "createPromptDescription": "Tạo thủ công hoặc import từ nguồn tuyển dụng."
+  },
   "adminTopDevImport": {
     "sidebarLabel": "Import JD",
     "pageTitle": "Import JD",
@@ -8220,6 +8233,9 @@
     "page": "Trang {{page}}",
     "pageSize": "Số dòng",
     "jobDetail": "Chi tiết JD",
+    "jobList": "Danh sách việc làm",
+    "detailHint": "Đang xem chi tiết JD",
+    "selectJobHint": "Chọn một JD để xem chi tiết",
     "location": "Địa điểm",
     "salary": "Mức lương",
     "notProvided": "Chưa cập nhật",

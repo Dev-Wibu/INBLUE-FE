@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { TruncatedScrollText } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,31 +51,31 @@ export function CompanyTable({
 
   return (
     <div className="overflow-x-auto">
-      <Table>
+      <Table className="w-full table-fixed">
         <TableHeader>
           <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[64px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.id", "ID")}
             </TableHead>
-            <TableHead className="min-w-[200px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[22%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCompanymanagement.companyName", "Tên công ty")}
             </TableHead>
-            <TableHead className="w-[160px] min-w-[160px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[14%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.location", "Địa điểm")}
             </TableHead>
-            <TableHead className="min-w-[220px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[23%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("common.description", "Mô tả")}
             </TableHead>
-            <TableHead className="w-[110px] min-w-[110px] text-center font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[9%] text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("adminCompanymanagement.jdCount", "Số Vị Trí")}
             </TableHead>
-            <TableHead className="w-[160px] min-w-[160px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[12%] px-4 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
             </TableHead>
-            <TableHead className="w-[120px] min-w-[120px] text-center font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[11%] text-center font-semibold text-slate-700 dark:text-slate-200">
               {t("common.status", "Trạng thái")}
             </TableHead>
-            <TableHead className="w-[100px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="w-[11%] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
               {t("common.actions", "Thao tác")}
             </TableHead>
           </TableRow>
@@ -95,7 +96,7 @@ export function CompanyTable({
                 className={`group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80 ${
                   isInactive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
-                <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                <TableCell className="py-3 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <span>#{company.id}</span>
                     <div
@@ -106,7 +107,7 @@ export function CompanyTable({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-4">
+                <TableCell className="min-w-0 px-4 py-3">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10 shrink-0 rounded-[14px] border border-slate-100 dark:border-slate-800">
                       <AvatarImage
@@ -118,31 +119,36 @@ export function CompanyTable({
                         {company.name?.charAt(0)?.toUpperCase() || "C"}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {company.name}
-                    </span>
+                    <TruncatedScrollText
+                      text={company.name || "—"}
+                      className="text-sm font-semibold text-slate-900 dark:text-white"
+                    />
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-4">
+                <TableCell className="min-w-0 px-4 py-3">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
                     <MapPin className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
-                    <span>{locationText}</span>
+                    <TruncatedScrollText
+                      text={locationText}
+                      className="text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    />
                   </div>
                 </TableCell>
-                <TableCell className="max-w-xs px-4 py-4">
-                  <p className="line-clamp-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                    {company.description || "—"}
-                  </p>
+                <TableCell className="min-w-0 px-4 py-3">
+                  <TruncatedScrollText
+                    text={company.description || "—"}
+                    className="text-xs font-medium text-slate-600 dark:text-slate-300"
+                  />
                 </TableCell>
-                <TableCell className="px-4 py-4 text-center">
+                <TableCell className="px-4 py-3 text-center">
                   <span className="inline-flex items-center justify-center rounded-md border border-slate-200/80 bg-slate-100/90 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-800 dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-200">
                     {company.jobDescriptions?.length || 0}
                   </span>
                 </TableCell>
-                <TableCell className="px-5 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                <TableCell className="px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-300">
                   {joinedDateRaw ? formatDate(joinedDateRaw as string) : "—"}
                 </TableCell>
-                <TableCell className="py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="py-3 text-center" onClick={(e) => e.stopPropagation()}>
                   {company.status === "ACTIVE" ? (
                     <button
                       type="button"
@@ -166,7 +172,7 @@ export function CompanyTable({
                     </button>
                   )}
                 </TableCell>
-                <TableCell className="py-4 pr-6 text-right" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="py-3 pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-end">
                     <Button
                       variant="outline"
