@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { plainText, splitSkills, toImportPayload } from "./topdev-job-import.utils";
+import {
+  plainText,
+  resolveDisplayedLevel,
+  splitSkills,
+  toImportPayload,
+} from "./topdev-job-import.utils";
 
 describe("TopDev import utilities", () => {
   it("removes preview-only fields from the import payload", () => {
@@ -45,6 +50,30 @@ describe("TopDev import utilities", () => {
     );
 
     expect(payload.requestedLevel).toBe("JUNIOR");
+  });
+
+  it("shows the persisted level for an imported job instead of the current search level", () => {
+    const importedPreview = {
+      title: "Sales Manager",
+      companyName: "Example",
+      sourceJobId: "2123568",
+      isExist: true,
+      requestedLevel: "MIDDLE" as const,
+    };
+
+    expect(resolveDisplayedLevel(importedPreview, "INTERN")).toBe("INTERN");
+    expect(resolveDisplayedLevel(importedPreview)).toBeUndefined();
+  });
+
+  it("shows the requested level as the future import level for an available job", () => {
+    expect(
+      resolveDisplayedLevel({
+        title: "Backend internship",
+        companyName: "Example",
+        isExist: false,
+        requestedLevel: "INTERN",
+      })
+    ).toBe("INTERN");
   });
 
   it("normalizes skills from common separators", () => {

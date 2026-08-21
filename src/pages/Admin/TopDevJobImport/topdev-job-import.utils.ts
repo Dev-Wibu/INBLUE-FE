@@ -24,6 +24,13 @@ export function toImportPayload(
   };
 }
 
+export function resolveDisplayedLevel(
+  job: TopDevJobPreview,
+  persistedLevel?: string
+): string | undefined {
+  return job.isExist ? persistedLevel : job.requestedLevel;
+}
+
 export function splitSkills(skills?: string): string[] {
   if (!skills) return [];
   return skills

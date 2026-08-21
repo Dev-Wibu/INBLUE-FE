@@ -28,7 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { AppApiError } from "@/lib/error-normalizer";
-import { topDevJobImportManager, type TopDevJobPreview } from "@/services";
+import { jobDescriptionManager, topDevJobImportManager, type TopDevJobPreview } from "@/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -53,6 +53,7 @@ import { toast } from "sonner";
 
 import {
   plainText,
+  resolveDisplayedLevel,
   splitSkills,
   toImportPayload,
   TOPDEV_PAGE_SIZE,
@@ -109,6 +110,27 @@ export function TopDevJobImportPage() {
     staleTime: 30 * 60 * 1000,
     retry: 1,
   });
+
+  const existingJdQuery = useQuery({
+    queryKey: ["admin", "job-import", "existing-jd", preview?.existingJobDescriptionId],
+    queryFn: async () => {
+      if (!preview?.existingJobDescriptionId) return null;
+      const response = await jobDescriptionManager.getById(preview.existingJobDescriptionId);
+      return response.success && response.data ? response.data : null;
+    },
+    enabled: Boolean(preview?.isExist && preview.existingJobDescriptionId),
+    staleTime: 30_000,
+  });
+
+  const previewLevelLabel = preview?.isExist
+    ? t("adminTopDevImport.savedLevel", "Level đã lưu")
+    : t("adminTopDevImport.levelOnImport", "Level khi import");
+  const previewLevelValue =
+    preview?.isExist && existingJdQuery.isLoading
+      ? t("common.loading", "Đang tải...")
+      : displayLevel(
+          preview ? resolveDisplayedLevel(preview, existingJdQuery.data?.level) : undefined
+        );
 
   const availableItems = useMemo(() => items.filter((item) => !item.isExist), [items]);
   const availableIds = useMemo(() => availableItems.map(jobKey).filter(Boolean), [availableItems]);
@@ -217,6 +239,11 @@ export function TopDevJobImportPage() {
               ? { ...item, isExist: true, existingJobDescriptionId: result.jobDescriptionId }
               : item
           )
+        );
+        setPreview((current) =>
+          current && jobKey(current) === id
+            ? { ...current, isExist: true, existingJobDescriptionId: result.jobDescriptionId }
+            : current
         );
         setSelectedIds((current) => {
           const next = new Set(current);
@@ -734,8 +761,8 @@ export function TopDevJobImportPage() {
                       ],
                       [
                         Layers3,
-                        t("adminTopDevImport.level"),
-                        displayLevel(preview.requestedLevel),
+                        previewLevelLabel,
+                        previewLevelValue,
                         "text-violet-600 bg-violet-50 dark:bg-violet-950 dark:text-violet-300",
                       ],
                       [
