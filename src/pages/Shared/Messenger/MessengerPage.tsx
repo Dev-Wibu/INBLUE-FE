@@ -1072,20 +1072,20 @@ export function MessengerPage() {
   const shouldShowSidebar = !isMobile || !selectedContact;
   const shouldShowConversation = !isMobile || !!selectedContact;
   return (
-    <div className="h-full w-full overflow-hidden bg-[#f7f9fc] text-slate-900 dark:bg-[#0f1419] dark:text-slate-100">
+    <div className="h-full w-full overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <div
         className={cn(
           "grid h-full w-full overflow-hidden",
           shouldShowSidebar && shouldShowConversation
-            ? "md:grid-cols-[360px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)]"
+            ? "md:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]"
             : "grid-cols-1"
         )}>
         {shouldShowSidebar && (
-          <aside className="flex min-h-0 flex-col bg-white/90 text-slate-900 shadow-[inset_-1px_0_0_rgba(15,23,42,0.06)] backdrop-blur-sm dark:bg-[#161b22]/90 dark:text-slate-100 dark:shadow-[inset_-1px_0_0_rgba(255,255,255,0.06)]">
-            <div className="border-b border-slate-200/70 bg-white/60 px-5 py-5 dark:border-white/[0.06] dark:bg-[#161b22]/70">
-              <div className="mb-4 flex items-start justify-between gap-3">
+          <aside className="flex min-h-0 flex-col border-r border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+            <div className="border-b border-slate-200 px-4 py-4 dark:border-slate-800">
+              <div className="mb-3.5 flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
                     {showMentorList ? t("sharedMessenger.findMentors") : t("common.messages")}
                   </h2>
                   <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -1126,15 +1126,15 @@ export function MessengerPage() {
                       ? t("sharedMessenger.findMentorByName")
                       : t("sharedMessenger.searchContact")
                   }
-                  className="h-10 rounded-xl border-slate-200/70 bg-slate-100/80 pl-10 text-sm text-slate-900 shadow-inner shadow-slate-900/[0.02] transition-colors placeholder:text-slate-500 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/20 dark:border-white/[0.08] dark:bg-white/[0.045] dark:text-slate-100 dark:placeholder:text-slate-400"
+                  className="h-10 rounded-lg border-slate-200 bg-slate-50 pl-10 text-sm text-slate-900 shadow-none transition-colors placeholder:text-slate-500 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
                   value={contactSearchQuery}
                   onChange={(event) => setContactSearchQuery(event.target.value)}
                 />
               </div>
             </div>
 
-            <div className="custom-scrollbar flex-1 overflow-y-auto p-3.5">
-              <div className="space-y-1.5">
+            <div className="custom-scrollbar flex-1 overflow-y-auto px-2.5 py-3">
+              <div className="space-y-1">
                 {showMentorList ? (
                   loadingMentors ? (
                     Array.from({
@@ -1180,14 +1180,14 @@ export function MessengerPage() {
                           setShowMentorList(false);
                           setContactSearchQuery("");
                         }}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50/40 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-800/70 dark:hover:bg-indigo-950/20">
+                        className="w-full rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-11 w-11 rounded-xl border border-white shadow-sm dark:border-slate-700">
+                          <Avatar className="h-11 w-11 rounded-full ring-1 ring-slate-200 dark:ring-slate-700">
                             <AvatarImage
                               src={mentor.avatarUrl || ""}
                               alt={mentor.name || t("common.mentor")}
                             />
-                            <AvatarFallback className="rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                            <AvatarFallback className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
                               {mentor.name?.charAt(0) ?? "M"}
                             </AvatarFallback>
                           </Avatar>
@@ -1253,21 +1253,21 @@ export function MessengerPage() {
                         key={contact.id}
                         onClick={() => openConversation(contact)}
                         className={cn(
-                          "group relative w-full rounded-xl border px-3 py-3 text-left transition-colors",
+                          "group w-full rounded-lg px-3 py-2.5 text-left transition-colors",
                           isActive
-                            ? "border-indigo-200/70 bg-indigo-50/65 shadow-sm before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-indigo-500 dark:border-indigo-400/30 dark:bg-indigo-400/[0.10]"
-                            : "border-transparent bg-transparent hover:border-slate-200/70 hover:bg-slate-50/80 dark:hover:border-white/[0.06] dark:hover:bg-white/[0.045]"
+                            ? "bg-indigo-50 text-indigo-950 dark:bg-slate-800 dark:text-white"
+                            : "bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800/70"
                         )}>
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <Avatar className="h-11 w-11 rounded-xl border border-white shadow-sm dark:border-slate-700">
+                            <Avatar className="h-11 w-11 rounded-full ring-1 ring-slate-200 dark:ring-slate-700">
                               <AvatarImage src={contact.avatarUrl || ""} alt={contact.name} />
-                              <AvatarFallback className="rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                              <AvatarFallback className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
                                 {contact.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             <span
-                              className="absolute -right-1 -bottom-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-slate-300 dark:border-slate-900 dark:bg-slate-600"
+                              className="absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white bg-slate-300 dark:border-slate-900 dark:bg-slate-600"
                               title={t("sharedMessenger.thereIsNoRealTime")}
                             />
                           </div>
@@ -1307,12 +1307,12 @@ export function MessengerPage() {
 
         {shouldShowConversation && (
           <section
-            className="relative flex min-h-0 flex-col bg-[#f7f9fc] text-slate-900 dark:bg-[#0f1419] dark:text-slate-100"
+            className="relative flex min-h-0 flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100"
             onTouchStart={handleConversationTouchStart}
             onTouchEnd={handleConversationTouchEnd}>
             {selectedContact ? (
               <>
-                <div className="border-b border-slate-200/70 bg-white/80 px-4 py-3.5 shadow-sm shadow-slate-900/[0.03] backdrop-blur-sm md:px-6 dark:border-white/[0.06] dark:bg-[#161b22]/85 dark:shadow-black/10">
+                <div className="flex min-h-16 items-center border-b border-slate-200 bg-white px-4 py-2.5 md:px-6 dark:border-slate-800 dark:bg-slate-900">
                   <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2.5 md:gap-3">
                       {isMobile && (
@@ -1325,12 +1325,12 @@ export function MessengerPage() {
                         </Button>
                       )}
 
-                      <Avatar className="h-10 w-10 rounded-xl border border-white shadow-sm dark:border-slate-700">
+                      <Avatar className="h-10 w-10 rounded-full ring-1 ring-slate-200 dark:ring-slate-700">
                         <AvatarImage
                           src={selectedContact.avatarUrl || ""}
                           alt={selectedContact.name}
                         />
-                        <AvatarFallback className="rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                        <AvatarFallback className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
                           {selectedContact.name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
@@ -1344,10 +1344,6 @@ export function MessengerPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 md:gap-2">
-                      <p className="hidden text-[11px] text-slate-400 xl:block">
-                        {t("sharedMessenger.ctrlKSearchCtrlShift")}
-                      </p>
-
                       {pendingOutboxCount > 0 && (
                         <Badge className="hidden h-7 items-center gap-1 rounded-full bg-amber-100 px-2.5 text-[11px] text-amber-800 md:inline-flex dark:bg-amber-900/40 dark:text-amber-200">
                           <Sparkles className="h-3.5 w-3.5" />
@@ -1378,7 +1374,7 @@ export function MessengerPage() {
                         variant="ghost"
                         size="icon"
                         className={cn(
-                          "h-9 w-9 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400",
+                          "h-9 w-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400",
                           isMessageSearchOpen &&
                             "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
                         )}
@@ -1458,9 +1454,20 @@ export function MessengerPage() {
                         </div>
                       </>
                     ) : messages.length === 0 ? (
-                      <div className="flex min-h-[280px] flex-col items-center justify-center px-8 text-center">
-                        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[22px] bg-indigo-500/10 text-indigo-600 ring-8 ring-indigo-500/[0.04] dark:text-indigo-300">
-                          <MessageSquare className="h-8 w-8" />
+                      <div className="flex min-h-[320px] flex-col items-center justify-center px-8 text-center">
+                        <div className="relative mb-5">
+                          <Avatar className="h-20 w-20 rounded-full ring-4 ring-white dark:ring-slate-900">
+                            <AvatarImage
+                              src={selectedContact.avatarUrl || ""}
+                              alt={selectedContact.name}
+                            />
+                            <AvatarFallback className="rounded-full bg-slate-200 text-xl font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                              {selectedContact.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="absolute -right-1 -bottom-1 flex h-8 w-8 items-center justify-center rounded-full border-4 border-slate-50 bg-indigo-600 text-white dark:border-slate-950 dark:bg-indigo-500">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                          </span>
                         </div>
                         <p className="text-[15px] font-semibold text-slate-900 dark:text-white">
                           {t("sharedMessenger.startAConversation")}
@@ -1497,8 +1504,10 @@ export function MessengerPage() {
                         {timelineItems.map((timelineItem) => {
                           if (timelineItem.type === "day") {
                             return (
-                              <div key={timelineItem.key} className="my-1 flex justify-center">
-                                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                              <div
+                                key={timelineItem.key}
+                                className="my-2 flex items-center gap-3 before:h-px before:flex-1 before:bg-slate-200 after:h-px after:flex-1 after:bg-slate-200 dark:before:bg-slate-800 dark:after:bg-slate-800">
+                                <span className="bg-slate-50 px-3 text-[11px] font-medium text-slate-500 dark:bg-slate-950 dark:text-slate-400">
                                   {timelineItem.label}
                                 </span>
                               </div>
@@ -1531,14 +1540,10 @@ export function MessengerPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-slate-200/70 bg-white/80 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-24px_rgba(15,23,42,0.4)] backdrop-blur-sm md:px-6 md:py-4 dark:border-white/[0.06] dark:bg-[#161b22]/85 dark:shadow-black/20">
-                  <div className="mx-auto mb-2 flex w-full max-w-5xl items-center justify-between text-[11px]">
-                    <span className="text-muted-foreground">
-                      {t("sharedMessenger.messagesAreAutomaticallySavedAs")}
-                    </span>
-
+                <div className="border-t border-slate-200 bg-white px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-6 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="mx-auto flex w-full max-w-4xl justify-end text-[11px]">
                     {messageInput.trim().length > 0 && draftLastSavedAt && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                      <span className="mb-1.5 text-slate-500 dark:text-slate-400">
                         {t("sharedMessenger.savedAt")} {draftLastSavedAt}
                       </span>
                     )}
@@ -1550,17 +1555,13 @@ export function MessengerPage() {
                     onSend={handleSendMessage}
                     onApplyQuickCommand={handleApplyQuickCommand}
                     isMobile={isMobile}
-                    placeholder={
-                      isMobile
-                        ? t("sharedMessenger.enterMessageContent")
-                        : t("sharedMessenger.enterMessageContentEnterSend")
-                    }
+                    placeholder={t("sharedMessenger.enterMessageContent")}
                   />
                 </div>
               </>
             ) : (
               <div className="hidden h-full flex-col items-center justify-center px-8 text-center md:flex">
-                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] bg-indigo-500/10 text-indigo-600 ring-8 ring-indigo-500/[0.04] dark:text-indigo-300">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
                   <MessageSquare className="h-8 w-8" />
                 </div>
                 <h3 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">

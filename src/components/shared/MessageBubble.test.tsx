@@ -138,8 +138,7 @@ describe("MessageBubble", () => {
     expect(screen.getByText("Tin nhan da gui")).toHaveClass(
       "bg-indigo-600",
       "text-white",
-      "dark:bg-indigo-500",
-      "shadow-indigo-600/20"
+      "dark:bg-indigo-500"
     );
 
     rerender(
@@ -152,9 +151,9 @@ describe("MessageBubble", () => {
     );
 
     expect(screen.getByText("Tin nhan da nhan")).toHaveClass(
-      "border-slate-200/80",
-      "bg-white/90",
-      "dark:bg-[#1c2128]"
+      "bg-white",
+      "shadow-sm",
+      "dark:bg-slate-800"
     );
   });
 });
