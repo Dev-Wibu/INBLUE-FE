@@ -138,6 +138,7 @@ export function TopDevJobImportPage() {
     setHasSearched(false);
     setSearchError("");
     setSelectedIds(new Set());
+    setPreview(null);
   };
 
   const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
@@ -158,12 +159,12 @@ export function TopDevJobImportPage() {
         limit: requestedLimit,
       });
       const requestedLevel = filters.level === "ALL" ? undefined : filters.level;
-      setItems(
-        results.map((result) => ({
-          ...result,
-          requestedLevel: result.requestedLevel ?? requestedLevel,
-        }))
-      );
+      const mappedResults = results.map((result) => ({
+        ...result,
+        requestedLevel: result.requestedLevel ?? requestedLevel,
+      }));
+      setItems(mappedResults);
+      setPreview(mappedResults[0] ?? null);
       setPage(targetPage);
       setHasSearched(true);
     } catch (error) {
@@ -501,8 +502,8 @@ export function TopDevJobImportPage() {
                 </div>
               </div>
 
-              <div className="grid gap-0 bg-slate-50/70 lg:grid-cols-[minmax(360px,0.88fr)_minmax(520px,1.45fr)] dark:bg-slate-950/60">
-                <div className="space-y-3 border-r border-slate-200/80 p-3 sm:p-4 dark:border-slate-800">
+              <div className="grid gap-0 bg-slate-50/70 lg:h-[calc(100vh-390px)] lg:min-h-[560px] lg:grid-cols-[minmax(360px,0.88fr)_minmax(520px,1.45fr)] dark:bg-slate-950/60">
+                <div className="min-h-0 space-y-3 border-r border-slate-200/80 p-3 sm:p-4 lg:overflow-y-auto lg:pr-3 dark:border-slate-800">
                   <div className="flex items-center justify-between px-1 text-xs text-slate-500 dark:text-slate-400">
                     <span>{t("adminTopDevImport.jobList", "Danh sách việc làm")}</span>
                     <span>
@@ -626,10 +627,10 @@ export function TopDevJobImportPage() {
                     );
                   })}
                 </div>
-                <div className="hidden min-h-[620px] bg-white p-5 lg:block dark:bg-slate-900">
+                <div className="hidden min-h-0 bg-white p-5 lg:block dark:bg-slate-900">
                   {preview ? (
-                    <div className="h-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-                      <div className="border-b border-slate-200 pb-4 dark:border-slate-800">
+                    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                      <div className="flex-none border-b border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
                         <h3 className="text-xl font-bold text-[#3158b8] dark:text-blue-300">
                           {preview.title}
                         </h3>
@@ -653,7 +654,7 @@ export function TopDevJobImportPage() {
                           ))}
                         </div>
                       </div>
-                      <div className="space-y-4 pt-4">
+                      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5 pt-4">
                         {[
                           [
                             t("adminTopDevImport.description", "Mô tả công việc"),
