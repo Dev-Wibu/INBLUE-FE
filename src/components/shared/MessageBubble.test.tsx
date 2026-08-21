@@ -151,8 +151,8 @@ describe("MessageBubble", () => {
     );
 
     expect(screen.getByText("Tin nhan da nhan")).toHaveClass(
-      "border-slate-200",
       "bg-white",
+      "shadow-sm",
       "dark:bg-slate-800"
     );
   });

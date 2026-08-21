@@ -87,11 +87,7 @@ describe("ChatComposer", () => {
       />
     );
 
-    expect(screen.getByRole("textbox")).toHaveClass(
-      "border-slate-200",
-      "bg-slate-50",
-      "dark:bg-slate-800"
-    );
+    expect(screen.getByRole("textbox")).toHaveClass("border-0", "bg-transparent", "focus:ring-0");
     expect(screen.getByRole("button", { name: t("compShared.sendAMessage") })).toHaveClass(
       "bg-indigo-600",
       "dark:bg-indigo-500"

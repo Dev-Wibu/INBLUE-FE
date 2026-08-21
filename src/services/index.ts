@@ -40,5 +40,6 @@ export * from "./question.manager";
 export * from "./quiz-set.manager";
 export * from "./round.manager";
 export * from "./session.manager";
+export * from "./topdev-job-import.manager";
 export * from "./user.manager";
 export * from "./users-admin.manager";
