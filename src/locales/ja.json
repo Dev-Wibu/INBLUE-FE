@@ -8221,6 +8221,8 @@
     "jobDetail": "JD詳細",
     "location": "勤務地",
     "salary": "給与",
+    "notProvided": "未入力",
+    "unspecifiedLevel": "未指定",
     "description": "仕事内容",
     "requirements": "応募条件",
     "benefits": "福利厚生",

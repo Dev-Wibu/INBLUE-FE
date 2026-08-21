@@ -8222,6 +8222,8 @@
     "jobDetail": "Job details",
     "location": "Location",
     "salary": "Salary",
+    "notProvided": "Not provided",
+    "unspecifiedLevel": "Not specified",
     "description": "Job description",
     "requirements": "Requirements",
     "benefits": "Benefits",

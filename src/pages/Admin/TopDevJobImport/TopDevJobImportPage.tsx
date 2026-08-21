@@ -76,6 +76,10 @@ function formatDate(date?: string, locale = "vi-VN") {
   return Number.isNaN(parsed.getTime()) ? date : new Intl.DateTimeFormat(locale).format(parsed);
 }
 
+function isNegotiableSalary(value?: string) {
+  return /^(negotiable|not provided|not specified|n\/a|na)$/i.test(value?.trim() ?? "");
+}
+
 export function TopDevJobImportPage() {
   const { t, i18n } = useTranslation();
   const [filters, setFilters] = useState<Filters>(INITIAL_FILTERS);
@@ -93,6 +97,10 @@ export function TopDevJobImportPage() {
     success: number;
     failed: number;
   } | null>(null);
+
+  const displaySalary = (salary?: string) =>
+    !salary?.trim() || isNegotiableSalary(salary) ? t("adminTopDevImport.negotiable") : salary;
+  const displayLevel = (level?: string) => level?.trim() || t("adminTopDevImport.unspecifiedLevel");
 
   const categoriesQuery = useQuery({
     queryKey: ["topdev-job-categories"],
@@ -575,10 +583,10 @@ export function TopDevJobImportPage() {
                             <div className="space-y-1 text-xs">
                               <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300">
                                 <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                                {job.location || "—"}
+                                {job.location || t("adminTopDevImport.notProvided")}
                               </span>
                               <span className="font-medium text-emerald-700 dark:text-emerald-400">
-                                {job.salary || t("adminTopDevImport.negotiable", "Thỏa thuận")}
+                                {displaySalary(job.salary)}
                               </span>
                             </div>
                           </TableCell>
@@ -701,20 +709,20 @@ export function TopDevJobImportPage() {
                     [
                       [
                         MapPin,
-                        t("adminTopDevImport.location", "Địa điểm"),
-                        preview.location || "—",
+                        t("adminTopDevImport.location"),
+                        preview.location || t("adminTopDevImport.notProvided"),
                         "text-indigo-600 bg-indigo-50 dark:bg-indigo-950 dark:text-indigo-300",
                       ],
                       [
                         CircleDollarSign,
-                        t("adminTopDevImport.salary", "Mức lương"),
-                        preview.salary || t("adminTopDevImport.negotiable", "Thỏa thuận"),
+                        t("adminTopDevImport.salary"),
+                        displaySalary(preview.salary),
                         "text-emerald-600 bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-300",
                       ],
                       [
                         Layers3,
-                        t("adminTopDevImport.level", "Cấp độ"),
-                        preview.requestedLevel || t("common.unspecified", "Chưa xác định"),
+                        t("adminTopDevImport.level"),
+                        displayLevel(preview.requestedLevel),
                         "text-violet-600 bg-violet-50 dark:bg-violet-950 dark:text-violet-300",
                       ],
                       [
