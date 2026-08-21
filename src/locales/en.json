@@ -8192,10 +8192,10 @@
     "category": "Job category",
     "allCategories": "All job categories",
     "search": "Search jobs",
-    "searchError": "Could not search TopDev jobs. Please try again.",
+    "searchError": "Could not search the job source. Please try again.",
     "searchFailed": "Could not load results",
     "initialTitle": "Find suitable jobs to import",
-    "initialDescription": "Use the filters above to fetch the latest TopDev jobs and preview them before importing.",
+    "initialDescription": "Use the filters above to fetch the latest jobs and preview them before importing.",
     "emptyTitle": "No matching jobs found",
     "emptyDescription": "Try a broader keyword or remove some filters.",
     "pageResults": "{{count}} results on page {{page}}",
@@ -8219,10 +8219,13 @@
     "available": "Available",
     "page": "Page {{page}}",
     "pageSize": "Rows",
+    "jobDetail": "Job details",
+    "location": "Location",
+    "salary": "Salary",
     "description": "Job description",
     "requirements": "Requirements",
     "benefits": "Benefits",
     "companyDescription": "About the company",
-    "openSource": "Open original job on TopDev"
+    "openSource": "Open source job"
   }
 }

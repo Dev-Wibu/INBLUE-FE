@@ -8192,10 +8192,10 @@
     "category": "Nhóm nghề",
     "allCategories": "Tất cả nhóm nghề",
     "search": "Tìm JD",
-    "searchError": "Không thể tìm JD từ TopDev. Vui lòng thử lại.",
+    "searchError": "Không thể tìm JD từ nguồn dữ liệu. Vui lòng thử lại.",
     "searchFailed": "Không tải được kết quả",
     "initialTitle": "Tìm JD phù hợp để nhập nhanh",
-    "initialDescription": "Dùng bộ lọc phía trên để lấy dữ liệu mới nhất từ TopDev và xem trước trước khi import.",
+    "initialDescription": "Dùng bộ lọc phía trên để lấy dữ liệu mới nhất và xem trước trước khi import.",
     "emptyTitle": "Không tìm thấy JD phù hợp",
     "emptyDescription": "Hãy thử từ khóa rộng hơn hoặc bỏ bớt bộ lọc.",
     "pageResults": "{{count}} kết quả ở trang {{page}}",
@@ -8219,10 +8219,13 @@
     "available": "Khả dụng",
     "page": "Trang {{page}}",
     "pageSize": "Số dòng",
+    "jobDetail": "Chi tiết JD",
+    "location": "Địa điểm",
+    "salary": "Mức lương",
     "description": "Mô tả công việc",
     "requirements": "Yêu cầu",
     "benefits": "Quyền lợi",
     "companyDescription": "Về công ty",
-    "openSource": "Mở JD gốc trên TopDev"
+    "openSource": "Mở JD nguồn"
   }
 }

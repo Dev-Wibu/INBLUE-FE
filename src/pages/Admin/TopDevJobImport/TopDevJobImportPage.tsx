@@ -34,10 +34,14 @@ import {
   AlertCircle,
   ArrowDownToLine,
   BriefcaseBusiness,
+  Building2,
+  CalendarDays,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  CircleDollarSign,
   ExternalLink,
+  Layers3,
   Loader2,
   MapPin,
   RefreshCw,
@@ -285,31 +289,51 @@ export function TopDevJobImportPage() {
               </Badge>
             )}
           </div>
-          <form onSubmit={handleSearch} className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <div className="relative min-w-0 flex-1">
-              <Label htmlFor="topdev-keyword" className="sr-only">
-                {t("adminTopDevImport.keyword", "Từ khóa")}
-              </Label>
-              <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
-              <Input
-                id="topdev-keyword"
-                value={filters.keyword}
-                onChange={(event) => updateFilter("keyword", event.target.value)}
-                placeholder={t(
-                  "adminTopDevImport.keywordPlaceholder",
-                  "Ví dụ: Java, React, DevOps"
-                )}
-                className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:placeholder:text-slate-500"
-              />
+          <form onSubmit={handleSearch} className="mt-6">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="relative min-w-0 flex-1">
+                <Label htmlFor="topdev-keyword" className="sr-only">
+                  {t("adminTopDevImport.keyword", "Từ khóa")}
+                </Label>
+                <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
+                <Input
+                  id="topdev-keyword"
+                  value={filters.keyword}
+                  onChange={(event) => updateFilter("keyword", event.target.value)}
+                  placeholder={t(
+                    "adminTopDevImport.keywordPlaceholder",
+                    "Ví dụ: Java, React, DevOps"
+                  )}
+                  className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70 dark:placeholder:text-slate-500"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={isSearching}
+                className="h-[46px] shrink-0 rounded-xl border border-slate-200/90 bg-white px-6 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                {isSearching ? <Loader2 className="animate-spin" /> : <Search />}
+                {t("adminTopDevImport.search", "Tìm JD")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-[46px] w-[46px] shrink-0 rounded-xl border-slate-200/90 shadow-2xs dark:border-slate-800"
+                onClick={() => void searchPage(1)}
+                disabled={isSearching}
+                title={t("common.refresh", "Làm mới")}>
+                <RefreshCw className={isSearching ? "animate-spin" : ""} />
+              </Button>
             </div>
-            <div className="w-full sm:w-40">
-              <Label className="mb-1.5 block text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {t("adminTopDevImport.level", "Cấp độ")}
-              </Label>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <span className="text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                {t("adminTopDevImport.level", "Cấp độ")}:
+              </span>
               <Select
                 value={filters.level}
                 onValueChange={(value) => updateFilter("level", value as Level)}>
-                <SelectTrigger className="h-[42px] w-full rounded-xl border-slate-200/90 bg-slate-50/70 text-[14px] dark:border-slate-800 dark:bg-slate-950/70">
+                <SelectTrigger className="h-9 w-44 rounded-xl border-slate-200 bg-white text-[13.5px] shadow-xs dark:border-slate-800 dark:bg-slate-900">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -323,16 +347,16 @@ export function TopDevJobImportPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="w-full sm:w-56">
-              <Label className="mb-1.5 block text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {t("adminTopDevImport.category", "Nhóm nghề")}
-              </Label>
+
+              <div className="hidden h-6 w-px bg-slate-200 sm:block dark:bg-slate-800" />
+              <span className="text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                {t("adminTopDevImport.category", "Nhóm nghề")}:
+              </span>
               <Select
                 value={filters.categoryId}
                 onValueChange={(value) => updateFilter("categoryId", value)}
                 disabled={categoriesQuery.isLoading}>
-                <SelectTrigger className="h-[42px] w-full rounded-xl border-slate-200/90 bg-slate-50/70 text-[14px] dark:border-slate-800 dark:bg-slate-950/70">
+                <SelectTrigger className="h-9 w-60 rounded-xl border-slate-200 bg-white text-[13.5px] shadow-xs dark:border-slate-800 dark:bg-slate-900">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -346,25 +370,17 @@ export function TopDevJobImportPage() {
                   ))}
                 </SelectContent>
               </Select>
+              {categoriesQuery.isError && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 text-xs"
+                  onClick={() => void categoriesQuery.refetch()}>
+                  <RefreshCw /> {t("common.retry", "Thử lại")}
+                </Button>
+              )}
             </div>
-            {categoriesQuery.isError && (
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="h-[46px] w-[46px] shrink-0 rounded-xl"
-                onClick={() => void categoriesQuery.refetch()}
-                title={t("common.retry", "Thử lại")}>
-                <RefreshCw />
-              </Button>
-            )}
-            <Button
-              type="submit"
-              disabled={isSearching}
-              className="h-[46px] shrink-0 rounded-xl bg-indigo-600 px-6 font-semibold shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
-              {isSearching ? <Loader2 className="animate-spin" /> : <Search />}
-              {t("adminTopDevImport.search", "Tìm JD")}
-            </Button>
           </form>
         </div>
 
@@ -389,7 +405,7 @@ export function TopDevJobImportPage() {
           )}
 
           {!hasSearched && !isSearching && (
-            <div className="mx-4 flex h-72 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-300 bg-white/60 px-6 text-center md:mx-6 dark:border-slate-700 dark:bg-slate-900/40">
+            <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white px-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/50">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
                 <BriefcaseBusiness className="h-6 w-6" />
               </div>
@@ -425,7 +441,7 @@ export function TopDevJobImportPage() {
           )}
 
           {hasSearched && !isSearching && items.length === 0 && !searchError && (
-            <div className="mx-4 flex h-64 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-300 bg-white/60 px-6 text-center md:mx-6 dark:border-slate-700 dark:bg-slate-900/40">
+            <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white px-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/50">
               <Search className="h-7 w-7 text-slate-400" />
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
                 {t("adminTopDevImport.emptyTitle", "Không tìm thấy JD phù hợp")}
@@ -454,25 +470,8 @@ export function TopDevJobImportPage() {
           )}
 
           {items.length > 0 && (
-            <>
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-4 md:px-6">
-                <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
-                  <span>
-                    {t("adminTopDevImport.pageResults", "{{count}} kết quả ở trang {{page}}", {
-                      count: items.length,
-                      page,
-                    })}
-                  </span>
-                  {importedCount > 0 && (
-                    <span className="text-emerald-700 dark:text-emerald-400">
-                      {t(
-                        "adminTopDevImport.importedThisSession",
-                        "{{count}} JD đã nhập trong phiên này",
-                        { count: importedCount }
-                      )}
-                    </span>
-                  )}
-                </div>
+            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex flex-wrap items-center justify-end gap-3 border-b border-slate-200/80 bg-slate-50/50 px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950/30">
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
@@ -505,8 +504,8 @@ export function TopDevJobImportPage() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <Table>
+              <div className="overflow-x-auto">
+                <Table className="min-w-[980px]">
                   <TableHeader>
                     <TableRow className="bg-slate-50/70 hover:bg-slate-50/70 dark:bg-slate-950/60 dark:hover:bg-slate-950/60">
                       <TableHead className="w-12 pl-6">
@@ -652,46 +651,116 @@ export function TopDevJobImportPage() {
                   </Button>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>
 
       <Sheet open={Boolean(preview)} onOpenChange={(open) => !open && setPreview(null)}>
-        <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-3xl lg:max-w-[58vw]">
+        <SheetContent className="w-full gap-0 overflow-y-auto border-l-slate-200 bg-slate-50 sm:max-w-3xl sm:rounded-l-[28px] lg:max-w-[58vw] dark:border-l-slate-800 dark:bg-slate-950">
           {preview && (
             <>
-              <SheetHeader className="border-b border-slate-200 pr-12 dark:border-slate-800">
-                <div className="flex items-start gap-3">
-                  <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-100 text-xs font-bold dark:bg-slate-800">
+              <SheetHeader className="border-b border-slate-200 bg-white px-5 py-5 pr-14 sm:px-7 sm:py-6 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-start gap-4">
+                  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     {preview.companyName?.slice(0, 2).toUpperCase() || "TD"}
                     {preview.companyLogo && (
                       <img
                         src={preview.companyLogo}
                         alt=""
-                        className="absolute inset-0 h-full w-full bg-white object-contain"
+                        className="absolute inset-0 h-full w-full bg-white object-contain p-1.5"
                       />
                     )}
                   </div>
-                  <div className="min-w-0">
-                    <SheetTitle className="text-base leading-6">{preview.title}</SheetTitle>
-                    <SheetDescription>{preview.companyName}</SheetDescription>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <Badge className="border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
+                        <BriefcaseBusiness />
+                        {t("adminTopDevImport.jobDetail", "Chi tiết JD")}
+                      </Badge>
+                      {preview.isExist && (
+                        <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
+                          <CheckCircle2 />
+                          {t("adminTopDevImport.imported", "Đã import")}
+                        </Badge>
+                      )}
+                    </div>
+                    <SheetTitle className="text-xl leading-7 font-bold text-slate-950 dark:text-white">
+                      {preview.title}
+                    </SheetTitle>
+                    <SheetDescription className="mt-1 flex items-center gap-1.5 text-sm font-medium text-slate-500">
+                      <Building2 className="h-4 w-4" />
+                      {preview.companyName}
+                    </SheetDescription>
                   </div>
                 </div>
               </SheetHeader>
-              <div className="space-y-6 p-4">
-                <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-600 dark:text-slate-300">
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" />
-                    {preview.location || "—"}
-                  </span>
-                  <span className="font-medium text-emerald-700 dark:text-emerald-400">
-                    {preview.salary || t("adminTopDevImport.negotiable", "Thỏa thuận")}
-                  </span>
-                  {preview.requestedLevel && (
-                    <Badge variant="outline">{preview.requestedLevel}</Badge>
-                  )}
+              <div className="space-y-5 p-5 sm:p-7">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {(
+                    [
+                      [
+                        MapPin,
+                        t("adminTopDevImport.location", "Địa điểm"),
+                        preview.location || "—",
+                        "text-indigo-600 bg-indigo-50 dark:bg-indigo-950 dark:text-indigo-300",
+                      ],
+                      [
+                        CircleDollarSign,
+                        t("adminTopDevImport.salary", "Mức lương"),
+                        preview.salary || t("adminTopDevImport.negotiable", "Thỏa thuận"),
+                        "text-emerald-600 bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-300",
+                      ],
+                      [
+                        Layers3,
+                        t("adminTopDevImport.level", "Cấp độ"),
+                        preview.requestedLevel || t("common.unspecified", "Chưa xác định"),
+                        "text-violet-600 bg-violet-50 dark:bg-violet-950 dark:text-violet-300",
+                      ],
+                      [
+                        CalendarDays,
+                        t("adminTopDevImport.postedAt", "Ngày đăng"),
+                        formatDate(preview.postedAt, i18n.language),
+                        "text-amber-600 bg-amber-50 dark:bg-amber-950 dark:text-amber-300",
+                      ],
+                    ] as Array<[typeof MapPin, string, string, string]>
+                  ).map(([Icon, label, value, iconClass]) => (
+                    <div
+                      key={String(label)}
+                      className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                      <div
+                        className={`mb-3 flex h-8 w-8 items-center justify-center rounded-xl ${iconClass}`}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+                        {label}
+                      </p>
+                      <p className="mt-1 line-clamp-2 text-sm leading-5 font-semibold text-slate-700 dark:text-slate-200">
+                        {value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
+
+                {splitSkills(preview.skills).length > 0 && (
+                  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                      <Layers3 className="h-4 w-4 text-indigo-500" />
+                      {t("adminTopDevImport.skills", "Kỹ năng")}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {splitSkills(preview.skills).map((skill) => (
+                        <Badge
+                          key={skill}
+                          variant="secondary"
+                          className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
                 {[
                   [t("adminTopDevImport.description", "Mô tả công việc"), preview.description],
                   [t("adminTopDevImport.requirements", "Yêu cầu"), preview.requirements],
@@ -703,20 +772,26 @@ export function TopDevJobImportPage() {
                 ].map(
                   ([title, content]) =>
                     content && (
-                      <section key={title}>
-                        <h3 className="mb-2 text-sm font-semibold text-slate-900 dark:text-white">
+                      <section
+                        key={title}
+                        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+                        <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-slate-950 dark:text-white">
+                          <span className="h-5 w-1 rounded-full bg-indigo-500" />
                           {title}
                         </h3>
-                        <p className="text-sm leading-6 whitespace-pre-line text-slate-600 dark:text-slate-300">
+                        <p className="text-sm leading-7 whitespace-pre-line text-slate-600 dark:text-slate-300">
                           {plainText(content)}
                         </p>
                       </section>
                     )
                 )}
                 {preview.sourceUrl && (
-                  <Button asChild variant="outline" className="w-full">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-11 w-full rounded-xl border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
                     <a href={preview.sourceUrl} target="_blank" rel="noreferrer">
-                      {t("adminTopDevImport.openSource", "Mở JD gốc trên TopDev")}
+                      {t("adminTopDevImport.openSource", "Mở JD nguồn")}
                       <ExternalLink />
                     </a>
                   </Button>

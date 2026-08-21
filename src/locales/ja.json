@@ -8191,10 +8191,10 @@
     "category": "職種カテゴリー",
     "allCategories": "すべての職種カテゴリー",
     "search": "JDを検索",
-    "searchError": "TopDevのJDを検索できませんでした。もう一度お試しください。",
+    "searchError": "求人データソースを検索できませんでした。もう一度お試しください。",
     "searchFailed": "結果を読み込めませんでした",
     "initialTitle": "インポートするJDを検索",
-    "initialDescription": "上のフィルターでTopDevの最新JDを取得し、インポート前に確認できます。",
+    "initialDescription": "上のフィルターで最新JDを取得し、インポート前に確認できます。",
     "emptyTitle": "一致するJDがありません",
     "emptyDescription": "キーワードを広げるか、フィルターを減らしてください。",
     "pageResults": "ページ{{page}}の結果: {{count}}件",
@@ -8218,10 +8218,13 @@
     "available": "利用可能",
     "page": "ページ {{page}}",
     "pageSize": "行数",
+    "jobDetail": "JD詳細",
+    "location": "勤務地",
+    "salary": "給与",
     "description": "仕事内容",
     "requirements": "応募条件",
     "benefits": "福利厚生",
     "companyDescription": "会社概要",
-    "openSource": "TopDevで元のJDを開く"
+    "openSource": "元のJDを開く"
   }
 }
