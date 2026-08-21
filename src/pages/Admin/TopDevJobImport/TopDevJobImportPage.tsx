@@ -627,23 +627,23 @@ export function TopDevJobImportPage() {
                     );
                   })}
                 </div>
-                <div className="hidden min-h-0 bg-white p-5 lg:block dark:bg-slate-900">
+                <div className="hidden min-h-0 bg-white p-3 lg:block dark:bg-slate-900">
                   {preview ? (
                     <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-                      <div className="flex-none border-b border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-                        <h3 className="text-xl font-bold text-[#3158b8] dark:text-blue-300">
+                      <div className="flex-none border-b border-slate-200 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-900">
+                        <h3 className="text-lg font-bold text-[#3158b8] dark:text-blue-300">
                           {preview.title}
                         </h3>
                         <p className="mt-1 text-sm text-slate-500">{preview.companyName}</p>
-                        <p className="mt-2 font-semibold text-[#d31375]">
+                        <p className="mt-1 font-semibold text-[#d31375]">
                           <CircleDollarSign className="mr-1 inline h-4 w-4" />
                           {displaySalary(preview.salary)}
                         </p>
-                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                        <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">
                           <MapPin className="mr-1 inline h-4 w-4" />
                           {preview.location || t("adminTopDevImport.notProvided")}
                         </p>
-                        <div className="mt-3 flex flex-wrap gap-1.5">
+                        <div className="mt-2 flex flex-wrap gap-1.5">
                           {splitSkills(preview.skills).map((skill) => (
                             <Badge
                               key={skill}
@@ -654,7 +654,7 @@ export function TopDevJobImportPage() {
                           ))}
                         </div>
                       </div>
-                      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5 pt-4">
+                      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 pt-3">
                         {[
                           [
                             t("adminTopDevImport.description", "Mô tả công việc"),
