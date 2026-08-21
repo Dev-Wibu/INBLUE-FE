@@ -29,7 +29,7 @@ export function JobDescriptionManagementPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"system" | "create">("system");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [selectedJd, setSelectedJd] = useState<JobDescription | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,14 +89,15 @@ export function JobDescriptionManagementPage() {
         })
         .filter((jd) => {
           const query = searchQuery.trim().toLowerCase();
-          return (
+          const matchesSearch =
             !query ||
             jd.title?.toLowerCase().includes(query) ||
             (jd as any).companyName?.toLowerCase().includes(query) ||
-            String(jd.id).includes(query)
-          );
+            String(jd.id).includes(query);
+          const matchesStatus = statusFilter === "all" || jd.status === statusFilter;
+          return matchesSearch && matchesStatus;
         }),
-    [allJds, companies, openJds, searchQuery]
+    [allJds, companies, openJds, searchQuery, statusFilter]
   );
   const pagination = usePagination({ totalCount: processedJds.length, pageSize });
   const pageJds = processedJds.slice(pagination.startIndex, pagination.endIndex + 1);
@@ -104,7 +105,6 @@ export function JobDescriptionManagementPage() {
   const openCreate = () => {
     setFormData({ status: "OPEN", currency: "VND" });
     setIsCreateOpen(true);
-    setActiveTab("create");
   };
   const submitCreate = async () => {
     if (!formData.companyId) {
@@ -117,7 +117,6 @@ export function JobDescriptionManagementPage() {
       if (!response.success) throw new Error(response.error || "create failed");
       toast.success(t("adminCompanymanagement.successfullyCreatedJd", "Tạo JD mới thành công"));
       setIsCreateOpen(false);
-      setActiveTab("system");
       setFormData({ status: "OPEN", currency: "VND" });
       await Promise.all([
         refetchJds(),
@@ -130,6 +129,21 @@ export function JobDescriptionManagementPage() {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const toggleStatus = async (job: JobDescription) => {
+    if (!job.id) return;
+    try {
+      const response = await jobDescriptionManager.toggleStatus(job.id);
+      if (!response.success)
+        throw new Error(response.error || t("common.updateFailed", "Cập nhật thất bại"));
+      toast.success(t("common.updateSuccess", "Cập nhật thành công"));
+      await refetchJds();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("common.updateFailed", "Cập nhật thất bại")
+      );
     }
   };
 
@@ -182,20 +196,6 @@ export function JobDescriptionManagementPage() {
             </div>
           </div>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-200/90 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-950/70">
-              <button
-                type="button"
-                onClick={() => setActiveTab("system")}
-                className={`rounded-lg px-4 py-2 text-[13.5px] font-semibold ${activeTab === "system" ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-900 dark:text-indigo-400" : "text-slate-600 dark:text-slate-400"}`}>
-                {t("adminJobDescriptionManagement.systemTab", "JD hệ thống")}
-              </button>
-              <button
-                type="button"
-                onClick={openCreate}
-                className={`rounded-lg px-4 py-2 text-[13.5px] font-semibold ${activeTab === "create" ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-900 dark:text-indigo-400" : "text-slate-600 dark:text-slate-400"}`}>
-                {t("adminJobDescriptionManagement.createTab", "Tạo JD")}
-              </button>
-            </div>
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
               <Input
@@ -228,36 +228,45 @@ export function JobDescriptionManagementPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+              {t("common.status", "Trạng thái")}:
+            </span>
+            {[
+              ["all", t("common.allStatus", "Tất cả")],
+              ["OPEN", t("common.active", "Đang mở")],
+              ["DRAFT", t("common.draft", "Bản nháp")],
+              ["CLOSED", t("common.shutDown", "Đã đóng")],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setStatusFilter(value)}
+                className={`rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors ${statusFilter === value ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-        {activeTab === "create" && !isCreateOpen ? (
-          <div className="mb-6 flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white text-center dark:border-slate-700 dark:bg-slate-900/50">
-            <FilePlus2 className="mb-3 h-8 w-8 text-indigo-500" />
-            <h3 className="font-semibold text-slate-900 dark:text-white">
-              {t("adminJobDescriptionManagement.createPrompt", "Chọn cách tạo JD")}
-            </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              {t(
-                "adminJobDescriptionManagement.createPromptDescription",
-                "Tạo thủ công hoặc import từ nguồn tuyển dụng."
-              )}
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <JobDescriptionTable showCompany jobDescriptions={pageJds} onView={setSelectedJd} />
-            {processedJds.length > 0 && (
-              <div className="flex justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(size) => {
-                    setPageSize(size);
-                    pagination.goToFirstPage();
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        )}
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <JobDescriptionTable
+            showCompany
+            jobDescriptions={pageJds}
+            onView={setSelectedJd}
+            onToggleStatus={toggleStatus}
+          />
+          {processedJds.length > 0 && (
+            <div className="flex justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+              <PaginationControl
+                pagination={pagination}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  pagination.goToFirstPage();
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
       <JobDescriptionFormDialog
         isOpen={isCreateOpen}
