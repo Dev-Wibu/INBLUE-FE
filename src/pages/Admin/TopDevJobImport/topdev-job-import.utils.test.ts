@@ -22,6 +22,31 @@ describe("TopDev import utilities", () => {
     expect(payload).not.toHaveProperty("validThrough");
   });
 
+  it("keeps the selected search level when a preview omits requestedLevel", () => {
+    const payload = toImportPayload(
+      {
+        title: "Backend internship",
+        companyName: "Inblue",
+      },
+      "INTERN"
+    );
+
+    expect(payload.requestedLevel).toBe("INTERN");
+  });
+
+  it("prefers the preview level over the filter fallback", () => {
+    const payload = toImportPayload(
+      {
+        title: "Junior Java Developer",
+        companyName: "Inblue",
+        requestedLevel: "JUNIOR",
+      },
+      "INTERN"
+    );
+
+    expect(payload.requestedLevel).toBe("JUNIOR");
+  });
+
   it("normalizes skills from common separators", () => {
     expect(splitSkills("Java, Spring Boot; Docker | AWS")).toEqual([
       "Java",

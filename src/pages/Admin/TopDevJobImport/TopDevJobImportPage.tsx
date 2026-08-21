@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/table";
 import type { AppApiError } from "@/lib/error-normalizer";
 import { topDevJobImportManager, type TopDevJobPreview } from "@/services";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   ArrowDownToLine,
@@ -82,6 +82,7 @@ function isNegotiableSalary(value?: string) {
 
 export function TopDevJobImportPage() {
   const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<Filters>(INITIAL_FILTERS);
   const [items, setItems] = useState<TopDevJobPreview[]>([]);
   const [page, setPage] = useState(1);
@@ -144,7 +145,13 @@ export function TopDevJobImportPage() {
         page: targetPage,
         limit: requestedLimit,
       });
-      setItems(results);
+      const requestedLevel = filters.level === "ALL" ? undefined : filters.level;
+      setItems(
+        results.map((result) => ({
+          ...result,
+          requestedLevel: result.requestedLevel ?? requestedLevel,
+        }))
+      );
       setPage(targetPage);
       setHasSearched(true);
     } catch (error) {
@@ -200,7 +207,9 @@ export function TopDevJobImportPage() {
     for (const job of selectedJobs) {
       const id = jobKey(job);
       try {
-        const result = await topDevJobImportManager.importJob(toImportPayload(job));
+        const result = await topDevJobImportManager.importJob(
+          toImportPayload(job, filters.level === "ALL" ? undefined : filters.level)
+        );
         succeeded += 1;
         setItems((current) =>
           current.map((item) =>
@@ -238,6 +247,10 @@ export function TopDevJobImportPage() {
 
     setImportedCount((current) => current + succeeded);
     setLastImportSummary({ success: succeeded, failed });
+    if (succeeded > 0) {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "all-jds"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin", "companies"] });
+    }
     if (failed === 0) {
       toast.success(
         t("adminTopDevImport.importSuccess", "Đã import thành công {{count}} JD.", {

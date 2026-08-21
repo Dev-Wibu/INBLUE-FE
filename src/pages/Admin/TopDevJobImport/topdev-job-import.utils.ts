@@ -1,8 +1,11 @@
-import type { TopDevJobImportRequest, TopDevJobPreview } from "@/services";
+import type { TopDevJobImportRequest, TopDevJobPreview, TopDevSearchParams } from "@/services";
 
 export const TOPDEV_PAGE_SIZE = 5;
 
-export function toImportPayload(job: TopDevJobPreview): TopDevJobImportRequest {
+export function toImportPayload(
+  job: TopDevJobPreview,
+  fallbackLevel?: TopDevSearchParams["level"]
+): TopDevJobImportRequest {
   return {
     title: job.title?.trim() ?? "",
     companyName: job.companyName?.trim() ?? "",
@@ -17,7 +20,7 @@ export function toImportPayload(job: TopDevJobPreview): TopDevJobImportRequest {
     source: job.source,
     sourceUrl: job.sourceUrl,
     sourceJobId: job.sourceJobId,
-    requestedLevel: job.requestedLevel,
+    requestedLevel: job.requestedLevel ?? fallbackLevel,
   };
 }
 
