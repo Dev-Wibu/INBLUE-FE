@@ -13,6 +13,7 @@ import {
   Code2,
   Database,
   FileCheck2,
+  FileInput,
   LayoutDashboard,
   LayoutTemplate,
   Newspaper,
@@ -46,6 +47,7 @@ import { QuestionBankManagementPage } from "../QuestionBankManagement";
 import { QuestionMajorManagementPage } from "../QuestionMajorManagement";
 import { ReviewManagementPage } from "../ReviewManagement";
 import { SessionFormPage, SessionManagementPage } from "../SessionManagement";
+import { TopDevJobImportPage } from "../TopDevJobImport";
 import { UserManagementPage } from "../UserManagement";
 import { AdminHeader } from "./components/AdminHeader";
 
@@ -107,6 +109,12 @@ const getSidebarMenuGroups = (t: TranslateFn): SidebarMenuGroup[] => [
         icon: FileCheck2,
         label: t("adminApplicationManagement.title"),
         color: "text-indigo-600 dark:text-indigo-500",
+      },
+      {
+        type: "topdev-job-import",
+        icon: FileInput,
+        label: t("adminTopDevImport.sidebarLabel", "Import JD"),
+        color: "text-emerald-600 dark:text-emerald-500",
       },
       {
         type: "interviewTemplates",
@@ -375,6 +383,7 @@ export function AdminDashboardPage() {
             <Route path="companies" element={<CompanyManagementPage />} />
             <Route path="companies/:companyId" element={<CompanyManagementPage />} />
             <Route path="applications" element={<AdminApplicationManagementPage />} />
+            <Route path="topdev-job-import" element={<TopDevJobImportPage />} />
             <Route
               path="applications/:applicationId/details"
               element={<AdminApplicationDetailPage />}
