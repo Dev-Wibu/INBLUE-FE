@@ -290,7 +290,7 @@ export function TopDevJobImportPage() {
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {t("adminTopDevImport.pageTitle", "Import JD từ TopDev")}
+                {t("adminTopDevImport.pageTitle")}
               </h2>
               <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
                 {t(
