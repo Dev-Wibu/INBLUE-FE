@@ -8182,8 +8182,8 @@
     "linksCompanies": "Công ty"
   },
   "adminJobDescriptionManagement": {
-    "sidebarLabel": "Quản lý JD",
-    "title": "Quản lý JD",
+    "sidebarLabel": "Quản lý vị trí tuyển dụng",
+    "title": "Quản lý vị trí tuyển dụng",
     "description": "Quản lý các vị trí tuyển dụng trong hệ thống và tạo JD mới.",
     "total": "Tổng JD",
     "systemTab": "JD hệ thống",
@@ -8195,8 +8195,8 @@
     "createPromptDescription": "Tạo thủ công hoặc import từ nguồn tuyển dụng."
   },
   "adminTopDevImport": {
-    "sidebarLabel": "Import JD",
-    "pageTitle": "Import JD",
+    "sidebarLabel": "Nhập vị trí tuyển dụng",
+    "pageTitle": "Nhập vị trí tuyển dụng",
     "pageDescription": "Tìm, xem trước và nhập nhanh vị trí tuyển dụng vào hệ thống.",
     "keyword": "Từ khóa",
     "keywordPlaceholder": "Ví dụ: Java, React, DevOps",

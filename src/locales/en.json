@@ -8182,8 +8182,8 @@
     "linksCompanies": "Companies"
   },
   "adminJobDescriptionManagement": {
-    "sidebarLabel": "JD management",
-    "title": "JD management",
+    "sidebarLabel": "Manage job postings",
+    "title": "Manage job postings",
     "description": "Manage system job descriptions and create new openings.",
     "total": "Total JDs",
     "systemTab": "System JDs",
@@ -8195,8 +8195,8 @@
     "createPromptDescription": "Create manually or import from a recruitment source."
   },
   "adminTopDevImport": {
-    "sidebarLabel": "Import JD",
-    "pageTitle": "Import JD",
+    "sidebarLabel": "Import job postings",
+    "pageTitle": "Import job postings",
     "pageDescription": "Find, preview, and quickly add job openings to the system.",
     "keyword": "Keyword",
     "keywordPlaceholder": "For example: Java, React, DevOps",

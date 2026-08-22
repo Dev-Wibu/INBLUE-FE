@@ -91,7 +91,7 @@ const getSidebarMenuGroups = (t: TranslateFn): SidebarMenuGroup[] => [
       {
         type: "job-descriptions",
         icon: FileCheck2,
-        label: t("adminJobDescriptionManagement.sidebarLabel", "Quản lý JD"),
+        label: t("adminJobDescriptionManagement.sidebarLabel"),
         color: "text-cyan-600 dark:text-cyan-500",
       },
       {
@@ -120,7 +120,7 @@ const getSidebarMenuGroups = (t: TranslateFn): SidebarMenuGroup[] => [
       {
         type: "topdev-job-import",
         icon: FileInput,
-        label: t("adminTopDevImport.sidebarLabel", "Import JD"),
+        label: t("adminTopDevImport.sidebarLabel"),
         color: "text-emerald-600 dark:text-emerald-500",
       },
       {

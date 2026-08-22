@@ -166,7 +166,7 @@ export function JobDescriptionManagementPage() {
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {t("adminJobDescriptionManagement.title", "Quản lý JD")}
+                {t("adminJobDescriptionManagement.title")}
               </h2>
               <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
                 {t(
