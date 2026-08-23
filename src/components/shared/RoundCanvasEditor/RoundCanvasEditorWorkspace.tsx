@@ -1,3 +1,13 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { CodeReviewEditor } from "@/components/ui/code-review-editor";
 import { CodingEditor } from "@/components/ui/coding-editor";
@@ -13,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -36,11 +47,14 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { interviewTemplateManager } from "@/services/interview-template.manager";
+import { roundManager } from "@/services/round.manager";
 import {
   getAvailableRoundsTemplates,
   getPrebuiltProcessTemplates,
   type PrebuiltProcessTemplate,
 } from "./constants";
+import { validateEvaluationPlan } from "./evaluation-plan-validation";
+import { EvaluationPlanEditor } from "./EvaluationPlanEditor";
 import type { RoundType, UIRound, UIRoundConfig } from "./types";
 import { getBestConnection, getDistanceToSegment, getLocalizedRoundName } from "./utils";
 
@@ -59,9 +73,9 @@ export interface RoundCanvasEditorWorkspaceProps {
   onClose: () => void;
   initialRounds: UIRound[];
   onSave: (
-    rounds: UIRound[],
-    metadata: { name: string; category: string; description: string },
-    options?: { closeEditorAfter?: boolean }
+    _rounds: UIRound[],
+    _metadata: { name: string; category: string; description: string },
+    _options?: { closeEditorAfter?: boolean }
   ) => Promise<void>;
   isSaving?: boolean;
   showMetadataInputs?: boolean;
@@ -95,6 +109,8 @@ export interface RoundCanvasEditorWorkspaceProps {
    * dropdown is hidden and rounds save with `reviewerId = null`.
    */
   staffUsers?: StaffUserOption[];
+  /** Enables AI quick-fill for a concrete Job Description editor. */
+  aiGenerationJdId?: number;
 }
 
 export function RoundCanvasEditorWorkspace({
@@ -108,13 +124,16 @@ export function RoundCanvasEditorWorkspace({
   title,
   mode = "edit",
   staffUsers,
+  aiGenerationJdId,
 }: RoundCanvasEditorWorkspaceProps) {
   const { t } = useTranslation();
   const AVAILABLE_ROUNDS_TEMPLATES = useMemo(() => getAvailableRoundsTemplates(t), [t]);
   const PREBUILT_TEMPLATES = useMemo(() => getPrebuiltProcessTemplates(t), [t]);
 
-  const [sidebarTab, setSidebarTab] = useState<"custom" | "templates">("custom");
+  const [sidebarTab, setSidebarTab] = useState<"custom" | "templates" | "ai">("custom");
   const [customServerTemplates, setCustomServerTemplates] = useState<PrebuiltProcessTemplate[]>([]);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [showAiReplaceConfirm, setShowAiReplaceConfirm] = useState(false);
 
   useEffect(() => {
     if (isOpen && sidebarTab === "templates") {
@@ -235,6 +254,10 @@ export function RoundCanvasEditorWorkspace({
 
   const [selectedRoundIndex, setSelectedRoundIndex] = useState<number | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [configView, setConfigView] = useState<"setup" | "evaluation">("setup");
+  const [validationAttemptedRoundIndex, setValidationAttemptedRoundIndex] = useState<number | null>(
+    null
+  );
   const [zoomLevel, setZoomLevel] = useState(1.0);
   const [dialogEditingTime, setDialogEditingTime] = useState(false);
 
@@ -483,6 +506,8 @@ export function RoundCanvasEditorWorkspace({
     const dist = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
     if (dist < 4) {
       setSelectedRoundIndex(idx);
+      setConfigView("setup");
+      setValidationAttemptedRoundIndex(null);
       setConfigModalOpen(true);
     } else {
       const myPos = positions[idx];
@@ -573,6 +598,25 @@ export function RoundCanvasEditorWorkspace({
       return;
     }
     const savingRounds = customRounds || rounds;
+    const invalidEvaluationRoundIndex = savingRounds.findIndex(
+      (round) => !validateEvaluationPlan(round.configData?.evaluationPlan).isValid
+    );
+    if (invalidEvaluationRoundIndex >= 0) {
+      const invalidEvaluationRound = savingRounds[invalidEvaluationRoundIndex];
+      setSelectedRoundIndex(invalidEvaluationRoundIndex);
+      setConfigView("evaluation");
+      setValidationAttemptedRoundIndex(invalidEvaluationRoundIndex);
+      setConfigModalOpen(true);
+      toast.error(
+        t(
+          "roundAi.invalidEvaluationPlan",
+          "Bộ tiêu chí đánh giá của {{roundName}} chưa hợp lệ. Vui lòng kiểm tra các lỗi được đánh dấu.",
+          { roundName: invalidEvaluationRound.name || t("userApplicationhistory.round") }
+        )
+      );
+      return;
+    }
+    setValidationAttemptedRoundIndex(null);
     await onSave(
       savingRounds,
       {
@@ -587,7 +631,122 @@ export function RoundCanvasEditorWorkspace({
     }
   };
 
+  const handleGenerateWithAi = async () => {
+    if (!aiGenerationJdId || isGeneratingAi) return;
+    setIsGeneratingAi(true);
+    try {
+      const result = await roundManager.generatePlanForJd(aiGenerationJdId);
+      if (!result.success || !result.data?.rounds?.length) {
+        toast.error(result.error || t("roundAi.generateFailed", "Không thể tạo quy trình bằng AI"));
+        return;
+      }
+
+      const generatedRounds: UIRound[] = [...result.data.rounds]
+        .sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0))
+        .map((round, index) => ({
+          name: round.name || `${t("userApplicationhistory.round")} ${index + 1}`,
+          roundOrder: index + 1,
+          roundType: AVAILABLE_ROUNDS_TEMPLATES.some(
+            (template) => template.type === round.roundType
+          )
+            ? (round.roundType as RoundType)
+            : "CV_SCREENING",
+          passThreshold:
+            round.passThreshold == null
+              ? 80
+              : round.passThreshold <= 1
+                ? Math.round(round.passThreshold * 100)
+                : Math.round(round.passThreshold),
+          reviewerId: null,
+          configData: {
+            ...round.configData,
+            evaluationPlan: {
+              ...round.configData?.evaluationPlan,
+              metrics: round.configData?.evaluationPlan?.metrics ?? [],
+            },
+            quizQuestions: round.configData?.quizQuestions ?? [],
+            codingProblemsId:
+              round.configData?.codingProblems
+                ?.map((problem) => problem.problemId)
+                .filter((id): id is number => id !== undefined) ?? [],
+            codingProblems: round.configData?.codingProblems ?? [],
+            codeReviewProblemsId:
+              round.configData?.codeReviewProblems
+                ?.map((problem) => problem.problemId)
+                .filter((id): id is number => id !== undefined) ?? [],
+            codeReviewProblems: round.configData?.codeReviewProblems ?? [],
+          },
+        }));
+
+      setPositions([]);
+      setRounds(generatedRounds);
+      toast.success(
+        t(
+          "roundAi.generatedSuccess",
+          "Đã tạo bản nháp gồm {{count}} vòng. Vui lòng xem lại trước khi lưu.",
+          {
+            count: generatedRounds.length,
+          }
+        )
+      );
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
+  const handleRequestAiGeneration = () => {
+    if (rounds.length > 0) {
+      setShowAiReplaceConfirm(true);
+      return;
+    }
+    void handleGenerateWithAi();
+  };
+
   const selectedRound = selectedRoundIndex !== null ? rounds[selectedRoundIndex] : null;
+
+  const handleOpenEvaluationView = async () => {
+    if (selectedRoundIndex === null || !selectedRound) return;
+
+    if (selectedRound.roundType === "CODING" && codingEditorRef.current) {
+      const result = await codingEditorRef.current.saveCurrentProblem();
+      if (!result) return;
+      if (result !== true) {
+        setRounds((currentRounds) => {
+          const updated = [...currentRounds];
+          updated[selectedRoundIndex] = {
+            ...updated[selectedRoundIndex],
+            configData: {
+              ...updated[selectedRoundIndex].configData,
+              codingProblemsId: result.ids,
+              codingProblems: result.problems,
+            },
+          };
+          return updated;
+        });
+      }
+    }
+
+    if (selectedRound.roundType === "CODE_REVIEW" && codeReviewEditorRef.current) {
+      const result = await codeReviewEditorRef.current.saveCurrentProblem();
+      if (!result) return;
+      if (result !== true) {
+        setRounds((currentRounds) => {
+          const updated = [...currentRounds];
+          updated[selectedRoundIndex] = {
+            ...updated[selectedRoundIndex],
+            configData: {
+              ...updated[selectedRoundIndex].configData,
+              codeReviewProblemsId: result.ids,
+              codeReviewProblems: result.problems,
+            },
+          };
+          return updated;
+        });
+      }
+    }
+
+    setConfigView("evaluation");
+  };
 
   if (!isOpen) return null;
 
@@ -597,7 +756,11 @@ export function RoundCanvasEditorWorkspace({
       <div className="flex h-full min-h-0 w-[28%] max-w-[340px] min-w-[300px] shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
         {/* Tab switcher header */}
         <div className="flex shrink-0 flex-col border-b border-slate-200 bg-slate-100/60 p-2.5 dark:border-slate-800 dark:bg-slate-900/40">
-          <div className="grid grid-cols-2 rounded-lg bg-slate-200/80 p-1 dark:bg-slate-800/80">
+          <div
+            className={cn(
+              "grid rounded-lg bg-slate-200/80 p-1 dark:bg-slate-800/80",
+              aiGenerationJdId ? "grid-cols-3" : "grid-cols-2"
+            )}>
             <button
               type="button"
               onClick={() => setSidebarTab("custom")}
@@ -622,11 +785,27 @@ export function RoundCanvasEditorWorkspace({
               <Layers className="h-3.5 w-3.5" />
               {t("template.tabPresets", "Template có sẵn")}
             </button>
+            {aiGenerationJdId && (
+              <button
+                type="button"
+                onClick={() => setSidebarTab("ai")}
+                className={cn(
+                  "flex cursor-pointer items-center justify-center gap-1 rounded-md px-1 py-1.5 text-[11px] font-bold transition-all",
+                  sidebarTab === "ai"
+                    ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-950 dark:text-indigo-400"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                )}>
+                <Sparkles className="h-3.5 w-3.5" />
+                {t("roundAi.tab", "Tạo bằng AI")}
+              </button>
+            )}
           </div>
           <p className="mt-2 text-center text-[11px] font-medium text-slate-500 dark:text-slate-400">
             {sidebarTab === "custom"
               ? t("template.dragToCenter", "Kéo thả vòng vào tâm để thêm")
-              : t("template.clickToApply", "Nhấp vào mẫu quy trình để áp dụng ngay")}
+              : sidebarTab === "templates"
+                ? t("template.clickToApply", "Nhấp vào mẫu quy trình để áp dụng ngay")
+                : t("roundAi.quickFillHint", "AI phân tích JD và điền nhanh một bản nháp")}
           </p>
         </div>
 
@@ -658,7 +837,7 @@ export function RoundCanvasEditorWorkspace({
                 </div>
               ))}
             </div>
-          ) : (
+          ) : sidebarTab === "templates" ? (
             <div className="space-y-3 py-1">
               {[...PREBUILT_TEMPLATES, ...customServerTemplates].map((tmpl) => (
                 <div
@@ -686,6 +865,53 @@ export function RoundCanvasEditorWorkspace({
                   </p>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="py-1">
+              <div className="rounded-lg border border-indigo-200 bg-white p-4 dark:border-indigo-900 dark:bg-slate-900/60">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                  <Sparkles className="h-4.5 w-4.5" />
+                </div>
+                <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-slate-100">
+                  {t("roundAi.generateTitle", "Tạo quy trình từ Job Description")}
+                </h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                  {t(
+                    "roundAi.generateDescription",
+                    "AI đề xuất các vòng, ngưỡng đạt và bộ tiêu chí chấm điểm. Bạn có thể chỉnh sửa mọi nội dung trước khi lưu."
+                  )}
+                </p>
+
+                {isGeneratingAi ? (
+                  <div className="mt-5 space-y-3" aria-live="polite">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                      <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                      {t("roundAi.generating", "Đang phân tích JD và xây dựng quy trình...")}
+                    </div>
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-5/6" />
+                    <Skeleton className="h-3 w-2/3" />
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    className="mt-5 h-9 w-full gap-2 bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-700"
+                    onClick={handleRequestAiGeneration}>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {rounds.length > 0
+                      ? t("roundAi.regenerate", "Tạo lại bản nháp bằng AI")
+                      : t("roundAi.generate", "Tạo bản nháp bằng AI")}
+                  </Button>
+                )}
+
+                <p className="mt-3 flex items-start gap-1.5 text-[11px] leading-relaxed text-amber-700 dark:text-amber-400">
+                  <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+                  {t(
+                    "roundAi.notSavedHint",
+                    "Kết quả chỉ được điền vào trình chỉnh sửa và chưa lưu vào hệ thống."
+                  )}
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -1011,6 +1237,22 @@ export function RoundCanvasEditorWorkspace({
                                 {t("common.obtain")} {Math.round(round.passThreshold ?? 80)}%
                               </span>
                             </div>
+                            {(round.configData?.evaluationPlan?.metrics?.length ?? 0) > 0 && (
+                              <div className="mt-1.5 flex items-center justify-between gap-2 text-[10px] font-medium text-indigo-600 dark:text-indigo-400">
+                                <span>
+                                  {t("roundAi.metricCount", "{{count}} tiêu chí", {
+                                    count: round.configData?.evaluationPlan?.metrics?.length ?? 0,
+                                  })}
+                                </span>
+                                <span>
+                                  {round.configData?.evaluationPlan?.metrics?.reduce(
+                                    (sum, metric) => sum + Number(metric.weight ?? 0),
+                                    0
+                                  )}
+                                  %
+                                </span>
+                              </div>
+                            )}
                             {/* Reviewer row — hidden for QUIZ (auto-graded),
                                 CODING (system-graded), and MENTOR_REVIEW
                                 (handled by the mentor system). */}
@@ -1072,14 +1314,18 @@ export function RoundCanvasEditorWorkspace({
           open={configModalOpen}
           onOpenChange={(open) => {
             setConfigModalOpen(open);
-            if (!open) setSelectedRoundIndex(null);
+            if (!open) {
+              setSelectedRoundIndex(null);
+              setValidationAttemptedRoundIndex(null);
+            }
           }}>
           <DialogContent
             showCloseButton={false}
             onOpenAutoFocus={(e) => e.preventDefault()}
             className={cn(
               "flex flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950",
-              selectedRound?.roundType === "QUIZ" ||
+              configView === "evaluation" ||
+                selectedRound?.roundType === "QUIZ" ||
                 selectedRound?.roundType === "CODING" ||
                 selectedRound?.roundType === "CODE_REVIEW"
                 ? "h-[96vh] max-h-[96vh] w-[98vw] max-w-[98vw]"
@@ -1119,6 +1365,35 @@ export function RoundCanvasEditorWorkspace({
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
+                <div className="flex rounded-md bg-slate-200/80 p-0.5 dark:bg-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setConfigView("setup")}
+                    className={cn(
+                      "h-7 rounded px-2.5 text-[11px] font-semibold transition-colors",
+                      configView === "setup"
+                        ? "bg-white text-slate-900 shadow-xs dark:bg-slate-950 dark:text-slate-100"
+                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                    )}>
+                    {t("roundAi.roundSetup", "Cấu hình vòng")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenEvaluationView}
+                    className={cn(
+                      "h-7 rounded px-2.5 text-[11px] font-semibold transition-colors",
+                      configView === "evaluation"
+                        ? "bg-white text-indigo-700 shadow-xs dark:bg-slate-950 dark:text-indigo-300"
+                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                    )}>
+                    {t("roundAi.evaluation", "Đánh giá")}
+                    {(selectedRound.configData?.evaluationPlan?.metrics?.length ?? 0) > 0 && (
+                      <span className="ml-1.5 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                        {selectedRound.configData?.evaluationPlan?.metrics?.length}
+                      </span>
+                    )}
+                  </button>
+                </div>
                 {/* Reviewer (Staff) — surfaced inside the round detail dialog for
                     round types whose body is taken over by a specialized editor
                     (CODE_REVIEW) so admins can still pick a reviewer here
@@ -1187,12 +1462,31 @@ export function RoundCanvasEditorWorkspace({
             <div
               className={cn(
                 "flex-1 overflow-hidden",
-                selectedRound.roundType !== "QUIZ" &&
-                  selectedRound.roundType !== "CODING" &&
-                  selectedRound.roundType !== "CODE_REVIEW" &&
-                  "overflow-y-auto"
+                configView === "evaluation"
+                  ? "overflow-y-auto"
+                  : selectedRound.roundType !== "QUIZ" &&
+                      selectedRound.roundType !== "CODING" &&
+                      selectedRound.roundType !== "CODE_REVIEW" &&
+                      "overflow-y-auto"
               )}>
-              {selectedRound.roundType === "QUIZ" ? (
+              {configView === "evaluation" ? (
+                <div className="mx-auto w-full max-w-5xl overflow-y-auto p-6">
+                  <EvaluationPlanEditor
+                    value={selectedRound.configData?.evaluationPlan}
+                    showAllErrors={validationAttemptedRoundIndex === selectedRoundIndex}
+                    onChange={(evaluationPlan) =>
+                      updateRoundConfigField(selectedRoundIndex, "evaluationPlan", evaluationPlan)
+                    }
+                  />
+                  <div className="mt-5 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    {t(
+                      "roundAi.persistenceWarning",
+                      "Các tiêu chí được giữ trong bản nháp để bạn xem và chỉnh sửa. Backend hiện tại có thể chưa lưu evaluationPlan khi bấm Save."
+                    )}
+                  </div>
+                </div>
+              ) : selectedRound.roundType === "QUIZ" ? (
                 <QuizEditor
                   questions={selectedRound.configData?.quizQuestions || []}
                   onChange={(questions) =>
@@ -1713,6 +2007,38 @@ export function RoundCanvasEditorWorkspace({
           </DialogContent>
         </Dialog>
       )}
+
+      <AlertDialog open={showAiReplaceConfirm} onOpenChange={setShowAiReplaceConfirm}>
+        <AlertDialogContent className="max-w-md border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950">
+          <AlertDialogHeader className="gap-3 px-5 pt-5 text-left">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <div className="space-y-1.5">
+              <AlertDialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+                {t("roundAi.replaceTitle", "Thay thế bản nháp hiện tại?")}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                {t(
+                  "roundAi.replaceConfirmation",
+                  "Bản nháp AI mới sẽ thay thế các vòng đang có trong trình chỉnh sửa. Các thay đổi chưa lưu hiện tại sẽ bị mất."
+                )}
+              </AlertDialogDescription>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="border-t border-slate-200 bg-slate-50 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50">
+            <AlertDialogCancel className="h-9 border-slate-300 bg-white px-4 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-800">
+              {t("common.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="h-9 gap-1.5 bg-indigo-600 px-4 text-xs font-bold text-white hover:bg-indigo-700"
+              onClick={() => void handleGenerateWithAi()}>
+              <Sparkles className="h-3.5 w-3.5" />
+              {t("roundAi.replaceConfirmAction", "Tạo lại bằng AI")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
