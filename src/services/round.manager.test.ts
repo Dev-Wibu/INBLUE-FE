@@ -15,10 +15,44 @@ import { fetchClient } from "@/lib/api";
 import { roundManager } from "./round.manager";
 
 const mockPut = fetchClient.PUT as ReturnType<typeof vi.fn>;
+const mockPost = fetchClient.POST as ReturnType<typeof vi.fn>;
 
 describe("RoundManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe("generatePlanForJd", () => {
+    it("generates a draft plan for a job description", async () => {
+      const draft = {
+        rounds: [{ name: "CV Screening", roundOrder: 1, roundType: "CV_SCREENING" }],
+        globalNotes: "Review before saving",
+      };
+      mockPost.mockResolvedValueOnce({ data: draft, error: null });
+
+      const result = await roundManager.generatePlanForJd(101);
+
+      expect(mockPost).toHaveBeenCalledWith("/api/rounds/jd/{jdId}/generate-round-plan", {
+        params: { path: { jdId: 101 } },
+      });
+      expect(result).toEqual({ success: true, data: draft });
+    });
+
+    it("rejects an empty AI draft", async () => {
+      mockPost.mockResolvedValueOnce({ data: { rounds: [] }, error: null });
+
+      const result = await roundManager.generatePlanForJd(101);
+
+      expect(result.success).toBe(false);
+    });
+
+    it("returns the normalized request error", async () => {
+      mockPost.mockRejectedValueOnce(new Error("AnythingLLM unavailable"));
+
+      const result = await roundManager.generatePlanForJd(101);
+
+      expect(result).toEqual({ success: false, error: "AnythingLLM unavailable" });
+    });
   });
 
   describe("setUpForJd", () => {
