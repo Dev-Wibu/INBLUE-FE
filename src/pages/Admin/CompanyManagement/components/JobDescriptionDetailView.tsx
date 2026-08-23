@@ -594,6 +594,7 @@ export function JobDescriptionDetailView({
       <div className="flex h-[calc(100vh-80px)] min-h-[500px] w-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         <RoundCanvasEditorWorkspace
           isOpen={isEditorOpen}
+          aiGenerationJdId={currentJd.id}
           onClose={() => setIsEditorOpen(false)}
           initialRounds={initialRounds}
           initialMetadata={{ name: currentJd.title || "", category: "", description: "" }}

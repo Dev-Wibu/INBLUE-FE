@@ -8,6 +8,22 @@ export type RoundType =
   | "MENTOR_REVIEW"
   | "AI_INTERVIEW";
 
+export interface UIEvaluationMetric {
+  code?: string;
+  name?: string;
+  description?: string;
+  weight?: number;
+  maxScore?: number;
+  required?: boolean;
+  minimumScore?: number;
+}
+
+export interface UIEvaluationPlan {
+  metrics?: UIEvaluationMetric[];
+  scoringInstruction?: string;
+  passRule?: string;
+}
+
 export interface UIRoundConfig {
   instruction?: string;
   submissionFormat?: string;
@@ -15,6 +31,7 @@ export interface UIRoundConfig {
   maxScore?: number;
   aiSystemPrompt?: string;
   evaluationCriteria?: string;
+  evaluationPlan?: UIEvaluationPlan;
   quizQuestions?: {
     questionText?: string;
     options?: string[];
