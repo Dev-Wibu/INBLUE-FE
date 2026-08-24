@@ -1,11 +1,20 @@
 import {
   enterKioskApi,
+  generateTtsAudioApi,
   getAvailableVoicesApi,
   resolveApiAssetUrl,
   type Kiosk,
   type VoiceOption,
 } from "@/services/kiosk/kioskApi.service";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  playAudioUri,
+  type AudioPlayerHandle,
+} from "@/services/kiosk/kioskAudioPlayer";
+import {
+  playTtsAudioBlob,
+  type TtsPlayback,
+} from "@/services/kiosk/ttsAudio";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { KioskHardwareCheckModal } from "./components/KioskHardwareCheckModal";
 import { KioskSettingsModal } from "./components/KioskSettingsModal";
 import { KioskAIInterviewRoomPage } from "./KioskAIInterviewRoomPage";
@@ -295,19 +304,20 @@ export function StandaloneKioskPage() {
 
   const [screenState, setScreenState] = useState<AppScreenState>("PIN_ENTRY");
   const [pin, setPin] = useState("");
-  const [aiSessionKey, setAiSessionKey] = useState("DEMO-KIOSK-2026");
+  const [aiSessionKey, setAiSessionKey] = useState("");
   const [interviewDurationMinutes, setInterviewDurationMinutes] = useState(15);
   const [voices, setVoices] = useState<VoiceOption[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState("");
   const [isLoadingVoices, setIsLoadingVoices] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
+  const previewTtsRef = useRef<TtsPlayback | null>(null);
+  const previewPlayerRef = useRef<AudioPlayerHandle | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [selectedKiosk, setSelectedKiosk] = useState<Kiosk | null>(null);
   const [isKioskSettingsOpen, setIsKioskSettingsOpen] = useState(false);
-  const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
-  const [showDevBar, setShowDevBar] = useState(false);
 
   // Cold Start Animation state
   const [initStepIndex, setInitStepIndex] = useState(0);
@@ -315,7 +325,6 @@ export function StandaloneKioskPage() {
 
   // Equalizer Signal levels for voice preview
   const [waveLevels, setWaveLevels] = useState([0.3, 0.55, 0.82, 0.55, 0.3]);
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const previewAnimFrameRef = useRef<number | null>(null);
 
   // Load saved kiosk config
@@ -359,75 +368,42 @@ export function StandaloneKioskPage() {
       const voiceList = await getAvailableVoicesApi();
       if (voiceList && voiceList.length > 0) {
         setVoices(voiceList);
-        setSelectedVoiceId(voiceList[0]?.id || "");
       } else {
-        throw new Error("Không có giọng đọc.");
+        setVoices([]);
+        setVoiceError("Không tìm thấy giọng đọc AI nào trên hệ thống.");
       }
-    } catch {
-      const mockList: VoiceOption[] = [
-        {
-          id: "voice-banmai",
-          name: "Ban Mai (Nữ miền Bắc)",
-          description:
-            "Giọng đọc nữ thanh thoát, tự nhiên, chuẩn ngữ điệu phỏng vấn chuyên nghiệp.",
-          previewUrl: "",
-        },
-        {
-          id: "voice-minhquang",
-          name: "Minh Quang (Nam miền Bắc)",
-          description: "Giọng đọc nam trầm ấm, rõ ràng, phong thái tự tin và chuyên nghiệp.",
-          previewUrl: "",
-        },
-        {
-          id: "voice-lananh",
-          name: "Lan Anh (Nữ miền Nam)",
-          description: "Giọng nữ miền Nam nhẹ nhàng, lưu loát, truyền cảm hứng.",
-          previewUrl: "",
-        },
-        {
-          id: "voice-thanhhai",
-          name: "Thanh Hải (Nam miền Nam)",
-          description: "Giọng nam miền Nam dõng dạc, mạch lạc, phù hợp mọi vai trò.",
-          previewUrl: "",
-        },
-      ];
-      setVoices(mockList);
-      setSelectedVoiceId("voice-banmai");
+    } catch (err: unknown) {
+      setVoices([]);
+      setVoiceError((err as Error)?.message || "Không thể tải danh sách giọng đọc AI.");
     } finally {
       setIsLoadingVoices(false);
     }
   }, []);
 
-  // Submit PIN Handler
+  // Submit PIN Handler (Real Production Flow)
   const handlePinSubmit = useCallback(
     async (targetPin: string) => {
       setIsVerifying(true);
       setAuthError(null);
 
       try {
-        if (selectedKiosk?.id) {
-          const res = await enterKioskApi(targetPin, selectedKiosk.id);
-          setAiSessionKey(res.aiSessionKey || targetPin);
-          setInterviewDurationMinutes(Number(res.durationMinutes) || 15);
-        } else {
-          setAiSessionKey(`KIOSK-${targetPin}`);
-          setInterviewDurationMinutes(15);
+        if (!selectedKiosk?.id) {
+          throw new Error("Kiosk chưa được cấu hình thiết bị. Vui lòng bấm biểu tượng bánh răng ở góc dưới để cấu hình Kiosk.");
         }
+
+        const res = await enterKioskApi(targetPin, selectedKiosk.id);
+        setAiSessionKey(res.aiSessionKey || targetPin);
+        setInterviewDurationMinutes(Number(res.durationMinutes) || 15);
 
         setTimeout(() => {
           setIsVerifying(false);
           setScreenState("VOICE_SELECT");
           void loadVoices();
         }, 1200);
-      } catch {
-        // Fallback demo for testing
-        setAiSessionKey(`DEMO-${targetPin}`);
-        setInterviewDurationMinutes(15);
-        setTimeout(() => {
-          setIsVerifying(false);
-          setScreenState("VOICE_SELECT");
-          void loadVoices();
-        }, 1200);
+      } catch (err: unknown) {
+        setIsVerifying(false);
+        setPin("");
+        setAuthError((err as Error)?.message || "Mã PIN không hợp lệ hoặc Kiosk chưa được cấu hình.");
       }
     },
     [loadVoices, selectedKiosk]
@@ -443,108 +419,173 @@ export function StandaloneKioskPage() {
         return;
       }
       if (val === "DEL") {
-        setPin((p) => p.slice(0, -1));
+        setPin((prev) => prev.slice(0, -1));
         return;
       }
-
       if (pin.length < PIN_LENGTH) {
-        const nextPin = pin + val;
-        setPin(nextPin);
-        if (nextPin.length === PIN_LENGTH) {
-          void handlePinSubmit(nextPin);
+        const next = pin + val;
+        setPin(next);
+        if (next.length === PIN_LENGTH) {
+          void handlePinSubmit(next);
         }
       }
     },
-    [isVerifying, screenState, pin, handlePinSubmit]
+    [handlePinSubmit, isVerifying, pin, screenState]
   );
 
-  // Keyboard shortcut listener
+  // Keyboard shortcut listener for hardware numpad
   useEffect(() => {
-    if (screenState !== "PIN_ENTRY") return;
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (screenState !== "PIN_ENTRY" || isVerifying) return;
       if (e.key >= "0" && e.key <= "9") {
         pressKey(e.key);
       } else if (e.key === "Backspace") {
         pressKey("DEL");
       } else if (e.key === "Escape") {
         pressKey("AC");
-      } else if (e.key === "Enter" && pin.length > 0) {
-        void handlePinSubmit(pin.padEnd(6, "0"));
-      } else if (e.key === "`" || e.key === "~") {
-        setShowDevBar((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [screenState, pin, pressKey, handlePinSubmit]);
+  }, [isVerifying, pressKey, screenState]);
 
-  const handlePreviewVoice = (voice: VoiceOption) => {
-    setSelectedVoiceId(voice.id);
-    if (previewingVoiceId === voice.id) {
-      if (previewAudioRef.current) {
-        previewAudioRef.current.pause();
-        previewAudioRef.current = null;
-      }
-      if (previewAnimFrameRef.current) {
-        cancelAnimationFrame(previewAnimFrameRef.current);
-        previewAnimFrameRef.current = null;
-      }
-      setPreviewingVoiceId(null);
-      setWaveLevels([0.3, 0.55, 0.82, 0.55, 0.3]);
-      return;
+  const resetPreviewWave = useCallback(() => {
+    if (previewAnimFrameRef.current !== null) {
+      cancelAnimationFrame(previewAnimFrameRef.current);
+      previewAnimFrameRef.current = null;
     }
+    setWaveLevels([0.3, 0.55, 0.82, 0.55, 0.3]);
+  }, []);
 
-    setPreviewingVoiceId(voice.id);
-    if (voice.previewUrl) {
-      const audioUrl = resolveApiAssetUrl(voice.previewUrl);
-      const audio = new Audio(audioUrl);
-      previewAudioRef.current = audio;
-      audio.onended = () => {
+  const handlePreviewVoice = useCallback(
+    async (voice: VoiceOption) => {
+      setSelectedVoiceId(voice.id);
+      if (previewingVoiceId === voice.id) {
+        if (previewTtsRef.current) {
+          previewTtsRef.current.stop();
+          previewTtsRef.current = null;
+        }
+        if (previewPlayerRef.current) {
+          previewPlayerRef.current.stop();
+          previewPlayerRef.current = null;
+        }
         setPreviewingVoiceId(null);
-        setWaveLevels([0.3, 0.55, 0.82, 0.55, 0.3]);
-      };
-      void audio.play().catch(() => {});
-    }
+        resetPreviewWave();
+        return;
+      }
 
-    const animateWave = () => {
-      const t = Date.now() / 250;
-      setWaveLevels([
-        0.38 + Math.abs(Math.sin(t * 2.2)) * 0.6,
-        0.42 + Math.abs(Math.sin(t * 2.8 + 1)) * 0.55,
-        0.5 + Math.abs(Math.sin(t * 3.2 + 2)) * 0.65,
-        0.42 + Math.abs(Math.sin(t * 2.8 + 3)) * 0.55,
-        0.38 + Math.abs(Math.sin(t * 2.2 + 4)) * 0.6,
-      ]);
-      previewAnimFrameRef.current = requestAnimationFrame(animateWave);
-    };
-    animateWave();
-  };
+      if (previewTtsRef.current) {
+        previewTtsRef.current.stop();
+        previewTtsRef.current = null;
+      }
+      if (previewPlayerRef.current) {
+        previewPlayerRef.current.stop();
+        previewPlayerRef.current = null;
+      }
+
+      setPreviewingVoiceId(voice.id);
+      resetPreviewWave();
+
+      if (voice.previewUrl) {
+        const audioUrl = resolveApiAssetUrl(voice.previewUrl);
+        try {
+          const handle = await playAudioUri(audioUrl, {
+            onVolume: (volume: number) => {
+              setWaveLevels([
+                Math.max(0.2, volume * 0.9),
+                Math.max(0.3, volume * 1.3),
+                Math.max(0.4, volume * 1.6),
+                Math.max(0.3, volume * 1.3),
+                Math.max(0.2, volume * 0.9),
+              ]);
+            },
+            onEnd: () => {
+              previewPlayerRef.current = null;
+              setPreviewingVoiceId(null);
+              resetPreviewWave();
+            },
+            onError: () => {
+              previewPlayerRef.current = null;
+              setPreviewingVoiceId(null);
+              resetPreviewWave();
+            },
+          });
+          previewPlayerRef.current = handle;
+          return;
+        } catch {
+          // Fallback to TTS below
+        }
+      }
+
+      try {
+        const sampleText = `Xin chào, tôi là ${voice.name.split('(')[0].trim()}, giọng đọc AI sẵn sàng đồng hành cùng bạn.`;
+        const blob = await generateTtsAudioApi(sampleText, voice.id);
+        const tts = await playTtsAudioBlob(blob, {
+          onVolume: (volume: number) => {
+            setWaveLevels([
+              Math.max(0.2, volume * 0.9),
+              Math.max(0.3, volume * 1.3),
+              Math.max(0.4, volume * 1.6),
+              Math.max(0.3, volume * 1.3),
+              Math.max(0.2, volume * 0.9),
+            ]);
+          },
+          onEnd: () => {
+            previewTtsRef.current = null;
+            setPreviewingVoiceId(null);
+            resetPreviewWave();
+          },
+          onError: () => {
+            previewTtsRef.current = null;
+            setPreviewingVoiceId(null);
+            resetPreviewWave();
+          },
+        });
+        previewTtsRef.current = tts;
+      } catch (e) {
+        console.warn("Play voice preview failed:", e);
+        setPreviewingVoiceId(null);
+        resetPreviewWave();
+      }
+    },
+    [previewingVoiceId, resetPreviewWave]
+  );
 
   const handleFinishAIRoom = () => {
     setPin("");
     setAiSessionKey("");
     setInterviewDurationMinutes(0);
     setSelectedVoiceId("");
+    setVoices([]);
     setAuthError(null);
     setVoiceError(null);
     setScreenState("PIN_ENTRY");
   };
 
   const activeInitState = KIOSK_INIT_STATES[initStepIndex % KIOSK_INIT_STATES.length];
-  const safeVoices = useMemo(() => voices, [voices]);
 
   // Full Screen AI Room
   if (screenState === "AI_ROOM") {
     return (
-      <KioskAIInterviewRoomPage
-        sessionKey={aiSessionKey}
-        durationMinutes={interviewDurationMinutes}
-        selectedVoiceId={selectedVoiceId}
-        voices={safeVoices}
-        onFinish={handleFinishAIRoom}
-      />
+      <div
+        style={{
+          width: "100vw",
+          height: "100vh",
+          position: "relative",
+          backgroundColor: "#050A1A",
+          overflow: "hidden",
+        }}>
+        <KioskAIInterviewRoomPage
+          sessionKey={aiSessionKey}
+          durationMinutes={interviewDurationMinutes || 15}
+          selectedVoiceId={selectedVoiceId}
+          voices={voices}
+          onFinish={handleFinishAIRoom}
+        />
+      </div>
     );
   }
+
   return (
     <div
       style={{
@@ -560,114 +601,6 @@ export function StandaloneKioskPage() {
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
       }}>
-      {/* ── Discreet Dev Screen Switcher ── */}
-      <div
-        onMouseEnter={() => setShowDevBar(true)}
-        onMouseLeave={() => setShowDevBar(false)}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 100,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          paddingTop: 0,
-          height: showDevBar ? "auto" : 12,
-          width: 140,
-        }}>
-        <div
-          style={{
-            backgroundColor: "rgba(152, 203, 255, 0.3)",
-            borderRadius: "0 0 6px 6px",
-            cursor: "pointer",
-          }}
-        />
-        {showDevBar && (
-          <div
-            style={{
-              marginTop: 4,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              backgroundColor: "rgba(8, 17, 32, 0.95)",
-              border: "1px solid rgba(152, 203, 255, 0.25)",
-              borderRadius: 999,
-              padding: "4px 12px",
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
-            }}>
-            <span style={{ fontSize: 11, fontWeight: 900, color: "#98cbff" }}>
-              CHUYỂN MÀN HÌNH:
-            </span>
-            <button
-              type="button"
-              onClick={() => setScreenState("PIN_ENTRY")}
-              style={{
-                border: "none",
-                borderRadius: 999,
-                padding: "2px 8px",
-                fontSize: 11,
-                fontWeight: 800,
-                cursor: "pointer",
-                backgroundColor: screenState === "PIN_ENTRY" ? "#98cbff" : "transparent",
-                color: screenState === "PIN_ENTRY" ? "#050A1A" : "#bec7d4",
-              }}>
-              1. Nhập PIN
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setScreenState("VOICE_SELECT");
-                void loadVoices();
-              }}
-              style={{
-                border: "none",
-                borderRadius: 999,
-                padding: "2px 8px",
-                fontSize: 11,
-                fontWeight: 800,
-                cursor: "pointer",
-                backgroundColor: screenState === "VOICE_SELECT" ? "#98cbff" : "transparent",
-                color: screenState === "VOICE_SELECT" ? "#050A1A" : "#bec7d4",
-              }}>
-              2. Chọn Giọng
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsHardwareModalOpen(true)}
-              style={{
-                border: "none",
-                borderRadius: 999,
-                padding: "2px 8px",
-                fontSize: 11,
-                fontWeight: 800,
-                cursor: "pointer",
-                backgroundColor: "transparent",
-                color: "#bec7d4",
-              }}>
-              3. Test Phần Cứng
-            </button>
-            <button
-              type="button"
-              onClick={() => setScreenState("AI_ROOM")}
-              style={{
-                border: "none",
-                borderRadius: 999,
-                padding: "2px 10px",
-                fontSize: 11,
-                fontWeight: 900,
-                cursor: "pointer",
-                backgroundColor: "#00a3ff",
-                color: "#ffffff",
-                boxShadow: "0 0 10px rgba(0,163,255,0.4)",
-              }}>
-              4. Vào Phòng AI 🚀
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* ── Main Split Layout ── */}
       <div
@@ -951,7 +884,7 @@ export function StandaloneKioskPage() {
                       gap: isDesktop ? 12 : 8,
                       marginBottom: 18,
                     }}>
-                    {safeVoices.map((voice: VoiceOption, index: number) => {
+                    {voices.map((voice: VoiceOption, index: number) => {
                       const selected = selectedVoiceId === voice.id;
                       const previewing = previewingVoiceId === voice.id;
                       const voiceCode = `V${String(index + 1).padStart(2, "0")}`;

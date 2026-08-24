@@ -9,6 +9,7 @@ export interface RealtimeTranscriptionHandle {
 
 export interface RealtimeTranscriptionOptions {
   onTranscript: (text: string, isFinal?: boolean) => void;
+  onAudioLevel?: (level: number) => void;
   onReady?: () => void;
   onError?: (error: Error) => void;
   onClose?: () => void;
@@ -75,131 +76,144 @@ export async function startRealtimeTranscription(
   options: RealtimeTranscriptionOptions
 ): Promise<RealtimeTranscriptionHandle> {
   if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-    throw new Error('Trình duyệt không hỗ trợ thu âm Microphone.');
+    throw new Error('Microphone recording is not supported in this browser.');
   }
 
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      channelCount: 1,
-      noiseSuppression: true,
-      echoCancellation: true,
-      autoGainControl: true,
-    },
+  let ws: WebSocket | null = null;
+  let mediaStream: MediaStream | null = null;
+  let audioContext: AudioContext | null = null;
+  let sourceNode: MediaStreamAudioSourceNode | null = null;
+  let processorNode: ScriptProcessorNode | null = null;
+  let muteGain: GainNode | null = null;
+  let stopped = false;
+  let committedText = initialText.trim();
+
+  const cleanup = async (sendAudioEnd: boolean) => {
+    if (stopped) return;
+    stopped = true;
+
+    if (processorNode) {
+      processorNode.onaudioprocess = null;
+      processorNode.disconnect();
+      processorNode = null;
+    }
+
+    sourceNode?.disconnect();
+    sourceNode = null;
+    muteGain?.disconnect();
+    muteGain = null;
+
+    mediaStream?.getTracks().forEach((track) => track.stop());
+    mediaStream = null;
+
+    if (audioContext && audioContext.state !== 'closed') {
+      await audioContext.close();
+      audioContext = null;
+    }
+
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      if (sendAudioEnd) {
+        ws.send(JSON.stringify({ type: 'audio_end' }));
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+      } else {
+        ws.close();
+      }
+    }
+  };
+
+  await new Promise<void>((resolve, reject) => {
+    ws = new WebSocket(getRealtimeTranscriptionUrl());
+    ws.binaryType = 'arraybuffer';
+
+    ws.onopen = async () => {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+
+        const AudioContextCtor =
+          window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        audioContext = new AudioContextCtor();
+        sourceNode = audioContext.createMediaStreamSource(mediaStream);
+        processorNode = audioContext.createScriptProcessor(4096, 1, 1);
+        muteGain = audioContext.createGain();
+        muteGain.gain.value = 0;
+
+        sourceNode.connect(processorNode);
+        processorNode.connect(muteGain);
+        muteGain.connect(audioContext.destination);
+
+        processorNode.onaudioprocess = (event) => {
+          if (!ws || ws.readyState !== WebSocket.OPEN || !audioContext) return;
+          const input = event.inputBuffer.getChannelData(0);
+
+          // Audio level check for silence detector
+          let sum = 0;
+          for (let i = 0; i < input.length; i++) {
+            sum += Math.abs(input[i]);
+          }
+          const level = sum / input.length;
+          options.onAudioLevel?.(level);
+
+          const downsampled = downsampleBuffer(input, audioContext.sampleRate, TARGET_SAMPLE_RATE);
+          ws.send(float32ToPCM16(downsampled));
+        };
+
+        options.onReady?.();
+        resolve();
+      } catch (error: unknown) {
+        void cleanup(false);
+        reject(error);
+      }
+    };
+
+    ws.onmessage = (event) => {
+      if (typeof event.data !== 'string') return;
+
+      const message = parseTranscriptionMessage(event.data);
+      if (!message) return;
+
+      if (message.type === 'ready') {
+        options.onReady?.();
+        return;
+      }
+
+      if (message.type === 'transcript' && message.text) {
+        committedText = appendTranscriptSegment(committedText, message.text);
+        options.onTranscript(committedText, false);
+        return;
+      }
+
+      if (message.type === 'turn_complete') {
+        options.onTranscript(committedText, true);
+        return;
+      }
+
+      if (message.type === 'error') {
+        options.onError?.(new Error(message.message || 'Realtime transcription failed.'));
+      }
+    };
+
+    ws.onerror = () => {
+      const error = new Error('Realtime transcription WebSocket error.');
+      options.onError?.(error);
+      reject(error);
+    };
+
+    ws.onclose = () => {
+      options.onClose?.();
+    };
   });
 
-  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  const audioContext = new AudioCtx();
-  const source = audioContext.createMediaStreamSource(stream);
-  const processor = audioContext.createScriptProcessor(4096, 1, 1);
-
-  const socket = new WebSocket(getRealtimeTranscriptionUrl());
-  socket.binaryType = 'arraybuffer';
-
-  let currentTranscript = initialText.trim();
-  let isClosed = false;
-  let stopResolve: (() => void) | null = null;
-
-  const emitTranscript = (text: string, isFinal = false) => {
-    currentTranscript = text.trim();
-    options.onTranscript(currentTranscript, isFinal);
-  };
-
-  const cleanup = () => {
-    if (isClosed) return;
-    isClosed = true;
-
-    try {
-      processor.disconnect();
-      source.disconnect();
-      stream.getTracks().forEach((track) => track.stop());
-      if (audioContext.state !== 'closed') {
-        void audioContext.close();
-      }
-    } catch (err) {
-      console.warn('Cleanup audio warning:', err);
-    }
-
-    if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
-      try {
-        socket.close();
-      } catch {}
-    }
-
-    options.onClose?.();
-    if (stopResolve) {
-      stopResolve();
-      stopResolve = null;
-    }
-  };
-
-  socket.onopen = () => {
-    options.onReady?.();
-  };
-
-  socket.onmessage = (event) => {
-    if (typeof event.data !== 'string') return;
-    const msg = parseTranscriptionMessage(event.data);
-    if (!msg) return;
-
-    if (msg.type === 'transcript' || msg.text) {
-      const seg = msg.text || msg.message || '';
-      if (seg) {
-        emitTranscript(appendTranscriptSegment(initialText, seg), false);
-      }
-    } else if (msg.type === 'turn_complete' || msg.type === 'final') {
-      const seg = msg.text || msg.message || '';
-      const finalText = seg ? appendTranscriptSegment(initialText, seg) : currentTranscript;
-      emitTranscript(finalText, true);
-      if (stopResolve) {
-        stopResolve();
-        stopResolve = null;
-      }
-    }
-  };
-
-  socket.onerror = () => {
-    options.onError?.(new Error('Lỗi kết nối WebSocket phiên âm thời gian thực.'));
-  };
-
-  socket.onclose = () => {
-    cleanup();
-  };
-
-  processor.onaudioprocess = (event) => {
-    if (socket.readyState !== WebSocket.OPEN) return;
-
-    const inputData = event.inputBuffer.getChannelData(0);
-    const downsampled = downsampleBuffer(inputData, audioContext.sampleRate, TARGET_SAMPLE_RATE);
-    const pcm16 = float32ToPCM16(downsampled);
-
-    try {
-      socket.send(pcm16);
-    } catch {}
-  };
-
-  source.connect(processor);
-  processor.connect(audioContext.destination);
-
   return {
-    stop: async () => {
-      if (isClosed) return;
-      if (socket.readyState === WebSocket.OPEN) {
-        try {
-          socket.send(JSON.stringify({ type: 'stop' }));
-        } catch {}
-      }
-
-      await new Promise<void>((resolve) => {
-        stopResolve = resolve;
-        setTimeout(() => {
-          if (stopResolve) {
-            stopResolve();
-            stopResolve = null;
-          }
-        }, 1200);
-      });
-
-      cleanup();
-    },
+    stop: () => cleanup(true),
   };
 }
+
+export { TARGET_SAMPLE_RATE };

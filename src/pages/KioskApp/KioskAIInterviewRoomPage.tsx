@@ -17,7 +17,7 @@ interface KioskAIInterviewRoomPageProps {
   durationMinutes?: number;
   selectedVoiceId?: string;
   voices?: VoiceOption[];
-  onFinish: () => void;
+  onFinish?: () => void;
 }
 
 type AIState = "IDLE" | "THINKING" | "SPEAKING" | "LISTENING";
@@ -280,16 +280,19 @@ function LineIcon({
 export function KioskAIInterviewRoomPage({
   sessionKey,
   selectedVoiceId = "",
+  onFinish,
 }: KioskAIInterviewRoomPageProps) {
   const [aiState, setAiState] = useState<AIState>("IDLE");
   const [messages, setMessages] = useState<ChatMessage[]>(DEFAULT_MESSAGES);
   const [currentQuestionContent, setCurrentQuestionContent] = useState(INITIAL_QUESTION);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1);
-  const [totalQuestions] = useState(1);
+  const [totalQuestions, setTotalQuestions] = useState(1);
 
   const [liveTranscript, setLiveTranscript] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [isTranscriptEditing, setIsTranscriptEditing] = useState(false);
 
@@ -431,13 +434,24 @@ export function KioskAIInterviewRoomPage({
     }
   }, [isRecording, liveTranscript, startMicVolumeMeter, stopMicVolumeMeter]);
 
-  // AI Speaks Question
+  const [spokenQuestionText, setSpokenQuestionText] = useState("");
+
+  // AI Speaks Question with Typewriter Progress Sync & Fallback
   const speakQuestion = useCallback(
     async (text: string) => {
       setAiState("SPEAKING");
+      setSpokenQuestionText("");
       try {
         const audioBlob = await generateTtsAudioApi(text, selectedVoiceId);
         const playback = await playTtsAudioBlob(audioBlob, {
+          onProgress: (currentTime, duration) => {
+            if (duration <= 0) return;
+            const progress = Math.max(0, Math.min(1, currentTime / duration));
+            const charCount = Math.floor(text.length * progress);
+            if (charCount > 0) {
+              setSpokenQuestionText(text.slice(0, charCount));
+            }
+          },
           onVolume: (energy) => {
             setWaveLevels(
               audioWaveRestingLevels.map((base, idx) => {
@@ -445,17 +459,45 @@ export function KioskAIInterviewRoomPage({
                 return Math.max(0.3, Math.min(2.4, base * mult));
               })
             );
+            setOrbPulse(1 + energy * 0.25);
           },
           onEnd: () => {
+            setSpokenQuestionText(text);
             setAiState("LISTENING");
             setWaveLevels(audioWaveRestingLevels);
+            setOrbPulse(1);
+          },
+          onError: () => {
+            setSpokenQuestionText(text);
+            if (typeof window !== "undefined" && "speechSynthesis" in window) {
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.lang = "vi-VN";
+              utterance.onend = () => {
+                setAiState("LISTENING");
+                setWaveLevels(audioWaveRestingLevels);
+              };
+              window.speechSynthesis.speak(utterance);
+            } else {
+              setAiState("LISTENING");
+            }
           },
         });
         ttsPlaybackRef.current = playback;
       } catch {
-        setTimeout(() => {
-          setAiState("LISTENING");
-        }, 2000);
+        setSpokenQuestionText(text);
+        if (typeof window !== "undefined" && "speechSynthesis" in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = "vi-VN";
+          utterance.onend = () => {
+            setAiState("LISTENING");
+            setWaveLevels(audioWaveRestingLevels);
+          };
+          window.speechSynthesis.speak(utterance);
+        } else {
+          setTimeout(() => {
+            setAiState("LISTENING");
+          }, 2000);
+        }
       }
     },
     [selectedVoiceId]
@@ -485,9 +527,19 @@ export function KioskAIInterviewRoomPage({
       const res = await submitAnswerApi(sessionKey, textToSend);
       setIsSubmitting(false);
 
+      if (res.finished) {
+        setIsEvaluating(true);
+        setTimeout(() => {
+          setIsEvaluating(false);
+          setIsFinished(true);
+        }, 3000);
+        return;
+      }
+
       if (res.questionContent) {
         setCurrentQuestionContent(res.questionContent);
-        setCurrentQuestionIndex((prev) => prev + 1);
+        if (res.currentQuestionIndex) setCurrentQuestionIndex(res.currentQuestionIndex);
+        if (res.totalQuestionsInPhase) setTotalQuestions(res.totalQuestionsInPhase);
 
         const aiMsg: ChatMessage = {
           id: Date.now() + 1,
@@ -500,22 +552,10 @@ export function KioskAIInterviewRoomPage({
       } else {
         setAiState("IDLE");
       }
-    } catch {
+    } catch (err: unknown) {
       setIsSubmitting(false);
-      const nextIdx = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIdx);
-      const nextQ = `Câu hỏi ${nextIdx}: Bạn có thể chia sẻ sâu hơn về một tình huống cụ thể mà bạn đã giải quyết khi làm việc nhóm không?`;
-      setCurrentQuestionContent(nextQ);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          role: "ai",
-          content: nextQ,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        },
-      ]);
-      void speakQuestion(nextQ);
+      setAiState("IDLE");
+      console.warn("Submit answer error:", err);
     }
   };
 
@@ -526,9 +566,24 @@ export function KioskAIInterviewRoomPage({
         const res = await startInterviewApi(sessionKey);
         if (mounted && res.questionContent) {
           setCurrentQuestionContent(res.questionContent);
+          if (res.currentQuestionIndex) setCurrentQuestionIndex(res.currentQuestionIndex);
+          if (res.totalQuestionsInPhase) setTotalQuestions(res.totalQuestionsInPhase);
+          setMessages([
+            {
+              id: Date.now(),
+              role: "ai",
+              content: res.questionContent,
+              timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            },
+          ]);
+          void speakQuestion(res.questionContent);
+        } else if (mounted) {
+          void speakQuestion(INITIAL_QUESTION);
         }
       } catch {
-        // Keeps mock initial question
+        if (mounted) {
+          void speakQuestion(INITIAL_QUESTION);
+        }
       }
     }
     void init();
@@ -538,7 +593,7 @@ export function KioskAIInterviewRoomPage({
       if (transcriptionHandleRef.current) void transcriptionHandleRef.current.stop();
       stopMicVolumeMeter();
     };
-  }, [sessionKey, stopMicVolumeMeter]);
+  }, [sessionKey, speakQuestion, stopMicVolumeMeter]);
 
   return (
     <div
@@ -682,20 +737,116 @@ export function KioskAIInterviewRoomPage({
             padding: "8px 0",
             backgroundColor: "rgba(2, 8, 23, 0.1)",
           }}>
-          <div
-            style={{
-              flex: 1,
-              minHeight: 0,
-              height: "100%",
-              width: "100%",
-              maxWidth: 700,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 12,
-              paddingBottom: 6,
-            }}>
+          {isFinished ? (
+            /* Finished Stage Card */
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                backgroundColor: "rgba(5, 10, 26, 0.72)",
+                border: "1px solid rgba(0, 163, 255, 0.38)",
+                borderRadius: 20,
+                padding: "36px 32px",
+                maxWidth: 540,
+                boxShadow: "0 0 36px rgba(0, 163, 255, 0.22)",
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+              }}>
+              <div style={{ fontSize: 64, marginBottom: 16 }}>🏆</div>
+              <h2
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 24,
+                  fontWeight: 900,
+                  marginBottom: 10,
+                  letterSpacing: 0.5,
+                }}>
+                Hoàn Thành Phỏng Vấn AI
+              </h2>
+              <p
+                style={{
+                  color: "#BEC7D4",
+                  fontSize: 14,
+                  lineHeight: "22px",
+                  marginBottom: 28,
+                  maxWidth: 440,
+                }}>
+                Cảm ơn bạn đã hoàn thành bài phỏng vấn tại Kiosk. Kết quả đánh giá đã được lưu an toàn vào hệ thống.
+              </p>
+              <button
+                type="button"
+                onClick={onFinish}
+                style={{
+                  padding: "12px 28px",
+                  borderRadius: 999,
+                  backgroundColor: "#00A3FF",
+                  color: "#FFFFFF",
+                  fontSize: 14,
+                  fontWeight: 900,
+                  border: "none",
+                  boxShadow: "0 0 20px rgba(0, 163, 255, 0.45)",
+                  cursor: "pointer",
+                }}>
+                Trở Về Trang Chủ Kiosk →
+              </button>
+            </div>
+          ) : isEvaluating ? (
+            /* Evaluating Stage Card */
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                backgroundColor: "rgba(5, 10, 26, 0.72)",
+                border: "1px solid rgba(0, 163, 255, 0.38)",
+                borderRadius: 20,
+                padding: "36px 32px",
+                maxWidth: 540,
+                boxShadow: "0 0 36px rgba(0, 163, 255, 0.22)",
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+              }}>
+              <div style={{ fontSize: 52, marginBottom: 16 }}>⏳</div>
+              <h2
+                style={{
+                  color: "#00A3FF",
+                  fontSize: 22,
+                  fontWeight: 900,
+                  marginBottom: 10,
+                  letterSpacing: 0.5,
+                }}>
+                Đang Đánh Giá Kết Quả...
+              </h2>
+              <p
+                style={{
+                  color: "#BEC7D4",
+                  fontSize: 14,
+                  lineHeight: "22px",
+                  maxWidth: 440,
+                }}>
+                Hệ thống AI đang tổng hợp câu trả lời của bạn. Vui lòng chờ trong giây lát.
+              </p>
+            </div>
+          ) : (
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                height: "100%",
+                width: "100%",
+                maxWidth: 700,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+                paddingBottom: 6,
+              }}>
             {/* Top Focus Stack: Current Question Card */}
             <div
               style={{
@@ -773,7 +924,7 @@ export function KioskAIInterviewRoomPage({
                     textAlign: "center",
                     margin: 0,
                   }}>
-                  {currentQuestionContent}
+                  {spokenQuestionText || currentQuestionContent}
                 </p>
 
                 {/* Speech Bubble Triangular Tail at bottom center */}
@@ -1176,6 +1327,7 @@ export function KioskAIInterviewRoomPage({
               </p>
             </div>
           </div>
+        )}
         </div>
 
         {/* ── RIGHT CHAT DRAWER (Exact 1:1 Mobile Match) ── */}
