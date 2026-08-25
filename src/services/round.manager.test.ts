@@ -76,6 +76,46 @@ describe("RoundManager", () => {
       expect(result.data).toEqual(rounds);
     });
 
+    it("sends evaluationPlan in the setup payload", async () => {
+      mockPut.mockResolvedValueOnce({ data: [], error: null });
+      const evaluationPlan = {
+        metrics: [
+          {
+            code: "TECH_DEPTH",
+            name: "Technical depth",
+            description: "Technical knowledge",
+            weight: 100,
+            maxScore: 100,
+            required: true,
+            minimumScore: 60,
+          },
+        ],
+        scoringInstruction: "Score on 0-100",
+        passRule: "Meet the round threshold",
+      };
+
+      await roundManager.setUpForJd(101, {
+        rounds: [
+          {
+            name: "Technical interview",
+            roundOrder: 1,
+            roundType: "AI_INTERVIEW",
+            passThreshold: 70,
+            configData: { evaluationPlan },
+          },
+        ],
+      });
+
+      expect(mockPut).toHaveBeenCalledWith(
+        "/api/rounds/jd/101",
+        expect.objectContaining({
+          body: expect.objectContaining({
+            rounds: [expect.objectContaining({ configData: { evaluationPlan } })],
+          }),
+        })
+      );
+    });
+
     it("returns error on failure", async () => {
       mockPut.mockRejectedValueOnce(new Error("Network error"));
 
@@ -114,6 +154,47 @@ describe("RoundManager", () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(rounds);
+    });
+
+    it("sends evaluationPlan in the update payload", async () => {
+      mockPut.mockResolvedValueOnce({ data: [], error: null });
+      const evaluationPlan = {
+        metrics: [
+          {
+            code: "COMMUNICATION",
+            name: "Communication",
+            description: "Clear communication",
+            weight: 100,
+            maxScore: 100,
+            required: false,
+            minimumScore: 0,
+          },
+        ],
+        scoringInstruction: "Score on 0-100",
+        passRule: "Meet the round threshold",
+      };
+
+      await roundManager.updateForJd(101, {
+        rounds: [
+          {
+            id: 55,
+            name: "Mentor interview",
+            roundOrder: 1,
+            roundType: "MENTROR_REVIEW",
+            passThreshold: 70,
+            configData: { evaluationPlan },
+          },
+        ],
+      });
+
+      expect(mockPut).toHaveBeenCalledWith(
+        "/api/rounds/jd/101/update",
+        expect.objectContaining({
+          body: expect.objectContaining({
+            rounds: [expect.objectContaining({ configData: { evaluationPlan } })],
+          }),
+        })
+      );
     });
 
     it("returns error on failure", async () => {
