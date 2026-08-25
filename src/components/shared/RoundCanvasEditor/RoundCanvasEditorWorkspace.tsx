@@ -758,45 +758,45 @@ export function RoundCanvasEditorWorkspace({
         <div className="flex shrink-0 flex-col border-b border-slate-200 bg-slate-100/60 p-2.5 dark:border-slate-800 dark:bg-slate-900/40">
           <div
             className={cn(
-              "grid rounded-lg bg-slate-200/80 p-1 dark:bg-slate-800/80",
+              "grid h-12 items-stretch rounded-lg bg-slate-200/80 p-1 dark:bg-slate-800/80",
               aiGenerationJdId ? "grid-cols-3" : "grid-cols-2"
             )}>
             <button
               type="button"
               onClick={() => setSidebarTab("custom")}
               className={cn(
-                "flex cursor-pointer items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-bold transition-all",
+                "flex h-10 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md px-1 text-[11px] font-bold whitespace-nowrap transition-all",
                 sidebarTab === "custom"
                   ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-950 dark:text-indigo-400"
                   : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
               )}>
-              <Wand2 className="h-3.5 w-3.5" />
-              {t("template.tabCustom", "Tự tạo")}
+              <Wand2 className="h-3.5 w-3.5 shrink-0" />
+              <span className="min-w-0 truncate">{t("template.tabCustom", "Tự tạo")}</span>
             </button>
             <button
               type="button"
               onClick={() => setSidebarTab("templates")}
               className={cn(
-                "flex cursor-pointer items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-bold transition-all",
+                "flex h-10 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md px-1 text-[11px] font-bold whitespace-nowrap transition-all",
                 sidebarTab === "templates"
                   ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-950 dark:text-indigo-400"
                   : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
               )}>
-              <Layers className="h-3.5 w-3.5" />
-              {t("template.tabPresets", "Template có sẵn")}
+              <Layers className="h-3.5 w-3.5 shrink-0" />
+              <span className="min-w-0 truncate">{t("template.tabPresets", "Mẫu có sẵn")}</span>
             </button>
             {aiGenerationJdId && (
               <button
                 type="button"
                 onClick={() => setSidebarTab("ai")}
                 className={cn(
-                  "flex cursor-pointer items-center justify-center gap-1 rounded-md px-1 py-1.5 text-[11px] font-bold transition-all",
+                  "flex h-10 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md px-1 text-[11px] font-bold whitespace-nowrap transition-all",
                   sidebarTab === "ai"
                     ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-950 dark:text-indigo-400"
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                 )}>
-                <Sparkles className="h-3.5 w-3.5" />
-                {t("roundAi.tab", "Tạo bằng AI")}
+                <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                <span className="min-w-0 truncate">{t("roundAi.tab", "Tạo bằng AI")}</span>
               </button>
             )}
           </div>
@@ -1478,13 +1478,6 @@ export function RoundCanvasEditorWorkspace({
                       updateRoundConfigField(selectedRoundIndex, "evaluationPlan", evaluationPlan)
                     }
                   />
-                  <div className="mt-5 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
-                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    {t(
-                      "roundAi.persistenceWarning",
-                      "Các tiêu chí được giữ trong bản nháp để bạn xem và chỉnh sửa. Backend hiện tại có thể chưa lưu evaluationPlan khi bấm Save."
-                    )}
-                  </div>
                 </div>
               ) : selectedRound.roundType === "QUIZ" ? (
                 <QuizEditor

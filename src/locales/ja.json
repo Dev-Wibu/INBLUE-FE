@@ -7542,7 +7542,6 @@
     "passRule": "合格ルール",
     "weightWarning": "保存前に合計ウェイトを100%にしてください。",
     "invalidEvaluationPlan": "{{roundName}}の評価プランが無効です。強調表示された項目を確認してください。",
-    "persistenceWarning": "評価指標は確認・編集用の下書きに保持されます。現在のバックエンドでは保存時にevaluationPlanが永続化されない場合があります。",
     "validation": {
       "required": "この項目は必須です。",
       "invalidCode": "TECH_DEPTHのようなUPPER_SNAKE_CASEを使用してください。",

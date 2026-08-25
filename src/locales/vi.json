@@ -7543,7 +7543,6 @@
     "passRule": "Quy tắc đạt",
     "weightWarning": "Tổng trọng số phải bằng 100% trước khi lưu.",
     "invalidEvaluationPlan": "Bộ tiêu chí đánh giá của {{roundName}} chưa hợp lệ. Vui lòng kiểm tra các lỗi được đánh dấu.",
-    "persistenceWarning": "Các tiêu chí được giữ trong bản nháp để bạn xem và chỉnh sửa. Backend hiện tại có thể chưa lưu evaluationPlan khi bấm Save.",
     "validation": {
       "required": "Trường này là bắt buộc.",
       "invalidCode": "Mã phải có dạng UPPER_SNAKE_CASE, ví dụ TECH_DEPTH.",
@@ -7561,7 +7560,7 @@
     "dragToCenter": "Kéo thả vòng vào tâm để thêm",
     "clickToApply": "Nhấp vào mẫu quy trình để áp dụng ngay",
     "tabCustom": "Tự tạo",
-    "tabPresets": "Template có sẵn",
+    "tabPresets": "Mẫu có sẵn",
     "roundsCount": "vòng",
     "appliedSuccess": "Đã áp dụng mẫu: {{name}} ({{count}} vòng)",
     "customSavedDescription": "Quy trình đã lưu trên hệ thống",
