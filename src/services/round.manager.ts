@@ -1,11 +1,21 @@
-import type {
-  ApiResponse,
-  Round,
-  RoundType,
-  SetupJdRoundsRequest,
-  UpdateJdRoundRequest,
-} from "@/interfaces";
+import type { ApiResponse, Round, RoundType } from "@/interfaces";
 import type { components } from "../../schema-from-be";
+
+type PersistedRoundConfig = components["schemas"]["RoundConfigDto"] & {
+  evaluationPlan?: components["schemas"]["EvaluationPlan"];
+};
+
+type PersistedRoundItem = Omit<components["schemas"]["RoundItemDto"], "configData"> & {
+  configData: PersistedRoundConfig;
+};
+
+export interface PersistedSetupJdRoundsRequest {
+  rounds: PersistedRoundItem[];
+}
+
+export interface PersistedUpdateJdRoundsRequest {
+  rounds: Array<PersistedRoundItem & { id?: number }>;
+}
 
 import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import { fetchClient } from "@/lib/api";
@@ -63,7 +73,7 @@ export class RoundManager {
 
   async setUpForJd(
     jdId: number | string,
-    data: SetupJdRoundsRequest
+    data: PersistedSetupJdRoundsRequest
   ): Promise<ApiResponse<Round[]>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.ROUNDS.SETUP_JD, { jdId });
@@ -87,7 +97,7 @@ export class RoundManager {
 
   async updateForJd(
     jdId: number | string,
-    data: UpdateJdRoundRequest
+    data: PersistedUpdateJdRoundsRequest
   ): Promise<ApiResponse<Round[]>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.ROUNDS.UPDATE_JD, { jdId });

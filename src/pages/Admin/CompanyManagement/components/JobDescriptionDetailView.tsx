@@ -6,6 +6,7 @@ import {
   RoundCanvasEditorWorkspace,
   type StaffUserOption,
 } from "@/components/shared/RoundCanvasEditor";
+import { toEvaluationPlanPayload } from "@/components/shared/RoundCanvasEditor/evaluation-plan-payload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -410,6 +411,9 @@ export function JobDescriptionDetailView({
           maxScore: Number(r.configData?.maxScore ?? 100),
           aiSystemPrompt: r.configData?.aiSystemPrompt || "",
           evaluationCriteria: r.configData?.evaluationCriteria || "",
+          ...(r.configData?.evaluationPlan
+            ? { evaluationPlan: toEvaluationPlanPayload(r.configData.evaluationPlan) }
+            : {}),
           quizQuestions: (r.configData?.quizQuestions || []).map((q: any) => ({
             questionText: q.questionText || "",
             options: q.options || [],
@@ -499,6 +503,9 @@ export function JobDescriptionDetailView({
             maxScore: r.configData?.maxScore ?? 100,
             aiSystemPrompt: r.configData?.aiSystemPrompt ?? "",
             evaluationCriteria: r.configData?.evaluationCriteria ?? "",
+            ...(r.configData?.evaluationPlan
+              ? { evaluationPlan: toEvaluationPlanPayload(r.configData.evaluationPlan) }
+              : {}),
             quizQuestions: (r.configData?.quizQuestions ?? []).map((q: any) => ({
               questionText: q.questionText ?? "",
               options: q.options ?? [],
