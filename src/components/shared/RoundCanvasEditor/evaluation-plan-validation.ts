@@ -83,14 +83,16 @@ export function validateEvaluationPlan(plan?: UIEvaluationPlan): EvaluationPlanV
       errors.maxScore = "invalidMaxScore";
     }
 
-    if (
-      !Number.isFinite(minimumScore) ||
-      Number(minimumScore) < 0 ||
-      Number(minimumScore) > Number(maxScore)
+    const hasMinimumScore = minimumScore !== null && minimumScore !== undefined;
+    if (metric.required && (!hasMinimumScore || Number(minimumScore) <= 0)) {
+      errors.minimumScore = "requiredMinimumScore";
+    } else if (
+      hasMinimumScore &&
+      (!Number.isFinite(minimumScore) ||
+        Number(minimumScore) < 0 ||
+        Number(minimumScore) > Number(maxScore))
     ) {
       errors.minimumScore = "invalidMinimumScore";
-    } else if (metric.required && Number(minimumScore) <= 0) {
-      errors.minimumScore = "requiredMinimumScore";
     }
 
     return errors;

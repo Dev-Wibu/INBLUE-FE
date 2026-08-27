@@ -15,7 +15,7 @@ export interface UIEvaluationMetric {
   weight?: number;
   maxScore?: number;
   required?: boolean;
-  minimumScore?: number;
+  minimumScore?: number | null;
 }
 
 export interface UIEvaluationPlan {
