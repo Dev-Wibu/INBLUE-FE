@@ -43,4 +43,24 @@ describe("toEvaluationPlanPayload", () => {
   it("omits evaluationPlan when a round has none", () => {
     expect(toEvaluationPlanPayload(undefined)).toBeUndefined();
   });
+
+  it("preserves a null minimum score returned for an optional AI metric", () => {
+    const payload = toEvaluationPlanPayload({
+      metrics: [
+        {
+          code: "EDGE_CASES",
+          name: "Edge cases",
+          description: "Handle exceptional input",
+          weight: 100,
+          maxScore: 100,
+          required: false,
+          minimumScore: null,
+        },
+      ],
+      scoringInstruction: "Score on 0-100",
+      passRule: "Meet the threshold",
+    });
+
+    expect(payload?.metrics?.[0].minimumScore).toBeNull();
+  });
 });
