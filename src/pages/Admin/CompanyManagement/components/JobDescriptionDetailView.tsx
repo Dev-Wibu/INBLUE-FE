@@ -6,6 +6,7 @@ import {
   RoundCanvasEditorWorkspace,
   type StaffUserOption,
 } from "@/components/shared/RoundCanvasEditor";
+import { normalizeEvaluationPlan } from "@/components/shared/RoundCanvasEditor/evaluation-plan-normalization";
 import { toEvaluationPlanPayload } from "@/components/shared/RoundCanvasEditor/evaluation-plan-payload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -348,6 +349,7 @@ export function JobDescriptionDetailView({
         reviewerId: r.reviewerId ?? null,
         configData: {
           ...r.configData,
+          evaluationPlan: normalizeEvaluationPlan(r.configData?.evaluationPlan),
           codingProblemsId:
             r.configData?.codingProblems
               ?.map((cp: any) => cp.problemId)

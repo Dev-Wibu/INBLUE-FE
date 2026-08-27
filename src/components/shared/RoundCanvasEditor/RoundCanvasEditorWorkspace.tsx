@@ -53,6 +53,7 @@ import {
   getPrebuiltProcessTemplates,
   type PrebuiltProcessTemplate,
 } from "./constants";
+import { normalizeEvaluationPlan } from "./evaluation-plan-normalization";
 import { validateEvaluationPlan } from "./evaluation-plan-validation";
 import { EvaluationPlanEditor } from "./EvaluationPlanEditor";
 import type { RoundType, UIRound, UIRoundConfig } from "./types";
@@ -660,10 +661,7 @@ export function RoundCanvasEditorWorkspace({
           reviewerId: null,
           configData: {
             ...round.configData,
-            evaluationPlan: {
-              ...round.configData?.evaluationPlan,
-              metrics: round.configData?.evaluationPlan?.metrics ?? [],
-            },
+            evaluationPlan: normalizeEvaluationPlan(round.configData?.evaluationPlan),
             quizQuestions: round.configData?.quizQuestions ?? [],
             codingProblemsId:
               round.configData?.codingProblems

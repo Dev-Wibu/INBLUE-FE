@@ -85,6 +85,23 @@ describe("validateEvaluationPlan", () => {
     expect(requiredZero.metricErrors[0].minimumScore).toBe("requiredMinimumScore");
   });
 
+  it("accepts a null minimum score for an optional AI metric", () => {
+    const result = validateEvaluationPlan({
+      ...validPlan,
+      metrics: [
+        {
+          ...validPlan.metrics[0],
+          weight: 100,
+          required: false,
+          minimumScore: null,
+        },
+      ],
+    });
+
+    expect(result.metricErrors[0].minimumScore).toBeUndefined();
+    expect(result.isValid).toBe(true);
+  });
+
   it("requires descriptions, scoring instructions, and pass rules", () => {
     const result = validateEvaluationPlan({
       ...validPlan,

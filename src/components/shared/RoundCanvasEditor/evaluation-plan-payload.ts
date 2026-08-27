@@ -1,13 +1,15 @@
+import { normalizeEvaluationPlan } from "./evaluation-plan-normalization";
 import type { UIEvaluationPlan } from "./types";
 
 /** Creates a request-safe copy so editor state is never shared with an API payload. */
 export function toEvaluationPlanPayload(
   evaluationPlan?: UIEvaluationPlan
 ): UIEvaluationPlan | undefined {
-  if (!evaluationPlan) return undefined;
+  const normalizedPlan = normalizeEvaluationPlan(evaluationPlan);
+  if (!normalizedPlan) return undefined;
 
   return {
-    metrics: (evaluationPlan.metrics ?? []).map((metric) => ({
+    metrics: (normalizedPlan.metrics ?? []).map((metric) => ({
       code: metric.code?.trim(),
       name: metric.name?.trim(),
       description: metric.description?.trim(),
@@ -16,7 +18,7 @@ export function toEvaluationPlanPayload(
       required: metric.required ?? false,
       minimumScore: metric.minimumScore,
     })),
-    scoringInstruction: evaluationPlan.scoringInstruction?.trim(),
-    passRule: evaluationPlan.passRule?.trim(),
+    scoringInstruction: normalizedPlan.scoringInstruction?.trim(),
+    passRule: normalizedPlan.passRule?.trim(),
   };
 }

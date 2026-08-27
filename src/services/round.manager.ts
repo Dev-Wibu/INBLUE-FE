@@ -1,8 +1,16 @@
 import type { ApiResponse, Round, RoundType } from "@/interfaces";
 import type { components } from "../../schema-from-be";
 
+type PersistedEvaluationMetric = Omit<components["schemas"]["EvaluationMetric"], "minimumScore"> & {
+  minimumScore?: number | null;
+};
+
+type PersistedEvaluationPlan = Omit<components["schemas"]["EvaluationPlan"], "metrics"> & {
+  metrics?: PersistedEvaluationMetric[];
+};
+
 type PersistedRoundConfig = components["schemas"]["RoundConfigDto"] & {
-  evaluationPlan?: components["schemas"]["EvaluationPlan"];
+  evaluationPlan?: PersistedEvaluationPlan;
 };
 
 type PersistedRoundItem = Omit<components["schemas"]["RoundItemDto"], "configData"> & {
