@@ -2,6 +2,7 @@ import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toSafeUrl } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 import type { Company } from "@/services/company.manager";
 import {
@@ -27,6 +28,7 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
 
   const bannerUrl = company.bannerUrl;
   const logoUrl = company.logoUrl;
+  const safeWebsiteUrl = toSafeUrl(company.website);
   const companyInitials =
     company.name
       ?.split(" ")
@@ -152,9 +154,9 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
                       {t("enterpriseCompanydetail.scale")} {company.size}
                     </span>
                   )}
-                  {company.website && (
+                  {safeWebsiteUrl && (
                     <a
-                      href={company.website}
+                      href={safeWebsiteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 font-medium hover:text-[#0047AB] dark:hover:text-[#66B2FF]">

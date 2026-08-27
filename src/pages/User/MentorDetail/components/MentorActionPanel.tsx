@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
 import { openUrlInNewTab } from "@/lib/media-file-utils";
+import { toSafeUrl } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 import { CalendarCheck2, Copy, ExternalLink, Linkedin, Mail, MessageSquare } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +14,7 @@ interface MentorActionPanelProps {
 }
 export function MentorActionPanel({ mentor, onBookNow, onStartChat }: MentorActionPanelProps) {
   const { t } = useTranslation();
+  const safeLinkedInUrl = toSafeUrl(mentor.linkedInUrl);
   const handleCopyEmail = async () => {
     if (!mentor.email) {
       return;
@@ -85,13 +87,13 @@ export function MentorActionPanel({ mentor, onBookNow, onStartChat }: MentorActi
           </div>
         )}
 
-        {mentor.linkedInUrl && (
+        {safeLinkedInUrl && (
           <a
-            href={mentor.linkedInUrl}
-            rel="noreferrer"
+            href={safeLinkedInUrl}
+            rel="noopener noreferrer"
             onClick={(event) => {
               event.preventDefault();
-              openUrlInNewTab(mentor.linkedInUrl || "");
+              openUrlInNewTab(safeLinkedInUrl);
             }}
             className={cn(
               "flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 transition-colors hover:border-slate-300",
