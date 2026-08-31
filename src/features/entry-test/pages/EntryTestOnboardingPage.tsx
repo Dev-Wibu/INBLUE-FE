@@ -80,10 +80,7 @@ export function EntryTestOnboardingPage() {
             {t("entryTestOnboarding.setupTitle")}
           </span>
           <LanguageToggle className="h-9 w-12 rounded-full border border-slate-200 bg-white px-0 text-xs font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900" />
-          <ThemeToggle
-            iconOnly
-            className="rounded-full border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
-          />
+          <ThemeToggle iconOnly />
         </div>
       </header>
       <section className="mx-auto flex h-[calc(100vh-64px)] w-full max-w-5xl items-center overflow-hidden px-4 py-4 sm:px-5 md:px-10">
