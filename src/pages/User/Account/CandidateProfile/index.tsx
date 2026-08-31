@@ -2,14 +2,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { entryTestRoles } from "@/features/entry-test/constants/entry-test-onboarding.constants";
+import { useCareerPreference } from "@/features/entry-test/hooks/useCareerPreference";
 import {
   Award,
   Briefcase,
@@ -55,6 +50,7 @@ function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }
 export function CandidateProfileTab() {
   const { t } = useTranslation();
   const form = useCandidateProfileForm();
+  const careerPreference = useCareerPreference(true);
 
   if (form.isLoading) {
     return (
@@ -187,31 +183,35 @@ export function CandidateProfileTab() {
               {t("userAccount.overviewOfYourApplicationProfile")}
             </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {form.profiles.length > 1 && (
-              <Select
-                value={form.selectedProfileId ? String(form.selectedProfileId) : undefined}
-                onValueChange={(value) => form.setSelectedProfileId(Number(value))}>
-                <SelectTrigger className="min-h-10 min-w-52">
-                  <SelectValue placeholder={t("userAccount.selectProfile")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {form.profiles
-                    .filter((profileItem) => profileItem.id !== undefined)
-                    .map((profileItem, index) => (
-                      <SelectItem key={profileItem.id} value={String(profileItem.id)}>
-                        {[profileItem.targetRole, profileItem.targetLevel]
-                          .filter(Boolean)
-                          .join(" · ") || t("userAccount.profileOption", { number: index + 1 })}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            )}
+          <div className="flex items-center">
             <Button onClick={form.startEditing}>{t("general.edit")}</Button>
           </div>
         </div>
       </div>
+
+      {careerPreference.data?.targetRole && (
+        <div className="rounded-lg border border-indigo-200/80 bg-indigo-50/70 p-5 dark:border-indigo-500/30 dark:bg-indigo-950/30">
+          <p className="text-xs font-bold tracking-wide text-indigo-600 uppercase dark:text-indigo-300">
+            Định hướng nghề nghiệp
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-base font-bold text-slate-900 dark:text-white">
+              {entryTestRoles.find((item) => item.value === careerPreference.data?.targetRole)
+                ?.label ?? careerPreference.data.targetRole}
+            </span>
+            {careerPreference.data.targetLevel && (
+              <Badge variant="secondary">{careerPreference.data.targetLevel}</Badge>
+            )}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(careerPreference.data.languagesJson ?? []).map((skill) => (
+              <Badge key={skill} variant="outline" className="bg-white/70 dark:bg-slate-900/50">
+                {skill.replaceAll("_", " ")}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Target role, level, and introduction are valid profile data even when
           the optional skills/experience sections are still empty. */}
