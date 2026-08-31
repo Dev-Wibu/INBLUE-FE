@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowRight, Check, Code2, Compass, Flag, Target } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,7 @@ export function CareerPreferenceWizard({
   onOpenChange: (_open: boolean) => void;
   onSaved: (_preference: UserCareerPreference) => void;
 }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [role, setRole] = useState<TargetRole | null>(initialPreference?.targetRole ?? null);
   const [skills, setSkills] = useState<string[]>(initialPreference?.languagesJson ?? []);
@@ -68,34 +70,37 @@ export function CareerPreferenceWizard({
 
   const canContinue = step === 0 ? role !== null : step === 1 ? skills.length > 0 : true;
   const stepItems = [
-    { label: "Định hướng", icon: Target },
-    { label: "Kỹ năng", icon: Code2 },
-    { label: "Mục tiêu", icon: Flag },
-    { label: "Xác nhận", icon: Check },
+    { label: t("entryTestOnboarding.direction"), icon: Target },
+    { label: t("entryTestOnboarding.skills"), icon: Code2 },
+    { label: t("entryTestOnboarding.goal"), icon: Flag },
+    { label: t("entryTestOnboarding.confirm"), icon: Check },
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "flex max-h-[calc(100vh-32px)] min-h-[min(720px,calc(100vh-32px))] flex-col overflow-hidden p-0 sm:max-w-4xl",
+          "flex max-h-[calc(100vh-32px)] min-h-[min(720px,calc(100vh-32px))] flex-col gap-0 overflow-hidden rounded-[20px] border-slate-200 p-0 shadow-xl sm:max-w-4xl dark:border-slate-800",
           fullScreen &&
             "fixed inset-0 h-screen max-h-none min-h-0 w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 bg-slate-950 text-white sm:max-w-none"
         )}>
-        <div className="flex-none border-b border-slate-200 px-6 pt-6 pb-4 md:px-10 dark:border-slate-800">
+        <div className="flex-none border-b border-slate-200 bg-slate-50/70 px-6 pt-6 pb-5 md:px-10 dark:border-slate-800 dark:bg-slate-950/30">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <Compass className="h-5 w-5 text-indigo-600" /> Định hướng hành trình của bạn
+            <DialogTitle className="flex items-center gap-3 text-xl">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm shadow-indigo-500/25">
+                <Compass className="h-5 w-5" />
+              </span>
+              {t("entryTestWizard.title")}
             </DialogTitle>
-            <DialogDescription>
-              Thông tin này giúp hệ thống chọn nội dung Entry Test phù hợp hơn.
-            </DialogDescription>
+            <DialogDescription>{t("entryTestWizard.description")}</DialogDescription>
           </DialogHeader>
           <div className="mt-5 flex items-center gap-3">
             <Progress value={(step + 1) * 25} className="h-1.5" />
             <span className="shrink-0 text-xs font-medium text-slate-500">{step + 1}/4</span>
           </div>
-          <ol className="mt-4 grid grid-cols-4 gap-2" aria-label="Tiến độ thiết lập">
+          <ol
+            className="mt-4 grid grid-cols-4 gap-2"
+            aria-label={t("entryTestOnboarding.progressLabel")}>
             {stepItems.map(({ label, icon: Icon }, index) => {
               const complete = index < step;
               const current = index === step;
@@ -131,26 +136,24 @@ export function CareerPreferenceWizard({
           {step === 0 && (
             <div>
               <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-                Bạn muốn phát triển theo hướng nào?
+                {t("entryTestOnboarding.roleTitle")}
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Chọn một vai trò mục tiêu. Bạn có thể cập nhật lại sau.
-              </p>
-              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              <p className="mt-1 text-sm text-slate-500">{t("entryTestWizard.roleDescription")}</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {entryTestRoles.map((item) => (
                   <button
                     key={item.value}
                     type="button"
                     onClick={() => handleRole(item.value)}
                     className={cn(
-                      "flex min-h-20 items-center gap-3 rounded-lg border p-3 text-left transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
+                      "flex min-h-24 items-center gap-4 rounded-2xl border p-4 text-left transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
                       role === item.value
-                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40"
-                        : "border-slate-200 hover:border-slate-300 dark:border-slate-700"
+                        ? "border-indigo-500 bg-indigo-50 shadow-sm shadow-indigo-500/10 dark:bg-indigo-950/40"
+                        : "border-slate-200 hover:border-indigo-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-indigo-700 dark:hover:bg-slate-800/60"
                     )}>
                     <span
                       className={cn(
-                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-md",
+                        "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
                         role === item.value
                           ? "bg-indigo-600 text-white"
                           : "bg-slate-100 text-slate-500 dark:bg-slate-800"
@@ -158,8 +161,12 @@ export function CareerPreferenceWizard({
                       <Target className="h-4 w-4" />
                     </span>
                     <span>
-                      <span className="block text-sm font-semibold">{item.label}</span>
-                      <span className="text-xs text-slate-500">{item.description}</span>
+                      <span className="block text-sm font-semibold">
+                        {t(`entryTestOnboarding.roleLabels.${item.value}`)}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {t(`entryTestOnboarding.roleDescriptions.${item.value}`)}
+                      </span>
                     </span>
                   </button>
                 ))}
@@ -169,10 +176,8 @@ export function CareerPreferenceWizard({
 
           {step === 1 && (
             <div>
-              <h2 className="text-base font-semibold">Kỹ năng bạn đang sử dụng</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Chọn ít nhất một kỹ năng để cá nhân hóa phần chuyên môn.
-              </p>
+              <h2 className="text-base font-semibold">{t("entryTestOnboarding.skillTitle")}</h2>
+              <p className="mt-1 text-sm text-slate-500">{t("entryTestWizard.skillDescription")}</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {availableSkills.map((skill) => {
                   const selected = skills.includes(skill);
@@ -188,10 +193,10 @@ export function CareerPreferenceWizard({
                         )
                       }
                       className={cn(
-                        "inline-flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
+                        "inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
                         selected
-                          ? "border-indigo-500 bg-indigo-600 text-white"
-                          : "border-slate-200 bg-white hover:border-indigo-300 dark:border-slate-700 dark:bg-slate-900"
+                          ? "border-indigo-600 bg-indigo-600 text-white shadow-sm shadow-indigo-500/20"
+                          : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-700 dark:bg-slate-900"
                       )}>
                       <Code2 className="h-4 w-4" />
                       {skill.replaceAll("_", " ")}
@@ -206,35 +211,37 @@ export function CareerPreferenceWizard({
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-base font-semibold">Mức độ bạn đang hướng tới</h2>
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <h2 className="text-base font-semibold">{t("entryTestOnboarding.levelTitle")}</h2>
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {entryTestLevels.map((item) => (
                     <button
                       key={item.value}
                       type="button"
                       onClick={() => setLevel(item.value)}
                       className={cn(
-                        "h-11 rounded-md border text-sm font-semibold",
+                        "h-14 rounded-xl border text-sm font-semibold transition-all",
                         level === item.value
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
-                          : "border-slate-200 dark:border-slate-700"
+                          ? "border-indigo-600 bg-indigo-600 text-white shadow-sm shadow-indigo-500/20"
+                          : "border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-700 dark:hover:border-indigo-700"
                       )}>
-                      {item.label}
+                      {t(`entryTestOnboarding.levelLabels.${item.value}`)}
                     </button>
                   ))}
                 </div>
               </div>
-              <div>
+              <div className="rounded-2xl bg-slate-50 p-5 dark:bg-slate-950/50">
                 <Label htmlFor="career-goal">
-                  Mục tiêu nghề nghiệp{" "}
-                  <span className="font-normal text-slate-400">(không bắt buộc)</span>
+                  {t("entryTestOnboarding.goalLabel")}{" "}
+                  <span className="font-normal text-slate-400">
+                    ({t("entryTestOnboarding.optional")})
+                  </span>
                 </Label>
                 <Input
                   id="career-goal"
                   value={goal}
                   onChange={(event) => setGoal(event.target.value)}
-                  className="mt-2"
-                  placeholder="Ví dụ: Trở thành Frontend Engineer trong 12 tháng"
+                  className="mt-2 h-12 rounded-xl bg-white dark:bg-slate-900"
+                  placeholder={t("entryTestWizard.goalPlaceholder")}
                   maxLength={300}
                 />
               </div>
@@ -243,54 +250,69 @@ export function CareerPreferenceWizard({
 
           {step === 3 && (
             <div>
-              <h2 className="text-base font-semibold">Kiểm tra lại lựa chọn</h2>
-              <div className="mt-5 divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
+              <h2 className="text-base font-semibold">{t("entryTestOnboarding.reviewTitle")}</h2>
+              <div className="mt-5 divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
                 <ReviewRow
                   icon={Target}
-                  label="Định hướng"
-                  value={entryTestRoles.find((item) => item.value === role)?.label ?? "Chưa chọn"}
+                  label={t("entryTestOnboarding.direction")}
+                  value={
+                    role
+                      ? t(`entryTestOnboarding.roleLabels.${role}`)
+                      : t("entryTestOnboarding.notSelected")
+                  }
                 />
                 <ReviewRow
                   icon={Code2}
-                  label="Kỹ năng"
+                  label={t("entryTestOnboarding.skills")}
                   value={skills.map((item) => item.replaceAll("_", " ")).join(", ")}
                 />
                 <ReviewRow
                   icon={Flag}
-                  label="Mức độ mục tiêu"
+                  label={t("entryTestWizard.targetLevel")}
                   value={
-                    entryTestLevels.find((item) => item.value === level)?.label ?? "Chưa xác định"
+                    level
+                      ? t(`entryTestOnboarding.levelLabels.${level}`)
+                      : t("entryTestOnboarding.notDefined")
                   }
                 />
               </div>
               <p className="mt-4 text-xs leading-5 text-slate-500">
-                Khi thay đổi định hướng hoặc kỹ năng, hệ thống có thể yêu cầu bạn thực hiện Entry
-                Test lại để cập nhật năng lực.
+                {t("entryTestWizard.changeNotice")}
               </p>
             </div>
           )}
         </div>
 
-        <div className="flex flex-none flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4 md:px-10 dark:border-slate-800">
+        <div className="flex flex-none flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-4 md:px-10 dark:border-slate-800 dark:bg-slate-950/30">
           <Button
             variant="ghost"
+            className="rounded-xl"
             onClick={handleSkip}
             disabled={skip.isPending || upsert.isPending}>
-            Để sau
+            {t("entryTestWizard.later")}
           </Button>
           <div className="flex gap-2">
             {step > 0 && (
-              <Button variant="outline" onClick={() => setStep((value) => value - 1)}>
-                <ArrowLeft className="h-4 w-4" /> Quay lại
+              <Button
+                className="rounded-xl"
+                variant="outline"
+                onClick={() => setStep((value) => value - 1)}>
+                <ArrowLeft className="h-4 w-4" /> {t("entryTestOnboarding.back")}
               </Button>
             )}
             {step < 3 ? (
-              <Button onClick={() => setStep((value) => value + 1)} disabled={!canContinue}>
-                Tiếp tục <ArrowRight className="h-4 w-4" />
+              <Button
+                className="rounded-xl bg-indigo-600 hover:bg-indigo-700"
+                onClick={() => setStep((value) => value + 1)}
+                disabled={!canContinue}>
+                {t("entryTestOnboarding.next")} <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button onClick={handleSave} disabled={!role || upsert.isPending}>
-                {upsert.isPending ? "Đang lưu..." : "Lưu định hướng"}
+              <Button
+                className="rounded-xl bg-indigo-600 hover:bg-indigo-700"
+                onClick={handleSave}
+                disabled={!role || upsert.isPending}>
+                {upsert.isPending ? t("common.saving") : t("entryTestWizard.save")}
               </Button>
             )}
           </div>
@@ -309,12 +331,15 @@ function ReviewRow({
   label: string;
   value: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-start gap-3 px-4 py-3">
       <Icon className="mt-0.5 h-4 w-4 text-indigo-600" />
       <div>
         <p className="text-xs font-medium text-slate-500">{label}</p>
-        <p className="mt-0.5 text-sm font-semibold">{value || "Chưa chọn"}</p>
+        <p className="mt-0.5 text-sm font-semibold">
+          {value || t("entryTestOnboarding.notSelected")}
+        </p>
       </div>
     </div>
   );

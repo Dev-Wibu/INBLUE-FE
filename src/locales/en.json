@@ -8297,8 +8297,207 @@
     "companyDescription": "About the company",
     "openSource": "Open source job"
   },
+  "entryTestResult": {
+    "title": "Entry competency assessment result",
+    "description": "A summary of your verified scores and current competency level.",
+    "graded": "Graded",
+    "submissionMeta": "Attempt #{{id}} · Submitted {{date}}",
+    "unranked": "Not ranked",
+    "totalScore": "Total score",
+    "currentLevel": "Current level",
+    "breakdownTitle": "Section breakdown",
+    "breakdownDescription": "Your score compared with the maximum score for each assessment section.",
+    "sectionCount": "{{count}} sections",
+    "scoreValue": "{{score}} / {{max}} points",
+    "scoringNote": "Scores are calculated from quiz answers and hidden test suites. Sample run results are not used to calculate the final score.",
+    "sections": {
+      "common": "Core knowledge",
+      "specific": "Role-specific knowledge",
+      "coding": "Coding"
+    },
+    "competency": {
+      "updated": "Your competency profile has been updated",
+      "syncing": "Your latest competency profile is being synchronized",
+      "direction": "Direction: {{role}} · Level: {{level}}"
+    },
+    "pending": {
+      "title": "The assessment has not been graded",
+      "description": "This attempt is still in progress. Scores and level will appear after grading is complete."
+    },
+    "errors": {
+      "loadTitle": "Unable to load the result",
+      "loadDescription": "This attempt does not exist, belongs to another account, or the connection was interrupted."
+    },
+    "actions": {
+      "retry": "Try again",
+      "continue": "Continue assessment",
+      "back": "Back to assessments",
+      "overview": "View overview"
+    }
+  },
+  "entryTestSubmit": {
+    "title": "Submit the entry competency assessment?",
+    "description": "After submitting, you cannot change your answers or source code.",
+    "expiredTitle": "The assessment time has ended",
+    "expiredDescription": "Your latest draft will be submitted for grading.",
+    "unanswered": "You still have {{count}} unanswered items. These items will not receive points.",
+    "processing": "Processing",
+    "continue": "Continue assessment",
+    "submitting": "Submitting and grading...",
+    "confirm": "Confirm submission",
+    "errors": {
+      "levelScaleMissing": "No grading scale is configured for this score. Your work is still saved; please contact an administrator and submit again later."
+    }
+  },
+  "entryTestLanding": {
+    "title": "Entry assessment profile",
+    "description": "Complete a role-based assessment to identify your current ability and receive a suitable development path.",
+    "assessed": "Assessed",
+    "continueAttempt": "Continue current attempt",
+    "start": "Start Entry Test",
+    "chooseDirection": "Choose direction",
+    "contentsTitle": "Assessment contents",
+    "contentsDescription": "The assessment is personalized to your direction and skills.",
+    "features": {
+      "foundation": {
+        "title": "Core knowledge",
+        "description": "Assess general reasoning and core knowledge in a technology environment."
+      },
+      "direction": {
+        "title": "Role-specific knowledge",
+        "description": "Questions are selected using your declared role and skill groups."
+      },
+      "coding": {
+        "title": "Coding exercise",
+        "description": "Write and run code against visible examples before submitting to hidden tests."
+      }
+    },
+    "profileTitle": "Assessment profile",
+    "latestResult": "Latest result available",
+    "level": "Level {{level}}",
+    "viewResult": "View detailed result",
+    "noAssessment": "No assessment result yet",
+    "noAssessmentDescription": "Your result will appear here after you complete your first Entry Test.",
+    "currentDirection": "Current direction",
+    "noSkills": "No skills selected",
+    "updateDirection": "Update direction",
+    "directionSkipped": "You can choose a direction at any time before starting.",
+    "errors": {
+      "create": "Unable to create the Entry Test.",
+      "notEnoughItems": "There are not enough questions for this direction yet. Please try again later."
+    }
+  },
+  "entryTestStart": {
+    "title": "Ready to start the Entry Test?",
+    "description": "The timer starts as soon as the test is created. Use a stable connection and do not reload while submitting.",
+    "time": {
+      "title": "Time is limited",
+      "description": "The exact duration appears as soon as the test is created."
+    },
+    "contents": {
+      "title": "Configured content",
+      "description": "Includes general, role-specific, and coding questions when configured."
+    },
+    "saved": {
+      "title": "Answers are saved on this device",
+      "description": "You can recover answers after reloading in this browser."
+    },
+    "cancel": "Not now",
+    "creating": "Creating test...",
+    "confirm": "Start test"
+  },
+  "entryTestWizard": {
+    "title": "Choose your career direction",
+    "description": "This information helps us select more relevant Entry Test content.",
+    "roleDescription": "Choose a target role. You can update it later.",
+    "skillDescription": "Choose at least one skill to personalize the specialist section.",
+    "goalPlaceholder": "Example: Become a Frontend Engineer within 12 months",
+    "targetLevel": "Target level",
+    "changeNotice": "Changing your direction or skills may require another Entry Test to update your assessment.",
+    "later": "Later",
+    "save": "Save direction"
+  },
+  "entryTestProfile": {
+    "direction": "Direction",
+    "currentLevel": "Current ability",
+    "targetLevel": "Target level",
+    "skills": "Skills",
+    "notAssessed": "Not assessed"
+  },
+  "adminEntryTest": {
+    "title": "Entry Test Management",
+    "description": "Manage test configurations and entry-level score mappings",
+    "stats": { "totalTests": "Total tests", "activeTests": "Active", "scales": "Score bands" },
+    "searchPlaceholder": "Search by test name...",
+    "create": "Create configuration",
+    "tabs": { "tests": "Tests ({{count}})", "scales": "Score mappings ({{count}})" },
+    "columns": {
+      "name": "Test name",
+      "duration": "Duration",
+      "structure": "Structure",
+      "totalScore": "Total score",
+      "actions": "Actions"
+    },
+    "units": {
+      "minutes": "{{value}} min",
+      "sections": "{{value}} sections",
+      "points": "{{value}} points"
+    },
+    "unnamed": "Untitled",
+    "inUse": "Currently in use",
+    "deactivate": "Deactivate configuration",
+    "empty": "No matching Entry Test configuration found.",
+    "sections": {
+      "common": "Core knowledge",
+      "specific": "Role-specific knowledge",
+      "coding": "Coding"
+    },
+    "itemTypes": {
+      "QUESTION_BANK": "Multiple-choice questions",
+      "CODING_PROBLEM": "Coding exercise"
+    },
+    "editor": {
+      "editTitle": "Edit Entry Test",
+      "createTitle": "Create Entry Test",
+      "description": "Configure general information and scoring for each assessment section.",
+      "namePlaceholder": "Enter the Entry Test configuration name",
+      "durationLabel": "Duration (minutes)",
+      "structureTitle": "Test structure",
+      "structureDescription": "Total score = item count × score per item.",
+      "section": "Section",
+      "itemCount": "Items",
+      "scorePerItem": "Score / item",
+      "save": "Save configuration"
+    },
+    "scale": {
+      "title": "Ability score mappings",
+      "description": "Configure score ranges for each level and role.",
+      "role": "Applicable role",
+      "level": "Level",
+      "minScore": "Minimum score",
+      "maxScore": "Maximum score",
+      "minCodingScore": "Minimum coding score",
+      "active": "Active",
+      "save": "Save mappings"
+    },
+    "messages": {
+      "loadError": "Unable to load Entry Test configurations.",
+      "invalidGeneral": "The test name and duration must be valid.",
+      "invalidSections": "Sections must have valid item counts and scores, and totals must match.",
+      "saveSuccess": "Entry Test configuration saved.",
+      "saveError": "Unable to save the Entry Test configuration.",
+      "deactivateSuccess": "Entry Test configuration deactivated.",
+      "deactivateError": "Unable to deactivate the Entry Test configuration.",
+      "invalidScale": "The minimum score cannot exceed the maximum score.",
+      "scaleSaveSuccess": "Score mappings saved.",
+      "scaleSaveError": "Unable to save score mappings."
+    }
+  },
   "entryTestOnboarding": {
     "setupTitle": "Set up your learning profile",
+    "stepCounter": "STEP {{current}} / {{total}}",
+    "pageTitle": "Set up your career profile",
+    "helpText": "This information helps personalize your Entry Test and development path.",
     "progressLabel": "Setup progress",
     "direction": "Direction",
     "skills": "Skills",

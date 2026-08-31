@@ -1,4 +1,5 @@
 import { Clock3, FileQuestion, ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,39 +22,46 @@ export function EntryTestStartDialog({
   onOpenChange: (_open: boolean) => void;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Sẵn sàng bắt đầu Entry Test?</DialogTitle>
-          <DialogDescription>
-            Đồng hồ sẽ chạy ngay sau khi hệ thống tạo đề. Hãy chuẩn bị kết nối ổn định và không tải
-            lại trang khi đang gửi bài.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="my-2 divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
-          <Info
-            icon={Clock3}
-            title="Thời gian có giới hạn"
-            text="Thời lượng chính xác sẽ hiển thị ngay khi đề được tạo."
-          />
-          <Info
-            icon={FileQuestion}
-            title="Nội dung theo cấu hình"
-            text="Gồm câu hỏi chung, chuyên môn và bài lập trình nếu được cấu hình."
-          />
-          <Info
-            icon={ShieldCheck}
-            title="Bài làm được lưu trên thiết bị"
-            text="Bạn có thể khôi phục câu trả lời sau khi refresh trên trình duyệt này."
-          />
+      <DialogContent className="gap-0 overflow-hidden rounded-2xl border-slate-200 p-0 sm:max-w-lg dark:border-slate-800">
+        <div className="px-6 pt-6 pb-5">
+          <DialogHeader>
+            <DialogTitle>{t("entryTestStart.title")}</DialogTitle>
+            <DialogDescription>{t("entryTestStart.description")}</DialogDescription>
+          </DialogHeader>
+          <div className="mt-5 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
+            <Info
+              icon={Clock3}
+              title={t("entryTestStart.time.title")}
+              text={t("entryTestStart.time.description")}
+            />
+            <Info
+              icon={FileQuestion}
+              title={t("entryTestStart.contents.title")}
+              text={t("entryTestStart.contents.description")}
+            />
+            <Info
+              icon={ShieldCheck}
+              title={t("entryTestStart.saved.title")}
+              text={t("entryTestStart.saved.description")}
+            />
+          </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-            Chưa bắt đầu
+        <DialogFooter className="border-t border-slate-200 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/30">
+          <Button
+            className="rounded-xl"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={pending}>
+            {t("entryTestStart.cancel")}
           </Button>
-          <Button onClick={onConfirm} disabled={pending}>
-            {pending ? "Đang tạo đề..." : "Bắt đầu làm bài"}
+          <Button
+            className="rounded-xl bg-indigo-600 hover:bg-indigo-700"
+            onClick={onConfirm}
+            disabled={pending}>
+            {pending ? t("entryTestStart.creating") : t("entryTestStart.confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

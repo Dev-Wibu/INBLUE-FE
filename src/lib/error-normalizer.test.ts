@@ -179,6 +179,15 @@ describe("error-normalizer — known error patterns", () => {
       normalizeApiError({ response: { data: "Content-Type text/plain is not supported" } }).message
     ).toBe(t("general.theSubmittedDataFormatIs"));
   });
+
+  it("maps missing Entry Test level scale to a localized actionable message", () => {
+    expect(
+      normalizeApiError({
+        status: 400,
+        data: { error: "Level scale is not configured for this score" },
+      }).message
+    ).toBe(t("entryTestSubmit.errors.levelScaleMissing"));
+  });
 });
 
 describe("error-normalizer — field errors extraction", () => {

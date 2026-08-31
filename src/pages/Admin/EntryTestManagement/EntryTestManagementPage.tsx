@@ -1,5 +1,15 @@
-import { PaginationControl, ReloadButton } from "@/components/shared";
+import { PaginationControl, ReloadButton, TruncatedScrollText } from "@/components/shared";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -9,14 +19,33 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import {
   entryTestAdminManager,
   type AdminEntryTest,
   type AdminLevelScale,
 } from "@/services/entry-test-admin.manager";
-import { CheckCircle2, ClipboardCheck, Plus, Save, Search, Trash2, XCircle } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  ClipboardCheck,
+  Clock3,
+  Edit3,
+  Gauge,
+  Layers3,
+  Plus,
+  Save,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import type {
@@ -26,19 +55,12 @@ import type {
   TargetRole,
 } from "@/features/entry-test/types/entry-test.types";
 
-const roles: Array<{ value: TargetRole; label: string }> = [
-  { value: "BE", label: "Backend" },
-  { value: "FE", label: "Frontend" },
-  { value: "QA_QC", label: "QA / QC" },
-  { value: "BA", label: "Business Analyst" },
-  { value: "DEVOPS", label: "DevOps" },
-  { value: "DATA", label: "Data" },
-];
+const roles: TargetRole[] = ["BE", "FE", "QA_QC", "BA", "DEVOPS", "DATA"];
 const levels: TargetLevel[] = ["INTERN", "FRESHER", "JUNIOR", "MIDDLE"];
-const sectionLabels: Record<EntryTestSectionType, string> = {
-  COMMON_QUIZ: "Kiến thức chung",
-  SPECIFIC_QUIZ: "Kiến thức chuyên môn",
-  SPECIFIC_CODING: "Lập trình",
+const sectionLabelKeys: Record<EntryTestSectionType, string> = {
+  COMMON_QUIZ: "adminEntryTest.sections.common",
+  SPECIFIC_QUIZ: "adminEntryTest.sections.specific",
+  SPECIFIC_CODING: "adminEntryTest.sections.coding",
 };
 const emptySection = (
   sectionType: EntryTestSectionType,
@@ -53,6 +75,7 @@ const emptySection = (
 });
 
 export function EntryTestManagementPage() {
+  const { t } = useTranslation();
   const [tests, setTests] = useState<AdminEntryTest[]>([]);
   const [scales, setScales] = useState<AdminLevelScale[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +86,7 @@ export function EntryTestManagementPage() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [testData, scaleData] = await Promise.all([
@@ -73,14 +96,14 @@ export function EntryTestManagementPage() {
       setTests(testData ?? []);
       setScales(scaleData ?? []);
     } catch {
-      toast.error("Không thể tải cấu hình Entry Test từ backend.");
+      toast.error(t("adminEntryTest.messages.loadError"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
   useEffect(() => {
     setScaleDraft(
       levels.map(
@@ -101,7 +124,7 @@ export function EntryTestManagementPage() {
   const activeTest = useMemo(() => tests.find((test) => test.isActive), [tests]);
   const saveTest = async () => {
     if (!editing?.name?.trim() || !editing.timeLimitMinutes || editing.timeLimitMinutes <= 0) {
-      toast.error("Tên bài và thời lượng phải hợp lệ.");
+      toast.error(t("adminEntryTest.messages.invalidGeneral"));
       return;
     }
     const sections = editing.sectionConfigs ?? [];
@@ -112,7 +135,7 @@ export function EntryTestManagementPage() {
         sections.reduce((sum, section) => sum + section.totalScore, 0) - (editing.totalScore ?? 0)
       ) > 0.01
     ) {
-      toast.error("Section phải có số lượng/điểm hợp lệ và tổng điểm phải khớp.");
+      toast.error(t("adminEntryTest.messages.invalidSections"));
       return;
     }
     setSaving(true);
@@ -133,9 +156,9 @@ export function EntryTestManagementPage() {
           : [saved, ...current]
       );
       setEditing(null);
-      toast.success("Đã lưu cấu hình Entry Test.");
+      toast.success(t("adminEntryTest.messages.saveSuccess"));
     } catch {
-      toast.error("Backend không thể lưu cấu hình Entry Test.");
+      toast.error(t("adminEntryTest.messages.saveError"));
     } finally {
       setSaving(false);
     }
@@ -145,16 +168,16 @@ export function EntryTestManagementPage() {
     try {
       const saved = await entryTestAdminManager.deactivateEntryTest(id);
       setTests((current) => current.map((item) => (item.id === saved.id ? saved : item)));
-      toast.success("Đã deactivate Entry Test.");
+      toast.success(t("adminEntryTest.messages.deactivateSuccess"));
     } catch {
-      toast.error("Không thể deactivate Entry Test.");
+      toast.error(t("adminEntryTest.messages.deactivateError"));
     } finally {
       setSaving(false);
     }
   };
   const saveScales = async () => {
     if (scaleDraft.some((scale) => (scale.minScore ?? 0) > (scale.maxScore ?? 0))) {
-      toast.error("minScore không được lớn hơn maxScore.");
+      toast.error(t("adminEntryTest.messages.invalidScale"));
       return;
     }
     setSaving(true);
@@ -174,9 +197,9 @@ export function EntryTestManagementPage() {
         ...current.filter((item) => item.targetRole !== scaleRole),
         ...saved,
       ]);
-      toast.success("Đã lưu thang quy đổi.");
+      toast.success(t("adminEntryTest.messages.scaleSaveSuccess"));
     } catch {
-      toast.error("Không thể lưu thang quy đổi.");
+      toast.error(t("adminEntryTest.messages.scaleSaveError"));
     } finally {
       setSaving(false);
     }
@@ -190,65 +213,104 @@ export function EntryTestManagementPage() {
     );
   return (
     <div className="-m-4 flex min-h-full flex-col bg-slate-50 md:-m-6 lg:-m-8 dark:bg-slate-950">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
-        <div>
-          <h1 className="text-base font-bold text-slate-900 dark:text-white">Entry Test</h1>
-          <p className="mt-0.5 text-xs text-slate-500">Cấu hình đề thi và thang quy đổi năng lực</p>
-        </div>
-        {tab === "tests" && (
-          <Button
-            className="h-8 bg-indigo-600 px-3 text-xs"
-            onClick={() =>
-              setEditing({
-                name: "",
-                totalScore: 100,
-                timeLimitMinutes: 60,
-                isActive: false,
-                sectionConfigs: [
-                  emptySection("COMMON_QUIZ", 1),
-                  emptySection("SPECIFIC_QUIZ", 2),
-                  emptySection("SPECIFIC_CODING", 3),
-                ],
-              })
-            }>
-            <Plus className="h-3.5 w-3.5" /> Tạo cấu hình
-          </Button>
-        )}
-      </div>
-      <div className="border-b border-slate-200 bg-white px-6 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex gap-5">
-          <button
-            className={`border-b-2 py-3 text-sm font-semibold ${tab === "tests" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}
-            onClick={() => setTab("tests")}>
-            Đề thi ({tests.length})
-          </button>
-          <button
-            className={`border-b-2 py-3 text-sm font-semibold ${tab === "scales" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}
-            onClick={() => setTab("scales")}>
-            Thang quy đổi ({scales.length})
-          </button>
-        </div>
-      </div>
-      {tab === "tests" ? (
-        <>
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-            <div className="relative w-full max-w-md">
-              <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
-              <Input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Tìm theo tên đề..."
-                className="h-9 pl-9 text-xs"
-              />
+      <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto p-5 duration-300 sm:p-6 md:px-8">
+        <section className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {t("adminEntryTest.title")}
+              </h1>
+              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                {t("adminEntryTest.description")}
+              </p>
             </div>
+            <div className="grid w-full grid-cols-3 items-center md:w-auto">
+              {[
+                [tests.length, t("adminEntryTest.stats.totalTests")],
+                [
+                  tests.filter((test) => test.isActive).length,
+                  t("adminEntryTest.stats.activeTests"),
+                ],
+                [scales.filter((scale) => scale.isActive).length, t("adminEntryTest.stats.scales")],
+              ].map(([value, label], index) => (
+                <div key={String(label)} className="flex items-center justify-center">
+                  {index > 0 && (
+                    <div className="h-7 w-px shrink-0 bg-slate-200 dark:bg-slate-800" />
+                  )}
+                  <div className="flex min-w-0 flex-1 flex-col items-center px-2 text-center sm:min-w-[94px]">
+                    <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
+                      {value}
+                    </span>
+                    <span className="mt-1.5 text-[11px] leading-4 font-medium text-slate-500 sm:text-[13px] dark:text-slate-400">
+                      {label}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            {tab === "tests" && (
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={t("adminEntryTest.searchPlaceholder")}
+                  className="h-[46px] rounded-xl border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70"
+                />
+              </div>
+            )}
             <ReloadButton
               onReload={load}
               isLoading={loading}
               showLabel
               hideTooltip
-              label="Tải lại"
+              label={t("common.reload")}
             />
+            {tab === "tests" && (
+              <Button
+                className="h-[46px] rounded-xl bg-indigo-600 px-5 font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700"
+                onClick={() =>
+                  setEditing({
+                    name: "",
+                    totalScore: 100,
+                    timeLimitMinutes: 60,
+                    isActive: false,
+                    sectionConfigs: [
+                      emptySection("COMMON_QUIZ", 1),
+                      emptySection("SPECIFIC_QUIZ", 2),
+                      emptySection("SPECIFIC_CODING", 3),
+                    ],
+                  })
+                }>
+                <Plus className="h-4 w-4" /> {t("adminEntryTest.create")}
+              </Button>
+            )}
           </div>
+
+          <div className="mt-4 inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-950/80">
+            {[
+              ["tests", t("adminEntryTest.tabs.tests", { count: tests.length })],
+              ["scales", t("adminEntryTest.tabs.scales", { count: scales.length })],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTab(value as "tests" | "scales")}
+                className={`rounded-lg px-4 py-2 text-[13.5px] font-semibold transition-all ${
+                  tab === value
+                    ? "bg-white text-indigo-700 shadow-sm dark:bg-slate-800 dark:text-indigo-300"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                }`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {tab === "tests" ? (
           <TestList
             tests={tests.filter((test) =>
               (test.name ?? "").toLowerCase().includes(search.trim().toLowerCase())
@@ -258,17 +320,17 @@ export function EntryTestManagementPage() {
             onDeactivate={deactivate}
             saving={saving}
           />
-        </>
-      ) : (
-        <ScaleEditor
-          role={scaleRole}
-          scales={scaleDraft}
-          onRoleChange={setScaleRole}
-          onChange={setScaleDraft}
-          onSave={saveScales}
-          saving={saving}
-        />
-      )}
+        ) : (
+          <ScaleEditor
+            role={scaleRole}
+            scales={scaleDraft}
+            onRoleChange={setScaleRole}
+            onChange={setScaleDraft}
+            onSave={saveScales}
+            saving={saving}
+          />
+        )}
+      </div>
       {editing && (
         <EntryTestEditor
           value={editing}
@@ -291,10 +353,11 @@ function TestList({
 }: {
   tests: AdminEntryTest[];
   activeId?: number;
-  onEdit: (test: AdminEntryTest) => void;
-  onDeactivate: (id: number) => void;
+  onEdit: (_test: AdminEntryTest) => void;
+  onDeactivate: (_id: number) => void;
   saving: boolean;
 }) {
+  const { t } = useTranslation();
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "admin_entry_test_page_size",
     defaultPageSize: 10,
@@ -302,77 +365,130 @@ function TestList({
   const pagination = usePagination({ totalCount: tests.length, pageSize });
   const pageData = tests.slice(pagination.startIndex, pagination.endIndex + 1);
   return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="border-y border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs text-slate-500 dark:bg-slate-900">
-            <tr>
-              <th className="py-3 pl-6">Tên đề</th>
-              <th className="py-3">Thời lượng</th>
-              <th className="py-3">Tổng điểm</th>
-              <th className="py-3">Trạng thái</th>
-              <th className="py-3 pr-6 text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageData.map((test) => (
-              <tr key={test.id} className="border-t border-slate-200 dark:border-slate-800">
-                <td className="max-w-[360px] py-4 pl-6 font-semibold">
-                  <span className="block truncate" title={test.name || "Chưa đặt tên"}>
-                    {test.name || "Chưa đặt tên"}
+    <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <Table>
+        <TableHeader>
+          <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+            <TableHead className="w-[80px] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+              {t("common.id")}
+            </TableHead>
+            <TableHead className="min-w-[280px] px-4 font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.columns.name")}
+            </TableHead>
+            <TableHead className="w-[150px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.columns.duration")}
+            </TableHead>
+            <TableHead className="w-[140px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.columns.structure")}
+            </TableHead>
+            <TableHead className="w-[160px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.columns.totalScore")}
+            </TableHead>
+            <TableHead className="w-[190px] px-5 font-semibold text-slate-700 dark:text-slate-200">
+              {t("common.status")}
+            </TableHead>
+            <TableHead className="w-[112px] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.columns.actions")}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {pageData.map((test) => (
+            <TableRow
+              key={test.id}
+              onClick={() => onEdit(test)}
+              className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+              <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                #{test.id ?? "—"}
+              </TableCell>
+              <TableCell className="max-w-[420px] px-4 py-4">
+                <TruncatedScrollText text={test.name || t("adminEntryTest.unnamed")} />
+              </TableCell>
+              <TableCell className="px-5 py-4">
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                  <Clock3 className="h-4 w-4 text-slate-400" />{" "}
+                  {t("adminEntryTest.units.minutes", { value: test.timeLimitMinutes ?? "—" })}
+                </span>
+              </TableCell>
+              <TableCell className="px-5 py-4">
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                  <Layers3 className="h-4 w-4 text-slate-400" />{" "}
+                  {t("adminEntryTest.units.sections", {
+                    value: test.sectionConfigs?.length ?? 0,
+                  })}
+                </span>
+              </TableCell>
+              <TableCell className="px-5 py-4">
+                <span className="inline-flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200">
+                  <Gauge className="h-4 w-4 text-indigo-500" />{" "}
+                  {t("adminEntryTest.units.points", { value: test.totalScore ?? "—" })}
+                </span>
+              </TableCell>
+              <TableCell className="px-5 py-4">
+                {test.isActive ? (
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-500/25 bg-emerald-50/80 px-3 py-1 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/60 dark:text-emerald-400">
+                    <span className="mr-2 h-2 w-2 rounded-full bg-emerald-500" />
+                    {t("common.active")}
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="border-slate-200 bg-slate-100/80 px-3 py-1 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+                    <span className="mr-2 h-2 w-2 rounded-full bg-slate-400" />
+                    {t("common.shutDown")}
+                  </Badge>
+                )}
+                {test.id === activeId && (
+                  <span className="mt-1.5 block text-[11px] font-semibold text-indigo-600 dark:text-indigo-300">
+                    {t("adminEntryTest.inUse")}
                   </span>
-                </td>
-                <td className="py-4 text-slate-600 dark:text-slate-300">
-                  {test.timeLimitMinutes ?? "-"} phút
-                </td>
-                <td className="py-4 text-slate-600 dark:text-slate-300">
-                  {test.totalScore ?? "-"}
-                </td>
-                <td className="py-4">
-                  {test.isActive ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Active
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                      <XCircle className="h-3.5 w-3.5" /> Inactive
-                    </span>
-                  )}
-                  {test.id === activeId && (
-                    <span className="ml-2 rounded-md bg-indigo-50 px-2 py-1 text-[11px] font-semibold text-indigo-600">
-                      Đang được dùng
-                    </span>
-                  )}
-                </td>
-                <td className="py-4 pr-6 text-right">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(test)}>
-                    Sửa
+                )}
+              </TableCell>
+              <TableCell
+                className="py-4 pr-6 text-right"
+                onClick={(event) => event.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 hover:bg-indigo-50 dark:hover:bg-indigo-950/50"
+                  onClick={() => onEdit(test)}
+                  title={t("general.edit")}>
+                  <Edit3 className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
+                </Button>
+                {test.isActive && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                    disabled={saving}
+                    title={t("adminEntryTest.deactivate")}
+                    onClick={() => test.id && onDeactivate(test.id)}>
+                    <Trash2 className="h-4 w-4 text-rose-500" />
                   </Button>
-                  {test.isActive && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={saving}
-                      onClick={() => test.id && onDeactivate(test.id)}>
-                      <Trash2 className="h-3.5 w-3.5 text-rose-500" />
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {tests.length === 0 && (
-          <div className="p-12 text-center text-sm text-slate-500">
-            <ClipboardCheck className="mx-auto mb-3 h-8 w-8 text-slate-400" />
-            Chưa có cấu hình Entry Test từ backend.
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      {tests.length === 0 && (
+        <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+            <ClipboardCheck className="h-6 w-6 text-slate-400" />
           </div>
-        )}
-      </div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            {t("adminEntryTest.empty")}
+          </p>
+        </div>
+      )}
       {tests.length > 0 && (
-        <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
           <PaginationControl
             pagination={pagination}
+            showBoundaryButtons={false}
+            showPageJump={false}
             onPageSizeChange={(nextPageSize) => {
               setPageSize(nextPageSize);
               pagination.goToFirstPage();
@@ -392,11 +508,12 @@ function EntryTestEditor({
   saving,
 }: {
   value: AdminEntryTest;
-  onChange: (value: AdminEntryTest) => void;
+  onChange: (_value: AdminEntryTest) => void;
   onClose: () => void;
   onSave: () => void;
   saving: boolean;
 }) {
+  const { t } = useTranslation();
   const sections = value.sectionConfigs ?? [];
   const updateSection = (index: number, patch: Partial<EntryTestSectionConfig>) =>
     onChange({
@@ -414,85 +531,115 @@ function EntryTestEditor({
       ),
     });
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
-      <div className="max-h-[92vh] w-full max-w-3xl overflow-auto rounded-lg border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-lg font-bold">
-              {value.id ? "Chỉnh sửa Entry Test" : "Tạo Entry Test"}
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Tổng điểm thực tế dùng scorePerItem × itemCount.
-            </p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <XCircle className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="mt-5 grid gap-4 sm:grid-cols-3">
-          <label className="sm:col-span-2">
-            <span className="text-xs font-semibold text-slate-500">Tên đề</span>
-            <Input
-              className="mt-1"
-              value={value.name ?? ""}
-              onChange={(e) => onChange({ ...value, name: e.target.value })}
-            />
-          </label>
-          <label>
-            <span className="text-xs font-semibold text-slate-500">Thời lượng (phút)</span>
-            <Input
-              className="mt-1"
-              type="number"
-              min="1"
-              value={value.timeLimitMinutes ?? ""}
-              onChange={(e) => onChange({ ...value, timeLimitMinutes: Number(e.target.value) })}
-            />
-          </label>
-        </div>
-        <div className="mt-6 overflow-hidden border-y border-slate-200 dark:border-slate-800">
-          <div className="grid grid-cols-[1.4fr_100px_100px_100px] gap-3 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-500 dark:bg-slate-950">
-            <span>Section</span>
-            <span>Số câu</span>
-            <span>Điểm/câu</span>
-            <span>Thành tiền</span>
-          </div>
-          {sections.map((section, index) => (
-            <div
-              key={section.sectionType}
-              className="grid grid-cols-[1.4fr_100px_100px_100px] items-center gap-3 border-t border-slate-200 px-3 py-3 text-sm dark:border-slate-800">
-              <span className="font-semibold">
-                {sectionLabels[section.sectionType]}
-                <span className="mt-1 block text-[11px] font-normal text-slate-500">
-                  {section.itemType}
-                </span>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-4xl flex-col gap-0 overflow-hidden rounded-2xl border-slate-200 p-0 dark:border-slate-800">
+        <DialogHeader className="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+          <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+            {value.id
+              ? t("adminEntryTest.editor.editTitle")
+              : t("adminEntryTest.editor.createTitle")}
+          </DialogTitle>
+          <DialogDescription>{t("adminEntryTest.editor.description")}</DialogDescription>
+        </DialogHeader>
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <label className="sm:col-span-2">
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                {t("adminEntryTest.columns.name")}
               </span>
               <Input
+                className="mt-2 h-11 rounded-xl"
+                value={value.name ?? ""}
+                placeholder={t("adminEntryTest.editor.namePlaceholder")}
+                onChange={(e) => onChange({ ...value, name: e.target.value })}
+              />
+            </label>
+            <label>
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                {t("adminEntryTest.editor.durationLabel")}
+              </span>
+              <Input
+                className="mt-2 h-11 rounded-xl"
                 type="number"
                 min="1"
-                value={section.itemCount}
-                onChange={(e) => updateSection(index, { itemCount: Number(e.target.value) })}
+                value={value.timeLimitMinutes ?? ""}
+                onChange={(e) => onChange({ ...value, timeLimitMinutes: Number(e.target.value) })}
               />
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={section.scorePerItem}
-                onChange={(e) => updateSection(index, { scorePerItem: Number(e.target.value) })}
-              />
-              <span className="font-mono text-xs">{section.totalScore.toFixed(2)}</span>
+            </label>
+          </div>
+          <div className="mt-6">
+            <div className="mb-3 flex items-end justify-between gap-4">
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">
+                  {t("adminEntryTest.editor.structureTitle")}
+                </h3>
+                <p className="mt-1 text-xs text-slate-500">
+                  {t("adminEntryTest.editor.structureDescription")}
+                </p>
+              </div>
+              <Badge variant="outline" className="shrink-0">
+                {sections.reduce((sum, section) => sum + section.totalScore, 0)} /{" "}
+                {t("adminEntryTest.units.points", { value: value.totalScore ?? 0 })}
+              </Badge>
             </div>
-          ))}
+            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+              <div className="min-w-[640px]">
+                <div className="grid grid-cols-[1.5fr_110px_120px_110px] gap-3 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600 dark:bg-slate-950 dark:text-slate-300">
+                  <span>{t("adminEntryTest.editor.section")}</span>
+                  <span>{t("adminEntryTest.editor.itemCount")}</span>
+                  <span>{t("adminEntryTest.editor.scorePerItem")}</span>
+                  <span>{t("adminEntryTest.columns.totalScore")}</span>
+                </div>
+                {sections.map((section, index) => (
+                  <div
+                    key={section.sectionType}
+                    className="grid grid-cols-[1.5fr_110px_120px_110px] items-center gap-3 border-t border-slate-200 px-4 py-4 dark:border-slate-800">
+                    <span className="font-semibold text-slate-800 dark:text-slate-100">
+                      {t(sectionLabelKeys[section.sectionType])}
+                      <span className="mt-1 block text-[11px] font-normal text-slate-500">
+                        {t(`adminEntryTest.itemTypes.${section.itemType}`)}
+                      </span>
+                    </span>
+                    <Input
+                      className="h-10 rounded-lg"
+                      type="number"
+                      min="1"
+                      value={section.itemCount}
+                      onChange={(e) => updateSection(index, { itemCount: Number(e.target.value) })}
+                    />
+                    <Input
+                      className="h-10 rounded-lg"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={section.scorePerItem}
+                      onChange={(e) =>
+                        updateSection(index, { scorePerItem: Number(e.target.value) })
+                      }
+                    />
+                    <span className="font-mono text-sm font-semibold text-indigo-600 dark:text-indigo-300">
+                      {section.totalScore.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="mt-4 flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
-            Hủy
+        <DialogFooter className="shrink-0 border-t border-slate-200 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/40">
+          <Button variant="outline" className="rounded-xl" onClick={onClose}>
+            {t("general.cancel")}
           </Button>
-          <Button onClick={onSave} disabled={saving}>
-            <Save className="h-4 w-4" /> {saving ? "Đang lưu..." : "Lưu cấu hình"}
+          <Button
+            className="rounded-xl bg-indigo-600 hover:bg-indigo-700"
+            onClick={onSave}
+            disabled={saving}>
+            <Save className="h-4 w-4" />
+            {saving ? t("common.saving") : t("adminEntryTest.editor.save")}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -506,115 +653,141 @@ function ScaleEditor({
 }: {
   role: TargetRole;
   scales: AdminLevelScale[];
-  onRoleChange: (role: TargetRole) => void;
-  onChange: (scales: AdminLevelScale[]) => void;
+  onRoleChange: (_role: TargetRole) => void;
+  onChange: (_scales: AdminLevelScale[]) => void;
   onSave: () => void;
   saving: boolean;
 }) {
+  const { t } = useTranslation();
   return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+    <div className="flex-1 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-800">
         <div>
-          <h2 className="text-base font-semibold">Thang quy đổi level</h2>
-          <p className="mt-1 text-xs text-slate-500">Mỗi role có một bộ khoảng điểm active.</p>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            {t("adminEntryTest.scale.title")}
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">{t("adminEntryTest.scale.description")}</p>
         </div>
-        <div className="w-48">
-          <span className="mb-1 block text-xs font-semibold text-slate-500">Role</span>
+        <div className="w-full sm:w-56">
+          <span className="mb-2 block text-xs font-semibold text-slate-500">
+            {t("adminEntryTest.scale.role")}
+          </span>
           <Select value={role} onValueChange={(value) => onRoleChange(value as TargetRole)}>
-            <SelectTrigger>
+            <SelectTrigger className="h-11 rounded-xl">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {roles.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
+                <SelectItem key={item} value={item}>
+                  {t(`entryTestOnboarding.roleLabels.${item}`)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
       </div>
-      <div className="border-y border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs text-slate-500 dark:bg-slate-900">
-            <tr>
-              <th className="py-3 pl-6">Level</th>
-              <th className="py-3">Min score</th>
-              <th className="py-3">Max score</th>
-              <th className="py-3">Min coding score</th>
-              <th className="py-3 pr-6">Active</th>
-            </tr>
-          </thead>
-          <tbody>
-            {scales.map((scale, index) => (
-              <tr key={scale.level} className="border-t border-slate-200 dark:border-slate-800">
-                <td className="py-3 pl-6 font-semibold">{scale.level}</td>
-                <td className="py-3">
-                  <Input
-                    className="h-8 w-28"
-                    type="number"
-                    step="0.01"
-                    value={scale.minScore ?? 0}
-                    onChange={(e) =>
-                      onChange(
-                        scales.map((item, i) =>
-                          i === index ? { ...item, minScore: Number(e.target.value) } : item
-                        )
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900 dark:hover:bg-slate-900">
+            <TableHead className="pl-6 font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.scale.level")}
+            </TableHead>
+            <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.scale.minScore")}
+            </TableHead>
+            <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.scale.maxScore")}
+            </TableHead>
+            <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.scale.minCodingScore")}
+            </TableHead>
+            <TableHead className="pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
+              {t("adminEntryTest.scale.active")}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {scales.map((scale, index) => (
+            <TableRow
+              key={scale.level}
+              className="border-b border-slate-100 hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/80">
+              <TableCell className="py-4 pl-6">
+                <Badge
+                  variant="outline"
+                  className="border-indigo-500/25 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
+                  {scale.level
+                    ? t(`entryTestOnboarding.levelLabels.${scale.level}`)
+                    : t("entryTestOnboarding.notDefined")}
+                </Badge>
+              </TableCell>
+              <TableCell className="py-4">
+                <Input
+                  className="h-10 w-32 rounded-lg"
+                  type="number"
+                  step="0.01"
+                  value={scale.minScore ?? 0}
+                  onChange={(e) =>
+                    onChange(
+                      scales.map((item, i) =>
+                        i === index ? { ...item, minScore: Number(e.target.value) } : item
                       )
-                    }
-                  />
-                </td>
-                <td className="py-3">
-                  <Input
-                    className="h-8 w-28"
-                    type="number"
-                    step="0.01"
-                    value={scale.maxScore ?? 0}
-                    onChange={(e) =>
-                      onChange(
-                        scales.map((item, i) =>
-                          i === index ? { ...item, maxScore: Number(e.target.value) } : item
-                        )
+                    )
+                  }
+                />
+              </TableCell>
+              <TableCell className="py-4">
+                <Input
+                  className="h-10 w-32 rounded-lg"
+                  type="number"
+                  step="0.01"
+                  value={scale.maxScore ?? 0}
+                  onChange={(e) =>
+                    onChange(
+                      scales.map((item, i) =>
+                        i === index ? { ...item, maxScore: Number(e.target.value) } : item
                       )
-                    }
-                  />
-                </td>
-                <td className="py-3">
-                  <Input
-                    className="h-8 w-32"
-                    type="number"
-                    step="0.01"
-                    value={scale.minCodingScore ?? 0}
-                    onChange={(e) =>
-                      onChange(
-                        scales.map((item, i) =>
-                          i === index ? { ...item, minCodingScore: Number(e.target.value) } : item
-                        )
+                    )
+                  }
+                />
+              </TableCell>
+              <TableCell className="py-4">
+                <Input
+                  className="h-10 w-36 rounded-lg"
+                  type="number"
+                  step="0.01"
+                  value={scale.minCodingScore ?? 0}
+                  onChange={(e) =>
+                    onChange(
+                      scales.map((item, i) =>
+                        i === index ? { ...item, minCodingScore: Number(e.target.value) } : item
                       )
-                    }
-                  />
-                </td>
-                <td className="py-3 pr-6">
-                  <input
-                    type="checkbox"
-                    checked={scale.isActive ?? false}
-                    onChange={(e) =>
-                      onChange(
-                        scales.map((item, i) =>
-                          i === index ? { ...item, isActive: e.target.checked } : item
-                        )
+                    )
+                  }
+                />
+              </TableCell>
+              <TableCell className="py-4 pr-6 text-center">
+                <Checkbox
+                  checked={scale.isActive ?? false}
+                  onCheckedChange={(checked) =>
+                    onChange(
+                      scales.map((item, i) =>
+                        i === index ? { ...item, isActive: checked === true } : item
                       )
-                    }
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="mt-4 flex justify-end">
-        <Button onClick={onSave} disabled={saving}>
-          <Save className="h-4 w-4" /> {saving ? "Đang lưu..." : "Lưu bộ scale"}
+                    )
+                  }
+                />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="flex justify-end border-t border-slate-200 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/30">
+        <Button
+          className="h-11 rounded-xl bg-indigo-600 px-5 hover:bg-indigo-700"
+          onClick={onSave}
+          disabled={saving}>
+          <Save className="h-4 w-4" />
+          {saving ? t("common.saving") : t("adminEntryTest.scale.save")}
         </Button>
       </div>
     </div>

@@ -3,8 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { entryTestRoles } from "@/features/entry-test/constants/entry-test-onboarding.constants";
-import { useCareerPreference } from "@/features/entry-test/hooks/useCareerPreference";
 import {
   Award,
   Briefcase,
@@ -50,7 +48,6 @@ function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }
 export function CandidateProfileTab() {
   const { t } = useTranslation();
   const form = useCandidateProfileForm();
-  const careerPreference = useCareerPreference(true);
 
   if (form.isLoading) {
     return (
@@ -188,30 +185,6 @@ export function CandidateProfileTab() {
           </div>
         </div>
       </div>
-
-      {careerPreference.data?.targetRole && (
-        <div className="rounded-lg border border-indigo-200/80 bg-indigo-50/70 p-5 dark:border-indigo-500/30 dark:bg-indigo-950/30">
-          <p className="text-xs font-bold tracking-wide text-indigo-600 uppercase dark:text-indigo-300">
-            Định hướng nghề nghiệp
-          </p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="text-base font-bold text-slate-900 dark:text-white">
-              {entryTestRoles.find((item) => item.value === careerPreference.data?.targetRole)
-                ?.label ?? careerPreference.data.targetRole}
-            </span>
-            {careerPreference.data.targetLevel && (
-              <Badge variant="secondary">{careerPreference.data.targetLevel}</Badge>
-            )}
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {(careerPreference.data.languagesJson ?? []).map((skill) => (
-              <Badge key={skill} variant="outline" className="bg-white/70 dark:bg-slate-900/50">
-                {skill.replaceAll("_", " ")}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Target role, level, and introduction are valid profile data even when
           the optional skills/experience sections are still empty. */}

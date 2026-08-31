@@ -72,6 +72,10 @@ const getKnownErrorPatterns = (): Array<{ pattern: RegExp; message: string }> =>
     pattern: /(timed out|timeout)/i,
     message: t("general.requestTimeoutExceededPleaseTry"),
   },
+  {
+    pattern: /level scale is not configured for this score/i,
+    message: t("entryTestSubmit.errors.levelScaleMissing"),
+  },
 ];
 
 type ErrorSource = "axios" | "fetch" | "native" | "unknown";

@@ -1,4 +1,5 @@
 import { AlertTriangle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,35 +26,39 @@ export function SubmitConfirmDialog({
   onOpenChange: (_open: boolean) => void;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{expired ? "Đã hết thời gian làm bài" : "Nộp bài Entry Test?"}</DialogTitle>
-          <DialogDescription>
-            {expired
-              ? "Hệ thống sẽ gửi bản nháp mới nhất của bạn."
-              : "Sau khi nộp, bạn không thể thay đổi câu trả lời hoặc mã nguồn."}
-          </DialogDescription>
-        </DialogHeader>
-        {unanswered > 0 && (
-          <div className="flex gap-3 rounded-lg bg-amber-50 p-3 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <p className="text-sm">
-              Bạn còn <strong>{unanswered} mục</strong> chưa trả lời. Các mục này sẽ không được cộng
-              điểm.
-            </p>
-          </div>
-        )}
-        <DialogFooter>
+      <DialogContent className="overflow-hidden rounded-2xl border-slate-200 p-0 sm:max-w-md dark:border-slate-800">
+        <div className="px-6 pt-6 pb-5">
+          <DialogHeader>
+            <DialogTitle>
+              {expired ? t("entryTestSubmit.expiredTitle") : t("entryTestSubmit.title")}
+            </DialogTitle>
+            <DialogDescription>
+              {expired ? t("entryTestSubmit.expiredDescription") : t("entryTestSubmit.description")}
+            </DialogDescription>
+          </DialogHeader>
+          {unanswered > 0 && (
+            <div className="mt-5 flex gap-3 rounded-xl bg-amber-50 p-3 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <p className="text-sm">{t("entryTestSubmit.unanswered", { count: unanswered })}</p>
+            </div>
+          )}
+        </div>
+        <DialogFooter className="border-t border-slate-200 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/30">
           <Button
+            className="rounded-xl"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={pending || expired}>
-            {expired ? "Đang xử lý" : "Tiếp tục làm"}
+            {expired ? t("entryTestSubmit.processing") : t("entryTestSubmit.continue")}
           </Button>
-          <Button onClick={onConfirm} disabled={pending}>
-            {pending ? "Đang nộp và chấm bài..." : "Xác nhận nộp bài"}
+          <Button
+            className="rounded-xl bg-indigo-600 hover:bg-indigo-700"
+            onClick={onConfirm}
+            disabled={pending}>
+            {pending ? t("entryTestSubmit.submitting") : t("entryTestSubmit.confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

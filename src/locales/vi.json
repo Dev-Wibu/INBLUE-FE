@@ -8297,8 +8297,211 @@
     "companyDescription": "Về công ty",
     "openSource": "Mở JD nguồn"
   },
+  "entryTestResult": {
+    "title": "Kết quả đánh giá năng lực đầu vào",
+    "description": "Tổng hợp điểm số và cấp độ năng lực đã được hệ thống xác nhận.",
+    "graded": "Đã chấm điểm",
+    "submissionMeta": "Bài #{{id}} · Nộp lúc {{date}}",
+    "unranked": "Chưa xếp hạng",
+    "totalScore": "Tổng điểm",
+    "currentLevel": "Cấp độ hiện tại",
+    "breakdownTitle": "Chi tiết theo phần",
+    "breakdownDescription": "Điểm đạt được trên tổng điểm của từng nội dung đánh giá.",
+    "sectionCount": "{{count}} phần",
+    "scoreValue": "{{score}} / {{max}} điểm",
+    "scoringNote": "Điểm được hệ thống chấm từ câu trả lời trắc nghiệm và các bộ kiểm thử ẩn. Kết quả chạy thử không được dùng để tự tính điểm.",
+    "sections": {
+      "common": "Kiến thức chung",
+      "specific": "Kiến thức chuyên môn",
+      "coding": "Lập trình"
+    },
+    "competency": {
+      "updated": "Hồ sơ năng lực đã được cập nhật",
+      "syncing": "Hệ thống đang đồng bộ hồ sơ năng lực mới nhất",
+      "direction": "Định hướng {{role}} · Cấp độ {{level}}"
+    },
+    "pending": {
+      "title": "Bài đánh giá chưa được chấm",
+      "description": "Bài làm vẫn đang được thực hiện. Điểm số và cấp độ sẽ hiển thị sau khi hệ thống chấm hoàn tất."
+    },
+    "errors": {
+      "loadTitle": "Không thể tải kết quả",
+      "loadDescription": "Bài làm không tồn tại, không thuộc tài khoản này hoặc kết nối đang bị gián đoạn."
+    },
+    "actions": {
+      "retry": "Thử lại",
+      "continue": "Tiếp tục làm bài",
+      "back": "Về trang đánh giá",
+      "overview": "Xem tổng quan"
+    }
+  },
+  "entryTestSubmit": {
+    "title": "Nộp bài đánh giá năng lực đầu vào?",
+    "description": "Sau khi nộp bài, bạn không thể thay đổi câu trả lời hoặc mã nguồn.",
+    "expiredTitle": "Đã hết thời gian làm bài",
+    "expiredDescription": "Hệ thống sẽ nộp bản nháp mới nhất của bạn để chấm điểm.",
+    "unanswered": "Bạn còn {{count}} mục chưa trả lời. Các mục này sẽ không được cộng điểm.",
+    "processing": "Đang xử lý",
+    "continue": "Tiếp tục làm bài",
+    "submitting": "Đang nộp và chấm bài...",
+    "confirm": "Xác nhận nộp bài",
+    "errors": {
+      "levelScaleMissing": "Hệ thống chưa cấu hình thang xếp loại phù hợp với điểm số này. Bài làm của bạn vẫn được lưu; vui lòng liên hệ quản trị viên và nộp lại sau."
+    }
+  },
+  "entryTestLanding": {
+    "title": "Hồ sơ năng lực đầu vào",
+    "description": "Hoàn thành bài đánh giá theo định hướng để xác định năng lực hiện tại và nhận lộ trình phát triển phù hợp.",
+    "assessed": "Đã đánh giá",
+    "continueAttempt": "Tiếp tục bài đang làm",
+    "start": "Bắt đầu Entry Test",
+    "chooseDirection": "Chọn định hướng",
+    "contentsTitle": "Nội dung bài đánh giá",
+    "contentsDescription": "Bài đánh giá được cá nhân hóa theo định hướng và kỹ năng của bạn.",
+    "features": {
+      "foundation": {
+        "title": "Kiến thức nền tảng",
+        "description": "Đánh giá tư duy chung và kiến thức cốt lõi trong môi trường công nghệ."
+      },
+      "direction": {
+        "title": "Kiến thức theo định hướng",
+        "description": "Câu hỏi được chọn theo vai trò và nhóm kỹ năng bạn đã khai báo."
+      },
+      "coding": {
+        "title": "Bài tập lập trình",
+        "description": "Viết và chạy thử code với ví dụ hiển thị trước khi nộp qua bộ test ẩn."
+      }
+    },
+    "profileTitle": "Hồ sơ đánh giá",
+    "latestResult": "Đã có kết quả gần nhất",
+    "level": "Cấp độ {{level}}",
+    "viewResult": "Xem kết quả chi tiết",
+    "noAssessment": "Chưa có đánh giá năng lực",
+    "noAssessmentDescription": "Kết quả sẽ xuất hiện tại đây sau khi bạn hoàn thành Entry Test đầu tiên.",
+    "currentDirection": "Định hướng hiện tại",
+    "noSkills": "Chưa chọn kỹ năng",
+    "updateDirection": "Cập nhật định hướng",
+    "directionSkipped": "Bạn có thể chọn định hướng bất cứ lúc nào trước khi bắt đầu.",
+    "errors": {
+      "create": "Không thể tạo đề Entry Test.",
+      "notEnoughItems": "Hệ thống chưa có đủ câu hỏi cho định hướng này. Vui lòng thử lại sau."
+    }
+  },
+  "entryTestStart": {
+    "title": "Sẵn sàng bắt đầu Entry Test?",
+    "description": "Đồng hồ sẽ chạy ngay sau khi hệ thống tạo đề. Hãy chuẩn bị kết nối ổn định và không tải lại trang khi đang gửi bài.",
+    "time": {
+      "title": "Thời gian có giới hạn",
+      "description": "Thời lượng chính xác sẽ hiển thị ngay khi đề được tạo."
+    },
+    "contents": {
+      "title": "Nội dung theo cấu hình",
+      "description": "Gồm câu hỏi chung, chuyên môn và bài lập trình nếu được cấu hình."
+    },
+    "saved": {
+      "title": "Bài làm được lưu trên thiết bị",
+      "description": "Bạn có thể khôi phục câu trả lời sau khi tải lại trên trình duyệt này."
+    },
+    "cancel": "Chưa bắt đầu",
+    "creating": "Đang tạo đề...",
+    "confirm": "Bắt đầu làm bài"
+  },
+  "entryTestWizard": {
+    "title": "Định hướng hành trình của bạn",
+    "description": "Thông tin này giúp hệ thống chọn nội dung Entry Test phù hợp hơn.",
+    "roleDescription": "Chọn một vai trò mục tiêu. Bạn có thể cập nhật lại sau.",
+    "skillDescription": "Chọn ít nhất một kỹ năng để cá nhân hóa phần chuyên môn.",
+    "goalPlaceholder": "Ví dụ: Trở thành Frontend Engineer trong 12 tháng",
+    "targetLevel": "Mức độ mục tiêu",
+    "changeNotice": "Khi thay đổi định hướng hoặc kỹ năng, hệ thống có thể yêu cầu bạn thực hiện Entry Test lại để cập nhật năng lực.",
+    "later": "Để sau",
+    "save": "Lưu định hướng"
+  },
+  "entryTestProfile": {
+    "direction": "Định hướng",
+    "currentLevel": "Năng lực hiện tại",
+    "targetLevel": "Cấp độ mục tiêu",
+    "skills": "Kỹ năng",
+    "notAssessed": "Chưa đánh giá"
+  },
+  "adminEntryTest": {
+    "title": "Quản lý Entry Test",
+    "description": "Quản lý cấu hình đề thi và thang quy đổi năng lực đầu vào",
+    "stats": {
+      "totalTests": "Tổng đề thi",
+      "activeTests": "Đang hoạt động",
+      "scales": "Mức quy đổi"
+    },
+    "searchPlaceholder": "Tìm theo tên đề thi...",
+    "create": "Tạo cấu hình",
+    "tabs": { "tests": "Đề thi ({{count}})", "scales": "Thang quy đổi ({{count}})" },
+    "columns": {
+      "name": "Tên đề thi",
+      "duration": "Thời lượng",
+      "structure": "Cấu trúc",
+      "totalScore": "Tổng điểm",
+      "actions": "Thao tác"
+    },
+    "units": {
+      "minutes": "{{value}} phút",
+      "sections": "{{value}} phần",
+      "points": "{{value}} điểm"
+    },
+    "unnamed": "Chưa đặt tên",
+    "inUse": "Đang được sử dụng",
+    "deactivate": "Tắt cấu hình",
+    "empty": "Chưa tìm thấy cấu hình Entry Test phù hợp.",
+    "sections": {
+      "common": "Kiến thức chung",
+      "specific": "Kiến thức chuyên môn",
+      "coding": "Lập trình"
+    },
+    "itemTypes": {
+      "QUESTION_BANK": "Câu hỏi trắc nghiệm",
+      "CODING_PROBLEM": "Bài tập lập trình"
+    },
+    "editor": {
+      "editTitle": "Chỉnh sửa Entry Test",
+      "createTitle": "Tạo Entry Test",
+      "description": "Thiết lập thông tin chung và điểm số cho từng phần của bài đánh giá.",
+      "namePlaceholder": "Nhập tên cấu hình Entry Test",
+      "durationLabel": "Thời lượng (phút)",
+      "structureTitle": "Cấu trúc đề thi",
+      "structureDescription": "Tổng điểm = số câu × điểm mỗi câu.",
+      "section": "Phần thi",
+      "itemCount": "Số câu",
+      "scorePerItem": "Điểm / câu",
+      "save": "Lưu cấu hình"
+    },
+    "scale": {
+      "title": "Thang quy đổi năng lực",
+      "description": "Thiết lập khoảng điểm tương ứng với từng cấp độ theo vai trò.",
+      "role": "Vai trò áp dụng",
+      "level": "Cấp độ",
+      "minScore": "Điểm tối thiểu",
+      "maxScore": "Điểm tối đa",
+      "minCodingScore": "Điểm coding tối thiểu",
+      "active": "Kích hoạt",
+      "save": "Lưu bộ scale"
+    },
+    "messages": {
+      "loadError": "Không thể tải cấu hình Entry Test từ backend.",
+      "invalidGeneral": "Tên bài và thời lượng phải hợp lệ.",
+      "invalidSections": "Phần thi phải có số lượng, điểm hợp lệ và tổng điểm phải khớp.",
+      "saveSuccess": "Đã lưu cấu hình Entry Test.",
+      "saveError": "Không thể lưu cấu hình Entry Test.",
+      "deactivateSuccess": "Đã tắt cấu hình Entry Test.",
+      "deactivateError": "Không thể tắt cấu hình Entry Test.",
+      "invalidScale": "Điểm tối thiểu không được lớn hơn điểm tối đa.",
+      "scaleSaveSuccess": "Đã lưu thang quy đổi.",
+      "scaleSaveError": "Không thể lưu thang quy đổi."
+    }
+  },
   "entryTestOnboarding": {
     "setupTitle": "Thiết lập hồ sơ học tập",
+    "stepCounter": "BƯỚC {{current}} / {{total}}",
+    "pageTitle": "Thiết lập hồ sơ nghề nghiệp",
+    "helpText": "Thông tin này giúp hệ thống cá nhân hóa bài Entry Test và lộ trình phát triển phù hợp với bạn.",
     "progressLabel": "Tiến độ thiết lập",
     "direction": "Định hướng",
     "skills": "Kỹ năng",

@@ -8,6 +8,7 @@ import {
   Route,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -24,6 +25,7 @@ import type { EntryTestDraftV1 } from "../types/entry-test.types";
 import { getActiveAttemptId, saveEntryTestDraft } from "../utils/entry-test-storage";
 
 export function EntryTestLandingPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const userId = Number(useAuthStore((state) => state.user?.id));
@@ -65,10 +67,10 @@ export function EntryTestLandingPage() {
       saveEntryTestDraft(draft);
       navigate(`/user/entry-test/session/${test.attemptId}`);
     } catch (error) {
-      const normalized = normalizeApiError(error, "Không thể tạo đề Entry Test.");
+      const normalized = normalizeApiError(error, t("entryTestLanding.errors.create"));
       toast.error(
         normalized.rawMessage?.includes("Not enough items")
-          ? "Hệ thống chưa có đủ câu hỏi cho định hướng này. Vui lòng thử lại sau."
+          ? t("entryTestLanding.errors.notEnoughItems")
           : normalized.message
       );
     }
@@ -83,125 +85,139 @@ export function EntryTestLandingPage() {
     );
 
   return (
-    <main className="-m-0 flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
-      <section className="flex flex-none flex-col justify-between gap-3 border-b border-slate-200 bg-white px-6 py-3 sm:flex-row sm:items-center lg:px-8 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
-            <BrainCircuit className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="truncate text-sm font-bold text-slate-900 dark:text-white">
-              Hồ sơ năng lực đầu vào
-            </h2>
-            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-              Định hướng, bài đánh giá và kết quả gần nhất
-            </p>
+    <main className="-m-0 flex min-h-full flex-col bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
+      <section className="mx-auto w-full max-w-6xl">
+        <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
+            <div className="flex min-w-0 items-start gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm shadow-indigo-500/25">
+                <BrainCircuit className="h-6 w-6" />
+              </span>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {t("entryTestLanding.title")}
+                </h1>
+                <p className="mt-1 max-w-2xl text-[15px] leading-6 text-slate-500 dark:text-slate-400">
+                  {t("entryTestLanding.description")}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {competency.data && (
+                <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                  <CheckCircle2 className="h-4 w-4" /> {t("entryTestLanding.assessed")}
+                </span>
+              )}
+              {activeAttemptId && (
+                <Button
+                  variant="outline"
+                  className="h-10 rounded-xl"
+                  onClick={() => navigate(`/user/entry-test/session/${activeAttemptId}`)}>
+                  <RefreshCw className="h-4 w-4" /> {t("entryTestLanding.continueAttempt")}
+                </Button>
+              )}
+              <Button
+                className="h-10 rounded-xl bg-indigo-600 px-5 font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700"
+                onClick={() =>
+                  preference.data?.targetRole ? setStartOpen(true) : setWizardOpen(true)
+                }>
+                {preference.data?.targetRole
+                  ? t("entryTestLanding.start")
+                  : t("entryTestLanding.chooseDirection")}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {competency.data && (
-            <span className="inline-flex h-8 items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Đã đánh giá
-            </span>
-          )}
-          {activeAttemptId && (
-            <Button
-              variant="outline"
-              className="h-8 text-xs"
-              onClick={() => navigate(`/user/entry-test/session/${activeAttemptId}`)}>
-              <RefreshCw className="h-3.5 w-3.5" /> Tiếp tục bài đang làm
-            </Button>
-          )}
-          <Button
-            className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700"
-            onClick={() =>
-              preference.data?.targetRole ? setStartOpen(true) : setWizardOpen(true)
-            }>
-            {preference.data?.targetRole ? "Bắt đầu Entry Test" : "Chọn định hướng"}
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </section>
-      <section className="mx-auto w-full max-w-6xl flex-1 px-6 py-6 lg:px-8">
-        <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-          <div>
-            <h1 className="text-xl font-bold text-slate-950 dark:text-white">
-              Xác định năng lực khởi điểm
-            </h1>
-            <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-              Hoàn thành bài đánh giá theo định hướng để nhận mức năng lực hiện tại và lộ trình học
-              phù hợp.
-            </p>
-          </div>
-          <span className="text-xs text-slate-500">Khu vực ứng viên</span>
-        </div>
-        <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-          <div>
-            <h2 className="text-base font-semibold">Bài đánh giá gồm những gì?</h2>
-            <div className="mt-3 divide-y divide-slate-200 border-y border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                {t("entryTestLanding.contentsTitle")}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                {t("entryTestLanding.contentsDescription")}
+              </p>
+            </div>
+            <div className="divide-y divide-slate-200 dark:divide-slate-800">
               <Feature
                 icon={ClipboardCheck}
-                title="Kiến thức nền tảng"
-                text="Đánh giá tư duy chung và kiến thức cốt lõi trong môi trường công nghệ."
+                title={t("entryTestLanding.features.foundation.title")}
+                text={t("entryTestLanding.features.foundation.description")}
               />
               <Feature
                 icon={Route}
-                title="Kiến thức theo định hướng"
-                text="Câu hỏi được chọn theo vai trò và nhóm kỹ năng bạn đã khai báo."
+                title={t("entryTestLanding.features.direction.title")}
+                text={t("entryTestLanding.features.direction.description")}
               />
               <Feature
                 icon={Code2}
-                title="Bài tập lập trình"
-                text="Viết và chạy thử code với ví dụ hiển thị trước khi nộp qua bộ test ẩn."
+                title={t("entryTestLanding.features.coding.title")}
+                text={t("entryTestLanding.features.coding.description")}
               />
             </div>
-          </div>
-          <aside>
-            <h2 className="text-base font-semibold">Hồ sơ đánh giá</h2>
-            <div className="mt-3 rounded-lg border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+          </section>
+
+          <aside className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                {t("entryTestLanding.profileTitle")}
+              </h2>
+            </div>
+            <div className="px-6 py-5">
               {competency.data ? (
                 <>
                   <div className="flex items-center gap-2 text-emerald-600">
                     <CheckCircle2 className="h-5 w-5" />
-                    <span className="text-sm font-semibold">Đã có kết quả gần nhất</span>
+                    <span className="text-sm font-semibold">
+                      {t("entryTestLanding.latestResult")}
+                    </span>
                   </div>
                   <p className="mt-4 text-3xl font-bold text-slate-950 dark:text-white">
                     {competency.data.currentScore}
                     <span className="text-base font-medium text-slate-400"> / 100</span>
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
-                    Cấp độ {competency.data.currentLevel}
+                    {t("entryTestLanding.level", { level: competency.data.currentLevel })}
                   </p>
                   <Button
                     variant="outline"
-                    className="mt-5 w-full"
+                    className="mt-5 w-full rounded-xl"
                     onClick={() =>
                       navigate(`/user/entry-test/result/${competency.data.lastEntryTestAttemptId}`)
                     }>
-                    Xem kết quả chi tiết
+                    {t("entryTestLanding.viewResult")}
                   </Button>
                 </>
               ) : (
                 <>
-                  <p className="text-sm font-semibold">Chưa có đánh giá năng lực</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {t("entryTestLanding.noAssessment")}
+                  </p>
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Kết quả sẽ xuất hiện tại đây sau khi bạn hoàn thành Entry Test đầu tiên.
+                    {t("entryTestLanding.noAssessmentDescription")}
                   </p>
                 </>
               )}
             </div>
             {preference.data?.targetRole && (
-              <div className="mt-3 border-y border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900">
-                <span className="text-slate-500">Định hướng hiện tại</span>
-                <p className="mt-1 font-semibold">
-                  {preference.data.targetRole} ·{" "}
-                  {(preference.data.languagesJson ?? []).join(", ") || "Chưa chọn kỹ năng"}
+              <div className="border-t border-slate-200 px-6 py-5 dark:border-slate-800">
+                <span className="text-xs font-semibold text-slate-500">
+                  {t("entryTestLanding.currentDirection")}
+                </span>
+                <p className="mt-1 text-sm font-semibold break-words text-slate-900 dark:text-white">
+                  {t(`entryTestOnboarding.roleLabels.${preference.data.targetRole}`)} ·{" "}
+                  {(preference.data.languagesJson ?? [])
+                    .map((skill) => skill.replaceAll("_", " "))
+                    .join(", ") || t("entryTestLanding.noSkills")}
                 </p>
-                <button
-                  className="mt-2 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                <Button
+                  variant="link"
+                  className="mt-2 h-auto p-0 text-sm font-semibold text-indigo-600"
                   onClick={() => setWizardOpen(true)}>
-                  Cập nhật định hướng
-                </button>
+                  {t("entryTestLanding.updateDirection")}
+                </Button>
               </div>
             )}
           </aside>
@@ -213,8 +229,7 @@ export function EntryTestLandingPage() {
         onOpenChange={setWizardOpen}
         onSaved={(saved) => {
           setWizardOpen(false);
-          if (!saved.targetRole)
-            toast.info("Bạn có thể chọn định hướng bất cứ lúc nào trước khi bắt đầu.");
+          if (!saved.targetRole) toast.info(t("entryTestLanding.directionSkipped"));
         }}
       />
       <EntryTestStartDialog
@@ -229,13 +244,13 @@ export function EntryTestLandingPage() {
 
 function Feature({ icon: Icon, title, text }: { icon: typeof Code2; title: string; text: string }) {
   return (
-    <div className="flex gap-4 p-5">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50">
-        <Icon className="h-4 w-4" />
+    <div className="flex gap-4 px-6 py-5">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
+        <Icon className="h-5 w-5" />
       </div>
-      <div>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <p className="mt-1 text-sm leading-6 text-slate-500">{text}</p>
+      <div className="min-w-0">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
+        <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{text}</p>
       </div>
     </div>
   );

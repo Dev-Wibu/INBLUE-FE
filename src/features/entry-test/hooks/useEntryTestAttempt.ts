@@ -33,7 +33,13 @@ export function useSubmitEntryTest(attemptId: number) {
   return useMutation({
     mutationFn: (body: EntryTestSubmitBody) => entryTestManager.submit(attemptId, body),
     retry: false,
-    onSuccess: (attempt) => queryClient.setQueryData(entryTestKeys.attempt(attemptId), attempt),
+    onSuccess: async (attempt) => {
+      queryClient.setQueryData(entryTestKeys.attempt(attemptId), attempt);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: entryTestKeys.competency() }),
+        queryClient.invalidateQueries({ queryKey: entryTestKeys.preference() }),
+      ]);
+    },
   });
 }
 

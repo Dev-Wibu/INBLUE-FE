@@ -6,7 +6,12 @@ import {
   Check,
   Clock3,
   FileQuestion,
+  GripHorizontal,
+  GripVertical,
+  ListChecks,
   Loader2,
+  PanelLeftClose,
+  PanelLeftOpen,
   Play,
   Send,
 } from "lucide-react";
@@ -24,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMonacoTheme } from "@/hooks/useMonacoTheme";
+import { registerInblueMonacoThemes, useMonacoTheme } from "@/hooks/useMonacoTheme";
 import { normalizeApiError } from "@/lib/error-normalizer";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
@@ -42,6 +47,7 @@ import { formatRemainingTime, useEntryTestTimer } from "../hooks/useEntryTestTim
 import type {
   CompilerLanguage,
   EntryTestCodingItem,
+  EntryTestDraftV1,
   EntryTestQuestion,
   EntryTestSectionType,
 } from "../types/entry-test.types";
@@ -74,6 +80,9 @@ export function EntryTestSessionPage() {
   const submit = useSubmitEntryTest(attemptId);
   const submitLock = useRef(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [navigatorWidth, setNavigatorWidth] = useState(256);
+  const [navigatorCollapsed, setNavigatorCollapsed] = useState(false);
+  const [mobilePane, setMobilePane] = useState<"questions" | "problem" | "code">("problem");
   const [submitOpen, setSubmitOpen] = useState(false);
   const [expired, setExpired] = useState(false);
   const [runResult, setRunResult] = useState<Awaited<
@@ -216,6 +225,7 @@ export function EntryTestSessionPage() {
     const target = items[index];
     setCurrentIndex(index);
     setRunResult(null);
+    setMobilePane("problem");
     setDraft((value) =>
       value
         ? {
@@ -228,8 +238,83 @@ export function EntryTestSessionPage() {
     );
   };
 
+  const startNavigatorResize = (event: React.MouseEvent) => {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = navigatorCollapsed ? 72 : navigatorWidth;
+    setNavigatorCollapsed(false);
+    const onMove = (moveEvent: MouseEvent) => {
+      setNavigatorWidth(Math.min(360, Math.max(180, startWidth + moveEvent.clientX - startX)));
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
+
+  const renderCurrentItem = (pane: "all" | "problem" | "code" = "all") =>
+    current.kind === "quiz" ? (
+      <div className="h-full overflow-y-auto">
+        <QuizPanel
+          question={current.data}
+          value={draft.quizDrafts[current.data.itemId]}
+          onChange={(selectedOption) =>
+            setDraft((value) =>
+              value
+                ? {
+                    ...value,
+                    quizDrafts: { ...value.quizDrafts, [current.data.itemId]: selectedOption },
+                    savedAt: new Date().toISOString(),
+                  }
+                : value
+            )
+          }
+        />
+      </div>
+    ) : (
+      <CodingPanel
+        item={current.data}
+        draft={draft.codingDrafts[current.data.itemId]}
+        monacoTheme={monacoTheme}
+        pane={pane}
+        runPending={runCode.isPending}
+        runResult={runResult}
+        onDraftChange={(next) =>
+          setDraft((value) =>
+            value
+              ? {
+                  ...value,
+                  codingDrafts: { ...value.codingDrafts, [current.data.itemId]: next },
+                  savedAt: new Date().toISOString(),
+                }
+              : value
+          )
+        }
+        onRun={async (language, sourceCode) => {
+          try {
+            setRunResult(
+              await runCode.mutateAsync({ itemId: current.data.itemId, language, sourceCode })
+            );
+          } catch (error) {
+            const normalized = normalizeApiError(error, "Không thể chạy code lúc này.");
+            toast.error(
+              (error as { status?: number }).status === 502
+                ? "Sandbox đang tạm gián đoạn. Mã nguồn của bạn vẫn được giữ nguyên."
+                : normalized.message
+            );
+          }
+        }}
+      />
+    );
+
   return (
-    <div className="flex h-screen min-h-[680px] flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
       <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 md:px-6 dark:border-slate-800 dark:bg-slate-900">
         <div>
           <p className="text-xs font-medium text-slate-500">ENTRY TEST · BÀI #{attemptId}</p>
@@ -255,100 +340,71 @@ export function EntryTestSessionPage() {
         value={(answeredCount / items.length) * 100}
         className="h-1 shrink-0 rounded-none"
       />
-      <div className="flex min-h-0 flex-1">
-        <aside className="hidden w-64 shrink-0 overflow-y-auto border-r border-slate-200 bg-white p-3 md:block dark:border-slate-800 dark:bg-slate-900">
-          {Array.from(new Set(items.map((item) => item.section))).map((section) => (
-            <div key={section} className="mb-5">
-              <p className="mb-2 px-2 text-[11px] font-bold text-slate-500">
-                {sectionLabels[section]}
-              </p>
-              <div className="grid grid-cols-5 gap-1.5">
-                {items.map((item, index) =>
-                  item.section === section ? (
-                    <button
-                      key={item.data.itemId}
-                      type="button"
-                      onClick={() => setCurrent(index)}
-                      aria-label={`Mở mục ${index + 1}`}
-                      className={cn(
-                        "flex aspect-square items-center justify-center rounded-md border text-xs font-semibold",
-                        index === currentIndex
-                          ? "border-indigo-600 bg-indigo-600 text-white"
-                          : draft.quizDrafts[item.data.itemId] ||
-                              draft.codingDrafts[item.data.itemId]?.sourceCode.some((line) =>
-                                line.trim()
-                              )
-                            ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40"
-                            : "border-slate-200 hover:border-indigo-300 dark:border-slate-700"
-                      )}>
-                      {(draft.quizDrafts[item.data.itemId] ||
-                        draft.codingDrafts[item.data.itemId]?.sourceCode.some((line) =>
-                          line.trim()
-                        )) &&
-                      index !== currentIndex ? (
-                        <Check className="h-3.5 w-3.5" />
-                      ) : (
-                        index + 1
-                      )}
-                    </button>
-                  ) : null
-                )}
-              </div>
-            </div>
-          ))}
+      <div className="hidden min-h-0 flex-1 lg:flex">
+        <aside
+          className="shrink-0 overflow-hidden border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+          style={{ width: navigatorCollapsed ? 68 : navigatorWidth }}>
+          <QuestionNavigator
+            items={items}
+            currentIndex={currentIndex}
+            draft={draft}
+            compact={navigatorCollapsed}
+            onSelect={setCurrent}
+            onToggle={() => setNavigatorCollapsed((value) => !value)}
+          />
         </aside>
-        <main className="min-w-0 flex-1 overflow-y-auto">
-          {current.kind === "quiz" ? (
-            <QuizPanel
-              question={current.data}
-              value={draft.quizDrafts[current.data.itemId]}
-              onChange={(selectedOption) =>
-                setDraft((value) =>
-                  value
-                    ? {
-                        ...value,
-                        quizDrafts: { ...value.quizDrafts, [current.data.itemId]: selectedOption },
-                        savedAt: new Date().toISOString(),
-                      }
-                    : value
-                )
-              }
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Thay đổi độ rộng danh sách câu hỏi"
+          onMouseDown={startNavigatorResize}
+          className="group relative z-10 flex w-2 shrink-0 cursor-col-resize items-center justify-center bg-slate-100 transition-colors hover:bg-indigo-100 dark:bg-slate-800 dark:hover:bg-indigo-950/60">
+          <span className="flex h-8 w-4 items-center justify-center rounded-md bg-slate-200 text-slate-400 shadow-sm group-hover:bg-indigo-200 group-hover:text-indigo-600 dark:bg-slate-700 dark:group-hover:bg-indigo-900 dark:group-hover:text-indigo-300">
+            <GripVertical className="h-3.5 w-3.5" />
+          </span>
+        </div>
+        <main className="min-h-0 min-w-0 flex-1 overflow-hidden">{renderCurrentItem()}</main>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col lg:hidden">
+        <div className="grid shrink-0 grid-cols-3 border-b border-slate-200 bg-white p-1.5 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: "questions" as const, label: "Câu hỏi", icon: ListChecks },
+            {
+              id: "problem" as const,
+              label: current.kind === "coding" ? "Đề bài" : "Nội dung",
+              icon: FileQuestion,
+            },
+            { id: "code" as const, label: "Code", icon: Play, hidden: current.kind !== "coding" },
+          ].map(({ id, label, icon: Icon, hidden }) => (
+            <button
+              key={id}
+              type="button"
+              disabled={hidden}
+              onClick={() => setMobilePane(id)}
+              className={cn(
+                "flex h-9 items-center justify-center gap-2 rounded-lg text-xs font-semibold transition-colors",
+                hidden && "invisible",
+                mobilePane === id
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              )}>
+              <Icon className="h-4 w-4" /> {label}
+            </button>
+          ))}
+        </div>
+        <div className="min-h-0 flex-1 overflow-hidden">
+          {mobilePane === "questions" ? (
+            <QuestionNavigator
+              items={items}
+              currentIndex={currentIndex}
+              draft={draft}
+              onSelect={setCurrent}
             />
           ) : (
-            <CodingPanel
-              item={current.data}
-              draft={draft.codingDrafts[current.data.itemId]}
-              monacoTheme={monacoTheme}
-              runPending={runCode.isPending}
-              runResult={runResult}
-              onDraftChange={(next) =>
-                setDraft((value) =>
-                  value
-                    ? {
-                        ...value,
-                        codingDrafts: { ...value.codingDrafts, [current.data.itemId]: next },
-                        savedAt: new Date().toISOString(),
-                      }
-                    : value
-                )
-              }
-              onRun={async (language, sourceCode) => {
-                try {
-                  setRunResult(
-                    await runCode.mutateAsync({ itemId: current.data.itemId, language, sourceCode })
-                  );
-                } catch (error) {
-                  const normalized = normalizeApiError(error, "Không thể chạy code lúc này.");
-                  toast.error(
-                    (error as { status?: number }).status === 502
-                      ? "Sandbox đang tạm gián đoạn. Mã nguồn của bạn vẫn được giữ nguyên."
-                      : normalized.message
-                  );
-                }
-              }}
-            />
+            renderCurrentItem(mobilePane === "code" ? "code" : "problem")
           )}
-        </main>
+        </div>
       </div>
       <footer className="flex shrink-0 items-center justify-between border-t border-slate-200 bg-white px-4 py-3 md:px-6 dark:border-slate-800 dark:bg-slate-900">
         <span className="text-xs text-slate-500">
@@ -377,6 +433,96 @@ export function EntryTestSessionPage() {
         onOpenChange={setSubmitOpen}
         onConfirm={() => void performSubmit()}
       />
+    </div>
+  );
+}
+
+function QuestionNavigator({
+  items,
+  currentIndex,
+  draft,
+  compact = false,
+  onSelect,
+  onToggle,
+}: {
+  items: RunnerItem[];
+  currentIndex: number;
+  draft: EntryTestDraftV1;
+  compact?: boolean;
+  onSelect: (_index: number) => void;
+  onToggle?: () => void;
+}) {
+  const sections = Array.from(new Set(items.map((item) => item.section)));
+  return (
+    <div className="flex h-full min-h-0 flex-col bg-white dark:bg-slate-900">
+      {onToggle && (
+        <div
+          className={cn(
+            "flex h-11 shrink-0 items-center border-b border-slate-200 px-2 dark:border-slate-800",
+            compact ? "justify-center" : "justify-between"
+          )}>
+          {!compact && (
+            <span className="text-xs font-semibold text-slate-500">Danh sách câu hỏi</span>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onToggle}
+            title={compact ? "Mở rộng danh sách" : "Thu gọn danh sách"}>
+            {compact ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      )}
+      <div className={cn("min-h-0 flex-1 overflow-y-auto", compact ? "p-2" : "p-3 sm:p-4")}>
+        {sections.map((section) => (
+          <div key={section} className={compact ? "mb-3" : "mb-5"}>
+            {!compact && (
+              <p className="mb-2 text-[11px] font-bold text-slate-500">{sectionLabels[section]}</p>
+            )}
+            <div
+              className={cn(
+                "grid gap-2",
+                compact
+                  ? "grid-cols-1"
+                  : "grid-cols-[repeat(auto-fill,minmax(42px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(46px,1fr))]"
+              )}>
+              {items.map((item, index) => {
+                if (item.section !== section) return null;
+                const answered = Boolean(
+                  draft.quizDrafts[item.data.itemId] ||
+                  draft.codingDrafts[item.data.itemId]?.sourceCode.some((line) => line.trim())
+                );
+                return (
+                  <button
+                    key={item.data.itemId}
+                    type="button"
+                    onClick={() => onSelect(index)}
+                    aria-label={`Mở mục ${index + 1}`}
+                    className={cn(
+                      "flex h-11 min-w-0 items-center justify-center rounded-lg border text-xs font-semibold transition-colors",
+                      index === currentIndex
+                        ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
+                        : answered
+                          ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                          : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-indigo-700"
+                    )}>
+                    {answered && index !== currentIndex ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      index + 1
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -438,6 +584,7 @@ function CodingPanel({
   item,
   draft,
   monacoTheme,
+  pane,
   runPending,
   runResult,
   onDraftChange,
@@ -446,6 +593,7 @@ function CodingPanel({
   item: EntryTestCodingItem;
   draft?: { language: CompilerLanguage; sourceCode: string[] };
   monacoTheme: string;
+  pane: "all" | "problem" | "code";
   runPending: boolean;
   runResult: Awaited<ReturnType<typeof entryTestManager.runCode>> | null;
   onDraftChange: (_value: { language: CompilerLanguage; sourceCode: string[] }) => void;
@@ -460,99 +608,194 @@ function CodingPanel({
       sourceCode:
         draft?.language === next ? sourceCode : editorTextToSourceLines(item.codeStubs[next] ?? ""),
     });
+  const [problemWidth, setProblemWidth] = useState(40);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const codePaneRef = useRef<HTMLElement>(null);
+  const [resultHeight, setResultHeight] = useState(260);
+  const [resultCollapsed, setResultCollapsed] = useState(false);
+  useEffect(() => {
+    if (runResult) setResultCollapsed(false);
+  }, [runResult]);
+  const startProblemResize = (event: React.MouseEvent) => {
+    event.preventDefault();
+    const onMove = (moveEvent: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const percent = ((moveEvent.clientX - rect.left) / rect.width) * 100;
+      setProblemWidth(Math.min(65, Math.max(25, percent)));
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
+  const showProblem = pane !== "code";
+  const showCode = pane !== "problem";
+  const startResultResize = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setResultCollapsed(false);
+    const onMove = (moveEvent: MouseEvent) => {
+      if (!codePaneRef.current) return;
+      const rect = codePaneRef.current.getBoundingClientRect();
+      const maxHeight = Math.max(180, Math.min(520, rect.height * 0.7));
+      setResultHeight(Math.min(maxHeight, Math.max(140, rect.bottom - moveEvent.clientY)));
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    document.body.style.cursor = "row-resize";
+    document.body.style.userSelect = "none";
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
   return (
-    <div className="flex min-h-full flex-col lg:grid lg:grid-cols-[minmax(300px,0.8fr)_minmax(440px,1.2fr)]">
-      <section className="overflow-y-auto border-b border-slate-200 bg-white p-5 lg:border-r lg:border-b-0 lg:p-6 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold">{item.title}</h2>
-          <span className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-            {item.difficulty}
+    <div ref={containerRef} className="flex h-full min-h-0 overflow-hidden">
+      {showProblem && (
+        <section
+          className="h-full min-w-0 overflow-y-auto bg-white p-5 lg:p-6 dark:bg-slate-900"
+          style={{ width: pane === "all" ? `${problemWidth}%` : "100%" }}>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-bold">{item.title}</h2>
+            <span className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+              {item.difficulty}
+            </span>
+          </div>
+          <p className="mt-5 text-sm leading-6 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+            {item.problemStatement}
+          </p>
+          {item.rulesAndConstraints.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-semibold">Ràng buộc</h3>
+              <ul className="mt-2 space-y-1.5 text-sm text-slate-600 dark:text-slate-400">
+                {item.rulesAndConstraints.map((rule) => (
+                  <li key={rule}>• {rule}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold">Ví dụ hiển thị</h3>
+            <div className="mt-2 space-y-3">
+              {item.visibleExamples.map((example, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg bg-slate-100 p-3 font-mono text-xs dark:bg-slate-950">
+                  <p>
+                    <span className="text-slate-500">Input:</span> {example.inputs.join(", ")}
+                  </p>
+                  <p className="mt-1">
+                    <span className="text-slate-500">Output:</span> {example.output}
+                  </p>
+                  {example.explanation && (
+                    <p className="mt-2 font-sans text-slate-500">{example.explanation}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+      {pane === "all" && (
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Thay đổi độ rộng đề bài và trình soạn thảo"
+          onMouseDown={startProblemResize}
+          className="group relative z-10 flex w-2 shrink-0 cursor-col-resize items-center justify-center border-x border-slate-200 bg-slate-100 transition-colors hover:bg-indigo-100 dark:border-slate-800 dark:bg-slate-800 dark:hover:bg-indigo-950/60">
+          <span className="flex h-8 w-4 items-center justify-center rounded-md bg-slate-200 text-slate-400 shadow-sm group-hover:bg-indigo-200 group-hover:text-indigo-600 dark:bg-slate-700 dark:group-hover:bg-indigo-900 dark:group-hover:text-indigo-300">
+            <GripVertical className="h-3.5 w-3.5" />
           </span>
         </div>
-        <p className="mt-5 text-sm leading-6 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-          {item.problemStatement}
-        </p>
-        {item.rulesAndConstraints.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold">Ràng buộc</h3>
-            <ul className="mt-2 space-y-1.5 text-sm text-slate-600 dark:text-slate-400">
-              {item.rulesAndConstraints.map((rule) => (
-                <li key={rule}>• {rule}</li>
-              ))}
-            </ul>
+      )}
+      {showCode && (
+        <section
+          ref={codePaneRef}
+          className="flex h-full min-h-0 min-w-0 flex-col bg-slate-950"
+          style={{ width: pane === "all" ? `${100 - problemWidth}%` : "100%" }}>
+          <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">
+            <Select
+              value={language}
+              onValueChange={(value) => selectLanguage(value as CompilerLanguage)}>
+              <SelectTrigger className="h-8 w-40 border-slate-700 bg-slate-900 text-xs text-slate-200">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              className="h-8 bg-emerald-600 hover:bg-emerald-700"
+              onClick={() => onRun(language, sourceCode)}
+              disabled={runPending || !sourceCode.some((line) => line.trim())}>
+              {runPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}{" "}
+              Chạy thử
+            </Button>
           </div>
-        )}
-        <div className="mt-6">
-          <h3 className="text-sm font-semibold">Ví dụ hiển thị</h3>
-          <div className="mt-2 space-y-3">
-            {item.visibleExamples.map((example, index) => (
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <Editor
+              height="100%"
+              language={toMonacoLanguage(language)}
+              beforeMount={registerInblueMonacoThemes}
+              theme={monacoTheme}
+              value={sourceLinesToEditorText(sourceCode)}
+              onChange={(value) =>
+                onDraftChange({ language, sourceCode: editorTextToSourceLines(value ?? "") })
+              }
+              options={{
+                minimap: { enabled: false },
+                fontSize: 13,
+                lineNumbersMinChars: 3,
+                padding: { top: 14 },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+              }}
+            />
+          </div>
+          {runResult && (
+            <div
+              className="flex shrink-0 flex-col overflow-hidden border-t border-slate-800 bg-slate-950"
+              style={{
+                height: resultCollapsed ? 50 : resultHeight,
+                maxHeight: resultCollapsed ? 50 : "70%",
+              }}>
               <div
-                key={index}
-                className="rounded-lg bg-slate-100 p-3 font-mono text-xs dark:bg-slate-950">
-                <p>
-                  <span className="text-slate-500">Input:</span> {example.inputs.join(", ")}
-                </p>
-                <p className="mt-1">
-                  <span className="text-slate-500">Output:</span> {example.output}
-                </p>
-                {example.explanation && (
-                  <p className="mt-2 font-sans text-slate-500">{example.explanation}</p>
-                )}
+                role="separator"
+                aria-orientation="horizontal"
+                aria-label="Thay đổi chiều cao kết quả chạy thử"
+                onMouseDown={startResultResize}
+                onDoubleClick={() => setResultCollapsed((value) => !value)}
+                className="group flex h-2 shrink-0 cursor-row-resize items-center justify-center bg-slate-900 hover:bg-indigo-950">
+                <GripHorizontal className="h-3.5 w-3.5 text-slate-600 group-hover:text-indigo-400" />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="flex min-h-[520px] min-w-0 flex-col bg-slate-950">
-        <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">
-          <Select
-            value={language}
-            onValueChange={(value) => selectLanguage(value as CompilerLanguage)}>
-            <SelectTrigger className="h-8 w-40 border-slate-700 bg-slate-900 text-xs text-slate-200">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {languages.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            className="h-8 bg-emerald-600 hover:bg-emerald-700"
-            onClick={() => onRun(language, sourceCode)}
-            disabled={runPending || !sourceCode.some((line) => line.trim())}>
-            {runPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}{" "}
-            Chạy thử
-          </Button>
-        </div>
-        <div className="min-h-[360px] flex-1">
-          <Editor
-            height="100%"
-            language={toMonacoLanguage(language)}
-            theme={monacoTheme}
-            value={sourceLinesToEditorText(sourceCode)}
-            onChange={(value) =>
-              onDraftChange({ language, sourceCode: editorTextToSourceLines(value ?? "") })
-            }
-            options={{
-              minimap: { enabled: false },
-              fontSize: 13,
-              lineNumbersMinChars: 3,
-              padding: { top: 14 },
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-            }}
-          />
-        </div>
-        {runResult && <CodingRunResult result={runResult} />}
-      </section>
+              <div className="min-h-0 flex-1">
+                <CodingRunResult
+                  result={runResult}
+                  collapsed={resultCollapsed}
+                  onToggle={() => setResultCollapsed((value) => !value)}
+                />
+              </div>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

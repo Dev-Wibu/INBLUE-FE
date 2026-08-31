@@ -8296,8 +8296,200 @@
     "companyDescription": "会社概要",
     "openSource": "元のJDを開く"
   },
+  "entryTestResult": {
+    "title": "初回スキル評価の結果",
+    "description": "確認済みのスコアと現在の能力レベルをまとめています。",
+    "graded": "採点済み",
+    "submissionMeta": "受験 #{{id}} · 提出日時 {{date}}",
+    "unranked": "未判定",
+    "totalScore": "合計点",
+    "currentLevel": "現在のレベル",
+    "breakdownTitle": "セクション別の詳細",
+    "breakdownDescription": "各評価セクションの満点に対する得点です。",
+    "sectionCount": "{{count}}セクション",
+    "scoreValue": "{{score}} / {{max}}点",
+    "scoringNote": "得点は選択式問題の回答と非公開テストによって計算されます。サンプル実行の結果は最終得点の計算には使用されません。",
+    "sections": {
+      "common": "基礎知識",
+      "specific": "専門知識",
+      "coding": "コーディング"
+    },
+    "competency": {
+      "updated": "能力プロフィールが更新されました",
+      "syncing": "最新の能力プロフィールを同期しています",
+      "direction": "方向性：{{role}} · レベル：{{level}}"
+    },
+    "pending": {
+      "title": "評価はまだ採点されていません",
+      "description": "この受験は進行中です。採点が完了すると、得点とレベルが表示されます。"
+    },
+    "errors": {
+      "loadTitle": "結果を読み込めませんでした",
+      "loadDescription": "この受験が存在しない、別のアカウントに属している、または接続が中断されています。"
+    },
+    "actions": {
+      "retry": "再試行",
+      "continue": "評価を続ける",
+      "back": "評価一覧に戻る",
+      "overview": "概要を見る"
+    }
+  },
+  "entryTestSubmit": {
+    "title": "初回スキル評価を提出しますか？",
+    "description": "提出後は、回答やソースコードを変更できません。",
+    "expiredTitle": "評価時間が終了しました",
+    "expiredDescription": "最新の下書きを採点のために提出します。",
+    "unanswered": "未回答の項目が{{count}}件あります。これらの項目には得点が加算されません。",
+    "processing": "処理中",
+    "continue": "評価を続ける",
+    "submitting": "提出して採点中...",
+    "confirm": "提出を確定",
+    "errors": {
+      "levelScaleMissing": "この得点に対応する評価スケールが設定されていません。回答は保存されています。管理者に連絡してから再度提出してください。"
+    }
+  },
+  "entryTestLanding": {
+    "title": "初回スキル評価プロフィール",
+    "description": "希望職種に基づく評価を完了し、現在のスキルと適切な成長プランを確認します。",
+    "assessed": "評価済み",
+    "continueAttempt": "進行中のテストを続ける",
+    "start": "Entry Testを開始",
+    "chooseDirection": "方向性を選択",
+    "contentsTitle": "評価内容",
+    "contentsDescription": "希望職種とスキルに合わせて評価内容が最適化されます。",
+    "features": {
+      "foundation": {
+        "title": "基礎知識",
+        "description": "IT環境に必要な一般的な思考力と基礎知識を評価します。"
+      },
+      "direction": {
+        "title": "職種別の知識",
+        "description": "選択した職種とスキルに基づいて問題が出題されます。"
+      },
+      "coding": {
+        "title": "コーディング課題",
+        "description": "表示された例でコードを実行し、非公開テストに提出します。"
+      }
+    },
+    "profileTitle": "評価プロフィール",
+    "latestResult": "最新の結果があります",
+    "level": "レベル {{level}}",
+    "viewResult": "詳細結果を見る",
+    "noAssessment": "評価結果はまだありません",
+    "noAssessmentDescription": "最初のEntry Testを完了すると、ここに結果が表示されます。",
+    "currentDirection": "現在の方向性",
+    "noSkills": "スキル未選択",
+    "updateDirection": "方向性を更新",
+    "directionSkipped": "開始前であればいつでも方向性を選択できます。",
+    "errors": {
+      "create": "Entry Testを作成できませんでした。",
+      "notEnoughItems": "この方向性の問題が不足しています。後でもう一度お試しください。"
+    }
+  },
+  "entryTestStart": {
+    "title": "Entry Testを開始しますか？",
+    "description": "テストが作成されるとタイマーが開始します。安定した接続を使用し、提出中は再読み込みしないでください。",
+    "time": {
+      "title": "制限時間があります",
+      "description": "正確な時間はテスト作成後に表示されます。"
+    },
+    "contents": {
+      "title": "設定された内容",
+      "description": "設定に応じて基礎、専門、コーディング問題が含まれます。"
+    },
+    "saved": {
+      "title": "回答はこの端末に保存されます",
+      "description": "このブラウザで再読み込み後も回答を復元できます。"
+    },
+    "cancel": "今は開始しない",
+    "creating": "テストを作成中...",
+    "confirm": "テストを開始"
+  },
+  "entryTestWizard": {
+    "title": "キャリアの方向性を選択",
+    "description": "この情報をもとに、より適切なEntry Testの内容を選択します。",
+    "roleDescription": "目標の職種を選択してください。後から更新できます。",
+    "skillDescription": "専門分野を最適化するため、少なくとも1つのスキルを選択してください。",
+    "goalPlaceholder": "例：12か月以内にFrontend Engineerになる",
+    "targetLevel": "目標レベル",
+    "changeNotice": "方向性やスキルを変更すると、評価更新のため再度Entry Testが必要になる場合があります。",
+    "later": "後で",
+    "save": "方向性を保存"
+  },
+  "entryTestProfile": {
+    "direction": "方向性",
+    "currentLevel": "現在の能力",
+    "targetLevel": "目標レベル",
+    "skills": "スキル",
+    "notAssessed": "未評価"
+  },
+  "adminEntryTest": {
+    "title": "Entry Test管理",
+    "description": "テスト設定と初回スキル評価のスコア換算を管理します",
+    "stats": { "totalTests": "テスト合計", "activeTests": "有効", "scales": "スコア帯" },
+    "searchPlaceholder": "テスト名で検索...",
+    "create": "設定を作成",
+    "tabs": { "tests": "テスト ({{count}})", "scales": "スコア換算 ({{count}})" },
+    "columns": {
+      "name": "テスト名",
+      "duration": "時間",
+      "structure": "構成",
+      "totalScore": "合計点",
+      "actions": "操作"
+    },
+    "units": {
+      "minutes": "{{value}}分",
+      "sections": "{{value}}セクション",
+      "points": "{{value}}点"
+    },
+    "unnamed": "名称未設定",
+    "inUse": "使用中",
+    "deactivate": "設定を無効化",
+    "empty": "該当するEntry Test設定がありません。",
+    "sections": { "common": "基礎知識", "specific": "専門知識", "coding": "コーディング" },
+    "itemTypes": { "QUESTION_BANK": "選択式問題", "CODING_PROBLEM": "コーディング課題" },
+    "editor": {
+      "editTitle": "Entry Testを編集",
+      "createTitle": "Entry Testを作成",
+      "description": "各評価セクションの基本情報と採点を設定します。",
+      "namePlaceholder": "Entry Test設定名を入力",
+      "durationLabel": "時間（分）",
+      "structureTitle": "テスト構成",
+      "structureDescription": "合計点 = 問題数 × 1問あたりの点数。",
+      "section": "セクション",
+      "itemCount": "問題数",
+      "scorePerItem": "1問の点数",
+      "save": "設定を保存"
+    },
+    "scale": {
+      "title": "能力スコア換算",
+      "description": "職種ごとに各レベルのスコア範囲を設定します。",
+      "role": "対象職種",
+      "level": "レベル",
+      "minScore": "最低点",
+      "maxScore": "最高点",
+      "minCodingScore": "コーディング最低点",
+      "active": "有効",
+      "save": "換算を保存"
+    },
+    "messages": {
+      "loadError": "Entry Test設定を読み込めませんでした。",
+      "invalidGeneral": "テスト名と時間を正しく入力してください。",
+      "invalidSections": "セクションの問題数と点数を正しく設定し、合計点を一致させてください。",
+      "saveSuccess": "Entry Test設定を保存しました。",
+      "saveError": "Entry Test設定を保存できませんでした。",
+      "deactivateSuccess": "Entry Test設定を無効化しました。",
+      "deactivateError": "Entry Test設定を無効化できませんでした。",
+      "invalidScale": "最低点は最高点以下にしてください。",
+      "scaleSaveSuccess": "スコア換算を保存しました。",
+      "scaleSaveError": "スコア換算を保存できませんでした。"
+    }
+  },
   "entryTestOnboarding": {
     "setupTitle": "学習プロフィールを設定",
+    "stepCounter": "ステップ {{current}} / {{total}}",
+    "pageTitle": "キャリアプロフィールを設定",
+    "helpText": "この情報をもとに、Entry Testと成長プランを最適化します。",
     "progressLabel": "設定の進捗",
     "direction": "方向性",
     "skills": "スキル",

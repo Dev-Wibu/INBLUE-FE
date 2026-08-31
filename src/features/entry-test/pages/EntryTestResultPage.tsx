@@ -6,23 +6,21 @@ import {
   FileQuestion,
   Gauge,
   RefreshCw,
+  Sparkles,
   Target,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 import { useCompetency, useEntryTestResult } from "../hooks/useEntryTestAttempt";
 
-const levelLabels = {
-  INTERN: "Intern",
-  FRESHER: "Fresher",
-  JUNIOR: "Junior",
-  MIDDLE: "Middle",
-} as const;
-
 export function EntryTestResultPage() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const attemptId = Number(useParams().id);
   const result = useEntryTestResult(Number.isSafeInteger(attemptId) ? attemptId : null);
@@ -30,148 +28,259 @@ export function EntryTestResultPage() {
 
   if (result.isLoading)
     return (
-      <div className="space-y-4 bg-slate-50 p-6 dark:bg-slate-950">
-        <Skeleton className="h-44" />
-        <Skeleton className="h-64" />
+      <div className="min-h-full space-y-6 bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
+        <Skeleton className="mx-auto h-36 max-w-6xl rounded-[20px]" />
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.8fr_1.35fr]">
+          <Skeleton className="h-72 rounded-2xl" />
+          <Skeleton className="h-72 rounded-2xl" />
+        </div>
       </div>
     );
+
   if (result.isError || !result.data)
     return (
       <StateMessage
-        title="Không thể tải kết quả"
-        description="Bài làm không tồn tại, không thuộc tài khoản này hoặc kết nối đang gián đoạn."
-        action="Thử lại"
+        title={t("entryTestResult.errors.loadTitle")}
+        description={t("entryTestResult.errors.loadDescription")}
+        action={t("entryTestResult.actions.retry")}
         onAction={() => void result.refetch()}
       />
     );
+
   if (result.data.status !== "GRADED")
     return (
       <StateMessage
-        title="Bài đánh giá chưa được chấm"
-        description="Bài làm này vẫn đang ở trạng thái thực hiện. Điểm và cấp độ sẽ chỉ hiển thị sau khi backend chấm hoàn tất."
-        action="Tiếp tục làm bài"
+        title={t("entryTestResult.pending.title")}
+        description={t("entryTestResult.pending.description")}
+        action={t("entryTestResult.actions.continue")}
         onAction={() => navigate(`/user/entry-test/session/${attemptId}`)}
       />
     );
 
   const attempt = result.data;
   const finalScore = attempt.finalScore ?? 0;
-  const level = attempt.resultLevel ? levelLabels[attempt.resultLevel] : "Chưa xếp hạng";
+  const commonMax = sumMaxScore(attempt.commonQuizItemsJson);
+  const specificMax = sumMaxScore(attempt.specificQuizItemsJson);
+  const codingMax = sumMaxScore(attempt.specificCodingItemsJson);
+  const totalPossibleScore = commonMax + specificMax + codingMax || 100;
+  const scorePercent = getPercent(finalScore, totalPossibleScore);
+  const submittedAt = attempt.submittedAt
+    ? new Intl.DateTimeFormat(i18n.resolvedLanguage || i18n.language, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(attempt.submittedAt))
+    : t("common.notAvailable");
+  const level = attempt.resultLevel
+    ? t(`entryTestOnboarding.levelLabels.${attempt.resultLevel}`)
+    : t("entryTestResult.unranked");
   const sections = [
     {
-      label: "Kiến thức chung",
+      key: "common",
+      label: t("entryTestResult.sections.common"),
       score: attempt.commonQuizScore ?? 0,
+      maxScore: commonMax,
       icon: FileQuestion,
-      color: "bg-sky-500",
+      iconClass: "bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-300",
+      barClass: "bg-sky-500",
     },
     {
-      label: "Kiến thức chuyên môn",
+      key: "specific",
+      label: t("entryTestResult.sections.specific"),
       score: attempt.specificQuizScore ?? 0,
+      maxScore: specificMax,
       icon: Target,
-      color: "bg-indigo-500",
+      iconClass: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300",
+      barClass: "bg-indigo-500",
     },
     {
-      label: "Lập trình",
+      key: "coding",
+      label: t("entryTestResult.sections.coding"),
       score: attempt.specificCodingScore ?? 0,
+      maxScore: codingMax,
       icon: Code2,
-      color: "bg-emerald-500",
+      iconClass: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300",
+      barClass: "bg-emerald-500",
     },
   ];
+  const skills = competency.data?.languagesJson ?? attempt.selectedLanguagesJson ?? [];
 
   return (
-    <main className="flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
-      <section className="flex flex-none flex-col justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3 sm:flex-row sm:items-center md:px-6 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300">
-            <CheckCircle2 className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="truncate text-sm font-bold text-slate-900 dark:text-white">
-              Đã hoàn thành và chấm điểm
-            </h2>
-            <p className="truncate text-xs text-slate-500">
-              Bài #{attempt.id} · Nộp lúc{" "}
-              {attempt.submittedAt ? new Date(attempt.submittedAt).toLocaleString("vi-VN") : "-"}
-            </p>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          className="h-8 text-xs"
-          onClick={() => navigate("/user/entry-test")}>
-          <ArrowLeft className="h-3.5 w-3.5" /> Về trang đánh giá
-        </Button>
-      </section>
-      <section className="mx-auto w-full max-w-5xl flex-1 px-5 py-6 md:px-8">
-        <div className="mb-5">
-          <h1 className="text-xl font-bold text-slate-950 dark:text-white">Kết quả Entry Test</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Tổng hợp điểm và cấp độ năng lực được backend xác nhận.
-          </p>
-        </div>
-        <div className="grid gap-6 md:grid-cols-[0.9fr_1.6fr]">
-          <aside className="rounded-lg bg-indigo-700 p-6 text-white">
-            <div className="flex items-center gap-2 text-indigo-100">
-              <Gauge className="h-4 w-4" />
-              <span className="text-sm font-medium">Tổng điểm</span>
-            </div>
-            <p className="mt-4 text-5xl font-bold">
-              {formatScore(finalScore)}
-              <span className="text-lg font-medium text-indigo-200"> / 100</span>
-            </p>
-            <div className="mt-6 border-t border-indigo-500 pt-5">
-              <p className="text-xs text-indigo-200">Cấp độ hiện tại</p>
-              <div className="mt-2 flex items-center gap-2">
-                <Award className="h-5 w-5 text-amber-300" />
-                <p className="text-xl font-bold">{level}</p>
+    <main className="min-h-full bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
+      <div className="mx-auto w-full max-w-6xl">
+        <section className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-start gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-300">
+                <CheckCircle2 className="h-6 w-6" />
+              </span>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {t("entryTestResult.title")}
+                  </h1>
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-500/25 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                    {t("entryTestResult.graded")}
+                  </Badge>
+                </div>
+                <p className="mt-1 text-[15px] leading-6 text-slate-500 dark:text-slate-400">
+                  {t("entryTestResult.description")}
+                </p>
+                <p className="mt-2 text-xs font-medium text-slate-400 dark:text-slate-500">
+                  {t("entryTestResult.submissionMeta", { id: attempt.id, date: submittedAt })}
+                </p>
               </div>
             </div>
-          </aside>
-          <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="text-base font-semibold">Chi tiết theo phần</h2>
-            <div className="mt-5 space-y-5">
-              {sections.map(({ label, score, icon: Icon, color }) => (
-                <div key={label}>
-                  <div className="mb-2 flex items-center justify-between gap-4">
-                    <span className="flex items-center gap-2 text-sm font-medium">
-                      <Icon className="h-4 w-4 text-slate-500" />
-                      {label}
-                    </span>
-                    <strong className="text-sm">{formatScore(score)} điểm</strong>
+            <Button
+              variant="outline"
+              className="h-10 shrink-0 rounded-xl"
+              onClick={() => navigate("/user/entry-test")}>
+              <ArrowLeft className="h-4 w-4" /> {t("entryTestResult.actions.back")}
+            </Button>
+          </div>
+        </section>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.35fr)]">
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                <Gauge className="h-4 w-4 text-indigo-500" />
+                {t("entryTestResult.totalScore")}
+              </div>
+              <div className="mt-4 flex items-end gap-2">
+                <strong className="text-5xl leading-none font-bold text-slate-950 dark:text-white">
+                  {formatScore(finalScore)}
+                </strong>
+                <span className="pb-1 text-base font-semibold text-slate-400">
+                  / {formatScore(totalPossibleScore)}
+                </span>
+              </div>
+              <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                <div
+                  className="h-full rounded-full bg-indigo-600 transition-[width] duration-500"
+                  style={{ width: `${scorePercent}%` }}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-4 px-6 py-5">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300">
+                <Award className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {t("entryTestResult.currentLevel")}
+                </p>
+                <p className="mt-1 text-xl font-bold text-slate-900 dark:text-white">{level}</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                  {t("entryTestResult.breakdownTitle")}
+                </h2>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {t("entryTestResult.breakdownDescription")}
+                </p>
+              </div>
+              <Badge variant="secondary">
+                {t("entryTestResult.sectionCount", { count: sections.length })}
+              </Badge>
+            </div>
+            <div className="divide-y divide-slate-200 dark:divide-slate-800">
+              {sections.map(({ key, label, score, maxScore, icon: Icon, iconClass, barClass }) => (
+                <div key={key} className="px-6 py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span
+                        className={cn(
+                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                          iconClass
+                        )}>
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        {label}
+                      </span>
+                    </div>
+                    <strong className="shrink-0 text-sm text-slate-900 dark:text-white">
+                      {t("entryTestResult.scoreValue", {
+                        score: formatScore(score),
+                        max: formatScore(maxScore),
+                      })}
+                    </strong>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div className="mt-3 ml-[52px] h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                     <div
-                      className={`h-full ${color}`}
-                      style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
+                      className={cn("h-full rounded-full", barClass)}
+                      style={{ width: `${getPercent(score, maxScore)}%` }}
                     />
                   </div>
                 </div>
               ))}
             </div>
-            <p className="mt-5 text-xs leading-5 text-slate-500">
-              Điểm do backend chấm từ đáp án quiz và hidden tests. Kết quả chạy thử code không được
-              dùng để tự tính điểm.
+            <p className="border-t border-slate-200 bg-slate-50/70 px-6 py-4 text-xs leading-5 text-slate-500 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-400">
+              {t("entryTestResult.scoringNote")}
             </p>
-          </div>
+          </section>
         </div>
-        <div className="mt-6 border-y border-slate-200 bg-white px-5 py-5 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <div>
-              <h2 className="text-base font-semibold">Hồ sơ năng lực đã được cập nhật</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                {competency.data
-                  ? `Định hướng ${competency.data.targetRole} · ${competency.data.languagesJson.join(", ")}`
-                  : "Hệ thống đang đồng bộ bản đánh giá mới nhất."}
-              </p>
+
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+            <div className="flex min-w-0 items-start gap-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
+                <Sparkles className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                  {competency.data
+                    ? t("entryTestResult.competency.updated")
+                    : t("entryTestResult.competency.syncing")}
+                </h2>
+                {competency.data && (
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    {t("entryTestResult.competency.direction", {
+                      role: t(`entryTestOnboarding.roleLabels.${competency.data.targetRole}`),
+                      level: t(`entryTestOnboarding.levelLabels.${competency.data.currentLevel}`),
+                    })}
+                  </p>
+                )}
+                {skills.length > 0 && (
+                  <div className="mt-3 flex max-w-3xl flex-wrap gap-1.5">
+                    {skills.map((skill) => (
+                      <Badge
+                        key={skill}
+                        variant="outline"
+                        className="max-w-full bg-slate-50 font-medium break-words dark:bg-slate-950/50">
+                        {skill.replaceAll("_", " ")}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-            <Button onClick={() => navigate("/user/entry-test")}>
-              <RefreshCw className="h-4 w-4" /> Xem tổng quan
+            <Button
+              className="h-10 shrink-0 rounded-xl bg-indigo-600 px-5 hover:bg-indigo-700"
+              onClick={() => navigate("/user/entry-test")}>
+              <RefreshCw className="h-4 w-4" /> {t("entryTestResult.actions.overview")}
             </Button>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   );
+}
+
+function sumMaxScore(items: Array<{ maxScore: number }>) {
+  return items.reduce((sum, item) => sum + (Number(item.maxScore) || 0), 0);
+}
+
+function getPercent(value: number, maximum: number) {
+  if (maximum <= 0) return 0;
+  return Math.min(100, Math.max(0, (value / maximum) * 100));
 }
 
 function formatScore(value: number) {
@@ -191,13 +300,13 @@ function StateMessage({
 }) {
   return (
     <div className="flex min-h-full items-center justify-center bg-slate-50 p-6 dark:bg-slate-950">
-      <div className="max-w-md text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
           <Award className="h-5 w-5" />
         </div>
-        <h1 className="mt-4 text-lg font-bold">{title}</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
-        <Button className="mt-5" onClick={onAction}>
+        <h1 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">{title}</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{description}</p>
+        <Button className="mt-5 rounded-xl bg-indigo-600 hover:bg-indigo-700" onClick={onAction}>
           {action}
         </Button>
       </div>
