@@ -83,8 +83,8 @@ export function EntryTestLandingPage() {
     );
 
   return (
-    <main className="flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
-      <section className="flex flex-none flex-col justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3 sm:flex-row sm:items-center md:px-6 dark:border-slate-800 dark:bg-slate-900">
+    <main className="-m-0 flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
+      <section className="flex flex-none flex-col justify-between gap-3 border-b border-slate-200 bg-white px-6 py-3 sm:flex-row sm:items-center lg:px-8 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
             <BrainCircuit className="h-4 w-4" />
@@ -122,15 +122,18 @@ export function EntryTestLandingPage() {
           </Button>
         </div>
       </section>
-      <section className="mx-auto w-full max-w-6xl flex-1 px-5 py-6 md:px-8">
-        <div className="mb-6 max-w-3xl">
-          <h1 className="text-xl font-bold text-slate-950 dark:text-white">
-            Xác định năng lực khởi điểm
-          </h1>
-          <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Hoàn thành bài đánh giá theo định hướng để nhận mức năng lực hiện tại và lộ trình học
-            phù hợp.
-          </p>
+      <section className="mx-auto w-full max-w-6xl flex-1 px-6 py-6 lg:px-8">
+        <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div>
+            <h1 className="text-xl font-bold text-slate-950 dark:text-white">
+              Xác định năng lực khởi điểm
+            </h1>
+            <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              Hoàn thành bài đánh giá theo định hướng để nhận mức năng lực hiện tại và lộ trình học
+              phù hợp.
+            </p>
+          </div>
+          <span className="text-xs text-slate-500">Khu vực ứng viên</span>
         </div>
         <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
           <div>
