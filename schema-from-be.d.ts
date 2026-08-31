@@ -222,6 +222,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/career-preference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCurrentPreference"];
+        put: operations["upsertPreference"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/kiosks/{id}": {
         parameters: {
             query?: never;
@@ -406,6 +422,38 @@ export interface paths {
         put: operations["assignMentor"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/level-scales/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getLevelScale"];
+        put: operations["updateLevelScale"];
+        post?: never;
+        delete: operations["deactivateLevelScale"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/entry-tests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEntryTest"];
+        put: operations["updateEntryTest"];
+        post?: never;
+        delete: operations["deactivateEntryTest"];
         options?: never;
         head?: never;
         patch?: never;
@@ -929,6 +977,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/career-preference/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["skipPreference"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/mails/send-generic": {
         parameters: {
             query?: never;
@@ -1075,6 +1139,54 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["analyzeFaceBehavior"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/entry-tests/{attemptId}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["submitEntryTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/entry-tests/{attemptId}/coding/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["runCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/entry-tests/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startEntryTest"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1281,6 +1393,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/level-scales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllLevelScales"];
+        put?: never;
+        post: operations["createLevelScale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/level-scales/set": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["upsertLevelScaleSet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/job-import/topdev/import": {
         parameters: {
             query?: never;
@@ -1292,6 +1436,22 @@ export interface paths {
         put?: never;
         /** Import a selected TopDev JD into Company and JobDescription */
         post: operations["importTopDevJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/entry-tests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllEntryTests"];
+        put?: never;
+        post: operations["createEntryTest"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1951,6 +2111,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/competency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCurrentCompetency"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/career-preference/exists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["hasCurrentPreference"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/mails/send": {
         parameters: {
             query?: never;
@@ -2186,6 +2378,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getSessionFromCache"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/entry-tests/attempts/{attemptId}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAttemptResult"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2621,6 +2829,22 @@ export interface paths {
          * @description Trả về danh sách các ứng viên đã ứng tuyển vào JD được chọn, thông tin ứng viên, điểm số tổng quan và vòng thi hiện tại.
          */
         get: operations["getApplicationsByJdId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/entry-tests/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getActiveEntryTest"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3224,6 +3448,30 @@ export interface components {
             rating?: number;
             comment?: string;
         };
+        UpsertCareerPreferenceRequest: {
+            /** @enum {string} */
+            targetRole?: "BE" | "FE" | "QA_QC" | "BA" | "DEVOPS" | "DATA";
+            languagesJson?: string[];
+            careerGoal?: string;
+            /** @enum {string} */
+            targetLevel?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+        };
+        UserCareerPreference: {
+            /** Format: int32 */
+            userId?: number;
+            /** @enum {string} */
+            targetRole?: "BE" | "FE" | "QA_QC" | "BA" | "DEVOPS" | "DATA";
+            languagesJson?: string[];
+            careerGoal?: string;
+            /** @enum {string} */
+            targetLevel?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+            needRetest?: boolean;
+            isActive?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
         Kiosk: {
             /** Format: int64 */
             id?: number;
@@ -3448,6 +3696,76 @@ export interface components {
         };
         AssignMentorsRequestDto: {
             mentorIds?: number[];
+        };
+        UpsertLevelScaleRequest: {
+            /** @enum {string} */
+            targetRole?: "BE" | "FE" | "QA_QC" | "BA" | "DEVOPS" | "DATA";
+            /** @enum {string} */
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+            /** Format: double */
+            minScore?: number;
+            /** Format: double */
+            maxScore?: number;
+            /** Format: double */
+            minCodingScore?: number;
+            isActive?: boolean;
+        };
+        LevelScale: {
+            /** Format: int64 */
+            id?: number;
+            /** @enum {string} */
+            targetRole?: "BE" | "FE" | "QA_QC" | "BA" | "DEVOPS" | "DATA";
+            /** @enum {string} */
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+            /** Format: double */
+            minScore?: number;
+            /** Format: double */
+            maxScore?: number;
+            /** Format: double */
+            minCodingScore?: number;
+            isActive?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        EntryTestSectionConfig: {
+            /** @enum {string} */
+            sectionType?: "COMMON_QUIZ" | "SPECIFIC_QUIZ" | "SPECIFIC_CODING";
+            /** @enum {string} */
+            itemType?: "QUESTION_BANK" | "CODING_PROBLEM";
+            /** Format: int32 */
+            itemCount?: number;
+            /** Format: double */
+            totalScore?: number;
+            /** Format: double */
+            scorePerItem?: number;
+            /** Format: int32 */
+            displayOrder?: number;
+        };
+        UpsertEntryTestRequest: {
+            name?: string;
+            /** Format: double */
+            totalScore?: number;
+            /** Format: int32 */
+            timeLimitMinutes?: number;
+            sectionConfigs?: components["schemas"]["EntryTestSectionConfig"][];
+            isActive?: boolean;
+        };
+        EntryTest: {
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+            /** Format: double */
+            totalScore?: number;
+            /** Format: int32 */
+            timeLimitMinutes?: number;
+            sectionConfigs?: components["schemas"]["EntryTestSectionConfig"][];
+            isActive?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         FaceSnapshotRequest: {
             sessionKey?: string;
@@ -3936,6 +4254,121 @@ export interface components {
             status?: "TURNING_LEFT" | "TURNING_RIGHT" | "BOWING_HEAD" | "LOOKING_UP_HEAD" | "TOO_CLOSE" | "TOO_FAR" | "GLANCING_LEFT" | "GLANCING_RIGHT" | "LOOKING_UP_EYES" | "LOOKING_DOWN_EYES" | "NORMAL" | "UNKNOWN";
             warning?: boolean;
         };
+        Answer: {
+            itemId?: string;
+            answerJson?: {
+                [key: string]: unknown;
+            };
+        };
+        EntryTestSubmitRequest: {
+            answers?: components["schemas"]["Answer"][];
+        };
+        CodingProblemItemSnapshot: {
+            itemId?: string;
+            /** Format: int64 */
+            codingProblemId?: number;
+            title?: string;
+            difficulty?: string;
+            problemStatement?: string;
+            rulesAndConstraints?: string[];
+            visibleExamples?: components["schemas"]["Example"][];
+            codeStubs?: {
+                [key: string]: string;
+            };
+            paramTypes?: string[];
+            returnType?: string;
+            /** Format: int32 */
+            executionTimeLimitMs?: number;
+            /** Format: int32 */
+            memoryLimitMb?: number;
+            /** Format: double */
+            maxScore?: number;
+            /** Format: int32 */
+            displayOrder?: number;
+        };
+        EntryTestAnswerSnapshot: {
+            itemId?: string;
+            /** @enum {string} */
+            sectionType?: "COMMON_QUIZ" | "SPECIFIC_QUIZ" | "SPECIFIC_CODING";
+            /** @enum {string} */
+            answerType?: "QUESTION_BANK" | "CODING_PROBLEM";
+            answerJson?: {
+                [key: string]: unknown;
+            };
+            /** Format: double */
+            score?: number;
+            isCorrect?: boolean;
+            /** Format: date-time */
+            gradedAt?: string;
+        };
+        EntryTestAttemptResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int32 */
+            userId?: number;
+            /** Format: int32 */
+            careerPreferenceId?: number;
+            /** Format: int64 */
+            entryTestId?: number;
+            selectedLanguagesJson?: string[];
+            commonQuizItemsJson?: components["schemas"]["EntryTestQuestionResponse"][];
+            specificQuizItemsJson?: components["schemas"]["EntryTestQuestionResponse"][];
+            specificCodingItemsJson?: components["schemas"]["CodingProblemItemSnapshot"][];
+            answersJson?: components["schemas"]["EntryTestAnswerSnapshot"][];
+            /** @enum {string} */
+            status?: "IN_PROGRESS" | "SUBMITTED" | "GRADED" | "EXPIRED";
+            /** Format: date-time */
+            startedAt?: string;
+            /** Format: date-time */
+            submittedAt?: string;
+            /** Format: double */
+            commonQuizScore?: number;
+            /** Format: double */
+            specificQuizScore?: number;
+            /** Format: double */
+            specificCodingScore?: number;
+            /** Format: double */
+            finalScore?: number;
+            resultLevel?: string;
+            resultSnapshotJson?: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        EntryTestQuestionResponse: {
+            itemId?: string;
+            /** Format: int32 */
+            questionBankId?: number;
+            questionText?: string;
+            options?: string[];
+            categoryName?: string;
+            difficulty?: string;
+            /** Format: double */
+            maxScore?: number;
+            /** Format: int32 */
+            displayOrder?: number;
+        };
+        EntryTestRunCodeRequest: {
+            itemId: string;
+            language: string;
+            sourceCode: string[];
+        };
+        EntryTestStartResponse: {
+            /** Format: int64 */
+            attemptId?: number;
+            /** Format: int64 */
+            entryTestId?: number;
+            /** Format: int32 */
+            timeLimitMinutes?: number;
+            selectedLanguagesJson?: string[];
+            sectionConfigs?: components["schemas"]["EntryTestSectionConfig"][];
+            commonQuizItemsJson?: components["schemas"]["EntryTestQuestionResponse"][];
+            specificQuizItemsJson?: components["schemas"]["EntryTestQuestionResponse"][];
+            specificCodingItemsJson?: components["schemas"]["CodingProblemItemSnapshot"][];
+        };
         CreateCompanyRequest: {
             name?: string;
             description?: string;
@@ -4156,6 +4589,11 @@ export interface components {
             roundId?: number;
             submissions?: components["schemas"]["CodeReviewSubmission"][];
         };
+        UpsertLevelScaleSetRequest: {
+            /** @enum {string} */
+            targetRole?: "BE" | "FE" | "QA_QC" | "BA" | "DEVOPS" | "DATA";
+            scales?: components["schemas"]["UpsertLevelScaleRequest"][];
+        };
         TopDevJobImportRequest: {
             title: string;
             companyName: string;
@@ -4305,10 +4743,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -4318,19 +4756,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
-            paged?: boolean;
-            /** Format: int32 */
-            pageSize?: number;
             /** Format: int32 */
             pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            paged?: boolean;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -4360,6 +4798,38 @@ export interface components {
             content?: string;
             /** Format: date-time */
             timestamp?: string;
+        };
+        UserCompetencyResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int32 */
+            userId?: number;
+            /** Format: int32 */
+            careerPreferenceId?: number;
+            /** @enum {string} */
+            targetRole?: "BE" | "FE" | "QA_QC" | "BA" | "DEVOPS" | "DATA";
+            languagesJson?: string[];
+            /** @enum {string} */
+            currentLevel?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+            /** Format: double */
+            currentScore?: number;
+            /** Format: double */
+            commonQuizScore?: number;
+            /** Format: double */
+            specificQuizScore?: number;
+            /** Format: double */
+            specificCodingScore?: number;
+            competencySnapshotJson?: {
+                [key: string]: unknown;
+            };
+            /** Format: int64 */
+            lastEntryTestAttemptId?: number;
+            /** Format: date-time */
+            lastEvaluatedAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         SlotDto: {
             /** Format: date-time */
@@ -4660,18 +5130,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            pageEncoding?: string;
-            errorOnELNotFound?: string;
             elIgnored?: string;
-            isXml?: string;
-            trimDirectiveWhitespaces?: string;
+            pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            urlPatterns?: string[];
+            errorOnELNotFound?: string;
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            isXml?: string;
             defaultContentType?: string;
+            urlPatterns?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -4706,14 +5176,18 @@ export interface components {
             };
         };
         ServletContext: {
+            /** Format: int32 */
+            sessionTimeout?: number;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
+            serverInfo?: string;
             servletContextName?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
@@ -4722,12 +5196,8 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -4819,8 +5289,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */
@@ -5768,6 +6238,50 @@ export interface operations {
             };
         };
     };
+    getCurrentPreference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserCareerPreference"];
+                };
+            };
+        };
+    };
+    upsertPreference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertCareerPreferenceRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserCareerPreference"];
+                };
+            };
+        };
+    };
     updateKiosk: {
         parameters: {
             query?: never;
@@ -6186,6 +6700,146 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApplicationDetail"];
+                };
+            };
+        };
+    };
+    getLevelScale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LevelScale"];
+                };
+            };
+        };
+    };
+    updateLevelScale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertLevelScaleRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LevelScale"];
+                };
+            };
+        };
+    };
+    deactivateLevelScale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LevelScale"];
+                };
+            };
+        };
+    };
+    getEntryTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EntryTest"];
+                };
+            };
+        };
+    };
+    updateEntryTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertEntryTestRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EntryTest"];
+                };
+            };
+        };
+    };
+    deactivateEntryTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EntryTest"];
                 };
             };
         };
@@ -7003,6 +7657,26 @@ export interface operations {
             };
         };
     };
+    skipPreference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserCareerPreference"];
+                };
+            };
+        };
+    };
     sendGenericEmail: {
         parameters: {
             query?: never;
@@ -7212,6 +7886,78 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["FaceAnalysisResponse"];
+                };
+            };
+        };
+    };
+    submitEntryTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attemptId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryTestSubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EntryTestAttemptResponse"];
+                };
+            };
+        };
+    };
+    runCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attemptId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryTestRunCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CompilerResponseDto"];
+                };
+            };
+        };
+    };
+    startEntryTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EntryTestStartResponse"];
                 };
             };
         };
@@ -7570,6 +8316,74 @@ export interface operations {
             };
         };
     };
+    getAllLevelScales: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LevelScale"][];
+                };
+            };
+        };
+    };
+    createLevelScale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertLevelScaleRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LevelScale"];
+                };
+            };
+        };
+    };
+    upsertLevelScaleSet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertLevelScaleSetRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LevelScale"][];
+                };
+            };
+        };
+    };
     importTopDevJob: {
         parameters: {
             query?: never;
@@ -7590,6 +8404,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TopDevJobImportResponse"];
+                };
+            };
+        };
+    };
+    getAllEntryTests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EntryTest"][];
+                };
+            };
+        };
+    };
+    createEntryTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertEntryTestRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EntryTest"];
                 };
             };
         };
@@ -8470,6 +9328,46 @@ export interface operations {
             };
         };
     };
+    getCurrentCompetency: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserCompetencyResponse"];
+                };
+            };
+        };
+    };
+    hasCurrentPreference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": boolean;
+                };
+            };
+        };
+    };
     adminSendMail: {
         parameters: {
             query: {
@@ -8778,6 +9676,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["InterviewSessionRedis"];
+                };
+            };
+        };
+    };
+    getAttemptResult: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attemptId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EntryTestAttemptResponse"];
                 };
             };
         };
@@ -9358,6 +10278,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminJdApplicationsResponseDto"];
+                };
+            };
+        };
+    };
+    getActiveEntryTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EntryTest"];
                 };
             };
         };
