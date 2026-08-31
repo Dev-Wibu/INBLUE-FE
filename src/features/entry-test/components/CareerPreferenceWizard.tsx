@@ -45,11 +45,13 @@ const levels: Array<{ value: TargetLevel; label: string }> = [
 
 export function CareerPreferenceWizard({
   open,
+  fullScreen = false,
   initialPreference,
   onOpenChange,
   onSaved,
 }: {
   open: boolean;
+  fullScreen?: boolean;
   initialPreference?: UserCareerPreference | null;
   onOpenChange: (_open: boolean) => void;
   onSaved: (_preference: UserCareerPreference) => void;
@@ -94,7 +96,12 @@ export function CareerPreferenceWizard({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[calc(100vh-32px)] min-h-[min(720px,calc(100vh-32px))] flex-col overflow-hidden p-0 sm:max-w-4xl">
+      <DialogContent
+        className={cn(
+          "flex max-h-[calc(100vh-32px)] min-h-[min(720px,calc(100vh-32px))] flex-col overflow-hidden p-0 sm:max-w-4xl",
+          fullScreen &&
+            "fixed inset-0 h-screen max-h-none min-h-0 w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 bg-slate-950 text-white sm:max-w-none"
+        )}>
         <div className="flex-none border-b border-slate-200 px-6 pt-6 pb-4 md:px-10 dark:border-slate-800">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">

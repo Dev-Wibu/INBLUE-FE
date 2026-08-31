@@ -24,6 +24,7 @@ export function EntryTestOnboardingCoordinator() {
   return (
     <CareerPreferenceWizard
       open={shouldOpen}
+      fullScreen
       onOpenChange={(open) => {
         if (!open) setDismissed(true);
       }}
