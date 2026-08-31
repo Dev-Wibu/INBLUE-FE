@@ -1,4 +1,5 @@
 import icon2 from "@/assets/icon2.svg";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,26 +66,34 @@ export function EntryTestOnboardingPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#111217] text-white">
+    <main className="h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-white">
       <header className="flex h-16 items-center justify-between px-6 md:px-10">
         <div className="flex items-center gap-2.5">
           <img src={icon2} alt="INBLUE AI" className="h-9 w-9" />
           <span className="text-base font-bold tracking-wide">INBLUE AI</span>
         </div>
-        <span className="rounded-full bg-white/[0.06] px-4 py-2 text-xs font-semibold text-slate-300">
-          Thiết lập hồ sơ học tập
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="hidden rounded-full bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 sm:inline-flex dark:bg-slate-800 dark:text-slate-300">
+            Thiết lập hồ sơ học tập
+          </span>
+          <ThemeToggle iconOnly />
+        </div>
       </header>
-      <section className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-5xl items-center px-5 py-8 md:px-10">
-        <div className="w-full rounded-2xl border border-white/[0.08] bg-[#1b1c23] px-6 py-7 shadow-2xl md:px-12 md:py-10">
-          <Progress value={(step + 1) * 25} className="h-2 bg-white/10 [&>div]:bg-indigo-500" />
+      <section className="mx-auto flex h-[calc(100vh-64px)] w-full max-w-5xl items-center overflow-hidden px-4 py-4 sm:px-5 md:px-10">
+        <div className="flex max-h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-xl sm:px-8 sm:py-7 md:px-12 md:py-8 dark:border-slate-800 dark:bg-slate-900">
+          <Progress
+            value={(step + 1) * 25}
+            className="h-2 bg-slate-200 dark:bg-slate-800 [&>div]:bg-indigo-600"
+          />
           <ol className="mt-5 grid grid-cols-4 gap-3" aria-label="Tiến độ thiết lập">
             {steps.map(({ label, icon: Icon }, index) => (
               <li key={label} className="flex min-w-0 items-center gap-2">
                 <span
                   className={cn(
                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                    index <= step ? "bg-indigo-600 text-white" : "bg-white/10 text-slate-500"
+                    index <= step
+                      ? "bg-indigo-600 text-white"
+                      : "bg-slate-100 text-slate-500 dark:bg-slate-800"
                   )}>
                   {index < step ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                 </span>
@@ -98,7 +107,7 @@ export function EntryTestOnboardingPage() {
               </li>
             ))}
           </ol>
-          <div className="mt-10 min-h-[390px]">
+          <div className="mt-6 min-h-0 flex-1 overflow-hidden py-2 sm:mt-8">
             {step === 0 && (
               <Step
                 title="Bạn muốn phát triển theo hướng nào?"
@@ -113,21 +122,25 @@ export function EntryTestOnboardingPage() {
                         setSkills([]);
                       }}
                       className={cn(
-                        "flex min-h-24 items-center gap-4 rounded-xl border p-4 text-left transition-colors",
+                        "flex min-h-20 items-center gap-3 rounded-xl border p-3 text-left transition-colors sm:min-h-24 sm:gap-4 sm:p-4",
                         role === item.value
-                          ? "border-indigo-400 bg-indigo-500/15"
-                          : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                          ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-500/15"
+                          : "border-slate-200 bg-slate-50 hover:border-indigo-300 dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-slate-600"
                       )}>
                       <span
                         className={cn(
                           "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-                          role === item.value ? "bg-indigo-600" : "bg-white/10 text-slate-400"
+                          role === item.value
+                            ? "bg-indigo-600"
+                            : "bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
                         )}>
                         <Target className="h-5 w-5" />
                       </span>
                       <span>
-                        <strong className="block text-sm">{item.label}</strong>
-                        <span className="mt-1 block text-xs text-slate-400">
+                        <strong className="block text-sm text-slate-900 dark:text-white">
+                          {item.label}
+                        </strong>
+                        <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">
                           {item.description}
                         </span>
                       </span>
@@ -155,10 +168,10 @@ export function EntryTestOnboardingPage() {
                           )
                         }
                         className={cn(
-                          "inline-flex h-12 items-center gap-2 rounded-lg border px-4 text-sm font-semibold",
+                          "inline-flex h-11 items-center gap-2 rounded-lg border px-4 text-sm font-semibold",
                           selected
-                            ? "border-indigo-400 bg-indigo-600"
-                            : "border-white/10 bg-white/[0.03] hover:border-white/25"
+                            ? "border-indigo-400 bg-indigo-600 text-white"
+                            : "border-slate-200 bg-slate-50 text-slate-800 hover:border-indigo-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600"
                         )}>
                         {skill.replaceAll("_", " ")}
                         {selected && <Check className="h-4 w-4" />}
@@ -181,8 +194,8 @@ export function EntryTestOnboardingPage() {
                       className={cn(
                         "h-14 rounded-lg border text-sm font-semibold",
                         level === item.value
-                          ? "border-indigo-400 bg-indigo-600"
-                          : "border-white/10 bg-white/[0.03] hover:border-white/25"
+                          ? "border-indigo-400 bg-indigo-600 text-white"
+                          : "border-slate-200 bg-slate-50 text-slate-800 hover:border-indigo-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600"
                       )}>
                       {item.label}
                     </button>
@@ -197,7 +210,7 @@ export function EntryTestOnboardingPage() {
                     id="onboarding-goal"
                     value={goal}
                     onChange={(event) => setGoal(event.target.value)}
-                    className="mt-2 border-white/10 bg-white/[0.04] text-white placeholder:text-slate-500"
+                    className="mt-2 border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
                     placeholder="Ví dụ: Trở thành Frontend Engineer"
                     maxLength={300}
                   />
@@ -208,7 +221,7 @@ export function EntryTestOnboardingPage() {
               <Step
                 title="Kiểm tra lại lựa chọn"
                 description="Bạn sắp hoàn tất bước thiết lập hồ sơ học tập.">
-                <div className="divide-y divide-white/10 rounded-xl border border-white/10">
+                <div className="divide-y divide-slate-200 rounded-xl border border-slate-200 dark:divide-white/10 dark:border-white/10">
                   {[
                     ["Định hướng", entryTestRoles.find((item) => item.value === role)?.label],
                     ["Kỹ năng", skills.map((item) => item.replaceAll("_", " ")).join(", ")],
@@ -219,8 +232,8 @@ export function EntryTestOnboardingPage() {
                     ],
                   ].map(([label, value]) => (
                     <div key={label} className="flex items-center justify-between gap-4 px-5 py-4">
-                      <span className="text-sm text-slate-400">{label}</span>
-                      <strong className="text-right text-sm text-white">
+                      <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>
+                      <strong className="text-right text-sm text-slate-900 dark:text-white">
                         {value || "Chưa chọn"}
                       </strong>
                     </div>
@@ -229,10 +242,10 @@ export function EntryTestOnboardingPage() {
               </Step>
             )}
           </div>
-          <footer className="flex items-center justify-between border-t border-white/10 pt-5">
+          <footer className="flex items-center justify-between border-t border-slate-200 pt-5 dark:border-white/10">
             <Button
               variant="ghost"
-              className="text-slate-400 hover:bg-white/10 hover:text-white"
+              className="text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
               onClick={() => step > 0 && setStep((value) => value - 1)}
               disabled={step === 0}>
               <ArrowLeft className="h-4 w-4" /> Quay lại
@@ -272,7 +285,9 @@ function Step({
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{description}</p>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+        {description}
+      </p>
       <div className="mt-8">{children}</div>
     </div>
   );
@@ -280,7 +295,7 @@ function Step({
 
 function OnboardingLoading() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#111217] text-sm text-slate-400">
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">
       Đang chuẩn bị thiết lập hồ sơ học tập...
     </main>
   );

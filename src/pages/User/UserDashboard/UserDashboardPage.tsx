@@ -2,7 +2,6 @@ import icon2 from "@/assets/icon2.svg";
 import type { SidebarMenuGroup } from "@/components/shared";
 import { DashboardSidebar, getInitialSidebarCollapsed } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
-import { EntryTestOnboardingCoordinator } from "@/features/entry-test";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
@@ -450,7 +449,6 @@ export function UserDashboardPage() {
 
   return (
     <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
-      <EntryTestOnboardingCoordinator />
       <DashboardSidebar
         menuGroups={sidebarMenuGroups}
         activeTab={sidebarActiveTab}

@@ -18,6 +18,7 @@ import {
   EntryTestOnboardingPage,
   EntryTestResultPage,
   EntryTestSessionPage,
+  MandatoryEntryTestGuard,
 } from "@/features/entry-test";
 import { AdminDashboardPage } from "@/pages/Admin";
 import { ApplicationGradingDetailPage } from "@/pages/Admin/ApplicationGrading";
@@ -145,6 +146,7 @@ function App() {
         <Toaster />
         <BrowserRouter>
           <SessionExpiryGuard />
+          <MandatoryEntryTestGuard />
           <ScrollToTop />
           <PublicScrollToTopButton />
           <ScrollRestorationLegacy />
