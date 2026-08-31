@@ -85,6 +85,12 @@ export function CareerPreferenceWizard({
   };
 
   const canContinue = step === 0 ? role !== null : step === 1 ? skills.length > 0 : true;
+  const stepItems = [
+    { label: "Định hướng", icon: Target },
+    { label: "Kỹ năng", icon: Code2 },
+    { label: "Mục tiêu", icon: Flag },
+    { label: "Xác nhận", icon: Check },
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -102,6 +108,36 @@ export function CareerPreferenceWizard({
             <Progress value={(step + 1) * 25} className="h-1.5" />
             <span className="shrink-0 text-xs font-medium text-slate-500">{step + 1}/4</span>
           </div>
+          <ol className="mt-4 grid grid-cols-4 gap-2" aria-label="Tiến độ thiết lập">
+            {stepItems.map(({ label, icon: Icon }, index) => {
+              const complete = index < step;
+              const current = index === step;
+              return (
+                <li key={label} className="flex min-w-0 items-center gap-1.5">
+                  <span
+                    className={cn(
+                      "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold",
+                      complete || current
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500"
+                    )}>
+                    {complete ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <Icon className="h-3.5 w-3.5" />
+                    )}
+                  </span>
+                  <span
+                    className={cn(
+                      "hidden truncate text-[11px] font-medium sm:block",
+                      current ? "text-indigo-700 dark:text-indigo-300" : "text-slate-500"
+                    )}>
+                    {label}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
         </div>
 
         <div className="min-h-[330px] px-6 py-5">
