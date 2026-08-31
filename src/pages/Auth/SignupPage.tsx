@@ -90,7 +90,7 @@ export function SignupPage() {
         });
       }
 
-      navigate("/", {
+      navigate("/user", {
         replace: true,
       });
     },
