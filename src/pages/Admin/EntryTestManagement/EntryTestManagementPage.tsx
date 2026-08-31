@@ -1,4 +1,4 @@
-import { PaginationControl } from "@/components/shared";
+import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,7 +15,7 @@ import {
   type AdminEntryTest,
   type AdminLevelScale,
 } from "@/services/entry-test-admin.manager";
-import { CheckCircle2, ClipboardCheck, Plus, Save, Trash2, XCircle } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, Plus, Save, Search, Trash2, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -61,6 +61,7 @@ export function EntryTestManagementPage() {
   const [scaleRole, setScaleRole] = useState<TargetRole>("BE");
   const [scaleDraft, setScaleDraft] = useState<AdminLevelScale[]>([]);
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -90,7 +91,7 @@ export function EntryTestManagementPage() {
             level,
             minScore: 0,
             maxScore: 0,
-            minCodingScore: null,
+            minCodingScore: undefined,
             isActive: true,
           } as AdminLevelScale)
       )
@@ -229,13 +230,35 @@ export function EntryTestManagementPage() {
         </div>
       </div>
       {tab === "tests" ? (
-        <TestList
-          tests={tests}
-          activeId={activeTest?.id}
-          onEdit={setEditing}
-          onDeactivate={deactivate}
-          saving={saving}
-        />
+        <>
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+            <div className="relative w-full max-w-md">
+              <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Tìm theo tên đề..."
+                className="h-9 pl-9 text-xs"
+              />
+            </div>
+            <ReloadButton
+              onReload={load}
+              isLoading={loading}
+              showLabel
+              hideTooltip
+              label="Tải lại"
+            />
+          </div>
+          <TestList
+            tests={tests.filter((test) =>
+              (test.name ?? "").toLowerCase().includes(search.trim().toLowerCase())
+            )}
+            activeId={activeTest?.id}
+            onEdit={setEditing}
+            onDeactivate={deactivate}
+            saving={saving}
+          />
+        </>
       ) : (
         <ScaleEditor
           role={scaleRole}
