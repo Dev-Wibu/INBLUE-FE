@@ -7,8 +7,8 @@ import {
   RefreshCw,
   Route,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,18 +25,17 @@ import { getActiveAttemptId, saveEntryTestDraft } from "../utils/entry-test-stor
 
 export function EntryTestLandingPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const userId = Number(useAuthStore((state) => state.user?.id));
   const exists = useCareerPreferenceExists(Number.isSafeInteger(userId));
   const preference = useCareerPreference(exists.data === true);
   const competency = useCompetency(true);
   const start = useStartEntryTest();
   const [wizardOpen, setWizardOpen] = useState(false);
-  const [startOpen, setStartOpen] = useState(false);
+  const [startOpen, setStartOpen] = useState(() =>
+    Boolean((location.state as { openStartDialog?: boolean } | null)?.openStartDialog)
+  );
   const activeAttemptId = Number.isSafeInteger(userId) ? getActiveAttemptId(userId) : null;
-
-  useEffect(() => {
-    if (exists.data === false) setWizardOpen(true);
-  }, [exists.data]);
 
   const handleStart = async () => {
     if (!preference.data?.targetRole) {

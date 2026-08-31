@@ -2,6 +2,7 @@ import icon2 from "@/assets/icon2.svg";
 import type { SidebarMenuGroup } from "@/components/shared";
 import { DashboardSidebar, getInitialSidebarCollapsed } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
+import { EntryTestOnboardingCoordinator } from "@/features/entry-test";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
@@ -139,7 +140,7 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
       {
         type: "entryTest",
         icon: ScanSearch,
-        label: "Đánh giá đầu vào",
+        label: "Năng lực đầu vào",
         color: "text-indigo-600 dark:text-indigo-400",
       },
       {
@@ -287,7 +288,7 @@ export function UserDashboardPage() {
 
     if (location.pathname.startsWith("/user/entry-test")) {
       return {
-        currentTitle: "Đánh giá đầu vào",
+        currentTitle: "Năng lực đầu vào",
         parentTitle: undefined,
         currentCategory: t("common.interview"),
       };
@@ -447,6 +448,7 @@ export function UserDashboardPage() {
 
   return (
     <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
+      <EntryTestOnboardingCoordinator />
       <DashboardSidebar
         menuGroups={sidebarMenuGroups}
         activeTab={sidebarActiveTab}
@@ -520,7 +522,8 @@ export function UserDashboardPage() {
                     typedActiveTab === "companies" ||
                     typedActiveTab === "applicationHistory" ||
                     typedActiveTab === "aiInterview" ||
-                    location.pathname.startsWith("/user/application")
+                    location.pathname.startsWith("/user/application") ||
+                    location.pathname.startsWith("/user/entry-test")
                   ? "overflow-auto p-0"
                   : location.pathname.startsWith("/user/account") ||
                       location.pathname.startsWith("/user/settings")

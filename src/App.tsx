@@ -271,7 +271,6 @@ function App() {
                 <Route path="account/change-password" element={<ChangePasswordPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="entry-test" element={<EntryTestLandingPage />} />
-                <Route path="entry-test/session/:id" element={<EntryTestSessionPage />} />
                 <Route path="entry-test/result/:id" element={<EntryTestResultPage />} />
               </Route>
             </Route>
@@ -279,6 +278,7 @@ function App() {
             {/* Quiz page — full page, no sidebar, outside ChromeTabs shell */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
               <Route path="/user/quiz/:appId/round/:roundId" element={<ApplicationQuizPage />} />
+              <Route path="/user/entry-test/session/:id" element={<EntryTestSessionPage />} />
             </Route>
 
             {/* Home Feed Detail — full page, no sidebar (outside ChromeTabs shell).

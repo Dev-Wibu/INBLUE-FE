@@ -229,7 +229,7 @@ export function EntryTestSessionPage() {
   };
 
   return (
-    <div className="flex h-full min-h-[680px] flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
+    <div className="flex h-screen min-h-[680px] flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
       <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 md:px-6 dark:border-slate-800 dark:bg-slate-900">
         <div>
           <p className="text-xs font-medium text-slate-500">ENTRY TEST · BÀI #{attemptId}</p>
