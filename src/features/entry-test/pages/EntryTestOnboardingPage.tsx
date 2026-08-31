@@ -14,7 +14,7 @@ import {
   entryTestLevels,
   entryTestRoles,
   entryTestSkillsByRole,
-} from "../components/CareerPreferenceWizard";
+} from "../constants/entry-test-onboarding.constants";
 import { useCareerPreferenceExists, useUpsertCareerPreference } from "../hooks/useCareerPreference";
 import type { TargetLevel, TargetRole } from "../types/entry-test.types";
 import { normalizeCareerLanguages } from "../utils/entry-test-payload";
