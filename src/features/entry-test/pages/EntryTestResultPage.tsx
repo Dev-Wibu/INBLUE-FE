@@ -79,28 +79,36 @@ export function EntryTestResultPage() {
   ];
 
   return (
-    <main className="min-h-full bg-slate-50 dark:bg-slate-950">
-      <section className="border-b border-slate-200 bg-white px-5 py-8 md:px-8 dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex max-w-5xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-emerald-600">
-              <CheckCircle2 className="h-5 w-5" />
-              <span className="text-sm font-semibold">Đã hoàn thành và chấm điểm</span>
-            </div>
-            <h1 className="mt-2 text-2xl font-bold text-slate-950 md:text-3xl dark:text-white">
-              Kết quả Entry Test
-            </h1>
-            <p className="mt-2 text-sm text-slate-500">
+    <main className="flex min-h-full flex-col bg-slate-50 dark:bg-slate-950">
+      <section className="flex flex-none flex-col justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3 sm:flex-row sm:items-center md:px-6 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300">
+            <CheckCircle2 className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="truncate text-sm font-bold text-slate-900 dark:text-white">
+              Đã hoàn thành và chấm điểm
+            </h2>
+            <p className="truncate text-xs text-slate-500">
               Bài #{attempt.id} · Nộp lúc{" "}
               {attempt.submittedAt ? new Date(attempt.submittedAt).toLocaleString("vi-VN") : "-"}
             </p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/user/entry-test")}>
-            <ArrowLeft className="h-4 w-4" /> Về trang đánh giá
-          </Button>
         </div>
+        <Button
+          variant="outline"
+          className="h-8 text-xs"
+          onClick={() => navigate("/user/entry-test")}>
+          <ArrowLeft className="h-3.5 w-3.5" /> Về trang đánh giá
+        </Button>
       </section>
-      <section className="mx-auto max-w-5xl px-5 py-7 md:px-8">
+      <section className="mx-auto w-full max-w-5xl flex-1 px-5 py-6 md:px-8">
+        <div className="mb-5">
+          <h1 className="text-xl font-bold text-slate-950 dark:text-white">Kết quả Entry Test</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Tổng hợp điểm và cấp độ năng lực được backend xác nhận.
+          </p>
+        </div>
         <div className="grid gap-6 md:grid-cols-[0.9fr_1.6fr]">
           <aside className="rounded-lg bg-indigo-700 p-6 text-white">
             <div className="flex items-center gap-2 text-indigo-100">
