@@ -472,10 +472,10 @@ const PUBLIC_GET_ENDPOINTS = new Set<string>([
 
 // Public GET endpoint patterns (for dynamic paths with parameters)
 const PUBLIC_GET_ENDPOINT_PATTERNS: RegExp[] = [
-  // GET /api/posts/{postId} - get individual post
-  /^\/api\/posts\/[^/]+$/,
-  // Any GET to /api/posts/* (including /api/posts/published)
-  /^\/api\/posts/,
+  // GET /api/posts/{postId} - public post detail. Restrict the path segment
+  // to the numeric backend ID so authenticated routes such as /posts/feed
+  // never lose their Bearer token.
+  /^\/api\/posts\/\d+$/,
 ];
 
 // Endpoints that should fail silently on 401 (no redirect, no toast)
@@ -486,7 +486,7 @@ const SILENT_401_ENDPOINTS = new Set<string>([
 
 const SILENT_401_ENDPOINT_PATTERNS: RegExp[] = [
   // GET /api/posts/{postId} - get individual post
-  /^\/api\/posts\/[^/]+$/,
+  /^\/api\/posts\/\d+$/,
 ];
 
 const PUBLIC_AUTH_PAGE_PATHS = new Set<string>(["/signup"]);
