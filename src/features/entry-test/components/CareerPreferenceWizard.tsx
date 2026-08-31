@@ -14,34 +14,14 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
+import {
+  entryTestLevels,
+  entryTestRoles,
+  entryTestSkillsByRole,
+} from "../constants/entry-test-onboarding.constants";
 import { useSkipCareerPreference, useUpsertCareerPreference } from "../hooks/useCareerPreference";
 import type { TargetLevel, TargetRole, UserCareerPreference } from "../types/entry-test.types";
 import { normalizeCareerLanguages } from "../utils/entry-test-payload";
-
-const roles: Array<{ value: TargetRole; label: string; description: string }> = [
-  { value: "FE", label: "Frontend", description: "Giao diện và trải nghiệm web" },
-  { value: "BE", label: "Backend", description: "API, dữ liệu và hệ thống" },
-  { value: "QA_QC", label: "QA / QC", description: "Chất lượng và kiểm thử" },
-  { value: "BA", label: "Business Analyst", description: "Nghiệp vụ và giải pháp" },
-  { value: "DEVOPS", label: "DevOps", description: "Hạ tầng và vận hành" },
-  { value: "DATA", label: "Data", description: "Dữ liệu và phân tích" },
-];
-
-const skillsByRole: Record<TargetRole, string[]> = {
-  FE: ["JAVASCRIPT", "TYPESCRIPT", "REACT", "NEXT_JS", "VUE", "HTML_CSS"],
-  BE: ["JAVA", "SPRING_BOOT", "NODE_JS", "PYTHON", "DOTNET", "GO"],
-  QA_QC: ["MANUAL_TESTING", "SELENIUM", "PLAYWRIGHT", "POSTMAN", "JAVASCRIPT"],
-  BA: ["UML", "BPMN", "SQL", "AGILE", "JIRA"],
-  DEVOPS: ["DOCKER", "KUBERNETES", "AWS", "LINUX", "CI_CD"],
-  DATA: ["PYTHON", "SQL", "POWER_BI", "MACHINE_LEARNING", "SPARK"],
-};
-
-const levels: Array<{ value: TargetLevel; label: string }> = [
-  { value: "INTERN", label: "Intern" },
-  { value: "FRESHER", label: "Fresher" },
-  { value: "JUNIOR", label: "Junior" },
-  { value: "MIDDLE", label: "Middle" },
-];
 
 export function CareerPreferenceWizard({
   open,
@@ -63,7 +43,7 @@ export function CareerPreferenceWizard({
   const [goal, setGoal] = useState(initialPreference?.careerGoal ?? "");
   const upsert = useUpsertCareerPreference();
   const skip = useSkipCareerPreference();
-  const availableSkills = useMemo(() => (role ? skillsByRole[role] : []), [role]);
+  const availableSkills = useMemo(() => (role ? entryTestSkillsByRole[role] : []), [role]);
 
   const handleRole = (nextRole: TargetRole) => {
     setRole(nextRole);
@@ -157,7 +137,7 @@ export function CareerPreferenceWizard({
                 Chọn một vai trò mục tiêu. Bạn có thể cập nhật lại sau.
               </p>
               <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                {roles.map((item) => (
+                {entryTestRoles.map((item) => (
                   <button
                     key={item.value}
                     type="button"
@@ -228,7 +208,7 @@ export function CareerPreferenceWizard({
               <div>
                 <h2 className="text-base font-semibold">Mức độ bạn đang hướng tới</h2>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {levels.map((item) => (
+                  {entryTestLevels.map((item) => (
                     <button
                       key={item.value}
                       type="button"
@@ -268,7 +248,7 @@ export function CareerPreferenceWizard({
                 <ReviewRow
                   icon={Target}
                   label="Định hướng"
-                  value={roles.find((item) => item.value === role)?.label ?? "Chưa chọn"}
+                  value={entryTestRoles.find((item) => item.value === role)?.label ?? "Chưa chọn"}
                 />
                 <ReviewRow
                   icon={Code2}
@@ -278,7 +258,9 @@ export function CareerPreferenceWizard({
                 <ReviewRow
                   icon={Flag}
                   label="Mức độ mục tiêu"
-                  value={levels.find((item) => item.value === level)?.label ?? "Chưa xác định"}
+                  value={
+                    entryTestLevels.find((item) => item.value === level)?.label ?? "Chưa xác định"
+                  }
                 />
               </div>
               <p className="mt-4 text-xs leading-5 text-slate-500">

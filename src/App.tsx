@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import {
   EntryTestLandingPage,
+  EntryTestOnboardingPage,
   EntryTestResultPage,
   EntryTestSessionPage,
 } from "@/features/entry-test";
@@ -277,6 +278,7 @@ function App() {
 
             {/* Quiz page — full page, no sidebar, outside ChromeTabs shell */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+              <Route path="/user/entry-test/onboarding" element={<EntryTestOnboardingPage />} />
               <Route path="/user/quiz/:appId/round/:roundId" element={<ApplicationQuizPage />} />
               <Route path="/user/entry-test/session/:id" element={<EntryTestSessionPage />} />
             </Route>

@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mocks.navigate,
+  Navigate: ({ to }: { to: string }) => <div data-testid="redirect">{to}</div>,
 }));
 
 vi.mock("@/stores/authStore", () => ({
@@ -21,24 +22,18 @@ vi.mock("../hooks/useCareerPreference", () => ({
   useCareerPreferenceExists: () => ({ data: mocks.exists() }),
 }));
 
-vi.mock("./CareerPreferenceWizard", () => ({
-  CareerPreferenceWizard: ({ open }: { open: boolean }) => (
-    <div data-testid="career-wizard-state">{open ? "open" : "closed"}</div>
-  ),
-}));
-
 describe("EntryTestOnboardingCoordinator", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("opens onboarding for any user without a preference record", () => {
     mocks.exists.mockReturnValue(false);
     render(<EntryTestOnboardingCoordinator />);
-    expect(screen.getByTestId("career-wizard-state")).toHaveTextContent("open");
+    expect(screen.getByTestId("redirect")).toHaveTextContent("/user/entry-test/onboarding");
   });
 
   it("does not interrupt users who already have a preference", () => {
     mocks.exists.mockReturnValue(true);
     render(<EntryTestOnboardingCoordinator />);
-    expect(screen.getByTestId("career-wizard-state")).toHaveTextContent("closed");
+    expect(screen.queryByTestId("redirect")).not.toBeInTheDocument();
   });
 });
