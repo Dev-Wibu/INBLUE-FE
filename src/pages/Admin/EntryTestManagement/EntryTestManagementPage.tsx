@@ -1,3 +1,4 @@
+import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import {
   entryTestAdminManager,
   type AdminEntryTest,
@@ -270,6 +272,12 @@ function TestList({
   onDeactivate: (id: number) => void;
   saving: boolean;
 }) {
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "admin_entry_test_page_size",
+    defaultPageSize: 10,
+  });
+  const pagination = usePagination({ totalCount: tests.length, pageSize });
+  const pageData = tests.slice(pagination.startIndex, pagination.endIndex + 1);
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="border-y border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -284,9 +292,13 @@ function TestList({
             </tr>
           </thead>
           <tbody>
-            {tests.map((test) => (
+            {pageData.map((test) => (
               <tr key={test.id} className="border-t border-slate-200 dark:border-slate-800">
-                <td className="py-4 pl-6 font-semibold">{test.name || "Chưa đặt tên"}</td>
+                <td className="max-w-[360px] py-4 pl-6 font-semibold">
+                  <span className="block truncate" title={test.name || "Chưa đặt tên"}>
+                    {test.name || "Chưa đặt tên"}
+                  </span>
+                </td>
                 <td className="py-4 text-slate-600 dark:text-slate-300">
                   {test.timeLimitMinutes ?? "-"} phút
                 </td>
@@ -334,6 +346,17 @@ function TestList({
           </div>
         )}
       </div>
+      {tests.length > 0 && (
+        <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+          <PaginationControl
+            pagination={pagination}
+            onPageSizeChange={(nextPageSize) => {
+              setPageSize(nextPageSize);
+              pagination.goToFirstPage();
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
