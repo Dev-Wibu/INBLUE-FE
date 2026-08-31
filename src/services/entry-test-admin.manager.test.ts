@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 
-const mockApi = {
-  GET: vi.fn(),
-  POST: vi.fn(),
-  PUT: vi.fn(),
-  DELETE: vi.fn(),
-};
+const { mockApi } = vi.hoisted(() => ({
+  mockApi: {
+    GET: vi.fn(),
+    POST: vi.fn(),
+    PUT: vi.fn(),
+    DELETE: vi.fn(),
+  },
+}));
 
 vi.mock("@/lib/api", () => ({ fetchClient: mockApi }));
 
