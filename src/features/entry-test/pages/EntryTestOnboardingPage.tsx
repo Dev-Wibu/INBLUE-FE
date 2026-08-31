@@ -1,4 +1,5 @@
 import icon2 from "@/assets/icon2.svg";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +74,7 @@ export function EntryTestOnboardingPage() {
         <div className="flex items-center gap-2.5">
           <img src={icon2} alt="INBLUE AI" className="h-9 w-9" />
           <span className="text-base font-bold tracking-wide">INBLUE AI</span>
+          <LanguageToggle />
         </div>
         <div className="flex items-center gap-2">
           <span className="hidden rounded-full bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 sm:inline-flex dark:bg-slate-800 dark:text-slate-300">
