@@ -94,8 +94,8 @@ export function CareerPreferenceWizard({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto p-0 sm:max-w-2xl">
-        <div className="border-b border-slate-200 px-6 pt-6 pb-4 dark:border-slate-800">
+      <DialogContent className="flex max-h-[calc(100vh-32px)] min-h-[min(720px,calc(100vh-32px))] flex-col overflow-hidden p-0 sm:max-w-4xl">
+        <div className="flex-none border-b border-slate-200 px-6 pt-6 pb-4 md:px-10 dark:border-slate-800">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Compass className="h-5 w-5 text-indigo-600" /> Định hướng hành trình của bạn
@@ -140,7 +140,7 @@ export function CareerPreferenceWizard({
           </ol>
         </div>
 
-        <div className="min-h-[330px] px-6 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-7 md:px-10 md:py-9">
           {step === 0 && (
             <div>
               <h2 className="text-base font-semibold text-slate-900 dark:text-white">
@@ -282,7 +282,7 @@ export function CareerPreferenceWizard({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+        <div className="flex flex-none flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4 md:px-10 dark:border-slate-800">
           <Button
             variant="ghost"
             onClick={handleSkip}
