@@ -11,59 +11,61 @@ import type {
   UserCompetencyResponse,
 } from "../types/entry-test.types";
 
-type DynamicApiResponse<T> = { data?: T; error?: unknown };
-type DynamicApiClient = {
-  GET: <T>(path: string, options?: object) => Promise<DynamicApiResponse<T>>;
-  POST: <T>(path: string, options?: object) => Promise<DynamicApiResponse<T>>;
-  PUT: <T>(path: string, options?: object) => Promise<DynamicApiResponse<T>>;
-};
-
-// Entry Test is not in the generated OpenAPI schema yet. Keep the escape hatch isolated here.
-const client = fetchClient as unknown as DynamicApiClient;
-
-function requireData<T>(response: DynamicApiResponse<T>): T {
+function requireData<T>(response: { data?: T }): T {
   if (response.data === undefined) throw new Error("API returned an empty response");
   return response.data;
 }
 
 export const entryTestManager = {
   async hasPreference() {
-    return requireData(await client.GET<boolean>("/api/me/career-preference/exists"));
+    return requireData(await fetchClient.GET("/api/me/career-preference/exists"));
   },
   async getPreference() {
-    return requireData(await client.GET<UserCareerPreference>("/api/me/career-preference"));
+    return requireData(await fetchClient.GET("/api/me/career-preference")) as UserCareerPreference;
   },
   async upsertPreference(body: UpsertCareerPreferenceBody) {
+    const requestBody = {
+      targetRole: body.targetRole,
+      languagesJson: body.languagesJson ?? undefined,
+      careerGoal: body.careerGoal ?? undefined,
+      targetLevel: body.targetLevel ?? undefined,
+    };
     return requireData(
-      await client.PUT<UserCareerPreference>("/api/me/career-preference", { body })
-    );
+      await fetchClient.PUT("/api/me/career-preference", { body: requestBody })
+    ) as UserCareerPreference;
   },
   async skipPreference() {
-    return requireData(await client.POST<UserCareerPreference>("/api/me/career-preference/skip"));
+    return requireData(
+      await fetchClient.POST("/api/me/career-preference/skip")
+    ) as UserCareerPreference;
   },
   async start() {
-    return requireData(await client.POST<EntryTestStartResponse>("/api/entry-tests/start"));
+    return requireData(await fetchClient.POST("/api/entry-tests/start")) as EntryTestStartResponse;
   },
   async runCode(attemptId: number, body: EntryTestRunCodeRequest) {
     return requireData(
-      await client.POST<CompilerRunResponse>(`/api/entry-tests/${attemptId}/coding/run`, {
+      await fetchClient.POST("/api/entry-tests/{attemptId}/coding/run", {
         body,
+        params: { path: { attemptId } },
       })
-    );
+    ) as CompilerRunResponse;
   },
   async submit(attemptId: number, body: EntryTestSubmitBody) {
     return requireData(
-      await client.POST<EntryTestAttemptResponse>(`/api/entry-tests/${attemptId}/submit`, {
+      await fetchClient.POST("/api/entry-tests/{attemptId}/submit", {
         body,
+        params: { path: { attemptId } },
       })
-    );
+    ) as EntryTestAttemptResponse;
   },
   async getResult(attemptId: number) {
     return requireData(
-      await client.GET<EntryTestAttemptResponse>(`/api/entry-tests/attempts/${attemptId}/result`)
-    );
+      await fetchClient.GET("/api/entry-tests/attempts/{attemptId}/result", {
+        params: { path: { attemptId } },
+      })
+    ) as EntryTestAttemptResponse;
   },
   async getCompetency() {
-    return requireData(await client.GET<UserCompetencyResponse>("/api/me/competency"));
+    return requireData(await fetchClient.GET("/api/me/competency")) as UserCompetencyResponse;
   },
 };
