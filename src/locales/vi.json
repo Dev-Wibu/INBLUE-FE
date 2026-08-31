@@ -8296,5 +8296,55 @@
     "benefits": "Quyền lợi",
     "companyDescription": "Về công ty",
     "openSource": "Mở JD nguồn"
+  },
+  "entryTestOnboarding": {
+    "setupTitle": "Thiết lập hồ sơ học tập",
+    "progressLabel": "Tiến độ thiết lập",
+    "direction": "Định hướng",
+    "skills": "Kỹ năng",
+    "goal": "Mục tiêu",
+    "confirm": "Xác nhận",
+    "roleTitle": "Bạn muốn phát triển theo hướng nào?",
+    "roleDescription": "Chọn một vai trò mục tiêu để cá nhân hóa nội dung học tập.",
+    "skillTitle": "Bạn đang sử dụng kỹ năng nào?",
+    "skillDescription": "Chọn ít nhất một kỹ năng để hệ thống chọn nội dung phù hợp.",
+    "levelTitle": "Mức độ bạn đang hướng tới?",
+    "levelDescription": "Bạn có thể cập nhật mục tiêu này sau.",
+    "goalLabel": "Mục tiêu nghề nghiệp",
+    "optional": "không bắt buộc",
+    "goalPlaceholder": "Ví dụ: Trở thành Frontend Engineer",
+    "reviewTitle": "Kiểm tra lại lựa chọn",
+    "reviewDescription": "Bạn sắp hoàn tất bước thiết lập hồ sơ học tập.",
+    "back": "Quay lại",
+    "next": "Tiếp tục",
+    "finish": "Hoàn tất thiết lập",
+    "saving": "Đang lưu...",
+    "saveError": "Không thể lưu định hướng lúc này. Vui lòng thử lại.",
+    "loading": "Đang chuẩn bị thiết lập hồ sơ học tập...",
+    "roleLabels": {
+      "FE": "Frontend",
+      "BE": "Backend",
+      "QA_QC": "QA / QC",
+      "BA": "Business Analyst",
+      "DEVOPS": "DevOps",
+      "DATA": "Data"
+    },
+    "roleDescriptions": {
+      "FE": "Giao diện và trải nghiệm web",
+      "BE": "API, dữ liệu và hệ thống",
+      "QA_QC": "Chất lượng và kiểm thử",
+      "BA": "Nghiệp vụ và giải pháp",
+      "DEVOPS": "Hạ tầng và vận hành",
+      "DATA": "Dữ liệu và phân tích"
+    },
+    "levelLabels": {
+      "INTERN": "Intern",
+      "FRESHER": "Fresher",
+      "JUNIOR": "Junior",
+      "MIDDLE": "Middle"
+    },
+    "sidebar": "Năng lực đầu vào",
+    "notSelected": "Chưa chọn",
+    "notDefined": "Chưa xác định"
   }
 }

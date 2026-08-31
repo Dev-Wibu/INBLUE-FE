@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { ArrowLeft, ArrowRight, Check, Code2, Flag, Target } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -25,13 +26,14 @@ import type { TargetLevel, TargetRole } from "../types/entry-test.types";
 import { normalizeCareerLanguages } from "../utils/entry-test-payload";
 
 const steps = [
-  { label: "Định hướng", icon: Target },
-  { label: "Kỹ năng", icon: Code2 },
-  { label: "Mục tiêu", icon: Flag },
-  { label: "Xác nhận", icon: Check },
+  { key: "direction", icon: Target },
+  { key: "skills", icon: Code2 },
+  { key: "goal", icon: Flag },
+  { key: "confirm", icon: Check },
 ];
 
 export function EntryTestOnboardingPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const userId = Number(useAuthStore((state) => state.user?.id));
   const exists = useCareerPreferenceExists(Number.isSafeInteger(userId));
@@ -61,7 +63,7 @@ export function EntryTestOnboardingPage() {
       });
       navigate("/user/entry-test", { replace: true, state: { openStartDialog: true } });
     } catch {
-      toast.error("Không thể lưu định hướng lúc này. Vui lòng thử lại.");
+      toast.error(t("entryTestOnboarding.saveError"));
     }
   };
 
@@ -74,7 +76,7 @@ export function EntryTestOnboardingPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="hidden rounded-full bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 sm:inline-flex dark:bg-slate-800 dark:text-slate-300">
-            Thiết lập hồ sơ học tập
+            {t("entryTestOnboarding.setupTitle")}
           </span>
           <ThemeToggle iconOnly />
         </div>
@@ -85,9 +87,11 @@ export function EntryTestOnboardingPage() {
             value={(step + 1) * 25}
             className="h-2 bg-slate-200 dark:bg-slate-800 [&>div]:bg-indigo-600"
           />
-          <ol className="mt-5 grid grid-cols-4 gap-3" aria-label="Tiến độ thiết lập">
-            {steps.map(({ label, icon: Icon }, index) => (
-              <li key={label} className="flex min-w-0 items-center gap-2">
+          <ol
+            className="mt-5 grid grid-cols-4 gap-3"
+            aria-label={t("entryTestOnboarding.progressLabel")}>
+            {steps.map(({ key, icon: Icon }, index) => (
+              <li key={key} className="flex min-w-0 items-center gap-2">
                 <span
                   className={cn(
                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold",
@@ -100,9 +104,9 @@ export function EntryTestOnboardingPage() {
                 <span
                   className={cn(
                     "hidden truncate text-xs font-semibold sm:block",
-                    index === step ? "text-white" : "text-slate-500"
+                    index === step ? "text-indigo-700 dark:text-white" : "text-slate-500"
                   )}>
-                  {label}
+                  {t(`entryTestOnboarding.${key}`)}
                 </span>
               </li>
             ))}
@@ -110,8 +114,8 @@ export function EntryTestOnboardingPage() {
           <div className="mt-6 min-h-0 flex-1 overflow-hidden py-2 sm:mt-8">
             {step === 0 && (
               <Step
-                title="Bạn muốn phát triển theo hướng nào?"
-                description="Chọn một vai trò mục tiêu để cá nhân hóa nội dung học tập.">
+                title={t("entryTestOnboarding.roleTitle")}
+                description={t("entryTestOnboarding.roleDescription")}>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {entryTestRoles.map((item) => (
                     <button
@@ -138,10 +142,13 @@ export function EntryTestOnboardingPage() {
                       </span>
                       <span>
                         <strong className="block text-sm text-slate-900 dark:text-white">
-                          {item.label}
+                          {t(`entryTestOnboarding.roleLabels.${item.value}`, item.label)}
                         </strong>
                         <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">
-                          {item.description}
+                          {t(
+                            `entryTestOnboarding.roleDescriptions.${item.value}`,
+                            item.description
+                          )}
                         </span>
                       </span>
                     </button>
@@ -151,8 +158,8 @@ export function EntryTestOnboardingPage() {
             )}
             {step === 1 && (
               <Step
-                title="Bạn đang sử dụng kỹ năng nào?"
-                description="Chọn ít nhất một kỹ năng để hệ thống chọn nội dung phù hợp.">
+                title={t("entryTestOnboarding.skillTitle")}
+                description={t("entryTestOnboarding.skillDescription")}>
                 <div className="flex flex-wrap gap-3">
                   {availableSkills.map((skill) => {
                     const selected = skills.includes(skill);
@@ -183,8 +190,8 @@ export function EntryTestOnboardingPage() {
             )}
             {step === 2 && (
               <Step
-                title="Mức độ bạn đang hướng tới?"
-                description="Bạn có thể cập nhật mục tiêu này sau.">
+                title={t("entryTestOnboarding.levelTitle")}
+                description={t("entryTestOnboarding.levelDescription")}>
                 <div className="grid gap-3 sm:grid-cols-4">
                   {entryTestLevels.map((item) => (
                     <button
@@ -203,15 +210,17 @@ export function EntryTestOnboardingPage() {
                 </div>
                 <div className="mt-8">
                   <Label htmlFor="onboarding-goal" className="text-slate-200">
-                    Mục tiêu nghề nghiệp{" "}
-                    <span className="font-normal text-slate-500">(không bắt buộc)</span>
+                    {t("entryTestOnboarding.goalLabel")}{" "}
+                    <span className="font-normal text-slate-500">
+                      ({t("entryTestOnboarding.optional")})
+                    </span>
                   </Label>
                   <Input
                     id="onboarding-goal"
                     value={goal}
                     onChange={(event) => setGoal(event.target.value)}
                     className="mt-2 border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
-                    placeholder="Ví dụ: Trở thành Frontend Engineer"
+                    placeholder={t("entryTestOnboarding.goalPlaceholder")}
                     maxLength={300}
                   />
                 </div>
@@ -219,22 +228,28 @@ export function EntryTestOnboardingPage() {
             )}
             {step === 3 && (
               <Step
-                title="Kiểm tra lại lựa chọn"
-                description="Bạn sắp hoàn tất bước thiết lập hồ sơ học tập.">
+                title={t("entryTestOnboarding.reviewTitle")}
+                description={t("entryTestOnboarding.reviewDescription")}>
                 <div className="divide-y divide-slate-200 rounded-xl border border-slate-200 dark:divide-white/10 dark:border-white/10">
                   {[
-                    ["Định hướng", entryTestRoles.find((item) => item.value === role)?.label],
-                    ["Kỹ năng", skills.map((item) => item.replaceAll("_", " ")).join(", ")],
                     [
-                      "Mức độ mục tiêu",
+                      t("entryTestOnboarding.direction"),
+                      entryTestRoles.find((item) => item.value === role)?.label,
+                    ],
+                    [
+                      t("entryTestOnboarding.skills"),
+                      skills.map((item) => item.replaceAll("_", " ")).join(", "),
+                    ],
+                    [
+                      t("entryTestOnboarding.levelTitle"),
                       entryTestLevels.find((item) => item.value === level)?.label ??
-                        "Chưa xác định",
+                        t("entryTestOnboarding.notDefined"),
                     ],
                   ].map(([label, value]) => (
                     <div key={label} className="flex items-center justify-between gap-4 px-5 py-4">
                       <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>
                       <strong className="text-right text-sm text-slate-900 dark:text-white">
-                        {value || "Chưa chọn"}
+                        {value || t("entryTestOnboarding.notSelected")}
                       </strong>
                     </div>
                   ))}
@@ -248,21 +263,21 @@ export function EntryTestOnboardingPage() {
               className="text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
               onClick={() => step > 0 && setStep((value) => value - 1)}
               disabled={step === 0}>
-              <ArrowLeft className="h-4 w-4" /> Quay lại
+              <ArrowLeft className="h-4 w-4" /> {t("entryTestOnboarding.back")}
             </Button>
             {step < 3 ? (
               <Button
                 className="bg-indigo-600 px-6 hover:bg-indigo-500"
                 onClick={() => setStep((value) => value + 1)}
                 disabled={!canContinue}>
-                Tiếp tục <ArrowRight className="h-4 w-4" />
+                {t("entryTestOnboarding.next")} <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
               <Button
                 className="bg-indigo-600 px-6 hover:bg-indigo-500"
                 onClick={finish}
                 disabled={save.isPending}>
-                {save.isPending ? "Đang lưu..." : "Hoàn tất thiết lập"}{" "}
+                {save.isPending ? t("entryTestOnboarding.saving") : t("entryTestOnboarding.finish")}{" "}
                 <Check className="h-4 w-4" />
               </Button>
             )}
@@ -294,9 +309,10 @@ function Step({
 }
 
 function OnboardingLoading() {
+  const { t } = useTranslation();
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">
-      Đang chuẩn bị thiết lập hồ sơ học tập...
+      {t("entryTestOnboarding.loading")}
     </main>
   );
 }

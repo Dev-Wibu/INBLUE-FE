@@ -139,7 +139,7 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
       {
         type: "entryTest",
         icon: ScanSearch,
-        label: "Năng lực đầu vào",
+        label: t("entryTestOnboarding.sidebar"),
         color: "text-indigo-600 dark:text-indigo-400",
       },
       {
@@ -287,7 +287,7 @@ export function UserDashboardPage() {
 
     if (location.pathname.startsWith("/user/entry-test")) {
       return {
-        currentTitle: "Năng lực đầu vào",
+        currentTitle: t("entryTestOnboarding.sidebar"),
         parentTitle: undefined,
         currentCategory: t("common.interview"),
       };

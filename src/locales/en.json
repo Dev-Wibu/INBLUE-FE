@@ -8296,5 +8296,55 @@
     "benefits": "Benefits",
     "companyDescription": "About the company",
     "openSource": "Open source job"
+  },
+  "entryTestOnboarding": {
+    "setupTitle": "Set up your learning profile",
+    "progressLabel": "Setup progress",
+    "direction": "Direction",
+    "skills": "Skills",
+    "goal": "Goal",
+    "confirm": "Confirm",
+    "roleTitle": "Which direction do you want to grow in?",
+    "roleDescription": "Choose a target role so we can personalize your learning path.",
+    "skillTitle": "Which skills are you using?",
+    "skillDescription": "Choose at least one skill so we can tailor the assessment.",
+    "levelTitle": "What level are you aiming for?",
+    "levelDescription": "You can update this goal later.",
+    "goalLabel": "Career goal",
+    "optional": "optional",
+    "goalPlaceholder": "Example: Become a Frontend Engineer",
+    "reviewTitle": "Review your choices",
+    "reviewDescription": "You are about to complete your learning profile setup.",
+    "back": "Back",
+    "next": "Continue",
+    "finish": "Complete setup",
+    "saving": "Saving...",
+    "saveError": "We could not save your direction. Please try again.",
+    "loading": "Preparing your learning profile...",
+    "roleLabels": {
+      "FE": "Frontend",
+      "BE": "Backend",
+      "QA_QC": "QA / QC",
+      "BA": "Business Analyst",
+      "DEVOPS": "DevOps",
+      "DATA": "Data"
+    },
+    "roleDescriptions": {
+      "FE": "Interfaces and web experiences",
+      "BE": "APIs, data and systems",
+      "QA_QC": "Quality and testing",
+      "BA": "Business and solutions",
+      "DEVOPS": "Infrastructure and operations",
+      "DATA": "Data and analytics"
+    },
+    "levelLabels": {
+      "INTERN": "Intern",
+      "FRESHER": "Fresher",
+      "JUNIOR": "Junior",
+      "MIDDLE": "Middle"
+    },
+    "sidebar": "Entry assessment",
+    "notSelected": "Not selected",
+    "notDefined": "Not defined"
   }
 }
