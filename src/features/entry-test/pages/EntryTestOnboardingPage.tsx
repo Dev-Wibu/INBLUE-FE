@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { ArrowLeft, ArrowRight, Check, Code2, Flag, Target } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -15,7 +15,11 @@ import {
   entryTestRoles,
   entryTestSkillsByRole,
 } from "../constants/entry-test-onboarding.constants";
-import { useCareerPreferenceExists, useUpsertCareerPreference } from "../hooks/useCareerPreference";
+import {
+  useCareerPreference,
+  useCareerPreferenceExists,
+  useUpsertCareerPreference,
+} from "../hooks/useCareerPreference";
 import type { TargetLevel, TargetRole } from "../types/entry-test.types";
 import { normalizeCareerLanguages } from "../utils/entry-test-payload";
 
@@ -30,6 +34,7 @@ export function EntryTestOnboardingPage() {
   const navigate = useNavigate();
   const userId = Number(useAuthStore((state) => state.user?.id));
   const exists = useCareerPreferenceExists(Number.isSafeInteger(userId));
+  const preference = useCareerPreference(exists.data === true);
   const save = useUpsertCareerPreference();
   const [step, setStep] = useState(0);
   const [role, setRole] = useState<TargetRole | null>(null);
@@ -38,9 +43,9 @@ export function EntryTestOnboardingPage() {
   const [goal, setGoal] = useState("");
   const availableSkills = useMemo(() => (role ? entryTestSkillsByRole[role] : []), [role]);
 
-  if (exists.data === true) {
-    navigate("/user/entry-test", { replace: true });
-    return null;
+  if (exists.data === true && preference.isLoading) return <OnboardingLoading />;
+  if (exists.data === true && preference.data?.targetRole) {
+    return <Navigate to="/user/entry-test" replace />;
   }
 
   const canContinue = step === 0 ? role !== null : step === 1 ? skills.length > 0 : true;
@@ -270,5 +275,13 @@ function Step({
       <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{description}</p>
       <div className="mt-8">{children}</div>
     </div>
+  );
+}
+
+function OnboardingLoading() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#111217] text-sm text-slate-400">
+      Đang chuẩn bị thiết lập hồ sơ học tập...
+    </main>
   );
 }
