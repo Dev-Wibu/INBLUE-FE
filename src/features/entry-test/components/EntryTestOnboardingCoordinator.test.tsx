@@ -5,6 +5,7 @@ import { EntryTestOnboardingCoordinator } from "./EntryTestOnboardingCoordinator
 
 const mocks = vi.hoisted(() => ({
   exists: vi.fn(),
+  preference: vi.fn(),
   navigate: vi.fn(),
 }));
 
@@ -20,6 +21,7 @@ vi.mock("@/stores/authStore", () => ({
 
 vi.mock("../hooks/useCareerPreference", () => ({
   useCareerPreferenceExists: () => ({ data: mocks.exists() }),
+  useCareerPreference: () => ({ data: mocks.preference(), isError: false }),
 }));
 
 describe("EntryTestOnboardingCoordinator", () => {
@@ -33,7 +35,15 @@ describe("EntryTestOnboardingCoordinator", () => {
 
   it("does not interrupt users who already have a preference", () => {
     mocks.exists.mockReturnValue(true);
+    mocks.preference.mockReturnValue({ targetRole: "FE" });
     render(<EntryTestOnboardingCoordinator />);
     expect(screen.queryByTestId("redirect")).not.toBeInTheDocument();
+  });
+
+  it("opens onboarding when the backend has an empty preference record", () => {
+    mocks.exists.mockReturnValue(true);
+    mocks.preference.mockReturnValue({ targetRole: null });
+    render(<EntryTestOnboardingCoordinator />);
+    expect(screen.getByTestId("redirect")).toHaveTextContent("/user/entry-test/onboarding");
   });
 });
