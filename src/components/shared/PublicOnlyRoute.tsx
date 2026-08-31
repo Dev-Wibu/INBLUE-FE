@@ -11,8 +11,10 @@ export function PublicOnlyRoute() {
 
   // Immediately redirect if logged in (no blocking spinner)
   if (isLoggedIn) {
-    // USER role stays on landing page; ADMIN/MENTOR/STAFF go to their dashboard
-    const redirectPath = user?.role === "USER" ? "/" : getDashboardPath(user?.role);
+    // USER enters the protected dashboard so onboarding can decide whether to
+    // open the career-orientation wizard. Public home remains available via
+    // its explicit navigation link, not as the post-auth destination.
+    const redirectPath = user?.role === "USER" ? "/user" : getDashboardPath(user?.role);
     return <Navigate to={redirectPath} replace />;
   }
 
