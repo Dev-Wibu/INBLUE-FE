@@ -74,13 +74,16 @@ export function EntryTestOnboardingPage() {
         <div className="flex items-center gap-2.5">
           <img src={icon2} alt="INBLUE AI" className="h-9 w-9" />
           <span className="text-base font-bold tracking-wide">INBLUE AI</span>
-          <LanguageToggle className="h-9 w-auto rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold dark:border-slate-700 dark:bg-slate-900" />
         </div>
         <div className="flex items-center gap-2">
           <span className="hidden rounded-full bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 sm:inline-flex dark:bg-slate-800 dark:text-slate-300">
             {t("entryTestOnboarding.setupTitle")}
           </span>
-          <ThemeToggle iconOnly />
+          <LanguageToggle className="h-9 w-12 rounded-full border border-slate-200 bg-white px-0 text-xs font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900" />
+          <ThemeToggle
+            iconOnly
+            className="rounded-full border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
+          />
         </div>
       </header>
       <section className="mx-auto flex h-[calc(100vh-64px)] w-full max-w-5xl items-center overflow-hidden px-4 py-4 sm:px-5 md:px-10">
