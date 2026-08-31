@@ -111,12 +111,12 @@ export function EntryTestOnboardingPage() {
               </li>
             ))}
           </ol>
-          <div className="mt-6 min-h-0 flex-1 overflow-hidden py-2 sm:mt-8">
+          <div className="mt-5 min-h-0 flex-1 overflow-y-auto py-2 pr-1 sm:mt-7">
             {step === 0 && (
               <Step
                 title={t("entryTestOnboarding.roleTitle")}
                 description={t("entryTestOnboarding.roleDescription")}>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-2.5 sm:grid-cols-2">
                   {entryTestRoles.map((item) => (
                     <button
                       key={item.value}
@@ -126,7 +126,7 @@ export function EntryTestOnboardingPage() {
                         setSkills([]);
                       }}
                       className={cn(
-                        "flex min-h-20 items-center gap-3 rounded-xl border p-3 text-left transition-colors sm:min-h-24 sm:gap-4 sm:p-4",
+                        "flex min-h-[72px] items-center gap-3 rounded-xl border p-3 text-left transition-colors sm:min-h-24 sm:gap-4 sm:p-4",
                         role === item.value
                           ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-500/15"
                           : "border-slate-200 bg-slate-50 hover:border-indigo-300 dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-slate-600"
