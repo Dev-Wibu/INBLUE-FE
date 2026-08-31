@@ -5,6 +5,7 @@ import CVUploadModal from "@/components/ui/cv-upload-modal";
 import { Progress } from "@/components/ui/progress";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { useMajorOptions } from "@/constants/majors";
+import { useCareerPreference } from "@/features/entry-test/hooks/useCareerPreference";
 import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { usersAdminManager } from "@/services";
@@ -61,6 +62,7 @@ export function AccountPage() {
   const { t } = useTranslation();
   const authUser = useAuthStore((state) => state.user);
   const authUserId = authUser?.id;
+  const careerPreference = useCareerPreference(Number.isFinite(Number(authUserId)));
   const { data: candidateProfileData } = useCandidateProfile(authUserId || 0);
   const candidateProfile = getLatestCandidateProfile(candidateProfileData);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -419,6 +421,19 @@ export function AccountPage() {
                       <Badge variant="secondary" className="px-2 py-0.5 text-[11px] font-medium">
                         {candidateProfile.targetLevel}
                       </Badge>
+                    </div>
+                  )}
+                  {careerPreference.data?.targetRole && (
+                    <div className="mt-2 border-t border-slate-100 pt-2 text-left dark:border-slate-800/80">
+                      <p className="text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
+                        {t("entryTestOnboarding.sidebar", "Định hướng đầu vào")}
+                      </p>
+                      <p className="mt-1 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
+                        {careerPreference.data.targetRole}
+                      </p>
+                      <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                        {(careerPreference.data.languagesJson ?? []).join(", ") || "-"}
+                      </p>
                     </div>
                   )}
                 </div>
