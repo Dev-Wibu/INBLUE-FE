@@ -412,14 +412,16 @@ export function UserDashboardPage() {
     [outlet, openTab, navigate]
   );
 
-  const sidebarActiveTab = location.pathname.startsWith("/user/account")
-    ? {
-        candidateProfile: "accountCandidateProfile",
-        notifications: "accountNotifications",
-        jdPurchases: "accountTransactions",
-      }[new URLSearchParams(location.search).get("subtab") || "candidateProfile"] ||
-      "accountCandidateProfile"
-    : typedActiveTab;
+  const sidebarActiveTab = location.pathname.startsWith("/user/entry-test")
+    ? "entryTest"
+    : location.pathname.startsWith("/user/account")
+      ? {
+          candidateProfile: "accountCandidateProfile",
+          notifications: "accountNotifications",
+          jdPurchases: "accountTransactions",
+        }[new URLSearchParams(location.search).get("subtab") || "candidateProfile"] ||
+        "accountCandidateProfile"
+      : typedActiveTab;
 
   const renderContent = () => {
     switch (typedActiveTab) {
