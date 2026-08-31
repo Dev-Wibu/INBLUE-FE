@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Newspaper,
   ReceiptText,
+  ScanSearch,
   Search,
   UserRound,
 } from "lucide-react";
@@ -135,6 +136,12 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
   {
     label: t("common.interview"),
     items: [
+      {
+        type: "entryTest",
+        icon: ScanSearch,
+        label: "Đánh giá đầu vào",
+        color: "text-indigo-600 dark:text-indigo-400",
+      },
       {
         type: "applicationHistory",
         icon: Briefcase,
@@ -278,6 +285,14 @@ export function UserDashboardPage() {
       };
     }
 
+    if (location.pathname.startsWith("/user/entry-test")) {
+      return {
+        currentTitle: "Đánh giá đầu vào",
+        parentTitle: undefined,
+        currentCategory: t("common.interview"),
+      };
+    }
+
     // 2. Mock Interview Session History (under "Interview")
     if (location.pathname.startsWith("/user/mock-interview/history")) {
       return {
@@ -381,6 +396,10 @@ export function UserDashboardPage() {
       const accountSubtab = accountSubtabs[type];
       if (accountSubtab) {
         navigate(`/user/account?subtab=${accountSubtab}`);
+        return;
+      }
+      if (type === "entryTest") {
+        navigate("/user/entry-test");
         return;
       }
       if (outlet) {

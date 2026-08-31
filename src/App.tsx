@@ -13,6 +13,7 @@ import {
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
+import { EntryTestLandingPage } from "@/features/entry-test";
 import { AdminDashboardPage } from "@/pages/Admin";
 import { ApplicationGradingDetailPage } from "@/pages/Admin/ApplicationGrading";
 import { AdminApplicationDetailPage } from "@/pages/Admin/ApplicationManagement/AdminApplicationDetailPage";
@@ -265,6 +266,7 @@ function App() {
                 <Route path="account" element={<AccountPage />} />
                 <Route path="account/change-password" element={<ChangePasswordPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="entry-test" element={<EntryTestLandingPage />} />
               </Route>
             </Route>
 
