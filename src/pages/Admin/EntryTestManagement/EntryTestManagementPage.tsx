@@ -1,4 +1,4 @@
-import { PaginationControl, ReloadButton, TruncatedScrollText } from "@/components/shared";
+import { PaginationControl, TruncatedScrollText } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -299,13 +299,6 @@ export function EntryTestManagementPage() {
                 <Plus className="h-4 w-4" /> {t("adminEntryTest.create")}
               </Button>
             )}
-            <ReloadButton
-              onReload={load}
-              isLoading={loading}
-              hideTooltip
-              className="h-[46px] w-[46px] shrink-0 rounded-xl"
-              title={t("common.reload")}
-            />
           </div>
 
           <div className="mt-4 inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-950/80">
