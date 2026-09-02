@@ -72,11 +72,17 @@ export type CreateMentorRequest = SchemaCreateMentorRequest;
 export type JobDescription = SchemaJobDescription & {
   companyName?: string;
   companyLogo?: string;
+  /** Backend JSONB array introduced with commit 47f015d. */
+  skillTags?: string[] | null;
 };
 export type JobDescriptionLevel = NonNullable<SchemaJobDescription["level"]>;
 export type JobDescriptionStatus = NonNullable<SchemaJobDescription["status"]>;
-export type CreateJobDescriptionRequest = SchemaCreateJobDescriptionRequest;
-export type UpdateJobDescriptionRequest = SchemaUpdateJobDescriptionRequest;
+export type CreateJobDescriptionRequest = SchemaCreateJobDescriptionRequest & {
+  skillTags?: string[] | null;
+};
+export type UpdateJobDescriptionRequest = SchemaUpdateJobDescriptionRequest & {
+  skillTags?: string[] | null;
+};
 export type Company = SchemaCompany;
 export type CreateCompanyRequest = SchemaCreateCompanyRequest;
 export type UpdateCompanyRequest = SchemaUpdateCompanyRequest;

@@ -173,6 +173,32 @@ export function JobDescriptionFormDialog({
                   className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="jd-skill-tags"
+                  className="text-xs font-bold text-slate-900 dark:text-white">
+                  {t("adminCompanymanagement.skillTags", "Kỹ năng nổi bật")}
+                </Label>
+                <Input
+                  id="jd-skill-tags"
+                  value={(formData.skillTags ?? []).join(", ")}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      skillTags: e.target.value
+                        .split(",")
+                        .map((tag) => tag.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  placeholder={t("adminCompanymanagement.skillTagsPlaceholder", "React, Java, SQL")}
+                  className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
+                />
+                <p className="text-[11px] text-slate-500">
+                  {t("adminCompanymanagement.skillTagsHint", "Phân tách bằng dấu phẩy")}
+                </p>
+              </div>
             </div>
           </ScrollArea>
 

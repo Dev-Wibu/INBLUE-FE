@@ -112,8 +112,8 @@ export function EntryTestManagementPage() {
           ({
             targetRole: scaleRole,
             level,
-            minScore: 0,
-            maxScore: 0,
+            minScore: undefined,
+            maxScore: undefined,
             minCodingScore: undefined,
             isActive: true,
           } as AdminLevelScale)
@@ -176,7 +176,23 @@ export function EntryTestManagementPage() {
     }
   };
   const saveScales = async () => {
-    if (scaleDraft.some((scale) => (scale.minScore ?? 0) > (scale.maxScore ?? 0))) {
+    if (
+      scaleDraft.some((scale) => {
+        const min = scale.minScore;
+        const max = scale.maxScore;
+        const coding = scale.minCodingScore;
+        return (
+          min == null ||
+          max == null ||
+          !Number.isFinite(min) ||
+          !Number.isFinite(max) ||
+          min < 0 ||
+          max < 0 ||
+          min > max ||
+          (coding != null && (!Number.isFinite(coding) || coding < 0 || coding > max))
+        );
+      })
+    ) {
       toast.error(t("adminEntryTest.messages.invalidScale"));
       return;
     }
@@ -216,13 +232,15 @@ export function EntryTestManagementPage() {
       <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-auto p-5 duration-300 sm:p-6 md:px-8">
         <section className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {t("adminEntryTest.title")}
-              </h1>
-              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-                {t("adminEntryTest.description")}
-              </p>
+            <div className="flex min-w-0 items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {t("adminEntryTest.title")}
+                </h1>
+                <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                  {t("adminEntryTest.description")}
+                </p>
+              </div>
             </div>
             <div className="grid w-full grid-cols-3 items-center md:w-auto">
               {[
@@ -262,13 +280,6 @@ export function EntryTestManagementPage() {
                 />
               </div>
             )}
-            <ReloadButton
-              onReload={load}
-              isLoading={loading}
-              showLabel
-              hideTooltip
-              label={t("common.reload")}
-            />
             {tab === "tests" && (
               <Button
                 className="h-[46px] rounded-xl bg-indigo-600 px-5 font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700"
@@ -288,6 +299,13 @@ export function EntryTestManagementPage() {
                 <Plus className="h-4 w-4" /> {t("adminEntryTest.create")}
               </Button>
             )}
+            <ReloadButton
+              onReload={load}
+              isLoading={loading}
+              hideTooltip
+              className="h-[46px] w-[46px] shrink-0 rounded-xl"
+              title={t("common.reload")}
+            />
           </div>
 
           <div className="mt-4 inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-950/80">
@@ -668,12 +686,12 @@ function ScaleEditor({
           </h2>
           <p className="mt-1 text-sm text-slate-500">{t("adminEntryTest.scale.description")}</p>
         </div>
-        <div className="w-full sm:w-56">
-          <span className="mb-2 block text-xs font-semibold text-slate-500">
+        <div className="flex w-full items-center gap-3 sm:w-auto">
+          <span className="text-xs font-semibold whitespace-nowrap text-slate-500">
             {t("adminEntryTest.scale.role")}
           </span>
           <Select value={role} onValueChange={(value) => onRoleChange(value as TargetRole)}>
-            <SelectTrigger className="h-11 rounded-xl">
+            <SelectTrigger className="h-11 w-56 rounded-xl">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -723,43 +741,86 @@ function ScaleEditor({
               <TableCell className="py-4">
                 <Input
                   className="h-10 w-32 rounded-lg"
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   step="0.01"
-                  value={scale.minScore ?? 0}
+                  value={scale.minScore == null ? "" : String(scale.minScore)}
                   onChange={(e) =>
                     onChange(
                       scales.map((item, i) =>
-                        i === index ? { ...item, minScore: Number(e.target.value) } : item
+                        i === index
+                          ? {
+                              ...item,
+                              minScore:
+                                e.target.value === ""
+                                  ? undefined
+                                  : Number(e.target.value.replace(/^0+(?=\d)/, "")),
+                            }
+                          : item
                       )
                     )
                   }
                 />
+                {scale.minScore == null && (
+                  <p className="mt-1 text-[11px] text-rose-600">
+                    {t("adminEntryTest.scale.required", "Bắt buộc")}
+                  </p>
+                )}
               </TableCell>
               <TableCell className="py-4">
                 <Input
                   className="h-10 w-32 rounded-lg"
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   step="0.01"
-                  value={scale.maxScore ?? 0}
+                  value={scale.maxScore == null ? "" : String(scale.maxScore)}
                   onChange={(e) =>
                     onChange(
                       scales.map((item, i) =>
-                        i === index ? { ...item, maxScore: Number(e.target.value) } : item
+                        i === index
+                          ? {
+                              ...item,
+                              maxScore:
+                                e.target.value === ""
+                                  ? undefined
+                                  : Number(e.target.value.replace(/^0+(?=\d)/, "")),
+                            }
+                          : item
                       )
                     )
                   }
                 />
+                {scale.maxScore == null ||
+                (scale.minScore != null && scale.maxScore < scale.minScore) ? (
+                  <p className="mt-1 text-[11px] text-rose-600">
+                    {scale.maxScore == null
+                      ? t("adminEntryTest.scale.required", "Bắt buộc")
+                      : t(
+                          "adminEntryTest.scale.invalidRange",
+                          "Phải lớn hơn hoặc bằng điểm tối thiểu"
+                        )}
+                  </p>
+                ) : null}
               </TableCell>
               <TableCell className="py-4">
                 <Input
                   className="h-10 w-36 rounded-lg"
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   step="0.01"
-                  value={scale.minCodingScore ?? 0}
+                  value={scale.minCodingScore == null ? "" : String(scale.minCodingScore)}
                   onChange={(e) =>
                     onChange(
                       scales.map((item, i) =>
-                        i === index ? { ...item, minCodingScore: Number(e.target.value) } : item
+                        i === index
+                          ? {
+                              ...item,
+                              minCodingScore:
+                                e.target.value === ""
+                                  ? undefined
+                                  : Number(e.target.value.replace(/^0+(?=\d)/, "")),
+                            }
+                          : item
                       )
                     )
                   }
@@ -781,7 +842,7 @@ function ScaleEditor({
           ))}
         </TableBody>
       </Table>
-      <div className="flex justify-end border-t border-slate-200 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/30">
+      <div className="flex justify-end border-t border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
         <Button
           className="h-11 rounded-xl bg-indigo-600 px-5 hover:bg-indigo-700"
           onClick={onSave}

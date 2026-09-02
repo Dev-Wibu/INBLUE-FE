@@ -11,6 +11,15 @@ import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import { fetchClient } from "@/lib/api";
 import i18n from "@/lib/i18n";
 
+const normalizeJobDescription = (value: JobDescription): JobDescription => ({
+  ...value,
+  skillTags: Array.isArray(value?.skillTags)
+    ? value.skillTags.filter((tag): tag is string => typeof tag === "string")
+    : [],
+});
+const normalizeJobDescriptions = (value: JobDescription[] | undefined) =>
+  Array.isArray(value) ? value.map(normalizeJobDescription) : [];
+
 export interface JobDescriptionSearchParams {
   keyword?: string;
   status?: JobDescriptionStatus;
@@ -27,7 +36,7 @@ export class JobDescriptionManager {
         status: res.response?.status,
         headers: res.response?.headers,
       }));
-      return { success: true, data: response.data };
+      return { success: true, data: normalizeJobDescriptions(response.data) };
     } catch (error) {
       return {
         success: false,
@@ -47,7 +56,10 @@ export class JobDescriptionManager {
         headers: res.response?.headers,
       }));
       // @ts-expect-error: Backend Swagger schema mismatch
-      return { success: true, data: response.data };
+      return {
+        success: true,
+        data: response.data ? normalizeJobDescription(response.data) : response.data,
+      };
     } catch (error) {
       return {
         success: false,
@@ -68,7 +80,7 @@ export class JobDescriptionManager {
           status: res.response?.status,
           headers: res.response?.headers,
         }));
-      return { success: true, data: response.data };
+      return { success: true, data: normalizeJobDescriptions(response.data) };
     } catch (error) {
       return {
         success: false,
@@ -88,7 +100,7 @@ export class JobDescriptionManager {
         headers: res.response?.headers,
       }));
       // @ts-expect-error: Backend Swagger schema mismatch
-      return { success: true, data: response.data };
+      return { success: true, data: normalizeJobDescriptions(response.data) };
     } catch (error) {
       return {
         success: false,

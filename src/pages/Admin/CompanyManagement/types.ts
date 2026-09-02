@@ -40,4 +40,5 @@ export interface JobDescriptionFormData {
   currency?: string;
   deadlineAt?: string;
   companyId?: number;
+  skillTags?: string[];
 }
