@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Minus, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -33,6 +33,97 @@ const EMPTY_METRIC: UIEvaluationMetric = {
   required: false,
   minimumScore: 0,
 };
+
+function ScoreDial({
+  label,
+  value,
+  min = 0,
+  max = 100,
+  step = 1,
+  onChange,
+}: {
+  label: string;
+  value?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  onChange: (_value: number | undefined) => void;
+}) {
+  const safeValue = Number.isFinite(value) ? Number(value) : 0;
+  const percentage = Math.max(0, Math.min(100, ((safeValue - min) / (max - min || 1)) * 100));
+  const ringColor =
+    percentage >= 75 ? "text-emerald-500" : percentage >= 40 ? "text-indigo-500" : "text-amber-500";
+  const update = (next: number) => onChange(Math.max(min, Math.min(max, Number(next.toFixed(2)))));
+  return (
+    <div className="flex min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 dark:border-slate-700 dark:bg-slate-950">
+      <div className="relative h-11 w-11 shrink-0" title={`${label}: ${safeValue}`}>
+        <svg viewBox="0 0 44 44" className="h-11 w-11 -rotate-90" aria-hidden="true">
+          <circle
+            cx="22"
+            cy="22"
+            r="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="4"
+            className="text-slate-200 dark:text-slate-800"
+          />
+          <circle
+            cx="22"
+            cy="22"
+            r="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeLinecap="round"
+            className={ringColor}
+            strokeDasharray={`${percentage * 1.13} 113`}
+          />
+        </svg>
+        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-slate-800 dark:text-slate-100">
+          {safeValue}
+        </span>
+      </div>
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <span
+          className="block truncate text-[10px] font-semibold tracking-wide text-slate-500 uppercase"
+          title={label}>
+          {label}
+        </span>
+        <div className="mt-1 flex min-w-0 items-center gap-1">
+          <button
+            type="button"
+            className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+            onClick={() => update(safeValue - step)}
+            aria-label={`Decrease ${label}`}>
+            <Minus className="h-3 w-3" />
+          </button>
+          <Input
+            type="text"
+            inputMode="decimal"
+            min={min}
+            max={max}
+            step={step}
+            value={value ?? ""}
+            onChange={(event) => {
+              const raw = event.target.value;
+              if (raw === "") return onChange(undefined);
+              const parsed = Number(raw.replace(/^0+(?=\d)/, ""));
+              if (Number.isFinite(parsed)) onChange(Math.max(min, Math.min(max, parsed)));
+            }}
+            className="h-6 min-w-0 flex-1 border-0 bg-slate-50 p-0 text-center text-xs font-bold tabular-nums shadow-none transition-colors focus-visible:bg-indigo-50 focus-visible:ring-0 dark:bg-slate-900 dark:focus-visible:bg-indigo-950/50"
+          />
+          <button
+            type="button"
+            className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+            onClick={() => update(safeValue + step)}
+            aria-label={`Increase ${label}`}>
+            <Plus className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function EvaluationPlanEditor({
   value,
@@ -93,9 +184,6 @@ export function EvaluationPlanEditor({
     }
   };
 
-  const parseOptionalNumber = (rawValue: string) =>
-    rawValue.trim() === "" ? undefined : Number(rawValue);
-
   const updateMetric = (index: number, patch: Partial<UIEvaluationMetric>) => {
     const nextMetrics = metrics.map((metric, metricIndex) =>
       metricIndex === index ? { ...metric, ...patch } : metric
@@ -149,15 +237,24 @@ export function EvaluationPlanEditor({
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
           {metrics.map((metric, index) => (
-            <div
-              key={`${metric.code ?? "metric"}-${index}`}
-              className="rounded-lg border border-slate-200 bg-slate-50/40 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+            <div key={`${metric.code ?? "metric"}-${index}`} className="py-5 first:pt-4 last:pb-4">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                  {t("roundAi.metricNumber", "Tiêu chí {{number}}", { number: index + 1 })}
-                </span>
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="flex h-6 min-w-6 items-center justify-center rounded-md border border-slate-300 bg-white px-1.5 text-[11px] font-bold text-slate-600 shadow-xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                    {index + 1}
+                  </span>
+                  <span className="truncate text-xs font-bold text-slate-700 dark:text-slate-200">
+                    {metric.name ||
+                      t("roundAi.metricNumber", "Tiêu chí {{number}}", { number: index + 1 })}
+                  </span>
+                  {metric.code && (
+                    <code className="truncate rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      {metric.code}
+                    </code>
+                  )}
+                </div>
                 <Button
                   type="button"
                   variant="ghost"
@@ -187,7 +284,7 @@ export function EvaluationPlanEditor({
                       validation.metricErrors[index]?.code
                     )}
                     placeholder="TECH_DEPTH"
-                    className="h-9 font-mono text-xs"
+                    className="h-9 border-slate-200 bg-slate-50/70 font-mono text-xs transition-colors hover:border-indigo-300 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/15 dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-indigo-700 dark:focus-visible:bg-slate-950"
                   />
                   {shouldShowError(
                     `metric.${index}.code`,
@@ -210,7 +307,7 @@ export function EvaluationPlanEditor({
                       validation.metricErrors[index]?.name
                     )}
                     placeholder={t("roundAi.metricNamePlaceholder", "Ví dụ: Độ sâu kỹ thuật")}
-                    className="h-9 text-xs"
+                    className="h-9 border-slate-200 bg-slate-50/70 text-xs transition-colors hover:border-indigo-300 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/15 dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-indigo-700 dark:focus-visible:bg-slate-950"
                   />
                   {shouldShowError(
                     `metric.${index}.name`,
@@ -235,7 +332,7 @@ export function EvaluationPlanEditor({
                     validation.metricErrors[index]?.description
                   )}
                   rows={2}
-                  className="text-xs"
+                  className="border-slate-200 bg-slate-50/70 text-xs transition-colors hover:border-indigo-300 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/15 dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-indigo-700 dark:focus-visible:bg-slate-950"
                 />
                 {shouldShowError(
                   `metric.${index}.description`,
@@ -247,26 +344,12 @@ export function EvaluationPlanEditor({
                 )}
               </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">
-                    {t("roundAi.weight", "Trọng số (%)")}
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    step="any"
-                    value={metric.weight ?? ""}
-                    onChange={(event) =>
-                      updateMetric(index, { weight: parseOptionalNumber(event.target.value) })
-                    }
-                    onBlur={() => touchField(`metric.${index}.weight`)}
-                    aria-invalid={shouldShowError(
-                      `metric.${index}.weight`,
-                      validation.metricErrors[index]?.weight
-                    )}
-                    className="h-9 text-xs"
+                  <ScoreDial
+                    label={t("roundAi.weight", "Trọng số (%)")}
+                    value={metric.weight}
+                    onChange={(weight) => updateMetric(index, { weight })}
                   />
                   {shouldShowError(
                     `metric.${index}.weight`,
@@ -278,24 +361,13 @@ export function EvaluationPlanEditor({
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">
-                    {t("roundAi.maxScore", "Điểm tối đa")}
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0.01}
+                  <ScoreDial
+                    label={t("roundAi.maxScore", "Điểm tối đa")}
+                    value={metric.maxScore}
+                    min={0}
                     max={EVALUATION_SCORE_MAX}
-                    step="any"
-                    value={metric.maxScore ?? ""}
-                    onChange={(event) =>
-                      updateMetric(index, { maxScore: parseOptionalNumber(event.target.value) })
-                    }
-                    onBlur={() => touchField(`metric.${index}.maxScore`)}
-                    aria-invalid={shouldShowError(
-                      `metric.${index}.maxScore`,
-                      validation.metricErrors[index]?.maxScore
-                    )}
-                    className="h-9 text-xs"
+                    step={1}
+                    onChange={(maxScore) => updateMetric(index, { maxScore })}
                   />
                   {shouldShowError(
                     `metric.${index}.maxScore`,
@@ -307,24 +379,13 @@ export function EvaluationPlanEditor({
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">
-                    {t("roundAi.minimumScore", "Điểm sàn")}
-                  </Label>
-                  <Input
-                    type="number"
+                  <ScoreDial
+                    label={t("roundAi.minimumScore", "Điểm sàn")}
+                    value={metric.minimumScore}
                     min={0}
                     max={metric.maxScore ?? EVALUATION_SCORE_MAX}
-                    step="any"
-                    value={metric.minimumScore ?? ""}
-                    onChange={(event) =>
-                      updateMetric(index, { minimumScore: parseOptionalNumber(event.target.value) })
-                    }
-                    onBlur={() => touchField(`metric.${index}.minimumScore`)}
-                    aria-invalid={shouldShowError(
-                      `metric.${index}.minimumScore`,
-                      validation.metricErrors[index]?.minimumScore
-                    )}
-                    className="h-9 text-xs"
+                    step={1}
+                    onChange={(minimumScore) => updateMetric(index, { minimumScore })}
                   />
                   {shouldShowError(
                     `metric.${index}.minimumScore`,

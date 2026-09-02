@@ -687,6 +687,8 @@ export function RoundCanvasEditorWorkspace({
           }
         )
       );
+    } catch {
+      toast.error(t("roundAi.generateFailed", "Không thể tạo quy trình bằng AI"));
     } finally {
       setIsGeneratingAi(false);
     }
@@ -1304,6 +1306,23 @@ export function RoundCanvasEditorWorkspace({
             </div>
           )}
         </div>
+        {isGeneratingAi && (
+          <div
+            className="absolute inset-0 z-[60] flex items-center justify-center bg-slate-900/20 backdrop-blur-[2px] dark:bg-slate-950/45"
+            role="status"
+            aria-live="polite">
+            <div className="flex min-w-[260px] flex-col items-center gap-3 rounded-2xl border border-indigo-200 bg-white/95 px-8 py-7 text-center shadow-2xl dark:border-indigo-900 dark:bg-slate-900/95">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-300">
+                <Sparkles className="h-6 w-6 animate-pulse" />
+              </div>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">
+                {t("roundAi.generating", "Đang phân tích JD và xây dựng quy trình...")}
+              </p>
+              <Skeleton className="h-2 w-44" />
+              <Skeleton className="h-2 w-32" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 3. Sub-modal configuration dialog for selected round card */}
