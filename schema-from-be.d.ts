@@ -3539,6 +3539,7 @@ export interface components {
             currency?: string;
             /** @enum {string} */
             status?: "OPEN" | "CLOSED" | "DRAFT";
+            skillTags?: string[];
             isDeleted?: boolean;
             /** Format: date-time */
             createdAt?: string;
@@ -4738,10 +4739,10 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
@@ -4756,12 +4757,12 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
+            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
+            paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            paged?: boolean;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
@@ -5026,10 +5027,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -5126,22 +5127,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            trimDirectiveWhitespaces?: string;
             elIgnored?: string;
+            isXml?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            errorOnELNotFound?: string;
-            trimDirectiveWhitespaces?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
-            isXml?: string;
-            defaultContentType?: string;
             urlPatterns?: string[];
+            defaultContentType?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -5176,18 +5177,16 @@ export interface components {
             };
         };
         ServletContext: {
-            /** Format: int32 */
-            sessionTimeout?: number;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
-            serverInfo?: string;
             servletContextName?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
@@ -5196,8 +5195,10 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -5276,11 +5277,11 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
+            httpOnly?: boolean;
             /** Format: int32 */
             maxAge?: number;
             secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -5289,8 +5290,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */

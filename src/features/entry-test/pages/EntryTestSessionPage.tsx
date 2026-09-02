@@ -16,6 +16,7 @@ import {
   Send,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -69,6 +70,7 @@ const sectionLabels: Record<EntryTestSectionType, string> = {
 };
 
 export function EntryTestSessionPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
   const attemptId = Number(params.id);
@@ -214,7 +216,7 @@ export function EntryTestSessionPage() {
     return (
       <RecoveryMessage
         title="Đề thi chưa có nội dung"
-        description="Cấu hình Entry Test không trả về câu hỏi nào. Bản nháp chưa bị xóa."
+        description={t("entryTestSession.emptyDescription")}
         onBack={() => navigate("/user/entry-test")}
       />
     );
@@ -317,8 +319,10 @@ export function EntryTestSessionPage() {
     <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
       <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 md:px-6 dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <p className="text-xs font-medium text-slate-500">ENTRY TEST · BÀI #{attemptId}</p>
-          <h1 className="text-base font-bold">Đánh giá năng lực đầu vào</h1>
+          <p className="text-xs font-medium text-slate-500">
+            {t("entryTestSession.eyebrow", { id: attemptId })}
+          </p>
+          <h1 className="text-base font-bold">{t("entryTestSession.title")}</h1>
         </div>
         <div className="flex items-center gap-3">
           <div
@@ -809,6 +813,8 @@ function RecoveryMessage({
   description: string;
   onBack: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-full items-center justify-center bg-slate-50 p-6 dark:bg-slate-950">
       <div className="max-w-md text-center">
@@ -818,7 +824,7 @@ function RecoveryMessage({
         <h1 className="mt-4 text-lg font-bold">{title}</h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
         <Button className="mt-5" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" /> Quay lại Entry Test
+          <ArrowLeft className="h-4 w-4" /> {t("entryTestSession.back")}
         </Button>
       </div>
     </div>

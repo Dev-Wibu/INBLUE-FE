@@ -169,7 +169,7 @@ const getSidebarMenuGroups = (t: TranslateFn): SidebarMenuGroup[] => [
       {
         type: "entry-tests",
         icon: ClipboardCheck,
-        label: "Entry Test",
+        label: t("adminEntryTest.sidebar"),
         color: "text-violet-600 dark:text-violet-400",
       },
     ],

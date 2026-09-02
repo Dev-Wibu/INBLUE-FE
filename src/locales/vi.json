@@ -8298,7 +8298,7 @@
     "openSource": "Mở JD nguồn"
   },
   "entryTestResult": {
-    "title": "Kết quả đánh giá năng lực đầu vào",
+    "title": "Kết quả bài đánh giá định hướng",
     "description": "Tổng hợp điểm số và cấp độ năng lực đã được hệ thống xác nhận.",
     "graded": "Đã chấm điểm",
     "submissionMeta": "Bài #{{id}} · Nộp lúc {{date}}",
@@ -8336,7 +8336,7 @@
     }
   },
   "entryTestSubmit": {
-    "title": "Nộp bài đánh giá năng lực đầu vào?",
+    "title": "Nộp bài đánh giá định hướng?",
     "description": "Sau khi nộp bài, bạn không thể thay đổi câu trả lời hoặc mã nguồn.",
     "expiredTitle": "Đã hết thời gian làm bài",
     "expiredDescription": "Hệ thống sẽ nộp bản nháp mới nhất của bạn để chấm điểm.",
@@ -8350,11 +8350,11 @@
     }
   },
   "entryTestLanding": {
-    "title": "Hồ sơ năng lực đầu vào",
+    "title": "Hồ sơ định hướng năng lực",
     "description": "Hoàn thành bài đánh giá theo định hướng để xác định năng lực hiện tại và nhận lộ trình phát triển phù hợp.",
     "assessed": "Đã đánh giá",
     "continueAttempt": "Tiếp tục bài đang làm",
-    "start": "Bắt đầu Entry Test",
+    "start": "Làm bài đánh giá định hướng",
     "chooseDirection": "Chọn định hướng",
     "contentsTitle": "Nội dung bài đánh giá",
     "contentsDescription": "Bài đánh giá được cá nhân hóa theo định hướng và kỹ năng của bạn.",
@@ -8377,22 +8377,22 @@
     "level": "Cấp độ {{level}}",
     "viewResult": "Xem kết quả chi tiết",
     "noAssessment": "Chưa có đánh giá năng lực",
-    "noAssessmentDescription": "Kết quả sẽ xuất hiện tại đây sau khi bạn hoàn thành Entry Test đầu tiên.",
+    "noAssessmentDescription": "Kết quả sẽ xuất hiện tại đây sau khi bạn hoàn thành bài đánh giá định hướng đầu tiên.",
     "currentDirection": "Định hướng hiện tại",
     "noSkills": "Chưa chọn kỹ năng",
     "updateDirection": "Cập nhật định hướng",
     "directionSkipped": "Bạn có thể chọn định hướng bất cứ lúc nào trước khi bắt đầu.",
     "errors": {
-      "create": "Không thể tạo đề Entry Test.",
+      "create": "Không thể tạo bài đánh giá định hướng.",
       "notEnoughItems": "Hệ thống chưa có đủ câu hỏi cho định hướng này. Vui lòng thử lại sau."
     }
   },
   "entryTestStart": {
-    "title": "Sẵn sàng bắt đầu Entry Test?",
-    "description": "Đồng hồ sẽ chạy ngay sau khi hệ thống tạo đề. Hãy chuẩn bị kết nối ổn định và không tải lại trang khi đang gửi bài.",
+    "title": "Sẵn sàng làm bài đánh giá định hướng?",
+    "description": "Đồng hồ sẽ chạy ngay sau khi hệ thống tạo bài đánh giá. Hãy chuẩn bị kết nối ổn định và không tải lại trang khi đang gửi bài.",
     "time": {
       "title": "Thời gian có giới hạn",
-      "description": "Thời lượng chính xác sẽ hiển thị ngay khi đề được tạo."
+      "description": "Thời lượng chính xác sẽ hiển thị ngay khi bài đánh giá được tạo."
     },
     "contents": {
       "title": "Nội dung theo cấu hình",
@@ -8403,17 +8403,17 @@
       "description": "Bạn có thể khôi phục câu trả lời sau khi tải lại trên trình duyệt này."
     },
     "cancel": "Chưa bắt đầu",
-    "creating": "Đang tạo đề...",
+    "creating": "Đang tạo bài đánh giá...",
     "confirm": "Bắt đầu làm bài"
   },
   "entryTestWizard": {
     "title": "Định hướng hành trình của bạn",
-    "description": "Thông tin này giúp hệ thống chọn nội dung Entry Test phù hợp hơn.",
+    "description": "Thông tin này giúp hệ thống chọn nội dung bài đánh giá định hướng phù hợp hơn.",
     "roleDescription": "Chọn một vai trò mục tiêu. Bạn có thể cập nhật lại sau.",
     "skillDescription": "Chọn ít nhất một kỹ năng để cá nhân hóa phần chuyên môn.",
     "goalPlaceholder": "Ví dụ: Trở thành Frontend Engineer trong 12 tháng",
     "targetLevel": "Mức độ mục tiêu",
-    "changeNotice": "Khi thay đổi định hướng hoặc kỹ năng, hệ thống có thể yêu cầu bạn thực hiện Entry Test lại để cập nhật năng lực.",
+    "changeNotice": "Khi thay đổi định hướng hoặc kỹ năng, hệ thống có thể yêu cầu bạn làm lại bài đánh giá để cập nhật năng lực.",
     "later": "Để sau",
     "save": "Lưu định hướng"
   },
@@ -8425,18 +8425,19 @@
     "notAssessed": "Chưa đánh giá"
   },
   "adminEntryTest": {
-    "title": "Quản lý Entry Test",
-    "description": "Quản lý cấu hình đề thi và thang quy đổi năng lực đầu vào",
+    "title": "Quản lý bài đánh giá định hướng",
+    "sidebar": "Bài đánh giá định hướng",
+    "description": "Quản lý cấu hình bài đánh giá và thang quy đổi năng lực theo định hướng",
     "stats": {
-      "totalTests": "Tổng đề thi",
+      "totalTests": "Tổng bài đánh giá",
       "activeTests": "Đang hoạt động",
       "scales": "Mức quy đổi"
     },
-    "searchPlaceholder": "Tìm theo tên đề thi...",
+    "searchPlaceholder": "Tìm theo tên bài đánh giá...",
     "create": "Tạo cấu hình",
-    "tabs": { "tests": "Đề thi ({{count}})", "scales": "Thang quy đổi ({{count}})" },
+    "tabs": { "tests": "Bài đánh giá ({{count}})", "scales": "Thang quy đổi ({{count}})" },
     "columns": {
-      "name": "Tên đề thi",
+      "name": "Tên bài đánh giá",
       "duration": "Thời lượng",
       "structure": "Cấu trúc",
       "totalScore": "Tổng điểm",
@@ -8450,7 +8451,7 @@
     "unnamed": "Chưa đặt tên",
     "inUse": "Đang được sử dụng",
     "deactivate": "Tắt cấu hình",
-    "empty": "Chưa tìm thấy cấu hình Entry Test phù hợp.",
+    "empty": "Chưa tìm thấy cấu hình bài đánh giá định hướng phù hợp.",
     "sections": {
       "common": "Kiến thức chung",
       "specific": "Kiến thức chuyên môn",
@@ -8461,12 +8462,12 @@
       "CODING_PROBLEM": "Bài tập lập trình"
     },
     "editor": {
-      "editTitle": "Chỉnh sửa Entry Test",
-      "createTitle": "Tạo Entry Test",
+      "editTitle": "Chỉnh sửa bài đánh giá định hướng",
+      "createTitle": "Tạo bài đánh giá định hướng",
       "description": "Thiết lập thông tin chung và điểm số cho từng phần của bài đánh giá.",
-      "namePlaceholder": "Nhập tên cấu hình Entry Test",
+      "namePlaceholder": "Nhập tên cấu hình bài đánh giá",
       "durationLabel": "Thời lượng (phút)",
-      "structureTitle": "Cấu trúc đề thi",
+      "structureTitle": "Cấu trúc bài đánh giá",
       "structureDescription": "Tổng điểm = số câu × điểm mỗi câu.",
       "section": "Phần thi",
       "itemCount": "Số câu",
@@ -8485,13 +8486,13 @@
       "save": "Lưu bộ scale"
     },
     "messages": {
-      "loadError": "Không thể tải cấu hình Entry Test từ backend.",
+      "loadError": "Không thể tải cấu hình bài đánh giá định hướng.",
       "invalidGeneral": "Tên bài và thời lượng phải hợp lệ.",
       "invalidSections": "Phần thi phải có số lượng, điểm hợp lệ và tổng điểm phải khớp.",
-      "saveSuccess": "Đã lưu cấu hình Entry Test.",
-      "saveError": "Không thể lưu cấu hình Entry Test.",
-      "deactivateSuccess": "Đã tắt cấu hình Entry Test.",
-      "deactivateError": "Không thể tắt cấu hình Entry Test.",
+      "saveSuccess": "Đã lưu cấu hình bài đánh giá định hướng.",
+      "saveError": "Không thể lưu cấu hình bài đánh giá định hướng.",
+      "deactivateSuccess": "Đã tắt cấu hình bài đánh giá định hướng.",
+      "deactivateError": "Không thể tắt cấu hình bài đánh giá định hướng.",
       "invalidScale": "Điểm tối thiểu không được lớn hơn điểm tối đa.",
       "scaleSaveSuccess": "Đã lưu thang quy đổi.",
       "scaleSaveError": "Không thể lưu thang quy đổi."
@@ -8501,7 +8502,7 @@
     "setupTitle": "Thiết lập hồ sơ học tập",
     "stepCounter": "BƯỚC {{current}} / {{total}}",
     "pageTitle": "Thiết lập hồ sơ nghề nghiệp",
-    "helpText": "Thông tin này giúp hệ thống cá nhân hóa bài Entry Test và lộ trình phát triển phù hợp với bạn.",
+    "helpText": "Thông tin này giúp hệ thống cá nhân hóa bài đánh giá định hướng và lộ trình phát triển phù hợp với bạn.",
     "progressLabel": "Tiến độ thiết lập",
     "direction": "Định hướng",
     "skills": "Kỹ năng",
@@ -8546,8 +8547,14 @@
       "JUNIOR": "Junior",
       "MIDDLE": "Middle"
     },
-    "sidebar": "Năng lực đầu vào",
+    "sidebar": "Định hướng năng lực",
     "notSelected": "Chưa chọn",
     "notDefined": "Chưa xác định"
+  },
+  "entryTestSession": {
+    "eyebrow": "BÀI ĐÁNH GIÁ ĐỊNH HƯỚNG · BÀI #{{id}}",
+    "title": "Bài đánh giá định hướng",
+    "emptyDescription": "Cấu hình bài đánh giá không trả về câu hỏi nào. Bản nháp chưa bị xóa.",
+    "back": "Quay lại trang định hướng năng lực"
   }
 }

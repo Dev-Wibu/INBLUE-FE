@@ -8298,7 +8298,7 @@
     "openSource": "Open source job"
   },
   "entryTestResult": {
-    "title": "Entry competency assessment result",
+    "title": "Career direction assessment result",
     "description": "A summary of your verified scores and current competency level.",
     "graded": "Graded",
     "submissionMeta": "Attempt #{{id}} · Submitted {{date}}",
@@ -8336,7 +8336,7 @@
     }
   },
   "entryTestSubmit": {
-    "title": "Submit the entry competency assessment?",
+    "title": "Submit the career direction assessment?",
     "description": "After submitting, you cannot change your answers or source code.",
     "expiredTitle": "The assessment time has ended",
     "expiredDescription": "Your latest draft will be submitted for grading.",
@@ -8350,11 +8350,11 @@
     }
   },
   "entryTestLanding": {
-    "title": "Entry assessment profile",
+    "title": "Career direction profile",
     "description": "Complete a role-based assessment to identify your current ability and receive a suitable development path.",
     "assessed": "Assessed",
     "continueAttempt": "Continue current attempt",
-    "start": "Start Entry Test",
+    "start": "Start career direction assessment",
     "chooseDirection": "Choose direction",
     "contentsTitle": "Assessment contents",
     "contentsDescription": "The assessment is personalized to your direction and skills.",
@@ -8377,22 +8377,22 @@
     "level": "Level {{level}}",
     "viewResult": "View detailed result",
     "noAssessment": "No assessment result yet",
-    "noAssessmentDescription": "Your result will appear here after you complete your first Entry Test.",
+    "noAssessmentDescription": "Your result will appear here after you complete your first career direction assessment.",
     "currentDirection": "Current direction",
     "noSkills": "No skills selected",
     "updateDirection": "Update direction",
     "directionSkipped": "You can choose a direction at any time before starting.",
     "errors": {
-      "create": "Unable to create the Entry Test.",
+      "create": "Unable to create the career direction assessment.",
       "notEnoughItems": "There are not enough questions for this direction yet. Please try again later."
     }
   },
   "entryTestStart": {
-    "title": "Ready to start the Entry Test?",
-    "description": "The timer starts as soon as the test is created. Use a stable connection and do not reload while submitting.",
+    "title": "Ready to start your career direction assessment?",
+    "description": "The timer starts as soon as the assessment is created. Use a stable connection and do not reload while submitting.",
     "time": {
       "title": "Time is limited",
-      "description": "The exact duration appears as soon as the test is created."
+      "description": "The exact duration appears as soon as the assessment is created."
     },
     "contents": {
       "title": "Configured content",
@@ -8403,17 +8403,17 @@
       "description": "You can recover answers after reloading in this browser."
     },
     "cancel": "Not now",
-    "creating": "Creating test...",
-    "confirm": "Start test"
+    "creating": "Creating assessment...",
+    "confirm": "Start assessment"
   },
   "entryTestWizard": {
     "title": "Choose your career direction",
-    "description": "This information helps us select more relevant Entry Test content.",
+    "description": "This information helps us select more relevant content for your career direction assessment.",
     "roleDescription": "Choose a target role. You can update it later.",
     "skillDescription": "Choose at least one skill to personalize the specialist section.",
     "goalPlaceholder": "Example: Become a Frontend Engineer within 12 months",
     "targetLevel": "Target level",
-    "changeNotice": "Changing your direction or skills may require another Entry Test to update your assessment.",
+    "changeNotice": "Changing your direction or skills may require another assessment to update your competency profile.",
     "later": "Later",
     "save": "Save direction"
   },
@@ -8425,14 +8425,19 @@
     "notAssessed": "Not assessed"
   },
   "adminEntryTest": {
-    "title": "Entry Test Management",
-    "description": "Manage test configurations and entry-level score mappings",
-    "stats": { "totalTests": "Total tests", "activeTests": "Active", "scales": "Score bands" },
-    "searchPlaceholder": "Search by test name...",
+    "title": "Career Direction Assessment Management",
+    "sidebar": "Career assessments",
+    "description": "Manage assessment configurations and role-based competency score mappings",
+    "stats": {
+      "totalTests": "Total assessments",
+      "activeTests": "Active",
+      "scales": "Score bands"
+    },
+    "searchPlaceholder": "Search by assessment name...",
     "create": "Create configuration",
-    "tabs": { "tests": "Tests ({{count}})", "scales": "Score mappings ({{count}})" },
+    "tabs": { "tests": "Assessments ({{count}})", "scales": "Score mappings ({{count}})" },
     "columns": {
-      "name": "Test name",
+      "name": "Assessment name",
       "duration": "Duration",
       "structure": "Structure",
       "totalScore": "Total score",
@@ -8446,7 +8451,7 @@
     "unnamed": "Untitled",
     "inUse": "Currently in use",
     "deactivate": "Deactivate configuration",
-    "empty": "No matching Entry Test configuration found.",
+    "empty": "No matching career direction assessment configuration found.",
     "sections": {
       "common": "Core knowledge",
       "specific": "Role-specific knowledge",
@@ -8457,12 +8462,12 @@
       "CODING_PROBLEM": "Coding exercise"
     },
     "editor": {
-      "editTitle": "Edit Entry Test",
-      "createTitle": "Create Entry Test",
+      "editTitle": "Edit career direction assessment",
+      "createTitle": "Create career direction assessment",
       "description": "Configure general information and scoring for each assessment section.",
-      "namePlaceholder": "Enter the Entry Test configuration name",
+      "namePlaceholder": "Enter the assessment configuration name",
       "durationLabel": "Duration (minutes)",
-      "structureTitle": "Test structure",
+      "structureTitle": "Assessment structure",
       "structureDescription": "Total score = item count × score per item.",
       "section": "Section",
       "itemCount": "Items",
@@ -8481,13 +8486,13 @@
       "save": "Save mappings"
     },
     "messages": {
-      "loadError": "Unable to load Entry Test configurations.",
-      "invalidGeneral": "The test name and duration must be valid.",
+      "loadError": "Unable to load career direction assessment configurations.",
+      "invalidGeneral": "The assessment name and duration must be valid.",
       "invalidSections": "Sections must have valid item counts and scores, and totals must match.",
-      "saveSuccess": "Entry Test configuration saved.",
-      "saveError": "Unable to save the Entry Test configuration.",
-      "deactivateSuccess": "Entry Test configuration deactivated.",
-      "deactivateError": "Unable to deactivate the Entry Test configuration.",
+      "saveSuccess": "Career direction assessment configuration saved.",
+      "saveError": "Unable to save the career direction assessment configuration.",
+      "deactivateSuccess": "Career direction assessment configuration deactivated.",
+      "deactivateError": "Unable to deactivate the career direction assessment configuration.",
       "invalidScale": "The minimum score cannot exceed the maximum score.",
       "scaleSaveSuccess": "Score mappings saved.",
       "scaleSaveError": "Unable to save score mappings."
@@ -8497,7 +8502,7 @@
     "setupTitle": "Set up your learning profile",
     "stepCounter": "STEP {{current}} / {{total}}",
     "pageTitle": "Set up your career profile",
-    "helpText": "This information helps personalize your Entry Test and development path.",
+    "helpText": "This information helps personalize your career direction assessment and development path.",
     "progressLabel": "Setup progress",
     "direction": "Direction",
     "skills": "Skills",
@@ -8542,8 +8547,14 @@
       "JUNIOR": "Junior",
       "MIDDLE": "Middle"
     },
-    "sidebar": "Entry assessment",
+    "sidebar": "Career direction",
     "notSelected": "Not selected",
     "notDefined": "Not defined"
+  },
+  "entryTestSession": {
+    "eyebrow": "CAREER DIRECTION ASSESSMENT · ATTEMPT #{{id}}",
+    "title": "Career direction assessment",
+    "emptyDescription": "The assessment configuration returned no questions. Your draft has not been deleted.",
+    "back": "Back to career direction"
   }
 }

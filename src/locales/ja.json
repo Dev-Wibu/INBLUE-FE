@@ -8353,7 +8353,7 @@
     "description": "希望職種に基づく評価を完了し、現在のスキルと適切な成長プランを確認します。",
     "assessed": "評価済み",
     "continueAttempt": "進行中のテストを続ける",
-    "start": "Entry Testを開始",
+    "start": "キャリアアセスメントを開始",
     "chooseDirection": "方向性を選択",
     "contentsTitle": "評価内容",
     "contentsDescription": "希望職種とスキルに合わせて評価内容が最適化されます。",
@@ -8376,22 +8376,22 @@
     "level": "レベル {{level}}",
     "viewResult": "詳細結果を見る",
     "noAssessment": "評価結果はまだありません",
-    "noAssessmentDescription": "最初のEntry Testを完了すると、ここに結果が表示されます。",
+    "noAssessmentDescription": "最初のキャリアアセスメントを完了すると、ここに結果が表示されます。",
     "currentDirection": "現在の方向性",
     "noSkills": "スキル未選択",
     "updateDirection": "方向性を更新",
     "directionSkipped": "開始前であればいつでも方向性を選択できます。",
     "errors": {
-      "create": "Entry Testを作成できませんでした。",
+      "create": "キャリアアセスメントを作成できませんでした。",
       "notEnoughItems": "この方向性の問題が不足しています。後でもう一度お試しください。"
     }
   },
   "entryTestStart": {
-    "title": "Entry Testを開始しますか？",
-    "description": "テストが作成されるとタイマーが開始します。安定した接続を使用し、提出中は再読み込みしないでください。",
+    "title": "キャリアアセスメントを開始しますか？",
+    "description": "アセスメントが作成されるとタイマーが開始します。安定した接続を使用し、提出中は再読み込みしないでください。",
     "time": {
       "title": "制限時間があります",
-      "description": "正確な時間はテスト作成後に表示されます。"
+      "description": "正確な時間はアセスメント作成後に表示されます。"
     },
     "contents": {
       "title": "設定された内容",
@@ -8402,17 +8402,17 @@
       "description": "このブラウザで再読み込み後も回答を復元できます。"
     },
     "cancel": "今は開始しない",
-    "creating": "テストを作成中...",
-    "confirm": "テストを開始"
+    "creating": "アセスメントを作成中...",
+    "confirm": "アセスメントを開始"
   },
   "entryTestWizard": {
     "title": "キャリアの方向性を選択",
-    "description": "この情報をもとに、より適切なEntry Testの内容を選択します。",
+    "description": "この情報をもとに、より適切なキャリアアセスメントの内容を選択します。",
     "roleDescription": "目標の職種を選択してください。後から更新できます。",
     "skillDescription": "専門分野を最適化するため、少なくとも1つのスキルを選択してください。",
     "goalPlaceholder": "例：12か月以内にFrontend Engineerになる",
     "targetLevel": "目標レベル",
-    "changeNotice": "方向性やスキルを変更すると、評価更新のため再度Entry Testが必要になる場合があります。",
+    "changeNotice": "方向性やスキルを変更すると、能力プロフィールを更新するため再評価が必要になる場合があります。",
     "later": "後で",
     "save": "方向性を保存"
   },
@@ -8424,14 +8424,15 @@
     "notAssessed": "未評価"
   },
   "adminEntryTest": {
-    "title": "Entry Test管理",
-    "description": "テスト設定と初回スキル評価のスコア換算を管理します",
-    "stats": { "totalTests": "テスト合計", "activeTests": "有効", "scales": "スコア帯" },
-    "searchPlaceholder": "テスト名で検索...",
+    "title": "キャリアアセスメント管理",
+    "sidebar": "キャリアアセスメント",
+    "description": "アセスメント設定と職種別の能力スコア換算を管理します",
+    "stats": { "totalTests": "アセスメント合計", "activeTests": "有効", "scales": "スコア帯" },
+    "searchPlaceholder": "アセスメント名で検索...",
     "create": "設定を作成",
-    "tabs": { "tests": "テスト ({{count}})", "scales": "スコア換算 ({{count}})" },
+    "tabs": { "tests": "アセスメント ({{count}})", "scales": "スコア換算 ({{count}})" },
     "columns": {
-      "name": "テスト名",
+      "name": "アセスメント名",
       "duration": "時間",
       "structure": "構成",
       "totalScore": "合計点",
@@ -8445,16 +8446,16 @@
     "unnamed": "名称未設定",
     "inUse": "使用中",
     "deactivate": "設定を無効化",
-    "empty": "該当するEntry Test設定がありません。",
+    "empty": "該当するキャリアアセスメント設定がありません。",
     "sections": { "common": "基礎知識", "specific": "専門知識", "coding": "コーディング" },
     "itemTypes": { "QUESTION_BANK": "選択式問題", "CODING_PROBLEM": "コーディング課題" },
     "editor": {
-      "editTitle": "Entry Testを編集",
-      "createTitle": "Entry Testを作成",
+      "editTitle": "キャリアアセスメントを編集",
+      "createTitle": "キャリアアセスメントを作成",
       "description": "各評価セクションの基本情報と採点を設定します。",
-      "namePlaceholder": "Entry Test設定名を入力",
+      "namePlaceholder": "アセスメント設定名を入力",
       "durationLabel": "時間（分）",
-      "structureTitle": "テスト構成",
+      "structureTitle": "アセスメント構成",
       "structureDescription": "合計点 = 問題数 × 1問あたりの点数。",
       "section": "セクション",
       "itemCount": "問題数",
@@ -8473,13 +8474,13 @@
       "save": "換算を保存"
     },
     "messages": {
-      "loadError": "Entry Test設定を読み込めませんでした。",
-      "invalidGeneral": "テスト名と時間を正しく入力してください。",
+      "loadError": "キャリアアセスメント設定を読み込めませんでした。",
+      "invalidGeneral": "アセスメント名と時間を正しく入力してください。",
       "invalidSections": "セクションの問題数と点数を正しく設定し、合計点を一致させてください。",
-      "saveSuccess": "Entry Test設定を保存しました。",
-      "saveError": "Entry Test設定を保存できませんでした。",
-      "deactivateSuccess": "Entry Test設定を無効化しました。",
-      "deactivateError": "Entry Test設定を無効化できませんでした。",
+      "saveSuccess": "キャリアアセスメント設定を保存しました。",
+      "saveError": "キャリアアセスメント設定を保存できませんでした。",
+      "deactivateSuccess": "キャリアアセスメント設定を無効化しました。",
+      "deactivateError": "キャリアアセスメント設定を無効化できませんでした。",
       "invalidScale": "最低点は最高点以下にしてください。",
       "scaleSaveSuccess": "スコア換算を保存しました。",
       "scaleSaveError": "スコア換算を保存できませんでした。"
@@ -8489,7 +8490,7 @@
     "setupTitle": "学習プロフィールを設定",
     "stepCounter": "ステップ {{current}} / {{total}}",
     "pageTitle": "キャリアプロフィールを設定",
-    "helpText": "この情報をもとに、Entry Testと成長プランを最適化します。",
+    "helpText": "この情報をもとに、キャリアアセスメントと成長プランを最適化します。",
     "progressLabel": "設定の進捗",
     "direction": "方向性",
     "skills": "スキル",
@@ -8534,8 +8535,14 @@
       "JUNIOR": "Junior",
       "MIDDLE": "Middle"
     },
-    "sidebar": "初回スキル評価",
+    "sidebar": "キャリア設計",
     "notSelected": "未選択",
     "notDefined": "未設定"
+  },
+  "entryTestSession": {
+    "eyebrow": "キャリアアセスメント · 受験 #{{id}}",
+    "title": "キャリアアセスメント",
+    "emptyDescription": "アセスメント設定から問題が返されませんでした。下書きは削除されていません。",
+    "back": "キャリア設計に戻る"
   }
 }
