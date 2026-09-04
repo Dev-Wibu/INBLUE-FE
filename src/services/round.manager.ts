@@ -29,6 +29,15 @@ import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import { fetchClient } from "@/lib/api";
 import i18n from "@/lib/i18n";
 
+function unwrapRoundsResponse(value: unknown): Round[] {
+  if (Array.isArray(value)) return value as Round[];
+  if (value && typeof value === "object") {
+    const data = (value as { data?: unknown }).data;
+    if (Array.isArray(data)) return data as Round[];
+  }
+  return [];
+}
+
 export class RoundManager {
   async generatePlanForJd(
     jdId: number
@@ -94,7 +103,7 @@ export class RoundManager {
           headers: res.response?.headers,
         }));
       // @ts-expect-error: Backend Swagger schema mismatch
-      return { success: true, data: response.data };
+      return { success: true, data: unwrapRoundsResponse(response.data) };
     } catch (error) {
       return {
         success: false,
@@ -118,7 +127,7 @@ export class RoundManager {
           headers: res.response?.headers,
         }));
       // @ts-expect-error: Backend Swagger schema mismatch
-      return { success: true, data: response.data };
+      return { success: true, data: unwrapRoundsResponse(response.data) };
     } catch (error) {
       return {
         success: false,

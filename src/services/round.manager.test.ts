@@ -136,6 +136,15 @@ describe("RoundManager", () => {
   });
 
   describe("updateForJd", () => {
+    it("unwraps the traceId/data response returned by the live backend", async () => {
+      const rounds = [{ id: 956, name: "Sàng lọc CV" }];
+      mockPut.mockResolvedValueOnce({ data: { traceId: "trace-1", data: rounds }, error: null });
+
+      const result = await roundManager.updateForJd(116, { rounds: [] });
+
+      expect(result).toEqual({ success: true, data: rounds });
+    });
+
     it("updates rounds for a job description", async () => {
       const rounds = [{ id: 1, name: "Updated Round" }];
       mockPut.mockResolvedValueOnce({ data: rounds, error: null });
