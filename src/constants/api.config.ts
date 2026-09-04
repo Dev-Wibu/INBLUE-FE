@@ -470,14 +470,6 @@ const PUBLIC_GET_ENDPOINTS = new Set<string>([
   "/api/companies", // GET /api/companies - public companies
 ]);
 
-// Public GET endpoint patterns (for dynamic paths with parameters)
-const PUBLIC_GET_ENDPOINT_PATTERNS: RegExp[] = [
-  // GET /api/posts/{postId} - public post detail. Restrict the path segment
-  // to the numeric backend ID so authenticated routes such as /posts/feed
-  // never lose their Bearer token.
-  /^\/api\/posts\/\d+$/,
-];
-
 // Endpoints that should fail silently on 401 (no redirect, no toast)
 // Used for public content that doesn't require authentication
 const SILENT_401_ENDPOINTS = new Set<string>([
@@ -550,10 +542,6 @@ export const isPublicAuthRequest = (url?: string, method?: string): boolean => {
   if (normalizedMethod === "get") {
     // Check exact match
     if (PUBLIC_GET_ENDPOINTS.has(requestPath)) {
-      return true;
-    }
-    // Check pattern match for dynamic endpoints
-    if (PUBLIC_GET_ENDPOINT_PATTERNS.some((pattern) => pattern.test(requestPath))) {
       return true;
     }
   }

@@ -7,8 +7,8 @@ describe("post authentication routing", () => {
     expect(isPublicAuthRequest("https://api.kdz.asia/api/posts/published", "GET")).toBe(true);
   });
 
-  it("keeps numeric public post details public", () => {
-    expect(isPublicAuthRequest("https://api.kdz.asia/api/posts/42", "GET")).toBe(true);
+  it("sends auth for post details while keeping a detail 401 silent", () => {
+    expect(isPublicAuthRequest("https://api.kdz.asia/api/posts/42", "GET")).toBe(false);
     expect(isSilent401Endpoint("https://api.kdz.asia/api/posts/42", "GET")).toBe(true);
   });
 
