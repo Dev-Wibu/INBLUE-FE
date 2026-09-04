@@ -308,6 +308,7 @@ export function JobDescriptionDetailView({
         status: editFormData.status as any,
         deadlineAt: editFormData.deadlineAt,
         price: editFormData.price,
+        skillTags: Array.isArray(editFormData.skillTags) ? editFormData.skillTags : [],
       });
 
       if (res.success && res.data) {
@@ -413,9 +414,9 @@ export function JobDescriptionDetailView({
           maxScore: Number(r.configData?.maxScore ?? 100),
           aiSystemPrompt: r.configData?.aiSystemPrompt || "",
           evaluationCriteria: r.configData?.evaluationCriteria || "",
-          ...(r.configData?.evaluationPlan
-            ? { evaluationPlan: toEvaluationPlanPayload(r.configData.evaluationPlan) }
-            : {}),
+          // updateRoundForJd replaces the complete config; explicitly preserve
+          // legacy rounds without a plan instead of omitting the field.
+          evaluationPlan: toEvaluationPlanPayload(r.configData?.evaluationPlan),
           quizQuestions: (r.configData?.quizQuestions || []).map((q: any) => ({
             questionText: q.questionText || "",
             options: q.options || [],
@@ -437,9 +438,14 @@ export function JobDescriptionDetailView({
 
       if (res.success && res.data) {
         toast.success(t("general.updateSuccess"));
-        setCurrentJd((prev) =>
-          prev ? { ...prev, rounds: res.data as unknown as typeof prev.rounds } : prev
-        );
+        // PUT returns an array, but GET is the persistence check because the
+        // backend replaces the complete JSONB config on update.
+        const refreshed = await jobDescriptionManager.getById(jdId);
+        const savedRounds =
+          refreshed.success && refreshed.data?.rounds
+            ? refreshed.data.rounds
+            : (res.data as unknown as typeof currentJd.rounds);
+        setCurrentJd((prev) => (prev ? { ...prev, rounds: savedRounds } : prev));
         // Only close the editor on a full save; per-round saves keep the user in the workspace.
         if (options?.closeEditorAfter !== false) {
           setIsEditorOpen(false);
@@ -505,25 +511,32 @@ export function JobDescriptionDetailView({
             maxScore: r.configData?.maxScore ?? 100,
             aiSystemPrompt: r.configData?.aiSystemPrompt ?? "",
             evaluationCriteria: r.configData?.evaluationCriteria ?? "",
-            ...(r.configData?.evaluationPlan
-              ? { evaluationPlan: toEvaluationPlanPayload(r.configData.evaluationPlan) }
-              : {}),
+            evaluationPlan: toEvaluationPlanPayload(r.configData?.evaluationPlan),
             quizQuestions: (r.configData?.quizQuestions ?? []).map((q: any) => ({
               questionText: q.questionText ?? "",
               options: q.options ?? [],
               correctAnswer: q.correctAnswer ?? "",
               points: Number(q.points ?? 0),
             })),
-            codingProblemsId: r.configData?.codingProblems?.map((c: any) => c.problemId) ?? [],
-            codeReviewIds: r.configData?.codeReviewProblems?.map((c: any) => c.problemId) ?? [],
+            codingProblemsId:
+              r.configData?.codingProblemsId ??
+              r.configData?.codingProblems?.map((c: any) => c.problemId) ??
+              [],
+            codeReviewIds:
+              r.configData?.codeReviewProblemsId ??
+              r.configData?.codeReviewProblems?.map((c: any) => c.problemId) ??
+              [],
           },
         })),
       });
       if (res.success && res.data) {
         toast.success(t("adminCompanymanagement.changeReviewerSuccess", "Đã đổi người chấm"));
-        setCurrentJd((prev) =>
-          prev ? { ...prev, rounds: res.data as unknown as typeof prev.rounds } : prev
-        );
+        const refreshed = await jobDescriptionManager.getById(jdId);
+        const savedRounds =
+          refreshed.success && refreshed.data?.rounds
+            ? refreshed.data.rounds
+            : (res.data as unknown as typeof currentJd.rounds);
+        setCurrentJd((prev) => (prev ? { ...prev, rounds: savedRounds } : prev));
         setChangingReviewerRoundId(null);
       } else {
         toast.error(res.error || t("errors.cannotUpdateInterviewRounds"));

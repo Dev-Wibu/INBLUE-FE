@@ -42,6 +42,22 @@ export interface AiFeedbackPayload {
   };
 }
 
+interface StructuredAiFeedbackPayload {
+  overallScore?: number | null;
+  metricResults?: Array<{
+    code?: string | null;
+    score?: number | null;
+    weightedScore?: number | null;
+    passed?: boolean | null;
+    evidence?: string | null;
+    feedback?: string | null;
+  }>;
+  overallFeedback?: string | null;
+  strengths?: string[];
+  weaknesses?: string[];
+  improvementAdvice?: string | null;
+}
+
 interface CvScreeningModuleProps {
   round: JdRound;
   detail?: ApplicationDetail;
@@ -194,6 +210,24 @@ export function CvScreeningModule({
     }
   }, [detail?.aiFeedback]);
 
+  const structuredAiFeedback = useMemo<StructuredAiFeedbackPayload | null>(() => {
+    const value = detail?.structuredAiFeedback;
+    if (!value) return null;
+    if (typeof value === "object") return value as StructuredAiFeedbackPayload;
+    try {
+      return JSON.parse(value as string) as StructuredAiFeedbackPayload;
+    } catch {
+      return null;
+    }
+  }, [detail?.structuredAiFeedback]);
+  const feedback = structuredAiFeedback
+    ? {
+        generalComment: structuredAiFeedback.overallFeedback ?? undefined,
+        strengths: structuredAiFeedback.strengths,
+        weaknesses: structuredAiFeedback.weaknesses,
+      }
+    : aiFeedback;
+
   // Extract Cloudinary / Submission File URL
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const submissionData = detail?.submissionData as any;
@@ -216,20 +250,24 @@ export function CvScreeningModule({
 
   // Strict check if real AI feedback or submission exists
   const hasAiData = Boolean(
-    detail?.aiFeedback || detail?.aiScore != null || detail?.finalScore != null
+    detail?.structuredAiFeedback ||
+    detail?.aiFeedback ||
+    detail?.aiScore != null ||
+    detail?.finalScore != null
   );
 
   // HR has data only when hrScore is actually graded by HR
   const hasHrData = detail?.hrScore !== undefined && detail?.hrScore !== null;
 
-  const aiScoreVal = detail?.aiScore ?? detail?.finalScore ?? 0;
+  const aiScoreVal =
+    structuredAiFeedback?.overallScore ?? detail?.aiScore ?? detail?.finalScore ?? 0;
   const hrScoreVal = hasHrData ? (detail?.hrScore ?? 0) : 0;
 
   const extraMetrics = aiFeedback?.extraMetrics;
   const keywordDensity = extraMetrics?.["Keyword Density"] || {};
   const redFlags = extraMetrics?.["Potential Red Flags"] || [];
-  const strengths = aiFeedback?.strengths || [];
-  const weaknesses = aiFeedback?.weaknesses || [];
+  const strengths = feedback?.strengths || [];
+  const weaknesses = feedback?.weaknesses || [];
 
   // Count matched keywords for coverage ratio
   const matchedKeywordsCount = useMemo(() => {
@@ -521,11 +559,42 @@ export function CvScreeningModule({
             </div>
 
             <p className="text-sm leading-relaxed font-normal text-slate-700 dark:text-slate-200">
-              {aiFeedback?.generalComment ||
+              {feedback?.generalComment ||
                 (hasAiData
                   ? t("userApplication.cvScreening.noDataUpdating")
                   : t("userApplication.cvScreening.noDataUploadHint"))}
             </p>
+            {structuredAiFeedback?.metricResults &&
+              structuredAiFeedback.metricResults.length > 0 && (
+                <div className="space-y-2 border-t border-slate-200 pt-3 dark:border-slate-800">
+                  {structuredAiFeedback.metricResults.map((metric, index) => (
+                    <div
+                      key={`${metric.code ?? "metric"}-${index}`}
+                      className="flex items-start justify-between gap-3 text-xs">
+                      <div className="min-w-0">
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">
+                          {metric.code || t("userApplication.cvScreening.metric", "Metric")}
+                        </span>
+                        {metric.feedback && (
+                          <p className="mt-0.5 text-slate-500 dark:text-slate-400">
+                            {metric.feedback}
+                          </p>
+                        )}
+                      </div>
+                      {typeof metric.score === "number" && (
+                        <span className="shrink-0 font-bold text-indigo-600 dark:text-indigo-400">
+                          {metric.score}/100
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            {structuredAiFeedback?.improvementAdvice && (
+              <p className="border-t border-slate-200 pt-3 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-300">
+                {structuredAiFeedback.improvementAdvice}
+              </p>
+            )}
           </Card>
 
           {/* SECTION 2: Strengths Card (Priority 2 - Green Theme) */}
