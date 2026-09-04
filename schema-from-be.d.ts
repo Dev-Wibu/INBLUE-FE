@@ -3216,6 +3216,7 @@ export interface components {
             maxScore?: number;
             aiSystemPrompt?: string;
             evaluationCriteria?: string;
+            evaluationPlan?: components["schemas"]["EvaluationPlan"];
             quizQuestions?: components["schemas"]["QuizQuestionDto"][];
             codingProblemsId?: number[];
             codeReviewIds?: number[];
@@ -3461,7 +3462,8 @@ export interface components {
             userId?: number;
             /** @enum {string} */
             targetRole?: "BE" | "FE" | "QA_QC" | "BA" | "DEVOPS" | "DATA";
-            languagesJson?: string[];
+            skills?: string[];
+            skillEmbedding?: number[];
             careerGoal?: string;
             /** @enum {string} */
             targetLevel?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
@@ -3540,6 +3542,7 @@ export interface components {
             /** @enum {string} */
             status?: "OPEN" | "CLOSED" | "DRAFT";
             skillTags?: string[];
+            skillEmbedding?: number[];
             isDeleted?: boolean;
             /** Format: date-time */
             createdAt?: string;
@@ -3599,6 +3602,7 @@ export interface components {
             /** Format: double */
             aiScore?: number;
             aiFeedback?: components["schemas"]["AiFeedback"];
+            structuredAiFeedback?: components["schemas"]["StructuredAiFeedback"];
             /** Format: double */
             hrScore?: number;
             hrNote?: string;
@@ -3660,6 +3664,16 @@ export interface components {
             errorMessage?: string;
             testCases?: components["schemas"]["TestCaseResult"][];
         };
+        MetricResult: {
+            code?: string;
+            /** Format: double */
+            score?: number;
+            /** Format: double */
+            weightedScore?: number;
+            passed?: boolean;
+            evidence?: string;
+            feedback?: string;
+        };
         QuizAnswer: {
             questionText?: string;
             selectedAnswer?: string;
@@ -3674,6 +3688,15 @@ export interface components {
             startTime?: string;
             /** Format: date-time */
             endTime?: string;
+        };
+        StructuredAiFeedback: {
+            /** Format: double */
+            overallScore?: number;
+            metricResults?: components["schemas"]["MetricResult"][];
+            overallFeedback?: string;
+            strengths?: string[];
+            weaknesses?: string[];
+            improvementAdvice?: string;
         };
         SubmissionData: {
             textContent?: string;
@@ -3866,6 +3889,7 @@ export interface components {
             extraMetrics?: {
                 [key: string]: unknown;
             };
+            structuredAiFeedback?: components["schemas"]["StructuredAiFeedback"];
         };
         JoinSessionDtoRequest: {
             sessionName?: string;
@@ -4195,6 +4219,7 @@ export interface components {
             description?: string;
             requirements?: string;
             benefits?: string;
+            skillTags?: string[];
             sourceJobId?: string;
             /** @enum {string} */
             level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
@@ -4211,6 +4236,7 @@ export interface components {
             companyId?: number;
             /** Format: int64 */
             price?: number;
+            skillEmbedding?: number[];
         };
         BasicInfo: {
             job_title?: string;
@@ -4757,12 +4783,12 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
@@ -5127,22 +5153,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            deferredSyntaxAllowedAsLiteral?: string;
             trimDirectiveWhitespaces?: string;
+            errorOnUndeclaredNamespace?: string;
             elIgnored?: string;
             isXml?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            errorOnUndeclaredNamespace?: string;
-            urlPatterns?: string[];
             defaultContentType?: string;
+            urlPatterns?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -5177,8 +5203,9 @@ export interface components {
             };
         };
         ServletContext: {
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            /** Format: int32 */
+            sessionTimeout?: number;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
@@ -5196,9 +5223,8 @@ export interface components {
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -5277,11 +5303,11 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
-            httpOnly?: boolean;
             /** Format: int32 */
             maxAge?: number;
             secure?: boolean;
             domain?: string;
+            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -5464,6 +5490,7 @@ export interface components {
             /** Format: double */
             aiScore?: number;
             aiFeedback?: components["schemas"]["AiFeedback"];
+            structuredAiFeedback?: components["schemas"]["StructuredAiFeedback"];
             /** Format: double */
             hrScore?: number;
             hrNote?: string;
