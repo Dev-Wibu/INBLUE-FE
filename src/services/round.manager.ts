@@ -9,8 +9,8 @@ type PersistedEvaluationPlan = Omit<components["schemas"]["EvaluationPlan"], "me
   metrics?: PersistedEvaluationMetric[];
 };
 
-type PersistedRoundConfig = components["schemas"]["RoundConfigDto"] & {
-  evaluationPlan?: PersistedEvaluationPlan;
+type PersistedRoundConfig = Omit<components["schemas"]["RoundConfigDto"], "evaluationPlan"> & {
+  evaluationPlan?: PersistedEvaluationPlan | null;
 };
 
 type PersistedRoundItem = Omit<components["schemas"]["RoundItemDto"], "configData"> & {
@@ -102,7 +102,6 @@ export class RoundManager {
           status: res.response?.status,
           headers: res.response?.headers,
         }));
-      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: unwrapRoundsResponse(response.data) };
     } catch (error) {
       return {
@@ -126,7 +125,6 @@ export class RoundManager {
           status: res.response?.status,
           headers: res.response?.headers,
         }));
-      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: unwrapRoundsResponse(response.data) };
     } catch (error) {
       return {

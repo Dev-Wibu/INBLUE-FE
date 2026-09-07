@@ -48,14 +48,15 @@ export class JobDescriptionManager {
 
   async getById(id: number | string): Promise<ApiResponse<JobDescription>> {
     try {
-      const endpoint = buildEndpoint(API_ENDPOINTS.JOB_DESCRIPTIONS.DETAIL, { id });
-      // @ts-expect-error: Backend Swagger schema mismatch
-      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
-        data: res.data,
-        status: res.response?.status,
-        headers: res.response?.headers,
-      }));
-      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient
+        .GET("/api/job-descriptions/{id}", {
+          params: { path: { id: Number(id) } },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data ? normalizeJobDescription(response.data) : response.data,

@@ -518,14 +518,8 @@ export function JobDescriptionDetailView({
               correctAnswer: q.correctAnswer ?? "",
               points: Number(q.points ?? 0),
             })),
-            codingProblemsId:
-              r.configData?.codingProblemsId ??
-              r.configData?.codingProblems?.map((c: any) => c.problemId) ??
-              [],
-            codeReviewIds:
-              r.configData?.codeReviewProblemsId ??
-              r.configData?.codeReviewProblems?.map((c: any) => c.problemId) ??
-              [],
+            codingProblemsId: r.configData?.codingProblems?.map((c: any) => c.problemId) ?? [],
+            codeReviewIds: r.configData?.codeReviewProblems?.map((c: any) => c.problemId) ?? [],
           },
         })),
       });

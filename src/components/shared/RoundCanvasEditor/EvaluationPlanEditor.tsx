@@ -381,7 +381,7 @@ export function EvaluationPlanEditor({
                 <div className="space-y-1.5">
                   <ScoreDial
                     label={t("roundAi.minimumScore", "Điểm sàn")}
-                    value={metric.minimumScore}
+                    value={metric.minimumScore ?? undefined}
                     min={0}
                     max={metric.maxScore ?? EVALUATION_SCORE_MAX}
                     step={1}
