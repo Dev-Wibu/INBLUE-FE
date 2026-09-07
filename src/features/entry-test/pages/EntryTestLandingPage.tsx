@@ -12,17 +12,35 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { normalizeApiError } from "@/lib/error-normalizer";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 
 import { CareerPreferenceWizard } from "../components/CareerPreferenceWizard";
 import { EntryTestStartDialog } from "../components/EntryTestStartDialog";
+import { ScoreRing } from "../components/ScoreRing";
 import { useCareerPreference, useCareerPreferenceExists } from "../hooks/useCareerPreference";
 import { useCompetency, useStartEntryTest } from "../hooks/useEntryTestAttempt";
 import type { EntryTestDraftV1 } from "../types/entry-test.types";
 import { getActiveAttemptId, saveEntryTestDraft } from "../utils/entry-test-storage";
+
+const featureStyles = [
+  {
+    icon: ClipboardCheck,
+    surface: "bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400",
+  },
+  {
+    icon: Route,
+    surface: "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400",
+  },
+  {
+    icon: Code2,
+    surface: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400",
+  },
+] as const;
 
 export function EntryTestLandingPage() {
   const { t } = useTranslation();
@@ -78,151 +96,217 @@ export function EntryTestLandingPage() {
 
   if (exists.isLoading)
     return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
+      <section className="flex h-full flex-col overflow-y-auto bg-slate-50 dark:bg-transparent">
+        <div className="px-5 py-6 md:px-8">
+          <Skeleton className="h-36 w-full rounded-[20px]" />
+        </div>
+        <div className="grid gap-6 px-5 pb-8 md:px-8 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,0.6fr)]">
+          <Skeleton className="h-80 rounded-xl" />
+          <Skeleton className="h-80 rounded-xl" />
+        </div>
+      </section>
     );
 
+  const featureContent = [
+    {
+      title: t("entryTestLanding.features.foundation.title"),
+      description: t("entryTestLanding.features.foundation.description"),
+    },
+    {
+      title: t("entryTestLanding.features.direction.title"),
+      description: t("entryTestLanding.features.direction.description"),
+    },
+    {
+      title: t("entryTestLanding.features.coding.title"),
+      description: t("entryTestLanding.features.coding.description"),
+    },
+  ];
+  const primaryAction = activeAttemptId
+    ? {
+        label: t("entryTestLanding.continueAttempt"),
+        icon: RefreshCw,
+        onClick: () => navigate(`/user/entry-test/session/${activeAttemptId}`),
+      }
+    : {
+        label: preference.data?.targetRole
+          ? t("entryTestLanding.start")
+          : t("entryTestLanding.chooseDirection"),
+        icon: ArrowRight,
+        onClick: () => (preference.data?.targetRole ? setStartOpen(true) : setWizardOpen(true)),
+      };
+  const PrimaryActionIcon = primaryAction.icon;
+
   return (
-    <main className="-m-0 flex min-h-full flex-col bg-slate-50 p-5 sm:p-6 md:px-8 dark:bg-slate-950">
-      <section className="mx-auto w-full max-w-6xl">
-        <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
-          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
-            <div className="flex min-w-0 items-start gap-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm shadow-indigo-500/25">
-                <BrainCircuit className="h-6 w-6" />
-              </span>
-              <div className="min-w-0">
+    <section className="flex h-full flex-col overflow-y-auto bg-slate-50 dark:bg-transparent">
+      <div className="shrink-0 px-5 py-6 md:px-8">
+        <div className="w-full rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                   {t("entryTestLanding.title")}
                 </h1>
-                <p className="mt-1 max-w-2xl text-[15px] leading-6 text-slate-500 dark:text-slate-400">
-                  {t("entryTestLanding.description")}
+                {competency.data && (
+                  <Badge className="border-0 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/15 dark:bg-emerald-500/10 dark:text-emerald-300">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {t("entryTestLanding.assessed")}
+                  </Badge>
+                )}
+              </div>
+              <p className="mt-1 max-w-3xl text-[15px] leading-6 text-slate-500 dark:text-slate-400">
+                {t("entryTestLanding.description")}
+              </p>
+            </div>
+            <Button
+              className="h-11 shrink-0 rounded-[10px] bg-indigo-600 px-5 font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700"
+              onClick={primaryAction.onClick}>
+              {activeAttemptId && <PrimaryActionIcon className="h-4 w-4" />}
+              {primaryAction.label}
+              {!activeAttemptId && <PrimaryActionIcon className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid w-full min-w-0 gap-6 px-5 pb-8 md:px-8 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,0.6fr)]">
+        <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+          <div className="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+                <BrainCircuit className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                  {t("entryTestLanding.contentsTitle")}
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  {t("entryTestLanding.contentsDescription")}
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {competency.data && (
-                <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-                  <CheckCircle2 className="h-4 w-4" /> {t("entryTestLanding.assessed")}
-                </span>
-              )}
-              {activeAttemptId && (
-                <Button
-                  variant="outline"
-                  className="h-10 rounded-xl"
-                  onClick={() => navigate(`/user/entry-test/session/${activeAttemptId}`)}>
-                  <RefreshCw className="h-4 w-4" /> {t("entryTestLanding.continueAttempt")}
-                </Button>
-              )}
-              <Button
-                className="h-10 rounded-xl bg-indigo-600 px-5 font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700"
-                onClick={() =>
-                  preference.data?.targetRole ? setStartOpen(true) : setWizardOpen(true)
-                }>
-                {preference.data?.targetRole
-                  ? t("entryTestLanding.start")
-                  : t("entryTestLanding.chooseDirection")}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-3">
+            {featureContent.map((feature, index) => {
+              const style = featureStyles[index];
+              const Icon = style.icon;
+              return (
+                <div
+                  key={feature.title}
+                  className={cn(
+                    "relative min-w-0 px-5 py-6",
+                    index > 0 &&
+                      "border-t border-slate-100 sm:border-t-0 sm:border-l dark:border-slate-800"
+                  )}>
+                  <div className="flex items-start justify-between gap-4">
+                    <span
+                      className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                        style.surface
+                      )}>
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-300 dark:text-slate-600">
+                      0{index + 1}
+                    </span>
+                  </div>
+                  <h3 className="mt-5 text-sm font-bold text-slate-900 dark:text-white">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                    {feature.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {t("entryTestLanding.contentsTitle")}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                {t("entryTestLanding.contentsDescription")}
-              </p>
-            </div>
-            <div className="divide-y divide-slate-200 dark:divide-slate-800">
-              <Feature
-                icon={ClipboardCheck}
-                title={t("entryTestLanding.features.foundation.title")}
-                text={t("entryTestLanding.features.foundation.description")}
-              />
-              <Feature
-                icon={Route}
-                title={t("entryTestLanding.features.direction.title")}
-                text={t("entryTestLanding.features.direction.description")}
-              />
-              <Feature
-                icon={Code2}
-                title={t("entryTestLanding.features.coding.title")}
-                text={t("entryTestLanding.features.coding.description")}
-              />
-            </div>
-          </section>
-
-          <aside className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+        <aside className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+          <div className="px-5 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 {t("entryTestLanding.profileTitle")}
               </h2>
+              {competency.data && (
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  {t("entryTestLanding.latestResult")}
+                </span>
+              )}
             </div>
-            <div className="px-6 py-5">
-              {competency.data ? (
-                <>
-                  <div className="flex items-center gap-2 text-emerald-600">
-                    <CheckCircle2 className="h-5 w-5" />
-                    <span className="text-sm font-semibold">
-                      {t("entryTestLanding.latestResult")}
-                    </span>
-                  </div>
-                  <p className="mt-4 text-3xl font-bold text-slate-950 dark:text-white">
-                    {competency.data.currentScore}
-                    <span className="text-base font-medium text-slate-400"> / 100</span>
+
+            {competency.data ? (
+              <div className="mt-4 flex items-center gap-4 rounded-xl bg-slate-50 p-4 dark:bg-slate-950/50">
+                <ScoreRing
+                  value={competency.data.currentScore}
+                  label={t("entryTestResult.totalScore")}
+                  size="md"
+                />
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {t("entryTestResult.currentLevel")}
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {t("entryTestLanding.level", { level: competency.data.currentLevel })}
+                  <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">
+                    {t(`entryTestOnboarding.levelLabels.${competency.data.currentLevel}`)}
                   </p>
-                  <Button
-                    variant="outline"
-                    className="mt-5 w-full rounded-xl"
+                  <button
+                    type="button"
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                     onClick={() =>
                       navigate(`/user/entry-test/result/${competency.data.lastEntryTestAttemptId}`)
                     }>
                     {t("entryTestLanding.viewResult")}
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {t("entryTestLanding.noAssessment")}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">
-                    {t("entryTestLanding.noAssessmentDescription")}
-                  </p>
-                </>
-              )}
-            </div>
-            {preference.data?.targetRole && (
-              <div className="border-t border-slate-200 px-6 py-5 dark:border-slate-800">
-                <span className="text-xs font-semibold text-slate-500">
-                  {t("entryTestLanding.currentDirection")}
-                </span>
-                <p className="mt-1 text-sm font-semibold break-words text-slate-900 dark:text-white">
-                  {t(`entryTestOnboarding.roleLabels.${preference.data.targetRole}`)} ·{" "}
-                  {(preference.data.languagesJson ?? [])
-                    .map((skill) => skill.replaceAll("_", " "))
-                    .join(", ") || t("entryTestLanding.noSkills")}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 rounded-xl border border-dashed border-slate-200 p-4 dark:border-slate-700">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {t("entryTestLanding.noAssessment")}
                 </p>
+                <p className="mt-1.5 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                  {t("entryTestLanding.noAssessmentDescription")}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {preference.data?.targetRole && (
+            <div className="border-t border-slate-100 px-5 py-4 dark:border-slate-800">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {t("entryTestLanding.currentDirection")}
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                    {t(`entryTestOnboarding.roleLabels.${preference.data.targetRole}`)}
+                  </p>
+                </div>
                 <Button
-                  variant="link"
-                  className="mt-2 h-auto p-0 text-sm font-semibold text-indigo-600"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 shrink-0 rounded-lg px-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400"
                   onClick={() => setWizardOpen(true)}>
                   {t("entryTestLanding.updateDirection")}
                 </Button>
               </div>
-            )}
-          </aside>
-        </div>
-      </section>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {(preference.data.languagesJson ?? []).length > 0 ? (
+                  preference.data.languagesJson?.map((skill) => (
+                    <Badge key={skill} variant="secondary" className="rounded-md text-[11px]">
+                      {skill.replaceAll("_", " ")}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-xs text-slate-500">{t("entryTestLanding.noSkills")}</span>
+                )}
+              </div>
+            </div>
+          )}
+        </aside>
+      </div>
+
       <CareerPreferenceWizard
         open={wizardOpen}
         initialPreference={preference.data}
@@ -238,20 +322,6 @@ export function EntryTestLandingPage() {
         onOpenChange={setStartOpen}
         onConfirm={handleStart}
       />
-    </main>
-  );
-}
-
-function Feature({ icon: Icon, title, text }: { icon: typeof Code2; title: string; text: string }) {
-  return (
-    <div className="flex gap-4 px-6 py-5">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="min-w-0">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
-        <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{text}</p>
-      </div>
-    </div>
+    </section>
   );
 }

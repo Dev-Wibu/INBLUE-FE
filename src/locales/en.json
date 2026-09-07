@@ -8305,6 +8305,16 @@
     "unranked": "Not ranked",
     "totalScore": "Total score",
     "currentLevel": "Current level",
+    "strongestArea": "Top strength",
+    "developmentPriority": "Development priority",
+    "chartTitle": "Competency chart",
+    "chartDescription": "Compare your result across assessment areas.",
+    "scoreRange": "SCORE RANGE 0–100",
+    "chartSections": {
+      "common": "Core",
+      "specific": "Role skills",
+      "coding": "Coding"
+    },
     "breakdownTitle": "Section breakdown",
     "breakdownDescription": "Your score compared with the maximum score for each assessment section.",
     "sectionCount": "{{count}} sections",
@@ -8555,6 +8565,7 @@
     "eyebrow": "CAREER DIRECTION ASSESSMENT · ATTEMPT #{{id}}",
     "title": "Career direction assessment",
     "emptyDescription": "The assessment configuration returned no questions. Your draft has not been deleted.",
-    "back": "Back to career direction"
+    "back": "Back to career direction",
+    "codeSnippet": "Code snippet"
   }
 }

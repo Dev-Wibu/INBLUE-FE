@@ -37,6 +37,7 @@ import { useAuthStore } from "@/stores/authStore";
 
 import { entryTestManager } from "../api/entry-test.manager";
 import { CodingRunResult } from "../components/CodingRunResult";
+import { QuestionContent } from "../components/QuestionContent";
 import { SubmitConfirmDialog } from "../components/SubmitConfirmDialog";
 import {
   useEntryTestResult,
@@ -540,6 +541,8 @@ function QuizPanel({
   value?: string;
   onChange: (_value: string) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="mx-auto max-w-3xl p-5 md:p-8">
       <div className="mb-5 flex items-center gap-2 text-xs font-medium text-slate-500">
@@ -548,9 +551,7 @@ function QuizPanel({
         <span>·</span>
         <span>{question.maxScore} điểm</span>
       </div>
-      <h2 className="text-lg leading-7 font-semibold text-slate-950 md:text-xl dark:text-white">
-        {question.questionText}
-      </h2>
+      <QuestionContent text={question.questionText} codeLabel={t("entryTestSession.codeSnippet")} />
       <div className="mt-6 space-y-2.5">
         {question.options.map((option, index) => {
           const key = String.fromCharCode(65 + index);

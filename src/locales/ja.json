@@ -8304,6 +8304,16 @@
     "unranked": "未判定",
     "totalScore": "合計点",
     "currentLevel": "現在のレベル",
+    "strongestArea": "最も高い評価",
+    "developmentPriority": "優先して伸ばす領域",
+    "chartTitle": "能力チャート",
+    "chartDescription": "評価分野ごとの結果を比較します。",
+    "scoreRange": "スコア範囲 0–100",
+    "chartSections": {
+      "common": "基礎",
+      "specific": "専門",
+      "coding": "コーディング"
+    },
     "breakdownTitle": "セクション別の詳細",
     "breakdownDescription": "各評価セクションの満点に対する得点です。",
     "sectionCount": "{{count}}セクション",
@@ -8543,6 +8553,7 @@
     "eyebrow": "キャリアアセスメント · 受験 #{{id}}",
     "title": "キャリアアセスメント",
     "emptyDescription": "アセスメント設定から問題が返されませんでした。下書きは削除されていません。",
-    "back": "キャリア設計に戻る"
+    "back": "キャリア設計に戻る",
+    "codeSnippet": "コードスニペット"
   }
 }

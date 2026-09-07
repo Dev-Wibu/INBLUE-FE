@@ -8305,6 +8305,16 @@
     "unranked": "Chưa xếp hạng",
     "totalScore": "Tổng điểm",
     "currentLevel": "Cấp độ hiện tại",
+    "strongestArea": "Điểm nổi bật",
+    "developmentPriority": "Ưu tiên phát triển",
+    "chartTitle": "Biểu đồ năng lực",
+    "chartDescription": "Tương quan kết quả giữa các nhóm nội dung đánh giá.",
+    "scoreRange": "THANG ĐIỂM 0–100",
+    "chartSections": {
+      "common": "Nền tảng",
+      "specific": "Chuyên môn",
+      "coding": "Lập trình"
+    },
     "breakdownTitle": "Chi tiết theo phần",
     "breakdownDescription": "Điểm đạt được trên tổng điểm của từng nội dung đánh giá.",
     "sectionCount": "{{count}} phần",
@@ -8555,6 +8565,7 @@
     "eyebrow": "BÀI ĐÁNH GIÁ ĐỊNH HƯỚNG · BÀI #{{id}}",
     "title": "Bài đánh giá định hướng",
     "emptyDescription": "Cấu hình bài đánh giá không trả về câu hỏi nào. Bản nháp chưa bị xóa.",
-    "back": "Quay lại trang định hướng năng lực"
+    "back": "Quay lại trang định hướng năng lực",
+    "codeSnippet": "Đoạn mã"
   }
 }
