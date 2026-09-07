@@ -29,8 +29,15 @@ export function useUpsertCareerPreference() {
   return useMutation({
     mutationFn: (body: UpsertCareerPreferenceBody) => entryTestManager.upsertPreference(body),
     retry: false,
-    onSuccess: (preference) => {
-      queryClient.setQueryData(entryTestKeys.preference(), preference);
+    onSuccess: (preference, variables) => {
+      const mergedPreference = {
+        ...preference,
+        targetRole: preference.targetRole ?? variables.targetRole,
+        languagesJson: preference.languagesJson ?? variables.languagesJson,
+        careerGoal: preference.careerGoal ?? variables.careerGoal,
+        targetLevel: preference.targetLevel ?? variables.targetLevel,
+      };
+      queryClient.setQueryData(entryTestKeys.preference(), mergedPreference);
       queryClient.setQueryData(entryTestKeys.preferenceExists(), true);
     },
   });

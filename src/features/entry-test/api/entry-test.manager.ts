@@ -16,12 +16,35 @@ function requireData<T>(response: { data?: T }): T {
   return response.data;
 }
 
+function normalizePreference(value: unknown): UserCareerPreference {
+  const record = (value ?? {}) as Record<string, unknown>;
+  const languages =
+    record.languagesJson ?? record.languages ?? record.skills ?? record.selectedLanguagesJson;
+  const normalizedLanguages =
+    typeof languages === "string"
+      ? (() => {
+          try {
+            const parsed = JSON.parse(languages) as unknown;
+            return Array.isArray(parsed) ? parsed : [languages];
+          } catch {
+            return languages ? [languages] : [];
+          }
+        })()
+      : languages;
+  return {
+    ...(record as unknown as UserCareerPreference),
+    languagesJson: Array.isArray(normalizedLanguages)
+      ? normalizedLanguages.filter((item): item is string => typeof item === "string")
+      : null,
+  };
+}
+
 export const entryTestManager = {
   async hasPreference() {
     return requireData(await fetchClient.GET("/api/me/career-preference/exists"));
   },
   async getPreference() {
-    return requireData(await fetchClient.GET("/api/me/career-preference")) as UserCareerPreference;
+    return normalizePreference(requireData(await fetchClient.GET("/api/me/career-preference")));
   },
   async upsertPreference(body: UpsertCareerPreferenceBody) {
     const requestBody = {
@@ -30,14 +53,14 @@ export const entryTestManager = {
       careerGoal: body.careerGoal ?? undefined,
       targetLevel: body.targetLevel ?? undefined,
     };
-    return requireData(
-      await fetchClient.PUT("/api/me/career-preference", { body: requestBody })
-    ) as UserCareerPreference;
+    return normalizePreference(
+      requireData(await fetchClient.PUT("/api/me/career-preference", { body: requestBody }))
+    );
   },
   async skipPreference() {
-    return requireData(
-      await fetchClient.POST("/api/me/career-preference/skip")
-    ) as UserCareerPreference;
+    return normalizePreference(
+      requireData(await fetchClient.POST("/api/me/career-preference/skip"))
+    );
   },
   async start() {
     return requireData(await fetchClient.POST("/api/entry-tests/start")) as EntryTestStartResponse;
