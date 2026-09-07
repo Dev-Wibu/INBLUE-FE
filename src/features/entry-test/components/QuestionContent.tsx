@@ -12,7 +12,7 @@ export function QuestionContent({ text, codeLabel }: { text: string; codeLabel: 
         segment.type === "code" ? (
           <div
             key={`${segment.type}-${index}`}
-            className="overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950 shadow-sm dark:border-slate-700 dark:bg-[#070b14]">
+            className="overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950 shadow-sm dark:border-slate-700 dark:bg-slate-950">
             <div className="flex h-9 items-center justify-between border-b border-slate-800 bg-slate-900 px-3.5">
               <span className="flex items-center gap-2 text-[11px] font-semibold text-slate-300">
                 <Code2 className="h-3.5 w-3.5 text-indigo-400" />

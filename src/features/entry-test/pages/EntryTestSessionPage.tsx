@@ -64,12 +64,6 @@ type RunnerItem =
   | { kind: "quiz"; section: EntryTestSectionType; data: EntryTestQuestion }
   | { kind: "coding"; section: "SPECIFIC_CODING"; data: EntryTestCodingItem };
 
-const sectionLabels: Record<EntryTestSectionType, string> = {
-  COMMON_QUIZ: "Kiến thức chung",
-  SPECIFIC_QUIZ: "Kiến thức chuyên môn",
-  SPECIFIC_CODING: "Lập trình",
-};
-
 export function EntryTestSessionPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -166,15 +160,12 @@ export function EntryTestSessionPage() {
       } catch {
         /* Keep the local draft until result verification is possible. */
       }
-      const normalized = normalizeApiError(
-        error,
-        "Chưa thể xác nhận trạng thái nộp bài. Bản nháp vẫn được giữ lại."
-      );
+      const normalized = normalizeApiError(error, t("entryTestSession.submitStatusUnknown"));
       toast.error(normalized.message);
       submitLock.current = false;
       setExpired(false);
     }
-  }, [attemptId, codingItems, latestDraftRef, navigate, questionItems, submit, userId]);
+  }, [attemptId, codingItems, latestDraftRef, navigate, questionItems, submit, t, userId]);
 
   const onExpire = useCallback(() => {
     setExpired(true);
@@ -189,8 +180,8 @@ export function EntryTestSessionPage() {
   if (!Number.isSafeInteger(attemptId) || !Number.isSafeInteger(userId))
     return (
       <RecoveryMessage
-        title="Phiên làm bài không hợp lệ"
-        description="Không thể xác định người dùng hoặc mã bài làm."
+        title={t("entryTestSession.invalidSessionTitle")}
+        description={t("entryTestSession.invalidSessionDescription")}
         onBack={() => navigate("/user/entry-test")}
       />
     );
@@ -204,11 +195,11 @@ export function EntryTestSessionPage() {
   if (!draft)
     return (
       <RecoveryMessage
-        title="Không tìm thấy bản nháp trên thiết bị này"
+        title={t("entryTestSession.draftNotFoundTitle")}
         description={
           remoteAttempt.data?.status === "IN_PROGRESS"
-            ? "Backend xác nhận bài vẫn đang làm, nhưng API hiện chưa cung cấp đủ thời lượng để khôi phục đồng hồ an toàn. Hãy quay lại trên trình duyệt đã bắt đầu bài."
-            : "Bài làm đã hết hạn hoặc không thuộc tài khoản hiện tại."
+            ? t("entryTestSession.draftNotRestorableDescription")
+            : t("entryTestSession.draftExpiredDescription")
         }
         onBack={() => navigate("/user/entry-test")}
       />
@@ -216,7 +207,7 @@ export function EntryTestSessionPage() {
   if (items.length === 0)
     return (
       <RecoveryMessage
-        title="Đề thi chưa có nội dung"
+        title={t("entryTestSession.emptyTitle")}
         description={t("entryTestSession.emptyDescription")}
         onBack={() => navigate("/user/entry-test")}
       />
@@ -305,10 +296,10 @@ export function EntryTestSessionPage() {
               await runCode.mutateAsync({ itemId: current.data.itemId, language, sourceCode })
             );
           } catch (error) {
-            const normalized = normalizeApiError(error, "Không thể chạy code lúc này.");
+            const normalized = normalizeApiError(error, t("entryTestSession.runCodeError"));
             toast.error(
               (error as { status?: number }).status === 502
-                ? "Sandbox đang tạm gián đoạn. Mã nguồn của bạn vẫn được giữ nguyên."
+                ? t("entryTestSession.sandboxUnavailable")
                 : normalized.message
             );
           }
@@ -337,7 +328,7 @@ export function EntryTestSessionPage() {
             {formatRemainingTime(remainingMs)}
           </div>
           <Button onClick={() => setSubmitOpen(true)} disabled={submit.isPending}>
-            <Send className="h-4 w-4" /> Nộp bài
+            <Send className="h-4 w-4" /> {t("entryTestSession.submit")}
           </Button>
         </div>
       </header>
@@ -361,7 +352,7 @@ export function EntryTestSessionPage() {
         <div
           role="separator"
           aria-orientation="vertical"
-          aria-label="Thay đổi độ rộng danh sách câu hỏi"
+          aria-label={t("entryTestSession.resizeQuestionList")}
           onMouseDown={startNavigatorResize}
           className="group relative z-10 flex w-2 shrink-0 cursor-col-resize items-center justify-center bg-slate-100 transition-colors hover:bg-indigo-100 dark:bg-slate-800 dark:hover:bg-indigo-950/60">
           <span className="flex h-8 w-4 items-center justify-center rounded-md bg-slate-200 text-slate-400 shadow-sm group-hover:bg-indigo-200 group-hover:text-indigo-600 dark:bg-slate-700 dark:group-hover:bg-indigo-900 dark:group-hover:text-indigo-300">
@@ -374,13 +365,25 @@ export function EntryTestSessionPage() {
       <div className="flex min-h-0 flex-1 flex-col lg:hidden">
         <div className="grid shrink-0 grid-cols-3 border-b border-slate-200 bg-white p-1.5 dark:border-slate-800 dark:bg-slate-900">
           {[
-            { id: "questions" as const, label: "Câu hỏi", icon: ListChecks },
+            {
+              id: "questions" as const,
+              label: t("entryTestSession.questions"),
+              icon: ListChecks,
+            },
             {
               id: "problem" as const,
-              label: current.kind === "coding" ? "Đề bài" : "Nội dung",
+              label:
+                current.kind === "coding"
+                  ? t("entryTestSession.problem")
+                  : t("entryTestSession.content"),
               icon: FileQuestion,
             },
-            { id: "code" as const, label: "Code", icon: Play, hidden: current.kind !== "coding" },
+            {
+              id: "code" as const,
+              label: t("entryTestSession.code"),
+              icon: Play,
+              hidden: current.kind !== "coding",
+            },
           ].map(({ id, label, icon: Icon, hidden }) => (
             <button
               key={id}
@@ -413,20 +416,20 @@ export function EntryTestSessionPage() {
       </div>
       <footer className="flex shrink-0 items-center justify-between border-t border-slate-200 bg-white px-4 py-3 md:px-6 dark:border-slate-800 dark:bg-slate-900">
         <span className="text-xs text-slate-500">
-          Đã trả lời {answeredCount}/{items.length} mục
+          {t("entryTestSession.answeredCount", { answered: answeredCount, total: items.length })}
         </span>
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={() => setCurrent(currentIndex - 1)}
             disabled={currentIndex === 0}>
-            <ArrowLeft className="h-4 w-4" /> Trước
+            <ArrowLeft className="h-4 w-4" /> {t("entryTestSession.previous")}
           </Button>
           <Button
             variant="outline"
             onClick={() => setCurrent(currentIndex + 1)}
             disabled={currentIndex === items.length - 1}>
-            Tiếp <ArrowRight className="h-4 w-4" />
+            {t("entryTestSession.next")} <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </footer>
@@ -457,6 +460,7 @@ function QuestionNavigator({
   onSelect: (_index: number) => void;
   onToggle?: () => void;
 }) {
+  const { t } = useTranslation();
   const sections = Array.from(new Set(items.map((item) => item.section)));
   return (
     <div className="flex h-full min-h-0 flex-col bg-white dark:bg-slate-900">
@@ -467,14 +471,20 @@ function QuestionNavigator({
             compact ? "justify-center" : "justify-between"
           )}>
           {!compact && (
-            <span className="text-xs font-semibold text-slate-500">Danh sách câu hỏi</span>
+            <span className="text-xs font-semibold text-slate-500">
+              {t("entryTestSession.questionList")}
+            </span>
           )}
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
             onClick={onToggle}
-            title={compact ? "Mở rộng danh sách" : "Thu gọn danh sách"}>
+            title={
+              compact
+                ? t("entryTestSession.expandQuestionList")
+                : t("entryTestSession.collapseQuestionList")
+            }>
             {compact ? (
               <PanelLeftOpen className="h-4 w-4" />
             ) : (
@@ -487,7 +497,9 @@ function QuestionNavigator({
         {sections.map((section) => (
           <div key={section} className={compact ? "mb-3" : "mb-5"}>
             {!compact && (
-              <p className="mb-2 text-[11px] font-bold text-slate-500">{sectionLabels[section]}</p>
+              <p className="mb-2 text-[11px] font-bold text-slate-500">
+                {t(`entryTestSession.sectionLabels.${section}`)}
+              </p>
             )}
             <div
               className={cn(
@@ -507,7 +519,7 @@ function QuestionNavigator({
                     key={item.data.itemId}
                     type="button"
                     onClick={() => onSelect(index)}
-                    aria-label={`Mở mục ${index + 1}`}
+                    aria-label={t("entryTestSession.openItem", { number: index + 1 })}
                     className={cn(
                       "flex h-11 min-w-0 items-center justify-center rounded-lg border text-xs font-semibold transition-colors",
                       index === currentIndex
@@ -547,9 +559,9 @@ function QuizPanel({
     <div className="mx-auto max-w-3xl p-5 md:p-8">
       <div className="mb-5 flex items-center gap-2 text-xs font-medium text-slate-500">
         <FileQuestion className="h-4 w-4" />
-        <span>{question.categoryName ?? "Câu hỏi"}</span>
+        <span>{question.categoryName ?? t("entryTestSession.question")}</span>
         <span>·</span>
-        <span>{question.maxScore} điểm</span>
+        <span>{t("entryTestSession.points", { count: question.maxScore })}</span>
       </div>
       <QuestionContent text={question.questionText} codeLabel={t("entryTestSession.codeSnippet")} />
       <div className="mt-6 space-y-2.5">
@@ -604,6 +616,7 @@ function CodingPanel({
   onDraftChange: (_value: { language: CompilerLanguage; sourceCode: string[] }) => void;
   onRun: (_language: CompilerLanguage, _sourceCode: string[]) => void;
 }) {
+  const { t } = useTranslation();
   const languages = Object.keys(item.codeStubs) as CompilerLanguage[];
   const language = draft?.language ?? languages[0] ?? "JAVA";
   const sourceCode = draft?.sourceCode ?? editorTextToSourceLines(item.codeStubs[language] ?? "");
@@ -679,7 +692,7 @@ function CodingPanel({
           </p>
           {item.rulesAndConstraints.length > 0 && (
             <div className="mt-6">
-              <h3 className="text-sm font-semibold">Ràng buộc</h3>
+              <h3 className="text-sm font-semibold">{t("entryTestSession.constraints")}</h3>
               <ul className="mt-2 space-y-1.5 text-sm text-slate-600 dark:text-slate-400">
                 {item.rulesAndConstraints.map((rule) => (
                   <li key={rule}>• {rule}</li>
@@ -688,17 +701,19 @@ function CodingPanel({
             </div>
           )}
           <div className="mt-6">
-            <h3 className="text-sm font-semibold">Ví dụ hiển thị</h3>
+            <h3 className="text-sm font-semibold">{t("entryTestSession.examples")}</h3>
             <div className="mt-2 space-y-3">
               {item.visibleExamples.map((example, index) => (
                 <div
                   key={index}
                   className="rounded-lg bg-slate-100 p-3 font-mono text-xs dark:bg-slate-950">
                   <p>
-                    <span className="text-slate-500">Input:</span> {example.inputs.join(", ")}
+                    <span className="text-slate-500">{t("entryTestSession.input")}:</span>{" "}
+                    {example.inputs.join(", ")}
                   </p>
                   <p className="mt-1">
-                    <span className="text-slate-500">Output:</span> {example.output}
+                    <span className="text-slate-500">{t("entryTestSession.output")}:</span>{" "}
+                    {example.output}
                   </p>
                   {example.explanation && (
                     <p className="mt-2 font-sans text-slate-500">{example.explanation}</p>
@@ -713,7 +728,7 @@ function CodingPanel({
         <div
           role="separator"
           aria-orientation="vertical"
-          aria-label="Thay đổi độ rộng đề bài và trình soạn thảo"
+          aria-label={t("entryTestSession.resizeProblemEditor")}
           onMouseDown={startProblemResize}
           className="group relative z-10 flex w-2 shrink-0 cursor-col-resize items-center justify-center border-x border-slate-200 bg-slate-100 transition-colors hover:bg-indigo-100 dark:border-slate-800 dark:bg-slate-800 dark:hover:bg-indigo-950/60">
           <span className="flex h-8 w-4 items-center justify-center rounded-md bg-slate-200 text-slate-400 shadow-sm group-hover:bg-indigo-200 group-hover:text-indigo-600 dark:bg-slate-700 dark:group-hover:bg-indigo-900 dark:group-hover:text-indigo-300">
@@ -724,13 +739,15 @@ function CodingPanel({
       {showCode && (
         <section
           ref={codePaneRef}
-          className="flex h-full min-h-0 min-w-0 flex-col bg-slate-950"
+          className="flex h-full min-h-0 min-w-0 flex-col bg-white dark:bg-slate-950"
           style={{ width: pane === "all" ? `${100 - problemWidth}%` : "100%" }}>
-          <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">
+          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-950">
             <Select
               value={language}
               onValueChange={(value) => selectLanguage(value as CompilerLanguage)}>
-              <SelectTrigger className="h-8 w-40 border-slate-700 bg-slate-900 text-xs text-slate-200">
+              <SelectTrigger
+                aria-label={t("entryTestSession.selectLanguage")}
+                className="h-8 w-40 border-slate-300 bg-white text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -751,7 +768,7 @@ function CodingPanel({
               ) : (
                 <Play className="h-4 w-4" />
               )}{" "}
-              Chạy thử
+              {t("entryTestSession.runTests")}
             </Button>
           </div>
           <div className="min-h-0 flex-1 overflow-hidden">
@@ -776,7 +793,7 @@ function CodingPanel({
           </div>
           {runResult && (
             <div
-              className="flex shrink-0 flex-col overflow-hidden border-t border-slate-800 bg-slate-950"
+              className="flex shrink-0 flex-col overflow-hidden border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
               style={{
                 height: resultCollapsed ? 50 : resultHeight,
                 maxHeight: resultCollapsed ? 50 : "70%",
@@ -784,11 +801,11 @@ function CodingPanel({
               <div
                 role="separator"
                 aria-orientation="horizontal"
-                aria-label="Thay đổi chiều cao kết quả chạy thử"
+                aria-label={t("entryTestSession.resizeRunResult")}
                 onMouseDown={startResultResize}
                 onDoubleClick={() => setResultCollapsed((value) => !value)}
-                className="group flex h-2 shrink-0 cursor-row-resize items-center justify-center bg-slate-900 hover:bg-indigo-950">
-                <GripHorizontal className="h-3.5 w-3.5 text-slate-600 group-hover:text-indigo-400" />
+                className="group flex h-2 shrink-0 cursor-row-resize items-center justify-center bg-slate-100 hover:bg-indigo-100 dark:bg-slate-900 dark:hover:bg-indigo-950">
+                <GripHorizontal className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 dark:text-slate-600 dark:group-hover:text-indigo-400" />
               </div>
               <div className="min-h-0 flex-1">
                 <CodingRunResult

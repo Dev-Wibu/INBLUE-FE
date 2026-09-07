@@ -25,12 +25,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { getEffectiveTheme, useThemeStore } from "@/stores/themeStore";
 
 import { ScoreRing } from "../components/ScoreRing";
 import { useCompetency, useEntryTestResult } from "../hooks/useEntryTestAttempt";
 
 export function EntryTestResultPage() {
   const { t, i18n } = useTranslation();
+  const theme = useThemeStore((state) => state.theme);
+  const isDark = getEffectiveTheme(theme) === "dark";
   const navigate = useNavigate();
   const attemptId = Number(useParams().id);
   const result = useEntryTestResult(Number.isSafeInteger(attemptId) ? attemptId : null);
@@ -201,7 +204,7 @@ export function EntryTestResultPage() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-5 lg:items-stretch">
-          <div className="overflow-hidden rounded-xl border border-indigo-200/80 bg-white shadow-xs lg:col-span-3 dark:border-indigo-500/20 dark:bg-[#0b1225] dark:shadow-none">
+          <div className="overflow-hidden rounded-xl border border-indigo-200/80 bg-white shadow-xs lg:col-span-3 dark:border-indigo-500/20 dark:bg-slate-900 dark:shadow-none">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-indigo-500/15">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
@@ -218,26 +221,31 @@ export function EntryTestResultPage() {
             <div className="h-[340px] min-w-0 px-2 py-3 sm:px-4">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={chartData} outerRadius="68%">
-                  <PolarGrid stroke="#cbd5e1" strokeOpacity={0.65} />
+                  <PolarGrid stroke={isDark ? "#334155" : "#cbd5e1"} strokeOpacity={0.65} />
                   <PolarRadiusAxis
                     angle={90}
                     domain={[0, 100]}
                     tickCount={5}
-                    tick={{ fill: "#64748b", fontSize: 9 }}
+                    tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 9 }}
                     axisLine={false}
                   />
                   <PolarAngleAxis
                     dataKey="subject"
-                    tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }}
+                    tick={{ fill: isDark ? "#cbd5e1" : "#64748b", fontSize: 11, fontWeight: 600 }}
                     tickLine={false}
                   />
                   <Radar
                     dataKey="score"
-                    stroke="#6366f1"
-                    fill="#6366f1"
+                    stroke={isDark ? "#818cf8" : "#4f46e5"}
+                    fill={isDark ? "#818cf8" : "#4f46e5"}
                     fillOpacity={0.3}
                     strokeWidth={2.5}
-                    dot={{ r: 4, fill: "#818cf8", stroke: "#4f46e5", strokeWidth: 2 }}
+                    dot={{
+                      r: 4,
+                      fill: isDark ? "#a5b4fc" : "#818cf8",
+                      stroke: isDark ? "#6366f1" : "#4f46e5",
+                      strokeWidth: 2,
+                    }}
                     isAnimationActive
                     animationDuration={900}
                   />
@@ -248,10 +256,10 @@ export function EntryTestResultPage() {
                       t("entryTestResult.totalScore"),
                     ]}
                     contentStyle={{
-                      backgroundColor: "#0f172a",
-                      border: "1px solid #334155",
+                      backgroundColor: isDark ? "#0f172a" : "#ffffff",
+                      border: `1px solid ${isDark ? "#334155" : "#cbd5e1"}`,
                       borderRadius: 8,
-                      color: "#e2e8f0",
+                      color: isDark ? "#e2e8f0" : "#0f172a",
                       fontSize: 12,
                     }}
                   />
@@ -309,7 +317,7 @@ export function EntryTestResultPage() {
                 );
               })}
             </div>
-            <p className="border-t border-slate-100 bg-slate-50/60 px-5 py-3 text-[11px] leading-5 text-slate-500 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-400">
+            <p className="border-t border-slate-100 bg-slate-50/60 px-5 py-3 text-[11px] leading-5 text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
               {t("entryTestResult.scoringNote")}
             </p>
           </div>
