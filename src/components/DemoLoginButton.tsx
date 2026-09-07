@@ -40,7 +40,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
     {
       role: "USER",
       email: "nha36978@gmail.com",
-      password: "123",
+      password: "12345",
       description: t("compDemologinbutton.userAccountToExperienceStudent"),
     },
     {
@@ -52,13 +52,13 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
     {
       role: "MENTOR",
       email: "b@fpt.com",
-      password: "12345678",
+      password: "12345",
       description: t("compDemologinbutton.mentorAccountToManageInterview"),
     },
     {
       role: "STAFF",
       email: "nhanquan@gmail.com",
-      password: "12345",
+      password: "12345678",
       description: t("compDemologinbutton.staffAccountToManageApplications"),
     },
   ];
