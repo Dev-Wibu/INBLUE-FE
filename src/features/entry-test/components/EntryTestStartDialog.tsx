@@ -25,13 +25,13 @@ export function EntryTestStartDialog({
   const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 overflow-hidden rounded-2xl border-slate-200 p-0 sm:max-w-lg dark:border-slate-800">
+      <DialogContent className="gap-0 overflow-hidden rounded-2xl border-slate-200 bg-white p-0 text-slate-950 sm:max-w-lg dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
         <div className="px-6 pt-6 pb-5">
           <DialogHeader>
             <DialogTitle>{t("entryTestStart.title")}</DialogTitle>
             <DialogDescription>{t("entryTestStart.description")}</DialogDescription>
           </DialogHeader>
-          <div className="mt-5 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
+          <div className="mt-5 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
             <Info
               icon={Clock3}
               title={t("entryTestStart.time.title")}
@@ -49,7 +49,7 @@ export function EntryTestStartDialog({
             />
           </div>
         </div>
-        <DialogFooter className="border-t border-slate-200 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/30">
+        <DialogFooter className="border-t border-slate-200 px-6 py-4 dark:border-slate-700">
           <Button
             className="rounded-xl"
             variant="outline"
@@ -72,10 +72,10 @@ export function EntryTestStartDialog({
 function Info({ icon: Icon, title, text }: { icon: typeof Clock3; title: string; text: string }) {
   return (
     <div className="flex gap-3 p-3">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-300" />
       <div>
         <p className="text-sm font-semibold">{title}</p>
-        <p className="mt-0.5 text-xs leading-5 text-slate-500">{text}</p>
+        <p className="mt-0.5 text-xs leading-5 text-slate-500 dark:text-slate-400">{text}</p>
       </div>
     </div>
   );

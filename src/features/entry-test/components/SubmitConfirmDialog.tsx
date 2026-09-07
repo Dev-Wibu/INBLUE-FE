@@ -29,7 +29,7 @@ export function SubmitConfirmDialog({
   const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden rounded-2xl border-slate-200 p-0 sm:max-w-md dark:border-slate-800">
+      <DialogContent className="overflow-hidden rounded-2xl border-slate-200 bg-white p-0 text-slate-950 sm:max-w-md dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
         <div className="px-6 pt-6 pb-5">
           <DialogHeader>
             <DialogTitle>
@@ -46,7 +46,7 @@ export function SubmitConfirmDialog({
             </div>
           )}
         </div>
-        <DialogFooter className="border-t border-slate-200 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/30">
+        <DialogFooter className="border-t border-slate-200 px-6 py-4 dark:border-slate-700">
           <Button
             className="rounded-xl"
             variant="outline"

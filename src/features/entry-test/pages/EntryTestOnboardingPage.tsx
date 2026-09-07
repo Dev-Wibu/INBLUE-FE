@@ -93,7 +93,7 @@ export function EntryTestOnboardingPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <LanguageToggle className="h-9 w-12 rounded-lg border border-slate-200 bg-white px-0 text-xs font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900" />
+            <LanguageToggle className="h-9 min-w-12 rounded-lg border border-slate-200 bg-white text-xs font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900" />
             <ThemeToggle iconOnly />
           </div>
         </div>
@@ -188,13 +188,10 @@ export function EntryTestOnboardingPage() {
                       </span>
                       <span>
                         <strong className="block pr-6 text-sm text-slate-900 dark:text-white">
-                          {t(`entryTestOnboarding.roleLabels.${item.value}`, item.label)}
+                          {t(`entryTestOnboarding.roleLabels.${item.value}`)}
                         </strong>
                         <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">
-                          {t(
-                            `entryTestOnboarding.roleDescriptions.${item.value}`,
-                            item.description
-                          )}
+                          {t(`entryTestOnboarding.roleDescriptions.${item.value}`)}
                         </span>
                       </span>
                       {role === item.value && (
@@ -253,7 +250,7 @@ export function EntryTestOnboardingPage() {
                           ? "border-indigo-600 bg-indigo-600 text-white shadow-sm shadow-indigo-500/20"
                           : "border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-700"
                       )}>
-                      {item.label}
+                      {t(`entryTestOnboarding.levelLabels.${item.value}`)}
                     </button>
                   ))}
                 </div>
@@ -285,7 +282,7 @@ export function EntryTestOnboardingPage() {
                   {[
                     [
                       t("entryTestOnboarding.direction"),
-                      entryTestRoles.find((item) => item.value === role)?.label,
+                      role ? t(`entryTestOnboarding.roleLabels.${role}`) : undefined,
                     ],
                     [
                       t("entryTestOnboarding.skills"),
@@ -293,8 +290,9 @@ export function EntryTestOnboardingPage() {
                     ],
                     [
                       t("entryTestOnboarding.levelTitle"),
-                      entryTestLevels.find((item) => item.value === level)?.label ??
-                        t("entryTestOnboarding.notDefined"),
+                      level
+                        ? t(`entryTestOnboarding.levelLabels.${level}`)
+                        : t("entryTestOnboarding.notDefined"),
                     ],
                   ].map(([label, value]) => (
                     <div
@@ -310,7 +308,7 @@ export function EntryTestOnboardingPage() {
               </Step>
             )}
           </div>
-          <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50/70 px-5 py-4 sm:px-8 lg:px-10 dark:border-slate-800 dark:bg-slate-950/30">
+          <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50/70 px-5 py-4 sm:px-8 lg:px-10 dark:border-slate-700 dark:bg-slate-900">
             <Button
               variant="ghost"
               className="rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
