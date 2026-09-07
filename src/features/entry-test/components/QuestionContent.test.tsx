@@ -24,4 +24,13 @@ describe("parseQuestionContent", () => {
       { type: "text", value: "What is dependency injection?" },
     ]);
   });
+
+  it("normalizes escaped newlines in backend code blocks", () => {
+    expect(
+      parseQuestionContent("Example:\n```java\\npublic class Main {\\n  return;\\n}\\n```")
+    ).toEqual([
+      { type: "text", value: "Example:" },
+      { type: "code", language: "JAVA", value: "public class Main {\n  return;\n}" },
+    ]);
+  });
 });
