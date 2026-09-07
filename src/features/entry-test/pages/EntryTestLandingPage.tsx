@@ -56,6 +56,7 @@ export function EntryTestLandingPage() {
     Boolean((location.state as { openStartDialog?: boolean } | null)?.openStartDialog)
   );
   const activeAttemptId = Number.isSafeInteger(userId) ? getActiveAttemptId(userId) : null;
+  const displayedSkills = preference.data?.languagesJson ?? competency.data?.languagesJson ?? [];
 
   const handleStart = async () => {
     if (!preference.data?.targetRole) {
@@ -128,9 +129,11 @@ export function EntryTestLandingPage() {
         onClick: () => navigate(`/user/entry-test/session/${activeAttemptId}`),
       }
     : {
-        label: preference.data?.targetRole
-          ? t("entryTestLanding.start")
-          : t("entryTestLanding.chooseDirection"),
+        label: preference.data?.needRetest
+          ? t("entryTestLanding.retake")
+          : preference.data?.targetRole
+            ? t("entryTestLanding.start")
+            : t("entryTestLanding.chooseDirection"),
         icon: ArrowRight,
         onClick: () => (preference.data?.targetRole ? setStartOpen(true) : setWizardOpen(true)),
       };
@@ -165,6 +168,19 @@ export function EntryTestLandingPage() {
               {!activeAttemptId && <PrimaryActionIcon className="h-4 w-4" />}
             </Button>
           </div>
+          {preference.data?.needRetest && (
+            <div className="mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/10">
+              <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
+              <div>
+                <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                  {t("entryTestLanding.retestRequiredTitle")}
+                </p>
+                <p className="mt-0.5 text-xs leading-5 text-amber-800/80 dark:text-amber-200/80">
+                  {t("entryTestLanding.retestRequiredDescription")}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -292,8 +308,8 @@ export function EntryTestLandingPage() {
                 </Button>
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {(preference.data.languagesJson ?? []).length > 0 ? (
-                  preference.data.languagesJson?.map((skill) => (
+                {displayedSkills.length > 0 ? (
+                  displayedSkills.map((skill) => (
                     <Badge key={skill} variant="secondary" className="rounded-md text-[11px]">
                       {skill.replaceAll("_", " ")}
                     </Badge>
@@ -313,7 +329,11 @@ export function EntryTestLandingPage() {
         onOpenChange={setWizardOpen}
         onSaved={(saved) => {
           setWizardOpen(false);
-          if (!saved.targetRole) toast.info(t("entryTestLanding.directionSkipped"));
+          if (!saved.targetRole) {
+            toast.info(t("entryTestLanding.directionSkipped"));
+          } else if (saved.needRetest) {
+            setStartOpen(true);
+          }
         }}
       />
       <EntryTestStartDialog

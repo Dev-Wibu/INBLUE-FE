@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Check, Code2, Compass, Flag, Target } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,15 @@ export function CareerPreferenceWizard({
   const skip = useSkipCareerPreference();
   const availableSkills = useMemo(() => (role ? entryTestSkillsByRole[role] : []), [role]);
 
+  useEffect(() => {
+    if (!open) return;
+    setStep(0);
+    setRole(initialPreference?.targetRole ?? null);
+    setSkills(initialPreference?.languagesJson ?? []);
+    setLevel(initialPreference?.targetLevel ?? null);
+    setGoal(initialPreference?.careerGoal ?? "");
+  }, [open, initialPreference]);
+
   const handleRole = (nextRole: TargetRole) => {
     setRole(nextRole);
     setSkills([]);
@@ -80,15 +89,15 @@ export function CareerPreferenceWizard({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "flex max-h-[calc(100vh-32px)] min-h-[min(720px,calc(100vh-32px))] flex-col gap-0 overflow-hidden rounded-[20px] border-slate-200 p-0 shadow-xl sm:max-w-4xl dark:border-slate-800",
+          "flex max-h-[calc(100vh-32px)] min-h-[min(720px,calc(100vh-32px))] flex-col gap-0 overflow-hidden rounded-2xl border-slate-200 bg-white p-0 text-slate-950 shadow-xl sm:max-w-4xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100",
           fullScreen &&
             "fixed inset-0 h-screen max-h-none min-h-0 w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 bg-slate-950 text-white sm:max-w-none"
         )}>
-        <div className="flex-none border-b border-slate-200 bg-slate-50/70 px-6 pt-6 pb-5 md:px-10 dark:border-slate-800 dark:bg-slate-950/30">
+        <div className="flex-none border-b border-slate-200 px-6 pt-6 pb-5 md:px-10 dark:border-slate-700">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3 text-xl">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm shadow-indigo-500/25">
-                <Compass className="h-5 w-5" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+                <Compass className="h-4 w-4" />
               </span>
               {t("entryTestWizard.title")}
             </DialogTitle>
@@ -146,17 +155,17 @@ export function CareerPreferenceWizard({
                     type="button"
                     onClick={() => handleRole(item.value)}
                     className={cn(
-                      "flex min-h-24 items-center gap-4 rounded-2xl border p-4 text-left transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
+                      "flex min-h-22 items-center gap-3 rounded-xl border p-3.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
                       role === item.value
-                        ? "border-indigo-500 bg-indigo-50 shadow-sm shadow-indigo-500/10 dark:bg-indigo-950/40"
-                        : "border-slate-200 hover:border-indigo-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-indigo-700 dark:hover:bg-slate-800/60"
+                        ? "border-indigo-500 bg-indigo-50/70 dark:bg-indigo-500/10"
+                        : "border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800/50"
                     )}>
                     <span
                       className={cn(
-                        "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                         role === item.value
                           ? "bg-indigo-600 text-white"
-                          : "bg-slate-100 text-slate-500 dark:bg-slate-800"
+                          : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
                       )}>
                       <Target className="h-4 w-4" />
                     </span>
@@ -283,7 +292,7 @@ export function CareerPreferenceWizard({
           )}
         </div>
 
-        <div className="flex flex-none flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-4 md:px-10 dark:border-slate-800 dark:bg-slate-950/30">
+        <div className="flex flex-none flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4 md:px-10 dark:border-slate-700">
           <Button
             variant="ghost"
             className="rounded-xl"
@@ -334,7 +343,7 @@ function ReviewRow({
   const { t } = useTranslation();
   return (
     <div className="flex items-start gap-3 px-4 py-3">
-      <Icon className="mt-0.5 h-4 w-4 text-indigo-600" />
+      <Icon className="mt-0.5 h-4 w-4 text-indigo-600 dark:text-indigo-300" />
       <div>
         <p className="text-xs font-medium text-slate-500">{label}</p>
         <p className="mt-0.5 text-sm font-semibold">
