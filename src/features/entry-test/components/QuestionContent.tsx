@@ -121,7 +121,7 @@ function highlightCode(code: string): ReactNode[] {
 function renderInlineCode(text: string): ReactNode[] {
   return text
     .replace(/\\"/g, '"')
-    .split(/(`[^`\n]+`|\*\*[^*\n]+\*\*|__[^_\n]+__|@\w+(?:\.\w+)*)/g)
+    .split(/(`[^`\n]+`|\*\*[^*\n]+\*\*|__[^_\n]+__|"[^"\n]+"|@\w+(?:\.\w+)*)/g)
     .map((part, index) => {
       if (part.startsWith("`") && part.endsWith("`")) {
         return (
@@ -139,6 +139,13 @@ function renderInlineCode(text: string): ReactNode[] {
         return (
           <strong key={index} className="font-bold text-slate-950 dark:text-white">
             {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      if (part.startsWith('"') && part.endsWith('"')) {
+        return (
+          <strong key={index} className="font-semibold text-indigo-700 dark:text-indigo-300">
+            {part}
           </strong>
         );
       }
