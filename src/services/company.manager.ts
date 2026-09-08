@@ -101,6 +101,7 @@ export interface JobDescription {
   location?: string;
   workType?: string;
   skills?: string[];
+  skillTags?: string[];
   rounds?: Round[];
   // Computed field for company detail page
   companyId?: number;
