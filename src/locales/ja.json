@@ -8155,6 +8155,16 @@
     "errorDescription": "データの読み込み中にエラーが発生しました。もう一度お試しください。",
     "retry": "再試行"
   },
+  "jobSkillTags": {
+    "label": "必要スキル",
+    "placeholder": "スキルを入力（例：React）",
+    "hint": "Enterキーまたはカンマでスキルを追加します。",
+    "add": "スキルを追加",
+    "remove": "{{skill}}を削除",
+    "currentTags": "現在のスキル一覧",
+    "more": "+{{count}}件のスキル",
+    "empty": "必要スキルはまだ登録されていません"
+  },
   "jobRecommendationThreshold": {
     "action": "おすすめ設定",
     "title": "最低適合度を設定",

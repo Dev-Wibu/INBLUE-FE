@@ -8156,6 +8156,16 @@
     "errorDescription": "Something went wrong while loading data. Please try again.",
     "retry": "Try again"
   },
+  "jobSkillTags": {
+    "label": "Required skills",
+    "placeholder": "Enter a skill, for example: React",
+    "hint": "Press Enter or comma to add a skill.",
+    "add": "Add skill",
+    "remove": "Remove {{skill}} skill",
+    "currentTags": "Current skill list",
+    "more": "+{{count}} skills",
+    "empty": "Required skills have not been updated"
+  },
   "jobRecommendationThreshold": {
     "action": "Recommendation settings",
     "title": "Set the minimum job fit",

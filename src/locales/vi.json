@@ -8156,6 +8156,16 @@
     "errorDescription": "Đã có lỗi khi tải dữ liệu. Vui lòng thử lại.",
     "retry": "Thử lại"
   },
+  "jobSkillTags": {
+    "label": "Kỹ năng yêu cầu",
+    "placeholder": "Nhập kỹ năng, ví dụ: React",
+    "hint": "Nhấn Enter hoặc dấu phẩy để thêm kỹ năng.",
+    "add": "Thêm kỹ năng",
+    "remove": "Xóa kỹ năng {{skill}}",
+    "currentTags": "Danh sách kỹ năng hiện tại",
+    "more": "+{{count}} kỹ năng",
+    "empty": "Chưa cập nhật kỹ năng yêu cầu"
+  },
   "jobRecommendationThreshold": {
     "action": "Thiết lập gợi ý việc làm",
     "title": "Thiết lập mức độ phù hợp",
