@@ -13,6 +13,13 @@ import {
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
+import {
+  EntryTestLandingPage,
+  EntryTestOnboardingPage,
+  EntryTestResultPage,
+  EntryTestSessionPage,
+  MandatoryEntryTestGuard,
+} from "@/features/entry-test";
 import { AdminDashboardPage } from "@/pages/Admin";
 import { ApplicationGradingDetailPage } from "@/pages/Admin/ApplicationGrading";
 import { AdminApplicationDetailPage } from "@/pages/Admin/ApplicationManagement/AdminApplicationDetailPage";
@@ -139,6 +146,7 @@ function App() {
         <Toaster />
         <BrowserRouter>
           <SessionExpiryGuard />
+          <MandatoryEntryTestGuard />
           <ScrollToTop />
           <PublicScrollToTopButton />
           <ScrollRestorationLegacy />
@@ -265,12 +273,16 @@ function App() {
                 <Route path="account" element={<AccountPage />} />
                 <Route path="account/change-password" element={<ChangePasswordPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="entry-test" element={<EntryTestLandingPage />} />
+                <Route path="entry-test/result/:id" element={<EntryTestResultPage />} />
               </Route>
             </Route>
 
             {/* Quiz page — full page, no sidebar, outside ChromeTabs shell */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+              <Route path="/user/entry-test/onboarding" element={<EntryTestOnboardingPage />} />
               <Route path="/user/quiz/:appId/round/:roundId" element={<ApplicationQuizPage />} />
+              <Route path="/user/entry-test/session/:id" element={<EntryTestSessionPage />} />
             </Route>
 
             {/* Home Feed Detail — full page, no sidebar (outside ChromeTabs shell).

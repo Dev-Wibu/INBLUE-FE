@@ -79,15 +79,33 @@ function renderAiFeedback(feedback: any, t: any) {
   }
 
   if (typeof content === "object" && content !== null) {
-    if (content.generalComment || content.strengths || content.weaknesses) {
+    if (
+      content.generalComment ||
+      content.overallFeedback ||
+      content.strengths ||
+      content.weaknesses ||
+      content.metricResults
+    ) {
       return (
         <div className="mt-1 space-y-1.5">
-          {content.generalComment && (
+          {(content.generalComment || content.overallFeedback) && (
             <p className="font-medium text-slate-700 dark:text-slate-300">
-              {typeof content.generalComment === "string"
-                ? content.generalComment
-                : JSON.stringify(content.generalComment)}
+              {content.overallFeedback || content.generalComment}
             </p>
+          )}
+          {Array.isArray(content.metricResults) && content.metricResults.length > 0 && (
+            <div className="space-y-1 text-slate-700 dark:text-slate-300">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {content.metricResults.map((metric: any, index: number) => (
+                <div key={`${metric.code || "metric"}-${index}`}>
+                  <strong>
+                    {metric.code || t("adminApplicationManagement.metric", "Tiêu chí")}:
+                  </strong>{" "}
+                  {formatScoreLabel("Điểm", metric.score) || "-"}
+                  {metric.feedback ? ` - ${metric.feedback}` : ""}
+                </div>
+              ))}
+            </div>
           )}
           {content.strengths &&
             Array.isArray(content.strengths) &&
@@ -490,12 +508,12 @@ export function ApplicationDetailDrawer({
 
                           {renderSubmissionSummary(round, t)}
 
-                          {round.aiFeedback && (
+                          {(round.structuredAiFeedback || round.aiFeedback) && (
                             <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
                               <strong className="text-slate-800 dark:text-slate-200">
                                 {t("adminApplicationManagement.aiEvaluation", "Đánh giá AI: ")}
                               </strong>
-                              {renderAiFeedback(round.aiFeedback, t)}
+                              {renderAiFeedback(round.structuredAiFeedback ?? round.aiFeedback, t)}
                             </div>
                           )}
 

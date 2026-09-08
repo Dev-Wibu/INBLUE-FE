@@ -3,10 +3,10 @@ import type { UIEvaluationPlan } from "./types";
 
 /** Creates a request-safe copy so editor state is never shared with an API payload. */
 export function toEvaluationPlanPayload(
-  evaluationPlan?: UIEvaluationPlan
-): UIEvaluationPlan | undefined {
+  evaluationPlan?: UIEvaluationPlan | null
+): UIEvaluationPlan | null {
   const normalizedPlan = normalizeEvaluationPlan(evaluationPlan);
-  if (!normalizedPlan) return undefined;
+  if (!normalizedPlan) return null;
 
   return {
     metrics: (normalizedPlan.metrics ?? []).map((metric) => ({

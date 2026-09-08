@@ -1,10 +1,11 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import CVUploadModal from "@/components/ui/cv-upload-modal";
 import { Progress } from "@/components/ui/progress";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { useMajorOptions } from "@/constants/majors";
+import { useCareerPreference } from "@/features/entry-test/hooks/useCareerPreference";
+import { useCompetency } from "@/features/entry-test/hooks/useEntryTestAttempt";
 import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { usersAdminManager } from "@/services";
@@ -61,6 +62,9 @@ export function AccountPage() {
   const { t } = useTranslation();
   const authUser = useAuthStore((state) => state.user);
   const authUserId = authUser?.id;
+  const hasValidUserId = Number.isFinite(Number(authUserId));
+  const careerPreference = useCareerPreference(hasValidUserId);
+  const competency = useCompetency(hasValidUserId);
   const { data: candidateProfileData } = useCandidateProfile(authUserId || 0);
   const candidateProfile = getLatestCandidateProfile(candidateProfileData);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -414,11 +418,73 @@ export function AccountPage() {
                       </span>
                     </div>
                   )}
-                  {candidateProfile?.targetLevel && (
-                    <div className="flex items-center justify-center gap-2 px-1 pt-1">
-                      <Badge variant="secondary" className="px-2 py-0.5 text-[11px] font-medium">
-                        {candidateProfile.targetLevel}
-                      </Badge>
+                  {(careerPreference.data?.targetRole || competency.data?.targetRole) && (
+                    <div className="mt-2 min-w-0 border-t border-slate-100 pt-3 text-left dark:border-slate-800/80">
+                      <p className="text-[10px] font-semibold text-slate-400 uppercase">
+                        {t("entryTestOnboarding.sidebar")}
+                      </p>
+                      <dl className="mt-2 space-y-2">
+                        {careerPreference.data?.targetRole && (
+                          <div className="grid min-w-0 grid-cols-[76px_minmax(0,1fr)] gap-2">
+                            <dt className="text-[11px] text-slate-500">
+                              {t("entryTestProfile.direction")}
+                            </dt>
+                            <dd className="min-w-0 text-right text-xs font-semibold break-words text-indigo-600 dark:text-indigo-300">
+                              {t(
+                                `entryTestOnboarding.roleLabels.${careerPreference.data.targetRole}`
+                              )}
+                            </dd>
+                          </div>
+                        )}
+                        <div className="grid min-w-0 grid-cols-[76px_minmax(0,1fr)] gap-2">
+                          <dt className="text-[11px] text-slate-500">
+                            {t("entryTestProfile.currentLevel")}
+                          </dt>
+                          <dd className="min-w-0 text-right text-xs font-semibold break-words text-slate-700 dark:text-slate-200">
+                            {competency.data
+                              ? `${t(`entryTestOnboarding.levelLabels.${competency.data.currentLevel}`)} · ${t(`entryTestOnboarding.roleLabels.${competency.data.targetRole}`)}`
+                              : t("entryTestProfile.notAssessed")}
+                          </dd>
+                        </div>
+                        {careerPreference.data?.targetLevel && (
+                          <div className="grid min-w-0 grid-cols-[76px_minmax(0,1fr)] gap-2">
+                            <dt className="text-[11px] text-slate-500">
+                              {t("entryTestProfile.targetLevel")}
+                            </dt>
+                            <dd className="min-w-0 text-right text-xs font-semibold text-slate-700 dark:text-slate-200">
+                              {t(
+                                `entryTestOnboarding.levelLabels.${careerPreference.data.targetLevel}`
+                              )}
+                            </dd>
+                          </div>
+                        )}
+                        <div className="grid min-w-0 grid-cols-[76px_minmax(0,1fr)] gap-2">
+                          <dt className="text-[11px] text-slate-500">
+                            {t("entryTestProfile.skills")}
+                          </dt>
+                          <dd className="flex min-w-0 flex-wrap justify-end gap-1">
+                            {(
+                              careerPreference.data?.languagesJson ??
+                              competency.data?.languagesJson ??
+                              []
+                            ).length > 0 ? (
+                              (
+                                careerPreference.data?.languagesJson ??
+                                competency.data?.languagesJson ??
+                                []
+                              ).map((skill) => (
+                                <span
+                                  key={skill}
+                                  className="max-w-full rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium break-words text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                  {skill.replaceAll("_", " ")}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-[11px] text-slate-400">—</span>
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
                     </div>
                   )}
                 </div>

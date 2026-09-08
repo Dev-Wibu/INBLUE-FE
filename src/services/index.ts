@@ -21,6 +21,7 @@ export * from "./chat.manager";
 export * from "./coding-problem.manager";
 export * from "./company.manager";
 export * from "./dashboard-admin.manager";
+export * from "./entry-test-admin.manager";
 export * from "./interview-analysis.manager";
 export * from "./interview-session.manager";
 export * from "./jd-purchase.manager";

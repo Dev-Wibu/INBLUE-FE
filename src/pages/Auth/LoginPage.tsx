@@ -62,7 +62,7 @@ export function LoginPage() {
 
       // USER role goes to landing page, other roles go to their dashboard
       const redirectPath =
-        payload.user.role?.toUpperCase() === "USER" ? "/" : getDashboardPath(payload.user.role);
+        payload.user.role?.toUpperCase() === "USER" ? "/user" : getDashboardPath(payload.user.role);
 
       // Build the user object first, then atomically commit to the store so
       // ProtectedRoute never sees isLoggedIn=true with user.role still null.

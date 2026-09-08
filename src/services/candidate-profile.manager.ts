@@ -12,18 +12,48 @@ import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type { CandidateProfile } from "@/interfaces";
 
 export function normalizeCandidateProfiles(data: unknown): CandidateProfile[] {
+  let profiles: CandidateProfile[];
   if (Array.isArray(data)) {
-    return data.filter((item): item is CandidateProfile => !!item && typeof item === "object");
+    profiles = data.filter((item): item is CandidateProfile => !!item && typeof item === "object");
+  } else {
+    if (!data || typeof data !== "object") return [];
+
+    const record = data as Record<string, unknown>;
+    if (Array.isArray(record.data)) {
+      profiles = normalizeCandidateProfiles(record.data);
+    } else {
+      profiles = "id" in record ? [record as CandidateProfile] : [];
+    }
   }
 
-  if (!data || typeof data !== "object") return [];
-
-  const record = data as Record<string, unknown>;
-  if (Array.isArray(record.data)) {
-    return normalizeCandidateProfiles(record.data);
+  // The API may expose historical profile versions with duplicated content.
+  // Keep the newest version for each identical profile so selectors stay usable.
+  const unique = new Map<string, CandidateProfile>();
+  for (const profile of profiles) {
+    const fingerprint = JSON.stringify({
+      userId: profile.user?.id,
+      targetRole: profile.targetRole,
+      targetLevel: profile.targetLevel,
+      introduction: profile.introduction,
+      technicalSkills: profile.technicalSkills,
+      softSkills: profile.softSkills,
+      tools: profile.tools,
+      certifications: profile.certifications,
+      achievements: profile.achievements,
+      projects: profile.projects,
+      workExperiences: profile.workExperiences,
+      educations: profile.educations,
+    });
+    const existing = unique.get(fingerprint);
+    if (!existing || getProfileTimestamp(profile) >= getProfileTimestamp(existing)) {
+      unique.set(fingerprint, profile);
+    }
   }
+  return [...unique.values()];
+}
 
-  return "id" in record ? [record as CandidateProfile] : [];
+function getProfileTimestamp(profile: CandidateProfile) {
+  return Date.parse(profile.updatedAt ?? profile.createdAt ?? "") || 0;
 }
 
 export function getLatestCandidateProfile(data: unknown): CandidateProfile | null {
@@ -31,9 +61,9 @@ export function getLatestCandidateProfile(data: unknown): CandidateProfile | nul
   if (profiles.length === 0) return null;
 
   return [...profiles].sort((left, right) => {
-    const leftDate = Date.parse(left.updatedAt ?? left.createdAt ?? "") || 0;
-    const rightDate = Date.parse(right.updatedAt ?? right.createdAt ?? "") || 0;
-    return rightDate - leftDate || (right.id ?? 0) - (left.id ?? 0);
+    return (
+      getProfileTimestamp(right) - getProfileTimestamp(left) || (right.id ?? 0) - (left.id ?? 0)
+    );
   })[0];
 }
 

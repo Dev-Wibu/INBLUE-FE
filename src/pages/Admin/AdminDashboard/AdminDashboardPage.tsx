@@ -10,6 +10,7 @@ import {
   Bell,
   Building2,
   CalendarDays,
+  ClipboardCheck,
   Code2,
   Database,
   FileCheck2,
@@ -34,6 +35,7 @@ import { CodeReviewProblemManagementPage } from "../CodeReviewProblemManagement"
 import { CodingProblemManagementPage } from "../CodingProblemManagement";
 import { CompanyManagementPage } from "../CompanyManagement";
 import { DashboardOverviewPage } from "../DashboardOverview";
+import { EntryTestManagementPage } from "../EntryTestManagement/EntryTestManagementPage";
 import { FeedbackManagementPage } from "../FeedbackManagement";
 import { InterviewTemplateDetailPage } from "../InterviewTemplateManagement/InterviewTemplateDetailPage";
 import { InterviewTemplateManagementPage } from "../InterviewTemplateManagement/InterviewTemplateManagementPage";
@@ -163,6 +165,12 @@ const getSidebarMenuGroups = (t: TranslateFn): SidebarMenuGroup[] => [
         icon: Code2,
         label: t("adminAdmindashboard.codingProblems"),
         color: "text-cyan-600 dark:text-cyan-500",
+      },
+      {
+        type: "entry-tests",
+        icon: ClipboardCheck,
+        label: t("adminEntryTest.sidebar"),
+        color: "text-violet-600 dark:text-violet-400",
       },
     ],
   },
@@ -403,6 +411,7 @@ export function AdminDashboardPage() {
             <Route path="kiosk-management/:kioskId" element={<KioskDetailPage />} />
             <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
             <Route path="codingProblems" element={<CodingProblemManagementPage />} />
+            <Route path="entry-tests" element={<EntryTestManagementPage />} />
           </Routes>
         </main>
       </div>

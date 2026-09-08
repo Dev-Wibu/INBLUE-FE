@@ -36,7 +36,7 @@ export function LanguageToggle({ className }: LanguageToggleProps) {
           variant="ghost"
           size="sm"
           className={cn(
-            "flex h-9 w-12 shrink-0 items-center justify-center gap-1.5 px-0 text-slate-700 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]",
+            "flex h-9 w-auto min-w-12 shrink-0 items-center justify-center gap-1.5 rounded-lg px-2 text-slate-700 hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-300",
             className
           )}>
           <Globe className="h-[1.2rem] w-[1.2rem]" />
@@ -46,14 +46,14 @@ export function LanguageToggle({ className }: LanguageToggleProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-48 border border-slate-200 bg-white/95 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
+        className="w-48 border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
         <DropdownMenuItem
           onClick={() => handleLanguageChange("vi")}
           className={cn(
             "flex h-9 w-full cursor-pointer items-center px-3 text-sm",
             language === "vi"
-              ? "bg-[#DCEEFF] text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]"
-              : "text-slate-700 hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-[#66B2FF]"
+              ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+              : "text-slate-700 hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
           )}>
           {t("common.vietnameseVi")}
         </DropdownMenuItem>
@@ -62,8 +62,8 @@ export function LanguageToggle({ className }: LanguageToggleProps) {
           className={cn(
             "flex h-9 w-full cursor-pointer items-center px-3 text-sm",
             language === "en"
-              ? "bg-[#DCEEFF] text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]"
-              : "text-slate-700 hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-[#66B2FF]"
+              ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+              : "text-slate-700 hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
           )}>
           {t("settings.englishEn")}
         </DropdownMenuItem>
@@ -72,8 +72,8 @@ export function LanguageToggle({ className }: LanguageToggleProps) {
           className={cn(
             "flex h-9 w-full cursor-pointer items-center px-3 text-sm",
             language === "ja"
-              ? "bg-[#DCEEFF] text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]"
-              : "text-slate-700 hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-[#66B2FF]"
+              ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+              : "text-slate-700 hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
           )}>
           {t("settings.japaneseJa")}
         </DropdownMenuItem>

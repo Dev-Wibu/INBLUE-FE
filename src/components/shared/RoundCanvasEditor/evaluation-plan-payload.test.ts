@@ -40,8 +40,8 @@ describe("toEvaluationPlanPayload", () => {
     expect(payload?.metrics).not.toBe(source.metrics);
   });
 
-  it("omits evaluationPlan when a round has none", () => {
-    expect(toEvaluationPlanPayload(undefined)).toBeUndefined();
+  it("preserves an explicit null for legacy rounds without a plan", () => {
+    expect(toEvaluationPlanPayload(undefined)).toBeNull();
   });
 
   it("preserves a null minimum score returned for an optional AI metric", () => {

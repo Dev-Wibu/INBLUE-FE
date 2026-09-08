@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Newspaper,
   ReceiptText,
+  ScanSearch,
   Search,
   UserRound,
 } from "lucide-react";
@@ -135,6 +136,12 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
   {
     label: t("common.interview"),
     items: [
+      {
+        type: "entryTest",
+        icon: ScanSearch,
+        label: t("entryTestOnboarding.sidebar"),
+        color: "text-indigo-600 dark:text-indigo-400",
+      },
       {
         type: "applicationHistory",
         icon: Briefcase,
@@ -278,6 +285,14 @@ export function UserDashboardPage() {
       };
     }
 
+    if (location.pathname.startsWith("/user/entry-test")) {
+      return {
+        currentTitle: t("entryTestOnboarding.sidebar"),
+        parentTitle: undefined,
+        currentCategory: t("common.interview"),
+      };
+    }
+
     // 2. Mock Interview Session History (under "Interview")
     if (location.pathname.startsWith("/user/mock-interview/history")) {
       return {
@@ -383,6 +398,10 @@ export function UserDashboardPage() {
         navigate(`/user/account?subtab=${accountSubtab}`);
         return;
       }
+      if (type === "entryTest") {
+        navigate("/user/entry-test");
+        return;
+      }
       if (outlet) {
         navigate(`/user?tab=${type}`);
       } else {
@@ -392,14 +411,16 @@ export function UserDashboardPage() {
     [outlet, openTab, navigate]
   );
 
-  const sidebarActiveTab = location.pathname.startsWith("/user/account")
-    ? {
-        candidateProfile: "accountCandidateProfile",
-        notifications: "accountNotifications",
-        jdPurchases: "accountTransactions",
-      }[new URLSearchParams(location.search).get("subtab") || "candidateProfile"] ||
-      "accountCandidateProfile"
-    : typedActiveTab;
+  const sidebarActiveTab = location.pathname.startsWith("/user/entry-test")
+    ? "entryTest"
+    : location.pathname.startsWith("/user/account")
+      ? {
+          candidateProfile: "accountCandidateProfile",
+          notifications: "accountNotifications",
+          jdPurchases: "accountTransactions",
+        }[new URLSearchParams(location.search).get("subtab") || "candidateProfile"] ||
+        "accountCandidateProfile"
+      : typedActiveTab;
 
   const renderContent = () => {
     switch (typedActiveTab) {
@@ -501,7 +522,8 @@ export function UserDashboardPage() {
                     typedActiveTab === "companies" ||
                     typedActiveTab === "applicationHistory" ||
                     typedActiveTab === "aiInterview" ||
-                    location.pathname.startsWith("/user/application")
+                    location.pathname.startsWith("/user/application") ||
+                    location.pathname.startsWith("/user/entry-test")
                   ? "overflow-auto p-0"
                   : location.pathname.startsWith("/user/account") ||
                       location.pathname.startsWith("/user/settings")
