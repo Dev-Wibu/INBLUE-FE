@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getJobSkillTags } from "@/lib/job-skills";
 import type { JobDescription } from "@/services/company.manager";
 import { BriefcaseBusiness, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -25,7 +26,7 @@ export function JobListingsSection({ jobs, companyName }: JobListingsSectionProp
         !query ||
         job.title?.toLowerCase().includes(query) ||
         job.description?.toLowerCase().includes(query) ||
-        job.skills?.some((skill) => skill.toLowerCase().includes(query));
+        getJobSkillTags(job).some((skill) => skill.toLowerCase().includes(query));
 
       return matchesSearch;
     });

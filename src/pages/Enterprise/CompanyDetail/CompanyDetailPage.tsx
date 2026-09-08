@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { getJobSkillTags } from "@/lib/job-skills";
 import { companyManager, type Company, type JobDescription } from "@/services/company.manager";
 import { motion } from "framer-motion";
 import { BriefcaseBusiness, Search, X } from "lucide-react";
@@ -67,7 +68,7 @@ export function CompanyDetailPage() {
         !q ||
         job.title?.toLowerCase().includes(q) ||
         job.description?.toLowerCase().includes(q) ||
-        job.skills?.some((s) => s.toLowerCase().includes(q));
+        getJobSkillTags(job).some((skill) => skill.toLowerCase().includes(q));
 
       const matchesLevel = !selectedLevel || job.level === selectedLevel;
 
