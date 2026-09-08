@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
 import { formatDate } from "@/lib/formatting";
+import { getJobSkillTags } from "@/lib/job-skills";
 import { applicationService } from "@/services/application.manager";
 import type { Company, JobDescription } from "@/services/company.manager";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
@@ -41,6 +42,7 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
   const { hasPurchased, hasApplied, isLoadingStatus, refetchStatus } = useJdPurchaseStatus(job.id);
   const normalizedJobStatus = job.status?.toUpperCase();
   const isJobOpen = normalizedJobStatus === "OPEN";
+  const skillTags = getJobSkillTags(job);
 
   const salaryText =
     job.salaryMin || job.salaryMax
@@ -296,6 +298,25 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
                   <p className="mt-2 text-xs leading-relaxed whitespace-pre-line text-slate-700 dark:text-slate-300">
                     {job.requirements}
                   </p>
+                </div>
+              )}
+
+              {skillTags.length > 0 && (
+                <div className="border-t border-slate-100 pt-5 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                    <Sparkles className="h-4 w-4 text-indigo-500" />
+                    <span>{t("jobSkillTags.label")}</span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {skillTags.map((skill) => (
+                      <Badge
+                        key={skill}
+                        variant="outline"
+                        className="border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
 
