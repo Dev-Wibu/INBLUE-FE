@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getJobSkillTags } from "@/lib/job-skills";
 import { companyManager, type JobDescription } from "@/services/company.manager";
 import {
   ArrowRight,
@@ -231,11 +232,16 @@ export function JobSearchSection() {
                           <Badge className={getLevelBadgeColor(job.level)}>
                             {job.level || t("common.notDetermined")}
                           </Badge>
-                          {job.skills?.slice(0, 2).map((skill) => (
-                            <Badge key={skill} variant="outline" className="dark:border-slate-700">
-                              {skill}
-                            </Badge>
-                          ))}
+                          {getJobSkillTags(job)
+                            .slice(0, 2)
+                            .map((skill) => (
+                              <Badge
+                                key={skill}
+                                variant="outline"
+                                className="dark:border-slate-700">
+                                {skill}
+                              </Badge>
+                            ))}
                         </div>
                       </div>
                     </article>
