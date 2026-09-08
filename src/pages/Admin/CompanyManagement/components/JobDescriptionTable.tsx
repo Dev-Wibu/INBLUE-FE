@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/formatting";
+import { getJobSkillTags } from "@/lib/job-skills";
 import { getJobDescriptionLevelBadge } from "@/lib/status-utils";
 import { Briefcase, Calendar, Clock, Layers, MapPin, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -128,6 +129,7 @@ export function JobDescriptionTable({
         </TableHeader>
         <TableBody>
           {jobDescriptions.map((job) => {
+            const skillTags = getJobSkillTags(job);
             const isClosed = job.status === "CLOSED";
             const compName = (job as any).companyName || (job as any).company?.name || "—";
             const compLogo =
@@ -187,6 +189,22 @@ export function JobDescriptionTable({
                     text={job.title || "—"}
                     className="text-sm font-semibold text-slate-900 dark:text-white"
                   />
+                  {skillTags.length > 0 && (
+                    <div className="mt-1 flex min-w-0 items-center gap-1 overflow-hidden">
+                      {skillTags.slice(0, 2).map((skill) => (
+                        <span
+                          key={skill}
+                          className="max-w-24 truncate rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                          {skill}
+                        </span>
+                      ))}
+                      {skillTags.length > 2 && (
+                        <span className="shrink-0 text-[10px] font-medium text-slate-400">
+                          {t("jobSkillTags.more", { count: skillTags.length - 2 })}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell className="min-w-0 px-4 py-3">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
