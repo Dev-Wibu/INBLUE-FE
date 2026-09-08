@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 interface JobDetailContainerProps {
   job: JobDescription;
+  mode?: "all" | "recommended";
   onClose?: () => void;
   onRefresh?: () => void;
   hideBackButton?: boolean;
@@ -23,6 +24,7 @@ interface JobDetailContainerProps {
 
 export function JobDetailContainer({
   job,
+  mode = "all",
   onClose,
   onRefresh,
   hideBackButton = false,
@@ -72,7 +74,7 @@ export function JobDetailContainer({
   const handleApply = async () => {
     if (!isLoggedIn) {
       toast.error(t("enterpriseJobdescriptiondetailpage.pleaseLoginToApply"));
-      navigate(`/login?redirect=${encodeURIComponent(buildJdPurchaseReturnPath(jdIdNum))}`);
+      navigate(`/login?redirect=${encodeURIComponent(buildJdPurchaseReturnPath(jdIdNum, mode))}`);
       return;
     }
     if (job.status?.toUpperCase() !== "OPEN") {
@@ -87,7 +89,7 @@ export function JobDetailContainer({
 
     setIsApplying(true);
     try {
-      rememberPendingJdPurchase(jdIdNum);
+      rememberPendingJdPurchase(jdIdNum, localStorage, mode);
       const { checkoutUrl } = await jdPurchaseManager.createPayment(jdIdNum);
       window.location.assign(checkoutUrl);
     } catch {

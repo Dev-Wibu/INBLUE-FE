@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApplicationDetailDrawer, DateTimePicker } from "@/components/shared";
+import { ApplicationDetailDrawer, DateTimePicker, JobSkillTagsInput } from "@/components/shared";
 import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
   getAvailableRoundsTemplates,
@@ -31,6 +31,7 @@ import {
 
 import { useUsers } from "@/hooks/useApplication";
 
+import { getJobSkillTags } from "@/lib/job-skills";
 import { cn } from "@/lib/utils";
 import {
   adminApplicationManager,
@@ -547,6 +548,7 @@ export function JobDescriptionDetailView({
   const detectedTechStack = useMemo(() => {
     return extractTechStack(currentJd.requirements);
   }, [currentJd.requirements]);
+  const skillTags = useMemo(() => getJobSkillTags(currentJd), [currentJd]);
 
   const formatSalary = (min?: number, max?: number, currency?: string) => {
     if (!min && !max) return t("enterpriseJobdescriptiondetailpage.salaryAgreement");
@@ -904,26 +906,40 @@ export function JobDescriptionDetailView({
             {detailTab === "requirements" && (
               <div>
                 {isEditing ? (
-                  <EditableTextList
-                    value={editFormData.requirements}
-                    onChange={(newText) =>
-                      setEditFormData({ ...editFormData, requirements: newText })
-                    }
-                    icon={CheckCircle2}
-                    iconColor="text-emerald-500"
-                    placeholder={t(
-                      "adminCompanymanagement.requirementsPlaceholder",
-                      "Yêu cầu kỹ năng / kinh nghiệm"
-                    )}
-                  />
+                  <div className="space-y-5">
+                    <EditableTextList
+                      value={editFormData.requirements}
+                      onChange={(newText) =>
+                        setEditFormData({ ...editFormData, requirements: newText })
+                      }
+                      icon={CheckCircle2}
+                      iconColor="text-emerald-500"
+                      placeholder={t(
+                        "adminCompanymanagement.requirementsPlaceholder",
+                        "Yêu cầu kỹ năng / kinh nghiệm"
+                      )}
+                    />
+                    <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+                      <Label className="mb-2 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        {t("jobSkillTags.label")}
+                      </Label>
+                      <JobSkillTagsInput
+                        id="detail-job-skill-tags"
+                        value={editFormData.skillTags}
+                        onChange={(nextSkillTags) =>
+                          setEditFormData({ ...editFormData, skillTags: nextSkillTags })
+                        }
+                      />
+                    </div>
+                  </div>
                 ) : (
                   <>
-                    {detectedTechStack.length > 0 && (
+                    {(skillTags.length > 0 || detectedTechStack.length > 0) && (
                       <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 p-2.5 dark:border-slate-800/60 dark:bg-slate-950/50">
                         <span className="mr-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-                          {t("adminCompanymanagement.techAndSkills", "Công nghệ & Kỹ năng:")}
+                          {t("jobSkillTags.label")}:
                         </span>
-                        {detectedTechStack.map((tech) => (
+                        {(skillTags.length > 0 ? skillTags : detectedTechStack).map((tech) => (
                           <Badge
                             key={tech}
                             className="border-indigo-200/60 bg-indigo-50 text-xs font-bold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800/60 dark:bg-indigo-950/80 dark:text-indigo-300">

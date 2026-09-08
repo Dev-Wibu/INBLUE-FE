@@ -23,6 +23,7 @@ export { DateTimePicker } from "./DateTimePicker";
 export type { DateTimePickerProps, ThemeVariant } from "./DateTimePicker";
 export { Filter } from "./Filter";
 export type { FilterCriteria, FilterGroup, FilterOption, FilterProps } from "./Filter";
+export { JobSkillTagsInput } from "./JobSkillTagsInput";
 export { KioskStatusBadge } from "./KioskStatusBadge";
 export type { KioskBookingStatus, KioskStatusBadgeProps } from "./KioskStatusBadge";
 export {

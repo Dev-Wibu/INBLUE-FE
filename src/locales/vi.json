@@ -8144,6 +8144,59 @@
       "middle": "Middle"
     }
   },
+  "jobRecommendations": {
+    "modeLabel": "Chế độ danh sách việc làm",
+    "allJobs": "Tất cả việc làm",
+    "tabTitle": "Gợi ý cho bạn",
+    "emptyTitle": "Chưa có gợi ý phù hợp",
+    "emptyDescription": "Hãy cập nhật kỹ năng và định hướng nghề nghiệp để hệ thống tìm công việc phù hợp hơn.",
+    "viewAllJobs": "Xem tất cả việc làm",
+    "updateProfile": "Cập nhật hồ sơ",
+    "loadError": "Không thể tải danh sách việc làm gợi ý",
+    "errorDescription": "Đã có lỗi khi tải dữ liệu. Vui lòng thử lại.",
+    "retry": "Thử lại"
+  },
+  "jobSkillTags": {
+    "label": "Kỹ năng yêu cầu",
+    "placeholder": "Nhập kỹ năng, ví dụ: React",
+    "hint": "Nhấn Enter hoặc dấu phẩy để thêm kỹ năng.",
+    "add": "Thêm kỹ năng",
+    "remove": "Xóa kỹ năng {{skill}}",
+    "currentTags": "Danh sách kỹ năng hiện tại",
+    "more": "+{{count}} kỹ năng",
+    "empty": "Chưa cập nhật kỹ năng yêu cầu"
+  },
+  "jobRecommendationThreshold": {
+    "action": "Thiết lập gợi ý việc làm",
+    "title": "Thiết lập mức độ phù hợp",
+    "label": "Mức độ phù hợp tối thiểu",
+    "description": "Quyết định một công việc cần phù hợp với hồ sơ kỹ năng của ứng viên đến mức nào trước khi xuất hiện trong mục Gợi ý cho bạn.",
+    "inputTitle": "Chọn mức áp dụng",
+    "inputDescription": "Nhập một giá trị hoặc chọn nhanh theo nhu cầu tuyển dụng hiện tại.",
+    "inputHint": "Nhập từ 0 đến 100, tối đa hai chữ số thập phân.",
+    "quickSelect": "Chọn nhanh",
+    "presets": {
+      "broad": "Phạm vi rộng",
+      "balanced": "Cân bằng",
+      "strict": "Chặt chẽ"
+    },
+    "guideTitle": "Thiết lập này hoạt động thế nào?",
+    "guideDescription": "Hệ thống so sánh kỹ năng trong hồ sơ định hướng của ứng viên với kỹ năng của từng vị trí tuyển dụng.",
+    "flow": {
+      "profile": "Hồ sơ kỹ năng",
+      "compare": "So sánh",
+      "recommend": "Gợi ý việc làm"
+    },
+    "higherEffect": "Tăng mức này: ít công việc được gợi ý hơn, nhưng sát kỹ năng của ứng viên hơn.",
+    "lowerEffect": "Giảm mức này: nhiều công việc được gợi ý hơn, phạm vi phù hợp sẽ rộng hơn.",
+    "previewEmpty": "Chưa chọn mức độ phù hợp",
+    "preview": "Chỉ gợi ý công việc đạt từ {{value}}% phù hợp",
+    "scopeNote": "Thay đổi này áp dụng cho tất cả ứng viên trong hệ thống.",
+    "footerNote": "Điểm phù hợp do hệ thống tự tính từ dữ liệu kỹ năng.",
+    "validation": "Vui lòng nhập số từ 0 đến 100, tối đa hai chữ số thập phân.",
+    "save": "Lưu thiết lập",
+    "success": "Đã đặt mức độ phù hợp tối thiểu là {{value}}%"
+  },
   "codeReviewRound": "Vòng Code Review",
   "codeReviewIssues": "Các vấn đề Code Review",
   "codeReviewContext": "Ngữ cảnh Code Review",

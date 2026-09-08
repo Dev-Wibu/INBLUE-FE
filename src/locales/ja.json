@@ -8143,6 +8143,59 @@
       "middle": "ミドル"
     }
   },
+  "jobRecommendations": {
+    "modeLabel": "求人一覧モード",
+    "allJobs": "すべての求人",
+    "tabTitle": "あなたへのおすすめ",
+    "emptyTitle": "おすすめの求人はまだありません",
+    "emptyDescription": "スキルとキャリア志向を更新すると、より適した求人を見つけられます。",
+    "viewAllJobs": "すべての求人を見る",
+    "updateProfile": "プロフィールを更新",
+    "loadError": "おすすめ求人を読み込めません",
+    "errorDescription": "データの読み込み中にエラーが発生しました。もう一度お試しください。",
+    "retry": "再試行"
+  },
+  "jobSkillTags": {
+    "label": "必要スキル",
+    "placeholder": "スキルを入力（例：React）",
+    "hint": "Enterキーまたはカンマでスキルを追加します。",
+    "add": "スキルを追加",
+    "remove": "{{skill}}を削除",
+    "currentTags": "現在のスキル一覧",
+    "more": "+{{count}}件のスキル",
+    "empty": "必要スキルはまだ登録されていません"
+  },
+  "jobRecommendationThreshold": {
+    "action": "おすすめ設定",
+    "title": "最低適合度を設定",
+    "label": "最低適合度",
+    "description": "候補者のスキルプロフィールにどの程度合う求人をおすすめに表示するか設定します。",
+    "inputTitle": "適用レベルを選択",
+    "inputDescription": "数値を入力するか、現在の採用ニーズに合う選択肢を使用してください。",
+    "inputHint": "0から100まで、小数点以下2桁以内で入力してください。",
+    "quickSelect": "クイック選択",
+    "presets": {
+      "broad": "広い範囲",
+      "balanced": "バランス",
+      "strict": "高精度"
+    },
+    "guideTitle": "この設定の仕組み",
+    "guideDescription": "候補者のキャリアプロフィールのスキルと、各求人で必要なスキルを比較します。",
+    "flow": {
+      "profile": "スキル情報",
+      "compare": "比較",
+      "recommend": "求人を提案"
+    },
+    "higherEffect": "値を上げると、提案数は減りますが候補者のスキルにより近い求人になります。",
+    "lowerEffect": "値を下げると、より広い適合範囲から多くの求人が提案されます。",
+    "previewEmpty": "最低適合度が未選択です",
+    "preview": "適合度{{value}}%以上の求人のみ提案します",
+    "scopeNote": "この変更はシステム内のすべての候補者に適用されます。",
+    "footerNote": "適合度はスキルデータからシステムが自動計算します。",
+    "validation": "0から100までの数値を小数点以下2桁以内で入力してください。",
+    "save": "設定を保存",
+    "success": "最低適合度を{{value}}%に設定しました"
+  },
   "codeReviewRound": "コードレビューラウンド",
   "codeReviewIssues": "コードレビューの問題",
   "codeReviewContext": "コードレビューのコンテキスト",

@@ -252,6 +252,7 @@ export function CompanyGridTab({
           currency: jdFormData.currency,
           status: jdFormData.status,
           deadlineAt: jdFormData.deadlineAt,
+          skillTags: jdFormData.skillTags ?? [],
         });
         if (res.success) {
           toast.success(t("common.updateSuccess", "Cập nhật JD thành công"));
@@ -278,6 +279,7 @@ export function CompanyGridTab({
           status: jdFormData.status,
           deadlineAt: jdFormData.deadlineAt,
           companyId: selectedCompanyId,
+          skillTags: jdFormData.skillTags ?? [],
         };
         const res = await jobDescriptionManager.create(data);
         if (res.success) {

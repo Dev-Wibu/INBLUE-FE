@@ -443,6 +443,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/job-recommendation-threshold": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update the global job recommendation match threshold */
+        put: operations["updateJobRecommendationThreshold"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/entry-tests/{id}": {
         parameters: {
             query?: never;
@@ -2273,6 +2290,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/job-descriptions/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get recommended job descriptions for the current user */
+        get: operations["getRecommendations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/job-descriptions/company/{companyId}": {
         parameters: {
             query?: never;
@@ -3505,6 +3539,7 @@ export interface components {
             description?: string;
             requirements?: string;
             benefits?: string;
+            skillTags?: string[];
             /** @enum {string} */
             level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: double */
@@ -3752,6 +3787,12 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        UpdateJobRecommendationThresholdRequest: {
+            thresholdPercent: number;
+        };
+        JobRecommendationThresholdResponse: {
+            thresholdPercent?: number;
         };
         EntryTestSectionConfig: {
             /** @enum {string} */
@@ -4765,10 +4806,10 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
@@ -4788,15 +4829,15 @@ export interface components {
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
+            unpaged?: boolean;
         };
         SortObject: {
             sorted?: boolean;
-            unsorted?: boolean;
             empty?: boolean;
+            unsorted?: boolean;
         };
         Payment: {
             /** Format: int32 */
@@ -4915,6 +4956,32 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        JobRecommendationResponse: {
+            /** Format: int64 */
+            id?: number;
+            title?: string;
+            description?: string;
+            requirements?: string;
+            benefits?: string;
+            /** @enum {string} */
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+            /** Format: double */
+            salaryMin?: number;
+            /** Format: double */
+            salaryMax?: number;
+            /** Format: int64 */
+            price?: number;
+            currency?: string;
+            skillTags?: string[];
+            companyName?: string;
+            companyLogo?: string;
+            /** @enum {string} */
+            status?: "OPEN" | "CLOSED" | "DRAFT";
+            /** Format: date-time */
+            deadlineAt?: string;
+            /** Format: int32 */
+            appliedCount?: number;
         };
         EnrichedJobDescription: {
             /** Format: int64 */
@@ -5053,10 +5120,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -5157,18 +5224,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            trimDirectiveWhitespaces?: string;
-            elIgnored?: string;
-            isXml?: string;
-            urlPatterns?: string[];
             errorOnELNotFound?: string;
             pageEncoding?: string;
-            defaultContentType?: string;
+            scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            scriptingInvalid?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            isXml?: string;
+            trimDirectiveWhitespaces?: string;
+            elIgnored?: string;
+            urlPatterns?: string[];
+            defaultContentType?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -5206,8 +5273,7 @@ export interface components {
             /** Format: int32 */
             sessionTimeout?: number;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
+            serverInfo?: string;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -5222,12 +5288,13 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            serverInfo?: string;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            initParameterNames?: unknown;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             contextPath?: string;
             attributeNames?: unknown;
-            initParameterNames?: unknown;
             classLoader?: {
                 name?: string;
                 registeredAsParallelCapable?: boolean;
@@ -5303,11 +5370,11 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
+            secure?: boolean;
+            httpOnly?: boolean;
             /** Format: int32 */
             maxAge?: number;
-            secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -6798,6 +6865,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["LevelScale"];
+                };
+            };
+        };
+    };
+    updateJobRecommendationThreshold: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateJobRecommendationThresholdRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JobRecommendationThresholdResponse"];
                 };
             };
         };
@@ -9552,6 +9643,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["JobDescription"][];
+                };
+            };
+        };
+    };
+    getRecommendations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JobRecommendationResponse"][];
                 };
             };
         };

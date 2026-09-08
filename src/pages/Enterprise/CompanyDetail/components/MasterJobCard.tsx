@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { formatUtcNaiveDateTime } from "@/lib/formatting";
+import { getJobSkillTags } from "@/lib/job-skills";
 import type { JobDescription } from "@/services/company.manager";
 import { Banknote, Building2, ChevronRight, Clock, MapPin, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -37,6 +38,7 @@ export function MasterJobCard({
   onSelect,
 }: MasterJobCardProps) {
   const { t } = useTranslation();
+  const skillTags = getJobSkillTags(job);
 
   const salaryText =
     job.salaryMin || job.salaryMax
@@ -121,18 +123,18 @@ export function MasterJobCard({
         </div>
 
         {/* Tech Stack Pills */}
-        {job.skills && job.skills.length > 0 && (
+        {skillTags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1">
-            {job.skills.slice(0, 3).map((skill, idx) => (
+            {skillTags.slice(0, 3).map((skill) => (
               <span
-                key={idx}
+                key={skill}
                 className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                 {skill}
               </span>
             ))}
-            {job.skills.length > 3 && (
+            {skillTags.length > 3 && (
               <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                +{job.skills.length - 3}
+                {t("jobSkillTags.more", { count: skillTags.length - 3 })}
               </span>
             )}
           </div>

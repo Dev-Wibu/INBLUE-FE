@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getJobSkillTags } from "@/lib/job-skills";
 import type { JobDescription } from "@/services/company.manager";
 import { Clock, DollarSign, Eye, MapPin, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -41,6 +42,7 @@ export function JobCard({ job }: JobCardProps) {
   };
 
   const salaryInfo = formatSalaryVND(job.salaryMin, job.salaryMax);
+  const skillTags = getJobSkillTags(job);
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors hover:border-[#0047AB]/30 sm:p-6 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-[#66B2FF]/30">
@@ -98,18 +100,18 @@ export function JobCard({ job }: JobCardProps) {
             </p>
           )}
 
-          {job.skills && job.skills.length > 0 && (
+          {skillTags.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-1.5">
-              {job.skills.slice(0, 5).map((skill) => (
+              {skillTags.slice(0, 5).map((skill) => (
                 <span
                   key={skill}
                   className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   {skill}
                 </span>
               ))}
-              {job.skills.length > 5 && (
+              {skillTags.length > 5 && (
                 <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-500">
-                  +{job.skills.length - 5}
+                  {t("jobSkillTags.more", { count: skillTags.length - 5 })}
                 </span>
               )}
             </div>

@@ -26,6 +26,7 @@ export * from "./interview-analysis.manager";
 export * from "./interview-session.manager";
 export * from "./jd-purchase.manager";
 export * from "./job-description.manager";
+export * from "./job-recommendation-admin.manager";
 export * from "./mentor-feedback.manager";
 export * from "./mentor-review.manager";
 export * from "./mentor.manager";

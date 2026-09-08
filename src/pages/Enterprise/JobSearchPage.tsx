@@ -3,6 +3,7 @@ import { Footer } from "@/components/layouts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getJobSkillTags } from "@/lib/job-skills";
 import { cn } from "@/lib/utils";
 import type { JobDescription } from "@/services/company.manager";
 import { companyManager, type Company } from "@/services/company.manager";
@@ -113,6 +114,7 @@ function EmptyPanel({ query, isError, onClear, t }: EmptyPanelProps) {
 
 function JobCard({ job, t }: { job: EnrichedJob; t: TFunction }) {
   const levelLabel = job.level || "INTERN";
+  const skillTags = getJobSkillTags(job);
 
   const formatSalaryVND = (min?: number, max?: number): { text: string; hasIcon: boolean } => {
     if (!min && !max) {
@@ -189,18 +191,18 @@ function JobCard({ job, t }: { job: EnrichedJob; t: TFunction }) {
         )}
 
         {/* Skills pills */}
-        {job.skills && job.skills.length > 0 && (
+        {skillTags.length > 0 && (
           <div className="mt-3.5 flex flex-wrap gap-1.5">
-            {job.skills.slice(0, 4).map((skill, idx) => (
+            {skillTags.slice(0, 4).map((skill) => (
               <span
-                key={idx}
+                key={skill}
                 className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 {skill}
               </span>
             ))}
-            {job.skills.length > 4 && (
+            {skillTags.length > 4 && (
               <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                +{job.skills.length - 4}
+                {t("jobSkillTags.more", { count: skillTags.length - 4 })}
               </span>
             )}
           </div>
@@ -378,7 +380,7 @@ export function JobSearchPage() {
         job.title?.toLowerCase().includes(q) ||
         job.companyName?.toLowerCase().includes(q) ||
         job.description?.toLowerCase().includes(q) ||
-        job.skills?.some((s) => s.toLowerCase().includes(q));
+        getJobSkillTags(job).some((skill) => skill.toLowerCase().includes(q));
 
       // Level check
       const matchLevel =
