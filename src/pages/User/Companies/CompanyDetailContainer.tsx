@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getJobSkillTags } from "@/lib/job-skills";
 import { companyManager, type Company, type JobDescription } from "@/services/company.manager";
 import { ArrowLeft, BriefcaseBusiness, MapPin, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -92,7 +93,7 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
         !q ||
         job.title?.toLowerCase().includes(q) ||
         job.description?.toLowerCase().includes(q) ||
-        job.skills?.some((s) => s.toLowerCase().includes(q));
+        getJobSkillTags(job).some((skill) => skill.toLowerCase().includes(q));
 
       const matchesLevel = !selectedLevel || job.level === selectedLevel;
 

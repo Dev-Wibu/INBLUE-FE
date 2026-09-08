@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getJobSkillTags } from "@/lib/job-skills";
 import { companyManager, type Company, type JobDescription } from "@/services/company.manager";
 import { BriefcaseBusiness, Building2, MapPin, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -55,7 +56,7 @@ export function CompanyCard({
   const companySkills = useMemo(() => {
     const set = new Set<string>();
     company.jobDescriptions?.forEach((j) => {
-      j.skills?.forEach((s) => set.add(s));
+      getJobSkillTags(j).forEach((skill) => set.add(skill));
     });
     return Array.from(set).slice(0, 3);
   }, [company]);
