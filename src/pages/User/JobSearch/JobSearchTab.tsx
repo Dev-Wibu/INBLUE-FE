@@ -2,12 +2,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import type { JobDescription } from "@/interfaces";
+import type { JobDescription, JobRecommendation } from "@/interfaces";
 import { formatNumber } from "@/lib/formatting";
 import { jobDescriptionManager } from "@/services/job-description.manager";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
-import { Banknote, Building2, CalendarDays, Coins, Search, Users, X } from "lucide-react";
+import {
+  AlertCircle,
+  Banknote,
+  Building2,
+  CalendarDays,
+  Coins,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Users,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
@@ -54,6 +66,68 @@ function EmptyState({ query, onClear, t }: { query: string; onClear: () => void;
   );
 }
 
+function RecommendationEmptyState({
+  onViewAll,
+  onUpdateProfile,
+  t,
+}: {
+  onViewAll: () => void;
+  onUpdateProfile: () => void;
+  t: TFunction;
+}) {
+  return (
+    <div className="mx-6 my-10 flex min-h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-5 text-center dark:border-slate-800 dark:bg-slate-900/50">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+        <Sparkles className="h-6 w-6" />
+      </div>
+      <div>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+          {t("jobRecommendations.emptyTitle")}
+        </h3>
+        <p className="mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">
+          {t("jobRecommendations.emptyDescription")}
+        </p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button onClick={onUpdateProfile} className="bg-indigo-600 hover:bg-indigo-700">
+          {t("jobRecommendations.updateProfile")}
+        </Button>
+        <Button variant="outline" onClick={onViewAll}>
+          {t("jobRecommendations.viewAllJobs")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function RecommendationErrorState({
+  error,
+  onRetry,
+  t,
+}: {
+  error?: Error | null;
+  onRetry: () => void;
+  t: TFunction;
+}) {
+  return (
+    <div className="mx-6 my-10 flex min-h-64 flex-col items-center justify-center gap-4 rounded-lg border border-red-200 bg-red-50/50 px-5 text-center dark:border-red-500/20 dark:bg-red-500/5">
+      <AlertCircle className="h-8 w-8 text-red-500" />
+      <div>
+        <h3 className="font-semibold text-slate-900 dark:text-white">
+          {t("jobRecommendations.loadError")}
+        </h3>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          {error?.message || t("jobRecommendations.errorDescription")}
+        </p>
+      </div>
+      <Button variant="outline" onClick={onRetry}>
+        <RefreshCw className="mr-2 h-4 w-4" />
+        {t("jobRecommendations.retry")}
+      </Button>
+    </div>
+  );
+}
+
 const LEVEL_COLORS: Record<string, string> = {
   INTERN: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300",
   FRESHER: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
@@ -67,7 +141,7 @@ export function JobCard({
   onApply,
   t,
 }: {
-  job: JobDescription;
+  job: JobDescription | JobRecommendation;
   onClick: () => void;
   onApply: (_e: React.MouseEvent) => void;
   t: TFunction;
@@ -216,8 +290,31 @@ export function JobSearchTab() {
   const [maxPrice, setMaxPrice] = useState<number | null>(
     searchParams.has("maxPrice") ? Number(searchParams.get("maxPrice")) : null
   );
-  const [jobs, setJobs] = useState<JobDescription[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const mode = searchParams.get("mode") === "recommended" ? "recommended" : "all";
+
+  const allJobsQuery = useQuery({
+    queryKey: ["job-descriptions", "all"],
+    queryFn: async () => {
+      const result = await jobDescriptionManager.getAll();
+      if (!result.success) throw new Error(result.error);
+      return (result.data ?? []).filter((job) => !job.isDeleted && job.status === "OPEN");
+    },
+  });
+  const recommendationsQuery = useQuery({
+    queryKey: ["job-descriptions", "recommendations"],
+    queryFn: async () => {
+      const result = await jobDescriptionManager.getRecommendations();
+      if (!result.success) throw new Error(result.error);
+      return result.data ?? [];
+    },
+    enabled: mode === "recommended",
+  });
+
+  const jobs = useMemo<Array<JobDescription | JobRecommendation>>(
+    () => (mode === "recommended" ? (recommendationsQuery.data ?? []) : (allJobsQuery.data ?? [])),
+    [allJobsQuery.data, mode, recommendationsQuery.data]
+  );
+  const activeQuery = mode === "recommended" ? recommendationsQuery : allJobsQuery;
 
   const selectedJobId = searchParams.get("jobId");
   const selectedJob = useMemo(
@@ -242,30 +339,15 @@ export function JobSearchTab() {
     }
   }, [searchParams]);
 
-  const fetchJobs = async () => {
-    setIsLoading(true);
-    try {
-      const result = await jobDescriptionManager.getAll();
-      if (result.success && result.data) {
-        const validJobs = result.data.filter((job) => !job.isDeleted && job.status === "OPEN");
-        setJobs(validJobs);
-      }
-    } catch {
-      // Intentionally ignored.
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void fetchJobs();
-  }, []);
-
   const updateFilters = (q: string, level: string, price: number | null) => {
-    const params: Record<string, string> = { tab: "jobSearch" };
-    if (q.trim()) params.q = q.trim();
-    if (level !== "ALL") params.level = level;
-    if (price !== null) params.maxPrice = price.toString();
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", "jobSearch");
+    if (q.trim()) params.set("q", q.trim());
+    else params.delete("q");
+    if (level !== "ALL") params.set("level", level);
+    else params.delete("level");
+    if (price !== null) params.set("maxPrice", price.toString());
+    else params.delete("maxPrice");
     setSearchParams(params);
   };
 
@@ -276,7 +358,7 @@ export function JobSearchTab() {
   };
 
   const handleRefresh = () => {
-    void fetchJobs();
+    void activeQuery.refetch();
   };
 
   const handleJobClick = (id: number) => {
@@ -294,7 +376,25 @@ export function JobSearchTab() {
     setSearchQuery("");
     setActiveLevel("ALL");
     setMaxPrice(null);
-    setSearchParams({ tab: "jobSearch" });
+    const params = new URLSearchParams(searchParams);
+    params.delete("q");
+    params.delete("level");
+    params.delete("maxPrice");
+    params.delete("jobId");
+    params.set("tab", "jobSearch");
+    setSearchParams(params);
+  };
+
+  const changeMode = (nextMode: "all" | "recommended") => {
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", "jobSearch");
+    params.set("mode", nextMode);
+    params.delete("jobId");
+    setSearchParams(params);
+  };
+
+  const openProfile = () => {
+    setSearchParams({ tab: "account", subtab: "editProfile" });
   };
 
   const filteredJobs = useMemo(() => {
@@ -318,8 +418,8 @@ export function JobSearchTab() {
       result = result.filter((job) => (job.price || 0) <= maxPrice);
     }
 
-    return result.sort((a, b) => (b.id || 0) - (a.id || 0));
-  }, [jobs, searchParams, maxPrice]);
+    return mode === "all" ? [...result].sort((a, b) => (b.id || 0) - (a.id || 0)) : result;
+  }, [jobs, maxPrice, mode, searchParams]);
 
   /* ─── Full-screen Detail View ─── */
   if (selectedJob) {
@@ -327,6 +427,7 @@ export function JobSearchTab() {
       <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
         <JobDetailContainer
           job={selectedJob}
+          mode={mode}
           onClose={handleCloseDetail}
           onRefresh={handleRefresh}
         />
@@ -383,6 +484,29 @@ export function JobSearchTab() {
                 </span>
               </div>
             </div>
+          </div>
+
+          <div
+            className="mt-6 inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-950"
+            role="group"
+            aria-label={t("jobRecommendations.modeLabel")}>
+            {(["all", "recommended"] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                aria-pressed={mode === item}
+                onClick={() => changeMode(item)}
+                className={`flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors ${
+                  mode === item
+                    ? "bg-white text-indigo-700 shadow-sm dark:bg-slate-800 dark:text-indigo-300"
+                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                }`}>
+                {item === "recommended" && <Sparkles className="h-4 w-4" />}
+                {item === "all"
+                  ? t("jobRecommendations.allJobs")
+                  : t("jobRecommendations.tabTitle")}
+              </button>
+            ))}
           </div>
 
           <form onSubmit={handleSearch} className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -482,7 +606,7 @@ export function JobSearchTab() {
           </div>
         )}
 
-        {isLoading ? (
+        {activeQuery.isLoading ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
@@ -511,6 +635,22 @@ export function JobSearchTab() {
               </div>
             ))}
           </div>
+        ) : activeQuery.isError ? (
+          <RecommendationErrorState
+            error={activeQuery.error}
+            onRetry={() => void activeQuery.refetch()}
+            t={t}
+          />
+        ) : filteredJobs.length === 0 &&
+          mode === "recommended" &&
+          !searchParams.get("q") &&
+          activeLevel === "ALL" &&
+          maxPrice === null ? (
+          <RecommendationEmptyState
+            onViewAll={() => changeMode("all")}
+            onUpdateProfile={openProfile}
+            t={t}
+          />
         ) : filteredJobs.length === 0 ? (
           <EmptyState query={searchParams.get("q") || ""} onClear={clearSearch} t={t} />
         ) : (
