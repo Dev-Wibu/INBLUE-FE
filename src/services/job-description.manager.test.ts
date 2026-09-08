@@ -37,3 +37,31 @@ describe("jobDescriptionManager recommendations", () => {
     });
   });
 });
+
+describe("jobDescriptionManager skill tag mutations", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("includes skillTags when creating a JD", async () => {
+    mockApi.POST.mockResolvedValueOnce({ data: { id: 120, skillTags: ["React"] } });
+
+    await jobDescriptionManager.create({ title: "Frontend", skillTags: ["React"] });
+
+    expect(mockApi.POST).toHaveBeenCalledWith("/api/job-descriptions", {
+      body: { title: "Frontend", skillTags: ["React"] },
+    });
+  });
+
+  it("includes skillTags when updating a JD", async () => {
+    mockApi.PUT.mockResolvedValueOnce({ data: { id: 120, skillTags: ["React", "TypeScript"] } });
+
+    await jobDescriptionManager.update({
+      id: 120,
+      title: "Frontend",
+      skillTags: ["React", "TypeScript"],
+    });
+
+    expect(mockApi.PUT).toHaveBeenCalledWith("/api/job-descriptions", {
+      body: { id: 120, title: "Frontend", skillTags: ["React", "TypeScript"] },
+    });
+  });
+});

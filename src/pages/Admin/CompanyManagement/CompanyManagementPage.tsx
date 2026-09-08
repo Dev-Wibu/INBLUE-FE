@@ -385,6 +385,7 @@ export function CompanyManagementPage() {
         status: jdFormData.status,
         deadlineAt: jdFormData.deadlineAt,
         companyId: targetCompanyId,
+        skillTags: jdFormData.skillTags ?? [],
       });
 
       if (res.success) {
@@ -422,6 +423,7 @@ export function CompanyManagementPage() {
         currency: jdEditFormData.currency,
         status: jdEditFormData.status,
         deadlineAt: jdEditFormData.deadlineAt,
+        skillTags: jdEditFormData.skillTags ?? [],
       });
       if (res.success) {
         toast.success(t("common.updateSuccess", "Cập nhật JD thành công"));
