@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/formatting";
 import i18n from "@/lib/i18n";
+import { getJobSkillTags } from "@/lib/job-skills";
 import { type JobDescription } from "@/services/company.manager";
 import { format } from "date-fns";
 import {
@@ -170,6 +171,7 @@ export function JobDetailView({
 }: JobDetailViewProps) {
   const { t } = useTranslation();
   const isJobOpen = job.status?.toUpperCase() === "OPEN";
+  const skillTags = getJobSkillTags(job);
 
   const renderActionButton = () => {
     if (!isJobOpen) {
@@ -367,15 +369,15 @@ export function JobDetailView({
                 </p>
               </div>
 
-              {job.skills && job.skills.length > 0 && (
+              {skillTags.length > 0 && (
                 <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
                   <h3 className="mb-3 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                     {t("enterpriseJobdescriptiondetailpage.requiredSkills")}
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {job.skills.map((skill, index) => (
+                    {skillTags.map((skill) => (
                       <Badge
-                        key={index}
+                        key={skill}
                         variant="outline"
                         className="rounded-lg border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                         {skill}

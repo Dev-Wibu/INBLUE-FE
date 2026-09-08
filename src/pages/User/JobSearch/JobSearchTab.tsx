@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import type { JobDescription, JobRecommendation } from "@/interfaces";
 import { formatNumber } from "@/lib/formatting";
+import { getJobSkillTags } from "@/lib/job-skills";
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -149,6 +150,7 @@ export function JobCard({
   const jobExtra = job as JobDescription & { thumbnailUrl?: string; companyLogoUrl?: string };
   const logoUrl = jobExtra.companyLogo || jobExtra.thumbnailUrl || jobExtra.companyLogoUrl || null;
   const initials = getCompanyInitials(job.companyName);
+  const skillTags = getJobSkillTags(job);
 
   const isNegotiable = !job.salaryMin && !job.salaryMax;
   const salaryText = isNegotiable
@@ -204,6 +206,24 @@ export function JobCard({
             </div>
           </div>
         </div>
+
+        {skillTags.length > 0 && (
+          <div className="mt-4 flex min-h-6 flex-wrap gap-1.5">
+            {skillTags.slice(0, 3).map((skill) => (
+              <Badge
+                key={skill}
+                variant="outline"
+                className="max-w-32 truncate border-slate-200 bg-slate-50 text-[11px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                {skill}
+              </Badge>
+            ))}
+            {skillTags.length > 3 && (
+              <span className="self-center text-[11px] font-medium text-slate-400">
+                {t("jobSkillTags.more", { count: skillTags.length - 3 })}
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="my-5 h-px w-full bg-slate-100 dark:bg-slate-800/60" />
 
