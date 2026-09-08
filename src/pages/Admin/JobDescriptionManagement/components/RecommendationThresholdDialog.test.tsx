@@ -34,7 +34,18 @@ describe("RecommendationThresholdDialog", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /70% Cân bằng/i }));
 
-    expect(screen.getByRole("spinbutton", { name: "Mức độ phù hợp tối thiểu" })).toHaveValue(70);
+    expect(screen.getByRole("textbox", { name: "Mức độ phù hợp tối thiểu" })).toHaveValue("70");
     expect(screen.getByText("Chỉ gợi ý công việc đạt từ 70% phù hợp")).toBeInTheDocument();
+  });
+
+  it("shows validation immediately and disables save for an invalid value", () => {
+    renderDialog();
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Mức độ phù hợp tối thiểu" }), {
+      target: { value: "1000" },
+    });
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Vui lòng nhập số từ 0 đến 100");
+    expect(screen.getByRole("button", { name: "Lưu thiết lập" })).toBeDisabled();
   });
 });

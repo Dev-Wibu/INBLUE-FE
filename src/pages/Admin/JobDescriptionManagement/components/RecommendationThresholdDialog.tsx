@@ -91,6 +91,11 @@ export function RecommendationThresholdDialog({
   };
 
   const parsedValue = parseRecommendationThreshold(inputValue);
+  const inputError =
+    inputValue.trim() !== "" && parsedValue === null
+      ? t("jobRecommendationThreshold.validation")
+      : "";
+  const displayedError = validationError || inputError || mutation.error?.message;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -134,15 +139,14 @@ export function RecommendationThresholdDialog({
                 <div className="relative mt-2">
                   <Input
                     id="recommendation-threshold"
-                    type="number"
-                    min={0}
-                    max={100}
-                    step="0.01"
+                    type="text"
                     inputMode="decimal"
+                    maxLength={6}
+                    pattern="\d{1,3}(\.\d{1,2})?"
                     value={inputValue}
                     onChange={(event) => setThreshold(event.target.value)}
                     placeholder="0"
-                    aria-invalid={Boolean(validationError || mutation.error)}
+                    aria-invalid={Boolean(displayedError)}
                     aria-describedby="recommendation-threshold-message"
                     disabled={mutation.isPending}
                     className="h-14 rounded-xl border-slate-200 bg-slate-50/50 pr-16 text-xl font-bold text-slate-950 placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/80 dark:text-white dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-400 dark:focus-visible:bg-slate-950 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
@@ -153,10 +157,9 @@ export function RecommendationThresholdDialog({
                 </div>
                 <p
                   id="recommendation-threshold-message"
-                  className={`mt-2 min-h-5 text-xs leading-5 ${validationError || mutation.error ? "text-red-600 dark:text-red-400" : "text-slate-500 dark:text-slate-400"}`}>
-                  {validationError ||
-                    mutation.error?.message ||
-                    t("jobRecommendationThreshold.inputHint")}
+                  role={displayedError ? "alert" : undefined}
+                  className={`mt-2 min-h-5 text-xs leading-5 ${displayedError ? "text-red-600 dark:text-red-400" : "text-slate-500 dark:text-slate-400"}`}>
+                  {displayedError || t("jobRecommendationThreshold.inputHint")}
                 </p>
               </div>
 
@@ -255,7 +258,7 @@ export function RecommendationThresholdDialog({
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || parsedValue === null}
               className="h-9.5 rounded-xl border border-slate-200 bg-white px-5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
               {t("common.cancel")}
             </Button>

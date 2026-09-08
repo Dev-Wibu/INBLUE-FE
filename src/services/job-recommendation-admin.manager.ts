@@ -9,8 +9,9 @@ export function isValidRecommendationThreshold(value: number): boolean {
 }
 
 export function parseRecommendationThreshold(value: string): number | null {
-  if (value.trim() === "") return null;
-  const parsed = Number(value);
+  const normalized = value.trim();
+  if (!/^\d{1,3}(?:\.\d{1,2})?$/.test(normalized)) return null;
+  const parsed = Number(normalized);
   return isValidRecommendationThreshold(parsed) ? parsed : null;
 }
 

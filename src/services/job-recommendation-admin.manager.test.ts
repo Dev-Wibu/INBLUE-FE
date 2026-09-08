@@ -23,9 +23,12 @@ describe("jobRecommendationAdminManager", () => {
     expect(isValidRecommendationThreshold(thresholdPercent)).toBe(false);
   });
 
-  it.each(["", " ", "NaN", "-1", "100.01", "70.123"])("rejects threshold input %j", (input) => {
-    expect(parseRecommendationThreshold(input)).toBeNull();
-  });
+  it.each(["", " ", "NaN", "-1", "100.01", "70.123", "1e2", "70,25"])(
+    "rejects threshold input %j",
+    (input) => {
+      expect(parseRecommendationThreshold(input)).toBeNull();
+    }
+  );
 
   it("sends the threshold request body", async () => {
     mockApi.PUT.mockResolvedValueOnce({ data: { thresholdPercent: 70.25 } });
