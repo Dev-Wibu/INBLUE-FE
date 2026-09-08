@@ -4,6 +4,7 @@ import type {
   JobDescription,
   JobDescriptionLevel,
   JobDescriptionStatus,
+  JobRecommendation,
   UpdateJobDescriptionRequest,
 } from "@/interfaces";
 
@@ -29,6 +30,18 @@ export interface JobDescriptionSearchParams {
 }
 
 export class JobDescriptionManager {
+  async getRecommendations(): Promise<ApiResponse<JobRecommendation[]>> {
+    try {
+      const { data } = await fetchClient.GET("/api/job-descriptions/recommendations");
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : i18n.t("jobRecommendations.loadError"),
+      };
+    }
+  }
+
   async getAll(): Promise<ApiResponse<JobDescription[]>> {
     try {
       const response = await fetchClient.GET("/api/job-descriptions", {}).then((res) => ({
