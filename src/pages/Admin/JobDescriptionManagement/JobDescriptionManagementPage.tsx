@@ -12,7 +12,7 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, FilePlus2, Import, Plus, Search } from "lucide-react";
+import { ChevronDown, FilePlus2, Import, Plus, Search, Settings2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +23,7 @@ import {
   JobDescriptionTable,
 } from "../CompanyManagement/components";
 import type { Company, JobDescription, JobDescriptionFormData } from "../CompanyManagement/types";
+import { RecommendationThresholdDialog } from "./components/RecommendationThresholdDialog";
 
 export function JobDescriptionManagementPage() {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ export function JobDescriptionManagementPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedJd, setSelectedJd] = useState<JobDescription | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isThresholdOpen, setIsThresholdOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<Partial<JobDescriptionFormData>>({
     status: "OPEN",
@@ -208,6 +210,14 @@ export function JobDescriptionManagementPage() {
                 className="h-[46px] rounded-xl border-slate-200 bg-slate-50/70 pl-11 dark:border-slate-800 dark:bg-slate-950/70"
               />
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsThresholdOpen(true)}
+              className="h-[46px] shrink-0 rounded-xl border-slate-200 px-4 font-semibold dark:border-slate-800">
+              <Settings2 className="mr-2 h-4 w-4" />
+              {t("jobRecommendationThreshold.action")}
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="h-[46px] shrink-0 rounded-xl bg-indigo-600 px-5 font-semibold hover:bg-indigo-700">
@@ -282,6 +292,7 @@ export function JobDescriptionManagementPage() {
         isSubmitting={isSubmitting}
         companies={companies.map((company) => ({ id: company.id!, name: company.name || "" }))}
       />
+      <RecommendationThresholdDialog open={isThresholdOpen} onOpenChange={setIsThresholdOpen} />
     </div>
   );
 }

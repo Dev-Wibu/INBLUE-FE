@@ -8144,6 +8144,49 @@
       "middle": "Middle"
     }
   },
+  "jobRecommendations": {
+    "modeLabel": "Job list mode",
+    "allJobs": "All jobs",
+    "tabTitle": "Recommended for you",
+    "emptyTitle": "No suitable recommendations yet",
+    "emptyDescription": "Update your skills and career preferences so we can find more suitable jobs.",
+    "viewAllJobs": "View all jobs",
+    "updateProfile": "Update profile",
+    "loadError": "Unable to load job recommendations",
+    "errorDescription": "Something went wrong while loading data. Please try again.",
+    "retry": "Try again"
+  },
+  "jobRecommendationThreshold": {
+    "action": "Recommendation settings",
+    "title": "Set the minimum job fit",
+    "label": "Minimum fit",
+    "description": "Decide how closely a job must match a candidate's skill profile before it appears in Recommended for you.",
+    "inputTitle": "Choose the level",
+    "inputDescription": "Enter a value or use a quick option based on your current hiring needs.",
+    "inputHint": "Enter 0 to 100, with up to two decimal places.",
+    "quickSelect": "Quick options",
+    "presets": {
+      "broad": "Broader reach",
+      "balanced": "Balanced",
+      "strict": "More precise"
+    },
+    "guideTitle": "How does this setting work?",
+    "guideDescription": "The system compares the skills in each candidate's career profile with the skills required by every open position.",
+    "flow": {
+      "profile": "Skill profile",
+      "compare": "Compare",
+      "recommend": "Recommend jobs"
+    },
+    "higherEffect": "Raise this level: fewer jobs are recommended, but they align more closely with the candidate's skills.",
+    "lowerEffect": "Lower this level: more jobs are recommended with a broader range of fit.",
+    "previewEmpty": "No minimum fit selected",
+    "preview": "Only recommend jobs with at least {{value}}% fit",
+    "scopeNote": "This change applies to every candidate in the system.",
+    "footerNote": "The system calculates fit automatically from skill data.",
+    "validation": "Enter a number from 0 to 100 with no more than two decimal places.",
+    "save": "Save setting",
+    "success": "Minimum job fit set to {{value}}%"
+  },
   "codeReviewRound": "Code Review Round",
   "codeReviewIssues": "Code Review Issues",
   "codeReviewContext": "Code Review Context",
