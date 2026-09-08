@@ -31,6 +31,20 @@ describe("JD payment navigation", () => {
     );
   });
 
+  it("preserves recommendation mode in the payment return path", () => {
+    const storage = createStorage();
+
+    rememberPendingJdPurchase(73, storage, "recommended");
+
+    expect(storage.setItem).toHaveBeenCalledWith(
+      PENDING_JD_PURCHASE_RETURN_KEY,
+      "/user?tab=jobSearch&mode=recommended&jobId=73"
+    );
+    expect(getJdPurchaseReturnPath(73, storage)).toBe(
+      "/user?tab=jobSearch&mode=recommended&jobId=73"
+    );
+  });
+
   it("prefers a callback jdId and rejects invalid identifiers", () => {
     const storage = createStorage({ [PENDING_JD_PURCHASE_ID_KEY]: "41" });
 
