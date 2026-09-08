@@ -1,4 +1,4 @@
-import { DateTimePicker } from "@/components/shared";
+import { DateTimePicker, JobSkillTagsInput } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -178,26 +178,19 @@ export function JobDescriptionFormDialog({
                 <Label
                   htmlFor="jd-skill-tags"
                   className="text-xs font-bold text-slate-900 dark:text-white">
-                  {t("adminCompanymanagement.skillTags", "Kỹ năng nổi bật")}
+                  {t("jobSkillTags.label")}
                 </Label>
-                <Input
+                <JobSkillTagsInput
                   id="jd-skill-tags"
-                  value={(formData.skillTags ?? []).join(", ")}
-                  onChange={(e) =>
+                  value={formData.skillTags}
+                  onChange={(skillTags) =>
                     onFormChange({
                       ...formData,
-                      skillTags: e.target.value
-                        .split(",")
-                        .map((tag) => tag.trim())
-                        .filter(Boolean),
+                      skillTags,
                     })
                   }
-                  placeholder={t("adminCompanymanagement.skillTagsPlaceholder", "React, Java, SQL")}
-                  className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
+                  disabled={isSubmitting}
                 />
-                <p className="text-[11px] text-slate-500">
-                  {t("adminCompanymanagement.skillTagsHint", "Phân tách bằng dấu phẩy")}
-                </p>
               </div>
             </div>
           </ScrollArea>
