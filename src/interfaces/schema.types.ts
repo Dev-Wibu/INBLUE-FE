@@ -28,6 +28,11 @@ export type SchemaCreateJobDescriptionRequest =
   components["schemas"]["CreateJobDescriptionRequest"];
 export type SchemaUpdateJobDescriptionRequest =
   components["schemas"]["UpdateJobDescriptionRequest"];
+export type JobRecommendation = components["schemas"]["JobRecommendationResponse"];
+export type UpdateJobRecommendationThresholdRequest =
+  components["schemas"]["UpdateJobRecommendationThresholdRequest"];
+export type JobRecommendationThresholdResponse =
+  components["schemas"]["JobRecommendationThresholdResponse"];
 export type SchemaCompany = components["schemas"]["Company"];
 export type SchemaCreateCompanyRequest = components["schemas"]["CreateCompanyRequest"];
 export type SchemaUpdateCompanyRequest = components["schemas"]["UpdateCompanyRequest"];

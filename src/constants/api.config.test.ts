@@ -23,4 +23,9 @@ describe("post authentication routing", () => {
     expect(isPublicAuthRequest("https://api.kdz.asia/api/posts/42/comments", "GET")).toBe(false);
     expect(isPublicAuthRequest("https://api.kdz.asia/api/posts/likes/42/check", "GET")).toBe(false);
   });
+
+  it("sends auth for company endpoints required by the backend", () => {
+    expect(isPublicAuthRequest("https://api.kdz.asia/api/companies", "GET")).toBe(false);
+    expect(isPublicAuthRequest("https://api.kdz.asia/api/companies/42", "GET")).toBe(false);
+  });
 });

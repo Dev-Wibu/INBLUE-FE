@@ -355,6 +355,11 @@ export const API_ENDPOINTS = {
     BY_COMPANY: "/api/job-descriptions/company/:companyId",
     SOFT_DELETE: "/api/job-descriptions/:id/soft",
     TOGGLE: "/api/job-descriptions/toggle/:id",
+    RECOMMENDATIONS: "/api/job-descriptions/recommendations",
+  },
+
+  ADMIN: {
+    JOB_RECOMMENDATION_THRESHOLD: "/api/admin/job-recommendation-threshold",
   },
 
   JOB_IMPORT: {
@@ -467,7 +472,6 @@ const PUBLIC_REGISTRATION_POST_ENDPOINTS = new Set<string>([
 // Public GET endpoints that don't require authentication
 const PUBLIC_GET_ENDPOINTS = new Set<string>([
   API_ENDPOINTS.POSTS.PUBLISHED, // GET /api/posts/published - public blog posts
-  "/api/companies", // GET /api/companies - public companies
 ]);
 
 // Endpoints that should fail silently on 401 (no redirect, no toast)
