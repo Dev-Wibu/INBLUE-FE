@@ -258,13 +258,13 @@ export function RecommendationThresholdDialog({
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
-              disabled={mutation.isPending || parsedValue === null}
+              disabled={mutation.isPending}
               className="h-9.5 rounded-xl border border-slate-200 bg-white px-5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
               {t("common.cancel")}
             </Button>
             <Button
               type="submit"
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || parsedValue === null}
               className="h-9.5 min-w-32 gap-2 rounded-xl bg-indigo-600 px-6 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 transition-all hover:bg-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("jobRecommendationThreshold.save")}
