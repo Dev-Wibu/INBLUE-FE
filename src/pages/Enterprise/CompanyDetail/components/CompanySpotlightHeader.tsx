@@ -73,7 +73,6 @@ export function CompanySpotlightHeader({
             <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
               {company.description || t("enterpriseCompanydetail.noCompanyDescription")}
             </p>
-
             <div className="mt-3 flex items-center gap-3">
               <span className="inline-flex items-center gap-1 text-xs font-bold text-[#0047AB] dark:text-[#66B2FF]">
                 {jobs.length} {t("enterpriseCompanydetail.openPositions")}

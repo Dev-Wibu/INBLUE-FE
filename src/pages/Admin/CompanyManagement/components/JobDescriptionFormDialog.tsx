@@ -178,8 +178,14 @@ export function JobDescriptionFormDialog({
                 <Label
                   htmlFor="jd-skill-tags"
                   className="text-xs font-bold text-slate-900 dark:text-white">
-                  {t("jobSkillTags.label")}
+                  {t("jobSkillTags.label", "Kỹ năng nổi bật (skill tags)")}
                 </Label>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {t(
+                    "jobSkillTags.adminHint",
+                    "Thêm các công nghệ/kỹ năng để ứng viên dễ tìm thấy JD."
+                  )}
+                </p>
                 <JobSkillTagsInput
                   id="jd-skill-tags"
                   value={formData.skillTags}
