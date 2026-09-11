@@ -1,4 +1,13 @@
-import { ArrowLeft, ArrowRight, Check, Code2, Compass, Flag, Target } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Code2,
+  Compass,
+  Flag,
+  Languages,
+  Target,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -41,6 +50,8 @@ export function CareerPreferenceWizard({
   const [step, setStep] = useState(0);
   const [role, setRole] = useState<TargetRole | null>(initialPreference?.targetRole ?? null);
   const [skills, setSkills] = useState<string[]>(initialPreference?.languagesJson ?? []);
+  const [otherLanguages, setOtherLanguages] = useState("");
+  const [showOtherLanguages, setShowOtherLanguages] = useState(false);
   const [level, setLevel] = useState<TargetLevel | null>(initialPreference?.targetLevel ?? null);
   const [goal, setGoal] = useState(initialPreference?.careerGoal ?? "");
   const upsert = useUpsertCareerPreference();
@@ -51,7 +62,14 @@ export function CareerPreferenceWizard({
     if (!open) return;
     setStep(0);
     setRole(initialPreference?.targetRole ?? null);
-    setSkills(initialPreference?.languagesJson ?? []);
+    const savedLanguages = initialPreference?.languagesJson ?? [];
+    const roleSkills = initialPreference?.targetRole
+      ? entryTestSkillsByRole[initialPreference.targetRole]
+      : [];
+    setSkills(savedLanguages.filter((language) => roleSkills.includes(language)));
+    const customLanguages = savedLanguages.filter((language) => !roleSkills.includes(language));
+    setOtherLanguages(customLanguages.join(", "));
+    setShowOtherLanguages(customLanguages.length > 0);
     setLevel(initialPreference?.targetLevel ?? null);
     setGoal(initialPreference?.careerGoal ?? "");
   }, [open, initialPreference]);
@@ -59,13 +77,15 @@ export function CareerPreferenceWizard({
   const handleRole = (nextRole: TargetRole) => {
     setRole(nextRole);
     setSkills([]);
+    setOtherLanguages("");
+    setShowOtherLanguages(false);
   };
 
   const handleSave = async () => {
     if (!role) return;
     const preference = await upsert.mutateAsync({
       targetRole: role,
-      languagesJson: normalizeCareerLanguages(skills),
+      languagesJson: normalizeCareerLanguages([...skills, ...otherLanguages.split(",")]),
       careerGoal: goal.trim() || null,
       targetLevel: level,
     });
@@ -77,7 +97,12 @@ export function CareerPreferenceWizard({
     onSaved(preference);
   };
 
-  const canContinue = step === 0 ? role !== null : step === 1 ? skills.length > 0 : true;
+  const canContinue =
+    step === 0
+      ? role !== null
+      : step === 1
+        ? skills.length > 0 || otherLanguages.trim().length > 0
+        : true;
   const stepItems = [
     { label: t("entryTestOnboarding.direction"), icon: Target },
     { label: t("entryTestOnboarding.skills"), icon: Code2 },
@@ -214,6 +239,37 @@ export function CareerPreferenceWizard({
                   );
                 })}
               </div>
+              <div className="mt-5 space-y-3 rounded-xl border border-dashed border-slate-300 p-4 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setShowOtherLanguages((current) => !current)}
+                  className={cn(
+                    "inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
+                    showOtherLanguages || otherLanguages.trim()
+                      ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                      : "border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-700"
+                  )}>
+                  <Languages className="h-4 w-4" />
+                  {t("entryTestOnboarding.otherLanguages")}
+                </button>
+                {showOtherLanguages && (
+                  <div>
+                    <Label htmlFor="other-languages" className="text-xs font-semibold">
+                      {t("entryTestOnboarding.otherLanguagesLabel")}
+                    </Label>
+                    <Input
+                      id="other-languages"
+                      value={otherLanguages}
+                      onChange={(event) => setOtherLanguages(event.target.value)}
+                      className="mt-2 h-11"
+                      placeholder={t("entryTestOnboarding.otherLanguagesPlaceholder")}
+                    />
+                    <p className="mt-1.5 text-xs text-slate-500">
+                      {t("entryTestOnboarding.otherLanguagesHint")}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -273,7 +329,15 @@ export function CareerPreferenceWizard({
                 <ReviewRow
                   icon={Code2}
                   label={t("entryTestOnboarding.skills")}
-                  value={skills.map((item) => item.replaceAll("_", " ")).join(", ")}
+                  value={[
+                    ...skills,
+                    ...otherLanguages
+                      .split(",")
+                      .map((item) => item.trim())
+                      .filter(Boolean),
+                  ]
+                    .map((item) => item.replaceAll("_", " "))
+                    .join(", ")}
                 />
                 <ReviewRow
                   icon={Flag}

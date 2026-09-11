@@ -7507,6 +7507,7 @@
     "dragDropInstruction": "Kéo thả từ danh sách bên trái vào pipeline &middot;"
   },
   "roundAi": {
+    "analyzing": "Đang phân tích JD...",
     "tab": "Tạo bằng AI",
     "quickFillHint": "AI phân tích JD và điền nhanh một bản nháp",
     "generateTitle": "Tạo quy trình từ Job Description",
@@ -8158,6 +8159,7 @@
   },
   "jobSkillTags": {
     "label": "Kỹ năng yêu cầu",
+    "adminHint": "Thêm các công nghệ/kỹ năng để ứng viên dễ tìm thấy JD.",
     "placeholder": "Nhập kỹ năng, ví dụ: React",
     "hint": "Nhấn Enter hoặc dấu phẩy để thêm kỹ năng.",
     "add": "Thêm kỹ năng",
@@ -8578,6 +8580,10 @@
     "roleDescription": "Chọn một vai trò mục tiêu để cá nhân hóa nội dung học tập.",
     "skillTitle": "Bạn đang sử dụng kỹ năng nào?",
     "skillDescription": "Chọn ít nhất một kỹ năng để hệ thống chọn nội dung phù hợp.",
+    "otherLanguages": "Ngôn ngữ khác",
+    "otherLanguagesLabel": "Nhập ngôn ngữ bạn biết",
+    "otherLanguagesPlaceholder": "Ví dụ: Swift, Clojure, Haskell",
+    "otherLanguagesHint": "Bạn có thể nhập nhiều ngôn ngữ, phân cách bằng dấu phẩy.",
     "levelTitle": "Mức độ bạn đang hướng tới?",
     "levelDescription": "Bạn có thể cập nhật mục tiêu này sau.",
     "goalLabel": "Mục tiêu nghề nghiệp",

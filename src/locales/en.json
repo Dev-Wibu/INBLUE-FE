@@ -7507,6 +7507,7 @@
     "dragDropInstruction": "Drag and drop from the left list into the pipeline &middot;"
   },
   "roundAi": {
+    "analyzing": "Analyzing the JD...",
     "tab": "Create with AI",
     "quickFillHint": "AI analyzes the JD and quick-fills a draft",
     "generateTitle": "Create a pipeline from the Job Description",
@@ -8158,6 +8159,7 @@
   },
   "jobSkillTags": {
     "label": "Required skills",
+    "adminHint": "Add technologies and skills so candidates can find this JD more easily.",
     "placeholder": "Enter a skill, for example: React",
     "hint": "Press Enter or comma to add a skill.",
     "add": "Add skill",
@@ -8578,6 +8580,10 @@
     "roleDescription": "Choose a target role so we can personalize your learning path.",
     "skillTitle": "Which skills are you using?",
     "skillDescription": "Choose at least one skill so we can tailor the assessment.",
+    "otherLanguages": "Other languages",
+    "otherLanguagesLabel": "Add languages you know",
+    "otherLanguagesPlaceholder": "For example: Swift, Clojure, Haskell",
+    "otherLanguagesHint": "You can enter multiple languages separated by commas.",
     "levelTitle": "What level are you aiming for?",
     "levelDescription": "You can update this goal later.",
     "goalLabel": "Career goal",

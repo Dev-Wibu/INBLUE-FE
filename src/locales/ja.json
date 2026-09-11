@@ -7506,6 +7506,7 @@
     "dragDropInstruction": "左のリストからパイプラインにドラッグ＆ドロップしてください &middot;"
   },
   "roundAi": {
+    "analyzing": "求人票を分析しています...",
     "tab": "AIで作成",
     "quickFillHint": "AIが求人票を分析して下書きを自動入力します",
     "generateTitle": "求人票から選考プロセスを作成",
@@ -8157,6 +8158,7 @@
   },
   "jobSkillTags": {
     "label": "必要スキル",
+    "adminHint": "候補者がこの求人を見つけやすいように技術やスキルを追加します。",
     "placeholder": "スキルを入力（例：React）",
     "hint": "Enterキーまたはカンマでスキルを追加します。",
     "add": "スキルを追加",
@@ -8566,6 +8568,10 @@
     "roleDescription": "目標の職種を選ぶと、学習内容を最適化できます。",
     "skillTitle": "使用しているスキルは？",
     "skillDescription": "評価内容を最適化するため、少なくとも1つ選択してください。",
+    "otherLanguages": "その他の言語",
+    "otherLanguagesLabel": "知っている言語を追加",
+    "otherLanguagesPlaceholder": "例：Swift、Clojure、Haskell",
+    "otherLanguagesHint": "複数の言語はカンマで区切って入力できます。",
     "levelTitle": "目標レベルは？",
     "levelDescription": "この目標は後から変更できます。",
     "goalLabel": "キャリア目標",
