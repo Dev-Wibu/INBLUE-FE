@@ -8616,7 +8616,8 @@
     "levelLabels": {
       "INTERN": "Intern",
       "FRESHER": "Fresher",
-      "JUNIOR": "Junior"
+      "JUNIOR": "Junior",
+      "MIDDLE": "Middle"
     },
     "sidebar": "Định hướng năng lực",
     "notSelected": "Chưa chọn",

@@ -8604,7 +8604,8 @@
     "levelLabels": {
       "INTERN": "Intern",
       "FRESHER": "Fresher",
-      "JUNIOR": "Junior"
+      "JUNIOR": "Junior",
+      "MIDDLE": "Middle"
     },
     "sidebar": "キャリア設計",
     "notSelected": "未選択",
