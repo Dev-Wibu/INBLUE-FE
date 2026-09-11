@@ -197,11 +197,6 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
                   <MapPin className="h-3.5 w-3.5 text-slate-400" />
                   {company.location || t("enterpriseCompanysearchpage.noCompanyLocation")}
                 </span>
-                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                <span className="inline-flex items-center gap-1 font-semibold text-indigo-600 dark:text-indigo-400">
-                  <BriefcaseBusiness className="h-3.5 w-3.5" />
-                  {openJobs.length} {t("enterpriseCompanydetail.openPositions", "vị trí mở tuyển")}
-                </span>
               </div>
 
               {company.description && (
@@ -209,18 +204,6 @@ export function CompanyDetailContainer({ companyId, onClose }: CompanyDetailCont
                   {company.description}
                 </p>
               )}
-            </div>
-          </div>
-
-          {/* Quick Stats Pill */}
-          <div className="flex shrink-0 items-center gap-4 rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-950/50">
-            <div className="flex flex-col items-center">
-              <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
-                {openJobs.length}
-              </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                {t("enterpriseCompanydetail.openPositions")}
-              </span>
             </div>
           </div>
         </div>
