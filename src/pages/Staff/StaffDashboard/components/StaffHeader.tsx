@@ -16,6 +16,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 import {
   ClipboardCheck,
+  Code2,
+  Database,
   Home,
   LayoutDashboard,
   Menu,
@@ -59,6 +61,21 @@ const STATIC_NAVIGATION: Array<{
     labelKey: "adminApplicationGrading.applicationGrading",
     to: "/staff?tab=applicationGrading",
     icon: ClipboardCheck,
+  },
+  {
+    labelKey: "common.questionBank",
+    to: "/staff?tab=questionBanks",
+    icon: Database,
+  },
+  {
+    labelKey: "adminAdmindashboard.codeReviewProblems",
+    to: "/staff?tab=codeReviewProblems",
+    icon: Code2,
+  },
+  {
+    labelKey: "adminAdmindashboard.codingProblems",
+    to: "/staff?tab=codingProblems",
+    icon: Code2,
   },
   {
     labelKey: "common.articlesCommunity",

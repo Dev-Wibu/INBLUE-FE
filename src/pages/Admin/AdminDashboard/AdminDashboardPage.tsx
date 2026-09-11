@@ -11,13 +11,10 @@ import {
   Building2,
   CalendarDays,
   ClipboardCheck,
-  Code2,
-  Database,
   FileCheck2,
   FileInput,
   LayoutDashboard,
   LayoutTemplate,
-  Newspaper,
   Star,
   UserCheck,
   UserCog,
@@ -31,8 +28,6 @@ import { MentorReviewAssignmentPage } from "@/pages/Admin/MentorReviewAssignment
 import { AdminAccountPage } from "../Account/AdminAccountPage";
 import { AdminApplicationDetailPage } from "../ApplicationManagement/AdminApplicationDetailPage";
 import { AdminApplicationManagementPage } from "../ApplicationManagement/AdminApplicationManagementPage";
-import { CodeReviewProblemManagementPage } from "../CodeReviewProblemManagement";
-import { CodingProblemManagementPage } from "../CodingProblemManagement";
 import { CompanyManagementPage } from "../CompanyManagement";
 import { DashboardOverviewPage } from "../DashboardOverview";
 import { EntryTestManagementPage } from "../EntryTestManagement/EntryTestManagementPage";
@@ -43,10 +38,8 @@ import { JobDescriptionManagementPage } from "../JobDescriptionManagement";
 import { KioskDetailPage, KioskManagementPage } from "../KioskManagement";
 import { MentorManagementPage } from "../MentorManagement";
 import { NotificationManagementPage } from "../NotificationManagement";
-import { PostManagementPage } from "../PostManagement";
 import { PracticeQuestionManagementPage } from "../PracticeQuestionManagement";
 import { PracticeSetManagementPage } from "../PracticeSetManagement";
-import { QuestionBankManagementPage } from "../QuestionBankManagement";
 import { QuestionMajorManagementPage } from "../QuestionMajorManagement";
 import { ReviewManagementPage } from "../ReviewManagement";
 import { SessionFormPage, SessionManagementPage } from "../SessionManagement";
@@ -149,39 +142,10 @@ const getSidebarMenuGroups = (t: TranslateFn): SidebarMenuGroup[] => [
     label: t("adminAdmindashboard.testingAndTraining"),
     items: [
       {
-        type: "questionBanks",
-        icon: Database,
-        label: t("common.questionBank"),
-        color: "text-indigo-600 dark:text-indigo-500",
-      },
-      {
-        type: "codeReviewProblems",
-        icon: Code2,
-        label: t("adminAdmindashboard.codeReviewProblems"),
-        color: "text-emerald-600 dark:text-emerald-500",
-      },
-      {
-        type: "codingProblems",
-        icon: Code2,
-        label: t("adminAdmindashboard.codingProblems"),
-        color: "text-cyan-600 dark:text-cyan-500",
-      },
-      {
         type: "entry-tests",
         icon: ClipboardCheck,
         label: t("adminEntryTest.sidebar"),
         color: "text-violet-600 dark:text-violet-400",
-      },
-    ],
-  },
-  {
-    label: t("common.content"),
-    items: [
-      {
-        type: "posts",
-        icon: Newspaper,
-        label: t("common.articlesCommunity"),
-        color: "text-orange-600 dark:text-orange-500",
       },
     ],
   },
@@ -390,11 +354,9 @@ export function AdminDashboardPage() {
             <Route path="reviews/:id" element={<ReviewManagementPage />} />
             <Route path="feedback" element={<FeedbackManagementPage />} />
             <Route path="notifications" element={<NotificationManagementPage />} />
-            <Route path="questionBanks" element={<QuestionBankManagementPage />} />
             <Route path="questionMajors" element={<QuestionMajorManagementPage />} />
             <Route path="practiceSets" element={<PracticeSetManagementPage />} />
             <Route path="practiceQuestions" element={<PracticeQuestionManagementPage />} />
-            <Route path="posts" element={<PostManagementPage />} />
             <Route path="companies" element={<CompanyManagementPage />} />
             <Route path="companies/:companyId" element={<CompanyManagementPage />} />
             <Route path="job-descriptions" element={<JobDescriptionManagementPage />} />
@@ -409,8 +371,6 @@ export function AdminDashboardPage() {
             <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />
             <Route path="kiosk-management" element={<KioskManagementPage />} />
             <Route path="kiosk-management/:kioskId" element={<KioskDetailPage />} />
-            <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
-            <Route path="codingProblems" element={<CodingProblemManagementPage />} />
             <Route path="entry-tests" element={<EntryTestManagementPage />} />
           </Routes>
         </main>

@@ -6,16 +6,19 @@ import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestora
 import { useTabsState } from "@/hooks/useTabsState";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { ClipboardCheck, Home, LayoutDashboard, Newspaper } from "lucide-react";
+import { ClipboardCheck, Code2, Database, Home, LayoutDashboard, Newspaper } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ApplicationGradingPage } from "../../Admin/ApplicationGrading/ApplicationGradingPage";
-import { PostManagementPage } from "../../Admin/PostManagement/PostManagementPage";
 import { StaffAccountPage } from "../Account/StaffAccountPage";
+import { CodeReviewProblemManagementPage } from "../CodeReviewProblemManagement";
+import { CodingProblemManagementPage } from "../CodingProblemManagement";
 import { staffGradingWorkspacePage as StaffGradingWorkspacePage } from "../GradingWorkspace";
 import { StaffHomeFeedPage } from "../HomeFeed/StaffHomeFeedPage";
+import { PostManagementPage } from "../PostManagement";
+import { QuestionBankManagementPage } from "../QuestionBankManagement";
 import { StaffOverviewPage } from "./StaffOverviewPage";
 import { StaffHeader } from "./components/StaffHeader";
 
@@ -24,6 +27,9 @@ type TabType =
   | "dashboard"
   | "applicationGrading"
   | "grading-detail"
+  | "questionBanks"
+  | "codeReviewProblems"
+  | "codingProblems"
   | "articles"
   | "account";
 
@@ -32,6 +38,9 @@ const VALID_TAB_TYPES: TabType[] = [
   "dashboard",
   "applicationGrading",
   "grading-detail",
+  "questionBanks",
+  "codeReviewProblems",
+  "codingProblems",
   "articles",
   "account",
 ];
@@ -52,6 +61,18 @@ const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; la
   {
     type: "applicationGrading",
     label: t("adminApplicationGrading.applicationGrading"),
+  },
+  {
+    type: "questionBanks",
+    label: t("common.questionBank"),
+  },
+  {
+    type: "codeReviewProblems",
+    label: t("adminAdmindashboard.codeReviewProblems"),
+  },
+  {
+    type: "codingProblems",
+    label: t("adminAdmindashboard.codingProblems"),
   },
   {
     type: "articles",
@@ -96,6 +117,34 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         color: "text-indigo-600 dark:text-indigo-400",
         description: t("adminApplicationGrading.gradeApplications"),
       },
+    ],
+  },
+  {
+    label: t("adminAdmindashboard.testingAndTraining"),
+    items: [
+      {
+        type: "questionBanks",
+        icon: Database,
+        label: t("common.questionBank"),
+        color: "text-indigo-600 dark:text-indigo-400",
+      },
+      {
+        type: "codeReviewProblems",
+        icon: Code2,
+        label: t("adminAdmindashboard.codeReviewProblems"),
+        color: "text-emerald-600 dark:text-emerald-400",
+      },
+      {
+        type: "codingProblems",
+        icon: Code2,
+        label: t("adminAdmindashboard.codingProblems"),
+        color: "text-cyan-600 dark:text-cyan-400",
+      },
+    ],
+  },
+  {
+    label: t("common.content"),
+    items: [
       {
         type: "articles",
         icon: Newspaper,
@@ -218,6 +267,12 @@ export function StaffDashboardPage() {
         return <StaffOverviewPage />;
       case "applicationGrading":
         return <ApplicationGradingPage onOpenGradingDetail={openGradingTab} basePath="/staff" />;
+      case "questionBanks":
+        return <QuestionBankManagementPage />;
+      case "codeReviewProblems":
+        return <CodeReviewProblemManagementPage />;
+      case "codingProblems":
+        return <CodingProblemManagementPage />;
       case "articles":
         return <PostManagementPage />;
       case "grading-detail": {

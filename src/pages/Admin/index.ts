@@ -6,7 +6,6 @@ export { InterviewTemplateManagementPage } from "./InterviewTemplateManagement/I
 export { KioskBookingManagementPage } from "./KioskBookingManagement";
 export { MentorManagementPage } from "./MentorManagement";
 export { NotificationManagementPage } from "./NotificationManagement";
-export { PostManagementPage } from "./PostManagement";
 export { PracticeQuestionManagementPage } from "./PracticeQuestionManagement";
 export { PracticeSetManagementPage } from "./PracticeSetManagement";
 export { QuestionMajorManagementPage } from "./QuestionMajorManagement";

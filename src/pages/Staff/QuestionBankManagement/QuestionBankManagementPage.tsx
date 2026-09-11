@@ -43,7 +43,7 @@ export function QuestionBankManagementPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
 
   const [pageSize, setPageSize] = useHybridPageSize({
-    key: "src_pages_admin_questionbankmanagement_questionbankmanagementpage_tsx_pagesize",
+    key: "src_pages_staff_questionbankmanagement_questionbankmanagementpage_tsx_pagesize",
     defaultPageSize: 10,
   });
 

@@ -130,7 +130,7 @@ export function CodingProblemManagementPage() {
   }, [problems]);
 
   const [pageSize, setPageSize] = useHybridPageSize({
-    key: "src_pages_admin_codingproblemmanagement_codingproblemmanagementpage_tsx_pagesize",
+    key: "src_pages_staff_codingproblemmanagement_codingproblemmanagementpage_tsx_pagesize",
     defaultPageSize: 10,
   });
 

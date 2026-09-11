@@ -183,7 +183,7 @@ export function PostManagementPage() {
       });
   }, [posts, searchQuery, statusFilter, tagFilter]);
   const [pageSize, setPageSize] = useHybridPageSize({
-    key: "src_pages_admin_postmanagement_postmanagementpage_tsx_pagesize",
+    key: "src_pages_staff_postmanagement_postmanagementpage_tsx_pagesize",
     defaultPageSize: 10,
   });
   const pagination = usePagination({

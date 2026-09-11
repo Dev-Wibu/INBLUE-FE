@@ -159,7 +159,7 @@ export function CodeReviewProblemManagementPage() {
   }, [sortedData, sort, difficultyFilter, searchQuery]);
 
   const [pageSize, setPageSize] = useHybridPageSize({
-    key: "src_pages_admin_codereviewproblemmanagement_page_pagesize",
+    key: "src_pages_staff_codereviewproblemmanagement_page_pagesize",
     defaultPageSize: 10,
   });
 
