@@ -134,6 +134,7 @@ export function RoundCanvasEditorWorkspace({
   const [sidebarTab, setSidebarTab] = useState<"custom" | "templates" | "ai">("custom");
   const [customServerTemplates, setCustomServerTemplates] = useState<PrebuiltProcessTemplate[]>([]);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [isAiReplacingExistingRounds, setIsAiReplacingExistingRounds] = useState(false);
   const [showAiReplaceConfirm, setShowAiReplaceConfirm] = useState(false);
 
   useEffect(() => {
@@ -635,6 +636,7 @@ export function RoundCanvasEditorWorkspace({
   const handleGenerateWithAi = async () => {
     if (!aiGenerationJdId || isGeneratingAi) return;
     setIsGeneratingAi(true);
+    setIsAiReplacingExistingRounds(rounds.length > 0);
     try {
       const result = await roundManager.generatePlanForJd(aiGenerationJdId);
       if (!result.success || !result.data?.rounds?.length) {
@@ -691,6 +693,7 @@ export function RoundCanvasEditorWorkspace({
       toast.error(t("roundAi.generateFailed", "Không thể tạo quy trình bằng AI"));
     } finally {
       setIsGeneratingAi(false);
+      setIsAiReplacingExistingRounds(false);
     }
   };
 
@@ -884,10 +887,12 @@ export function RoundCanvasEditorWorkspace({
 
                 {isGeneratingAi ? (
                   <div className="mt-5 space-y-3" aria-live="polite">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-                      <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-                      {t("roundAi.generating", "Đang phân tích JD và xây dựng quy trình...")}
-                    </div>
+                    {isAiReplacingExistingRounds && (
+                      <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                        <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                        {t("roundAi.analyzing", "Đang phân tích JD...")}
+                      </div>
+                    )}
                     <Skeleton className="h-3 w-full" />
                     <Skeleton className="h-3 w-5/6" />
                     <Skeleton className="h-3 w-2/3" />
@@ -1315,9 +1320,11 @@ export function RoundCanvasEditorWorkspace({
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-300">
                 <Sparkles className="h-6 w-6 animate-pulse" />
               </div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
-                {t("roundAi.generating", "Đang phân tích JD và xây dựng quy trình...")}
-              </p>
+              {isAiReplacingExistingRounds && (
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                  {t("roundAi.analyzing", "Đang phân tích JD...")}
+                </p>
+              )}
               <Skeleton className="h-2 w-44" />
               <Skeleton className="h-2 w-32" />
             </div>
