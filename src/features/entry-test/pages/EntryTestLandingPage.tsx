@@ -249,6 +249,7 @@ export function EntryTestLandingPage() {
                 key={feature.title}
                 onClick={() => setActiveStep(index)}
                 aria-current={activeStep === index ? "step" : undefined}
+                aria-label={feature.title}
                 className={cn(
                   "group relative z-10 flex min-w-0 flex-col items-center gap-1.5 rounded-lg py-1 text-center text-xs font-semibold transition-colors",
                   activeStep === index
