@@ -15,6 +15,7 @@ import {
   Code2,
   Compass,
   Flag,
+  Languages,
   Target,
 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
@@ -52,22 +53,30 @@ export function EntryTestOnboardingPage() {
   const [step, setStep] = useState(0);
   const [role, setRole] = useState<TargetRole | null>(null);
   const [skills, setSkills] = useState<string[]>([]);
+  const [otherLanguages, setOtherLanguages] = useState("");
+  const [showOtherLanguages, setShowOtherLanguages] = useState(false);
   const [level, setLevel] = useState<TargetLevel | null>(null);
   const [goal, setGoal] = useState("");
   const availableSkills = useMemo(() => (role ? entryTestSkillsByRole[role] : []), [role]);
+  const selectedSkills = normalizeCareerLanguages([...skills, ...otherLanguages.split(",")]);
 
   if (exists.data === true && preference.isLoading) return <OnboardingLoading />;
   if (exists.data === true && preference.data?.targetRole) {
     return <Navigate to="/user/entry-test" replace />;
   }
 
-  const canContinue = step === 0 ? role !== null : step === 1 ? skills.length > 0 : true;
+  const canContinue =
+    step === 0
+      ? role !== null
+      : step === 1
+        ? skills.length > 0 || otherLanguages.trim().length > 0
+        : true;
   const finish = async () => {
     if (!role) return;
     try {
       await save.mutateAsync({
         targetRole: role,
-        languagesJson: normalizeCareerLanguages(skills),
+        languagesJson: normalizeCareerLanguages([...skills, ...otherLanguages.split(",")]),
         careerGoal: goal.trim() || null,
         targetLevel: level,
       });
@@ -170,6 +179,8 @@ export function EntryTestOnboardingPage() {
                       onClick={() => {
                         setRole(item.value);
                         setSkills([]);
+                        setOtherLanguages("");
+                        setShowOtherLanguages(false);
                       }}
                       className={cn(
                         "group relative flex min-h-24 items-center gap-4 rounded-2xl border p-4 text-left transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
@@ -232,6 +243,37 @@ export function EntryTestOnboardingPage() {
                     );
                   })}
                 </div>
+                <div className="mt-5 space-y-3 rounded-xl border border-dashed border-slate-300 p-4 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setShowOtherLanguages((current) => !current)}
+                    className={cn(
+                      "inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
+                      showOtherLanguages || otherLanguages.trim()
+                        ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                        : "border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-700"
+                    )}>
+                    <Languages className="h-4 w-4" />
+                    {t("entryTestOnboarding.otherLanguages")}
+                  </button>
+                  {showOtherLanguages && (
+                    <div>
+                      <Label htmlFor="onboarding-other-languages" className="text-xs font-semibold">
+                        {t("entryTestOnboarding.otherLanguagesLabel")}
+                      </Label>
+                      <Input
+                        id="onboarding-other-languages"
+                        value={otherLanguages}
+                        onChange={(event) => setOtherLanguages(event.target.value)}
+                        className="mt-2 h-11 rounded-xl"
+                        placeholder={t("entryTestOnboarding.otherLanguagesPlaceholder")}
+                      />
+                      <p className="mt-1.5 text-xs text-slate-500">
+                        {t("entryTestOnboarding.otherLanguagesHint")}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </Step>
             )}
             {step === 2 && (
@@ -286,7 +328,7 @@ export function EntryTestOnboardingPage() {
                     ],
                     [
                       t("entryTestOnboarding.skills"),
-                      skills.map((item) => item.replaceAll("_", " ")).join(", "),
+                      selectedSkills.map((item) => item.replaceAll("_", " ")).join(", "),
                     ],
                     [
                       t("entryTestOnboarding.levelTitle"),
