@@ -8449,7 +8449,25 @@
     "updateDirection": "Cập nhật định hướng",
     "retestRequiredTitle": "Định hướng đã thay đổi",
     "retestRequiredDescription": "Hãy làm lại bài đánh giá để cập nhật cấp độ và hồ sơ năng lực theo kỹ năng mới.",
+    "retakeNow": "Làm lại ngay",
+    "outcomeTitle": "Sau khi hoàn thành, bạn sẽ nhận được:",
+    "outcomeRadar": "Hồ sơ năng lực trực quan",
+    "outcomePath": "Lộ trình phát triển phù hợp",
+    "outcomeSkills": "Cấp độ kỹ năng theo định hướng",
     "directionSkipped": "Bạn có thể chọn định hướng bất cứ lúc nào trước khi bắt đầu.",
+    "pathTitle": "Lộ trình đánh giá của bạn",
+    "pathComplete": "Đã hoàn thành 3/3 phần",
+    "pathSummary": "3 phần · khoảng 60 phút",
+    "completed": "Đã hoàn thành",
+    "ready": "Sẵn sàng bắt đầu",
+    "meta": {
+      "foundation": "Tư duy + kiến thức nền",
+      "foundationTime": "15 phút",
+      "direction": "Câu hỏi theo vai trò",
+      "directionTime": "20 phút",
+      "coding": "Bài tập lập trình thực hành",
+      "codingTime": "25 phút"
+    },
     "errors": {
       "create": "Không thể tạo bài đánh giá định hướng.",
       "notEnoughItems": "Hệ thống chưa có đủ câu hỏi cho định hướng này. Vui lòng thử lại sau."

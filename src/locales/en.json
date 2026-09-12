@@ -8449,7 +8449,25 @@
     "updateDirection": "Update direction",
     "retestRequiredTitle": "Your direction has changed",
     "retestRequiredDescription": "Retake the assessment to update your competency level and profile for the new skills.",
+    "retakeNow": "Retake now",
+    "outcomeTitle": "After you finish, you will receive:",
+    "outcomeRadar": "A visual competency profile",
+    "outcomePath": "A tailored development path",
+    "outcomeSkills": "Skill levels matched to your direction",
     "directionSkipped": "You can choose a direction at any time before starting.",
+    "pathTitle": "Your assessment path",
+    "pathComplete": "3 of 3 sections completed",
+    "pathSummary": "3 sections · about 60 minutes",
+    "completed": "Completed",
+    "ready": "Ready to start",
+    "meta": {
+      "foundation": "Reasoning + fundamentals",
+      "foundationTime": "15 min",
+      "direction": "Role-aligned questions",
+      "directionTime": "20 min",
+      "coding": "Hands-on coding task",
+      "codingTime": "25 min"
+    },
     "errors": {
       "create": "Unable to create the career direction assessment.",
       "notEnoughItems": "There are not enough questions for this direction yet. Please try again later."
