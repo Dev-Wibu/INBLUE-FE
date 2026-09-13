@@ -1,5 +1,15 @@
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -39,13 +49,25 @@ const THRESHOLD_PRESETS = [
   { value: 85, labelKey: "jobRecommendationThreshold.presets.strict" },
 ] as const;
 
+const THRESHOLD_STORAGE_KEY = "job-recommendation-threshold";
+
+function readStoredThreshold(): string {
+  try {
+    return window.localStorage.getItem(THRESHOLD_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
 export function RecommendationThresholdDialog({
   open,
   onOpenChange,
 }: RecommendationThresholdDialogProps) {
   const { t } = useTranslation();
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(readStoredThreshold);
   const [validationError, setValidationError] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingValue, setPendingValue] = useState<number | null>(null);
 
   const mutation = useMutation({
     mutationFn: async (thresholdPercent: number) => {
@@ -58,6 +80,11 @@ export function RecommendationThresholdDialog({
     onSuccess: ({ thresholdPercent }) => {
       toast.success(t("jobRecommendationThreshold.success", { value: thresholdPercent }));
       setInputValue(String(thresholdPercent));
+      try {
+        window.localStorage.setItem(THRESHOLD_STORAGE_KEY, String(thresholdPercent));
+      } catch {
+        // Storage is optional; the current value remains available in state.
+      }
       setValidationError("");
       onOpenChange(false);
     },
@@ -66,7 +93,7 @@ export function RecommendationThresholdDialog({
   const handleOpenChange = (nextOpen: boolean) => {
     if (mutation.isPending) return;
     if (nextOpen && !open) {
-      setInputValue("");
+      setInputValue((current) => current || readStoredThreshold());
       setValidationError("");
       mutation.reset();
     }
@@ -87,7 +114,14 @@ export function RecommendationThresholdDialog({
       return;
     }
     setValidationError("");
-    mutation.mutate(value);
+    setPendingValue(value);
+    setConfirmOpen(true);
+  };
+
+  const confirmSubmit = () => {
+    if (pendingValue === null) return;
+    setConfirmOpen(false);
+    mutation.mutate(pendingValue);
   };
 
   const parsedValue = parseRecommendationThreshold(inputValue);
@@ -98,7 +132,8 @@ export function RecommendationThresholdDialog({
   const displayedError = validationError || inputError || mutation.error?.message;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-[20px] border-slate-200/90 bg-white !p-0 shadow-2xl md:w-[880px] md:max-w-[880px] dark:border-slate-800 dark:bg-slate-900">
         <form onSubmit={handleSubmit} className="flex max-h-[calc(100dvh-2rem)] flex-col">
           <DialogHeader className="shrink-0 border-b border-slate-200/90 bg-slate-100/90 px-6 py-4 pr-14 text-left dark:border-slate-800 dark:bg-slate-900">
@@ -272,6 +307,28 @@ export function RecommendationThresholdDialog({
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("jobRecommendationThreshold.confirmTitle", "Xác nhận lưu cấu hình")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("jobRecommendationThreshold.confirmDescription", {
+                value: pendingValue ?? "",
+                defaultValue: `Bạn có chắc muốn đặt ngưỡng phù hợp tối thiểu là ${pendingValue ?? ""}%?`,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSubmit}>
+              {t("jobRecommendationThreshold.confirmSave", "Xác nhận lưu")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

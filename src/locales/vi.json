@@ -8153,6 +8153,8 @@
     "emptyDescription": "Hãy cập nhật kỹ năng và định hướng nghề nghiệp để hệ thống tìm công việc phù hợp hơn.",
     "viewAllJobs": "Xem tất cả việc làm",
     "updateProfile": "Cập nhật hồ sơ",
+    "takeAssessment": "Làm bài định hướng",
+    "match": "phù hợp",
     "loadError": "Không thể tải danh sách việc làm gợi ý",
     "errorDescription": "Đã có lỗi khi tải dữ liệu. Vui lòng thử lại.",
     "retry": "Thử lại"
@@ -8197,7 +8199,10 @@
     "footerNote": "Điểm phù hợp do hệ thống tự tính từ dữ liệu kỹ năng.",
     "validation": "Vui lòng nhập số từ 0 đến 100, tối đa hai chữ số thập phân.",
     "save": "Lưu thiết lập",
-    "success": "Đã đặt mức độ phù hợp tối thiểu là {{value}}%"
+    "success": "Đã đặt mức độ phù hợp tối thiểu là {{value}}%",
+    "confirmTitle": "Xác nhận lưu cấu hình",
+    "confirmDescription": "Bạn có chắc muốn đặt ngưỡng phù hợp tối thiểu là {{value}}% không?",
+    "confirmSave": "Xác nhận lưu"
   },
   "codeReviewRound": "Vòng Code Review",
   "codeReviewIssues": "Các vấn đề Code Review",
