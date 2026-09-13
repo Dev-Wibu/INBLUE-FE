@@ -33,6 +33,10 @@ describe("EvaluationPlanEditor validation timing", () => {
 
     expect(container.querySelectorAll('[aria-invalid="true"]')).toHaveLength(0);
 
+    const editButton = container.querySelector('button[aria-label="Sửa tiêu chí"]');
+    expect(editButton).not.toBeNull();
+    fireEvent.click(editButton!);
+
     const codeInput = container.querySelector('input[placeholder="TECH_DEPTH"]');
     expect(codeInput).not.toBeNull();
     fireEvent.blur(codeInput!);

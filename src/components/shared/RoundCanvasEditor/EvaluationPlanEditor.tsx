@@ -1,11 +1,19 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, CheckCircle2, Minus, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { AlertTriangle, Check, CheckCircle2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   EVALUATION_INSTRUCTION_MAX_LENGTH,
@@ -29,101 +37,10 @@ const EMPTY_METRIC: UIEvaluationMetric = {
   name: "",
   description: "",
   weight: 0,
-  maxScore: 100,
+  maxScore: EVALUATION_SCORE_MAX,
   required: false,
   minimumScore: 0,
 };
-
-function ScoreDial({
-  label,
-  value,
-  min = 0,
-  max = 100,
-  step = 1,
-  onChange,
-}: {
-  label: string;
-  value?: number;
-  min?: number;
-  max?: number;
-  step?: number;
-  onChange: (_value: number | undefined) => void;
-}) {
-  const safeValue = Number.isFinite(value) ? Number(value) : 0;
-  const percentage = Math.max(0, Math.min(100, ((safeValue - min) / (max - min || 1)) * 100));
-  const ringColor =
-    percentage >= 75 ? "text-emerald-500" : percentage >= 40 ? "text-indigo-500" : "text-amber-500";
-  const update = (next: number) => onChange(Math.max(min, Math.min(max, Number(next.toFixed(2)))));
-  return (
-    <div className="flex min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 dark:border-slate-700 dark:bg-slate-950">
-      <div className="relative h-11 w-11 shrink-0" title={`${label}: ${safeValue}`}>
-        <svg viewBox="0 0 44 44" className="h-11 w-11 -rotate-90" aria-hidden="true">
-          <circle
-            cx="22"
-            cy="22"
-            r="18"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="4"
-            className="text-slate-200 dark:text-slate-800"
-          />
-          <circle
-            cx="22"
-            cy="22"
-            r="18"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="4"
-            strokeLinecap="round"
-            className={ringColor}
-            strokeDasharray={`${percentage * 1.13} 113`}
-          />
-        </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-slate-800 dark:text-slate-100">
-          {safeValue}
-        </span>
-      </div>
-      <div className="min-w-0 flex-1 overflow-hidden">
-        <span
-          className="block truncate text-[10px] font-semibold tracking-wide text-slate-500 uppercase"
-          title={label}>
-          {label}
-        </span>
-        <div className="mt-1 flex min-w-0 items-center gap-1">
-          <button
-            type="button"
-            className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-            onClick={() => update(safeValue - step)}
-            aria-label={`Decrease ${label}`}>
-            <Minus className="h-3 w-3" />
-          </button>
-          <Input
-            type="text"
-            inputMode="decimal"
-            min={min}
-            max={max}
-            step={step}
-            value={value ?? ""}
-            onChange={(event) => {
-              const raw = event.target.value;
-              if (raw === "") return onChange(undefined);
-              const parsed = Number(raw.replace(/^0+(?=\d)/, ""));
-              if (Number.isFinite(parsed)) onChange(Math.max(min, Math.min(max, parsed)));
-            }}
-            className="h-6 min-w-0 flex-1 border-0 bg-slate-50 p-0 text-center text-xs font-bold tabular-nums shadow-none transition-colors focus-visible:bg-indigo-50 focus-visible:ring-0 dark:bg-slate-900 dark:focus-visible:bg-indigo-950/50"
-          />
-          <button
-            type="button"
-            className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-            onClick={() => update(safeValue + step)}
-            aria-label={`Increase ${label}`}>
-            <Plus className="h-3 w-3" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function EvaluationPlanEditor({
   value,
@@ -132,12 +49,14 @@ export function EvaluationPlanEditor({
 }: EvaluationPlanEditorProps) {
   const { t } = useTranslation();
   const [touchedFields, setTouchedFields] = useState<Set<string>>(() => new Set());
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const metrics = value?.metrics ?? [];
   const validation = validateEvaluationPlan(value);
   const totalWeight = metrics.reduce((sum, metric) => sum + Number(metric.weight ?? 0), 0);
   const hasValidWeight = !validation.totalWeight;
   const hasTouchedWeight = metrics.some((_, index) => touchedFields.has(`metric.${index}.weight`));
   const showWeightError = Boolean(validation.totalWeight && (showAllErrors || hasTouchedWeight));
+  const weightBarPercent = Math.max(0, Math.min(100, totalWeight));
 
   useEffect(() => {
     setTouchedFields(new Set());
@@ -184,6 +103,14 @@ export function EvaluationPlanEditor({
     }
   };
 
+  const metricHasVisibleError = (index: number) => {
+    const errors = validation.metricErrors[index];
+    if (!errors) return false;
+    return (Object.keys(errors) as (keyof typeof errors)[]).some((field) =>
+      shouldShowError(`metric.${index}.${field}`, errors[field])
+    );
+  };
+
   const updateMetric = (index: number, patch: Partial<UIEvaluationMetric>) => {
     const nextMetrics = metrics.map((metric, metricIndex) =>
       metricIndex === index ? { ...metric, ...patch } : metric
@@ -193,10 +120,68 @@ export function EvaluationPlanEditor({
 
   const removeMetric = (index: number) => {
     onChange({ ...value, metrics: metrics.filter((_, metricIndex) => metricIndex !== index) });
+    setEditingIndex((current) => {
+      if (current === null) return null;
+      if (current === index) return null;
+      return current > index ? current - 1 : current;
+    });
   };
 
+  const toggleEdit = (index: number) => {
+    setEditingIndex((current) => (current === index ? null : index));
+  };
+
+  const addMetric = () => {
+    const nextIndex = metrics.length;
+    onChange({ ...value, metrics: [...metrics, { ...EMPTY_METRIC }] });
+    setEditingIndex(nextIndex);
+  };
+
+  const parseNumberInput = (raw: string): number | undefined => {
+    if (raw.trim() === "") return undefined;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
+
+  const updateWeight = (index: number, raw: string) => {
+    const parsed = parseNumberInput(raw);
+    updateMetric(index, {
+      weight: parsed === undefined ? undefined : Math.max(0, Math.min(100, parsed)),
+    });
+  };
+
+  const updateMaxScore = (index: number, raw: string) => {
+    const parsed = parseNumberInput(raw);
+    updateMetric(index, {
+      maxScore:
+        parsed === undefined ? undefined : Math.max(0, Math.min(EVALUATION_SCORE_MAX, parsed)),
+    });
+  };
+
+  const handleMaxScoreBlur = (index: number, maxScore?: number) => {
+    touchField(`metric.${index}.maxScore`);
+    if (maxScore === undefined || maxScore === null) {
+      updateMetric(index, { maxScore: EVALUATION_SCORE_MAX });
+    }
+  };
+
+  const updateMinimumScore = (index: number, raw: string, maxScore: number) => {
+    const parsed = parseNumberInput(raw);
+    updateMetric(index, {
+      minimumScore: parsed === undefined ? undefined : Math.max(0, Math.min(maxScore, parsed)),
+    });
+  };
+
+  const inlineInputClass =
+    "h-8 border-slate-200 bg-white text-xs transition-colors hover:border-indigo-300 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/15 dark:border-slate-700 dark:bg-slate-950 dark:hover:border-indigo-700";
+
+  const inlineNumberInputClass = cn(
+    inlineInputClass,
+    "px-2 text-right tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+  );
+
   return (
-    <section className="space-y-4 border-t border-slate-200 pt-5 dark:border-slate-800">
+    <section className="min-w-0 space-y-4 border-t border-slate-200 pt-5 dark:border-slate-800">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
@@ -211,21 +196,27 @@ export function EvaluationPlanEditor({
         </div>
         <div
           className={cn(
-            "flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold",
+            "flex h-7 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold",
             hasValidWeight
               ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400"
-              : showWeightError
-                ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-400"
-                : "border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+              : "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-400"
           )}>
-          {hasValidWeight ? (
-            <CheckCircle2 className="h-3.5 w-3.5" />
-          ) : showWeightError ? (
-            <AlertTriangle className="h-3.5 w-3.5" />
-          ) : null}
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
           {t("roundAi.totalWeight", "Tổng trọng số")}: {totalWeight}%
         </div>
       </div>
+
+      {metrics.length > 0 && (
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all",
+              hasValidWeight ? "bg-emerald-500" : "bg-rose-700"
+            )}
+            style={{ width: `${weightBarPercent}%` }}
+          />
+        </div>
+      )}
 
       {metrics.length === 0 ? (
         <div className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50/60 px-4 py-5 text-center dark:border-slate-700 dark:bg-slate-900/40">
@@ -237,180 +228,352 @@ export function EvaluationPlanEditor({
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
-          {metrics.map((metric, index) => (
-            <div key={`${metric.code ?? "metric"}-${index}`} className="py-5 first:pt-4 last:pb-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="flex h-6 min-w-6 items-center justify-center rounded-md border border-slate-300 bg-white px-1.5 text-[11px] font-bold text-slate-600 shadow-xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                    {index + 1}
-                  </span>
-                  <span className="truncate text-xs font-bold text-slate-700 dark:text-slate-200">
-                    {metric.name ||
-                      t("roundAi.metricNumber", "Tiêu chí {{number}}", { number: index + 1 })}
-                  </span>
-                  {metric.code && (
-                    <code className="truncate rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                      {metric.code}
-                    </code>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
-                  onClick={() => removeMetric(index)}
-                  title={t("roundAi.removeMetric", "Xóa tiêu chí")}
-                  aria-label={t("roundAi.removeMetric", "Xóa tiêu chí")}>
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
+        <div className="min-w-0 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+          <Table className="table-fixed">
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-28 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {t("roundAi.metricCodeShort", "Code")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {t("roundAi.metricNameShort", "Tên tiêu chí")}
+                </TableHead>
+                <TableHead className="w-24 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {t("roundAi.weightShort", "Weight")}
+                </TableHead>
+                <TableHead className="w-20 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {t("roundAi.maxScoreShort", "Max")}
+                </TableHead>
+                <TableHead className="w-20 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {t("roundAi.minimumScoreShort", "Min")}
+                </TableHead>
+                <TableHead className="w-20 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {t("roundAi.requiredShort", "Required")}
+                </TableHead>
+                <TableHead className="w-20" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {metrics.map((metric, index) => {
+                const isEditing = editingIndex === index;
+                const hasError = metricHasVisibleError(index);
+                const maxScoreForMin = metric.maxScore ?? EVALUATION_SCORE_MAX;
+                return (
+                  <Fragment key={index}>
+                    <TableRow
+                      className={cn(
+                        !isEditing && "cursor-pointer",
+                        isEditing && "bg-indigo-50/60 dark:bg-indigo-950/20",
+                        hasError && !isEditing && "bg-red-50/60 dark:bg-red-950/10"
+                      )}
+                      onClick={() => !isEditing && toggleEdit(index)}>
+                      <TableCell
+                        className={cn("py-2.5 align-top", isEditing && "whitespace-normal")}
+                        onClick={(event) => isEditing && event.stopPropagation()}>
+                        {isEditing ? (
+                          <>
+                            <Input
+                              value={metric.code ?? ""}
+                              onChange={(event) =>
+                                updateMetric(index, {
+                                  code: event.target.value
+                                    .toUpperCase()
+                                    .replace(/[^A-Z0-9_]/g, "_"),
+                                })
+                              }
+                              onBlur={() => touchField(`metric.${index}.code`)}
+                              maxLength={METRIC_CODE_MAX_LENGTH}
+                              aria-invalid={shouldShowError(
+                                `metric.${index}.code`,
+                                validation.metricErrors[index]?.code
+                              )}
+                              placeholder="TECH_DEPTH"
+                              className={cn(inlineInputClass, "w-full font-mono")}
+                            />
+                            {shouldShowError(
+                              `metric.${index}.code`,
+                              validation.metricErrors[index]?.code
+                            ) && (
+                              <p className="mt-1 text-[10px] leading-tight text-red-600 dark:text-red-400">
+                                {getValidationMessage(validation.metricErrors[index].code)}
+                              </p>
+                            )}
+                          </>
+                        ) : metric.code ? (
+                          <Badge
+                            variant="outline"
+                            className="border-slate-200 bg-slate-50 font-mono text-[10px] text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                            {metric.code}
+                          </Badge>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 italic dark:text-slate-500">
+                            {t("roundAi.noCode", "chưa có mã")}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell
+                        className={cn(
+                          "overflow-hidden py-2.5 align-top",
+                          isEditing && "whitespace-normal"
+                        )}
+                        onClick={(event) => isEditing && event.stopPropagation()}>
+                        {isEditing ? (
+                          <>
+                            <Input
+                              value={metric.name ?? ""}
+                              onChange={(event) =>
+                                updateMetric(index, { name: event.target.value })
+                              }
+                              onBlur={() => touchField(`metric.${index}.name`)}
+                              maxLength={METRIC_NAME_MAX_LENGTH}
+                              aria-invalid={shouldShowError(
+                                `metric.${index}.name`,
+                                validation.metricErrors[index]?.name
+                              )}
+                              placeholder={t(
+                                "roundAi.metricNamePlaceholder",
+                                "Ví dụ: Độ sâu kỹ thuật"
+                              )}
+                              className={inlineInputClass}
+                            />
+                            {shouldShowError(
+                              `metric.${index}.name`,
+                              validation.metricErrors[index]?.name
+                            ) && (
+                              <p className="mt-1 text-[10px] leading-tight text-red-600 dark:text-red-400">
+                                {getValidationMessage(validation.metricErrors[index].name)}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <span
+                            className="block truncate text-xs font-medium text-slate-700 dark:text-slate-200"
+                            title={metric.name}>
+                            {metric.name ||
+                              t("roundAi.metricNumber", "Tiêu chí {{number}}", {
+                                number: index + 1,
+                              })}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell
+                        className={cn("py-2.5 align-top", isEditing && "whitespace-normal")}
+                        onClick={(event) => isEditing && event.stopPropagation()}>
+                        {isEditing ? (
+                          <>
+                            <Input
+                              type="number"
+                              inputMode="decimal"
+                              min={0}
+                              max={100}
+                              value={metric.weight ?? ""}
+                              onChange={(event) => updateWeight(index, event.target.value)}
+                              onBlur={() => touchField(`metric.${index}.weight`)}
+                              aria-invalid={shouldShowError(
+                                `metric.${index}.weight`,
+                                validation.metricErrors[index]?.weight
+                              )}
+                              className={inlineNumberInputClass}
+                            />
+                            {shouldShowError(
+                              `metric.${index}.weight`,
+                              validation.metricErrors[index]?.weight
+                            ) && (
+                              <p className="mt-1 text-[10px] leading-tight text-red-600 dark:text-red-400">
+                                {getValidationMessage(validation.metricErrors[index].weight)}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <span className="block text-right text-xs font-semibold text-slate-700 tabular-nums dark:text-slate-200">
+                            {metric.weight ?? 0}%
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell
+                        className={cn("py-2.5 align-top", isEditing && "whitespace-normal")}
+                        onClick={(event) => isEditing && event.stopPropagation()}>
+                        {isEditing ? (
+                          <>
+                            <Input
+                              type="number"
+                              inputMode="decimal"
+                              min={0}
+                              max={EVALUATION_SCORE_MAX}
+                              value={metric.maxScore ?? ""}
+                              onChange={(event) => updateMaxScore(index, event.target.value)}
+                              onBlur={() => handleMaxScoreBlur(index, metric.maxScore)}
+                              aria-invalid={shouldShowError(
+                                `metric.${index}.maxScore`,
+                                validation.metricErrors[index]?.maxScore
+                              )}
+                              className={inlineNumberInputClass}
+                            />
+                            {shouldShowError(
+                              `metric.${index}.maxScore`,
+                              validation.metricErrors[index]?.maxScore
+                            ) && (
+                              <p className="mt-1 text-[10px] leading-tight text-red-600 dark:text-red-400">
+                                {getValidationMessage(validation.metricErrors[index].maxScore)}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <span className="block text-right text-xs text-slate-600 tabular-nums dark:text-slate-300">
+                            {metric.maxScore ?? "—"}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell
+                        className={cn("py-2.5 align-top", isEditing && "whitespace-normal")}
+                        onClick={(event) => isEditing && event.stopPropagation()}>
+                        {isEditing ? (
+                          <>
+                            <Input
+                              type="number"
+                              inputMode="decimal"
+                              min={0}
+                              max={maxScoreForMin}
+                              value={metric.minimumScore ?? ""}
+                              onChange={(event) =>
+                                updateMinimumScore(index, event.target.value, maxScoreForMin)
+                              }
+                              onBlur={() => touchField(`metric.${index}.minimumScore`)}
+                              aria-invalid={shouldShowError(
+                                `metric.${index}.minimumScore`,
+                                validation.metricErrors[index]?.minimumScore
+                              )}
+                              className={inlineNumberInputClass}
+                            />
+                            {shouldShowError(
+                              `metric.${index}.minimumScore`,
+                              validation.metricErrors[index]?.minimumScore
+                            ) && (
+                              <p className="mt-1 text-[10px] leading-tight text-red-600 dark:text-red-400">
+                                {getValidationMessage(validation.metricErrors[index].minimumScore)}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <span className="block text-right text-xs text-slate-600 tabular-nums dark:text-slate-300">
+                            {metric.minimumScore ?? "—"}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell
+                        className="py-2.5 align-top"
+                        onClick={(event) => isEditing && event.stopPropagation()}>
+                        {isEditing ? (
+                          <input
+                            type="checkbox"
+                            checked={metric.required ?? false}
+                            onChange={(event) => {
+                              const checked = event.target.checked;
+                              updateMetric(index, { required: checked });
+                              if (checked) touchField(`metric.${index}.minimumScore`);
+                            }}
+                            aria-label={t("roundAi.required", "Bắt buộc đạt")}
+                            className="h-4 w-4 cursor-pointer accent-rose-600"
+                          />
+                        ) : metric.required ? (
+                          <Check
+                            className="h-4 w-4 text-rose-600 dark:text-rose-400"
+                            aria-label={t("roundAi.required", "Bắt buộc đạt")}
+                          />
+                        ) : (
+                          <span className="text-xs text-slate-300 dark:text-slate-600">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-2.5 align-top">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className={cn(
+                              "h-7 w-7",
+                              isEditing
+                                ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/50 dark:text-indigo-300"
+                                : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            )}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              toggleEdit(index);
+                            }}
+                            title={t("roundAi.editMetric", "Sửa tiêu chí")}
+                            aria-label={t("roundAi.editMetric", "Sửa tiêu chí")}>
+                            {isEditing ? (
+                              <X className="h-3.5 w-3.5" />
+                            ) : (
+                              <Pencil className="h-3.5 w-3.5" />
+                            )}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              removeMetric(index);
+                            }}
+                            title={t("roundAi.removeMetric", "Xóa tiêu chí")}
+                            aria-label={t("roundAi.removeMetric", "Xóa tiêu chí")}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {isEditing && (
+                      <TableRow className="bg-slate-50/70 hover:bg-slate-50/70 dark:bg-slate-900/40">
+                        <TableCell colSpan={7} className="p-4 pt-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold">
+                              {t("common.description", "Mô tả")}
+                            </Label>
+                            <Textarea
+                              value={metric.description ?? ""}
+                              onChange={(event) =>
+                                updateMetric(index, { description: event.target.value })
+                              }
+                              onBlur={() => touchField(`metric.${index}.description`)}
+                              maxLength={METRIC_DESCRIPTION_MAX_LENGTH}
+                              aria-invalid={shouldShowError(
+                                `metric.${index}.description`,
+                                validation.metricErrors[index]?.description
+                              )}
+                              rows={2}
+                              className="border-slate-200 bg-white text-xs transition-colors hover:border-indigo-300 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/15 dark:border-slate-700 dark:bg-slate-950 dark:hover:border-indigo-700"
+                            />
+                            {shouldShowError(
+                              `metric.${index}.description`,
+                              validation.metricErrors[index]?.description
+                            ) && (
+                              <p className="text-[11px] leading-relaxed text-red-600 dark:text-red-400">
+                                {getValidationMessage(validation.metricErrors[index].description)}
+                              </p>
+                            )}
+                          </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">{t("roundAi.metricCode", "Mã")}</Label>
-                  <Input
-                    value={metric.code ?? ""}
-                    onChange={(event) =>
-                      updateMetric(index, {
-                        code: event.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, "_"),
-                      })
-                    }
-                    onBlur={() => touchField(`metric.${index}.code`)}
-                    maxLength={METRIC_CODE_MAX_LENGTH}
-                    aria-invalid={shouldShowError(
-                      `metric.${index}.code`,
-                      validation.metricErrors[index]?.code
+                          <div className="mt-3 flex justify-end">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-7 gap-1.5 text-xs"
+                              onClick={() => setEditingIndex(null)}>
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              {t("roundAi.doneEditingMetric", "Xong")}
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     )}
-                    placeholder="TECH_DEPTH"
-                    className="h-9 border-slate-200 bg-slate-50/70 font-mono text-xs transition-colors hover:border-indigo-300 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/15 dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-indigo-700 dark:focus-visible:bg-slate-950"
-                  />
-                  {shouldShowError(
-                    `metric.${index}.code`,
-                    validation.metricErrors[index]?.code
-                  ) && (
-                    <p className="text-[11px] leading-relaxed text-red-600 dark:text-red-400">
-                      {getValidationMessage(validation.metricErrors[index].code)}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">{t("roundAi.metricName", "Tên")}</Label>
-                  <Input
-                    value={metric.name ?? ""}
-                    onChange={(event) => updateMetric(index, { name: event.target.value })}
-                    onBlur={() => touchField(`metric.${index}.name`)}
-                    maxLength={METRIC_NAME_MAX_LENGTH}
-                    aria-invalid={shouldShowError(
-                      `metric.${index}.name`,
-                      validation.metricErrors[index]?.name
-                    )}
-                    placeholder={t("roundAi.metricNamePlaceholder", "Ví dụ: Độ sâu kỹ thuật")}
-                    className="h-9 border-slate-200 bg-slate-50/70 text-xs transition-colors hover:border-indigo-300 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/15 dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-indigo-700 dark:focus-visible:bg-slate-950"
-                  />
-                  {shouldShowError(
-                    `metric.${index}.name`,
-                    validation.metricErrors[index]?.name
-                  ) && (
-                    <p className="text-[11px] leading-relaxed text-red-600 dark:text-red-400">
-                      {getValidationMessage(validation.metricErrors[index].name)}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-3 space-y-1.5">
-                <Label className="text-xs font-semibold">{t("common.description", "Mô tả")}</Label>
-                <Textarea
-                  value={metric.description ?? ""}
-                  onChange={(event) => updateMetric(index, { description: event.target.value })}
-                  onBlur={() => touchField(`metric.${index}.description`)}
-                  maxLength={METRIC_DESCRIPTION_MAX_LENGTH}
-                  aria-invalid={shouldShowError(
-                    `metric.${index}.description`,
-                    validation.metricErrors[index]?.description
-                  )}
-                  rows={2}
-                  className="border-slate-200 bg-slate-50/70 text-xs transition-colors hover:border-indigo-300 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/15 dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-indigo-700 dark:focus-visible:bg-slate-950"
-                />
-                {shouldShowError(
-                  `metric.${index}.description`,
-                  validation.metricErrors[index]?.description
-                ) && (
-                  <p className="text-[11px] leading-relaxed text-red-600 dark:text-red-400">
-                    {getValidationMessage(validation.metricErrors[index].description)}
-                  </p>
-                )}
-              </div>
-
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <div className="space-y-1.5">
-                  <ScoreDial
-                    label={t("roundAi.weight", "Trọng số (%)")}
-                    value={metric.weight}
-                    onChange={(weight) => updateMetric(index, { weight })}
-                  />
-                  {shouldShowError(
-                    `metric.${index}.weight`,
-                    validation.metricErrors[index]?.weight
-                  ) && (
-                    <p className="text-[11px] leading-relaxed text-red-600 dark:text-red-400">
-                      {getValidationMessage(validation.metricErrors[index].weight)}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <ScoreDial
-                    label={t("roundAi.maxScore", "Điểm tối đa")}
-                    value={metric.maxScore}
-                    min={0}
-                    max={EVALUATION_SCORE_MAX}
-                    step={1}
-                    onChange={(maxScore) => updateMetric(index, { maxScore })}
-                  />
-                  {shouldShowError(
-                    `metric.${index}.maxScore`,
-                    validation.metricErrors[index]?.maxScore
-                  ) && (
-                    <p className="text-[11px] leading-relaxed text-red-600 dark:text-red-400">
-                      {getValidationMessage(validation.metricErrors[index].maxScore)}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <ScoreDial
-                    label={t("roundAi.minimumScore", "Điểm sàn")}
-                    value={metric.minimumScore ?? undefined}
-                    min={0}
-                    max={metric.maxScore ?? EVALUATION_SCORE_MAX}
-                    step={1}
-                    onChange={(minimumScore) => updateMetric(index, { minimumScore })}
-                  />
-                  {shouldShowError(
-                    `metric.${index}.minimumScore`,
-                    validation.metricErrors[index]?.minimumScore
-                  ) && (
-                    <p className="text-[11px] leading-relaxed text-red-600 dark:text-red-400">
-                      {getValidationMessage(validation.metricErrors[index].minimumScore)}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-end pb-2">
-                  <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
-                    <Checkbox
-                      checked={metric.required ?? false}
-                      onCheckedChange={(checked) => {
-                        updateMetric(index, { required: checked === true });
-                        if (checked === true) touchField(`metric.${index}.minimumScore`);
-                      }}
-                    />
-                    {t("roundAi.required", "Bắt buộc đạt")}
-                  </label>
-                </div>
-              </div>
-            </div>
-          ))}
+                  </Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       )}
 
@@ -419,7 +582,7 @@ export function EvaluationPlanEditor({
         variant="outline"
         size="sm"
         className="h-8 gap-1.5 text-xs"
-        onClick={() => onChange({ ...value, metrics: [...metrics, { ...EMPTY_METRIC }] })}>
+        onClick={addMetric}>
         <Plus className="h-3.5 w-3.5" />
         {t("roundAi.addMetric", "Thêm tiêu chí")}
       </Button>
