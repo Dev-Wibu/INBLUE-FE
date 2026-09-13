@@ -12,6 +12,7 @@ export type SchemaMentorResponse = components["schemas"]["MentorResponse"];
 export type SchemaUserInfo = components["schemas"]["UserInfo"];
 export type SchemaCreateMentorRequest = components["schemas"]["CreateMentorRequest"];
 export type SchemaMentorInterviewDto = components["schemas"]["MentorInterviewDto"];
+export type SchemaUserScheduleEventDto = components["schemas"]["UserScheduleEventDto"];
 /** MemberShipPlan is no longer in schema-from-be; defined locally to match expected BE shape */
 export type SchemaMembershipPlan = {
   id?: number;
@@ -76,7 +77,23 @@ export type PaymentPurpose = "FULLY_PAID" | "MENTOR_INTERVIEW" | "JD_PURCHASE";
 export type PaymentEntity = components["schemas"]["Payment"] & {
   paymentPurpose?: PaymentPurpose | null;
 };
-export type CreateMentorRequest = SchemaCreateMentorRequest;
+export interface MentorProfileRequest {
+  certifications: string[];
+  skills: string[];
+  jobTitle: string | null;
+  education: string | null;
+  languages: string[];
+  portfolioUrl: string | null;
+  githubUrl: string | null;
+}
+
+export type CreateMentorRequest = Omit<SchemaCreateMentorRequest, "profileData"> & {
+  profileData: MentorProfileRequest;
+};
+
+export type UpdateMentorRequest = Omit<SchemaCreateMentorRequest, "password"> & {
+  profileData: MentorProfileRequest;
+};
 export type JobDescription = SchemaJobDescription & {
   companyName?: string;
   companyLogo?: string;
@@ -148,6 +165,8 @@ export interface User extends Omit<SchemaUser, "role"> {
  */
 export interface Mentor extends Omit<SchemaMentor, "role">, Partial<SchemaMentorResponse> {
   role?: UserRole;
+  profileData?: MentorProfileRequest | null;
+  matchPercent?: number | null;
   /** @deprecated Use averageRating from schema response */
   rate?: number;
 }
@@ -177,6 +196,7 @@ export interface MentorFormData extends Omit<SchemaCreateMentorRequest, "name" |
   name: string;
   email: string;
   active?: boolean;
+  profileData: MentorProfileRequest;
 }
 
 /**

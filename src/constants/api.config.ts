@@ -87,6 +87,9 @@ export const API_ENDPOINTS = {
     CREATE: "/api/mentors",
     UPDATE: "/api/mentors/:id",
     TOGGLE: "/api/mentors/toggle/:id",
+    SCHEDULE: "/api/mentors/schedule",
+    SCHEDULE_BY_ID: "/api/mentors/:mentorId/schedule",
+    RECOMMENDED: "/api/mentors/recommended",
   },
 
   // AI Interview endpoints

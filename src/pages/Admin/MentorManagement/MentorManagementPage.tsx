@@ -78,6 +78,25 @@ export function MentorManagementPage() {
           currentCompany: found.currentCompany,
           pricePerMinute: found.pricePerMinute,
           active: found.active ?? true,
+          profileData: found.profileData
+            ? {
+                certifications: found.profileData.certifications ?? [],
+                skills: found.profileData.skills ?? [],
+                jobTitle: found.profileData.jobTitle ?? null,
+                education: found.profileData.education ?? null,
+                languages: found.profileData.languages ?? [],
+                portfolioUrl: found.profileData.portfolioUrl ?? null,
+                githubUrl: found.profileData.githubUrl ?? null,
+              }
+            : {
+                certifications: [],
+                skills: [],
+                jobTitle: null,
+                education: null,
+                languages: [],
+                portfolioUrl: null,
+                githubUrl: null,
+              },
         });
         setViewMode("detail");
       }

@@ -10,17 +10,24 @@ import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type {
   ApiResponse,
   BaseManager,
+  CreateMentorRequest as ContractCreateMentorRequest,
   Mentor,
+  MentorProfileRequest,
   PaginatedResponse,
   PaginationParams,
-  SchemaCreateMentorRequest,
+  SchemaUserScheduleEventDto,
 } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
 import { validateMentorData } from "@/lib/mentor-validation";
 
 // Re-export Mentor type for convenience
 export type { Mentor } from "@/interfaces";
-export type CreateMentorRequest = SchemaCreateMentorRequest;
+export type CreateMentorRequest = ContractCreateMentorRequest;
+export type UpdateMentorRequest = Omit<CreateMentorRequest, "password"> & {
+  profileData: MentorProfileRequest;
+};
+export type RecommendedMentor = Mentor & { matchPercent?: number | null };
+export type MentorScheduleEvent = SchemaUserScheduleEventDto;
 
 /**
  * Extended mentor data for creation with file uploads
@@ -35,18 +42,29 @@ export interface CreateMentorData extends CreateMentorRequest {
  * Creates an empty file placeholder for multipart/form-data requests
  * Used as workaround for backend null pointer issues with optional file fields
  */
-function createEmptyFilePlaceholder(): File {
-  return new File([], "empty.txt", {
-    type: "text/plain",
-  });
-}
-
 type MentorApiShape = Mentor & { isActive?: boolean };
 
 function normalizeMentor(mentor: MentorApiShape): Mentor {
-  if (typeof mentor.active === "boolean") return mentor;
-  if (typeof mentor.isActive === "boolean") return { ...mentor, active: mentor.isActive };
-  return mentor;
+  if (!mentor || typeof mentor !== "object") return mentor;
+  const normalized =
+    typeof mentor.active === "boolean"
+      ? mentor
+      : typeof mentor.isActive === "boolean"
+        ? { ...mentor, active: mentor.isActive }
+        : mentor;
+  if (!mentor.profileData) return normalized;
+  return {
+    ...normalized,
+    profileData: {
+      certifications: mentor.profileData.certifications ?? [],
+      skills: mentor.profileData.skills ?? [],
+      jobTitle: mentor.profileData.jobTitle ?? null,
+      education: mentor.profileData.education ?? null,
+      languages: mentor.profileData.languages ?? [],
+      portfolioUrl: mentor.profileData.portfolioUrl ?? null,
+      githubUrl: mentor.profileData.githubUrl ?? null,
+    },
+  };
 }
 
 function normalizeMentorResponse(
@@ -152,6 +170,43 @@ export class MentorManager implements BaseManager<Mentor> {
     return list.find((m) => (m.email ?? "").trim().toLowerCase() === target) ?? null;
   }
 
+  async getSchedule(options?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<ApiResponse<MentorScheduleEvent[]>> {
+    try {
+      const response = await fetchClient.GET("/api/mentors/schedule", {
+        params: { query: options },
+      });
+      return { success: true, data: (response.data ?? []) as MentorScheduleEvent[] };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : t("common.unableToLoadMentorList"),
+      };
+    }
+  }
+
+  async getScheduleById(
+    mentorId: number,
+    options?: { startDate?: string; endDate?: string }
+  ): Promise<ApiResponse<MentorScheduleEvent[]>> {
+    if (!Number.isInteger(mentorId) || mentorId <= 0) {
+      return { success: false, error: t("general.invalidId") };
+    }
+    try {
+      const response = await fetchClient.GET("/api/mentors/{mentorId}/schedule", {
+        params: { path: { mentorId }, query: options },
+      });
+      return { success: true, data: (response.data ?? []) as MentorScheduleEvent[] };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : t("common.unableToLoadMentorList"),
+      };
+    }
+  }
+
   /**
    * Create new mentor
    * POST /api/mentors (multipart/form-data)
@@ -186,20 +241,24 @@ export class MentorManager implements BaseManager<Mentor> {
         linkedInUrl: _data.linkedInUrl,
         currentCompany: _data.currentCompany,
         pricePerMinute: _data.pricePerMinute,
+        profileData: {
+          certifications: _data.profileData?.certifications ?? [],
+          skills: _data.profileData?.skills ?? [],
+          jobTitle: _data.profileData?.jobTitle ?? null,
+          education: _data.profileData?.education ?? null,
+          languages: _data.profileData?.languages ?? [],
+          portfolioUrl: _data.profileData?.portfolioUrl ?? null,
+          githubUrl: _data.profileData?.githubUrl ?? null,
+        },
       };
 
       // Add active field to the payload to ensure new mentors are active
       // Note: This extends CreateMentorRequest with the active field from Mentor schema
-      const mentorPayload = {
-        ...mentorInfo,
-        active: (_data as Partial<Mentor>).active !== false, // Default true unless explicitly false
-      };
-
       // Append the 'data' field as a Blob with application/json content type
       // This ensures the backend receives proper JSON data within multipart/form-data
       formData.append(
         "data",
-        new Blob([JSON.stringify(mentorPayload)], {
+        new Blob([JSON.stringify(mentorInfo)], {
           type: "application/json",
         })
       );
@@ -212,8 +271,6 @@ export class MentorManager implements BaseManager<Mentor> {
       // Always send avatar to avoid "avatar is null" NullPointerException
       if (createData.avatar) {
         formData.append("avatar", createData.avatar);
-      } else {
-        formData.append("avatar", createEmptyFilePlaceholder());
       }
 
       // Remove default Content-Type header to let axios set multipart boundary automatically
@@ -296,11 +353,7 @@ export class MentorManager implements BaseManager<Mentor> {
       // hash that came back from GET /api/mentors/{id}. We only do that
       // when the field is actually a truthy string — never emit null /
       // undefined / empty.
-      const mentorInfo: CreateMentorRequest & {
-        id?: number;
-        active?: boolean;
-      } = {
-        id: Number(_id),
+      const mentorInfo: UpdateMentorRequest = {
         name: (_data.name ?? existingMentor.name)?.trim(),
         email: (_data.email ?? existingMentor.email)?.trim(),
         bio: _data.bio ?? existingMentor.bio,
@@ -309,24 +362,18 @@ export class MentorManager implements BaseManager<Mentor> {
         linkedInUrl: _data.linkedInUrl ?? existingMentor.linkedInUrl,
         currentCompany: _data.currentCompany ?? existingMentor.currentCompany,
         pricePerMinute: _data.pricePerMinute ?? existingMentor.pricePerMinute,
+        profileData: {
+          certifications:
+            _data.profileData?.certifications ?? existingMentor.profileData?.certifications ?? [],
+          skills: _data.profileData?.skills ?? existingMentor.profileData?.skills ?? [],
+          jobTitle: _data.profileData?.jobTitle ?? existingMentor.profileData?.jobTitle ?? null,
+          education: _data.profileData?.education ?? existingMentor.profileData?.education ?? null,
+          languages: _data.profileData?.languages ?? existingMentor.profileData?.languages ?? [],
+          portfolioUrl:
+            _data.profileData?.portfolioUrl ?? existingMentor.profileData?.portfolioUrl ?? null,
+          githubUrl: _data.profileData?.githubUrl ?? existingMentor.profileData?.githubUrl ?? null,
+        },
       };
-
-      // Add active field if provided
-      // Note: 'active' is not in MentorInfo schema but BE curl example includes it
-      // The BE accepts it for setting mentor active status during update
-      if ("active" in _data) {
-        mentorInfo.active = Boolean(_data.active);
-      } else if (existingMentor.active !== undefined) {
-        mentorInfo.active = existingMentor.active;
-      }
-
-      // Preserve the existing password. Only re-send if we actually have a
-      // truthy string (the BE strips a null/missing field and re-hashes
-      // anything we send, so we want to be sure).
-      const existingPassword = (existingMentor as { password?: unknown }).password;
-      if (typeof existingPassword === "string" && existingPassword.length > 0) {
-        mentorInfo.password = existingPassword;
-      }
 
       // Append the 'data' field as a Blob with application/json content type
       // This matches the curl format: --form 'data="...";type=application/json'
@@ -341,8 +388,6 @@ export class MentorManager implements BaseManager<Mentor> {
       const updateData = _data as CreateMentorData;
       if (updateData.avatar) {
         formData.append("avatar", updateData.avatar);
-      } else {
-        formData.append("avatar", createEmptyFilePlaceholder());
       }
 
       // Use PUT endpoint for update per MENTOR_AVATAR_UPDATE_GUIDE.md
@@ -378,20 +423,15 @@ export class MentorManager implements BaseManager<Mentor> {
    * GET /api/mentors/toggle/{id}
    * According to schema-from-be.d.ts
    */
-  async toggleActive(_id: string | number): Promise<ApiResponse<Mentor>> {
+  async toggleActive(_id: string | number): Promise<ApiResponse<void>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR.TOGGLE, {
         id: _id,
       });
       // @ts-expect-error: Backend Swagger schema mismatch
-      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
-        data: res.data,
-        status: res.response?.status,
-        headers: res.response?.headers,
-      }));
+      await fetchClient.GET(endpoint, {});
       return {
         success: true,
-        data: normalizeMentor(response.data as MentorApiShape),
       };
     } catch (error) {
       return {
@@ -411,6 +451,29 @@ export class MentorManager implements BaseManager<Mentor> {
       success: result.success,
       error: result.error,
     };
+  }
+
+  async getRecommended(jdId: number): Promise<ApiResponse<RecommendedMentor[]>> {
+    if (!Number.isInteger(jdId) || jdId <= 0) {
+      return { success: false, error: t("general.invalidId") };
+    }
+    try {
+      // @ts-expect-error: generated schema predates the backend recommendation route
+      const response = await fetchClient.GET("/api/mentors/recommended", {
+        params: { query: { jdId } },
+      });
+      return {
+        success: true,
+        data: (Array.isArray(response.data) ? response.data : []).map(
+          (mentor) => normalizeMentor(mentor as MentorApiShape) as RecommendedMentor
+        ),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : t("common.unableToLoadMentorList"),
+      };
+    }
   }
 
   /**

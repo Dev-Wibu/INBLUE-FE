@@ -15,6 +15,7 @@ export const MENTOR_QUERY_KEYS = {
   all: ["mentors"] as const,
   byId: (id: number) => ["mentors", id] as const,
   byEmail: (email: string) => ["mentors", "by-email", email] as const,
+  recommended: (jdId: number) => ["mentor-recommendations", jdId] as const,
 };
 
 /**
@@ -74,5 +75,18 @@ export const useCurrentMentorProfile = () => {
     },
     enabled: !!email,
     staleTime: 5 * 60_000,
+  });
+};
+
+export const useRecommendedMentors = (jdId?: number | null) => {
+  return useQuery({
+    queryKey: MENTOR_QUERY_KEYS.recommended(jdId ?? 0),
+    queryFn: async () => {
+      if (!jdId) return [];
+      const response = await mentorManager.getRecommended(jdId);
+      if (!response.success) throw new Error(response.error || t("common.unableToLoadMentorList"));
+      return response.data ?? [];
+    },
+    enabled: Number.isInteger(jdId) && Number(jdId) > 0,
   });
 };
