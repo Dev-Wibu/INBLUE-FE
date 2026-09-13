@@ -1496,6 +1496,7 @@ export function RoundCanvasEditorWorkspace({
               {configView === "evaluation" ? (
                 <div className="mx-auto w-full max-w-5xl overflow-y-auto p-6">
                   <EvaluationPlanEditor
+                    key={selectedRoundIndex}
                     value={selectedRound.configData?.evaluationPlan}
                     showAllErrors={validationAttemptedRoundIndex === selectedRoundIndex}
                     onChange={(evaluationPlan) =>
