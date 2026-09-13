@@ -303,7 +303,7 @@ export function MentorEditForm({
       <div className="grid gap-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="name">{t("common.fullName1")} *</Label>
+            <Label htmlFor="name">{t("common.fullName1")}</Label>
             <Input
               id="name"
               maxLength={MENTOR_FIELD_LIMITS.name}
