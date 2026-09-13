@@ -122,6 +122,7 @@ export function validateMentorData(
   if (
     data.pricePerMinute !== undefined &&
     (!Number.isFinite(data.pricePerMinute) ||
+      !Number.isInteger(data.pricePerMinute) ||
       data.pricePerMinute < 0 ||
       data.pricePerMinute > 100_000_000)
   ) {

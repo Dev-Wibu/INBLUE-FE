@@ -40,4 +40,13 @@ describe("validateMentorData", () => {
     );
     expect(validateMentorData(data, { requirePassword: false })).toEqual([]);
   });
+
+  it("rejects a fractional price per minute", () => {
+    const issues = validateMentorData(
+      { name: "Mentor", email: "mentor@example.com", pricePerMinute: 1.5 },
+      { requirePassword: false }
+    );
+
+    expect(issues).toContainEqual(expect.objectContaining({ field: "pricePerMinute" }));
+  });
 });

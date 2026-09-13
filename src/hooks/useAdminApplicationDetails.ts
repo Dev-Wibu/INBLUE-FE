@@ -24,3 +24,17 @@ export const useAdminApplicationDetails = (status?: ApplicationDetailStatus) => 
     staleTime: 30_000,
   });
 };
+
+export const useAdminApplicationFullDetail = (applicationId?: number | null) => {
+  return useQuery({
+    queryKey: ["admin", "applications", applicationId, "detail"],
+    queryFn: async () => {
+      if (!applicationId) return null;
+      const result = await adminApplicationManager.getApplicationFullDetail(applicationId);
+      if (!result.success) throw new Error(result.error);
+      return result.data ?? null;
+    },
+    enabled: Number.isInteger(applicationId) && Number(applicationId) > 0,
+    staleTime: 30_000,
+  });
+};

@@ -140,14 +140,13 @@ describe("MentorManager", () => {
   });
 
   describe("toggleActive", () => {
-    it("calls toggle endpoint and returns updated mentor", async () => {
-      const mentor = { id: 1, active: false };
-      mockGet.mockResolvedValueOnce({ data: mentor, error: null });
+    it("calls toggle endpoint and handles the 204 response without parsing a body", async () => {
+      mockGet.mockResolvedValueOnce({ data: undefined, response: { status: 204 } });
 
       const result = await mentorManager.toggleActive(1);
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(mentor);
+      expect(result.data).toBeUndefined();
       expect(mockGet).toHaveBeenCalledTimes(1);
       // Verify it calls the toggle endpoint (not getById)
       const calledUrl = mockGet.mock.calls[0]?.[0] as string;
@@ -161,6 +160,51 @@ describe("MentorManager", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Toggle failed");
+    });
+  });
+
+  describe("getRecommended", () => {
+    it("requests recommendations with a numeric jdId and preserves backend order", async () => {
+      mockGet.mockResolvedValueOnce({
+        data: [
+          { id: 7, name: "A", isActive: true, matchPercent: 91.27 },
+          { id: 3, name: "B", isActive: true, matchPercent: 88.1 },
+        ],
+      });
+
+      const result = await mentorManager.getRecommended(120);
+
+      expect(result.success).toBe(true);
+      expect(result.data?.map((mentor) => mentor.id)).toEqual([7, 3]);
+      expect(mockGet).toHaveBeenCalledWith(
+        "/api/mentors/recommended",
+        expect.objectContaining({ params: { query: { jdId: 120 } } })
+      );
+    });
+
+    it("does not call the backend for an invalid jdId", async () => {
+      const result = await mentorManager.getRecommended(0);
+
+      expect(result.success).toBe(false);
+      expect(mockGet).not.toHaveBeenCalled();
+    });
+
+    it("preserves status and traceId for recommendation error states", async () => {
+      mockGet.mockRejectedValueOnce(
+        Object.assign(new Error("Job Description Not Found"), {
+          status: 404,
+          traceId: "trace-404",
+        })
+      );
+
+      const result = await mentorManager.getRecommended(120);
+
+      expect(result).toEqual({
+        success: false,
+        error: "Job Description Not Found",
+        statusCode: 404,
+        traceId: "trace-404",
+      });
     });
   });
 
@@ -181,6 +225,44 @@ describe("MentorManager", () => {
         "/api/mentors",
         expect.objectContaining({ body: expect.any(FormData) })
       );
+    });
+
+    it("normalizes profile arrays and always includes profileData", async () => {
+      mockPost.mockResolvedValueOnce({ data: { id: 2 } });
+
+      await mentorManager.create({
+        name: "Mentor",
+        email: "mentor@test.com",
+        password: "password123",
+        profileData: {
+          certifications: [" AWS ", ""],
+          skills: [" Java ", "  "],
+          jobTitle: " Senior Engineer ",
+          education: null,
+          languages: [" English "],
+          portfolioUrl: null,
+          githubUrl: " https://github.com/mentor ",
+        },
+      });
+
+      const request = mockPost.mock.calls.at(-1)?.[1] as { body?: FormData };
+      const part = request.body?.get("data");
+      const json = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsText(part as Blob);
+      });
+      const payload = JSON.parse(json);
+      expect(payload.profileData).toEqual({
+        certifications: ["AWS"],
+        skills: ["Java"],
+        jobTitle: "Senior Engineer",
+        education: null,
+        languages: ["English"],
+        portfolioUrl: null,
+        githubUrl: "https://github.com/mentor",
+      });
+      expect(request.body?.has("avatar")).toBe(false);
     });
 
     it("returns error when name is missing", async () => {
@@ -262,11 +344,14 @@ describe("MentorManager", () => {
       );
     });
 
-    it("preserves the existing password hash when BE returns one", async () => {
-      // The BE wipes the mentor's password whenever `password` is missing
-      // from the update payload. To avoid that we re-send whatever the
-      // GET endpoint returned.
-      const existing = { id: 1, name: "M", email: "e@t.com", password: "$2a$10$hash" };
+    it("does not send password or active fields in the update payload", async () => {
+      const existing = {
+        id: 1,
+        name: "M",
+        email: "e@t.com",
+        password: "$2a$10$hash",
+        active: true,
+      };
       mockGet.mockResolvedValueOnce({ data: existing });
       mockPut.mockResolvedValueOnce({ data: { id: 1 } });
 
@@ -275,8 +360,18 @@ describe("MentorManager", () => {
       expect(mockPut).toHaveBeenCalledTimes(1);
 
       const parsed = await readLastUpdatePayload();
-      expect(parsed.password).toBe("$2a$10$hash");
       expect(parsed.name).toBe("Updated");
+      expect(parsed).not.toHaveProperty("password");
+      expect(parsed).not.toHaveProperty("active");
+      expect(parsed.profileData).toEqual({
+        certifications: [],
+        skills: [],
+        jobTitle: null,
+        education: null,
+        languages: [],
+        portfolioUrl: null,
+        githubUrl: null,
+      });
     });
 
     it("does NOT send password field when existing record has none", async () => {

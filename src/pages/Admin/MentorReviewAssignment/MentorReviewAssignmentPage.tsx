@@ -24,9 +24,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { useAdminApplicationDetails } from "@/hooks/useAdminApplicationDetails";
+import {
+  useAdminApplicationDetails,
+  useAdminApplicationFullDetail,
+} from "@/hooks/useAdminApplicationDetails";
 import { useAssignMentor, useAssignMentors } from "@/hooks/useApplicationDetails";
-import { useMentors } from "@/hooks/useMentor";
+import { useMentors, useRecommendedMentors } from "@/hooks/useMentor";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { cn } from "@/lib/utils";
 import type { AdminApplicationDetailResponse } from "@/services/admin-application.manager";
@@ -668,6 +671,29 @@ function AssignMentorDialog({
   const [notes, setNotes] = useState("");
 
   const { data: mentors = [] } = useMentors();
+  const applicationId = Number(detail?.applicationId);
+  const hasApplicationId = Number.isInteger(applicationId) && applicationId > 0;
+  const {
+    data: applicationFullDetail,
+    isLoading: isLoadingApplicationDetail,
+    isError: hasApplicationDetailError,
+    refetch: refetchApplicationDetail,
+  } = useAdminApplicationFullDetail(open && hasApplicationId ? applicationId : null);
+  const recommendationJdId = Number(applicationFullDetail?.jobDescriptionInfo?.jdId);
+  const hasRecommendationJd = Number.isInteger(recommendationJdId) && recommendationJdId > 0;
+  const {
+    data: recommendedMentors = [],
+    isLoading: isLoadingRecommendations,
+    isError: hasRecommendationError,
+    error: recommendationError,
+    refetch: refetchRecommendations,
+  } = useRecommendedMentors(hasRecommendationJd ? recommendationJdId : null);
+  const mentorCandidates = hasApplicationId ? recommendedMentors : mentors;
+  const isResolvingRecommendation = hasApplicationId && isLoadingApplicationDetail;
+  const hasRecommendationLookupError =
+    hasApplicationId &&
+    (hasApplicationDetailError ||
+      (!isLoadingApplicationDetail && applicationFullDetail !== undefined && !hasRecommendationJd));
 
   // Auto-populate previously assigned mentors when dialog opens
   useEffect(() => {
@@ -708,34 +734,34 @@ function AssignMentorDialog({
 
   // Filter mentors based on search query
   const filteredMentors = useMemo(() => {
-    if (!searchQuery.trim()) return mentors;
+    if (!searchQuery.trim()) return mentorCandidates;
     const q = searchQuery.toLowerCase();
-    return mentors.filter(
+    return mentorCandidates.filter(
       (m) =>
         m.name?.toLowerCase().includes(q) ||
         m.email?.toLowerCase().includes(q) ||
         m.currentCompany?.toLowerCase().includes(q) ||
         m.expertise?.toLowerCase().includes(q)
     );
-  }, [mentors, searchQuery]);
+  }, [mentorCandidates, searchQuery]);
 
   // Mentors currently selected
   const selectedMentorsList = useMemo(() => {
-    return mentors.filter((m) => m.id != null && selectedMentorIds.includes(m.id));
-  }, [mentors, selectedMentorIds]);
+    return mentorCandidates.filter((m) => m.id != null && selectedMentorIds.includes(m.id));
+  }, [mentorCandidates, selectedMentorIds]);
 
   // Currently previewed mentor object
   const previewMentor = useMemo(() => {
     if (activePreviewId != null) {
-      const found = mentors.find((m) => m.id === activePreviewId);
+      const found = mentorCandidates.find((m) => m.id === activePreviewId);
       if (found) return found;
     }
     if (selectedMentorIds.length > 0) {
       const firstId = selectedMentorIds[selectedMentorIds.length - 1];
-      return mentors.find((m) => m.id === firstId) ?? null;
+      return mentorCandidates.find((m) => m.id === firstId) ?? null;
     }
     return null;
-  }, [mentors, activePreviewId, selectedMentorIds]);
+  }, [mentorCandidates, activePreviewId, selectedMentorIds]);
 
   const toggleMentorSelection = (mentorId: number) => {
     setSelectedMentorIds((prev) => {
@@ -884,10 +910,44 @@ function AssignMentorDialog({
 
               {/* Scrollable Mentor List */}
               <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1 [scrollbar-gutter:stable]">
-                {filteredMentors.length === 0 ? (
+                {isResolvingRecommendation || isLoadingRecommendations ? (
+                  <div className="flex items-center justify-center py-12">
+                    <SpinnerBlock size="sm" />
+                  </div>
+                ) : hasRecommendationLookupError || hasRecommendationError ? (
+                  <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                    <AlertTriangle className="h-6 w-6 text-amber-500" />
+                    <p className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                      {!hasRecommendationLookupError &&
+                      (recommendationError as Error & { status?: number }).status === 404
+                        ? t("adminMentorReviewAssignment.recommendationJdNotFound")
+                        : t("adminMentorReviewAssignment.recommendationLoadError")}
+                    </p>
+                    {(recommendationError as Error & { traceId?: string }).traceId && (
+                      <code className="text-[10px] text-slate-500">
+                        {(recommendationError as Error & { traceId?: string }).traceId}
+                      </code>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (hasRecommendationLookupError) void refetchApplicationDetail();
+                        else void refetchRecommendations();
+                      }}>
+                      <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                      {t("common.retry")}
+                    </Button>
+                  </div>
+                ) : filteredMentors.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                    <p className="mt-2 text-xs text-slate-500">{t("common.noResults")}</p>
+                    <p className="mt-2 text-xs text-slate-500">
+                      {hasRecommendationJd && !searchQuery.trim()
+                        ? t("adminMentorReviewAssignment.noRecommendedMentors")
+                        : t("common.noResults")}
+                    </p>
                   </div>
                 ) : (
                   filteredMentors.map((mentor) => {
@@ -929,12 +989,19 @@ function AssignMentorDialog({
                             </p>
                             <span className="flex items-center gap-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
                               <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                              {mentor.averageRating?.toFixed(1) ?? "4.8"}
+                              {mentor.averageRating?.toFixed(1) ?? "0.0"}
                             </span>
                           </div>
                           <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
                             {mentor.currentCompany || mentor.email}
                           </p>
+                          {hasRecommendationJd && mentor.matchPercent != null && (
+                            <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400">
+                              {t("adminMentorReviewAssignment.matchPercent", {
+                                percent: mentor.matchPercent.toFixed(2),
+                              })}
+                            </span>
+                          )}
                         </div>
                       </div>
                     );
@@ -1027,7 +1094,7 @@ function AssignMentorDialog({
                           )}
                         <span className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
                           <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                          {previewMentor.averageRating?.toFixed(1) ?? "4.8"} / 5.0
+                          {previewMentor.averageRating?.toFixed(1) ?? "0.0"} / 5.0
                         </span>
                       </div>
                     </div>

@@ -19,12 +19,16 @@ import { useTranslation } from "react-i18next";
 import type { Mentor } from "../types";
 import { MentorEditForm, type ExtendedMentorFormData } from "./MentorEditForm";
 
+const safeExternalUrl = (value?: string | null) =>
+  value && /^https?:\/\//i.test(value) ? value : null;
+
 interface MentorDetailViewProps {
   mentor: Mentor;
   onBack: () => void;
   formData: ExtendedMentorFormData;
-  onFormChange: (data: ExtendedMentorFormData) => void;
+  onFormChange: (_data: ExtendedMentorFormData) => void;
   onSubmit: () => void;
+  isSubmitting?: boolean;
 }
 
 interface CollapsibleCardProps {
@@ -74,6 +78,7 @@ export function MentorDetailView({
   formData,
   onFormChange,
   onSubmit,
+  isSubmitting,
 }: MentorDetailViewProps) {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
@@ -123,6 +128,7 @@ export function MentorDetailView({
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 selectedMentor={mentor}
+                isSubmitting={isSubmitting}
               />
             </div>
           </div>
@@ -335,9 +341,9 @@ export function MentorDetailView({
                       {t("common.linkedinLink", "Đường dẫn LinkedIn")}
                     </p>
                     <div className="flex items-center gap-2">
-                      {mentor.linkedInUrl ? (
+                      {safeExternalUrl(mentor.linkedInUrl) ? (
                         <a
-                          href={mentor.linkedInUrl}
+                          href={safeExternalUrl(mentor.linkedInUrl) ?? undefined}
                           target="_blank"
                           rel="noreferrer"
                           className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
@@ -366,6 +372,71 @@ export function MentorDetailView({
                       )}
                     </div>
                   </div>
+                  {mentor.profileData?.jobTitle && (
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-500">
+                        {t("adminMentormanagement.jobTitle", "Job title")}
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {mentor.profileData.jobTitle}
+                      </p>
+                    </div>
+                  )}
+                  {mentor.profileData?.education && (
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-500">
+                        {t("adminMentormanagement.education", "Education")}
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {mentor.profileData.education}
+                      </p>
+                    </div>
+                  )}
+                  {[
+                    [t("adminMentormanagement.skills", "Skills"), mentor.profileData?.skills],
+                    [
+                      t("adminMentormanagement.certifications", "Certifications"),
+                      mentor.profileData?.certifications,
+                    ],
+                    [
+                      t("adminMentormanagement.languages", "Languages"),
+                      mentor.profileData?.languages,
+                    ],
+                  ].map(([label, values]) =>
+                    Array.isArray(values) && values.length > 0 ? (
+                      <div key={String(label)} className="space-y-1 sm:col-span-2">
+                        <p className="text-xs font-medium text-slate-500">{label}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {values.map((value, index) => (
+                            <Badge
+                              key={`${value}-${index}`}
+                              variant="secondary"
+                              className="text-xs">
+                              {value}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null
+                  )}
+                  {safeExternalUrl(mentor.profileData?.portfolioUrl) && (
+                    <a
+                      href={safeExternalUrl(mentor.profileData?.portfolioUrl) ?? undefined}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
+                      {t("adminMentormanagement.portfolio", "Portfolio")}
+                    </a>
+                  )}
+                  {safeExternalUrl(mentor.profileData?.githubUrl) && (
+                    <a
+                      href={safeExternalUrl(mentor.profileData?.githubUrl) ?? undefined}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
+                      {t("adminMentormanagement.github", "GitHub")}
+                    </a>
+                  )}
                 </div>
               </CollapsibleCard>
             </div>

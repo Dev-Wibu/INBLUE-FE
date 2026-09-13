@@ -10,6 +10,7 @@ export interface ApiResponse<T = unknown> {
   error?: string;
   statusCode?: number;
   fieldErrors?: Record<string, string>;
+  traceId?: string;
 }
 
 // Pagination parameters

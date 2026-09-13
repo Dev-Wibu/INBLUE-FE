@@ -209,6 +209,10 @@
     "activeScheduleSummary": "有効な時間枠"
   },
   "adminMentorReviewAssignment": {
+    "recommendationJdNotFound": "選択した求人情報は存在しません。",
+    "recommendationLoadError": "おすすめメンターを読み込めませんでした。",
+    "noRecommendedMentors": "一致するプロフィールを持つ有効なメンターはいません。",
+    "matchPercent": "JD一致度 {{percent}}%",
     "pageTitle": "メンターレビュー割り当て",
     "pageDescription": "メンターを待機中の ApplicationDetail に割り当てます。",
     "sidebarLabel": "メンターレビュー割り当て",
@@ -656,6 +660,17 @@
     "averageRating": "平均評価"
   },
   "adminMentormanagement": {
+    "jobTitle": "職種",
+    "education": "学歴",
+    "skills": "スキル",
+    "certifications": "資格",
+    "languages": "言語",
+    "portfolioUrl": "ポートフォリオURL",
+    "githubUrl": "GitHub URL",
+    "portfolio": "ポートフォリオ",
+    "github": "GitHub",
+    "addProfileEntry": "{{label}}を追加",
+    "removeProfileEntry": "プロフィール項目を削除",
     "activate": "有効化",
     "activateMentor": "メンターを有効化",
     "addMentor": "メンターを追加",

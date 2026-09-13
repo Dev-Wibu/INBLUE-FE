@@ -38,6 +38,7 @@ export function MentorManagementPage() {
   const [formData, setFormData] = useState<Partial<MentorFormData>>({});
   const [pendingToggleMentor, setPendingToggleMentor] = useState<Mentor | null>(null);
   const [isToggling, setIsToggling] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load mentors using the mentor manager service
   const loadMentors = useCallback(async () => {
@@ -78,6 +79,25 @@ export function MentorManagementPage() {
           currentCompany: found.currentCompany,
           pricePerMinute: found.pricePerMinute,
           active: found.active ?? true,
+          profileData: found.profileData
+            ? {
+                certifications: found.profileData.certifications ?? [],
+                skills: found.profileData.skills ?? [],
+                jobTitle: found.profileData.jobTitle ?? null,
+                education: found.profileData.education ?? null,
+                languages: found.profileData.languages ?? [],
+                portfolioUrl: found.profileData.portfolioUrl ?? null,
+                githubUrl: found.profileData.githubUrl ?? null,
+              }
+            : {
+                certifications: [],
+                skills: [],
+                jobTitle: null,
+                education: null,
+                languages: [],
+                portfolioUrl: null,
+                githubUrl: null,
+              },
         });
         setViewMode("detail");
       }
@@ -153,6 +173,8 @@ export function MentorManagementPage() {
   };
 
   const handleSubmitCreate = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const response = await mentorManager.create(formData);
       if (response.success) {
@@ -164,11 +186,15 @@ export function MentorManagementPage() {
       }
     } catch {
       toast.error(t("common.cannotCreateMentor"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSubmitEdit = async () => {
     if (!selectedMentor?.id) return;
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const response = await mentorManager.update(selectedMentor.id, formData);
       if (response.success) {
@@ -182,6 +208,8 @@ export function MentorManagementPage() {
       }
     } catch {
       toast.error(t("common.unableToUpdateMentor"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -206,9 +234,6 @@ export function MentorManagementPage() {
             var_0: action,
           })
         );
-        if (selectedMentor?.id === mentor.id) {
-          setSelectedMentor((prev) => (prev ? { ...prev, active: prev.active === false } : null));
-        }
         void loadMentors();
       } else {
         toast.error(response.error || t("adminMentormanagement.mentorStatusCannotBeChanged"));
@@ -379,6 +404,7 @@ export function MentorManagementPage() {
               formData={formData}
               onFormChange={setFormData}
               onSubmit={handleSubmitEdit}
+              isSubmitting={isSubmitting}
             />
           </div>
         ) : viewMode === "create" ? (
@@ -411,6 +437,7 @@ export function MentorManagementPage() {
                   onSubmit={handleSubmitCreate}
                   onCancel={handleBackToList}
                   submitLabel={t("adminMentormanagement.createMentors", "Tạo Mentor")}
+                  isSubmitting={isSubmitting}
                 />
               </div>
             </div>

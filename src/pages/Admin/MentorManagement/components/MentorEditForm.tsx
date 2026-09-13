@@ -14,7 +14,7 @@ import {
   type MentorValidationField,
 } from "@/lib/mentor-validation";
 import { cn } from "@/lib/utils";
-import { ExternalLink, Eye, EyeOff, FileText, ImageIcon, Upload, X } from "lucide-react";
+import { ExternalLink, Eye, EyeOff, FileText, ImageIcon, Plus, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -22,6 +22,56 @@ import type { Mentor, MentorFormData } from "../types";
 
 export interface ExtendedMentorFormData extends Partial<MentorFormData> {
   avatar?: File;
+}
+
+function ProfileArrayField({
+  label,
+  values,
+  onChange,
+}: {
+  label: string;
+  values: string[];
+  onChange: (_values: string[]) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <div className="space-y-2">
+        {values.map((value, index) => (
+          <div key={index} className="flex items-center gap-2">
+            <Input
+              value={value}
+              onChange={(event) => {
+                const next = [...values];
+                next[index] = event.target.value;
+                onChange(next);
+              }}
+              className="h-9"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 text-slate-400 hover:text-rose-600"
+              onClick={() => onChange(values.filter((_, itemIndex) => itemIndex !== index))}
+              aria-label={t("adminMentormanagement.removeProfileEntry", "Remove profile entry")}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="h-8 gap-1.5 text-xs"
+        onClick={() => onChange([...values, ""])}>
+        <Plus className="h-3.5 w-3.5" />
+        {t("adminMentormanagement.addProfileEntry", "Add {{label}}", { label })}
+      </Button>
+    </div>
+  );
 }
 
 interface MentorEditFormProps {
@@ -204,6 +254,17 @@ export function MentorEditForm({
   };
 
   const displayAvatarUrl = avatarPreview || selectedMentor?.avatarUrl;
+  const profileData = formData.profileData ?? {
+    certifications: [],
+    skills: [],
+    jobTitle: null,
+    education: null,
+    languages: [],
+    portfolioUrl: null,
+    githubUrl: null,
+  };
+  const updateProfile = (patch: Partial<typeof profileData>) =>
+    onFormChange({ ...formData, profileData: { ...profileData, ...patch } });
   const handleOpenFilePreview = ({
     label,
     url,
@@ -242,7 +303,7 @@ export function MentorEditForm({
       <div className="grid gap-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="name">{t("common.fullName1")} *</Label>
+            <Label htmlFor="name">{t("common.fullName1")}</Label>
             <Input
               id="name"
               maxLength={MENTOR_FIELD_LIMITS.name}
@@ -361,6 +422,63 @@ export function MentorEditForm({
             className={errorClass("expertise")}
           />
           {renderError("expertise")}
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="jobTitle">{t("adminMentormanagement.jobTitle", "Job title")}</Label>
+            <Input
+              id="jobTitle"
+              value={profileData.jobTitle ?? ""}
+              onChange={(e) => updateProfile({ jobTitle: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="education">{t("adminMentormanagement.education", "Education")}</Label>
+            <Input
+              id="education"
+              value={profileData.education ?? ""}
+              onChange={(e) => updateProfile({ education: e.target.value })}
+            />
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <ProfileArrayField
+            label={t("adminMentormanagement.skills", "Skills")}
+            values={profileData.skills}
+            onChange={(skills) => updateProfile({ skills })}
+          />
+          <ProfileArrayField
+            label={t("adminMentormanagement.certifications", "Certifications")}
+            values={profileData.certifications}
+            onChange={(certifications) => updateProfile({ certifications })}
+          />
+          <ProfileArrayField
+            label={t("adminMentormanagement.languages", "Languages")}
+            values={profileData.languages}
+            onChange={(languages) => updateProfile({ languages })}
+          />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="portfolioUrl">
+              {t("adminMentormanagement.portfolioUrl", "Portfolio URL")}
+            </Label>
+            <Input
+              id="portfolioUrl"
+              type="url"
+              value={profileData.portfolioUrl ?? ""}
+              onChange={(e) => updateProfile({ portfolioUrl: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="githubUrl">{t("adminMentormanagement.githubUrl", "GitHub URL")}</Label>
+            <Input
+              id="githubUrl"
+              type="url"
+              value={profileData.githubUrl ?? ""}
+              onChange={(e) => updateProfile({ githubUrl: e.target.value })}
+            />
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
