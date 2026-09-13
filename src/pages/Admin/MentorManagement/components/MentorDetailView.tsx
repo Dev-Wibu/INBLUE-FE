@@ -28,6 +28,7 @@ interface MentorDetailViewProps {
   formData: ExtendedMentorFormData;
   onFormChange: (_data: ExtendedMentorFormData) => void;
   onSubmit: () => void;
+  isSubmitting?: boolean;
 }
 
 interface CollapsibleCardProps {
@@ -77,6 +78,7 @@ export function MentorDetailView({
   formData,
   onFormChange,
   onSubmit,
+  isSubmitting,
 }: MentorDetailViewProps) {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
@@ -126,6 +128,7 @@ export function MentorDetailView({
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 selectedMentor={mentor}
+                isSubmitting={isSubmitting}
               />
             </div>
           </div>

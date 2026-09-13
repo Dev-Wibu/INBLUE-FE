@@ -209,6 +209,44 @@ describe("MentorManager", () => {
       );
     });
 
+    it("normalizes profile arrays and always includes profileData", async () => {
+      mockPost.mockResolvedValueOnce({ data: { id: 2 } });
+
+      await mentorManager.create({
+        name: "Mentor",
+        email: "mentor@test.com",
+        password: "password123",
+        profileData: {
+          certifications: [" AWS ", ""],
+          skills: [" Java ", "  "],
+          jobTitle: " Senior Engineer ",
+          education: null,
+          languages: [" English "],
+          portfolioUrl: null,
+          githubUrl: " https://github.com/mentor ",
+        },
+      });
+
+      const request = mockPost.mock.calls.at(-1)?.[1] as { body?: FormData };
+      const part = request.body?.get("data");
+      const json = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsText(part as Blob);
+      });
+      const payload = JSON.parse(json);
+      expect(payload.profileData).toEqual({
+        certifications: ["AWS"],
+        skills: ["Java"],
+        jobTitle: "Senior Engineer",
+        education: null,
+        languages: ["English"],
+        portfolioUrl: null,
+        githubUrl: "https://github.com/mentor",
+      });
+      expect(request.body?.has("avatar")).toBe(false);
+    });
+
     it("returns error when name is missing", async () => {
       const result = await mentorManager.create({
         email: "test@test.com",

@@ -44,6 +44,21 @@ export interface CreateMentorData extends CreateMentorRequest {
  */
 type MentorApiShape = Mentor & { isActive?: boolean };
 
+const normalizeTextList = (values?: string[] | null) =>
+  (values ?? []).map((value) => value.trim()).filter(Boolean);
+
+const normalizeProfilePayload = (
+  profileData?: Partial<MentorProfileRequest> | null
+): MentorProfileRequest => ({
+  certifications: normalizeTextList(profileData?.certifications),
+  skills: normalizeTextList(profileData?.skills),
+  jobTitle: profileData?.jobTitle?.trim() || null,
+  education: profileData?.education?.trim() || null,
+  languages: normalizeTextList(profileData?.languages),
+  portfolioUrl: profileData?.portfolioUrl?.trim() || null,
+  githubUrl: profileData?.githubUrl?.trim() || null,
+});
+
 function normalizeMentor(mentor: MentorApiShape): Mentor {
   if (!mentor || typeof mentor !== "object") return mentor;
   const normalized =
@@ -222,15 +237,8 @@ export class MentorManager implements BaseManager<Mentor> {
         };
       }
 
-      // According to schema, createMentor uses multipart/form-data
       const formData = new FormData();
 
-      // Prepare CreateMentorRequest data (JSON object)
-      // Note: Password should be handled securely by the backend (e.g., hashing)
-      // The frontend sends the password in plain text over HTTPS
-      // IMPORTANT: Backend comment says POST /api/mentors is shared for create & update
-      // When creating, don't include id. When updating, include id.
-      // Adding 'active: true' to ensure new mentors are active by default
       const mentorInfo: CreateMentorRequest = {
         name: _data.name?.trim(),
         email: _data.email?.trim(),
@@ -241,21 +249,9 @@ export class MentorManager implements BaseManager<Mentor> {
         linkedInUrl: _data.linkedInUrl,
         currentCompany: _data.currentCompany,
         pricePerMinute: _data.pricePerMinute,
-        profileData: {
-          certifications: _data.profileData?.certifications ?? [],
-          skills: _data.profileData?.skills ?? [],
-          jobTitle: _data.profileData?.jobTitle ?? null,
-          education: _data.profileData?.education ?? null,
-          languages: _data.profileData?.languages ?? [],
-          portfolioUrl: _data.profileData?.portfolioUrl ?? null,
-          githubUrl: _data.profileData?.githubUrl ?? null,
-        },
+        profileData: normalizeProfilePayload(_data.profileData),
       };
 
-      // Add active field to the payload to ensure new mentors are active
-      // Note: This extends CreateMentorRequest with the active field from Mentor schema
-      // Append the 'data' field as a Blob with application/json content type
-      // This ensures the backend receives proper JSON data within multipart/form-data
       formData.append(
         "data",
         new Blob([JSON.stringify(mentorInfo)], {
@@ -263,12 +259,8 @@ export class MentorManager implements BaseManager<Mentor> {
         })
       );
 
-      // Add file fields - always send placeholder files to avoid backend NullPointerException
-      // Backend code calls file.isEmpty() without null check first, causing 500 error
-      // By sending empty files as placeholders, we prevent null pointer exceptions
       const createData = _data as CreateMentorData;
 
-      // Always send avatar to avoid "avatar is null" NullPointerException
       if (createData.avatar) {
         formData.append("avatar", createData.avatar);
       }
@@ -308,20 +300,12 @@ export class MentorManager implements BaseManager<Mentor> {
     }
   }
 
-  /**
-   * Update mentor
-   * POST /api/mentors (multipart/form-data with 'data' field containing JSON)
-   * Note: Schema comment says POST is shared for create and update
-   * "dùng chung cho create và update mentor, nếu create thì ko có id còn update thì có id gửi kèm trong json data á"
-   * Translation: if create - no id, if update - include id in the json data
-   */
+  /** Update a mentor with JSON data and an optional replacement avatar. */
   async update(
     _id: string | number,
     _data: Partial<Mentor> | CreateMentorData
   ): Promise<ApiResponse<Mentor>> {
     try {
-      // Backend uses POST /api/mentors for both create and update (multipart/form-data)
-      // For update, include 'id' in the JSON data field
       const formData = new FormData();
 
       let existingMentor: Partial<Mentor> = {};
@@ -335,7 +319,7 @@ export class MentorManager implements BaseManager<Mentor> {
       }
 
       const validationIssue = validateMentorData(
-        { ...existingMentor, ..._data, password: _data.password },
+        { ...existingMentor, ..._data, password: undefined },
         { requirePassword: false }
       )[0];
       if (validationIssue) {
@@ -345,14 +329,7 @@ export class MentorManager implements BaseManager<Mentor> {
         };
       }
 
-      // Build CreateMentorRequest payload with id for update.
-      // SECURITY/PASSWORD-PRESERVATION NOTE:
-      // The backend controller wipes the mentor's password whenever the
-      // `password` field is missing from the request body OR arrives as
-      // explicit `null`. To keep the existing password we MUST re-send the
-      // hash that came back from GET /api/mentors/{id}. We only do that
-      // when the field is actually a truthy string — never emit null /
-      // undefined / empty.
+      const sourceProfile = _data.profileData ?? existingMentor.profileData;
       const mentorInfo: UpdateMentorRequest = {
         name: (_data.name ?? existingMentor.name)?.trim(),
         email: (_data.email ?? existingMentor.email)?.trim(),
@@ -362,17 +339,7 @@ export class MentorManager implements BaseManager<Mentor> {
         linkedInUrl: _data.linkedInUrl ?? existingMentor.linkedInUrl,
         currentCompany: _data.currentCompany ?? existingMentor.currentCompany,
         pricePerMinute: _data.pricePerMinute ?? existingMentor.pricePerMinute,
-        profileData: {
-          certifications:
-            _data.profileData?.certifications ?? existingMentor.profileData?.certifications ?? [],
-          skills: _data.profileData?.skills ?? existingMentor.profileData?.skills ?? [],
-          jobTitle: _data.profileData?.jobTitle ?? existingMentor.profileData?.jobTitle ?? null,
-          education: _data.profileData?.education ?? existingMentor.profileData?.education ?? null,
-          languages: _data.profileData?.languages ?? existingMentor.profileData?.languages ?? [],
-          portfolioUrl:
-            _data.profileData?.portfolioUrl ?? existingMentor.profileData?.portfolioUrl ?? null,
-          githubUrl: _data.profileData?.githubUrl ?? existingMentor.profileData?.githubUrl ?? null,
-        },
+        profileData: normalizeProfilePayload(sourceProfile),
       };
 
       // Append the 'data' field as a Blob with application/json content type

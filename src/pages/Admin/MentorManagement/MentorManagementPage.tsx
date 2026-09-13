@@ -38,6 +38,7 @@ export function MentorManagementPage() {
   const [formData, setFormData] = useState<Partial<MentorFormData>>({});
   const [pendingToggleMentor, setPendingToggleMentor] = useState<Mentor | null>(null);
   const [isToggling, setIsToggling] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load mentors using the mentor manager service
   const loadMentors = useCallback(async () => {
@@ -172,6 +173,8 @@ export function MentorManagementPage() {
   };
 
   const handleSubmitCreate = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const response = await mentorManager.create(formData);
       if (response.success) {
@@ -183,11 +186,15 @@ export function MentorManagementPage() {
       }
     } catch {
       toast.error(t("common.cannotCreateMentor"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSubmitEdit = async () => {
     if (!selectedMentor?.id) return;
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const response = await mentorManager.update(selectedMentor.id, formData);
       if (response.success) {
@@ -201,6 +208,8 @@ export function MentorManagementPage() {
       }
     } catch {
       toast.error(t("common.unableToUpdateMentor"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -398,6 +407,7 @@ export function MentorManagementPage() {
               formData={formData}
               onFormChange={setFormData}
               onSubmit={handleSubmitEdit}
+              isSubmitting={isSubmitting}
             />
           </div>
         ) : viewMode === "create" ? (
@@ -430,6 +440,7 @@ export function MentorManagementPage() {
                   onSubmit={handleSubmitCreate}
                   onCancel={handleBackToList}
                   submitLabel={t("adminMentormanagement.createMentors", "Tạo Mentor")}
+                  isSubmitting={isSubmitting}
                 />
               </div>
             </div>
