@@ -250,6 +250,7 @@
   "adminMentorReviewAssignment": {
     "recommendationJdNotFound": "Mô tả công việc đã chọn không còn tồn tại.",
     "recommendationLoadError": "Không thể tải danh sách Mentor được đề xuất.",
+    "noRecommendedMentors": "Không có Mentor đang hoạt động với hồ sơ phù hợp.",
     "matchPercent": "Phù hợp JD {{percent}}%",
     "pageTitle": "Phân công Mentor Review",
     "pageDescription": "Phân công Mentor cho các ApplicationDetail đang chờ.",

@@ -24,7 +24,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { useAdminApplicationDetails } from "@/hooks/useAdminApplicationDetails";
+import {
+  useAdminApplicationDetails,
+  useAdminApplicationFullDetail,
+} from "@/hooks/useAdminApplicationDetails";
 import { useAssignMentor, useAssignMentors } from "@/hooks/useApplicationDetails";
 import { useMentors, useRecommendedMentors } from "@/hooks/useMentor";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
@@ -668,7 +671,15 @@ function AssignMentorDialog({
   const [notes, setNotes] = useState("");
 
   const { data: mentors = [] } = useMentors();
-  const recommendationJdId = Number((detail as Record<string, unknown> | null)?.jdId);
+  const applicationId = Number(detail?.applicationId);
+  const hasApplicationId = Number.isInteger(applicationId) && applicationId > 0;
+  const {
+    data: applicationFullDetail,
+    isLoading: isLoadingApplicationDetail,
+    isError: hasApplicationDetailError,
+    refetch: refetchApplicationDetail,
+  } = useAdminApplicationFullDetail(open && hasApplicationId ? applicationId : null);
+  const recommendationJdId = Number(applicationFullDetail?.jobDescriptionInfo?.jdId);
   const hasRecommendationJd = Number.isInteger(recommendationJdId) && recommendationJdId > 0;
   const {
     data: recommendedMentors = [],
@@ -677,7 +688,12 @@ function AssignMentorDialog({
     error: recommendationError,
     refetch: refetchRecommendations,
   } = useRecommendedMentors(hasRecommendationJd ? recommendationJdId : null);
-  const mentorCandidates = hasRecommendationJd ? recommendedMentors : mentors;
+  const mentorCandidates = hasApplicationId ? recommendedMentors : mentors;
+  const isResolvingRecommendation = hasApplicationId && isLoadingApplicationDetail;
+  const hasRecommendationLookupError =
+    hasApplicationId &&
+    (hasApplicationDetailError ||
+      (!isLoadingApplicationDetail && applicationFullDetail !== undefined && !hasRecommendationJd));
 
   // Auto-populate previously assigned mentors when dialog opens
   useEffect(() => {
@@ -894,15 +910,16 @@ function AssignMentorDialog({
 
               {/* Scrollable Mentor List */}
               <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1 [scrollbar-gutter:stable]">
-                {isLoadingRecommendations ? (
+                {isResolvingRecommendation || isLoadingRecommendations ? (
                   <div className="flex items-center justify-center py-12">
                     <SpinnerBlock size="sm" />
                   </div>
-                ) : hasRecommendationError ? (
+                ) : hasRecommendationLookupError || hasRecommendationError ? (
                   <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
                     <AlertTriangle className="h-6 w-6 text-amber-500" />
                     <p className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                      {(recommendationError as Error & { status?: number }).status === 404
+                      {!hasRecommendationLookupError &&
+                      (recommendationError as Error & { status?: number }).status === 404
                         ? t("adminMentorReviewAssignment.recommendationJdNotFound")
                         : t("adminMentorReviewAssignment.recommendationLoadError")}
                     </p>
@@ -915,7 +932,10 @@ function AssignMentorDialog({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => void refetchRecommendations()}>
+                      onClick={() => {
+                        if (hasRecommendationLookupError) void refetchApplicationDetail();
+                        else void refetchRecommendations();
+                      }}>
                       <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
                       {t("common.retry")}
                     </Button>
@@ -923,7 +943,11 @@ function AssignMentorDialog({
                 ) : filteredMentors.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                    <p className="mt-2 text-xs text-slate-500">{t("common.noResults")}</p>
+                    <p className="mt-2 text-xs text-slate-500">
+                      {hasRecommendationJd && !searchQuery.trim()
+                        ? t("adminMentorReviewAssignment.noRecommendedMentors")
+                        : t("common.noResults")}
+                    </p>
                   </div>
                 ) : (
                   filteredMentors.map((mentor) => {
@@ -965,7 +989,7 @@ function AssignMentorDialog({
                             </p>
                             <span className="flex items-center gap-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
                               <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                              {mentor.averageRating?.toFixed(1) ?? "4.8"}
+                              {mentor.averageRating?.toFixed(1) ?? "0.0"}
                             </span>
                           </div>
                           <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
@@ -1070,7 +1094,7 @@ function AssignMentorDialog({
                           )}
                         <span className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
                           <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                          {previewMentor.averageRating?.toFixed(1) ?? "4.8"} / 5.0
+                          {previewMentor.averageRating?.toFixed(1) ?? "0.0"} / 5.0
                         </span>
                       </div>
                     </div>

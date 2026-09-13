@@ -234,9 +234,6 @@ export function MentorManagementPage() {
             var_0: action,
           })
         );
-        if (selectedMentor?.id === mentor.id) {
-          setSelectedMentor((prev) => (prev ? { ...prev, active: prev.active === false } : null));
-        }
         void loadMentors();
       } else {
         toast.error(response.error || t("adminMentormanagement.mentorStatusCannotBeChanged"));
