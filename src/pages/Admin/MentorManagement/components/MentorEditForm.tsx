@@ -33,6 +33,7 @@ function ProfileArrayField({
   values: string[];
   onChange: (_values: string[]) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
@@ -54,7 +55,7 @@ function ProfileArrayField({
               size="icon"
               className="h-8 w-8 shrink-0 text-slate-400 hover:text-rose-600"
               onClick={() => onChange(values.filter((_, itemIndex) => itemIndex !== index))}
-              aria-label={`Remove ${label}`}>
+              aria-label={t("adminMentormanagement.removeProfileEntry", "Remove profile entry")}>
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -67,7 +68,7 @@ function ProfileArrayField({
         className="h-8 gap-1.5 text-xs"
         onClick={() => onChange([...values, ""])}>
         <Plus className="h-3.5 w-3.5" />
-        Add {label}
+        {t("adminMentormanagement.addProfileEntry", "Add {{label}}", { label })}
       </Button>
     </div>
   );
@@ -424,7 +425,7 @@ export function MentorEditForm({
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="jobTitle">Job title</Label>
+            <Label htmlFor="jobTitle">{t("adminMentormanagement.jobTitle", "Job title")}</Label>
             <Input
               id="jobTitle"
               value={profileData.jobTitle ?? ""}
@@ -432,7 +433,7 @@ export function MentorEditForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="education">Education</Label>
+            <Label htmlFor="education">{t("adminMentormanagement.education", "Education")}</Label>
             <Input
               id="education"
               value={profileData.education ?? ""}
@@ -442,24 +443,26 @@ export function MentorEditForm({
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           <ProfileArrayField
-            label="Skills"
+            label={t("adminMentormanagement.skills", "Skills")}
             values={profileData.skills}
             onChange={(skills) => updateProfile({ skills })}
           />
           <ProfileArrayField
-            label="Certifications"
+            label={t("adminMentormanagement.certifications", "Certifications")}
             values={profileData.certifications}
             onChange={(certifications) => updateProfile({ certifications })}
           />
           <ProfileArrayField
-            label="Languages"
+            label={t("adminMentormanagement.languages", "Languages")}
             values={profileData.languages}
             onChange={(languages) => updateProfile({ languages })}
           />
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="portfolioUrl">Portfolio URL</Label>
+            <Label htmlFor="portfolioUrl">
+              {t("adminMentormanagement.portfolioUrl", "Portfolio URL")}
+            </Label>
             <Input
               id="portfolioUrl"
               type="url"
@@ -468,7 +471,7 @@ export function MentorEditForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="githubUrl">GitHub URL</Label>
+            <Label htmlFor="githubUrl">{t("adminMentormanagement.githubUrl", "GitHub URL")}</Label>
             <Input
               id="githubUrl"
               type="url"

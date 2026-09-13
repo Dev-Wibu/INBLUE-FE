@@ -372,7 +372,7 @@ export function MentorDetailView({
                   {mentor.profileData?.jobTitle && (
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-slate-500">
-                        {t("common.jobTitle", "Job title")}
+                        {t("adminMentormanagement.jobTitle", "Job title")}
                       </p>
                       <p className="text-sm font-semibold text-slate-900 dark:text-white">
                         {mentor.profileData.jobTitle}
@@ -382,7 +382,7 @@ export function MentorDetailView({
                   {mentor.profileData?.education && (
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-slate-500">
-                        {t("common.education", "Education")}
+                        {t("adminMentormanagement.education", "Education")}
                       </p>
                       <p className="text-sm font-semibold text-slate-900 dark:text-white">
                         {mentor.profileData.education}
@@ -390,9 +390,15 @@ export function MentorDetailView({
                     </div>
                   )}
                   {[
-                    ["Skills", mentor.profileData?.skills],
-                    ["Certifications", mentor.profileData?.certifications],
-                    ["Languages", mentor.profileData?.languages],
+                    [t("adminMentormanagement.skills", "Skills"), mentor.profileData?.skills],
+                    [
+                      t("adminMentormanagement.certifications", "Certifications"),
+                      mentor.profileData?.certifications,
+                    ],
+                    [
+                      t("adminMentormanagement.languages", "Languages"),
+                      mentor.profileData?.languages,
+                    ],
                   ].map(([label, values]) =>
                     Array.isArray(values) && values.length > 0 ? (
                       <div key={String(label)} className="space-y-1 sm:col-span-2">
@@ -416,7 +422,7 @@ export function MentorDetailView({
                       target="_blank"
                       rel="noreferrer"
                       className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
-                      Portfolio
+                      {t("adminMentormanagement.portfolio", "Portfolio")}
                     </a>
                   )}
                   {safeExternalUrl(mentor.profileData?.githubUrl) && (
@@ -425,7 +431,7 @@ export function MentorDetailView({
                       target="_blank"
                       rel="noreferrer"
                       className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
-                      GitHub
+                      {t("adminMentormanagement.github", "GitHub")}
                     </a>
                   )}
                 </div>

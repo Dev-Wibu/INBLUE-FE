@@ -248,6 +248,7 @@
     "activeKiosks": "Kiosk đang hoạt động"
   },
   "adminMentorReviewAssignment": {
+    "matchPercent": "Phù hợp JD {{percent}}%",
     "pageTitle": "Phân công Mentor Review",
     "pageDescription": "Phân công Mentor cho các ApplicationDetail đang chờ.",
     "sidebarLabel": "Phân công Mentor Review",
@@ -695,6 +696,17 @@
     "averageRating": "Đánh giá trung bình"
   },
   "adminMentormanagement": {
+    "jobTitle": "Chức danh",
+    "education": "Học vấn",
+    "skills": "Kỹ năng",
+    "certifications": "Chứng chỉ",
+    "languages": "Ngôn ngữ",
+    "portfolioUrl": "URL hồ sơ năng lực",
+    "githubUrl": "URL GitHub",
+    "portfolio": "Hồ sơ năng lực",
+    "github": "GitHub",
+    "addProfileEntry": "Thêm {{label}}",
+    "removeProfileEntry": "Xóa mục hồ sơ",
     "activate": "kích hoạt",
     "activateMentor": "Kích hoạt Mentor",
     "addMentor": "Thêm Mentor",

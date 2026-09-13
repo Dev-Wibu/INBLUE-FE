@@ -248,6 +248,7 @@
     "activeKiosks": "Active kiosks"
   },
   "adminMentorReviewAssignment": {
+    "matchPercent": "JD match {{percent}}%",
     "pageTitle": "Mentor Review Assignment",
     "pageDescription": "Assign mentors to ApplicationDetails that are awaiting a reviewer.",
     "sidebarLabel": "Mentor Review Assignment",
@@ -695,6 +696,17 @@
     "averageRating": "Average rating"
   },
   "adminMentormanagement": {
+    "jobTitle": "Job title",
+    "education": "Education",
+    "skills": "Skills",
+    "certifications": "Certifications",
+    "languages": "Languages",
+    "portfolioUrl": "Portfolio URL",
+    "githubUrl": "GitHub URL",
+    "portfolio": "Portfolio",
+    "github": "GitHub",
+    "addProfileEntry": "Add {{label}}",
+    "removeProfileEntry": "Remove profile entry",
     "activate": "activate",
     "activateMentor": "Activate Mentor",
     "addMentor": "Add Mentor",

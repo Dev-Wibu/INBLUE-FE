@@ -26,7 +26,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAdminApplicationDetails } from "@/hooks/useAdminApplicationDetails";
 import { useAssignMentor, useAssignMentors } from "@/hooks/useApplicationDetails";
-import { useMentors } from "@/hooks/useMentor";
+import { useMentors, useRecommendedMentors } from "@/hooks/useMentor";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { cn } from "@/lib/utils";
 import type { AdminApplicationDetailResponse } from "@/services/admin-application.manager";
@@ -668,6 +668,11 @@ function AssignMentorDialog({
   const [notes, setNotes] = useState("");
 
   const { data: mentors = [] } = useMentors();
+  const recommendationJdId = Number((detail as Record<string, unknown> | null)?.jdId);
+  const hasRecommendationJd = Number.isInteger(recommendationJdId) && recommendationJdId > 0;
+  const { data: recommendedMentors = [], isLoading: isLoadingRecommendations } =
+    useRecommendedMentors(hasRecommendationJd ? recommendationJdId : null);
+  const mentorCandidates = hasRecommendationJd ? recommendedMentors : mentors;
 
   // Auto-populate previously assigned mentors when dialog opens
   useEffect(() => {
@@ -708,34 +713,34 @@ function AssignMentorDialog({
 
   // Filter mentors based on search query
   const filteredMentors = useMemo(() => {
-    if (!searchQuery.trim()) return mentors;
+    if (!searchQuery.trim()) return mentorCandidates;
     const q = searchQuery.toLowerCase();
-    return mentors.filter(
+    return mentorCandidates.filter(
       (m) =>
         m.name?.toLowerCase().includes(q) ||
         m.email?.toLowerCase().includes(q) ||
         m.currentCompany?.toLowerCase().includes(q) ||
         m.expertise?.toLowerCase().includes(q)
     );
-  }, [mentors, searchQuery]);
+  }, [mentorCandidates, searchQuery]);
 
   // Mentors currently selected
   const selectedMentorsList = useMemo(() => {
-    return mentors.filter((m) => m.id != null && selectedMentorIds.includes(m.id));
-  }, [mentors, selectedMentorIds]);
+    return mentorCandidates.filter((m) => m.id != null && selectedMentorIds.includes(m.id));
+  }, [mentorCandidates, selectedMentorIds]);
 
   // Currently previewed mentor object
   const previewMentor = useMemo(() => {
     if (activePreviewId != null) {
-      const found = mentors.find((m) => m.id === activePreviewId);
+      const found = mentorCandidates.find((m) => m.id === activePreviewId);
       if (found) return found;
     }
     if (selectedMentorIds.length > 0) {
       const firstId = selectedMentorIds[selectedMentorIds.length - 1];
-      return mentors.find((m) => m.id === firstId) ?? null;
+      return mentorCandidates.find((m) => m.id === firstId) ?? null;
     }
     return null;
-  }, [mentors, activePreviewId, selectedMentorIds]);
+  }, [mentorCandidates, activePreviewId, selectedMentorIds]);
 
   const toggleMentorSelection = (mentorId: number) => {
     setSelectedMentorIds((prev) => {
@@ -884,7 +889,11 @@ function AssignMentorDialog({
 
               {/* Scrollable Mentor List */}
               <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1 [scrollbar-gutter:stable]">
-                {filteredMentors.length === 0 ? (
+                {isLoadingRecommendations ? (
+                  <div className="flex items-center justify-center py-12">
+                    <SpinnerBlock size="sm" />
+                  </div>
+                ) : filteredMentors.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
                     <p className="mt-2 text-xs text-slate-500">{t("common.noResults")}</p>
@@ -935,6 +944,13 @@ function AssignMentorDialog({
                           <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
                             {mentor.currentCompany || mentor.email}
                           </p>
+                          {hasRecommendationJd && mentor.matchPercent != null && (
+                            <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400">
+                              {t("adminMentorReviewAssignment.matchPercent", {
+                                percent: mentor.matchPercent.toFixed(2),
+                              })}
+                            </span>
+                          )}
                         </div>
                       </div>
                     );
