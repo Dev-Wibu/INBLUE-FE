@@ -38,6 +38,15 @@ function getCompanyInitials(name?: string) {
   );
 }
 
+function formatMatchPercent(value: unknown): string | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  const safeValue = Math.min(100, Math.max(0, value));
+  return `${new Intl.NumberFormat("vi-VN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(safeValue)}%`;
+}
+
 function EmptyState({ query, onClear, t }: { query: string; onClear: () => void; t: TFunction }) {
   return (
     <div className="mx-6 my-10 flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
@@ -91,7 +100,7 @@ function RecommendationEmptyState({
       </div>
       <div className="flex flex-wrap justify-center gap-2">
         <Button onClick={onUpdateProfile} className="bg-indigo-600 hover:bg-indigo-700">
-          {t("jobRecommendations.updateProfile")}
+          {t("jobRecommendations.takeAssessment")}
         </Button>
         <Button variant="outline" onClick={onViewAll}>
           {t("jobRecommendations.viewAllJobs")}
@@ -151,6 +160,7 @@ export function JobCard({
   const logoUrl = jobExtra.companyLogo || jobExtra.thumbnailUrl || jobExtra.companyLogoUrl || null;
   const initials = getCompanyInitials(job.companyName);
   const skillTags = getJobSkillTags(job);
+  const matchPercent = formatMatchPercent((job as JobRecommendation).matchPercent);
 
   const isNegotiable = !job.salaryMin && !job.salaryMax;
   const salaryText = isNegotiable
@@ -201,6 +211,11 @@ export function JobCard({
                   variant="secondary"
                   className={`border-transparent px-3 py-0.5 text-xs font-semibold ${LEVEL_COLORS[job.level] || "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"}`}>
                   {job.level}
+                </Badge>
+              )}
+              {matchPercent && (
+                <Badge className="border-transparent bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                  {matchPercent} {t("jobRecommendations.match", "phù hợp")}
                 </Badge>
               )}
             </div>
@@ -414,7 +429,9 @@ export function JobSearchTab() {
   };
 
   const openProfile = () => {
-    setSearchParams({ tab: "account", subtab: "editProfile" });
+    // Recommendations require the career direction and graded Entry Test.
+    // Send users to that flow instead of the generic profile editor.
+    window.location.assign("/user/entry-test/onboarding");
   };
 
   const filteredJobs = useMemo(() => {
