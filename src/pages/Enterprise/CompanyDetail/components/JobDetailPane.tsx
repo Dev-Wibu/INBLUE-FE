@@ -42,6 +42,7 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
   const { hasPurchased, hasApplied, isLoadingStatus, refetchStatus } = useJdPurchaseStatus(job.id);
   const normalizedJobStatus = job.status?.toUpperCase();
   const isJobOpen = normalizedJobStatus === "OPEN";
+  const isFreeJob = typeof job.price !== "number" || job.price <= 0;
   const skillTags = getJobSkillTags(job);
 
   const salaryText =
@@ -87,7 +88,7 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
 
     setIsActionLoading(true);
     try {
-      if (!hasPurchased) {
+      if (!isFreeJob && !hasPurchased) {
         localStorage.setItem("pending_jd_purchase_id", String(jdId));
         const payment = await jdPurchaseManager.createPayment(jdId);
         if (!payment.checkoutUrl) {
@@ -238,7 +239,7 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
                       Fee practice
                     </span>
                     <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
-                      {job.price ? `${job.price.toLocaleString()} VND` : "2,000 VND"}
+                      {isFreeJob ? t("common.free", "Miễn phí") : `${job.price!.toLocaleString()} VND`}
                     </span>
                   </div>
 
@@ -254,7 +255,7 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
                         ? t("common.processing", "Processing...")
                         : hasApplied
                           ? t("enterpriseJobdescriptiondetailpage.alreadyApplied", "Đã ứng tuyển ✓")
-                          : !hasPurchased
+                          : !isFreeJob && !hasPurchased
                             ? t("payment.buyPackage", "Mua gói")
                             : t("enterpriseJobdescriptiondetailpage.applyNow", "Apply ngay")}
                     {!isLoadingStatus && hasPurchased && (
