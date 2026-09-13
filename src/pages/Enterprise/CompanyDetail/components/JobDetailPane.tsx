@@ -239,7 +239,9 @@ export function JobDetailPane({ job, company }: JobDetailPaneProps) {
                       Fee practice
                     </span>
                     <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
-                      {isFreeJob ? t("common.free", "Miễn phí") : `${job.price!.toLocaleString()} VND`}
+                      {isFreeJob
+                        ? t("common.free", "Miễn phí")
+                        : `${job.price!.toLocaleString()} VND`}
                     </span>
                   </div>
 
