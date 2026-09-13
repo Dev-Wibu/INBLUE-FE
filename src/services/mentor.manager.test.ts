@@ -188,6 +188,24 @@ describe("MentorManager", () => {
       expect(result.success).toBe(false);
       expect(mockGet).not.toHaveBeenCalled();
     });
+
+    it("preserves status and traceId for recommendation error states", async () => {
+      mockGet.mockRejectedValueOnce(
+        Object.assign(new Error("Job Description Not Found"), {
+          status: 404,
+          traceId: "trace-404",
+        })
+      );
+
+      const result = await mentorManager.getRecommended(120);
+
+      expect(result).toEqual({
+        success: false,
+        error: "Job Description Not Found",
+        statusCode: 404,
+        traceId: "trace-404",
+      });
+    });
   });
 
   describe("create", () => {

@@ -18,6 +18,7 @@ import type {
   SchemaUserScheduleEventDto,
 } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
+import type { AppApiError } from "@/lib/error-normalizer";
 import { validateMentorData } from "@/lib/mentor-validation";
 
 // Re-export Mentor type for convenience
@@ -126,9 +127,12 @@ export class MentorManager implements BaseManager<Mentor> {
         data: normalizeMentorResponse(response.data as PaginatedResponse<Mentor> | Mentor[]),
       };
     } catch (error) {
+      const apiError = error as AppApiError;
       return {
         success: false,
         error: error instanceof Error ? error.message : t("common.unableToLoadMentorList"),
+        statusCode: apiError.status,
+        traceId: apiError.traceId,
       };
     }
   }
@@ -195,9 +199,12 @@ export class MentorManager implements BaseManager<Mentor> {
       });
       return { success: true, data: (response.data ?? []) as MentorScheduleEvent[] };
     } catch (error) {
+      const apiError = error as AppApiError;
       return {
         success: false,
         error: error instanceof Error ? error.message : t("common.unableToLoadMentorList"),
+        statusCode: apiError.status,
+        traceId: apiError.traceId,
       };
     }
   }
@@ -436,9 +443,12 @@ export class MentorManager implements BaseManager<Mentor> {
         ),
       };
     } catch (error) {
+      const apiError = error as AppApiError;
       return {
         success: false,
         error: error instanceof Error ? error.message : t("common.unableToLoadMentorList"),
+        statusCode: apiError.status,
+        traceId: apiError.traceId,
       };
     }
   }

@@ -84,7 +84,12 @@ export const useRecommendedMentors = (jdId?: number | null) => {
     queryFn: async () => {
       if (!jdId) return [];
       const response = await mentorManager.getRecommended(jdId);
-      if (!response.success) throw new Error(response.error || t("common.unableToLoadMentorList"));
+      if (!response.success) {
+        throw Object.assign(new Error(response.error || t("common.unableToLoadMentorList")), {
+          status: response.statusCode,
+          traceId: response.traceId,
+        });
+      }
       return response.data ?? [];
     },
     enabled: Number.isInteger(jdId) && Number(jdId) > 0,

@@ -209,6 +209,8 @@
     "activeScheduleSummary": "有効な時間枠"
   },
   "adminMentorReviewAssignment": {
+    "recommendationJdNotFound": "選択した求人情報は存在しません。",
+    "recommendationLoadError": "おすすめメンターを読み込めませんでした。",
     "matchPercent": "JD一致度 {{percent}}%",
     "pageTitle": "メンターレビュー割り当て",
     "pageDescription": "メンターを待機中の ApplicationDetail に割り当てます。",

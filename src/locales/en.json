@@ -248,6 +248,8 @@
     "activeKiosks": "Active kiosks"
   },
   "adminMentorReviewAssignment": {
+    "recommendationJdNotFound": "The selected job description no longer exists.",
+    "recommendationLoadError": "Unable to load recommended mentors.",
     "matchPercent": "JD match {{percent}}%",
     "pageTitle": "Mentor Review Assignment",
     "pageDescription": "Assign mentors to ApplicationDetails that are awaiting a reviewer.",

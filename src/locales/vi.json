@@ -248,6 +248,8 @@
     "activeKiosks": "Kiosk đang hoạt động"
   },
   "adminMentorReviewAssignment": {
+    "recommendationJdNotFound": "Mô tả công việc đã chọn không còn tồn tại.",
+    "recommendationLoadError": "Không thể tải danh sách Mentor được đề xuất.",
     "matchPercent": "Phù hợp JD {{percent}}%",
     "pageTitle": "Phân công Mentor Review",
     "pageDescription": "Phân công Mentor cho các ApplicationDetail đang chờ.",
