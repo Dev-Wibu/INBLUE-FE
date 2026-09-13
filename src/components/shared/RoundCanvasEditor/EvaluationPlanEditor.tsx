@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,7 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Check, CheckCircle2, Pencil, Plus, Trash2, X } from "lucide-react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   EVALUATION_INSTRUCTION_MAX_LENGTH,
@@ -50,17 +51,34 @@ export function EvaluationPlanEditor({
   const { t } = useTranslation();
   const [touchedFields, setTouchedFields] = useState<Set<string>>(() => new Set());
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const handledValidationAttemptRef = useRef(false);
   const metrics = value?.metrics ?? [];
   const validation = validateEvaluationPlan(value);
   const totalWeight = metrics.reduce((sum, metric) => sum + Number(metric.weight ?? 0), 0);
-  const hasValidWeight = !validation.totalWeight;
+  const hasMetrics = metrics.length > 0;
+  const hasValidWeight = hasMetrics && !validation.totalWeight;
   const hasTouchedWeight = metrics.some((_, index) => touchedFields.has(`metric.${index}.weight`));
   const showWeightError = Boolean(validation.totalWeight && (showAllErrors || hasTouchedWeight));
   const weightBarPercent = Math.max(0, Math.min(100, totalWeight));
+  const firstInvalidMetricIndex = validation.metricErrors.findIndex(
+    (errors) => Object.keys(errors).length > 0
+  );
 
   useEffect(() => {
     setTouchedFields(new Set());
   }, [metrics.length]);
+
+  useEffect(() => {
+    if (!showAllErrors) {
+      handledValidationAttemptRef.current = false;
+      return;
+    }
+
+    if (!handledValidationAttemptRef.current) {
+      handledValidationAttemptRef.current = true;
+      if (firstInvalidMetricIndex >= 0) setEditingIndex(firstInvalidMetricIndex);
+    }
+  }, [firstInvalidMetricIndex, showAllErrors]);
 
   const touchField = (field: string) => {
     setTouchedFields((current) => new Set(current).add(field));
@@ -199,9 +217,17 @@ export function EvaluationPlanEditor({
             "flex h-7 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold",
             hasValidWeight
               ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400"
-              : "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-400"
+              : showWeightError
+                ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-400"
+                : "border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
           )}>
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
+          {hasValidWeight ? (
+            <CheckCircle2 className="h-3.5 w-3.5" />
+          ) : showWeightError ? (
+            <AlertTriangle className="h-3.5 w-3.5" />
+          ) : (
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
+          )}
           {t("roundAi.totalWeight", "Tổng trọng số")}: {totalWeight}%
         </div>
       </div>
@@ -211,7 +237,11 @@ export function EvaluationPlanEditor({
           <div
             className={cn(
               "h-full rounded-full transition-all",
-              hasValidWeight ? "bg-emerald-500" : "bg-rose-700"
+              hasValidWeight
+                ? "bg-emerald-500"
+                : showWeightError
+                  ? "bg-rose-600"
+                  : "bg-slate-400 dark:bg-slate-600"
             )}
             style={{ width: `${weightBarPercent}%` }}
           />
@@ -229,7 +259,7 @@ export function EvaluationPlanEditor({
         </div>
       ) : (
         <div className="min-w-0 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-          <Table className="table-fixed">
+          <Table className="min-w-[760px] table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-28 text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -364,11 +394,13 @@ export function EvaluationPlanEditor({
                             <Input
                               type="number"
                               inputMode="decimal"
-                              min={0}
+                              min={0.01}
                               max={100}
+                              step="any"
                               value={metric.weight ?? ""}
                               onChange={(event) => updateWeight(index, event.target.value)}
                               onBlur={() => touchField(`metric.${index}.weight`)}
+                              aria-label={t("roundAi.weight", "Trọng số (%)")}
                               aria-invalid={shouldShowError(
                                 `metric.${index}.weight`,
                                 validation.metricErrors[index]?.weight
@@ -398,11 +430,13 @@ export function EvaluationPlanEditor({
                             <Input
                               type="number"
                               inputMode="decimal"
-                              min={0}
+                              min={0.01}
                               max={EVALUATION_SCORE_MAX}
+                              step="any"
                               value={metric.maxScore ?? ""}
                               onChange={(event) => updateMaxScore(index, event.target.value)}
                               onBlur={() => handleMaxScoreBlur(index, metric.maxScore)}
+                              aria-label={t("roundAi.maxScore", "Điểm tối đa (>0 đến 100)")}
                               aria-invalid={shouldShowError(
                                 `metric.${index}.maxScore`,
                                 validation.metricErrors[index]?.maxScore
@@ -432,13 +466,15 @@ export function EvaluationPlanEditor({
                             <Input
                               type="number"
                               inputMode="decimal"
-                              min={0}
+                              min={metric.required ? 0.01 : 0}
                               max={maxScoreForMin}
+                              step="any"
                               value={metric.minimumScore ?? ""}
                               onChange={(event) =>
                                 updateMinimumScore(index, event.target.value, maxScoreForMin)
                               }
                               onBlur={() => touchField(`metric.${index}.minimumScore`)}
+                              aria-label={t("roundAi.minimumScore", "Điểm sàn (0 đến điểm tối đa)")}
                               aria-invalid={shouldShowError(
                                 `metric.${index}.minimumScore`,
                                 validation.metricErrors[index]?.minimumScore
@@ -464,16 +500,15 @@ export function EvaluationPlanEditor({
                         className="py-2.5 align-top"
                         onClick={(event) => isEditing && event.stopPropagation()}>
                         {isEditing ? (
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={metric.required ?? false}
-                            onChange={(event) => {
-                              const checked = event.target.checked;
-                              updateMetric(index, { required: checked });
-                              if (checked) touchField(`metric.${index}.minimumScore`);
+                            onCheckedChange={(checked) => {
+                              const isRequired = checked === true;
+                              updateMetric(index, { required: isRequired });
+                              if (isRequired) touchField(`metric.${index}.minimumScore`);
                             }}
                             aria-label={t("roundAi.required", "Bắt buộc đạt")}
-                            className="h-4 w-4 cursor-pointer accent-rose-600"
+                            className="cursor-pointer data-[state=checked]:border-indigo-600 data-[state=checked]:bg-indigo-600 dark:data-[state=checked]:bg-indigo-500"
                           />
                         ) : metric.required ? (
                           <Check
