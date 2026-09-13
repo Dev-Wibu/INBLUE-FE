@@ -28,7 +28,10 @@ export type SchemaCreateJobDescriptionRequest =
   components["schemas"]["CreateJobDescriptionRequest"];
 export type SchemaUpdateJobDescriptionRequest =
   components["schemas"]["UpdateJobDescriptionRequest"];
-export type JobRecommendation = components["schemas"]["JobRecommendationResponse"];
+/** Recommendation payload fields added by the backend recommendation endpoint. */
+export type JobRecommendation = components["schemas"]["JobRecommendationResponse"] & {
+  matchPercent?: number | null;
+};
 export type UpdateJobRecommendationThresholdRequest =
   components["schemas"]["UpdateJobRecommendationThresholdRequest"];
 export type JobRecommendationThresholdResponse =

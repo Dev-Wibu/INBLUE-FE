@@ -8153,6 +8153,8 @@
     "emptyDescription": "Update your skills and career preferences so we can find more suitable jobs.",
     "viewAllJobs": "View all jobs",
     "updateProfile": "Update profile",
+    "takeAssessment": "Take career assessment",
+    "match": "match",
     "loadError": "Unable to load job recommendations",
     "errorDescription": "Something went wrong while loading data. Please try again.",
     "retry": "Try again"
@@ -8197,7 +8199,10 @@
     "footerNote": "The system calculates fit automatically from skill data.",
     "validation": "Enter a number from 0 to 100 with no more than two decimal places.",
     "save": "Save setting",
-    "success": "Minimum job fit set to {{value}}%"
+    "success": "Minimum job fit set to {{value}}%",
+    "confirmTitle": "Confirm save",
+    "confirmDescription": "Are you sure you want to set the minimum job fit to {{value}}%?",
+    "confirmSave": "Confirm save"
   },
   "codeReviewRound": "Code Review Round",
   "codeReviewIssues": "Code Review Issues",

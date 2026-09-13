@@ -86,6 +86,15 @@ function formatDate(dateStr?: string) {
   return format(new Date(dateStr), "dd/MM/yyyy");
 }
 
+function formatMatchPercent(value: unknown): string | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  const safeValue = Math.min(100, Math.max(0, value));
+  return `${new Intl.NumberFormat("vi-VN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(safeValue)}%`;
+}
+
 function getCompanyInitials(name?: string) {
   if (!name) return "IB";
   return (
@@ -172,6 +181,9 @@ export function JobDetailView({
   const { t } = useTranslation();
   const isJobOpen = job.status?.toUpperCase() === "OPEN";
   const skillTags = getJobSkillTags(job);
+  const matchPercent = formatMatchPercent(
+    (job as JobDescription & { matchPercent?: number | null }).matchPercent
+  );
 
   const renderActionButton = () => {
     if (!isJobOpen) {
@@ -288,6 +300,11 @@ export function JobDetailView({
                           ? t("enterpriseJobdescriptiondetailpage.closed")
                           : t("common.draft1")}
                     </Badge>
+                    {matchPercent && (
+                      <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                        {matchPercent} {t("jobRecommendations.match", "phù hợp")}
+                      </Badge>
+                    )}
                   </div>
 
                   <h1 className="mb-0.5 text-xl leading-snug font-extrabold text-slate-900 dark:text-white">
@@ -324,9 +341,7 @@ export function JobDetailView({
                     <span className="text-[15px] font-extrabold tracking-tight whitespace-nowrap text-amber-600 dark:text-amber-400">
                       {typeof job?.price === "number" && job.price > 0
                         ? `${formatNumber(job.price)} VND`
-                        : typeof job?.price === "number" && job.price === 0
-                          ? t("common.free", "Miễn phí")
-                          : "99.000 VND"}
+                        : t("common.free", "Miễn phí")}
                     </span>
                   </div>
                 )}

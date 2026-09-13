@@ -8152,6 +8152,8 @@
     "emptyDescription": "スキルとキャリア志向を更新すると、より適した求人を見つけられます。",
     "viewAllJobs": "すべての求人を見る",
     "updateProfile": "プロフィールを更新",
+    "takeAssessment": "キャリア適性を診断",
+    "match": "適合",
     "loadError": "おすすめ求人を読み込めません",
     "errorDescription": "データの読み込み中にエラーが発生しました。もう一度お試しください。",
     "retry": "再試行"
@@ -8196,7 +8198,10 @@
     "footerNote": "適合度はスキルデータからシステムが自動計算します。",
     "validation": "0から100までの数値を小数点以下2桁以内で入力してください。",
     "save": "設定を保存",
-    "success": "最低適合度を{{value}}%に設定しました"
+    "success": "最低適合度を{{value}}%に設定しました",
+    "confirmTitle": "保存を確認",
+    "confirmDescription": "最低適合度を{{value}}%に設定して保存しますか？",
+    "confirmSave": "保存を確認"
   },
   "codeReviewRound": "コードレビューラウンド",
   "codeReviewIssues": "コードレビューの問題",

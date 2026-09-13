@@ -1210,6 +1210,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/email-submissions/process-pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["triggerProcessPendingEmails"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/email-submissions/fetch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["triggerFetchEmails"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/coding-problems": {
         parameters: {
             query?: never;
@@ -4811,10 +4843,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -4824,20 +4856,20 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
+            /** Format: int32 */
+            pageNumber?: number;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
-            unpaged?: boolean;
         };
         SortObject: {
+            unsorted?: boolean;
             sorted?: boolean;
             empty?: boolean;
-            unsorted?: boolean;
         };
         Payment: {
             /** Format: int32 */
@@ -4982,6 +5014,8 @@ export interface components {
             deadlineAt?: string;
             /** Format: int32 */
             appliedCount?: number;
+            /** Format: double */
+            matchPercent?: number;
         };
         EnrichedJobDescription: {
             /** Format: int64 */
@@ -5120,10 +5154,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -5224,19 +5258,19 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            defaultContentType?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            isXml?: string;
-            trimDirectiveWhitespaces?: string;
-            elIgnored?: string;
+            errorOnELNotFound?: string;
+            pageEncoding?: string;
             urlPatterns?: string[];
-            defaultContentType?: string;
+            isXml?: string;
             buffer?: string;
+            elIgnored?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -5270,10 +5304,10 @@ export interface components {
             };
         };
         ServletContext: {
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -5284,15 +5318,15 @@ export interface components {
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -5370,11 +5404,11 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
-            secure?: boolean;
-            httpOnly?: boolean;
             /** Format: int32 */
             maxAge?: number;
+            secure?: boolean;
             domain?: string;
+            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -8077,6 +8111,46 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EntryTestStartResponse"];
+                };
+            };
+        };
+    };
+    triggerProcessPendingEmails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    triggerFetchEmails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
                 };
             };
         };

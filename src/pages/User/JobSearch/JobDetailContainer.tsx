@@ -82,6 +82,13 @@ export function JobDetailContainer({
       return;
     }
 
+    // Free jobs do not require a JD purchase. Apply directly so the detail
+    // page stays consistent with the list card when price is null or zero.
+    if (typeof job.price !== "number" || job.price <= 0) {
+      await handleApplyAfterPurchased();
+      return;
+    }
+
     if (hasPurchased) {
       await handleApplyAfterPurchased();
       return;
