@@ -87,11 +87,21 @@ export interface MentorProfileRequest {
   githubUrl: string | null;
 }
 
+export interface MentorProfileView {
+  certifications?: string[];
+  skills?: string[];
+  jobTitle?: string;
+  education?: string;
+  languages?: string[];
+  portfolioUrl?: string;
+  githubUrl?: string;
+}
+
 export type CreateMentorRequest = Omit<SchemaCreateMentorRequest, "profileData"> & {
   profileData: MentorProfileRequest;
 };
 
-export type UpdateMentorRequest = Omit<SchemaCreateMentorRequest, "password"> & {
+export type UpdateMentorRequest = Omit<SchemaCreateMentorRequest, "password" | "profileData"> & {
   profileData: MentorProfileRequest;
 };
 export type JobDescription = SchemaJobDescription & {
@@ -163,10 +173,13 @@ export interface User extends Omit<SchemaUser, "role"> {
 /**
  * Mentor type based on backend schema
  */
-export interface Mentor extends Omit<SchemaMentor, "role">, Partial<SchemaMentorResponse> {
+export interface Mentor
+  extends
+    Omit<SchemaMentor, "role" | "profileData">,
+    Omit<Partial<SchemaMentorResponse>, "profileData" | "matchPercent"> {
   role?: UserRole;
-  profileData?: MentorProfileRequest | null;
-  matchPercent?: number | null;
+  profileData?: MentorProfileView;
+  matchPercent?: number;
   /** @deprecated Use averageRating from schema response */
   rate?: number;
 }
@@ -192,7 +205,10 @@ export interface UserFormData extends Omit<SchemaUserInfo, "id" | "name" | "emai
  * Mentor form data for create/update operations
  * Updated to match MentorInfo schema (doesn't include rate)
  */
-export interface MentorFormData extends Omit<SchemaCreateMentorRequest, "name" | "email"> {
+export interface MentorFormData extends Omit<
+  SchemaCreateMentorRequest,
+  "name" | "email" | "profileData"
+> {
   name: string;
   email: string;
   active?: boolean;

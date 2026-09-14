@@ -1,4 +1,4 @@
-import { PaginationControl, ReloadButton } from "@/components/shared";
+import { MatchLevelBadge, PaginationControl, ReloadButton } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -996,11 +996,7 @@ function AssignMentorDialog({
                             {mentor.currentCompany || mentor.email}
                           </p>
                           {hasRecommendationJd && mentor.matchPercent != null && (
-                            <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400">
-                              {t("adminMentorReviewAssignment.matchPercent", {
-                                percent: mentor.matchPercent.toFixed(2),
-                              })}
-                            </span>
+                            <MatchLevelBadge percent={mentor.matchPercent} className="mt-1" />
                           )}
                         </div>
                       </div>

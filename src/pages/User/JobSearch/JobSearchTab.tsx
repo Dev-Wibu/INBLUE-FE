@@ -1,3 +1,4 @@
+import { MatchLevelBadge } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -213,11 +214,7 @@ export function JobCard({
                   {job.level}
                 </Badge>
               )}
-              {matchPercent && (
-                <Badge className="border-transparent bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-                  {matchPercent} {t("jobRecommendations.match", "phù hợp")}
-                </Badge>
-              )}
+              {matchPercent && <MatchLevelBadge percent={matchPercent} compact />}
             </div>
           </div>
         </div>

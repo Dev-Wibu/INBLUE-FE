@@ -251,7 +251,7 @@
     "recommendationJdNotFound": "Mô tả công việc đã chọn không còn tồn tại.",
     "recommendationLoadError": "Không thể tải danh sách Mentor được đề xuất.",
     "noRecommendedMentors": "Không có Mentor đang hoạt động với hồ sơ phù hợp.",
-    "matchPercent": "Phù hợp JD {{percent}}%",
+    "matchPercent": "Mức độ phù hợp {{percent}}%",
     "pageTitle": "Phân công Mentor Review",
     "pageDescription": "Phân công Mentor cho các ApplicationDetail đang chờ.",
     "sidebarLabel": "Phân công Mentor Review",
@@ -710,6 +710,7 @@
     "github": "GitHub",
     "addProfileEntry": "Thêm {{label}}",
     "removeProfileEntry": "Xóa mục hồ sơ",
+    "profileEntryPlaceholder": "Thêm {{label}}",
     "activate": "kích hoạt",
     "activateMentor": "Kích hoạt Mentor",
     "addMentor": "Thêm Mentor",
@@ -8170,6 +8171,7 @@
     }
   },
   "jobRecommendations": {
+    "matchLevel": "Mức độ phù hợp",
     "modeLabel": "Chế độ danh sách việc làm",
     "allJobs": "Tất cả việc làm",
     "tabTitle": "Gợi ý cho bạn",
@@ -8489,6 +8491,7 @@
     "pathSummary": "3 phần · khoảng 60 phút",
     "completed": "Đã hoàn thành",
     "ready": "Sẵn sàng bắt đầu",
+    "viewing": "Đang xem",
     "meta": {
       "foundation": "Tư duy + kiến thức nền",
       "foundationTime": "15 phút",

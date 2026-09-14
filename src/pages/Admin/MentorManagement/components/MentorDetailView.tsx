@@ -393,16 +393,25 @@ export function MentorDetailView({
                     </div>
                   )}
                   {[
-                    [t("adminMentormanagement.skills", "Skills"), mentor.profileData?.skills],
-                    [
-                      t("adminMentormanagement.certifications", "Certifications"),
-                      mentor.profileData?.certifications,
-                    ],
-                    [
-                      t("adminMentormanagement.languages", "Languages"),
-                      mentor.profileData?.languages,
-                    ],
-                  ].map(([label, values]) =>
+                    {
+                      label: t("adminMentormanagement.skills", "Skills"),
+                      values: mentor.profileData?.skills,
+                      badgeClassName:
+                        "border-indigo-200 bg-indigo-50 text-indigo-800 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-200",
+                    },
+                    {
+                      label: t("adminMentormanagement.certifications", "Certifications"),
+                      values: mentor.profileData?.certifications,
+                      badgeClassName:
+                        "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200",
+                    },
+                    {
+                      label: t("adminMentormanagement.languages", "Languages"),
+                      values: mentor.profileData?.languages,
+                      badgeClassName:
+                        "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-200",
+                    },
+                  ].map(({ label, values, badgeClassName }) =>
                     Array.isArray(values) && values.length > 0 ? (
                       <div key={String(label)} className="space-y-1 sm:col-span-2">
                         <p className="text-xs font-medium text-slate-500">{label}</p>
@@ -410,8 +419,8 @@ export function MentorDetailView({
                           {values.map((value, index) => (
                             <Badge
                               key={`${value}-${index}`}
-                              variant="secondary"
-                              className="text-xs">
+                              variant="outline"
+                              className={`rounded-md text-xs font-medium shadow-none ${badgeClassName}`}>
                               {value}
                             </Badge>
                           ))}

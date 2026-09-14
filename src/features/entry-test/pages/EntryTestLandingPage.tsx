@@ -208,30 +208,7 @@ export function EntryTestLandingPage() {
           )}
         </div>
         <div className="mt-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm md:px-6 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
-                {t("entryTestLanding.pathTitle")}
-              </p>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                {competency.data
-                  ? t("entryTestLanding.pathComplete")
-                  : t("entryTestLanding.pathSummary")}
-              </p>
-            </div>
-            <span className="text-sm font-black text-indigo-600 dark:text-indigo-300">
-              {competency.data ? "100%" : "0%"}
-            </span>
-          </div>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-            <div
-              className={cn(
-                "h-full rounded-full bg-indigo-500 transition-all",
-                competency.data ? "w-full" : "w-0"
-              )}
-            />
-          </div>
-          <div className="relative mt-4 grid grid-cols-3 gap-3">
+          <div className="relative grid grid-cols-3 gap-3">
             <div className="pointer-events-none absolute top-3.5 right-[16.666%] left-[16.666%] h-px bg-slate-200 dark:bg-slate-700" />
             <div
               className={cn(
@@ -322,10 +299,19 @@ export function EntryTestLandingPage() {
                       </h3>
                       <Badge
                         variant="secondary"
-                        className="rounded-full px-2 py-0.5 text-[10px] font-bold">
+                        className={cn(
+                          "h-5 rounded-md border px-2 py-0 text-[10px] font-bold shadow-none",
+                          competency.data
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
+                            : activeStep === index
+                              ? "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300"
+                              : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+                        )}>
                         {competency.data
                           ? t("entryTestLanding.completed")
-                          : t("entryTestLanding.ready")}
+                          : activeStep === index
+                            ? t("entryTestLanding.viewing")
+                            : t("entryTestLanding.ready")}
                       </Badge>
                     </div>
                     <p className="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">

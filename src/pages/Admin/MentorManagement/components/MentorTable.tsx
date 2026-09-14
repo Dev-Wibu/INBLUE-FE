@@ -15,13 +15,13 @@ import type { Mentor } from "../types";
 
 interface SortProps {
   direction: SortDirection;
-  onChange: (direction: SortDirection) => void;
+  onChange: (_direction: SortDirection) => void;
 }
 interface MentorTableProps {
   mentors: Mentor[];
-  onViewDetail: (mentor: Mentor) => void;
-  onToggleActive: (mentor: Mentor) => void;
-  getSortProps?: (key: keyof Mentor) => SortProps;
+  onViewDetail: (_mentor: Mentor) => void;
+  onToggleActive: (_mentor: Mentor) => void;
+  getSortProps?: (_key: keyof Mentor) => SortProps;
 }
 
 export function MentorTable({
@@ -75,7 +75,7 @@ export function MentorTable({
             <TableHead className="w-[170px] min-w-[170px] px-5 font-semibold text-slate-700 dark:text-slate-200">
               {t("adminMentormanagement.lastUpdated")}
             </TableHead>
-            <TableHead className="w-[120px] min-w-[120px] pr-6 text-center font-semibold text-slate-700 dark:text-slate-200">
+            <TableHead className="sticky right-0 z-10 w-[132px] min-w-[132px] border-l border-slate-200 bg-slate-50 pr-6 text-center font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
               {t("common.status")}
             </TableHead>
           </TableRow>
@@ -161,7 +161,9 @@ export function MentorTable({
                   : "—"}
               </TableCell>
 
-              <TableCell className="py-4 pr-6 text-center" onClick={(e) => e.stopPropagation()}>
+              <TableCell
+                className="sticky right-0 z-[1] border-l border-slate-100 bg-white py-4 pr-6 text-center group-hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:group-hover:bg-slate-800"
+                onClick={(e) => e.stopPropagation()}>
                 {mentor.active !== false ? (
                   <button
                     type="button"
