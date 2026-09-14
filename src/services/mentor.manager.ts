@@ -39,11 +39,21 @@ export interface CreateMentorData extends CreateMentorRequest {
   active?: boolean;
 }
 
+type MentorMutationData = Partial<Omit<Mentor, "profileData">> & {
+  profileData?: MentorProfileRequest;
+  avatar?: File;
+  password?: string;
+};
+
 /**
  * Creates an empty file placeholder for multipart/form-data requests
  * Used as workaround for backend null pointer issues with optional file fields
  */
-type MentorApiShape = Mentor & { isActive?: boolean };
+type MentorApiShape = Omit<Mentor, "profileData" | "matchPercent"> & {
+  profileData?: Partial<MentorProfileRequest> | null;
+  matchPercent?: number | null;
+  isActive?: boolean;
+};
 
 const normalizeTextList = (values?: string[] | null) =>
   (values ?? []).map((value) => value.trim()).filter(Boolean);
@@ -68,17 +78,21 @@ function normalizeMentor(mentor: MentorApiShape): Mentor {
       : typeof mentor.isActive === "boolean"
         ? { ...mentor, active: mentor.isActive }
         : mentor;
-  if (!mentor.profileData) return normalized;
+  const matchPercent = mentor.matchPercent ?? undefined;
+  if (!mentor.profileData) {
+    return { ...normalized, profileData: undefined, matchPercent };
+  }
   return {
     ...normalized,
+    matchPercent,
     profileData: {
       certifications: mentor.profileData.certifications ?? [],
       skills: mentor.profileData.skills ?? [],
-      jobTitle: mentor.profileData.jobTitle ?? null,
-      education: mentor.profileData.education ?? null,
+      jobTitle: mentor.profileData.jobTitle ?? undefined,
+      education: mentor.profileData.education ?? undefined,
       languages: mentor.profileData.languages ?? [],
-      portfolioUrl: mentor.profileData.portfolioUrl ?? null,
-      githubUrl: mentor.profileData.githubUrl ?? null,
+      portfolioUrl: mentor.profileData.portfolioUrl ?? undefined,
+      githubUrl: mentor.profileData.githubUrl ?? undefined,
     },
   };
 }
@@ -103,7 +117,11 @@ function normalizeMentorResponse(
   return data;
 }
 
-export class MentorManager implements BaseManager<Mentor> {
+export class MentorManager implements BaseManager<
+  Mentor,
+  MentorMutationData | CreateMentorData,
+  MentorMutationData | CreateMentorData
+> {
   /**
    * Get all mentors
    * GET /api/mentors
@@ -234,7 +252,7 @@ export class MentorManager implements BaseManager<Mentor> {
    * POST /api/mentors (multipart/form-data)
    * According to schema: { data: MentorInfo, avatar?: File }
    */
-  async create(_data: Partial<Mentor> | CreateMentorData): Promise<ApiResponse<Mentor>> {
+  async create(_data: MentorMutationData | CreateMentorData): Promise<ApiResponse<Mentor>> {
     try {
       const validationIssue = validateMentorData(_data, { requirePassword: true })[0];
       if (validationIssue) {
@@ -310,7 +328,7 @@ export class MentorManager implements BaseManager<Mentor> {
   /** Update a mentor with JSON data and an optional replacement avatar. */
   async update(
     _id: string | number,
-    _data: Partial<Mentor> | CreateMentorData
+    _data: MentorMutationData | CreateMentorData
   ): Promise<ApiResponse<Mentor>> {
     try {
       const formData = new FormData();
@@ -432,10 +450,16 @@ export class MentorManager implements BaseManager<Mentor> {
       return { success: false, error: t("general.invalidId") };
     }
     try {
-      // @ts-expect-error: generated schema predates the backend recommendation route
-      const response = await fetchClient.GET("/api/mentors/recommended", {
-        params: { query: { jdId } },
-      });
+      type RecommendationGet = (
+        _path: string,
+        _options: { params: { query: { jdId: number } } }
+      ) => Promise<{ data?: unknown }>;
+      const response = await (fetchClient.GET as unknown as RecommendationGet)(
+        "/api/mentors/recommended",
+        {
+          params: { query: { jdId } },
+        }
+      );
       return {
         success: true,
         data: (Array.isArray(response.data) ? response.data : []).map(
