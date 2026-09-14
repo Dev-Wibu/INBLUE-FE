@@ -212,7 +212,7 @@
     "recommendationJdNotFound": "選択した求人情報は存在しません。",
     "recommendationLoadError": "おすすめメンターを読み込めませんでした。",
     "noRecommendedMentors": "一致するプロフィールを持つ有効なメンターはいません。",
-    "matchPercent": "JD一致度 {{percent}}%",
+    "matchPercent": "適合度 {{percent}}%",
     "pageTitle": "メンターレビュー割り当て",
     "pageDescription": "メンターを待機中の ApplicationDetail に割り当てます。",
     "sidebarLabel": "メンターレビュー割り当て",
@@ -671,6 +671,7 @@
     "github": "GitHub",
     "addProfileEntry": "{{label}}を追加",
     "removeProfileEntry": "プロフィール項目を削除",
+    "profileEntryPlaceholder": "{{label}}を追加",
     "activate": "有効化",
     "activateMentor": "メンターを有効化",
     "addMentor": "メンターを追加",
@@ -8169,6 +8170,7 @@
     }
   },
   "jobRecommendations": {
+    "matchLevel": "適合度",
     "modeLabel": "求人一覧モード",
     "allJobs": "すべての求人",
     "tabTitle": "あなたへのおすすめ",
@@ -8477,7 +8479,26 @@
     "updateDirection": "方向性を更新",
     "retestRequiredTitle": "方向性が変更されました",
     "retestRequiredDescription": "新しいスキルに合わせて能力レベルとプロフィールを更新するため、評価をやり直してください。",
+    "retakeNow": "今すぐ再評価",
+    "outcomeTitle": "完了後に受け取れるもの：",
+    "outcomeRadar": "視覚的な能力プロフィール",
+    "outcomePath": "個別の成長プラン",
+    "outcomeSkills": "目標に応じたスキルレベル",
     "directionSkipped": "開始前であればいつでも方向性を選択できます。",
+    "pathTitle": "評価ステップ",
+    "pathComplete": "3つのセクションをすべて完了",
+    "pathSummary": "3セクション・約60分",
+    "completed": "完了",
+    "ready": "開始可能",
+    "viewing": "表示中",
+    "meta": {
+      "foundation": "思考力・基礎知識",
+      "foundationTime": "15分",
+      "direction": "職種別の問題",
+      "directionTime": "20分",
+      "coding": "実践コーディング",
+      "codingTime": "25分"
+    },
     "errors": {
       "create": "キャリアアセスメントを作成できませんでした。",
       "notEnoughItems": "この方向性の問題が不足しています。後でもう一度お試しください。"

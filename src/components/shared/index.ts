@@ -26,6 +26,8 @@ export type { FilterCriteria, FilterGroup, FilterOption, FilterProps } from "./F
 export { JobSkillTagsInput } from "./JobSkillTagsInput";
 export { KioskStatusBadge } from "./KioskStatusBadge";
 export type { KioskBookingStatus, KioskStatusBadgeProps } from "./KioskStatusBadge";
+export { MatchLevelBadge } from "./MatchLevelBadge";
+export type { MatchLevelBadgeProps } from "./MatchLevelBadge";
 export {
   FormMediaUploader,
   ImageZoomPreview,

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { MatchLevelBadge } from "./MatchLevelBadge";
 
 function getLevelBadgeColor(level?: string) {
   switch (level?.toUpperCase()) {
@@ -300,11 +301,7 @@ export function JobDetailView({
                           ? t("enterpriseJobdescriptiondetailpage.closed")
                           : t("common.draft1")}
                     </Badge>
-                    {matchPercent && (
-                      <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-                        {matchPercent} {t("jobRecommendations.match", "phù hợp")}
-                      </Badge>
-                    )}
+                    {matchPercent && <MatchLevelBadge percent={matchPercent} />}
                   </div>
 
                   <h1 className="mb-0.5 text-xl leading-snug font-extrabold text-slate-900 dark:text-white">
