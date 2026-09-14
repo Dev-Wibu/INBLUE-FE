@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Gauge } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export interface MatchLevelBadgeProps {
@@ -20,7 +19,6 @@ export function MatchLevelBadge({ percent, className, compact = false }: MatchLe
         "h-6 gap-1.5 rounded-md border-emerald-200 bg-emerald-50 px-2 text-[11px] font-semibold text-emerald-800 shadow-none dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200",
         className
       )}>
-      <Gauge className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
       {!compact && (
         <span className="font-medium text-emerald-700 dark:text-emerald-300">
           {t("jobRecommendations.matchLevel")}
