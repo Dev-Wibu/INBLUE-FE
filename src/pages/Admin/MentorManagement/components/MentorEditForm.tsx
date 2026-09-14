@@ -3,6 +3,7 @@ import {
   UniversalMediaUploader,
   type MediaViewerItem,
 } from "@/components/shared";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,42 +35,63 @@ function ProfileArrayField({
   onChange: (_values: string[]) => void;
 }) {
   const { t } = useTranslation();
+  const [draft, setDraft] = useState("");
+  const addValue = () => {
+    const normalized = draft.trim();
+    if (
+      !normalized ||
+      values.some((value) => value.trim().toLowerCase() === normalized.toLowerCase())
+    ) {
+      return;
+    }
+    onChange([...values, normalized]);
+    setDraft("");
+  };
+
   return (
-    <div className="space-y-2">
+    <div className="min-w-0 space-y-2">
       <Label>{label}</Label>
-      <div className="space-y-2">
+      <div className="flex min-h-9 flex-wrap items-center gap-1.5">
         {values.map((value, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <Input
-              value={value}
-              onChange={(event) => {
-                const next = [...values];
-                next[index] = event.target.value;
-                onChange(next);
-              }}
-              className="h-9"
-            />
-            <Button
+          <Badge
+            key={`${value}-${index}`}
+            variant="secondary"
+            className="h-7 max-w-full gap-1 rounded-md border border-indigo-200 bg-indigo-50 px-2 text-xs font-medium text-indigo-800 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-200">
+            <span className="max-w-40 truncate">{value}</span>
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 text-slate-400 hover:text-rose-600"
+              className="rounded-sm text-indigo-500 transition-colors hover:text-rose-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:text-indigo-300"
               onClick={() => onChange(values.filter((_, itemIndex) => itemIndex !== index))}
               aria-label={t("adminMentormanagement.removeProfileEntry", "Remove profile entry")}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
         ))}
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="h-8 gap-1.5 text-xs"
-        onClick={() => onChange([...values, ""])}>
-        <Plus className="h-3.5 w-3.5" />
-        {t("adminMentormanagement.addProfileEntry", "Add {{label}}", { label })}
-      </Button>
+      <div className="flex items-center gap-2">
+        <Input
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              addValue();
+            }
+          }}
+          placeholder={t("adminMentormanagement.profileEntryPlaceholder", { label })}
+          className="h-9 min-w-0"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 shrink-0"
+          onClick={addValue}
+          disabled={!draft.trim()}
+          title={t("adminMentormanagement.addProfileEntry", "Add {{label}}", { label })}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
