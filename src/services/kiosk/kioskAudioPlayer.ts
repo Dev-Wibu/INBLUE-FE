@@ -12,14 +12,14 @@ export interface PlayAudioOptions {
 
 export async function requestMicrophonePermissionAsync(): Promise<boolean> {
   try {
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       return false;
     }
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach((track) => track.stop());
     return true;
   } catch (error) {
-    console.warn('Microphone permission not granted on web:', error);
+    console.warn("Microphone permission not granted on web:", error);
     return false;
   }
 }
@@ -30,7 +30,7 @@ export async function playAudioUri(
 ): Promise<AudioPlayerHandle> {
   const audio = new Audio(uri);
   (audio as unknown as { playsInline?: boolean }).playsInline = true;
-  audio.crossOrigin = 'anonymous';
+  audio.crossOrigin = "anonymous";
 
   let volumeInterval: ReturnType<typeof setInterval> | null = null;
   let progressInterval: ReturnType<typeof setInterval> | null = null;
@@ -51,10 +51,10 @@ export async function playAudioUri(
       clearInterval(progressInterval);
       progressInterval = null;
     }
-    audio.removeEventListener('timeupdate', emitProgress);
+    audio.removeEventListener("timeupdate", emitProgress);
   };
 
-  audio.addEventListener('timeupdate', emitProgress);
+  audio.addEventListener("timeupdate", emitProgress);
 
   audio.onplay = () => {
     options.onStart?.();
@@ -106,13 +106,14 @@ export async function playAudioBlob(
 ): Promise<AudioPlayerHandle> {
   try {
     const AudioContextCtor =
-      window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextCtor) {
-      throw new Error('Web Audio API is not available');
+      throw new Error("Web Audio API is not available");
     }
 
     const audioContext = new AudioContextCtor();
-    if (audioContext.state === 'suspended') {
+    if (audioContext.state === "suspended") {
       await audioContext.resume();
     }
 
@@ -145,13 +146,19 @@ export async function playAudioBlob(
       }
       try {
         source.disconnect();
-      } catch {}
+      } catch {
+        // The source may already be disconnected during overlapping cleanup.
+      }
       try {
         analyser.disconnect();
-      } catch {}
+      } catch {
+        // The analyser may already be disconnected during overlapping cleanup.
+      }
       try {
         gainNode.disconnect();
-      } catch {}
+      } catch {
+        // The gain node may already be disconnected during overlapping cleanup.
+      }
       void audioContext.close().catch(() => {});
     };
 
@@ -195,12 +202,16 @@ export async function playAudioBlob(
         stopped = true;
         try {
           source.stop();
-        } catch {}
+        } catch {
+          // Stopping an already-ended source is harmless.
+        }
         options.onVolume?.(0);
         cleanup();
       },
     };
-  } catch {}
+  } catch {
+    // Fall back to the HTMLAudioElement implementation below.
+  }
 
   const objectUrl = URL.createObjectURL(blob);
   const handle = await playAudioUri(objectUrl, {
@@ -208,13 +219,17 @@ export async function playAudioBlob(
     onEnd: () => {
       try {
         URL.revokeObjectURL(objectUrl);
-      } catch {}
+      } catch {
+        // The URL may already have been revoked by another cleanup path.
+      }
       options.onEnd?.();
     },
     onError: (err) => {
       try {
         URL.revokeObjectURL(objectUrl);
-      } catch {}
+      } catch {
+        // The URL may already have been revoked by another cleanup path.
+      }
       options.onError?.(err);
     },
   });
@@ -224,7 +239,9 @@ export async function playAudioBlob(
       handle.stop();
       try {
         URL.revokeObjectURL(objectUrl);
-      } catch {}
+      } catch {
+        // The URL may already have been revoked by another cleanup path.
+      }
     },
   };
 }

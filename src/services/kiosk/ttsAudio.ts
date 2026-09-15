@@ -10,7 +10,10 @@ export interface TtsPlaybackCallbacks {
   onVolume?: (energy: number) => void;
 }
 
-export async function playTtsAudioBlob(blob: Blob, callbacks: TtsPlaybackCallbacks = {}): Promise<TtsPlayback> {
+export async function playTtsAudioBlob(
+  blob: Blob,
+  callbacks: TtsPlaybackCallbacks = {}
+): Promise<TtsPlayback> {
   const objectUrl = window.URL.createObjectURL(blob);
   const audio = new Audio(objectUrl);
   let isCleanedUp = false;
@@ -36,15 +39,19 @@ export async function playTtsAudioBlob(blob: Blob, callbacks: TtsPlaybackCallbac
 
     try {
       source?.disconnect();
-    } catch {}
+    } catch {
+      // The source may already be disconnected during overlapping cleanup.
+    }
     source = null;
     analyser = null;
 
     try {
-      if (audioContext && audioContext.state !== 'closed') {
+      if (audioContext && audioContext.state !== "closed") {
         void audioContext.close();
       }
-    } catch {}
+    } catch {
+      // Closing an already-closed audio context is harmless.
+    }
     audioContext = null;
     callbacks.onVolume?.(0);
   };
@@ -56,14 +63,16 @@ export async function playTtsAudioBlob(blob: Blob, callbacks: TtsPlaybackCallbac
       clearInterval(progressInterval);
       progressInterval = null;
     }
-    audio.removeEventListener('timeupdate', emitProgress);
+    audio.removeEventListener("timeupdate", emitProgress);
     stopVolumeMeter();
     window.URL.revokeObjectURL(objectUrl);
   };
 
   const startVolumeMeter = () => {
     try {
-      const AudioContextCtor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioContextCtor =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextCtor || audioContext) return;
 
       audioContext = new AudioContextCtor();
@@ -97,12 +106,12 @@ export async function playTtsAudioBlob(blob: Blob, callbacks: TtsPlaybackCallbac
 
       updateVolume();
     } catch (error) {
-      console.warn('Unable to attach TTS volume meter:', error);
+      console.warn("Unable to attach TTS volume meter:", error);
       callbacks.onVolume?.(0.28);
     }
   };
 
-  audio.addEventListener('timeupdate', emitProgress);
+  audio.addEventListener("timeupdate", emitProgress);
 
   audio.onplay = () => {
     callbacks.onStart?.();

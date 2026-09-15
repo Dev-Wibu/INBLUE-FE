@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useCallback, type MouseEvent } from 'react';
-import { Play, Square, Check, Mic2, ArrowRight, Loader2, Sparkles } from 'lucide-react';
-import type { VoiceOption } from '@/services/kiosk/kioskApi.service';
+import type { VoiceOption } from "@/services/kiosk/kioskApi.service";
+import { ArrowRight, Check, Loader2, Mic2, Play, Sparkles, Square } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 
 interface KioskVoiceSelectorProps {
   voices: VoiceOption[];
@@ -104,10 +104,9 @@ export function KioskVoiceSelector({
                 onClick={() => onSelectVoice(v.id)}
                 className={`group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4.5 transition-all ${
                   isSelected
-                    ? 'border-[#98cbff] bg-[#98cbff]/20 shadow-[0_0_15px_rgba(152,203,255,0.3)]'
-                    : 'border-[#98cbff]/15 bg-[#1a2235]/40 hover:border-[#98cbff]/40 hover:bg-[#1a2235]/70'
-                }`}
-              >
+                    ? "border-[#98cbff] bg-[#98cbff]/20 shadow-[0_0_15px_rgba(152,203,255,0.3)]"
+                    : "border-[#98cbff]/15 bg-[#1a2235]/40 hover:border-[#98cbff]/40 hover:bg-[#1a2235]/70"
+                }`}>
                 {/* Voice Info */}
                 <div className="flex items-start justify-between gap-2">
                   <div>
@@ -122,17 +121,16 @@ export function KioskVoiceSelector({
                       )}
                     </div>
                     <p className="mt-1 line-clamp-2 text-xs text-[#bec7d4]">
-                      {v.description || 'Giọng AI chuẩn hóa tiếng Việt chất lượng cao.'}
+                      {v.description || "Giọng AI chuẩn hóa tiếng Việt chất lượng cao."}
                     </p>
                   </div>
 
                   <div
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all ${
                       isSelected
-                        ? 'border-[#98cbff] bg-[#98cbff] text-slate-950'
-                        : 'border-slate-600 bg-transparent'
-                    }`}
-                  >
+                        ? "border-[#98cbff] bg-[#98cbff] text-slate-950"
+                        : "border-slate-600 bg-transparent"
+                    }`}>
                     {isSelected && <Check className="h-3.5 w-3.5 stroke-[3]" />}
                   </div>
                 </div>
@@ -144,10 +142,9 @@ export function KioskVoiceSelector({
                     onClick={(e) => handleTogglePreview(v, e)}
                     className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
                       isPreviewing
-                        ? 'border-amber-400/50 bg-amber-400/20 text-amber-300'
-                        : 'border-[#98cbff]/20 bg-[#1a2235]/80 text-[#98cbff] hover:bg-[#98cbff]/20'
-                    }`}
-                  >
+                        ? "border-amber-400/50 bg-amber-400/20 text-amber-300"
+                        : "border-[#98cbff]/20 bg-[#1a2235]/80 text-[#98cbff] hover:bg-[#98cbff]/20"
+                    }`}>
                     {isPreviewing ? (
                       <>
                         <Square className="h-3.5 w-3.5 fill-current" />
@@ -171,7 +168,7 @@ export function KioskVoiceSelector({
                           style={{
                             height: `${h * 16}px`,
                             animationDelay: `${i * 150}ms`,
-                            animationDuration: '600ms',
+                            animationDuration: "600ms",
                           }}
                         />
                       ))}
@@ -189,8 +186,7 @@ export function KioskVoiceSelector({
         <button
           type="button"
           onClick={onBack}
-          className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-300 transition-all hover:bg-white/10"
-        >
+          className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-300 transition-all hover:bg-white/10">
           Quay lại
         </button>
 
@@ -198,8 +194,7 @@ export function KioskVoiceSelector({
           type="button"
           onClick={onConfirm}
           disabled={!selectedVoiceId}
-          className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#00a3ff] to-[#0055ff] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:opacity-95 active:scale-98 disabled:opacity-50"
-        >
+          className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#00a3ff] to-[#0055ff] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:opacity-95 active:scale-98 disabled:opacity-50">
           <span>Tiếp tục kiểm tra thiết bị</span>
           <ArrowRight className="h-4 w-4" />
         </button>

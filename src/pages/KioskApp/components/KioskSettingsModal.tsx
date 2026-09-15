@@ -1,13 +1,13 @@
-import { useState, useCallback, useEffect, type FormEvent } from 'react';
-import { X, ShieldCheck, Monitor, LogIn, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import {
   getAllKiosksApi,
   loginStaffApi,
   type Kiosk,
   type StaffTokenPayload,
-} from '@/services/kiosk/kioskApi.service';
+} from "@/services/kiosk/kioskApi.service";
+import { AlertCircle, CheckCircle2, Loader2, LogIn, Monitor, ShieldCheck, X } from "lucide-react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 
-const WEB_KIOSK_STORAGE_KEY = 'inblue.currentKiosk';
+const WEB_KIOSK_STORAGE_KEY = "inblue.currentKiosk";
 
 interface KioskSettingsModalProps {
   isOpen: boolean;
@@ -18,14 +18,14 @@ interface KioskSettingsModalProps {
 
 function decodeJwtPayload(token: string): StaffTokenPayload | null {
   try {
-    const payload = token.split('.')[1];
+    const payload = token.split(".")[1];
     if (!payload) return null;
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
     const json = decodeURIComponent(
       atob(base64)
-        .split('')
+        .split("")
         .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
-        .join('')
+        .join("")
     );
     return JSON.parse(json);
   } catch {
@@ -39,9 +39,9 @@ export function KioskSettingsModal({
   onClose,
   onKioskSaved,
 }: KioskSettingsModalProps) {
-  const [mode, setMode] = useState<'LOGIN' | 'SELECT'>('LOGIN');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [mode, setMode] = useState<"LOGIN" | "SELECT">("LOGIN");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [kiosks, setKiosks] = useState<Kiosk[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,44 +49,47 @@ export function KioskSettingsModal({
 
   useEffect(() => {
     if (isOpen) {
-      setMode('LOGIN');
-      setEmail('');
-      setPassword('');
+      setMode("LOGIN");
+      setEmail("");
+      setPassword("");
       setError(null);
       setSuccessMessage(null);
       setKiosks([]);
     }
   }, [isOpen]);
 
-  const handleLogin = useCallback(async (e: FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError('Vui lòng nhập đầy đủ email và mật khẩu nhân viên.');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const token = await loginStaffApi(email.trim(), password.trim());
-      const payload = decodeJwtPayload(token);
-
-      if (!payload?.roles?.includes('ROLE_STAFF') && !payload?.roles?.includes('ROLE_ADMIN')) {
-        throw new Error('Tài khoản không có quyền quản trị Kiosk (Yêu cầu ROLE_STAFF).');
+  const handleLogin = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      if (!email.trim() || !password.trim()) {
+        setError("Vui lòng nhập đầy đủ email và mật khẩu nhân viên.");
+        return;
       }
 
       setIsLoading(true);
+      setError(null);
 
-      const kioskList = await getAllKiosksApi(token);
-      setKiosks(kioskList);
-      setMode('SELECT');
-    } catch (err: unknown) {
-      setError((err as Error)?.message || 'Đăng nhập nhân viên không thành công.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [email, password]);
+      try {
+        const token = await loginStaffApi(email.trim(), password.trim());
+        const payload = decodeJwtPayload(token);
+
+        if (!payload?.roles?.includes("ROLE_STAFF") && !payload?.roles?.includes("ROLE_ADMIN")) {
+          throw new Error("Tài khoản không có quyền quản trị Kiosk (Yêu cầu ROLE_STAFF).");
+        }
+
+        setIsLoading(true);
+
+        const kioskList = await getAllKiosksApi(token);
+        setKiosks(kioskList);
+        setMode("SELECT");
+      } catch (err: unknown) {
+        setError((err as Error)?.message || "Đăng nhập nhân viên không thành công.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [email, password]
+  );
 
   const handleSelectKiosk = useCallback(
     (kiosk: Kiosk) => {
@@ -98,7 +101,7 @@ export function KioskSettingsModal({
           onClose();
         }, 800);
       } catch (err) {
-        console.warn('Cannot save kiosk config:', err);
+        console.warn("Cannot save kiosk config:", err);
       }
     },
     [onKioskSaved, onClose]
@@ -125,14 +128,15 @@ export function KioskSettingsModal({
             <div>
               <h3 className="font-bold text-white">Cấu hình trạm Kiosk</h3>
               <p className="text-xs text-[#bec7d4]">
-                {mode === 'LOGIN' ? 'Xác thực tài khoản nhân viên vận hành' : 'Chọn thiết bị Kiosk cho máy này'}
+                {mode === "LOGIN"
+                  ? "Xác thực tài khoản nhân viên vận hành"
+                  : "Chọn thiết bị Kiosk cho máy này"}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white"
-          >
+            className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -141,7 +145,9 @@ export function KioskSettingsModal({
         {currentKiosk && (
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs text-emerald-300">
             <Monitor className="h-4 w-4" />
-            <span>Trạm hiện tại: <strong>{currentKiosk.name}</strong> (ID: #{currentKiosk.id})</span>
+            <span>
+              Trạm hiện tại: <strong>{currentKiosk.name}</strong> (ID: #{currentKiosk.id})
+            </span>
           </div>
         )}
 
@@ -160,7 +166,7 @@ export function KioskSettingsModal({
         )}
 
         {/* Body Content */}
-        {mode === 'LOGIN' ? (
+        {mode === "LOGIN" ? (
           <form onSubmit={handleLogin} className="mt-6 space-y-4">
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-[#bec7d4]">
@@ -176,9 +182,7 @@ export function KioskSettingsModal({
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-[#bec7d4]">
-                Mật khẩu
-              </label>
+              <label className="mb-1.5 block text-xs font-semibold text-[#bec7d4]">Mật khẩu</label>
               <input
                 type="password"
                 required
@@ -192,8 +196,7 @@ export function KioskSettingsModal({
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00a3ff] to-[#0055ff] py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:opacity-95 active:scale-98 disabled:opacity-50"
-            >
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00a3ff] to-[#0055ff] py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:opacity-95 active:scale-98 disabled:opacity-50">
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -222,15 +225,16 @@ export function KioskSettingsModal({
                     onClick={() => handleSelectKiosk(kiosk)}
                     className={`flex w-full items-center justify-between rounded-xl border p-3.5 text-left transition-all ${
                       isSelected
-                        ? 'border-[#98cbff] bg-[#98cbff]/20 shadow-[0_0_12px_rgba(152,203,255,0.25)]'
-                        : 'border-[#98cbff]/15 bg-[#1a2235]/40 hover:border-[#98cbff]/40 hover:bg-[#1a2235]/80'
-                    }`}
-                  >
+                        ? "border-[#98cbff] bg-[#98cbff]/20 shadow-[0_0_12px_rgba(152,203,255,0.25)]"
+                        : "border-[#98cbff]/15 bg-[#1a2235]/40 hover:border-[#98cbff]/40 hover:bg-[#1a2235]/80"
+                    }`}>
                     <div className="flex items-center gap-3">
                       <Monitor className="h-5 w-5 text-[#98cbff]" />
                       <div>
                         <div className="text-sm font-bold text-white">{kiosk.name}</div>
-                        <div className="text-xs text-[#bec7d4]">{kiosk.location || 'Vị trí mặc định'} (ID: #{kiosk.id})</div>
+                        <div className="text-xs text-[#bec7d4]">
+                          {kiosk.location || "Vị trí mặc định"} (ID: #{kiosk.id})
+                        </div>
                       </div>
                     </div>
                     {isSelected && <CheckCircle2 className="h-5 w-5 text-[#98cbff]" />}

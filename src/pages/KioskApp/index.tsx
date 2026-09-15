@@ -6,14 +6,8 @@ import {
   type Kiosk,
   type VoiceOption,
 } from "@/services/kiosk/kioskApi.service";
-import {
-  playAudioUri,
-  type AudioPlayerHandle,
-} from "@/services/kiosk/kioskAudioPlayer";
-import {
-  playTtsAudioBlob,
-  type TtsPlayback,
-} from "@/services/kiosk/ttsAudio";
+import { playAudioUri, type AudioPlayerHandle } from "@/services/kiosk/kioskAudioPlayer";
+import { playTtsAudioBlob, type TtsPlayback } from "@/services/kiosk/ttsAudio";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { KioskHardwareCheckModal } from "./components/KioskHardwareCheckModal";
 import { KioskSettingsModal } from "./components/KioskSettingsModal";
@@ -388,7 +382,9 @@ export function StandaloneKioskPage() {
 
       try {
         if (!selectedKiosk?.id) {
-          throw new Error("Kiosk chưa được cấu hình thiết bị. Vui lòng bấm biểu tượng bánh răng ở góc dưới để cấu hình Kiosk.");
+          throw new Error(
+            "Kiosk chưa được cấu hình thiết bị. Vui lòng bấm biểu tượng bánh răng ở góc dưới để cấu hình Kiosk."
+          );
         }
 
         const res = await enterKioskApi(targetPin, selectedKiosk.id);
@@ -403,7 +399,9 @@ export function StandaloneKioskPage() {
       } catch (err: unknown) {
         setIsVerifying(false);
         setPin("");
-        setAuthError((err as Error)?.message || "Mã PIN không hợp lệ hoặc Kiosk chưa được cấu hình.");
+        setAuthError(
+          (err as Error)?.message || "Mã PIN không hợp lệ hoặc Kiosk chưa được cấu hình."
+        );
       }
     },
     [loadVoices, selectedKiosk]
@@ -518,7 +516,7 @@ export function StandaloneKioskPage() {
       }
 
       try {
-        const sampleText = `Xin chào, tôi là ${voice.name.split('(')[0].trim()}, giọng đọc AI sẵn sàng đồng hành cùng bạn.`;
+        const sampleText = `Xin chào, tôi là ${voice.name.split("(")[0].trim()}, giọng đọc AI sẵn sàng đồng hành cùng bạn.`;
         const blob = await generateTtsAudioApi(sampleText, voice.id);
         const tts = await playTtsAudioBlob(blob, {
           onVolume: (volume: number) => {
@@ -601,7 +599,6 @@ export function StandaloneKioskPage() {
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
       }}>
-
       {/* ── Main Split Layout ── */}
       <div
         style={{
