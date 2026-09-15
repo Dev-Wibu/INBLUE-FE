@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getAiEvaluationScore } from "@/lib/ai-feedback";
 import { formatAiInterviewScore } from "@/lib/ai-interview-score";
 import {
   CompetencyChartError,
@@ -887,7 +888,11 @@ export function FinalCompetencyReportNodeView({
                   const isAiInterviewRound =
                     roundType.includes("AI_INTERVIEW") ||
                     /ai\s*interview|phỏng\s*vấn\s*ai/i.test(round.name ?? "");
-                  const rawScore = detail?.hrScore ?? detail?.finalScore ?? detail?.aiScore;
+                  const rawScore =
+                    detail?.finalScore ??
+                    detail?.hrScore ??
+                    getAiEvaluationScore(detail) ??
+                    undefined;
                   const score =
                     rawScore == null
                       ? undefined
