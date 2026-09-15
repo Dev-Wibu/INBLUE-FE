@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUsers } from "@/hooks/useApplication";
 import { useApplicationDetailsForReviewer, useHrScore } from "@/hooks/useApplicationDetails";
 import { useJobDescriptions } from "@/hooks/useJobDescription";
+import { getAiEvaluationScore } from "@/lib/ai-feedback";
 import { formatAiInterviewScore } from "@/lib/ai-interview-score";
 import { inferRoundType } from "@/lib/application-detail-utils";
 import { formatDateTime } from "@/lib/formatting";
@@ -197,12 +198,13 @@ function InlineGradingForm({
 }) {
   const { t } = useTranslation();
   const hasExistingGrade = detail.hrScore !== undefined && detail.hrScore !== null;
+  const aiEvaluationScore = getAiEvaluationScore(detail);
   const [isPass, setIsPass] = useState(detail.finalResult === "PASSED");
   const [score, setScore] = useState(
     hasExistingGrade
       ? String(detail.hrScore)
-      : detail.aiScore !== undefined && detail.aiScore !== null
-        ? (formatAiInterviewScore(detail.aiScore, aiScoreScale ?? "auto") ?? "0")
+      : aiEvaluationScore !== null
+        ? (formatAiInterviewScore(aiEvaluationScore, aiScoreScale ?? "auto") ?? "0")
         : "0"
   );
   const [note, setNote] = useState(detail.hrNote ?? "");
@@ -494,18 +496,18 @@ function InlineGradingForm({
               {scoreError}
             </p>
           )}
-          {detail.aiScore !== undefined && detail.status !== "PENDING" && (
+          {aiEvaluationScore !== null && detail.status !== "PENDING" && (
             <button
               type="button"
               onClick={() =>
                 handleScoreChange(
-                  formatAiInterviewScore(detail.aiScore, aiScoreScale ?? "auto") ?? "0"
+                  formatAiInterviewScore(aiEvaluationScore, aiScoreScale ?? "auto") ?? "0"
                 )
               }
               className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700 transition-all hover:bg-purple-100 dark:border-purple-500/30 dark:bg-purple-500/15 dark:text-purple-300">
               <Sparkles className="h-3 w-3" />
               {t("staffGrading.aiScore", {
-                score: formatAiInterviewScore(detail.aiScore, aiScoreScale ?? "auto") ?? 0,
+                score: formatAiInterviewScore(aiEvaluationScore, aiScoreScale ?? "auto") ?? 0,
               })}
             </button>
           )}
@@ -635,7 +637,7 @@ function StaffGradingWorkspaceHeaderCard({
   const resolvedUserName = candidateUserName ?? candidateName;
 
   const hrScore = detail?.hrScore;
-  const aiScore = detail?.aiScore;
+  const aiScore = getAiEvaluationScore(detail);
   const hasHrScore = hrScore !== undefined && hrScore !== null;
   const isPass = detail?.finalResult === "PASSED";
   const needsGrading = !hasHrScore;
