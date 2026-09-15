@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApplicationDetailsForReviewer } from "@/hooks/useApplicationDetails";
 import type { Post } from "@/interfaces";
+import { getAiEvaluationScore } from "@/lib/ai-feedback";
 import { cn, extractDataArray, fixUtf8Mojibake } from "@/lib/utils";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -99,7 +100,8 @@ function DashboardChartTooltip({
   );
 }
 
-const scoreOf = (item: ReviewerItem) => item.hrScore ?? item.finalScore ?? item.aiScore;
+const scoreOf = (item: ReviewerItem) =>
+  item.finalScore ?? item.hrScore ?? getAiEvaluationScore(item) ?? undefined;
 
 const statusLabel = (status: string, t: TFunction) => {
   if (status === "AI_EVALUATED") return t("staffOverview.statusReadyToGrade");
