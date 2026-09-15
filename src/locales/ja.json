@@ -8709,5 +8709,21 @@
       "SPECIFIC_QUIZ": "専門知識",
       "SPECIFIC_CODING": "プログラミング"
     }
+  },
+  "structuredAiFeedback": {
+    "metricResults": "評価基準別の結果",
+    "criteriaCount": "{{count}}件の評価基準",
+    "unknownMetric": "未特定の評価基準",
+    "score": "スコア",
+    "scoreValue": "{{score}}/100",
+    "weightedScore": "加重点: {{score}}",
+    "passed": "基準を達成",
+    "failed": "基準未達",
+    "notAssessed": "未判定",
+    "evidence": "根拠",
+    "feedback": "AIフィードバック",
+    "improvementAdvice": "改善アドバイス",
+    "actionsCount": "{{count}}件のアクション",
+    "notAvailable": "データなし"
   }
 }

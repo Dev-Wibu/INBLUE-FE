@@ -8721,5 +8721,21 @@
       "SPECIFIC_QUIZ": "Specialized knowledge",
       "SPECIFIC_CODING": "Programming"
     }
+  },
+  "structuredAiFeedback": {
+    "metricResults": "Results by criterion",
+    "criteriaCount": "{{count}} criteria",
+    "unknownMetric": "Unidentified criterion",
+    "score": "Score",
+    "scoreValue": "{{score}}/100",
+    "weightedScore": "Weighted score: {{score}}",
+    "passed": "Criterion met",
+    "failed": "Criterion not met",
+    "notAssessed": "Not assessed",
+    "evidence": "Evidence",
+    "feedback": "AI feedback",
+    "improvementAdvice": "Improvement advice",
+    "actionsCount": "{{count}} actions",
+    "notAvailable": "Not available"
   }
 }

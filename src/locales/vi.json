@@ -8721,5 +8721,21 @@
       "SPECIFIC_QUIZ": "Kiến thức chuyên môn",
       "SPECIFIC_CODING": "Lập trình"
     }
+  },
+  "structuredAiFeedback": {
+    "metricResults": "Kết quả theo tiêu chí",
+    "criteriaCount": "{{count}} tiêu chí",
+    "unknownMetric": "Tiêu chí chưa xác định",
+    "score": "Điểm",
+    "scoreValue": "{{score}}/100",
+    "weightedScore": "Điểm có trọng số: {{score}}",
+    "passed": "Đạt tiêu chí",
+    "failed": "Chưa đạt tiêu chí",
+    "notAssessed": "Chưa kết luận",
+    "evidence": "Bằng chứng",
+    "feedback": "Nhận xét của AI",
+    "improvementAdvice": "Đề xuất cải thiện",
+    "actionsCount": "{{count}} hành động",
+    "notAvailable": "Chưa có dữ liệu"
   }
 }
