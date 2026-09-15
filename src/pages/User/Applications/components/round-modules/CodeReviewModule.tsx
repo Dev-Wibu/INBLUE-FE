@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { SpinnerBlock } from "@/components/ui/spinner";
+import { getAiEvaluationScore, normalizeAiFeedback } from "@/lib/ai-feedback";
 import { cn } from "@/lib/utils";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import { codeReviewProblemManager } from "@/services/code-review-problem.manager";
@@ -49,7 +50,6 @@ import { localizeRoundInstruction } from "./round-localization";
 type CodeReviewProblemSnapshot = components["schemas"]["CodeReviewProblemSnapshot"];
 type CodeFile = components["schemas"]["CodeFile"];
 type CodeReviewSubmission = components["schemas"]["CodeReviewSubmission"];
-type AiFeedback = components["schemas"]["AiFeedback"];
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
 type Severity = "CRITICAL" | "WARNING" | "INFO";
@@ -599,12 +599,12 @@ export function CodeReviewModule({
         throw new Error(res.error || t("userApplication.codeReview.submitFailedHint"));
       }
 
-      const resDetail = res.data?.detail ?? (res.data as unknown as ApplicationDetail) ?? null;
+      const resDetail = res.data ?? null;
       setGradedResult(resDetail);
       setStep("GRADED");
       toast.success(
         t("userApplication.codeReview.submitCompleted", {
-          score: resDetail?.finalScore ?? resDetail?.aiScore ?? "?",
+          score: resDetail?.structuredAiFeedback?.overallScore ?? resDetail?.aiScore ?? "?",
           maxScore,
         })
       );
@@ -785,6 +785,7 @@ export function CodeReviewModule({
       {isFinished && activeGradedDetail ? (
         <GradedResultView
           detail={activeGradedDetail}
+          roundConfig={round.configData}
           maxScore={maxScore}
           passed={detail?.finalResult === "PASSED"}
           failed={detail?.finalResult === "FAILED"}
@@ -1748,6 +1749,7 @@ const CRITERIA_META: Record<string, { labelKey: string; color: string; bg: strin
 
 function GradedResultView({
   detail,
+  roundConfig,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   maxScore: _maxScore,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1760,6 +1762,7 @@ function GradedResultView({
   issuesByProblem,
 }: {
   detail: ApplicationDetail;
+  roundConfig?: JdRound["configData"];
   maxScore: number;
   passed: boolean;
   failed: boolean;
@@ -1769,15 +1772,7 @@ function GradedResultView({
   issuesByProblem: Record<number, LocalDraftIssue[]>;
 }) {
   const { t } = useTranslation();
-  const feedback = useMemo<AiFeedback | null>(() => {
-    if (!detail.aiFeedback) return null;
-    if (typeof detail.aiFeedback === "object") return detail.aiFeedback as AiFeedback;
-    try {
-      return JSON.parse(detail.aiFeedback as string) as AiFeedback;
-    } catch {
-      return null;
-    }
-  }, [detail.aiFeedback]);
+  const feedback = useMemo(() => normalizeAiFeedback(detail, roundConfig), [detail, roundConfig]);
 
   const submissionData = useMemo(() => {
     if (!detail.submissionData) return null;
@@ -1789,17 +1784,18 @@ function GradedResultView({
     }
   }, [detail.submissionData]);
 
-  const aiScoreVal = Math.round(detail.aiScore ?? detail.finalScore ?? 0);
+  const aiScore = getAiEvaluationScore(detail);
+  const aiScoreVal = Math.round(aiScore ?? 0);
   const hrScoreVal = Math.round(detail.hrScore ?? 0);
   const hasHrScore = detail.hrScore != null && hrScoreVal > 0;
 
-  const rawMetrics = feedback?.extraMetrics ?? {};
   const strengths = feedback?.strengths ?? [];
   const weaknesses = feedback?.weaknesses ?? [];
-  const generalComment = feedback?.generalComment ?? "";
+  const generalComment = feedback?.overallFeedback ?? "";
 
   // Parse numerical metrics & text missed issues
   const { numericMetrics, missedIssuesText } = useMemo(() => {
+    const rawMetrics = feedback?.legacyExtraMetrics;
     const list: {
       key: string;
       label: string;
@@ -1856,7 +1852,7 @@ function GradedResultView({
     }
 
     return { numericMetrics: list, missedIssuesText: missed };
-  }, [rawMetrics, t]);
+  }, [feedback, t]);
 
   // Active problem & files
   const activeProblem = problems[activeProblemIdx] ?? problems[0];
@@ -1914,6 +1910,67 @@ function GradedResultView({
               {generalComment || t("userApplication.codeReview.generalCommentFallback")}
             </p>
           </Card>
+
+          {feedback?.source === "structured" && feedback.metricResults.length > 0 && (
+            <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/80 dark:shadow-none">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                {t("structuredAiFeedback.metricResults")}
+              </h4>
+              <div className="space-y-3">
+                {feedback.metricResults.map((metric, index) => (
+                  <div key={`${metric.code ?? "metric"}-${index}`} className="text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-semibold text-slate-800 dark:text-slate-100">
+                        {metric.code ?? t("structuredAiFeedback.unknownMetric")}
+                        {metric.definition?.name ? ` - ${metric.definition.name}` : ""}
+                      </span>
+                      <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                        {metric.score !== null
+                          ? t("structuredAiFeedback.scoreValue", { score: metric.score })
+                          : t("structuredAiFeedback.notAvailable")}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      {metric.weightedScore !== null && (
+                        <span className="mr-2">
+                          {t("structuredAiFeedback.weightedScore", {
+                            score: metric.weightedScore,
+                          })}
+                        </span>
+                      )}
+                      {t(
+                        metric.passed === true
+                          ? "structuredAiFeedback.passed"
+                          : metric.passed === false
+                            ? "structuredAiFeedback.failed"
+                            : "structuredAiFeedback.notAssessed"
+                      )}
+                    </p>
+                    {metric.feedback && (
+                      <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-300">
+                        {metric.feedback}
+                      </p>
+                    )}
+                    {metric.evidence && (
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        <strong>{t("structuredAiFeedback.evidence")}:</strong> {metric.evidence}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {feedback.improvementAdvice && (
+                <div className="border-t border-slate-200 pt-3 dark:border-slate-800">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    {t("structuredAiFeedback.improvementAdvice")}
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
+                    {feedback.improvementAdvice}
+                  </p>
+                </div>
+              )}
+            </Card>
+          )}
 
           {/* SECTION 2: Strengths Card (Green Theme) */}
           {strengths.length > 0 && (
@@ -2004,7 +2061,7 @@ function GradedResultView({
                 score={aiScoreVal}
                 label={t("userApplication.codeReview.aiScore")}
                 color="indigo"
-                hasData={true}
+                hasData={aiScore !== null}
               />
               <ModernGaugeClock
                 score={hrScoreVal}

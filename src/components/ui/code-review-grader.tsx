@@ -1,6 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { NormalizedCodeReviewProblem } from "@/hooks/useCodeReviewProblems";
+import {
+  getAiEvaluationScore,
+  normalizeAiFeedback,
+  type NormalizedAiFeedback,
+} from "@/lib/ai-feedback";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -17,7 +22,6 @@ import { useTranslation } from "react-i18next";
 import type { components } from "../../../schema-from-be";
 
 type CodeReviewSubmission = components["schemas"]["CodeReviewSubmission"];
-type AiFeedback = components["schemas"]["AiFeedback"];
 
 type Severity = "CRITICAL" | "WARNING" | "INFO";
 
@@ -150,13 +154,19 @@ function IssueCard({
   );
 }
 
-function AIFeedbackView({ feedback, score }: { feedback?: AiFeedback; score?: number }) {
+function AIFeedbackView({
+  feedback,
+  score,
+}: {
+  feedback: NormalizedAiFeedback | null;
+  score: number | null;
+}) {
   const { t } = useTranslation();
   const strengths = feedback?.strengths ?? [];
   const weaknesses = feedback?.weaknesses ?? [];
-  const generalComment = feedback?.generalComment;
+  const generalComment = feedback?.overallFeedback;
 
-  if (!feedback && score === undefined) return null;
+  if (!feedback && score === null) return null;
 
   return (
     <div className="space-y-4 rounded-xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-800/50 dark:bg-purple-950/30">
@@ -165,9 +175,7 @@ function AIFeedbackView({ feedback, score }: { feedback?: AiFeedback; score?: nu
         <h4 className="text-sm font-bold text-purple-700 dark:text-purple-300">
           {t("grading.aiFeedback", "AI Feedback")}
         </h4>
-        {score !== undefined && score !== null && (
-          <Badge className="ml-auto bg-purple-600 text-white">{score}/100</Badge>
-        )}
+        {score !== null && <Badge className="ml-auto bg-purple-600 text-white">{score}/100</Badge>}
       </div>
 
       {generalComment && (
@@ -213,6 +221,58 @@ function AIFeedbackView({ feedback, score }: { feedback?: AiFeedback; score?: nu
           </ul>
         </div>
       )}
+
+      {feedback?.source === "structured" && feedback.metricResults.length > 0 && (
+        <div className="space-y-2">
+          <h5 className="text-xs font-bold text-slate-700 dark:text-slate-200">
+            {t("structuredAiFeedback.metricResults")}
+          </h5>
+          {feedback.metricResults.map((metric, index) => (
+            <div key={`${metric.code ?? "metric"}-${index}`} className="text-xs">
+              <div className="flex items-center justify-between gap-2 font-semibold text-slate-700 dark:text-slate-200">
+                <span>
+                  {metric.code ?? t("structuredAiFeedback.unknownMetric")}
+                  {metric.definition?.name ? ` - ${metric.definition.name}` : ""}
+                </span>
+                <span>
+                  {metric.score !== null
+                    ? t("structuredAiFeedback.scoreValue", { score: metric.score })
+                    : t("structuredAiFeedback.notAvailable")}
+                </span>
+              </div>
+              <p className="mt-1 text-slate-500 dark:text-slate-400">
+                {metric.weightedScore !== null && (
+                  <span className="mr-2">
+                    {t("structuredAiFeedback.weightedScore", { score: metric.weightedScore })}
+                  </span>
+                )}
+                {t(
+                  metric.passed === true
+                    ? "structuredAiFeedback.passed"
+                    : metric.passed === false
+                      ? "structuredAiFeedback.failed"
+                      : "structuredAiFeedback.notAssessed"
+                )}
+              </p>
+              {metric.feedback && (
+                <p className="mt-1 text-slate-600 dark:text-slate-400">{metric.feedback}</p>
+              )}
+              {metric.evidence && (
+                <p className="mt-1 text-slate-500 dark:text-slate-400">
+                  <strong>{t("structuredAiFeedback.evidence")}:</strong> {metric.evidence}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {feedback?.improvementAdvice && (
+        <div className="text-xs text-slate-600 dark:text-slate-300">
+          <strong>{t("structuredAiFeedback.improvementAdvice")}:</strong>{" "}
+          <span className="whitespace-pre-line">{feedback.improvementAdvice}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -223,8 +283,9 @@ export function CodeReviewGrader({ detail, problems, isLoading }: CodeReviewGrad
   const [showExpectedIssues, setShowExpectedIssues] = useState(false);
 
   const submissions = detail.submissionData?.codeReviewSubmissions ?? [];
-  const aiScore = detail.aiScore;
-  const aiFeedback = detail.aiFeedback;
+  const aiScore = getAiEvaluationScore(detail);
+  const roundConfig = (detail as typeof detail & { roundConfig?: unknown }).roundConfig;
+  const aiFeedback = normalizeAiFeedback(detail, roundConfig);
 
   const activeProblem = problems[activeProblemIdx];
 
