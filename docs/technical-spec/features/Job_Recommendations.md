@@ -260,12 +260,7 @@ Sau khi schema đã được cập nhật, thêm vào `src/hooks/useJobDescripti
 
 ```ts
 export const useJobRecommendations = (enabled = true) =>
-  $api.useQuery(
-    "get",
-    "/api/job-descriptions/recommendations",
-    undefined,
-    { enabled }
-  );
+  $api.useQuery("get", "/api/job-descriptions/recommendations", undefined, { enabled });
 
 export const useUpdateJobRecommendationThreshold = () =>
   $api.useMutation("put", "/api/admin/job-recommendation-threshold");
@@ -274,8 +269,7 @@ export const useUpdateJobRecommendationThreshold = () =>
 Nếu tiếp tục dùng manager + TanStack Query thủ công trong màn hiện tại, query key đề xuất:
 
 ```ts
-["job-descriptions", "recommendations"]
-["admin", "job-recommendation-threshold"]
+["job-descriptions", "recommendations"][("admin", "job-recommendation-threshold")];
 ```
 
 Chỉ bật query recommendation khi `mode === "recommended"` để tránh gọi API không cần thiết.
@@ -301,9 +295,7 @@ Khi chọn một card, tìm `selectedJob` từ đúng nguồn dữ liệu của 
 
 ```ts
 const sourceJobs = mode === "recommended" ? recommendedJobs : allJobs;
-const selectedJob = sourceJobs.find(
-  (job) => job.id?.toString() === selectedJobId
-);
+const selectedJob = sourceJobs.find((job) => job.id?.toString() === selectedJobId);
 ```
 
 ### 5.3. Trạng thái UI
@@ -346,10 +338,7 @@ Trước khi gửi request, kiểm tra:
 
 ```ts
 const isValidThreshold =
-  Number.isFinite(value) &&
-  value >= 0 &&
-  value <= 100 &&
-  Math.round(value * 100) === value * 100;
+  Number.isFinite(value) && value >= 0 && value <= 100 && Math.round(value * 100) === value * 100;
 ```
 
 Khi lưu thành công:
@@ -432,4 +421,3 @@ Không chỉ dựa vào `defaultValue`; thêm key thật vào đủ ba locale th
 - Không có giá trị threshold mặc định hard-code ở frontend.
 - Typecheck, lint và test frontend đều chạy thành công.
 - Không làm thay đổi luồng xem chi tiết, mua quyền apply và ứng tuyển hiện tại.
-
