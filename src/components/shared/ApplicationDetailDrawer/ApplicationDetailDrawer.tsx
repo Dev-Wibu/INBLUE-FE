@@ -9,6 +9,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  getAiEvaluationScore,
+  normalizeAiFeedback,
+  type NormalizedAiFeedback,
+} from "@/lib/ai-feedback";
+import {
   adminApplicationManager,
   type AdminApplicationFullDetailResponseDto,
 } from "@/services/admin-application.manager";
@@ -53,83 +58,81 @@ function formatScoreLabel(label: string, value: unknown) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getRoundScore(round: any) {
-  return formatScore(round.finalScore ?? round.score ?? round.hrScore ?? round.aiScore);
+  return formatScore(round.finalScore ?? round.score);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getRoundResult(round: any) {
-  if (round.finalResult === "PASSED" || round.passed === true) return "PASSED";
-  if (round.finalResult === "FAILED" || round.passed === false) return "FAILED";
-  if (round.status === "COMPLETED" || round.status === "AI_EVALUATED") return "COMPLETED";
+  if (round.finalResult === "PASSED") return "PASSED";
+  if (round.finalResult === "FAILED") return "FAILED";
+  if (round.status === "COMPLETED") return "COMPLETED";
   return round.status;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderAiFeedback(feedback: any, t: any) {
+function renderAiFeedback(feedback: NormalizedAiFeedback | null, t: any) {
   if (!feedback) return null;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let content: any = feedback;
-  if (typeof feedback === "string") {
-    try {
-      content = JSON.parse(feedback);
-    } catch {
-      return feedback;
-    }
-  }
-
-  if (typeof content === "object" && content !== null) {
-    if (
-      content.generalComment ||
-      content.overallFeedback ||
-      content.strengths ||
-      content.weaknesses ||
-      content.metricResults
-    ) {
-      return (
-        <div className="mt-1 space-y-1.5">
-          {(content.generalComment || content.overallFeedback) && (
-            <p className="font-medium text-slate-700 dark:text-slate-300">
-              {content.overallFeedback || content.generalComment}
-            </p>
-          )}
-          {Array.isArray(content.metricResults) && content.metricResults.length > 0 && (
-            <div className="space-y-1 text-slate-700 dark:text-slate-300">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {content.metricResults.map((metric: any, index: number) => (
-                <div key={`${metric.code || "metric"}-${index}`}>
-                  <strong>
-                    {metric.code || t("adminApplicationManagement.metric", "Tiêu chí")}:
-                  </strong>{" "}
-                  {formatScoreLabel("Điểm", metric.score) || "-"}
-                  {metric.feedback ? ` - ${metric.feedback}` : ""}
+  return (
+    <div className="mt-1 space-y-1.5">
+      {feedback.overallFeedback && (
+        <p className="font-medium text-slate-700 dark:text-slate-300">{feedback.overallFeedback}</p>
+      )}
+      {feedback.metricResults.length > 0 && (
+        <div className="space-y-1 text-slate-700 dark:text-slate-300">
+          {feedback.metricResults.map((metric, index) => (
+            <div key={`${metric.code || "metric"}-${index}`}>
+              <strong>
+                {metric.code || t("adminApplicationManagement.metric", "Tiêu chí")}
+                {metric.definition?.name ? ` - ${metric.definition.name}` : ""}:
+              </strong>{" "}
+              {formatScoreLabel(t("structuredAiFeedback.score"), metric.score) ||
+                t("structuredAiFeedback.notAvailable")}
+              {metric.feedback ? ` - ${metric.feedback}` : ""}
+              {metric.evidence && (
+                <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                  <strong>{t("structuredAiFeedback.evidence")}:</strong> {metric.evidence}
                 </div>
-              ))}
+              )}
+              <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                {metric.weightedScore !== null && (
+                  <span className="mr-2">
+                    {t("structuredAiFeedback.weightedScore", {
+                      score: metric.weightedScore,
+                    })}
+                  </span>
+                )}
+                {t(
+                  metric.passed === true
+                    ? "structuredAiFeedback.passed"
+                    : metric.passed === false
+                      ? "structuredAiFeedback.failed"
+                      : "structuredAiFeedback.notAssessed"
+                )}
+              </div>
             </div>
-          )}
-          {content.strengths &&
-            Array.isArray(content.strengths) &&
-            content.strengths.length > 0 && (
-              <div className="text-emerald-600 dark:text-emerald-400">
-                <strong>{t("adminApplicationManagement.strengths", "Điểm mạnh:")}</strong>{" "}
-                {content.strengths.join(", ")}
-              </div>
-            )}
-          {content.weaknesses &&
-            Array.isArray(content.weaknesses) &&
-            content.weaknesses.length > 0 && (
-              <div className="text-amber-600 dark:text-amber-400">
-                <strong>{t("adminApplicationManagement.weaknesses", "Cần cải thiện:")}</strong>{" "}
-                {content.weaknesses.join(", ")}
-              </div>
-            )}
+          ))}
         </div>
-      );
-    }
-    return JSON.stringify(content);
-  }
-
-  return String(content);
+      )}
+      {feedback.strengths.length > 0 && (
+        <div className="text-emerald-600 dark:text-emerald-400">
+          <strong>{t("adminApplicationManagement.strengths", "Điểm mạnh:")}</strong>{" "}
+          {feedback.strengths.join(", ")}
+        </div>
+      )}
+      {feedback.weaknesses.length > 0 && (
+        <div className="text-amber-600 dark:text-amber-400">
+          <strong>{t("adminApplicationManagement.weaknesses", "Cần cải thiện:")}</strong>{" "}
+          {feedback.weaknesses.join(", ")}
+        </div>
+      )}
+      {feedback.improvementAdvice && (
+        <div className="whitespace-pre-line text-slate-700 dark:text-slate-300">
+          <strong>{t("structuredAiFeedback.improvementAdvice")}:</strong>{" "}
+          {feedback.improvementAdvice}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -430,10 +433,11 @@ export function ApplicationDetailDrawer({
                     {detail.roundDetails.map((round: any, idx: number) => {
                       const score = getRoundScore(round);
                       const result = getRoundResult(round);
+                      const normalizedAiFeedback = normalizeAiFeedback(round, round.roundConfig);
                       const scoreParts = [
                         formatScoreLabel(
                           t("adminApplicationManagement.aiScore", "AI"),
-                          round.aiScore
+                          getAiEvaluationScore(round)
                         ),
                         formatScoreLabel(
                           t("adminApplicationManagement.hrScore", "HR"),
@@ -508,12 +512,12 @@ export function ApplicationDetailDrawer({
 
                           {renderSubmissionSummary(round, t)}
 
-                          {(round.structuredAiFeedback || round.aiFeedback) && (
+                          {normalizedAiFeedback && (
                             <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
                               <strong className="text-slate-800 dark:text-slate-200">
                                 {t("adminApplicationManagement.aiEvaluation", "Đánh giá AI: ")}
                               </strong>
-                              {renderAiFeedback(round.structuredAiFeedback ?? round.aiFeedback, t)}
+                              {renderAiFeedback(normalizedAiFeedback, t)}
                             </div>
                           )}
 
