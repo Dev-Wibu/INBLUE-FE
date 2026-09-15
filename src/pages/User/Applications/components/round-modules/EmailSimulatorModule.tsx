@@ -1,8 +1,11 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
+import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useEmailSubmission } from "@/hooks/useEmailSubmission";
+import { getAiEvaluationScore, normalizeAiFeedback } from "@/lib/ai-feedback";
 import { formatDateTime } from "@/lib/formatting";
 import {
   AlertCircle,
@@ -14,11 +17,15 @@ import {
   Copy,
   Globe,
   Italic,
+  Lightbulb,
   Link2,
   List,
+  ListChecks,
   Mail,
   Maximize2,
+  MessageSquareText,
   Paperclip,
+  Quote,
   RefreshCw,
   Send,
   ShieldCheck,
@@ -58,6 +65,22 @@ type Phase =
   | { kind: "EMAIL_RECEIVED" }
   | { kind: "REJECTED"; reason: "IGNORED" | "ERROR"; message: string }
   | { kind: "POLL_TIMEOUT" };
+
+function splitImprovementAdvice(value: string): string[] {
+  const lines = value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length > 1) {
+    return lines.map((line) => line.replace(/^\d+[.)]\s*/, "").trim()).filter(Boolean);
+  }
+
+  return value
+    .split(/(?=\b\d+[.)]\s+)/)
+    .map((line) => line.replace(/^\d+[.)]\s*/, "").trim())
+    .filter(Boolean);
+}
 
 /** Linear/Stripe Style Modern Circular SVG Gauge Clock */
 function ModernGaugeClock({
@@ -202,35 +225,34 @@ export function EmailSimulatorModule({
   const phase = useMemo<Phase>(() => {
     const detailStatus = detail?.status as string | undefined;
 
-    // Nếu detail đã có kết quả hoặc đang được Staff rà soát/chấm điểm
-    if (
-      detail &&
-      (detailStatus === "AI_EVALUATED" ||
-        detailStatus === "COMPLETED" ||
-        detailStatus === "SUBMITTED" ||
-        detailStatus === "GRADING" ||
-        detailStatus === "PASSED" ||
-        detailStatus === "FAILED" ||
-        detail?.hrScore !== undefined ||
-        emailSubmissionId != null)
-    ) {
-      if (emailSubmission?.status === "IGNORED") {
-        return {
-          kind: "REJECTED",
-          reason: "IGNORED",
-          message:
-            emailSubmission.errorMessage ||
-            t("userApplication.emailSimulator.emailMissingSubjectCode"),
-        };
-      }
-      if (emailSubmission?.status === "ERROR") {
-        return {
-          kind: "REJECTED",
-          reason: "ERROR",
-          message:
-            emailSubmission.errorMessage || t("userApplication.emailSimulator.errorGradingEmail"),
-        };
-      }
+    if (emailSubmission?.status === "IGNORED") {
+      return {
+        kind: "REJECTED",
+        reason: "IGNORED",
+        message:
+          emailSubmission.errorMessage ||
+          t("userApplication.emailSimulator.emailMissingSubjectCode"),
+      };
+    }
+    if (emailSubmission?.status === "ERROR") {
+      return {
+        kind: "REJECTED",
+        reason: "ERROR",
+        message:
+          emailSubmission.errorMessage || t("userApplication.emailSimulator.errorGradingEmail"),
+      };
+    }
+
+    // PROCESSED is an email-ingestion state and can be written before AI grading
+    // finishes. Only ApplicationDetail data/status proves that evaluation exists.
+    const hasAiEvaluation = Boolean(
+      detailStatus === "AI_EVALUATED" ||
+      detailStatus === "COMPLETED" ||
+      detail?.structuredAiFeedback ||
+      detail?.aiFeedback ||
+      detail?.aiScore != null
+    );
+    if (hasAiEvaluation) {
       return { kind: "EMAIL_RECEIVED" };
     }
 
@@ -248,7 +270,7 @@ export function EmailSimulatorModule({
     if (emailSubmission.status === "PENDING") {
       return { kind: "PENDING" };
     } else if (emailSubmission.status === "PROCESSED") {
-      return { kind: "EMAIL_RECEIVED" };
+      return { kind: "PENDING" };
     } else if (emailSubmission.status === "IGNORED") {
       return {
         kind: "REJECTED",
@@ -278,21 +300,9 @@ export function EmailSimulatorModule({
     return () => clearInterval(interval);
   }, [phase.kind, onSuccess]);
 
-  const finalScore = detail?.finalScore ?? detail?.aiScore;
-  const aiScoreVal = detail?.aiScore ?? finalScore ?? 0;
-
-  const aiFeedback = detail?.aiFeedback as
-    | {
-        generalComment?: string;
-        strengths?: string[];
-        weaknesses?: string[];
-        extraMetrics?: Record<
-          string,
-          string | number | boolean | { score?: number; comment?: string; maxScore?: number }
-        >;
-      }
-    | null
-    | undefined;
+  const aiFeedback = normalizeAiFeedback(detail, detailRoundConfig ?? round.configData);
+  const aiScore = getAiEvaluationScore(detail);
+  const aiScoreVal = aiScore ?? 0;
 
   const handleSubmit = () => {
     // Guard: staff view is read-only on this page, no candidate actions allowed.
@@ -813,7 +823,7 @@ export function EmailSimulatorModule({
               </div>
 
               <p className="text-sm leading-relaxed font-normal text-slate-700 dark:text-slate-200">
-                {aiFeedback?.generalComment ||
+                {aiFeedback?.overallFeedback ||
                   t("userApplication.emailSimulator.emailCollectedSuccess")}
               </p>
             </Card>
@@ -853,6 +863,187 @@ export function EmailSimulatorModule({
                     </li>
                   ))}
                 </ul>
+              </Card>
+            )}
+
+            {aiFeedback?.source === "structured" && aiFeedback.metricResults.length > 0 && (
+              <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white p-0 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/40">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white dark:bg-indigo-500">
+                      <ListChecks className="h-4 w-4" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                      {t("structuredAiFeedback.metricResults")}
+                    </h4>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="rounded-md border-slate-300 bg-white px-2.5 py-1 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                    {t("structuredAiFeedback.criteriaCount", {
+                      count: aiFeedback.metricResults.length,
+                    })}
+                  </Badge>
+                </div>
+                <div className="divide-y divide-slate-200 dark:divide-slate-800">
+                  {aiFeedback.metricResults.map((metric, index) => {
+                    const maxScore =
+                      typeof metric.definition?.maxScore === "number" &&
+                      metric.definition.maxScore > 0
+                        ? metric.definition.maxScore
+                        : null;
+                    const scorePercent =
+                      metric.score !== null && maxScore !== null
+                        ? Math.min(100, Math.max(0, (metric.score / maxScore) * 100))
+                        : null;
+                    const showCodeChip = Boolean(
+                      metric.code && (metric.definition?.name || /^[A-Za-z]+\d+$/.test(metric.code))
+                    );
+
+                    return (
+                      <article
+                        key={`${metric.code ?? "metric"}-${index}`}
+                        className="space-y-4 px-5 py-5">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="flex min-w-0 items-start gap-3">
+                            {showCodeChip && (
+                              <span className="inline-flex h-8 min-w-10 shrink-0 items-center justify-center rounded-md bg-slate-900 px-2 font-mono text-xs font-bold text-white dark:bg-slate-100 dark:text-slate-950">
+                                {metric.code}
+                              </span>
+                            )}
+                            <div className="min-w-0 pt-0.5">
+                              <h5 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                                {metric.definition?.name ??
+                                  metric.code ??
+                                  t("structuredAiFeedback.unknownMetric")}
+                              </h5>
+                              {metric.definition?.description && (
+                                <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                                  {metric.definition.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex shrink-0 items-baseline gap-1 sm:justify-end">
+                            <span className="text-2xl font-black text-indigo-600 tabular-nums dark:text-indigo-400">
+                              {metric.score ?? "--"}
+                            </span>
+                            {maxScore !== null && (
+                              <span className="text-xs font-semibold text-slate-400">
+                                /{maxScore}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2.5">
+                          {scorePercent !== null && (
+                            <Progress
+                              value={scorePercent}
+                              aria-label={`${metric.score}/${maxScore}`}
+                              className="h-2 bg-slate-100 dark:bg-slate-800 [&_[data-slot=progress-indicator]]:bg-indigo-600 dark:[&_[data-slot=progress-indicator]]:bg-indigo-400"
+                            />
+                          )}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge
+                              className={
+                                metric.passed === true
+                                  ? "rounded-md border-emerald-200 bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                                  : metric.passed === false
+                                    ? "rounded-md border-rose-200 bg-rose-50 px-2.5 py-1 font-semibold text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
+                                    : "rounded-md border-slate-200 bg-slate-100 px-2.5 py-1 font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                              }>
+                              {metric.passed === true ? (
+                                <CheckCircle2 />
+                              ) : metric.passed === false ? (
+                                <X />
+                              ) : (
+                                <AlertCircle />
+                              )}
+                              {t(
+                                metric.passed === true
+                                  ? "structuredAiFeedback.passed"
+                                  : metric.passed === false
+                                    ? "structuredAiFeedback.failed"
+                                    : "structuredAiFeedback.notAssessed"
+                              )}
+                            </Badge>
+                            {metric.weightedScore !== null && (
+                              <Badge
+                                variant="outline"
+                                className="rounded-md border-slate-200 bg-white px-2.5 py-1 font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                                {t("structuredAiFeedback.weightedScore", {
+                                  score: metric.weightedScore,
+                                })}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        {metric.feedback && (
+                          <div className="flex items-start gap-2.5">
+                            <MessageSquareText className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500" />
+                            <div>
+                              <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                {t("structuredAiFeedback.feedback")}
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-700 dark:text-slate-300">
+                                {metric.feedback}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {metric.evidence && (
+                          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950/50">
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
+                              <Quote className="h-3.5 w-3.5 text-slate-400" />
+                              {t("structuredAiFeedback.evidence")}
+                            </div>
+                            <blockquote className="mt-2 text-sm leading-6 text-slate-600 italic dark:text-slate-300">
+                              {metric.evidence}
+                            </blockquote>
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+
+            {aiFeedback?.source === "structured" && aiFeedback.improvementAdvice && (
+              <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white p-0 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-amber-50/70 px-5 py-4 dark:border-slate-800 dark:bg-amber-500/5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white dark:bg-amber-400 dark:text-slate-950">
+                      <Lightbulb className="h-4 w-4" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                      {t("structuredAiFeedback.improvementAdvice")}
+                    </h4>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="rounded-md border-amber-200 bg-white px-2.5 py-1 text-amber-700 dark:border-amber-500/30 dark:bg-slate-900 dark:text-amber-300">
+                    {t("structuredAiFeedback.actionsCount", {
+                      count: splitImprovementAdvice(aiFeedback.improvementAdvice).length,
+                    })}
+                  </Badge>
+                </div>
+                <ol className="divide-y divide-slate-200 dark:divide-slate-800">
+                  {splitImprovementAdvice(aiFeedback.improvementAdvice).map((advice, index) => (
+                    <li key={`${index}-${advice}`} className="flex items-start gap-4 px-5 py-4">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-100 font-mono text-xs font-black text-amber-800 dark:bg-amber-500/15 dark:text-amber-300">
+                        {index + 1}
+                      </span>
+                      <p className="pt-0.5 text-sm leading-6 font-medium text-slate-700 dark:text-slate-200">
+                        {advice}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
               </Card>
             )}
 
@@ -911,7 +1102,7 @@ export function EmailSimulatorModule({
             </Card>
           </div>
 
-          <div className="space-y-5 lg:col-span-5">
+          <div className="space-y-5 lg:sticky lg:top-[92px] lg:col-span-5 lg:self-start">
             <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-800/80 dark:bg-slate-900/80">
               <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800">
                 <div className="flex items-center gap-2">
@@ -930,7 +1121,7 @@ export function EmailSimulatorModule({
                   score={aiScoreVal}
                   label={t("userApplication.emailSimulator.aiScore", "AI Score")}
                   color="indigo"
-                  hasData={true}
+                  hasData={aiScore !== null}
                 />
                 <ModernGaugeClock
                   score={detail?.hrScore ?? 0}
@@ -1027,96 +1218,103 @@ export function EmailSimulatorModule({
               </div>
             </Card>
 
-            {aiFeedback?.extraMetrics && Object.keys(aiFeedback.extraMetrics).length > 0 && (
-              <Card className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-md backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-indigo-400" />
-                    <h4 className="text-xs font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
-                      {t("userApplication.emailSimulator.gradingCriteriaDetailed")}
-                    </h4>
+            {aiFeedback?.source === "legacy" &&
+              aiFeedback.legacyExtraMetrics &&
+              Object.keys(aiFeedback.legacyExtraMetrics).length > 0 && (
+                <Card className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-md backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-indigo-400" />
+                      <h4 className="text-xs font-extrabold tracking-wider text-slate-700 uppercase dark:text-slate-200">
+                        {t("userApplication.emailSimulator.gradingCriteriaDetailed")}
+                      </h4>
+                    </div>
+                    <span className="rounded bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-400">
+                      {t("userApplication.emailSimulator.criteriaCount", {
+                        count: Object.keys(aiFeedback.legacyExtraMetrics).length,
+                      })}
+                    </span>
                   </div>
-                  <span className="rounded bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-400">
-                    {t("userApplication.emailSimulator.criteriaCount", {
-                      count: Object.keys(aiFeedback.extraMetrics).length,
-                    })}
-                  </span>
-                </div>
 
-                <div className="space-y-3">
-                  {Object.entries(aiFeedback.extraMetrics).map(([key, val]) => {
-                    if (typeof val === "object" && val !== null) {
-                      const score = val.score ?? 0;
-                      const maxScore = val.maxScore ?? 0;
-                      const comment = val.comment;
-                      const pct =
-                        maxScore > 0
-                          ? Math.min(100, Math.max(0, Math.round((score / maxScore) * 100)))
-                          : 0;
+                  <div className="space-y-3">
+                    {Object.entries(aiFeedback.legacyExtraMetrics).map(([key, val]) => {
+                      if (typeof val === "object" && val !== null) {
+                        const metric = val as {
+                          score?: number;
+                          maxScore?: number;
+                          comment?: string;
+                        };
+                        const score = metric.score ?? 0;
+                        const maxScore = metric.maxScore ?? 0;
+                        const comment = metric.comment;
+                        const pct =
+                          maxScore > 0
+                            ? Math.min(100, Math.max(0, Math.round((score / maxScore) * 100)))
+                            : 0;
 
-                      let badgeStyle =
-                        "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300";
-                      let barStyle = "bg-gradient-to-r from-indigo-500 to-blue-500";
+                        let badgeStyle =
+                          "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300";
+                        let barStyle = "bg-gradient-to-r from-indigo-500 to-blue-500";
 
-                      if (pct >= 80) {
-                        badgeStyle =
-                          "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300";
-                        barStyle = "bg-gradient-to-r from-emerald-500 to-teal-400";
-                      } else if (pct < 50) {
-                        badgeStyle =
-                          "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300";
-                        barStyle = "bg-gradient-to-r from-amber-500 to-rose-500";
+                        if (pct >= 80) {
+                          badgeStyle =
+                            "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300";
+                          barStyle = "bg-gradient-to-r from-emerald-500 to-teal-400";
+                        } else if (pct < 50) {
+                          badgeStyle =
+                            "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300";
+                          barStyle = "bg-gradient-to-r from-amber-500 to-rose-500";
+                        }
+
+                        return (
+                          <div
+                            key={key}
+                            className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/70 p-3 shadow-inner dark:border-slate-800/80 dark:bg-slate-950/70">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                                {key}
+                              </span>
+                              <span
+                                className={`rounded-md border px-2 py-0.5 font-mono text-xs font-extrabold ${badgeStyle}`}>
+                                {score}
+                                {maxScore > 0 ? `/${maxScore}` : ""}
+                              </span>
+                            </div>
+
+                            {maxScore > 0 && (
+                              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-900">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${barStyle}`}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                            )}
+
+                            {comment && (
+                              <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
+                                {comment}
+                              </p>
+                            )}
+                          </div>
+                        );
                       }
 
                       return (
                         <div
                           key={key}
-                          className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/70 p-3 shadow-inner dark:border-slate-800/80 dark:bg-slate-950/70">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                              {key}
-                            </span>
-                            <span
-                              className={`rounded-md border px-2 py-0.5 font-mono text-xs font-extrabold ${badgeStyle}`}>
-                              {score}
-                              {maxScore > 0 ? `/${maxScore}` : ""}
-                            </span>
-                          </div>
-
-                          {maxScore > 0 && (
-                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-900">
-                              <div
-                                className={`h-full rounded-full transition-all duration-500 ${barStyle}`}
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          )}
-
-                          {comment && (
-                            <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
-                              {comment}
-                            </p>
-                          )}
+                          className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800/80 dark:bg-slate-950/70">
+                          <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                            {key}
+                          </span>
+                          <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            {String(val)}
+                          </span>
                         </div>
                       );
-                    }
-
-                    return (
-                      <div
-                        key={key}
-                        className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800/80 dark:bg-slate-950/70">
-                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                          {key}
-                        </span>
-                        <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {String(val)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-            )}
+                    })}
+                  </div>
+                </Card>
+              )}
           </div>
         </div>
       )}

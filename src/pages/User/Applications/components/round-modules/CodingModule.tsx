@@ -522,7 +522,7 @@ export function CodingModule({
   const [awaitingGrade] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const finalScore = detail?.finalScore ?? detail?.aiScore;
+  const finalScore = detail?.finalScore;
   const timeLimitMinutes = round.configData?.timeLimitMinutes ?? null;
 
   // ---- Editor change handlers ---------------------------------------------

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 export function CyberCanvasBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -6,7 +6,7 @@ export function CyberCanvasBackground() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     let width = (canvas.width = canvas.parentElement?.clientWidth || window.innerWidth);
@@ -31,30 +31,30 @@ export function CyberCanvasBackground() {
       height = canvas.height = canvas.parentElement?.clientHeight || window.innerHeight;
     }
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     function render() {
       if (!canvas || !ctx) return;
 
       t += 0.008;
 
-      ctx.fillStyle = '#050A1A';
+      ctx.fillStyle = "#050A1A";
       ctx.fillRect(0, 0, width, height);
 
       // Soft glowing ambient orbs
       const orb1X = width * (0.35 + 0.2 * Math.sin(t * 0.5));
       const orb1Y = height * (0.35 + 0.2 * Math.cos(t * 0.3));
       const g1 = ctx.createRadialGradient(orb1X, orb1Y, 0, orb1X, orb1Y, width * 0.55);
-      g1.addColorStop(0, 'rgba(0, 163, 255, 0.2)');
-      g1.addColorStop(1, 'rgba(5, 10, 26, 0)');
+      g1.addColorStop(0, "rgba(0, 163, 255, 0.2)");
+      g1.addColorStop(1, "rgba(5, 10, 26, 0)");
       ctx.fillStyle = g1;
       ctx.fillRect(0, 0, width, height);
 
       const orb2X = width * (0.75 - 0.2 * Math.cos(t * 0.4));
       const orb2Y = height * (0.65 - 0.2 * Math.sin(t * 0.6));
       const g2 = ctx.createRadialGradient(orb2X, orb2Y, 0, orb2X, orb2Y, width * 0.45);
-      g2.addColorStop(0, 'rgba(99, 102, 241, 0.16)');
-      g2.addColorStop(1, 'rgba(5, 10, 26, 0)');
+      g2.addColorStop(0, "rgba(99, 102, 241, 0.16)");
+      g2.addColorStop(1, "rgba(5, 10, 26, 0)");
       ctx.fillStyle = g2;
       ctx.fillRect(0, 0, width, height);
 
@@ -96,7 +96,7 @@ export function CyberCanvasBackground() {
     animId = requestAnimationFrame(render);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animId);
     };
   }, []);

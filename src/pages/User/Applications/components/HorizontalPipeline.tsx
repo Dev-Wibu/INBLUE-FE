@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { getAiEvaluationScore } from "@/lib/ai-feedback";
 import { formatAiInterviewScore } from "@/lib/ai-interview-score";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Award, Check, ChevronLeft, ChevronRight, Lock } from "lucide-react";
@@ -22,6 +23,7 @@ export interface JdRound {
     submissionFormat?: string;
     evaluationCriteria?: string;
     maxScore?: number;
+    evaluationPlan?: components["schemas"]["EvaluationPlan"];
   };
   /** Embedded round config from reviewer API response (source of truth for staff grading) */
   roundConfig?: Record<string, unknown>;
@@ -151,12 +153,13 @@ export function HorizontalPipeline({
           const isAiInterviewRound =
             roundTypeNormalized === "AI_INTERVIEW" ||
             /ai\s*interview|phỏng\s*vấn\s*ai/i.test(round.name ?? "");
-          const rawScore = detail?.hrScore ?? detail?.finalScore ?? detail?.aiScore;
+          const aiEvaluationScore = getAiEvaluationScore(detail);
+          const rawScore = detail?.finalScore ?? detail?.hrScore ?? aiEvaluationScore ?? undefined;
           const score =
             isAiInterviewRound && detail?.hrScore == null && detail?.finalScore != null
               ? formatAiInterviewScore(detail.finalScore, "auto")
-              : isAiInterviewRound && detail?.hrScore == null && detail?.aiScore != null
-                ? formatAiInterviewScore(detail.aiScore, "auto")
+              : isAiInterviewRound && detail?.hrScore == null && aiEvaluationScore != null
+                ? formatAiInterviewScore(aiEvaluationScore, "auto")
                 : rawScore;
 
           return (

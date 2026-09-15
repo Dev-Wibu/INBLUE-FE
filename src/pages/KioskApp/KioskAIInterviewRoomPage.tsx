@@ -774,7 +774,8 @@ export function KioskAIInterviewRoomPage({
                   marginBottom: 28,
                   maxWidth: 440,
                 }}>
-                Cảm ơn bạn đã hoàn thành bài phỏng vấn tại Kiosk. Kết quả đánh giá đã được lưu an toàn vào hệ thống.
+                Cảm ơn bạn đã hoàn thành bài phỏng vấn tại Kiosk. Kết quả đánh giá đã được lưu an
+                toàn vào hệ thống.
               </p>
               <button
                 type="button"
@@ -847,487 +848,507 @@ export function KioskAIInterviewRoomPage({
                 gap: 12,
                 paddingBottom: 6,
               }}>
-            {/* Top Focus Stack: Current Question Card */}
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                paddingTop: 4,
-              }}>
-              {/* Question Glass Card with Speech Bubble Beak Tail */}
+              {/* Top Focus Stack: Current Question Card */}
               <div
                 style={{
                   width: "100%",
-                  maxWidth: 660,
-                  backgroundColor: "rgba(26, 34, 53, 0.64)",
-                  border: "1px solid rgba(0, 163, 255, 0.36)",
-                  borderRadius: 10,
-                  padding: "14px 26px 16px",
-                  marginBottom: 12,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  position: "relative",
-                  boxShadow: "0 6px 24px rgba(0, 163, 255, 0.16)",
-                  backdropFilter: "blur(24px)",
-                  WebkitBackdropFilter: "blur(24px)",
+                  paddingTop: 4,
                 }}>
-                {/* Header Row */}
+                {/* Question Glass Card with Speech Bubble Beak Tail */}
                 <div
                   style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 10,
-                    marginBottom: 8,
                     width: "100%",
+                    maxWidth: 660,
+                    backgroundColor: "rgba(26, 34, 53, 0.64)",
+                    border: "1px solid rgba(0, 163, 255, 0.36)",
+                    borderRadius: 10,
+                    padding: "14px 26px 16px",
+                    marginBottom: 12,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
                     position: "relative",
+                    boxShadow: "0 6px 24px rgba(0, 163, 255, 0.16)",
+                    backdropFilter: "blur(24px)",
+                    WebkitBackdropFilter: "blur(24px)",
                   }}>
+                  {/* Header Row */}
                   <div
-                    style={{ width: 32, height: 1, backgroundColor: "rgba(0, 163, 255, 0.32)" }}
-                  />
-                  <div
-                    style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <LineIcon name="question" size={14} color="#00A3FF" />
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                      marginBottom: 8,
+                      width: "100%",
+                      position: "relative",
+                    }}>
+                    <div
+                      style={{ width: 32, height: 1, backgroundColor: "rgba(0, 163, 255, 0.32)" }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}>
+                      <LineIcon name="question" size={14} color="#00A3FF" />
+                      <span
+                        style={{
+                          color: "#00A3FF",
+                          fontSize: 11,
+                          fontWeight: 800,
+                          letterSpacing: 2,
+                        }}>
+                        CÂU HỎI HIỆN TẠI
+                      </span>
+                    </div>
+                    <div
+                      style={{ width: 32, height: 1, backgroundColor: "rgba(0, 163, 255, 0.32)" }}
+                    />
                     <span
-                      style={{ color: "#00A3FF", fontSize: 11, fontWeight: 800, letterSpacing: 2 }}>
-                      CÂU HỎI HIỆN TẠI
+                      style={{
+                        position: "absolute",
+                        right: 0,
+                        color: "#94A3B8",
+                        fontSize: 10,
+                        fontWeight: 800,
+                        letterSpacing: 1.4,
+                      }}>
+                      Q{String(currentQuestionIndex).padStart(2, "0")} /{" "}
+                      {String(totalQuestions).padStart(2, "0")}
                     </span>
                   </div>
+
+                  {/* Body Text */}
+                  <p
+                    style={{
+                      color: "#F1F5F9",
+                      fontSize: 15.5,
+                      lineHeight: "23px",
+                      fontWeight: 600,
+                      textAlign: "center",
+                      margin: 0,
+                    }}>
+                    {spokenQuestionText || currentQuestionContent}
+                  </p>
+
+                  {/* Speech Bubble Triangular Tail at bottom center */}
                   <div
-                    style={{ width: 32, height: 1, backgroundColor: "rgba(0, 163, 255, 0.32)" }}
-                  />
-                  <span
                     style={{
                       position: "absolute",
-                      right: 0,
-                      color: "#94A3B8",
-                      fontSize: 10,
-                      fontWeight: 800,
-                      letterSpacing: 1.4,
-                    }}>
-                    Q{String(currentQuestionIndex).padStart(2, "0")} /{" "}
-                    {String(totalQuestions).padStart(2, "0")}
-                  </span>
+                      bottom: -7,
+                      width: 14,
+                      height: 14,
+                      backgroundColor: "rgba(26, 34, 53, 0.64)",
+                      borderRight: "1px solid rgba(0, 163, 255, 0.34)",
+                      borderBottom: "1px solid rgba(0, 163, 255, 0.34)",
+                      transform: "rotate(45deg)",
+                    }}
+                  />
                 </div>
 
-                {/* Body Text */}
-                <p
-                  style={{
-                    color: "#F1F5F9",
-                    fontSize: 15.5,
-                    lineHeight: "23px",
-                    fontWeight: 600,
-                    textAlign: "center",
-                    margin: 0,
-                  }}>
-                  {spokenQuestionText || currentQuestionContent}
-                </p>
-
-                {/* Speech Bubble Triangular Tail at bottom center */}
+                {/* Holographic Node & AI Orb */}
                 <div
                   style={{
-                    position: "absolute",
-                    bottom: -7,
-                    width: 14,
-                    height: 14,
-                    backgroundColor: "rgba(26, 34, 53, 0.64)",
-                    borderRight: "1px solid rgba(0, 163, 255, 0.34)",
-                    borderBottom: "1px solid rgba(0, 163, 255, 0.34)",
-                    transform: "rotate(45deg)",
-                  }}
-                />
-              </div>
-
-              {/* Holographic Node & AI Orb */}
-              <div
-                style={{
-                  position: "relative",
-                  width: 250,
-                  height: 250,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}>
-                <div
-                  style={{
-                    position: "absolute",
-                    width: 236,
-                    height: 236,
-                    borderRadius: 999,
-                    border: "1px solid rgba(0, 163, 255, 0.16)",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    width: 206,
-                    height: 206,
-                    borderRadius: 999,
-                    border: "1px solid rgba(152, 203, 255, 0.72)",
-                    backgroundColor: "rgba(0, 163, 255, 0.08)",
-                    boxShadow: "0 0 30px #98CBFF",
-                    transform: `scale(${orbPulse * 1.06})`,
-                    transition: "transform 0.1s ease-out",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    width: 182,
-                    height: 182,
-                    borderRadius: 999,
-                    backgroundColor: "rgba(0, 163, 255, 0.18)",
-                  }}
-                />
-                <div
-                  style={{
-                    width: 160,
-                    height: 160,
-                    borderRadius: 999,
-                    backgroundColor: "#0F172A",
-                    border: "1.5px solid #98CBFF",
+                    position: "relative",
+                    width: 250,
+                    height: 250,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "0 0 30px #00A3FF",
-                    transform: `scale(${orbPulse})`,
-                    transition: "transform 0.1s ease-out",
                   }}>
                   <div
                     style={{
-                      width: 108,
-                      height: 108,
+                      position: "absolute",
+                      width: 236,
+                      height: 236,
                       borderRadius: 999,
-                      backgroundColor: "rgba(0, 163, 255, 0.16)",
+                      border: "1px solid rgba(0, 163, 255, 0.16)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      width: 206,
+                      height: 206,
+                      borderRadius: 999,
+                      border: "1px solid rgba(152, 203, 255, 0.72)",
+                      backgroundColor: "rgba(0, 163, 255, 0.08)",
+                      boxShadow: "0 0 30px #98CBFF",
+                      transform: `scale(${orbPulse * 1.06})`,
+                      transition: "transform 0.1s ease-out",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      width: 182,
+                      height: 182,
+                      borderRadius: 999,
+                      backgroundColor: "rgba(0, 163, 255, 0.18)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 160,
+                      height: 160,
+                      borderRadius: 999,
+                      backgroundColor: "#0F172A",
+                      border: "1.5px solid #98CBFF",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      boxShadow: "0 0 30px #00A3FF",
+                      transform: `scale(${orbPulse})`,
+                      transition: "transform 0.1s ease-out",
                     }}>
-                    <LineIcon name="bot" size={68} color="#98CBFF" />
+                    <div
+                      style={{
+                        width: 108,
+                        height: 108,
+                        borderRadius: 999,
+                        backgroundColor: "rgba(0, 163, 255, 0.16)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}>
+                      <LineIcon name="bot" size={68} color="#98CBFF" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Status Pill Badge below Orb */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 7,
-                  marginTop: 4,
-                  padding: "4px 12px",
-                  borderRadius: 999,
-                  backgroundColor: "rgba(26, 34, 53, 0.6)",
-                  border: "1px solid rgba(152, 203, 255, 0.2)",
-                  backdropFilter: "blur(12px)",
-                }}>
+                {/* Status Pill Badge below Orb */}
                 <div
                   style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor:
-                      aiState === "SPEAKING"
-                        ? "#00A3FF"
-                        : aiState === "LISTENING"
-                          ? "#10B981"
-                          : "#98CBFF",
-                    boxShadow: `0 0 8px ${aiState === "SPEAKING" ? "#00A3FF" : aiState === "LISTENING" ? "#10B981" : "#98CBFF"}`,
-                  }}
-                />
-                <span style={{ color: "#98CBFF", fontSize: 10.5, fontWeight: 700 }}>
-                  {aiState === "SPEAKING"
-                    ? "AI đang phát biểu..."
-                    : aiState === "LISTENING"
-                      ? "Đang lắng nghe..."
-                      : aiState === "THINKING"
-                        ? "AI đang phân tích..."
-                        : "Sẵn sàng"}
-                </span>
-              </div>
-            </div>
-
-            {/* Bottom Voice Interaction Hub */}
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                padding: "0 12px",
-              }}>
-              {/* Mic Button & 17-bar Audio Visualizer */}
-              <div
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-                <button
-                  type="button"
-                  onClick={toggleRecording}
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 999,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: `1.5px solid ${isRecording ? "rgba(239, 68, 68, 0.55)" : "rgba(0, 163, 255, 0.42)"}`,
-                    backgroundColor: isRecording
-                      ? "rgba(239, 68, 68, 0.18)"
-                      : "rgba(0, 163, 255, 0.14)",
-                    boxShadow: `0 0 26px ${isRecording ? "#EF4444" : "#00A3FF"}`,
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                  }}>
-                  <LineIcon
-                    name={isRecording ? "stop" : "mic"}
-                    size={28}
-                    color={isRecording ? "#EF4444" : "#98CBFF"}
-                  />
-                </button>
-
-                <div
-                  style={{
-                    position: "relative",
-                    width: 108,
-                    height: 24,
                     display: "flex",
                     flexDirection: "row",
                     alignItems: "center",
-                    justifyContent: "center",
-                    gap: 2.5,
-                    marginBottom: 10,
+                    gap: 7,
+                    marginTop: 4,
+                    padding: "4px 12px",
+                    borderRadius: 999,
+                    backgroundColor: "rgba(26, 34, 53, 0.6)",
+                    border: "1px solid rgba(152, 203, 255, 0.2)",
+                    backdropFilter: "blur(12px)",
                   }}>
                   <div
                     style={{
-                      position: "absolute",
-                      left: 0,
-                      right: 0,
-                      top: "50%",
-                      height: 1,
-                      backgroundColor: "rgba(0, 163, 255, 0.28)",
-                      boxShadow: "0 0 8px #00A3FF",
+                      width: 6,
+                      height: 6,
+                      borderRadius: 3,
+                      backgroundColor:
+                        aiState === "SPEAKING"
+                          ? "#00A3FF"
+                          : aiState === "LISTENING"
+                            ? "#10B981"
+                            : "#98CBFF",
+                      boxShadow: `0 0 8px ${aiState === "SPEAKING" ? "#00A3FF" : aiState === "LISTENING" ? "#10B981" : "#98CBFF"}`,
                     }}
                   />
-                  {waveLevels.map((lvl, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        width: index === 8 ? 3.5 : 2.5,
-                        height: 12 * lvl,
-                        borderRadius: 2,
-                        backgroundColor: index === 8 ? "#98CBFF" : "#00A3FF",
-                        opacity: index % 4 === 0 ? 0.58 : 1,
-                        boxShadow: "0 0 8px #00A3FF",
-                        transition: "height 0.08s ease",
-                      }}
-                    />
-                  ))}
+                  <span style={{ color: "#98CBFF", fontSize: 10.5, fontWeight: 700 }}>
+                    {aiState === "SPEAKING"
+                      ? "AI đang phát biểu..."
+                      : aiState === "LISTENING"
+                        ? "Đang lắng nghe..."
+                        : aiState === "THINKING"
+                          ? "AI đang phân tích..."
+                          : "Sẵn sàng"}
+                  </span>
                 </div>
               </div>
 
-              {/* Live Transcript HUD Card (Exact 1:1 Mobile Match) */}
+              {/* Bottom Voice Interaction Hub */}
               <div
                 style={{
                   width: "100%",
-                  maxWidth: "100%",
-                  minHeight: 110,
-                  maxHeight: 140,
-                  backgroundColor: "rgba(5, 10, 26, 0.68)",
-                  border: "1px solid rgba(0, 163, 255, 0.22)",
-                  borderRadius: 8,
-                  padding: "12px 16px",
-                  marginTop: 6,
-                  position: "relative",
-                  boxShadow: "0 0 22px rgba(0, 0, 0, 0.38)",
-                  backdropFilter: "blur(18px)",
-                  WebkitBackdropFilter: "blur(18px)",
                   display: "flex",
                   flexDirection: "column",
-                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "0 12px",
                 }}>
-                {/* HUD Tech Corner Decorations */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: 16,
-                    height: 16,
-                    borderTop: "1px solid #00A3FF",
-                    borderLeft: "1px solid #00A3FF",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    bottom: 0,
-                    width: 16,
-                    height: 16,
-                    borderRight: "1px solid #00A3FF",
-                    borderBottom: "1px solid #00A3FF",
-                  }}
-                />
-
-                {/* Header */}
+                {/* Mic Button & 17-bar Audio Visualizer */}
                 <div
                   style={{
                     display: "flex",
-                    flexDirection: "row",
+                    flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    borderBottom: "1px solid rgba(0, 163, 255, 0.16)",
-                    paddingBottom: 4,
-                    marginBottom: 4,
+                    gap: 14,
                   }}>
+                  <button
+                    type="button"
+                    onClick={toggleRecording}
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 999,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: `1.5px solid ${isRecording ? "rgba(239, 68, 68, 0.55)" : "rgba(0, 163, 255, 0.42)"}`,
+                      backgroundColor: isRecording
+                        ? "rgba(239, 68, 68, 0.18)"
+                        : "rgba(0, 163, 255, 0.14)",
+                      boxShadow: `0 0 26px ${isRecording ? "#EF4444" : "#00A3FF"}`,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}>
+                    <LineIcon
+                      name={isRecording ? "stop" : "mic"}
+                      size={28}
+                      color={isRecording ? "#EF4444" : "#98CBFF"}
+                    />
+                  </button>
+
                   <div
-                    style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <LineIcon name="transcript" size={13} color="#00A3FF" />
+                    style={{
+                      position: "relative",
+                      width: 108,
+                      height: 24,
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 2.5,
+                      marginBottom: 10,
+                    }}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        right: 0,
+                        top: "50%",
+                        height: 1,
+                        backgroundColor: "rgba(0, 163, 255, 0.28)",
+                        boxShadow: "0 0 8px #00A3FF",
+                      }}
+                    />
+                    {waveLevels.map((lvl, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          width: index === 8 ? 3.5 : 2.5,
+                          height: 12 * lvl,
+                          borderRadius: 2,
+                          backgroundColor: index === 8 ? "#98CBFF" : "#00A3FF",
+                          opacity: index % 4 === 0 ? 0.58 : 1,
+                          boxShadow: "0 0 8px #00A3FF",
+                          transition: "height 0.08s ease",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Live Transcript HUD Card (Exact 1:1 Mobile Match) */}
+                <div
+                  style={{
+                    width: "100%",
+                    maxWidth: "100%",
+                    minHeight: 110,
+                    maxHeight: 140,
+                    backgroundColor: "rgba(5, 10, 26, 0.68)",
+                    border: "1px solid rgba(0, 163, 255, 0.22)",
+                    borderRadius: 8,
+                    padding: "12px 16px",
+                    marginTop: 6,
+                    position: "relative",
+                    boxShadow: "0 0 22px rgba(0, 0, 0, 0.38)",
+                    backdropFilter: "blur(18px)",
+                    WebkitBackdropFilter: "blur(18px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}>
+                  {/* HUD Tech Corner Decorations */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: 16,
+                      height: 16,
+                      borderTop: "1px solid #00A3FF",
+                      borderLeft: "1px solid #00A3FF",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      bottom: 0,
+                      width: 16,
+                      height: 16,
+                      borderRight: "1px solid #00A3FF",
+                      borderBottom: "1px solid #00A3FF",
+                    }}
+                  />
+
+                  {/* Header */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderBottom: "1px solid rgba(0, 163, 255, 0.16)",
+                      paddingBottom: 4,
+                      marginBottom: 4,
+                    }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}>
+                      <LineIcon name="transcript" size={13} color="#00A3FF" />
+                      <span
+                        style={{
+                          color: "#00A3FF",
+                          fontSize: 10.5,
+                          fontWeight: 800,
+                          letterSpacing: 1.6,
+                        }}>
+                        BẢN DỊCH TRỰC TIẾP
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsTranscriptEditing(!isTranscriptEditing)}
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: "2px 5px",
+                        background: "none",
+                        border: "none",
+                        color: "#9CAFC5",
+                        fontSize: 9.5,
+                        fontWeight: 800,
+                        letterSpacing: 1,
+                        cursor: "pointer",
+                      }}>
+                      <span>{isTranscriptEditing ? "XONG" : "CHỈNH SỬA"}</span>
+                      <LineIcon name="edit" size={12} color="#9CAFC5" />
+                    </button>
+                  </div>
+
+                  {/* Subtitle Body */}
+                  <div
+                    style={{
+                      flex: 1,
+                      overflowY: "auto",
+                      minHeight: 28,
+                      maxHeight: 46,
+                      display: "flex",
+                      alignItems: "flex-start",
+                    }}>
+                    {isTranscriptEditing ? (
+                      <input
+                        type="text"
+                        value={liveTranscript}
+                        onChange={(e) => setLiveTranscript(e.target.value)}
+                        placeholder="Nhập hoặc chỉnh sửa câu trả lời..."
+                        style={{
+                          width: "100%",
+                          backgroundColor: "transparent",
+                          border: "none",
+                          color: "#E2E8F0",
+                          fontSize: 13,
+                          lineHeight: "18px",
+                          outline: "none",
+                          padding: 0,
+                          margin: 0,
+                        }}
+                      />
+                    ) : (
+                      <span
+                        style={{
+                          color: "#E2E8F0",
+                          fontSize: 13,
+                          lineHeight: "18px",
+                          fontStyle: "italic",
+                        }}>
+                        "
+                        {liveTranscript ||
+                          (isRecording
+                            ? "Đang lắng nghe câu trả lời của bạn..."
+                            : "Nhấn mic để bắt đầu trả lời bằng giọng nói.")}
+                        "
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Footer Bar inside HUD */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginTop: 4,
+                    }}>
                     <span
                       style={{
-                        color: "#00A3FF",
-                        fontSize: 10.5,
+                        color: "rgba(148, 163, 184, 0.62)",
+                        fontSize: 9.5,
                         fontWeight: 800,
                         letterSpacing: 1.6,
                       }}>
-                      BẢN DỊCH TRỰC TIẾP
+                      {isRecording ? "LISTENING..." : "VOICE READY"}
                     </span>
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleSubmitAnswer}
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 5,
+                        backgroundColor: "rgba(0, 163, 255, 0.13)",
+                        border: "1px solid rgba(0, 163, 255, 0.34)",
+                        borderRadius: 6,
+                        padding: "4px 12px",
+                        cursor: "pointer",
+                        opacity: isSubmitting ? 0.45 : 1,
+                      }}>
+                      <span
+                        style={{
+                          color: "#98CBFF",
+                          fontSize: 10.5,
+                          fontWeight: 900,
+                          letterSpacing: 1,
+                        }}>
+                        GỬI PHẢN HỒI
+                      </span>
+                      <LineIcon name="send" size={12} color="#98CBFF" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsTranscriptEditing(!isTranscriptEditing)}
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
-                      padding: "2px 5px",
-                      background: "none",
-                      border: "none",
-                      color: "#9CAFC5",
-                      fontSize: 9.5,
-                      fontWeight: 800,
-                      letterSpacing: 1,
-                      cursor: "pointer",
-                    }}>
-                    <span>{isTranscriptEditing ? "XONG" : "CHỈNH SỬA"}</span>
-                    <LineIcon name="edit" size={12} color="#9CAFC5" />
-                  </button>
                 </div>
 
-                {/* Subtitle Body */}
-                <div
+                {/* Subtitle Hint */}
+                <p
                   style={{
-                    flex: 1,
-                    overflowY: "auto",
-                    minHeight: 28,
-                    maxHeight: 46,
-                    display: "flex",
-                    alignItems: "flex-start",
-                  }}>
-                  {isTranscriptEditing ? (
-                    <input
-                      type="text"
-                      value={liveTranscript}
-                      onChange={(e) => setLiveTranscript(e.target.value)}
-                      placeholder="Nhập hoặc chỉnh sửa câu trả lời..."
-                      style={{
-                        width: "100%",
-                        backgroundColor: "transparent",
-                        border: "none",
-                        color: "#E2E8F0",
-                        fontSize: 13,
-                        lineHeight: "18px",
-                        outline: "none",
-                        padding: 0,
-                        margin: 0,
-                      }}
-                    />
-                  ) : (
-                    <span
-                      style={{
-                        color: "#E2E8F0",
-                        fontSize: 13,
-                        lineHeight: "18px",
-                        fontStyle: "italic",
-                      }}>
-                      "
-                      {liveTranscript ||
-                        (isRecording
-                          ? "Đang lắng nghe câu trả lời của bạn..."
-                          : "Nhấn mic để bắt đầu trả lời bằng giọng nói.")}
-                      "
-                    </span>
-                  )}
-                </div>
-
-                {/* Footer Bar inside HUD */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    color: "#94A3B8",
+                    fontSize: 9.5,
+                    fontWeight: 500,
+                    textAlign: "center",
                     marginTop: 4,
+                    marginBottom: 0,
                   }}>
-                  <span
-                    style={{
-                      color: "rgba(148, 163, 184, 0.62)",
-                      fontSize: 9.5,
-                      fontWeight: 800,
-                      letterSpacing: 1.6,
-                    }}>
-                    {isRecording ? "LISTENING..." : "VOICE READY"}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={handleSubmitAnswer}
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 5,
-                      backgroundColor: "rgba(0, 163, 255, 0.13)",
-                      border: "1px solid rgba(0, 163, 255, 0.34)",
-                      borderRadius: 6,
-                      padding: "4px 12px",
-                      cursor: "pointer",
-                      opacity: isSubmitting ? 0.45 : 1,
-                    }}>
-                    <span
-                      style={{
-                        color: "#98CBFF",
-                        fontSize: 10.5,
-                        fontWeight: 900,
-                        letterSpacing: 1,
-                      }}>
-                      GỬI PHẢN HỒI
-                    </span>
-                    <LineIcon name="send" size={12} color="#98CBFF" />
-                  </button>
-                </div>
+                  Nhấn vào mic để bắt đầu nói trực tiếp với Trợ lý phỏng vấn AI.
+                </p>
               </div>
-
-              {/* Subtitle Hint */}
-              <p
-                style={{
-                  color: "#94A3B8",
-                  fontSize: 9.5,
-                  fontWeight: 500,
-                  textAlign: "center",
-                  marginTop: 4,
-                  marginBottom: 0,
-                }}>
-                Nhấn vào mic để bắt đầu nói trực tiếp với Trợ lý phỏng vấn AI.
-              </p>
             </div>
-          </div>
-        )}
+          )}
         </div>
 
         {/* ── RIGHT CHAT DRAWER (Exact 1:1 Mobile Match) ── */}

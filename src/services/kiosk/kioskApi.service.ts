@@ -1,5 +1,4 @@
-export const BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string) || 'https://api.kdz.asia';
+export const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || "https://api.kdz.asia";
 
 export const SYSTEM_TIMEOUT_MS = 3 * 60 * 1000; // 3 Minutes overall timeout for AI processing
 
@@ -47,7 +46,7 @@ export interface InterviewSubmitResponse {
 
 export interface ChatMessage {
   id: number;
-  role: 'ai' | 'user';
+  role: "ai" | "user";
   content: string;
   timestamp: string;
   meta?: {
@@ -66,15 +65,15 @@ export interface VoiceOption {
 }
 
 export function resolveApiAssetUrl(path: string): string {
-  if (!path) return '';
+  if (!path) return "";
   if (/^https?:\/\//i.test(path)) return path;
-  return `${BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+  return `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 function normalizeVoiceOptions(payload: unknown): VoiceOption[] {
   if (Array.isArray(payload)) return payload as VoiceOption[];
 
-  if (payload && typeof payload === 'object') {
+  if (payload && typeof payload === "object") {
     const data = payload as {
       voices?: unknown;
       data?: unknown;
@@ -92,22 +91,28 @@ function normalizeVoiceOptions(payload: unknown): VoiceOption[] {
 }
 
 // Fetch helper for Kiosk API endpoints (Exact 1:1 Mobile Match)
-export async function enterKioskApi(sessionKey: string, kioskId: number): Promise<KioskEnterDtoResponse> {
+export async function enterKioskApi(
+  sessionKey: string,
+  kioskId: number
+): Promise<KioskEnterDtoResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), SYSTEM_TIMEOUT_MS);
 
   try {
-    const response = await fetch(`${BASE_URL}/api/kiosk/enter/${encodeURIComponent(sessionKey)}?kioskId=${encodeURIComponent(String(kioskId))}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-    });
+    const response = await fetch(
+      `${BASE_URL}/api/kiosk/enter/${encodeURIComponent(sessionKey)}?kioskId=${encodeURIComponent(String(kioskId))}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      }
+    );
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      let errorMsg = 'Mã PIN không đúng hoặc chưa tới giờ phỏng vấn (±15 phút). Vui lòng thử lại!';
+      let errorMsg = "Mã PIN không đúng hoặc chưa tới giờ phỏng vấn (±15 phút). Vui lòng thử lại!";
       try {
         const errJson = await response.json();
         if (errJson.error) {
@@ -124,8 +129,8 @@ export async function enterKioskApi(sessionKey: string, kioskId: number): Promis
     return await response.json();
   } catch (err: unknown) {
     clearTimeout(timeoutId);
-    if ((err as Error)?.name === 'AbortError') {
-      throw new Error('Kết nối máy chủ quá thời gian (Timeout 3 phút). Vui lòng thử lại!');
+    if ((err as Error)?.name === "AbortError") {
+      throw new Error("Kết nối máy chủ quá thời gian (Timeout 3 phút). Vui lòng thử lại!");
     }
     throw err;
   }
@@ -137,9 +142,9 @@ export async function loginStaffApi(email: string, password: string): Promise<st
 
   try {
     const response = await fetch(`${BASE_URL}/api/auth/login`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ email, password }),
       signal: controller.signal,
@@ -147,19 +152,19 @@ export async function loginStaffApi(email: string, password: string): Promise<st
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error('Thông tin đăng nhập không chính xác.');
+      throw new Error("Thông tin đăng nhập không chính xác.");
     }
 
     return (await response.text()).trim();
   } catch (err: unknown) {
     clearTimeout(timeoutId);
-    if ((err as Error)?.name === 'AbortError') {
-      throw new Error('Đăng nhập quá thời gian. Vui lòng thử lại!');
+    if ((err as Error)?.name === "AbortError") {
+      throw new Error("Đăng nhập quá thời gian. Vui lòng thử lại!");
     }
-    if ((err as Error)?.message === 'Thông tin đăng nhập không chính xác.') {
+    if ((err as Error)?.message === "Thông tin đăng nhập không chính xác.") {
       throw err;
     }
-    throw new Error('Thông tin đăng nhập không chính xác.');
+    throw new Error("Thông tin đăng nhập không chính xác.");
   }
 }
 
@@ -169,9 +174,9 @@ export async function getAllKiosksApi(token: string): Promise<Kiosk[]> {
 
   try {
     const response = await fetch(`${BASE_URL}/api/kiosks`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       signal: controller.signal,
@@ -184,14 +189,14 @@ export async function getAllKiosksApi(token: string): Promise<Kiosk[]> {
 
     const data = await response.json();
     if (Array.isArray(data)) return data as Kiosk[];
-    if (data && typeof data === 'object' && Array.isArray((data as { data?: unknown }).data)) {
+    if (data && typeof data === "object" && Array.isArray((data as { data?: unknown }).data)) {
       return (data as { data: Kiosk[] }).data;
     }
     return [];
   } catch (err: unknown) {
     clearTimeout(timeoutId);
-    if ((err as Error)?.name === 'AbortError') {
-      throw new Error('Tải danh sách kiosk quá thời gian. Vui lòng thử lại!');
+    if ((err as Error)?.name === "AbortError") {
+      throw new Error("Tải danh sách kiosk quá thời gian. Vui lòng thử lại!");
     }
     throw err;
   }
@@ -202,13 +207,16 @@ export async function startInterviewApi(sessionKey: string): Promise<InterviewSt
   const timeoutId = setTimeout(() => controller.abort(), SYSTEM_TIMEOUT_MS);
 
   try {
-    const response = await fetch(`${BASE_URL}/api/v1/interview/start/${encodeURIComponent(sessionKey)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-    });
+    const response = await fetch(
+      `${BASE_URL}/api/v1/interview/start/${encodeURIComponent(sessionKey)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      }
+    );
     clearTimeout(timeoutId);
 
     if (!response.ok) {
@@ -218,22 +226,25 @@ export async function startInterviewApi(sessionKey: string): Promise<InterviewSt
     return await response.json();
   } catch (err: unknown) {
     clearTimeout(timeoutId);
-    if ((err as Error)?.name === 'AbortError') {
-      throw new Error('AI phản hồi quá thời gian (Timeout 3 phút). Vui lòng thử lại!');
+    if ((err as Error)?.name === "AbortError") {
+      throw new Error("AI phản hồi quá thời gian (Timeout 3 phút). Vui lòng thử lại!");
     }
     throw err;
   }
 }
 
-export async function submitAnswerApi(sessionKey: string, answerText: string): Promise<InterviewSubmitResponse> {
+export async function submitAnswerApi(
+  sessionKey: string,
+  answerText: string
+): Promise<InterviewSubmitResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), SYSTEM_TIMEOUT_MS);
 
   try {
     const response = await fetch(`${BASE_URL}/api/v1/interview/submit`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         sessionKey,
@@ -250,8 +261,8 @@ export async function submitAnswerApi(sessionKey: string, answerText: string): P
     return await response.json();
   } catch (err: unknown) {
     clearTimeout(timeoutId);
-    if ((err as Error)?.name === 'AbortError') {
-      throw new Error('AI xử lý câu trả lời quá thời gian (Timeout 3 phút). Vui lòng thử lại!');
+    if ((err as Error)?.name === "AbortError") {
+      throw new Error("AI xử lý câu trả lời quá thời gian (Timeout 3 phút). Vui lòng thử lại!");
     }
     throw err;
   }
@@ -262,13 +273,16 @@ export async function timeoutInterviewApi(sessionKey: string): Promise<unknown> 
   const timeoutId = setTimeout(() => controller.abort(), SYSTEM_TIMEOUT_MS);
 
   try {
-    const response = await fetch(`${BASE_URL}/api/v1/interview/timeout/${encodeURIComponent(sessionKey)}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-    });
+    const response = await fetch(
+      `${BASE_URL}/api/v1/interview/timeout/${encodeURIComponent(sessionKey)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      }
+    );
     clearTimeout(timeoutId);
 
     if (!response.ok) {
@@ -278,8 +292,8 @@ export async function timeoutInterviewApi(sessionKey: string): Promise<unknown> 
     return await response.json().catch(() => null);
   } catch (err: unknown) {
     clearTimeout(timeoutId);
-    if ((err as Error)?.name === 'AbortError') {
-      throw new Error('Báo hết giờ phỏng vấn quá thời gian.');
+    if ((err as Error)?.name === "AbortError") {
+      throw new Error("Báo hết giờ phỏng vấn quá thời gian.");
     }
     throw err;
   }
@@ -291,9 +305,9 @@ export async function generateTtsAudioApi(text: string, voiceId?: string): Promi
 
   try {
     const response = await fetch(`${BASE_URL}/api/v1/interview/tts`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ text, voiceId }),
       signal: controller.signal,
@@ -301,17 +315,19 @@ export async function generateTtsAudioApi(text: string, voiceId?: string): Promi
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => '');
+      const errorBody = await response.text().catch(() => "");
       const detail = errorBody.trim().slice(0, 300);
-      console.warn(`TTS API returned status ${response.status}`, detail || '(empty response body)');
-      throw new Error(`Tạo giọng đọc AI thất bại (${response.status})${detail ? `: ${detail}` : ''}`);
+      console.warn(`TTS API returned status ${response.status}`, detail || "(empty response body)");
+      throw new Error(
+        `Tạo giọng đọc AI thất bại (${response.status})${detail ? `: ${detail}` : ""}`
+      );
     }
 
     return await response.blob();
   } catch (err: unknown) {
     clearTimeout(timeoutId);
-    if ((err as Error)?.name === 'AbortError') {
-      throw new Error('Tạo giọng đọc AI quá thời gian (Timeout 3 phút). Vui lòng thử lại!');
+    if ((err as Error)?.name === "AbortError") {
+      throw new Error("Tạo giọng đọc AI quá thời gian (Timeout 3 phút). Vui lòng thử lại!");
     }
     throw err;
   }
@@ -323,9 +339,9 @@ export async function getAvailableVoicesApi(): Promise<VoiceOption[]> {
 
   try {
     const response = await fetch(`${BASE_URL}/api/v1/interview/voices`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       signal: controller.signal,
     });
@@ -338,8 +354,8 @@ export async function getAvailableVoicesApi(): Promise<VoiceOption[]> {
     return normalizeVoiceOptions(await response.json());
   } catch (err: unknown) {
     clearTimeout(timeoutId);
-    if ((err as Error)?.name === 'AbortError') {
-      throw new Error('Tải danh sách giọng đọc AI quá thời gian. Vui lòng thử lại!');
+    if ((err as Error)?.name === "AbortError") {
+      throw new Error("Tải danh sách giọng đọc AI quá thời gian. Vui lòng thử lại!");
     }
     throw err;
   }

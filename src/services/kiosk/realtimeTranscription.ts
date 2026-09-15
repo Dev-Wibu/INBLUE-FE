@@ -1,7 +1,7 @@
-import { BASE_URL } from './kioskApi.service';
+import { BASE_URL } from "./kioskApi.service";
 
 const TARGET_SAMPLE_RATE = 16000;
-const TRANSCRIBE_PATH = '/api/v1/interview/transcribe';
+const TRANSCRIBE_PATH = "/api/v1/interview/transcribe";
 
 export interface RealtimeTranscriptionHandle {
   stop: () => Promise<void>;
@@ -16,10 +16,12 @@ export interface RealtimeTranscriptionOptions {
 }
 
 export function getRealtimeTranscriptionUrl(): string {
-  return `${BASE_URL.replace(/^http/i, 'ws')}${TRANSCRIBE_PATH}`;
+  return `${BASE_URL.replace(/^http/i, "ws")}${TRANSCRIBE_PATH}`;
 }
 
-function parseTranscriptionMessage(raw: string): { type?: string; text?: string; message?: string } | null {
+function parseTranscriptionMessage(
+  raw: string
+): { type?: string; text?: string; message?: string } | null {
   try {
     return JSON.parse(raw);
   } catch {
@@ -28,10 +30,14 @@ function parseTranscriptionMessage(raw: string): { type?: string; text?: string;
 }
 
 function appendTranscriptSegment(baseText: string, segment: string): string {
-  return [baseText.trim(), segment.trim()].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+  return [baseText.trim(), segment.trim()].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
 }
 
-function downsampleBuffer(buffer: Float32Array, inputSampleRate: number, outputSampleRate: number): Float32Array {
+function downsampleBuffer(
+  buffer: Float32Array,
+  inputSampleRate: number,
+  outputSampleRate: number
+): Float32Array {
   if (inputSampleRate === outputSampleRate) return buffer;
 
   const ratio = inputSampleRate / outputSampleRate;
@@ -75,8 +81,8 @@ export async function startRealtimeTranscription(
   initialText: string,
   options: RealtimeTranscriptionOptions
 ): Promise<RealtimeTranscriptionHandle> {
-  if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-    throw new Error('Microphone recording is not supported in this browser.');
+  if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+    throw new Error("Microphone recording is not supported in this browser.");
   }
 
   let ws: WebSocket | null = null;
@@ -106,14 +112,14 @@ export async function startRealtimeTranscription(
     mediaStream?.getTracks().forEach((track) => track.stop());
     mediaStream = null;
 
-    if (audioContext && audioContext.state !== 'closed') {
+    if (audioContext && audioContext.state !== "closed") {
       await audioContext.close();
       audioContext = null;
     }
 
     if (ws && ws.readyState === WebSocket.OPEN) {
       if (sendAudioEnd) {
-        ws.send(JSON.stringify({ type: 'audio_end' }));
+        ws.send(JSON.stringify({ type: "audio_end" }));
         await new Promise((resolve) => setTimeout(resolve, 1500));
         if (ws && ws.readyState === WebSocket.OPEN) ws.close();
       } else {
@@ -124,7 +130,7 @@ export async function startRealtimeTranscription(
 
   await new Promise<void>((resolve, reject) => {
     ws = new WebSocket(getRealtimeTranscriptionUrl());
-    ws.binaryType = 'arraybuffer';
+    ws.binaryType = "arraybuffer";
 
     ws.onopen = async () => {
       try {
@@ -138,7 +144,8 @@ export async function startRealtimeTranscription(
         });
 
         const AudioContextCtor =
-          window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         audioContext = new AudioContextCtor();
         sourceNode = audioContext.createMediaStreamSource(mediaStream);
         processorNode = audioContext.createScriptProcessor(4096, 1, 1);
@@ -174,34 +181,34 @@ export async function startRealtimeTranscription(
     };
 
     ws.onmessage = (event) => {
-      if (typeof event.data !== 'string') return;
+      if (typeof event.data !== "string") return;
 
       const message = parseTranscriptionMessage(event.data);
       if (!message) return;
 
-      if (message.type === 'ready') {
+      if (message.type === "ready") {
         options.onReady?.();
         return;
       }
 
-      if (message.type === 'transcript' && message.text) {
+      if (message.type === "transcript" && message.text) {
         committedText = appendTranscriptSegment(committedText, message.text);
         options.onTranscript(committedText, false);
         return;
       }
 
-      if (message.type === 'turn_complete') {
+      if (message.type === "turn_complete") {
         options.onTranscript(committedText, true);
         return;
       }
 
-      if (message.type === 'error') {
-        options.onError?.(new Error(message.message || 'Realtime transcription failed.'));
+      if (message.type === "error") {
+        options.onError?.(new Error(message.message || "Realtime transcription failed."));
       }
     };
 
     ws.onerror = () => {
-      const error = new Error('Realtime transcription WebSocket error.');
+      const error = new Error("Realtime transcription WebSocket error.");
       options.onError?.(error);
       reject(error);
     };

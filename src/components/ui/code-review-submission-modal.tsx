@@ -258,9 +258,9 @@ export function CodeReviewSubmissionModal({
       });
 
       if (result.success) {
-        toast.success(result.data?.message ?? t("common.applicationSubmittedSuccessfully"));
+        toast.success(t("common.applicationSubmittedSuccessfully"));
         onOpenChange(false);
-        onSuccess?.(result.data?.message);
+        onSuccess?.();
       } else {
         toast.error(result.error ?? t("common.anErrorHasOccurred"));
       }

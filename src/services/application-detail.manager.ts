@@ -131,9 +131,9 @@ export class ApplicationDetailManager {
    * HR/Admin scores and approves/rejects a candidate's application round
    * POST /api/application-details/hr-score?applicationDetailId=&isPass=&note=&score=
    */
-  async hrScore(params: HrScoreParams): Promise<ApiResponse<ApplicationDetail>> {
+  async hrScore(params: HrScoreParams): Promise<ApiResponse<void>> {
     try {
-      const response = await fetchClient.POST("/api/application-details/hr-score", {
+      await fetchClient.POST("/api/application-details/hr-score", {
         params: {
           query: {
             applicationDetailId: params.applicationDetailId,
@@ -145,7 +145,6 @@ export class ApplicationDetailManager {
       });
       return {
         success: true,
-        data: response.data as ApplicationDetail,
       };
     } catch (error) {
       // Handle empty JSON body (BE returns 200 with no body)
@@ -155,7 +154,6 @@ export class ApplicationDetailManager {
       ) {
         return {
           success: true,
-          data: undefined as unknown as ApplicationDetail,
         };
       }
 
@@ -221,7 +219,9 @@ export class ApplicationDetailManager {
    * Submit Code Review evaluation
    * POST /api/application-details/code-review/evaluate
    */
-  async submitCodeReview(params: CodeReviewEvaluateParams): Promise<ApiResponse<SubmissionResult>> {
+  async submitCodeReview(
+    params: CodeReviewEvaluateParams
+  ): Promise<ApiResponse<ApplicationDetail>> {
     try {
       const response = await fetchClient.POST("/api/application-details/code-review/evaluate", {
         body: {
@@ -237,7 +237,7 @@ export class ApplicationDetailManager {
       });
       return {
         success: true,
-        data: response.data as SubmissionResult,
+        data: response.data as ApplicationDetail,
       };
     } catch (error) {
       return {

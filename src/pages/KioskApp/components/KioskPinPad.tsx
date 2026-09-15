@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react';
-import { Lock, Delete, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Delete, Loader2, Lock, RefreshCw } from "lucide-react";
+import { useCallback, useEffect } from "react";
 
 interface KioskPinPadProps {
   pin: string;
@@ -22,11 +22,11 @@ export function KioskPinPad({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (isVerifying) return;
-      if (e.key >= '0' && e.key <= '9') {
+      if (e.key >= "0" && e.key <= "9") {
         onKeyPress(e.key);
-      } else if (e.key === 'Backspace') {
-        onKeyPress('DEL');
-      } else if (e.key === 'Escape') {
+      } else if (e.key === "Backspace") {
+        onKeyPress("DEL");
+      } else if (e.key === "Escape") {
         onClear();
       }
     },
@@ -34,15 +34,15 @@ export function KioskPinPad({
   );
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
   const keys = [
-    ['1', '2', '3'],
-    ['4', '5', '6'],
-    ['7', '8', '9'],
-    ['AC', '0', 'DEL'],
+    ["1", "2", "3"],
+    ["4", "5", "6"],
+    ["7", "8", "9"],
+    ["AC", "0", "DEL"],
   ];
 
   return (
@@ -69,13 +69,12 @@ export function KioskPinPad({
               key={index}
               className={`flex h-12 w-11 items-center justify-center rounded-xl border text-xl font-bold transition-all duration-200 sm:h-14 sm:w-13 sm:text-2xl ${
                 isFilled
-                  ? 'border-[#98cbff] bg-[#98cbff]/25 text-[#98cbff] shadow-[0_0_15px_rgba(152,203,255,0.4)]'
+                  ? "border-[#98cbff] bg-[#98cbff]/25 text-[#98cbff] shadow-[0_0_15px_rgba(152,203,255,0.4)]"
                   : isActive
-                    ? 'border-[#98cbff] bg-[#1a2235]/80 text-[#98cbff] ring-2 ring-[#98cbff]/40 shadow-[0_0_12px_rgba(152,203,255,0.3)]'
-                    : 'border-[#98cbff]/20 bg-[#1a2235]/50 text-slate-500'
-              }`}
-            >
-              {isFilled ? pin[index] : isActive ? <span className="animate-pulse">|</span> : ''}
+                    ? "border-[#98cbff] bg-[#1a2235]/80 text-[#98cbff] shadow-[0_0_12px_rgba(152,203,255,0.3)] ring-2 ring-[#98cbff]/40"
+                    : "border-[#98cbff]/20 bg-[#1a2235]/50 text-slate-500"
+              }`}>
+              {isFilled ? pin[index] : isActive ? <span className="animate-pulse">|</span> : ""}
             </div>
           );
         })}
@@ -100,7 +99,7 @@ export function KioskPinPad({
       {/* On-Screen Virtual Numpad */}
       <div className="grid w-full grid-cols-3 gap-2.5 sm:gap-3.5">
         {keys.flat().map((k) => {
-          const isSpecial = k === 'AC' || k === 'DEL';
+          const isSpecial = k === "AC" || k === "DEL";
           return (
             <button
               key={k}
@@ -109,13 +108,12 @@ export function KioskPinPad({
               onClick={() => onKeyPress(k)}
               className={`flex h-13 items-center justify-center rounded-2xl font-bold transition-all duration-150 active:scale-95 disabled:pointer-events-none disabled:opacity-50 sm:h-15 ${
                 isSpecial
-                  ? 'border border-[#98cbff]/20 bg-[#1a2235]/60 text-xs text-[#98cbff] hover:bg-[#98cbff]/20 sm:text-sm'
-                  : 'border border-[#98cbff]/15 bg-[#1a2235]/40 text-xl text-white hover:border-[#98cbff]/40 hover:bg-[#98cbff]/15 sm:text-2xl'
-              } shadow-[0_4px_12px_rgba(0,0,0,0.2)]`}
-            >
-              {k === 'DEL' ? (
+                  ? "border border-[#98cbff]/20 bg-[#1a2235]/60 text-xs text-[#98cbff] hover:bg-[#98cbff]/20 sm:text-sm"
+                  : "border border-[#98cbff]/15 bg-[#1a2235]/40 text-xl text-white hover:border-[#98cbff]/40 hover:bg-[#98cbff]/15 sm:text-2xl"
+              } shadow-[0_4px_12px_rgba(0,0,0,0.2)]`}>
+              {k === "DEL" ? (
                 <Delete className="h-5 w-5 text-[#98cbff]" />
-              ) : k === 'AC' ? (
+              ) : k === "AC" ? (
                 <span className="flex items-center gap-1">
                   <RefreshCw className="h-3.5 w-3.5" /> AC
                 </span>

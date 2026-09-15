@@ -36,6 +36,11 @@ import { useEmailSubmission } from "@/hooks/useEmailSubmission";
 import { useJobDescription, useJobDescriptions } from "@/hooks/useJobDescription";
 import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import {
+  getAiEvaluationScore,
+  normalizeAiFeedback,
+  type NormalizedAiFeedback,
+} from "@/lib/ai-feedback";
 import { normalizeAiInterviewScore } from "@/lib/ai-interview-score";
 import {
   filterOutAutoGradedRounds,
@@ -71,7 +76,7 @@ import {
   ThumbsUp,
   User,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
@@ -81,7 +86,6 @@ const t = (k: string, opts?: string | Record<string, unknown>): string =>
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 type SubmissionData = components["schemas"]["SubmissionData"];
-type AiFeedback = components["schemas"]["AiFeedback"];
 
 function isAiInterviewDetail(detail?: ApplicationDetail): boolean {
   if (!detail) return false;
@@ -101,7 +105,7 @@ function isAiInterviewDetail(detail?: ApplicationDetail): boolean {
 function getDisplayScore(detail?: ApplicationDetail): number | undefined {
   if (!detail) return undefined;
   if (detail.hrScore != null) return Number(detail.hrScore);
-  const raw = detail.finalScore ?? detail.aiScore;
+  const raw = detail.finalScore ?? getAiEvaluationScore(detail);
   if (raw == null) return undefined;
   return isAiInterviewDetail(detail)
     ? (normalizeAiInterviewScore(raw, "auto") ?? undefined)
@@ -109,10 +113,11 @@ function getDisplayScore(detail?: ApplicationDetail): number | undefined {
 }
 
 function getDisplayAiScoreValue(detail?: ApplicationDetail): number | undefined {
-  if (detail?.aiScore == null) return undefined;
+  const score = getAiEvaluationScore(detail);
+  if (score === null) return undefined;
   return isAiInterviewDetail(detail)
-    ? (normalizeAiInterviewScore(detail.aiScore, "auto") ?? undefined)
-    : Number(detail.aiScore);
+    ? (normalizeAiInterviewScore(score, "auto") ?? undefined)
+    : score;
 }
 
 function getDisplayAiScore(detail?: ApplicationDetail): string | null {
@@ -555,10 +560,16 @@ function SubmissionPreview({ detail, onViewEmailSubmission }: SubmissionPreviewP
 // AI Feedback Panel
 // ============================================================
 
-function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: number }) {
+function AIFeedbackPanel({
+  feedback,
+  score,
+}: {
+  feedback: NormalizedAiFeedback | null;
+  score?: number;
+}) {
   if (!feedback && score === undefined) return null;
 
-  const em = feedback?.extraMetrics as Record<string, unknown> | undefined;
+  const em = feedback?.legacyExtraMetrics ?? undefined;
   const overallMatch =
     typeof em?.["Overall CV Match"] === "number" ? (em["Overall CV Match"] as number) : null;
   const skillsMatch =
@@ -604,9 +615,63 @@ function AIFeedbackPanel({ feedback, score }: { feedback?: AiFeedback; score?: n
         </div>
       )}
 
-      {feedback?.generalComment && (
+      {feedback?.overallFeedback && (
         <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">
-          <p className="text-sm text-slate-700 dark:text-slate-300">{feedback.generalComment}</p>
+          <p className="text-sm text-slate-700 dark:text-slate-300">{feedback.overallFeedback}</p>
+        </div>
+      )}
+
+      {feedback?.source === "structured" && feedback.metricResults.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+            {t("structuredAiFeedback.metricResults")}
+          </p>
+          {feedback.metricResults.map((metric, index) => (
+            <div key={`${metric.code ?? "metric"}-${index}`} className="text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                  {metric.code ?? t("structuredAiFeedback.unknownMetric")}
+                  {metric.definition?.name ? ` - ${metric.definition.name}` : ""}
+                </span>
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                  {metric.score !== null
+                    ? t("structuredAiFeedback.scoreValue", { score: metric.score })
+                    : t("structuredAiFeedback.notAvailable")}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {metric.weightedScore !== null && (
+                  <span className="mr-2">
+                    {t("structuredAiFeedback.weightedScore", { score: metric.weightedScore })}
+                  </span>
+                )}
+                {t(
+                  metric.passed === true
+                    ? "structuredAiFeedback.passed"
+                    : metric.passed === false
+                      ? "structuredAiFeedback.failed"
+                      : "structuredAiFeedback.notAssessed"
+                )}
+              </p>
+              {metric.feedback && (
+                <p className="mt-1 text-slate-600 dark:text-slate-300">{metric.feedback}</p>
+              )}
+              {metric.evidence && (
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  <strong>{t("structuredAiFeedback.evidence")}:</strong> {metric.evidence}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {feedback?.improvementAdvice && (
+        <div className="text-sm text-slate-600 dark:text-slate-300">
+          <p className="mb-1 text-xs font-semibold text-slate-700 dark:text-slate-200">
+            {t("structuredAiFeedback.improvementAdvice")}
+          </p>
+          <p className="whitespace-pre-line">{feedback.improvementAdvice}</p>
         </div>
       )}
 
@@ -1050,6 +1115,9 @@ export function ApplicationGradingPage({
   const [statusFilter, setStatusFilter] = useState<string>(
     isStaff ? "NEEDS_HR_SCORING" : "PENDING"
   );
+  useEffect(() => {
+    setStatusFilter(isStaff ? "NEEDS_HR_SCORING" : "PENDING");
+  }, [isStaff]);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "score-high" | "score-low">("newest");
 
   // Sortable fields for the table
@@ -1185,16 +1253,14 @@ export function ApplicationGradingPage({
           if (statusFilter !== "all") {
             // Special filter: AI-graded rounds that still need HR scoring
             if (statusFilter === "NEEDS_HR_SCORING") {
-              // Show items where status = AI_EVALUATED and hrScore is null/undefined
+              // The reviewer endpoint already limits this list to rounds assigned
+              // to the current staff member. aiScore may be null when the new
+              // structured feedback carries the AI result.
               const detail = item.detail;
-              const hasAiScore = detail?.aiScore !== undefined && detail?.aiScore !== null;
               const needsHrScore = detail?.hrScore === undefined || detail?.hrScore === null;
               const isAiEvaluated =
                 item.detailStatus === "AI_EVALUATED" || item.status === "AI_EVALUATED";
-              if (isAiEvaluated && hasAiScore && needsHrScore) {
-                return true;
-              }
-              return false;
+              return isAiEvaluated && needsHrScore;
             }
             // Standard status filters (PENDING, SUBMITTED, COMPLETED)
             if (item.detailStatus !== statusFilter && item.status !== statusFilter) {
@@ -1289,9 +1355,8 @@ export function ApplicationGradingPage({
       (item) => item.detail?.hrScore !== undefined && item.detail?.hrScore !== null
     );
     const needsGradingItems = staffItems.filter((item) => {
-      const hasAiScore = item.detail?.aiScore !== undefined && item.detail?.aiScore !== null;
       const hasNoHrScore = item.detail?.hrScore === undefined || item.detail?.hrScore === null;
-      return item.detailStatus === "AI_EVALUATED" && hasAiScore && hasNoHrScore;
+      return item.detailStatus === "AI_EVALUATED" && hasNoHrScore;
     });
     const averageScore = gradedItems.length
       ? gradedItems.reduce((total, item) => total + Number(item.detail?.hrScore ?? 0), 0) /
@@ -2107,6 +2172,12 @@ export function ApplicationGradingDetailPage({
     const firstNeedsHr = displayDetails.find((d) => needsHrScoring(d));
     return firstNeedsHr ?? displayDetails[0];
   }, [displayDetails, selectedRoundId]);
+  const activeAiFeedback = activeDetail
+    ? normalizeAiFeedback(
+        activeDetail,
+        (activeDetail as ApplicationDetail & { roundConfig?: unknown }).roundConfig
+      )
+    : null;
 
   const handleViewEmailSubmission = useCallback((emailSubmissionId: number) => {
     setEmailPreviewId(emailSubmissionId);
@@ -2343,7 +2414,7 @@ export function ApplicationGradingDetailPage({
               </div>
 
               {/* AI Evaluation Insights Card */}
-              {(activeDetail.aiScore !== undefined || activeDetail.aiFeedback) && (
+              {(getDisplayAiScoreValue(activeDetail) !== undefined || activeAiFeedback) && (
                 <div className="overflow-hidden rounded-2xl border border-purple-200/80 bg-gradient-to-b from-purple-50/40 via-white to-white p-6 shadow-xs dark:border-purple-500/20 dark:from-purple-950/20 dark:via-slate-900 dark:to-slate-900">
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
@@ -2372,7 +2443,7 @@ export function ApplicationGradingDetailPage({
 
                   <div className="rounded-xl border border-purple-100 bg-purple-50/60 p-4 dark:border-purple-500/15 dark:bg-purple-500/5">
                     <AIFeedbackPanel
-                      feedback={activeDetail.aiFeedback}
+                      feedback={activeAiFeedback}
                       score={getDisplayAiScoreValue(activeDetail)}
                     />
                   </div>

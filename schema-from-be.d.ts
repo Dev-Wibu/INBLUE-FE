@@ -2112,6 +2112,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/mentors/recommended": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy danh sách Mentor được gợi ý dựa trên JD
+         * @description Truyền jdId của Job Description, hệ thống sẽ lấy skill embedding của JD đó và trả về tối đa 20 Mentor có skill embedding gần nhất.
+         */
+        get: operations["getTopRecommendedMentors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/mentor-reviews/{id}": {
         parameters: {
             query?: never;
@@ -3377,11 +3397,22 @@ export interface components {
             averageRating?: number;
             /** Format: int32 */
             pricePerMinute?: number;
+            profileData?: components["schemas"]["MentorProfile"];
+            skillEmbedding?: number[];
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
             active?: boolean;
+        };
+        MentorProfile: {
+            certifications?: string[];
+            skills?: string[];
+            jobTitle?: string;
+            education?: string;
+            languages?: string[];
+            portfolioUrl?: string;
+            githubUrl?: string;
         };
         PostComment: {
             /** Format: int32 */
@@ -3419,6 +3450,15 @@ export interface components {
             updatedAt?: string;
             candidates?: components["schemas"]["CandidateProfile"][];
         };
+        MentorProfileRequest: {
+            certifications?: string[];
+            skills?: string[];
+            jobTitle?: string;
+            education?: string;
+            languages?: string[];
+            portfolioUrl?: string;
+            githubUrl?: string;
+        };
         UpdateMentorRequest: {
             name?: string;
             email?: string;
@@ -3430,6 +3470,7 @@ export interface components {
             currentCompany?: string;
             /** Format: int32 */
             pricePerMinute?: number;
+            profileData?: components["schemas"]["MentorProfileRequest"];
         };
         MentorFeedbackResponse: {
             /** Format: int32 */
@@ -3437,6 +3478,15 @@ export interface components {
             comment?: string;
             userName?: string;
             userAvatarUrl?: string;
+        };
+        MentorProfileResponse: {
+            certifications?: string[];
+            skills?: string[];
+            jobTitle?: string;
+            education?: string;
+            languages?: string[];
+            portfolioUrl?: string;
+            githubUrl?: string;
         };
         MentorResponse: {
             /** Format: int32 */
@@ -3463,6 +3513,9 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
             feedbacks?: components["schemas"]["MentorFeedbackResponse"][];
+            profileData?: components["schemas"]["MentorProfileResponse"];
+            /** Format: double */
+            matchPercent?: number;
             active?: boolean;
         };
         ChangeMentorPasswordRequest: {
@@ -4216,6 +4269,7 @@ export interface components {
             currentCompany?: string;
             /** Format: int32 */
             pricePerMinute?: number;
+            profileData?: components["schemas"]["MentorProfileRequest"];
         };
         CreateMentorReviewRequest: {
             /** Format: int32 */
@@ -4838,10 +4892,10 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
             pageable?: components["schemas"]["PageableObject"];
             first?: boolean;
             last?: boolean;
@@ -4856,12 +4910,12 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
@@ -5154,10 +5208,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -5258,19 +5312,19 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            pageEncoding?: string;
             trimDirectiveWhitespaces?: string;
+            errorOnELNotFound?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
-            defaultContentType?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
-            urlPatterns?: string[];
-            isXml?: string;
-            buffer?: string;
             elIgnored?: string;
+            isXml?: string;
+            defaultContentType?: string;
+            urlPatterns?: string[];
+            buffer?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -5304,10 +5358,11 @@ export interface components {
             };
         };
         ServletContext: {
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -5318,13 +5373,12 @@ export interface components {
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
@@ -9451,6 +9505,29 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["UserScheduleEventDto"][];
+                };
+            };
+        };
+    };
+    getTopRecommendedMentors: {
+        parameters: {
+            query: {
+                /** @description ID của Job Description dùng để gợi ý Mentor */
+                jdId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MentorResponse"][];
                 };
             };
         };

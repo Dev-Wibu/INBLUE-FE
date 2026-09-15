@@ -10,6 +10,7 @@ import {
   useKioskSlots,
   usePickKioskSlot,
 } from "@/hooks/useKiosk";
+import { getAiEvaluationScore, normalizeAiFeedback } from "@/lib/ai-feedback";
 import {
   normalizeAiInterviewScore,
   normalizeAiInterviewSessionScore,
@@ -1617,12 +1618,9 @@ function AiInterviewResultView({
   const aiScoreVal =
     sessionData?.overallScore != null
       ? normalizeAiInterviewSessionScore(sessionData.overallScore)
-      : detail?.aiScore != null
-        ? normalizeAiInterviewScore(detail.aiScore, "auto")
-        : normalizeAiInterviewScore(
-            detail?.finalScore,
-            detail?.hrScore != null ? "hundred" : "auto"
-          );
+      : getAiEvaluationScore(detail) != null
+        ? normalizeAiInterviewScore(getAiEvaluationScore(detail), "auto")
+        : null;
   const aiScorePercent = aiScoreVal ?? 0;
   const aiScoreDisplay = aiScoreVal != null ? `${Math.round(aiScoreVal)}` : "--";
 
@@ -2012,9 +2010,7 @@ function AiInterviewResultView({
                   content={
                     parsedResultDetail?.aiOverviewFeedback ||
                     parsedResultDetail?.ai_overview_feedback ||
-                    (typeof detail?.aiFeedback === "string"
-                      ? detail.aiFeedback
-                      : detail?.aiFeedback?.generalComment) ||
+                    normalizeAiFeedback(detail)?.overallFeedback ||
                     t("userApplication.aiInterview.noDataYet")
                   }
                 />
@@ -2469,7 +2465,7 @@ export function AiInterviewModule({
 
   const aiScore = detail?.aiScore;
   const hrScore = detail?.hrScore;
-  const finalScore = detail?.finalScore ?? detail?.aiScore;
+  const finalScore = detail?.finalScore;
   const applicationDetailId = detail?.id ?? null;
   const selectedDateString = useMemo(() => toYmd(selectedDate), [selectedDate]);
 

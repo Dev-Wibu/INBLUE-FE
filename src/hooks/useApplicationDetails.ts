@@ -78,7 +78,7 @@ export const useApplicationDetailsForReviewer = (enabled = true) => {
 
 /**
  * HR/Admin scores a candidate's application round
- * PUT /api/application-details/hr-score
+ * POST /api/application-details/hr-score
  *
  * Cache strategy on success:
  *   1. Use `setQueryData` to merge the returned detail into the
@@ -102,70 +102,27 @@ export const useHrScore = (options?: {
     mutationFn: async (params: HrScoreParams) => {
       const result = await applicationDetailManager.hrScore(params);
       if (!result.success) throw new Error(result.error);
-      return result.data!;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       toast.success(t("grading.gradeSuccess"));
-
-      const updatedDetail = data as unknown as ApplicationDetail | undefined;
-
-      // 1. Update the single-detail cache for instant UI update
-      if (updatedDetail?.id !== undefined) {
-        queryClient.setQueryData<ApplicationDetail>(
-          ["applicationDetails", "byId", variables.applicationDetailId],
-          updatedDetail
-        );
-
-        // 2. Patch the detail inside the per-application array cache so any
-        //    list view that already has the array re-renders without a refetch.
-        const appId = updatedDetail.applicationId;
-        if (appId !== undefined) {
-          queryClient.setQueryData<ApplicationDetail[]>(
-            ["applicationDetails", "byApplicationId", appId],
-            (prev) =>
-              prev?.map((d) => (d.id === updatedDetail.id ? { ...d, ...updatedDetail } : d)) ?? prev
-          );
-          // Also patch the application-level query for the score column
-          queryClient.setQueryData(["applications", "byId", appId], (prev: unknown) => {
-            if (!prev || typeof prev !== "object") return prev;
-            return {
-              ...(prev as Record<string, unknown>),
-              ...(updatedDetail as unknown as Record<string, unknown>),
-            };
-          });
-        }
-
-        // 2b. Patch the reviewer list cache so the Staff Grading Workspace
-        //     (which fetches from /api/application-details/reviewer) reflects the
-        //     newly-graded detail immediately without a page refresh.
-        queryClient.setQueryData<{ data?: ApplicationDetail[] }>(
-          ["get", "/api/application-details/reviewer"],
-          (prev) => {
-            if (!prev || !Array.isArray(prev?.data)) return prev;
-            return {
-              ...prev,
-              data: prev.data.map((d) =>
-                d.id === updatedDetail.id ? { ...d, ...updatedDetail } : d
-              ),
-            };
-          }
-        );
-      }
-
-      // 3. Refetch ONLY the listing queries that need to reflect the change.
+      // Backend intentionally returns an empty body. Refetch the affected detail
+      // and lists instead of attempting to merge a non-existent response entity.
+      queryClient.invalidateQueries({
+        queryKey: ["applicationDetails", "byId", variables.applicationDetailId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["applicationDetails", "byApplicationId"],
+        exact: false,
+      });
       //    These are coarse-grained lists, not per-detail refetches.
       queryClient.invalidateQueries({
         queryKey: ["applicationDetails", "forReviewer"],
-        refetchType: "none",
       });
-      // 4. Refetch the applications list (used by the Admin grading table)
       queryClient.invalidateQueries({
         queryKey: ["get", "/api/applications"],
-        refetchType: "none",
       });
       queryClient.invalidateQueries({
         queryKey: ["get", "/api/applications/{id}"],
-        refetchType: "none",
         exact: false,
       });
 
