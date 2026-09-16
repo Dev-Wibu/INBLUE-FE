@@ -10,6 +10,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import type { TFunction } from "i18next";
 import {
   Bell,
+  Bot,
   Briefcase,
   Building2,
   LayoutDashboard,
@@ -141,6 +142,12 @@ const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
         icon: ScanSearch,
         label: t("entryTestOnboarding.sidebar"),
         color: "text-indigo-600 dark:text-indigo-400",
+      },
+      {
+        type: "aiInterview",
+        icon: Bot,
+        label: t("userAiinterview.historyNavigation", "Lịch sử phỏng vấn AI"),
+        color: "text-blue-600 dark:text-blue-400",
       },
       {
         type: "applicationHistory",

@@ -1,851 +1,518 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { $api } from "@/lib/api";
 import { formatUtcNaiveDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
-import { practiceSetManager } from "@/services";
 import {
   AlertCircle,
   ArrowLeft,
-  Award,
-  BookOpen,
-  Briefcase,
+  Bot,
   Calendar,
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Clock,
+  FileQuestion,
   Globe,
-  Info,
-  Layers,
   Lightbulb,
   MessageSquare,
-  Plus,
   RefreshCw,
-  Sparkles,
-  Star,
-  TrendingUp,
-  User,
-  Zap,
+  ShieldAlert,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
-import { FormattedMarkdownText } from "../Applications/components/round-modules/AiInterviewModule";
-import { SelectRoadmapModal } from "./components/SelectRoadmapModal";
+import {
+  getAiInterviewDomain,
+  getAiInterviewJobTitle,
+  getAiInterviewMode,
+  hasAiInterviewScore,
+} from "./ai-interview-history.utils";
 
-function ResultSkeleton() {
-  return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex items-center gap-4">
-        <Skeleton className="h-10 w-10" />
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-64" />
-          <Skeleton className="h-4 w-40" />
-        </div>
-      </div>
-      <Skeleton className="h-48 rounded-xl" />
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Skeleton className="h-40 rounded-xl" />
-        <Skeleton className="h-40 rounded-xl" />
-      </div>
-      {[1, 2, 3].map((i) => (
-        <Skeleton key={i} className="h-32 rounded-xl" />
-      ))}
-    </div>
-  );
-}
-function QACard({
-  qa,
-  index,
-  followUps,
-}: {
-  qa: {
-    questionType?: string;
-    questionOrder?: number;
-    questionText?: string;
-    answerText?: string;
-    feedback?: string;
-    score?: number;
-    suggestion?: string;
-    behavioralWarnings?: string[];
-  };
-  index: number;
-  followUps?: (typeof qa)[];
-}) {
-  const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(false);
-  const score = qa.score ?? 0;
-  const scoreColor =
-    score >= 8
-      ? "text-emerald-600 dark:text-emerald-400"
-      : score >= 5
-        ? "text-amber-600 dark:text-amber-400"
-        : "text-red-600 dark:text-red-400";
-  return (
-    <Card>
-      <button
-        onClick={() => setExpanded((prev) => !prev)}
-        className="w-full text-left"
-        aria-expanded={expanded}>
-        <CardContent className="flex items-center gap-4 p-5">
-          <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-            <span className="text-primary text-sm font-bold">{qa.questionOrder ?? index + 1}</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            {qa.questionType && (
-              <div className="mb-1">
-                {qa.questionType === "BLUEPRINT" ? (
-                  <span className="inline-flex items-center rounded-full border border-indigo-300 bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:border-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
-                    {t("userAiinterview.mainSentence")}
-                  </span>
-                ) : qa.questionType === "FOLLOW_UP" ? (
-                  <span className="inline-flex items-center rounded-full border border-violet-300 bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700 dark:border-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
-                    {t("userAiinterview.nextSentence")}
-                  </span>
-                ) : null}
-              </div>
-            )}
-            <p className="text-foreground text-sm leading-relaxed font-medium">
-              {qa.questionText ?? t("userAiinterview.questionHasNoContent")}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className={cn("text-lg font-bold", scoreColor)}>{score.toFixed(1)}</span>
-            <span className="text-muted-foreground text-xs">/10</span>
-            {expanded ? (
-              <ChevronUp className="text-muted-foreground h-4 w-4" />
-            ) : (
-              <ChevronDown className="text-muted-foreground h-4 w-4" />
-            )}
-          </div>
-        </CardContent>
-      </button>
-      {expanded && (
-        <div className="space-y-4 border-t px-5 pt-4 pb-5">
-          {qa.answerText && (
-            <div className="space-y-1">
-              <p className="text-foreground text-xs font-semibold tracking-wide uppercase">
-                {t("userAiinterview.yourAnswer")}
-              </p>
-              <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-                {qa.answerText}
-              </p>
-            </div>
-          )}
-          {qa.feedback && (
-            <div className="space-y-1">
-              <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">
-                {t("common.comment")}
-              </p>
-              <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-                {qa.feedback}
-              </p>
-            </div>
-          )}
-          {qa.suggestion && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
-              <div className="mb-1 flex items-center gap-1.5">
-                <Lightbulb className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-                  {t("userAiinterview.suggestionsForImprovement")}
-                </span>
-              </div>
-              <p className="text-sm leading-relaxed text-amber-800 dark:text-amber-200">
-                {qa.suggestion}
-              </p>
-            </div>
-          )}
-          {qa.behavioralWarnings && qa.behavioralWarnings.length > 0 && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/30">
-              <p className="mb-1 text-xs font-semibold text-red-700 dark:text-red-300">
-                {t("userAiinterview.behavioralWarnings")}
-              </p>
-              <ul className="list-inside list-disc space-y-0.5 text-sm text-red-600 dark:text-red-400">
-                {qa.behavioralWarnings.map((w, i) => (
-                  <li key={i}>{w}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div className="flex items-center gap-2 pt-1">
-            <Progress value={score * 10} className="h-2 flex-1" />
-            <span className={cn("text-sm font-bold", scoreColor)}>{score.toFixed(1)}/10</span>
-          </div>
-        </div>
-      )}
-      {/* Follow-up questions grouped under this blueprint */}
-      {followUps && followUps.length > 0 && (
-        <div className="border-t px-5 pt-3 pb-4">
-          <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-            {t("userAiinterview.nextQuestion")}
-            {followUps.length})
-          </p>
-          <div className="space-y-2 border-l-2 border-violet-200 pl-4 dark:border-violet-800">
-            {followUps.map((fu, fuIdx) => (
-              <QACard key={fu.questionOrder ?? fuIdx} qa={fu} index={fuIdx} />
-            ))}
-          </div>
-        </div>
-      )}
-    </Card>
-  );
-}
 export function AIInterviewResultPage() {
   const { t } = useTranslation();
-
-  // Translated constants — inside component for language reactivity
-  const RESULT_MAP: Record<string, { label: string; color: string; bg: string }> = {
-    STRONG_HIRE: {
-      label: t("common.excellent"),
-      color: "text-emerald-700 dark:text-emerald-300",
-      bg: "bg-emerald-100 dark:bg-emerald-900/40",
-    },
-    HIRE: {
-      label: t("common.obtain"),
-      color: "text-blue-700 dark:text-blue-300",
-      bg: "bg-blue-100 dark:bg-blue-900/40",
-    },
-    CONSIDER: {
-      label: t("common.needToConsider"),
-      color: "text-amber-700 dark:text-amber-300",
-      bg: "bg-amber-100 dark:bg-amber-900/40",
-    },
-    REJECT: {
-      label: t("common.failed"),
-      color: "text-red-700 dark:text-red-300",
-      bg: "bg-red-100 dark:bg-red-900/40",
-    },
-  };
-  const MODE_LABELS: Record<string, string> = {
-    STANDARD_MOCK: t("common.trialInterview"),
-    THEORY_CHECK: t("common.testTheTheory"),
-    PROJECT_DEFENSE: t("common.projectProtection"),
-  };
-  const DIFFICULTY_LABELS: Record<string, string> = {
-    FRESHER_BASIC: t("userAiinterview.basicFresher"),
-    FRESHER_ADVANCED: t("userAiinterview.advancedFresher"),
-  };
-  const LANGUAGE_LABELS: Record<string, string> = {
-    VI: t("common.vietnamese"),
-    EN: t("common.english"),
-  };
-  const DOMAIN_LABELS: Record<string, string> = {
-    IT: t("userAiinterview.informationTechnologyIt"),
-    NON_IT: t("common.outsideOfIt"),
-  };
-  const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-    CREATED: { label: t("common.created"), className: "bg-blue-100 text-blue-700" },
-    IN_PROGRESS: { label: t("common.ongoing"), className: "bg-amber-100 text-amber-700" },
-    COMPLETED: { label: t("general.completed"), className: "bg-emerald-100 text-emerald-700" },
-    CANCELLED: { label: t("common.canceled"), className: "bg-red-100 text-red-700" },
-  };
-
   const navigate = useNavigate();
-  const { id } = useParams<{
-    id: string;
-  }>();
-  const [roadmapOpen, setRoadmapOpen] = useState(false);
-  const [roadmapLoading, setRoadmapLoading] = useState(false);
+  const { id } = useParams<{ id: string }>();
+  const sessionId = Number(id);
+
+  const statusLabels = useMemo<Record<string, string>>(
+    () => ({
+      CREATED: t("common.created", "Mới tạo"),
+      IN_PROGRESS: t("common.ongoing", "Đang diễn ra"),
+      COMPLETED: t("general.completed", "Hoàn thành"),
+      CANCELLED: t("common.canceled", "Đã hủy"),
+    }),
+    [t]
+  );
+  const resultLabels = useMemo<Record<string, string>>(
+    () => ({
+      STRONG_HIRE: t("common.excellent", "Xuất sắc"),
+      HIRE: t("common.obtain", "Đạt"),
+      CONSIDER: t("common.needToConsider", "Cân nhắc"),
+      REJECT: t("common.failed", "Chưa đạt"),
+    }),
+    [t]
+  );
+  const modeLabels = useMemo<Record<string, string>>(
+    () => ({
+      STANDARD_MOCK: t("common.trialInterview", "Phỏng vấn thử"),
+      THEORY_CHECK: t("common.testTheTheory", "Kiểm tra lý thuyết"),
+      PROJECT_DEFENSE: t("common.projectProtection", "Bảo vệ dự án"),
+    }),
+    [t]
+  );
+  const difficultyLabels = useMemo<Record<string, string>>(
+    () => ({
+      FRESHER_BASIC: t("userAiinterview.basic", "Cơ bản"),
+      FRESHER_ADVANCED: t("userAiinterview.advanced", "Nâng cao"),
+    }),
+    [t]
+  );
+  const languageLabels = useMemo<Record<string, string>>(
+    () => ({
+      VI: t("common.vietnamese", "Tiếng Việt"),
+      EN: t("common.english", "Tiếng Anh"),
+    }),
+    [t]
+  );
+
   const {
     data: session,
     isLoading,
     isError,
+    isRefetching,
+    refetch,
   } = $api.useQuery(
     "get",
     "/api/interview-sessions/{sessionId}",
-    {
-      params: {
-        path: {
-          sessionId: Number(id),
-        },
-      },
-    },
-    {
-      enabled: !!id,
-    }
+    { params: { path: { sessionId } } },
+    { enabled: Number.isInteger(sessionId) && sessionId > 0 }
   );
 
-  // Kiểm tra số lượng lộ trình lợn tập đã tạo cho session này
-  const { data: existingPracticeSets = [], refetch: refetchPracticeSets } = $api.useQuery(
-    "get",
-    // @ts-expect-error: Backend Swagger schema mismatch - endpoint path not in schema
-    "/api/practice-sets/interview-session/{interviewSessionId}",
-    {
-      params: {
-        path: {
-          interviewSessionId: Number(id),
-        },
-      },
-    },
-    {
-      enabled: !!id,
-    }
-  );
-  const handleCreateRoadmap = async (dateNumber: number) => {
-    setRoadmapLoading(true);
-    try {
-      const result = await practiceSetManager.createByAI({
-        aiInterviewId: Number(id),
-        dateNumber,
-      });
-      if (result.success) {
-        setRoadmapOpen(false);
-        toast.success(t("userAiinterview.successfullyCreatedTrainingRoadmap"));
-        void refetchPracticeSets();
-        // Điều hướng theo interviewSessionId để tải toàn bộ lộ trình của session
-        navigate(`/user/practice/session/${id}`);
-      } else {
-        toast.error(result.error ?? t("userAiinterview.unableToCreateTrainingRoute"));
-      }
-    } catch {
-      toast.error(t("userAiinterview.unableToCreateTrainingRoute"));
-    } finally {
-      setRoadmapLoading(false);
-    }
-  };
-  const detail = session?.resultDetail;
-  const history = detail?.history ?? [];
-  const resultConfig = RESULT_MAP[session?.result ?? ""] ?? null;
-  type QAItem = (typeof history)[number];
+  if (isLoading) return <DetailSkeleton />;
 
-  // Nhóm các câu FOLLOW_UP vào sau câu BLUEPRINT tương ứng
-  const groupedHistory = (() => {
-    const groups: {
-      blueprint: QAItem;
-      followUps: QAItem[];
-    }[] = [];
-    for (const qa of history) {
-      if (qa.questionType === "FOLLOW_UP" && groups.length > 0) {
-        groups[groups.length - 1].followUps.push(qa);
-      } else {
-        groups.push({
-          blueprint: qa,
-          followUps: [],
-        });
-      }
-    }
-    return groups;
-  })();
-  if (isLoading) {
+  if (isError || !session) {
     return (
-      <div className="bg-background min-h-screen p-6">
-        <ResultSkeleton />
-      </div>
-    );
-  }
-  if (isError) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6">
-        <AlertCircle className="h-10 w-10 text-red-500" />
-        <p className="text-foreground font-semibold">
-          {t("userAiinterview.unableToDownloadInterviewResults")}
-        </p>
-        <p className="text-muted-foreground text-sm">{t("userAiinterview.pleaseTryAgainLater")}</p>
-        <Button variant="outline" onClick={() => navigate("/user?tab=aiInterview")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("general.back")}
-        </Button>
-      </div>
-    );
-  }
-  if (!session) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6">
-        <AlertCircle className="text-muted-foreground h-10 w-10" />
-        <p className="text-foreground font-semibold">{t("common.noInterviewSessionsFound")}</p>
-        <p className="text-muted-foreground text-sm">
-          {t("userAiinterview.theInterviewSessionDoesNot")}
-        </p>
-        <Button variant="outline" onClick={() => navigate("/user?tab=aiInterview")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("common.backToTheList")}
-        </Button>
+      <div className="w-full px-5 py-6 md:px-8">
+        <div className="mx-auto flex min-h-80 max-w-3xl flex-col items-center justify-center gap-3 rounded-[20px] border border-slate-200 bg-white p-8 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <AlertCircle className="h-9 w-9 text-rose-500" />
+          <h1 className="text-base font-bold text-slate-900 dark:text-white">
+            {t("userAiinterview.unableToDownloadInterviewResults", "Không thể tải kết quả")}
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {t("userAiinterview.theInterviewSessionDoesNot", "Phiên phỏng vấn không tồn tại")}
+          </p>
+          <Button variant="outline" size="sm" onClick={() => navigate("/user?tab=aiInterview")}>
+            <ArrowLeft className="h-4 w-4" />
+            {t("common.backToTheList", "Quay lại danh sách")}
+          </Button>
+        </div>
       </div>
     );
   }
 
-  // CANCELLED session — hiển thị card riêng vì không có điểm/kết quả
-  if (session.status === "CANCELLED") {
-    const cfg = session.sessionConfig;
-    return (
-      <div className="bg-background min-h-screen p-6">
-        <div className="mx-auto max-w-2xl">
-          <div className="mb-6 flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
+  const mode = getAiInterviewMode(session);
+  const domain = getAiInterviewDomain(session);
+  const jobTitle = getAiInterviewJobTitle(session);
+  const config = session.sessionConfig;
+  const history = session.resultDetail?.history ?? [];
+  const hasScore = hasAiInterviewScore(session);
+  const shouldRefresh = session.status === "IN_PROGRESS" || !session.resultDetail;
+
+  return (
+    <div className="w-full px-5 py-6 pb-16 md:px-8">
+      <div className="mx-auto w-full max-w-6xl space-y-6">
+        <header className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
               onClick={() => navigate("/user?tab=aiInterview")}
-              className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-foreground text-2xl font-bold">
-                {t("userAiinterview.aiInterviewResults")}
-              </h1>
-              <p className="text-muted-foreground mt-0.5 text-sm">
-                {MODE_LABELS[session.mode ?? ""] ?? session.mode ?? t("common.aiInterview")}
-              </p>
-            </div>
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {t("common.backToTheList", "Quay lại danh sách")}
+            </button>
+            {shouldRefresh && session.status !== "CANCELLED" && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isRefetching}
+                onClick={() => void refetch()}
+                className="h-8 gap-2 rounded-lg text-xs font-bold">
+                <RefreshCw className={cn("h-3.5 w-3.5", isRefetching && "animate-spin")} />
+                {t("common.reload", "Tải lại")}
+              </Button>
+            )}
           </div>
-          <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
-            <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40">
-                <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+
+          <div className="mt-4 flex flex-col gap-5 border-t border-slate-100 pt-5 lg:flex-row lg:items-center lg:justify-between dark:border-slate-800">
+            <div className="flex min-w-0 items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                <Bot className="h-6 w-6" />
               </div>
-              <div>
-                <h2 className="text-foreground text-xl font-bold">
-                  {t("userAiinterview.theInterviewSessionHasBeen")}
-                </h2>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {t("userAiinterview.thisSessionHasBeenCanceled")}
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                  {t("userAiinterview.aiInterviewResults", "Kết quả phỏng vấn AI")} #{session.id}
                 </p>
-              </div>
-              <div className="w-full max-w-xs space-y-2 text-left text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("userAiinterview.regime")}</span>
-                  <span className="font-medium">
-                    {MODE_LABELS[session.mode ?? ""] ?? session.mode ?? "—"}
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <h1 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-white">
+                    {jobTitle ?? t("common.aiInterview", "Phỏng vấn AI")}
+                  </h1>
+                  <StatusBadge status={session.status} label={statusLabels[session.status ?? ""]} />
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                  <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                    <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
+                    {mode ? (modeLabels[mode] ?? mode) : t("common.aiInterview", "Phỏng vấn AI")}
+                  </span>
+                  {domain && (
+                    <>
+                      <span className="text-slate-300 dark:text-slate-600">·</span>
+                      <span>{domain}</span>
+                    </>
+                  )}
+                  <span className="text-slate-300 dark:text-slate-600">·</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                    {formatUtcNaiveDateTime(session.createdAt)}
                   </span>
                 </div>
-                {cfg?.difficulty && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {t("userAiinterview.difficultyLevel")}
-                    </span>
-                    <span>{DIFFICULTY_LABELS[cfg.difficulty] ?? cfg.difficulty}</span>
-                  </div>
-                )}
-                {cfg?.language && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("common.language")}</span>
-                    <span>{LANGUAGE_LABELS[cfg.language] ?? cfg.language}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("userAiinterview.createAt")}</span>
-                  <span>{formatUtcNaiveDateTime(session.createdAt)}</span>
+              </div>
+            </div>
+
+            {session.status === "COMPLETED" && (
+              <div className="flex shrink-0 items-center gap-5 rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 dark:border-slate-700 dark:bg-slate-800/70">
+                <div>
+                  <p className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    {t("userAiinterview.overallScore", "Điểm tổng")}
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                    {hasScore ? session.overallScore!.toFixed(1) : "—"}
+                    <span className="ml-1 text-xs font-semibold text-slate-400">/100</span>
+                  </p>
                 </div>
+                {session.result && (
+                  <>
+                    <span className="h-9 w-px bg-slate-200 dark:bg-slate-700" />
+                    <div>
+                      <p className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        {t("common.result", "Kết quả")}
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-slate-800 dark:text-slate-100">
+                        {resultLabels[session.result] ?? session.result}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={() => navigate("/user?tab=aiInterview")}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  {t("common.backToTheList")}
-                </Button>
-                <Button
-                  onClick={() => navigate("/user/ai-interview/setup")}
-                  className="bg-[#0047AB] text-white hover:bg-[#005B9A]">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t("userAiinterview.createNewInterview")}
-                </Button>
+            )}
+          </div>
+        </header>
+
+        {session.status === "IN_PROGRESS" && (
+          <Notice tone="amber" icon={Clock}>
+            {t(
+              "userAiinterview.gradingDescription",
+              "Phiên phỏng vấn đang tiếp tục hoặc hệ thống đang xử lý kết quả."
+            )}
+          </Notice>
+        )}
+        {session.status === "CANCELLED" && (
+          <Notice tone="rose" icon={AlertCircle}>
+            {t("userAiinterview.thisSessionHasBeenCanceled", "Phiên phỏng vấn đã bị hủy.")}
+          </Notice>
+        )}
+        {session.status === "COMPLETED" && !session.resultDetail && (
+          <Notice tone="amber" icon={Clock}>
+            {t(
+              "userAiinterview.gradingInProgress",
+              "Kết quả chi tiết chưa sẵn sàng. Vui lòng tải lại sau."
+            )}
+          </Notice>
+        )}
+
+        <div className="grid items-start gap-6 lg:grid-cols-12">
+          <div className="space-y-6 lg:col-span-8">
+            {session.resultDetail?.aiOverviewFeedback && (
+              <Section title={t("userAiinterview.generalComments", "Nhận xét tổng quan")}>
+                <p className="text-sm leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                  {session.resultDetail.aiOverviewFeedback}
+                </p>
+              </Section>
+            )}
+
+            {session.resultDetail?.improvementPlan && (
+              <Section title={t("userAiinterview.improvementPlan", "Kế hoạch cải thiện")}>
+                <p className="text-sm leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                  {session.resultDetail.improvementPlan}
+                </p>
+              </Section>
+            )}
+
+            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    {t("userAiinterview.transcriptTitle", "Câu hỏi và câu trả lời")}
+                  </h2>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {history.length} {t("userAiinterview.questionCountLabel", "câu hỏi")}
+                  </p>
+                </div>
+                <FileQuestion className="h-5 w-5 text-indigo-500" />
               </div>
-            </CardContent>
-          </Card>
+
+              {history.length > 0 ? (
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {history.map((qa, index) => (
+                    <TranscriptItem
+                      key={`${qa.questionOrder ?? index}-${index}`}
+                      qa={qa}
+                      index={index}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-44 flex-col items-center justify-center gap-2 p-6 text-center">
+                  <MessageSquare className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    {t("userAiinterview.thereAreNoDetailedResults", "Chưa có kết quả chi tiết")}
+                  </p>
+                  <p className="max-w-md text-xs leading-5 text-slate-500 dark:text-slate-400">
+                    {t(
+                      "userAiinterview.thisInterviewSessionHasNot",
+                      "Phiên phỏng vấn chưa hoàn thành hoặc chưa được đánh giá."
+                    )}
+                  </p>
+                </div>
+              )}
+            </section>
+          </div>
+
+          <aside className="space-y-4 lg:col-span-4">
+            <Section title={t("common.sessionInformation", "Thông tin phiên")}>
+              <dl className="divide-y divide-slate-100 dark:divide-slate-800">
+                <InfoRow label={t("userAiinterview.regime", "Chế độ")}>
+                  {mode ? (modeLabels[mode] ?? mode) : "—"}
+                </InfoRow>
+                <InfoRow label={t("userAiinterview.field", "Lĩnh vực")}>{domain ?? "—"}</InfoRow>
+                <InfoRow label={t("userAiinterview.difficultyLevel", "Độ khó")}>
+                  {config?.difficulty
+                    ? (difficultyLabels[config.difficulty] ?? config.difficulty)
+                    : "—"}
+                </InfoRow>
+                <InfoRow label={t("common.language", "Ngôn ngữ")}>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Globe className="h-3.5 w-3.5 text-slate-400" />
+                    {config?.language ? (languageLabels[config.language] ?? config.language) : "—"}
+                  </span>
+                </InfoRow>
+                <InfoRow label={t("common.duration", "Thời lượng cấu hình")}>
+                  {config?.duration_minutes
+                    ? `${config.duration_minutes} ${t("common.minute", "phút")}`
+                    : "—"}
+                </InfoRow>
+                <InfoRow label={t("userAiinterview.createAt", "Thời gian tạo")}>
+                  {formatUtcNaiveDateTime(session.createdAt)}
+                </InfoRow>
+                <InfoRow label={t("general.completed", "Hoàn thành")}>
+                  {session.completedAt ? formatUtcNaiveDateTime(session.completedAt) : "—"}
+                </InfoRow>
+                {session.applicationDetailId != null && (
+                  <InfoRow label={t("common.application", "Đơn ứng tuyển")}>
+                    #{session.applicationDetailId}
+                  </InfoRow>
+                )}
+              </dl>
+            </Section>
+          </aside>
         </div>
       </div>
-    );
-  }
-  const overallScore = session.overallScore ?? 0;
-  const cfg = session.sessionConfig;
-  const profile = session.candidateProfile;
-  const blueprint = session.blueprint;
-  const statusConfig = STATUS_LABELS[session.status ?? ""] ?? {
-    label: session.status ?? "",
-    className: "bg-gray-100 text-gray-700",
-  };
-  const jobTitle = (session.jobRequirement?.basic_info as Record<string, string> | undefined)
-    ?.job_title;
-  return (
-    <div className="bg-background min-h-screen p-6">
-      <div className="mx-auto max-w-5xl">
-        {/* Header */}
-        <div className="mb-6 flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/user?tab=aiInterview")}
-            className="shrink-0">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-foreground text-2xl font-bold">
-              {t("userAiinterview.aiInterviewEvaluationResults")}
-            </h1>
-            <p className="text-muted-foreground mt-0.5 text-sm">
-              {MODE_LABELS[session.mode ?? ""] ?? session.mode ?? t("common.aiInterview")}
-              {session.domain ? ` • ${DOMAIN_LABELS[session.domain] ?? session.domain}` : ""}
-              {cfg?.difficulty ? ` • ${DIFFICULTY_LABELS[cfg.difficulty] ?? cfg.difficulty}` : ""}
-              {cfg?.language ? ` • ${LANGUAGE_LABELS[cfg.language] ?? cfg.language}` : ""}
-            </p>
-          </div>
-        </div>
+    </div>
+  );
+}
 
-        {/* Score Card */}
-        <Card className="mb-6 overflow-hidden border-0 bg-linear-to-r from-[#0047AB] via-[#005B9A] to-[#007BFF]">
-          <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-            <p className="text-lg text-white/80">{t("userAiinterview.overallScore")}</p>
-            <div className="flex items-center gap-2">
-              <Star className="h-10 w-10 fill-yellow-400 text-yellow-400" />
-              <span className="text-6xl font-bold text-white">{overallScore.toFixed(1)}</span>
-              <span className="mt-4 text-2xl text-white/70">/10</span>
-            </div>
-            {resultConfig && (
-              <Badge className={cn("text-sm", resultConfig.bg, resultConfig.color)}>
-                {t("userAiinterview.conclude")} {resultConfig.label}
+function DetailSkeleton() {
+  return (
+    <div className="w-full px-5 py-6 md:px-8">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <Skeleton className="h-44 rounded-[20px]" />
+        <div className="grid gap-6 lg:grid-cols-12">
+          <div className="space-y-6 lg:col-span-8">
+            <Skeleton className="h-44 rounded-xl" />
+            <Skeleton className="h-80 rounded-xl" />
+          </div>
+          <Skeleton className="h-96 rounded-xl lg:col-span-4" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div className="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">{title}</h2>
+      </div>
+      <div className="p-5">{children}</div>
+    </section>
+  );
+}
+
+function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0">
+      <dt className="text-xs text-slate-500 dark:text-slate-400">{label}</dt>
+      <dd className="text-right text-xs font-semibold text-slate-800 dark:text-slate-200">
+        {children}
+      </dd>
+    </div>
+  );
+}
+
+function TranscriptItem({
+  qa,
+  index,
+}: {
+  qa: {
+    questionType?: string | null;
+    questionOrder?: number | null;
+    questionText?: string | null;
+    answerText?: string | null;
+    feedback?: string | null;
+    score?: number | null;
+    suggestion?: string | null;
+    behavioralWarnings?: string[] | null;
+  };
+  index: number;
+}) {
+  const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const score = typeof qa.score === "number" && Number.isFinite(qa.score) ? qa.score : null;
+  return (
+    <article>
+      <button
+        type="button"
+        className="flex w-full items-start justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((value) => !value)}>
+        <div className="min-w-0">
+          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+              {t("common.question", "Câu")}{" "}
+              {qa.questionOrder != null ? qa.questionOrder + 1 : index + 1}
+            </span>
+            {qa.questionType && (
+              <Badge variant="secondary" className="rounded-md px-2 py-0.5 text-[10px]">
+                {qa.questionType === "FOLLOW_UP"
+                  ? t("userAiinterview.nextSentence", "Câu hỏi tiếp theo")
+                  : t("userAiinterview.mainSentence", "Câu hỏi chính")}
               </Badge>
             )}
-          </CardContent>
-        </Card>
-
-        {/* ────────────────────────────────────────────────────────────────
-            Session info + Candidate profile grid
-         ──────────────────────────────────────────────────────────────── */}
-        <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Session config card */}
-          <Card className="border-l-4 border-l-blue-500">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <CardTitle className="text-foreground text-base">
-                  {t("common.sessionInformation")}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2">
-                {/* Status */}
-                <span className="text-muted-foreground">{t("userAiinterview.impact")}</span>
-                <Badge className={statusConfig.className}>{statusConfig.label}</Badge>
-                {/* Mode */}
-                <span className="text-muted-foreground">{t("userAiinterview.regime")}</span>
-                <span className="text-foreground font-medium">
-                  {MODE_LABELS[session.mode ?? ""] ?? session.mode ?? "—"}
-                </span>
-                {/* Domain */}
-                {session.domain && (
-                  <>
-                    <span className="text-muted-foreground">{t("userAiinterview.field")}</span>
-                    <span className="text-foreground">
-                      {DOMAIN_LABELS[session.domain] ?? session.domain}
-                    </span>
-                  </>
-                )}
-                {/* Difficulty */}
-                {cfg?.difficulty && (
-                  <>
-                    <span className="text-muted-foreground">
-                      {t("userAiinterview.difficultyLevel")}
-                    </span>
-                    <span className="flex items-center gap-1 font-medium">
-                      <Zap className="h-3.5 w-3.5 text-amber-500" />
-                      {DIFFICULTY_LABELS[cfg.difficulty] ?? cfg.difficulty}
-                    </span>
-                  </>
-                )}
-                {/* Language */}
-                {cfg?.language && (
-                  <>
-                    <span className="text-muted-foreground">{t("common.language")}</span>
-                    <span className="flex items-center gap-1">
-                      <Globe className="h-3.5 w-3.5" />
-                      {LANGUAGE_LABELS[cfg.language] ?? cfg.language}
-                    </span>
-                  </>
-                )}
-                {/* Duration */}
-                {cfg?.duration_minutes && (
-                  <>
-                    <span className="text-muted-foreground">{t("common.duration")}</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      {cfg.duration_minutes} {t("common.minute")}
-                    </span>
-                  </>
-                )}
-                {/* createdAt */}
-                <span className="text-muted-foreground">{t("userAiinterview.createAt")}</span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {formatUtcNaiveDateTime(session.createdAt)}
-                </span>
-                {/* updatedAt */}
-                {session.updatedAt && (
-                  <>
-                    <span className="text-muted-foreground">{t("general.update")}</span>
-                    <span className="flex items-center gap-1">
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      {formatUtcNaiveDateTime(session.updatedAt)}
-                    </span>
-                  </>
-                )}
-                {/* completedAt */}
-                {session.completedAt && (
-                  <>
-                    <span className="text-muted-foreground">{t("general.completed")}</span>
-                    <span className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      {formatUtcNaiveDateTime(session.completedAt)}
-                    </span>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Candidate / Job info card */}
-          <Card className="border-l-4 border-l-purple-500">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                <CardTitle className="text-foreground text-base">
-                  {t("userAiinterview.candidateAmpLocation")}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              {(profile?.targetRole || profile?.targetLevel) && (
-                <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2">
-                  {profile.targetRole && (
-                    <>
-                      <span className="text-muted-foreground">{t("common.location1")}</span>
-                      <span className="text-foreground font-semibold">{profile.targetRole}</span>
-                    </>
-                  )}
-                  {profile.targetLevel && (
-                    <>
-                      <span className="text-muted-foreground">{t("common.level")}</span>
-                      <span className="text-foreground">{profile.targetLevel}</span>
-                    </>
-                  )}
-                </div>
-              )}
-              {jobTitle && (
-                <div className="flex items-center gap-2">
-                  <Briefcase className="text-muted-foreground h-4 w-4 shrink-0" />
-                  <span className="text-foreground font-medium">{jobTitle}</span>
-                </div>
-              )}
-              {profile?.technicalSkills && profile.technicalSkills.length > 0 && (
-                <div>
-                  <p className="text-muted-foreground mb-1.5 text-xs font-semibold tracking-wide uppercase">
-                    {t("common.technicalSkills")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {profile.technicalSkills.slice(0, 10).map((s, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
-                        {s}
-                      </Badge>
-                    ))}
-                    {profile.technicalSkills.length > 10 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{profile.technicalSkills.length - 10}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              )}
-              {profile?.softSkills && profile.softSkills.length > 0 && (
-                <div>
-                  <p className="text-muted-foreground mb-1.5 text-xs font-semibold tracking-wide uppercase">
-                    {t("common.softSkills")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {profile.softSkills.slice(0, 8).map((s, i) => (
-                      <Badge key={i} variant="outline" className="text-xs">
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {profile?.tools && profile.tools.length > 0 && (
-                <div>
-                  <p className="text-muted-foreground mb-1.5 text-xs font-semibold tracking-wide uppercase">
-                    {t("userAiinterview.toolsTechnology")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {profile.tools.slice(0, 8).map((t, i) => (
-                      <Badge
-                        key={i}
-                        className="bg-blue-50 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                        {t}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {!profile?.targetRole &&
-                !profile?.targetLevel &&
-                !jobTitle &&
-                !profile?.technicalSkills?.length && (
-                  <p className="text-muted-foreground text-xs italic">
-                    {t("userAiinterview.noProfileInformationAvailable")}
-                  </p>
-                )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Blueprint strategy analysis */}
-        {blueprint?.strategy_analysis && (
-          <Card className="mb-6 border-l-4 border-l-indigo-500">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Layers className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                <CardTitle className="text-foreground text-base">
-                  {t("userAiinterview.interviewStrategyAiBlueprint")}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <FormattedMarkdownText content={blueprint.strategy_analysis} />
-            </CardContent>
-          </Card>
-        )}
-
-        {/* AI Overview Feedback & Improvement Plan */}
-        <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Overview Feedback */}
-          <Card className="border-l-4 border-l-emerald-500">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                <CardTitle className="text-foreground text-lg">
-                  {t("userAiinterview.generalComments")}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {detail?.aiOverviewFeedback ? (
-                <FormattedMarkdownText content={detail.aiOverviewFeedback} />
-              ) : (
-                <p className="text-muted-foreground text-sm italic">
-                  {t("userAiinterview.noCommentsYet")}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Improvement Plan */}
-          <Card className="border-l-4 border-l-amber-400">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                <CardTitle className="text-foreground text-lg">
-                  {t("userAiinterview.improvementPlan")}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {detail?.improvementPlan ? (
-                <FormattedMarkdownText content={detail.improvementPlan} />
-              ) : // @ts-expect-error: Backend Swagger schema mismatch - type mismatch on existingPracticeSets
-              existingPracticeSets.length === 0 ? (
-                <p className="text-muted-foreground text-sm italic">
-                  {t("userAiinterview.noPlansYet")}
-                </p>
-              ) : null}
-              {session?.status === "COMPLETED" && !!detail && (
-                <div className="mt-4">
-                  {/* @ts-expect-error: Backend Swagger schema mismatch - type mismatch on existingPracticeSets */}
-                  {existingPracticeSets.length > 0 ? (
-                    // 1 session = 1 practice set: redirect khi đã tạo
-                    <div className="items-c flex gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
-                        onClick={() => setRoadmapOpen(true)}>
-                        <Sparkles className="h-3.5 w-3.5" />
-                        {t("userAiinterview.createANewTrainingRoute")}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
-                        onClick={() => navigate(`/user/practice/session/${id}`)}>
-                        <BookOpen className="h-3.5 w-3.5" />
-                        {t("userAiinterview.seeTrainingRoute")}
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30"
-                      onClick={() => setRoadmapOpen(true)}>
-                      <Sparkles className="h-3.5 w-3.5" />
-                      {t("userAiinterview.createATrainingRoute")}
-                    </Button>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Q&A History */}
-        {history.length > 0 && (
-          <div className="mb-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <BookOpen className="text-primary h-5 w-5" />
-              <h2 className="text-foreground text-xl font-bold">
-                {t("userAiinterview.questionDetailsAmpReply")}
-                {history.length})
-              </h2>
-            </div>
-            {groupedHistory.map(({ blueprint, followUps }, index) => (
-              <QACard
-                key={blueprint.questionOrder ?? index}
-                qa={blueprint}
-                index={index}
-                followUps={followUps}
-              />
-            ))}
           </div>
-        )}
-
-        {/* Session metadata when no detailed result */}
-        {!detail && session.status !== "COMPLETED" && (
-          <Card className="mb-6">
-            <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-              <MessageSquare className="text-muted-foreground h-10 w-10" />
-              <p className="text-foreground font-semibold">
-                {t("userAiinterview.thereAreNoDetailedResults")}
-              </p>
-              <p className="text-muted-foreground text-sm">
-                {t("userAiinterview.thisInterviewSessionHasNot")}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-4">
-          <Button variant="outline" onClick={() => navigate("/user?tab=aiInterview")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("common.backToTheList")}
-          </Button>
-          <Button
-            onClick={() => navigate("/user/ai-interview/setup")}
-            className="bg-[#0047AB] text-white hover:bg-[#005B9A]">
-            <Plus className="mr-2 h-4 w-4" />
-            {t("userAiinterview.startNewInterview1")}
-          </Button>
+          <h3 className="text-sm leading-6 font-bold text-slate-900 dark:text-white">
+            {qa.questionText ?? t("userAiinterview.questionHasNoContent", "Không có nội dung")}
+          </h3>
         </div>
-      </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="font-mono text-sm font-black text-indigo-600 dark:text-indigo-400">
+            {score != null ? `${score.toFixed(1)}/10` : "—"}
+          </span>
+          {expanded ? (
+            <ChevronUp className="h-4 w-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          )}
+        </div>
+      </button>
 
-      <SelectRoadmapModal
-        key={`roadmap-${String(roadmapOpen)}`}
-        open={roadmapOpen}
-        onClose={() => setRoadmapOpen(false)}
-        onConfirm={handleCreateRoadmap}
-        loading={roadmapLoading}
-      />
+      {expanded && (
+        <div className="border-t border-slate-100 bg-slate-50/40 px-5 py-5 dark:border-slate-800 dark:bg-slate-950/30">
+          <div className="border-l-2 border-slate-200 pl-4 dark:border-slate-700">
+            <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+              {t("userAiinterview.yourAnswer", "Câu trả lời")}
+            </p>
+            <p className="mt-1.5 text-sm leading-6 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+              {qa.answerText || "—"}
+            </p>
+          </div>
+
+          {(qa.feedback || qa.suggestion) && (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {qa.feedback && (
+                <div>
+                  <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                    {t("common.comment", "Nhận xét")}
+                  </p>
+                  <p className="mt-1.5 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                    {qa.feedback}
+                  </p>
+                </div>
+              )}
+              {qa.suggestion && (
+                <div>
+                  <p className="flex items-center gap-1 text-[10px] font-bold tracking-wider text-amber-600 uppercase dark:text-amber-400">
+                    <Lightbulb className="h-3 w-3" />
+                    {t("userAiinterview.suggestionsForImprovement", "Gợi ý cải thiện")}
+                  </p>
+                  <p className="mt-1.5 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                    {qa.suggestion}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {qa.behavioralWarnings && qa.behavioralWarnings.length > 0 && (
+            <div className="mt-4 flex items-start gap-2 text-xs leading-5 text-rose-600 dark:text-rose-400">
+              <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>{qa.behavioralWarnings.join(" · ")}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function StatusBadge({ status, label }: { status?: string; label?: string }) {
+  const styles: Record<string, string> = {
+    CREATED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300",
+    IN_PROGRESS: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    COMPLETED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    CANCELLED: "border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+  };
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase",
+        styles[status ?? ""] ?? "border-slate-200 bg-slate-100 text-slate-600"
+      )}>
+      {label ?? status ?? "—"}
+    </Badge>
+  );
+}
+
+function Notice({
+  tone,
+  icon: Icon,
+  children,
+}: {
+  tone: "amber" | "rose";
+  icon: typeof Clock;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-start gap-3 rounded-xl border px-4 py-3 text-sm",
+        tone === "amber"
+          ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+          : "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300"
+      )}>
+      <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+      <p className="leading-6">{children}</p>
     </div>
   );
 }
