@@ -121,7 +121,7 @@ export function AIInterviewResultPage() {
 
   return (
     <div className="w-full px-5 py-6 pb-16 md:px-8">
-      <div className="mx-auto w-full max-w-6xl space-y-6">
+      <div className="w-full space-y-5">
         <header className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -230,8 +230,8 @@ export function AIInterviewResultPage() {
           </Notice>
         )}
 
-        <div className="grid items-start gap-6 lg:grid-cols-12">
-          <div className="space-y-6 lg:col-span-8">
+        <div className="grid items-start gap-5 lg:grid-cols-12">
+          <div className="space-y-5 lg:col-span-8">
             {session.resultDetail?.aiOverviewFeedback && (
               <Section title={t("userAiinterview.generalComments", "Nhận xét tổng quan")}>
                 <p className="text-sm leading-7 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
@@ -334,10 +334,10 @@ export function AIInterviewResultPage() {
 function DetailSkeleton() {
   return (
     <div className="w-full px-5 py-6 md:px-8">
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="w-full space-y-5">
         <Skeleton className="h-44 rounded-[20px]" />
-        <div className="grid gap-6 lg:grid-cols-12">
-          <div className="space-y-6 lg:col-span-8">
+        <div className="grid gap-5 lg:grid-cols-12">
+          <div className="space-y-5 lg:col-span-8">
             <Skeleton className="h-44 rounded-xl" />
             <Skeleton className="h-80 rounded-xl" />
           </div>

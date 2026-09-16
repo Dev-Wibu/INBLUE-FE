@@ -195,11 +195,11 @@ export function AIInterviewListPage() {
         </div>
       </header>
 
-      <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="overflow-x-auto">
           <Table className="min-w-[920px]">
-            <TableHeader className="border-b border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90">
-              <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
+            <TableHeader>
+              <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
                 <TableHead className="h-11 min-w-[210px] pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
                   {t("common.position", "Vị trí")}
                 </TableHead>
@@ -278,7 +278,7 @@ export function AIInterviewListPage() {
                       onClick={() =>
                         sessionId != null && navigate(`/user/ai-interview/result/${sessionId}`)
                       }
-                      className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-indigo-50/40 dark:border-slate-800/60 dark:hover:bg-slate-800/60">
+                      className="group cursor-pointer border-b border-slate-100 bg-white transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
                       <TableCell className="py-3 pl-6">
                         <p className="text-xs font-extrabold text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
                           {getAiInterviewJobTitle(session) ??
