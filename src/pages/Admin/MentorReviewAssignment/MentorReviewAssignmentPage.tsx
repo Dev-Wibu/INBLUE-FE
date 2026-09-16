@@ -54,6 +54,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { mergeAndRankMentors } from "./mentor-assignment.utils";
 
 type StatusFilter = "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "ALL";
 
@@ -670,26 +671,23 @@ function AssignMentorDialog({
   const [searchQuery, setSearchQuery] = useState("");
   const [notes, setNotes] = useState("");
 
-  const { data: mentors = [] } = useMentors();
+  const { data: mentors = [], isLoading: isLoadingMentors } = useMentors();
   const applicationId = Number(detail?.applicationId);
   const hasApplicationId = Number.isInteger(applicationId) && applicationId > 0;
   const {
     data: applicationFullDetail,
     isLoading: isLoadingApplicationDetail,
     isError: hasApplicationDetailError,
-    refetch: refetchApplicationDetail,
   } = useAdminApplicationFullDetail(open && hasApplicationId ? applicationId : null);
   const recommendationJdId = Number(applicationFullDetail?.jobDescriptionInfo?.jdId);
   const hasRecommendationJd = Number.isInteger(recommendationJdId) && recommendationJdId > 0;
-  const {
-    data: recommendedMentors = [],
-    isLoading: isLoadingRecommendations,
-    isError: hasRecommendationError,
-    error: recommendationError,
-    refetch: refetchRecommendations,
-  } = useRecommendedMentors(hasRecommendationJd ? recommendationJdId : null);
-  const mentorCandidates = hasApplicationId ? recommendedMentors : mentors;
-  const isResolvingRecommendation = hasApplicationId && isLoadingApplicationDetail;
+  const { data: recommendedMentors = [], isError: hasRecommendationError } = useRecommendedMentors(
+    hasRecommendationJd ? recommendationJdId : null
+  );
+  const mentorCandidates = useMemo(
+    () => mergeAndRankMentors(mentors, recommendedMentors),
+    [mentors, recommendedMentors]
+  );
   const hasRecommendationLookupError =
     hasApplicationId &&
     (hasApplicationDetailError ||
@@ -910,44 +908,20 @@ function AssignMentorDialog({
 
               {/* Scrollable Mentor List */}
               <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1 [scrollbar-gutter:stable]">
-                {isResolvingRecommendation || isLoadingRecommendations ? (
+                {(hasRecommendationLookupError || hasRecommendationError) && (
+                  <div className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>{t("adminMentorReviewAssignment.recommendationFallback")}</span>
+                  </div>
+                )}
+                {isLoadingMentors ? (
                   <div className="flex items-center justify-center py-12">
                     <SpinnerBlock size="sm" />
-                  </div>
-                ) : hasRecommendationLookupError || hasRecommendationError ? (
-                  <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
-                    <AlertTriangle className="h-6 w-6 text-amber-500" />
-                    <p className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                      {!hasRecommendationLookupError &&
-                      (recommendationError as Error & { status?: number }).status === 404
-                        ? t("adminMentorReviewAssignment.recommendationJdNotFound")
-                        : t("adminMentorReviewAssignment.recommendationLoadError")}
-                    </p>
-                    {(recommendationError as Error & { traceId?: string }).traceId && (
-                      <code className="text-[10px] text-slate-500">
-                        {(recommendationError as Error & { traceId?: string }).traceId}
-                      </code>
-                    )}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (hasRecommendationLookupError) void refetchApplicationDetail();
-                        else void refetchRecommendations();
-                      }}>
-                      <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-                      {t("common.retry")}
-                    </Button>
                   </div>
                 ) : filteredMentors.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <User className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                    <p className="mt-2 text-xs text-slate-500">
-                      {hasRecommendationJd && !searchQuery.trim()
-                        ? t("adminMentorReviewAssignment.noRecommendedMentors")
-                        : t("common.noResults")}
-                    </p>
+                    <p className="mt-2 text-xs text-slate-500">{t("common.noResults")}</p>
                   </div>
                 ) : (
                   filteredMentors.map((mentor) => {
