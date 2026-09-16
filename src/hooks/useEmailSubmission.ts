@@ -1,6 +1,10 @@
 import { fetchClient } from "@/lib/api";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
-import { useQuery } from "@tanstack/react-query";
+import {
+  emailSubmissionManager,
+  type EmailSubmissionRecord,
+} from "@/services/email-submission.manager";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { components } from "../../schema-from-be";
 
 export type EmailSubmission = components["schemas"]["EmailSubmission"];
@@ -28,5 +32,36 @@ export const useEmailSubmission = (id: number, enabled = true) => {
     },
     enabled: enabled && id > 0,
     staleTime: 30_000,
+  });
+};
+
+export const useEmailSubmissions = (enabled = true) =>
+  useQuery({
+    queryKey: ["emailSubmissions"],
+    queryFn: (): Promise<EmailSubmissionRecord[]> => emailSubmissionManager.list(),
+    enabled,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+  });
+
+export const useFetchEmailMailbox = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => emailSubmissionManager.fetchMailbox(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["emailSubmissions"] });
+    },
+  });
+};
+
+export const useProcessPendingEmails = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => emailSubmissionManager.processPending(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["emailSubmissions"] });
+      void queryClient.invalidateQueries({ queryKey: ["applicationDetails"] });
+      void queryClient.invalidateQueries({ queryKey: ["get", "/api/applications"] });
+    },
   });
 };

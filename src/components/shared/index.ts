@@ -21,6 +21,7 @@ export type {
 } from "./DashboardSidebar";
 export { DateTimePicker } from "./DateTimePicker";
 export type { DateTimePickerProps, ThemeVariant } from "./DateTimePicker";
+export { EmailQueueActions } from "./EmailQueueActions";
 export { Filter } from "./Filter";
 export type { FilterCriteria, FilterGroup, FilterOption, FilterProps } from "./Filter";
 export { JobSkillTagsInput } from "./JobSkillTagsInput";

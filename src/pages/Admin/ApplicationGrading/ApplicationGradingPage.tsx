@@ -1,4 +1,4 @@
-import { ReloadButton } from "@/components/shared";
+import { EmailQueueActions, ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -631,7 +631,7 @@ function AIFeedbackPanel({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-semibold text-slate-800 dark:text-slate-100">
                   {metric.code ?? t("structuredAiFeedback.unknownMetric")}
-                  {metric.definition?.name ? ` - ${metric.definition.name}` : ""}
+                  {metric.name ? ` - ${metric.name}` : ""}
                 </span>
                 <span className="font-bold text-indigo-600 dark:text-indigo-400">
                   {metric.score !== null
@@ -666,12 +666,16 @@ function AIFeedbackPanel({
         </div>
       )}
 
-      {feedback?.improvementAdvice && (
+      {feedback && feedback.improvementAdvice.length > 0 && (
         <div className="text-sm text-slate-600 dark:text-slate-300">
           <p className="mb-1 text-xs font-semibold text-slate-700 dark:text-slate-200">
             {t("structuredAiFeedback.improvementAdvice")}
           </p>
-          <p className="whitespace-pre-line">{feedback.improvementAdvice}</p>
+          <ul className="list-disc space-y-1 pl-5">
+            {feedback.improvementAdvice.map((advice) => (
+              <li key={advice}>{advice}</li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -1549,6 +1553,8 @@ export function ApplicationGradingPage({
               </Button>
             </div>
           )}
+
+          <EmailQueueActions />
 
           <ReloadButton
             onReload={async () => {
