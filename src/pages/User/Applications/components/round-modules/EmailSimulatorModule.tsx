@@ -66,7 +66,8 @@ type Phase =
   | { kind: "REJECTED"; reason: "IGNORED" | "ERROR"; message: string }
   | { kind: "POLL_TIMEOUT" };
 
-function splitImprovementAdvice(value: string): string[] {
+function splitImprovementAdvice(value: string | string[]): string[] {
+  if (Array.isArray(value)) return value.map((item) => item.trim()).filter(Boolean);
   const lines = value
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -897,7 +898,7 @@ export function EmailSimulatorModule({
                         ? Math.min(100, Math.max(0, (metric.score / maxScore) * 100))
                         : null;
                     const showCodeChip = Boolean(
-                      metric.code && (metric.definition?.name || /^[A-Za-z]+\d+$/.test(metric.code))
+                      metric.code && (metric.name || /^[A-Za-z]+\d+$/.test(metric.code))
                     );
 
                     return (
@@ -913,7 +914,7 @@ export function EmailSimulatorModule({
                             )}
                             <div className="min-w-0 pt-0.5">
                               <h5 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                                {metric.definition?.name ??
+                                {metric.name ??
                                   metric.code ??
                                   t("structuredAiFeedback.unknownMetric")}
                               </h5>
@@ -1013,7 +1014,7 @@ export function EmailSimulatorModule({
               </Card>
             )}
 
-            {aiFeedback?.source === "structured" && aiFeedback.improvementAdvice && (
+            {aiFeedback?.source === "structured" && aiFeedback.improvementAdvice.length > 0 && (
               <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white p-0 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-amber-50/70 px-5 py-4 dark:border-slate-800 dark:bg-amber-500/5">
                   <div className="flex items-center gap-2.5">

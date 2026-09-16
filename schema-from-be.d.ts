@@ -1386,6 +1386,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/application-details/{id}/schedule-decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mentor duyệt hoặc từ chối lịch hẹn do ứng viên đề xuất
+         * @description approved = true: tạo phòng họp Daily.co và chốt lịch. approved = false: bắt buộc nhập reason, ứng viên sẽ phải chọn lại mentor / chờ Admin gán mentor mới.
+         */
+        post: operations["scheduleDecision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/application-details/submit": {
         parameters: {
             query?: never;
@@ -2833,6 +2853,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/application-details/mentor/pending-schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Danh sách lịch hẹn đang chờ mentor hiện tại duyệt
+         * @description Dành cho Mentor: lấy các vòng Mentor Review mà ứng viên đã đề xuất lịch hẹn online và đang chờ mentor duyệt.
+         */
+        get: operations["getPendingScheduleApprovals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/application-details/application/{applicationId}": {
         parameters: {
             query?: never;
@@ -3715,7 +3755,7 @@ export interface components {
             /** Format: int64 */
             roundId?: number;
             /** @enum {string} */
-            status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "AWAITING_MENTOR_SCHEDULE_APPROVAL" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
             /** Format: double */
             finalScore?: number;
             submissionData?: components["schemas"]["SubmissionData"];
@@ -3785,6 +3825,7 @@ export interface components {
             testCases?: components["schemas"]["TestCaseResult"][];
         };
         MetricResult: {
+            name?: string;
             code?: string;
             /** Format: double */
             score?: number;
@@ -3808,6 +3849,13 @@ export interface components {
             startTime?: string;
             /** Format: date-time */
             endTime?: string;
+            pendingJoinTime?: string;
+            /** Format: int32 */
+            pendingDurationMinutes?: number;
+            mentorRejectReason?: string;
+            mentorRejectedAt?: string;
+            /** Format: int32 */
+            rejectedMentorId?: number;
         };
         StructuredAiFeedback: {
             /** Format: double */
@@ -3816,7 +3864,7 @@ export interface components {
             overallFeedback?: string;
             strengths?: string[];
             weaknesses?: string[];
-            improvementAdvice?: string;
+            improvementAdvice?: string[];
         };
         SubmissionData: {
             textContent?: string;
@@ -3996,12 +4044,6 @@ export interface components {
             description?: string;
             start_date?: string;
             end_date?: string;
-        };
-        EvaluationCriteria: {
-            /** Format: int32 */
-            maxScore?: number;
-            aiSystemPrompt?: string;
-            extraMetrics?: string[];
         };
         JD: {
             title?: string;
@@ -4708,6 +4750,10 @@ export interface components {
             evidenceSummary?: string;
             sourceRounds?: string[];
         };
+        ScheduleDecisionRequest: {
+            approved?: boolean;
+            reason?: string;
+        };
         SubmissionResult: {
             /** @enum {string} */
             status?: "PENDING" | "COMPLETED";
@@ -4892,13 +4938,11 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
             /** Format: int32 */
@@ -4907,6 +4951,8 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            first?: boolean;
+            last?: boolean;
             empty?: boolean;
         };
         PageableObject: {
@@ -4921,8 +4967,8 @@ export interface components {
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -5308,23 +5354,23 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            pageEncoding?: string;
-            trimDirectiveWhitespaces?: string;
+            elIgnored?: string;
             errorOnELNotFound?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
+            pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            elIgnored?: string;
-            isXml?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            trimDirectiveWhitespaces?: string;
+            errorOnUndeclaredNamespace?: string;
             defaultContentType?: string;
             urlPatterns?: string[];
             buffer?: string;
+            isXml?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -5358,11 +5404,9 @@ export interface components {
             };
         };
         ServletContext: {
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -5377,9 +5421,11 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -5493,6 +5539,32 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        MentorPendingScheduleResponse: {
+            /** Format: int64 */
+            applicationDetailId?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: int64 */
+            roundId?: number;
+            roundName?: string;
+            /** Format: int32 */
+            roundOrder?: number;
+            jobTitle?: string;
+            /** Format: int32 */
+            candidateUserId?: number;
+            candidateName?: string;
+            candidateEmail?: string;
+            candidateAvatarUrl?: string;
+            /** Format: int32 */
+            mentorId?: number;
+            /** @enum {string} */
+            meetingType?: "ONLINE" | "OFFLINE";
+            proposedJoinTime?: string;
+            /** Format: int32 */
+            proposedDurationMinutes?: number;
+            /** Format: date-time */
+            requestedAt?: string;
         };
         AdminOpenJdResponseDto: {
             /** Format: int64 */
@@ -5641,7 +5713,7 @@ export interface components {
             reviewerId?: number;
             roundConfig?: components["schemas"]["RoundConfig"];
             /** @enum {string} */
-            status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "AWAITING_MENTOR_SCHEDULE_APPROVAL" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
             /** Format: double */
             aiScore?: number;
             aiFeedback?: components["schemas"]["AiFeedback"];
@@ -5694,7 +5766,7 @@ export interface components {
             /** Format: int64 */
             roundId?: number;
             /** @enum {string} */
-            status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "AWAITING_MENTOR_SCHEDULE_APPROVAL" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
             /** Format: double */
             finalScore?: number;
             /** Format: double */
@@ -5750,7 +5822,7 @@ export interface components {
             /** @enum {string} */
             roundType?: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "CODING" | "CODE_REVIEW" | "MENTROR_REVIEW" | "AI_INTERVIEW";
             /** @enum {string} */
-            roundStatus?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            roundStatus?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "AWAITING_MENTOR_SCHEDULE_APPROVAL" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
             /** Format: date-time */
             startedAt?: string;
             /** Format: date-time */
@@ -7387,7 +7459,6 @@ export interface operations {
                 "multipart/form-data": {
                     /** Format: binary */
                     cvFile: string;
-                    evaluationCriteria: components["schemas"]["EvaluationCriteria"];
                     jobDescription: components["schemas"]["JD"];
                 };
             };
@@ -8477,6 +8548,32 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["JourneySummary"];
+                };
+            };
+        };
+    };
+    scheduleDecision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApplicationDetail"];
                 };
             };
         };
@@ -10460,6 +10557,26 @@ export interface operations {
             };
         };
     };
+    getPendingScheduleApprovals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MentorPendingScheduleResponse"][];
+                };
+            };
+        };
+    };
     getApplicationDetailsByApplicationId: {
         parameters: {
             query?: never;
@@ -10617,7 +10734,7 @@ export interface operations {
     getApplicationDetails: {
         parameters: {
             query?: {
-                status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+                status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "AWAITING_MENTOR_SCHEDULE_APPROVAL" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
             };
             header?: never;
             path?: never;

@@ -1922,7 +1922,7 @@ function GradedResultView({
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-semibold text-slate-800 dark:text-slate-100">
                         {metric.code ?? t("structuredAiFeedback.unknownMetric")}
-                        {metric.definition?.name ? ` - ${metric.definition.name}` : ""}
+                        {metric.name ? ` - ${metric.name}` : ""}
                       </span>
                       <span className="font-bold text-indigo-600 dark:text-indigo-400">
                         {metric.score !== null
@@ -1959,14 +1959,16 @@ function GradedResultView({
                   </div>
                 ))}
               </div>
-              {feedback.improvementAdvice && (
+              {feedback.improvementAdvice.length > 0 && (
                 <div className="border-t border-slate-200 pt-3 dark:border-slate-800">
                   <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                     {t("structuredAiFeedback.improvementAdvice")}
                   </p>
-                  <p className="mt-1 text-sm leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
-                    {feedback.improvementAdvice}
-                  </p>
+                  <ul className="mt-1 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                    {feedback.improvementAdvice.map((advice) => (
+                      <li key={advice}>{advice}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </Card>

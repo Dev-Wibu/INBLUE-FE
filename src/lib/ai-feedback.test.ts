@@ -44,6 +44,22 @@ describe("AI feedback contract", () => {
     expect(metric).toMatchObject({ code: "NEW", passed: null, definition: null });
   });
 
+  it("prefers result names and accepts both old and new advice shapes", () => {
+    const modern = normalizeAiFeedback({
+      structuredAiFeedback: {
+        metricResults: [{ name: "Customer empathy", code: "E1" }],
+        improvementAdvice: ["Open with context", "Use a clearer CTA"],
+      },
+    });
+    expect(modern?.metricResults[0]?.name).toBe("Customer empathy");
+    expect(modern?.improvementAdvice).toEqual(["Open with context", "Use a clearer CTA"]);
+
+    const legacy = normalizeAiFeedback({
+      structuredAiFeedback: { improvementAdvice: "Add a concrete example" } as never,
+    });
+    expect(legacy?.improvementAdvice).toEqual(["Add a concrete example"]);
+  });
+
   it("removes backend placeholder text from metric metadata", () => {
     const [metric] = joinMetricResults(
       [{ code: "A1", score: 40 }],

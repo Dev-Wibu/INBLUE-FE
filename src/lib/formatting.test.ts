@@ -497,6 +497,10 @@ describe("formatDateTimeWithSeconds", () => {
 // formatUtcNaiveDateTime / formatUtcNaiveTime
 // ---------------------------------------------------------------------------
 describe("formatUtcNaiveDateTime", () => {
+  it("restores the candidate wall-clock time from a pending mentor schedule", () => {
+    expect(formatUtcNaiveDateTime("2026-09-16T12:30")).toBe("16/09/2026 19:30");
+  });
+
   it("parses UTC-naive ISO timestamps correctly", () => {
     const value = "2026-04-18T13:21:05.473428";
     expect(formatUtcNaiveDateTime(value)).toBe("18/04/2026 20:21");

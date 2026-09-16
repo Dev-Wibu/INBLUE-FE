@@ -33,5 +33,6 @@ export type {
   StatsTile,
   StatsToneKey,
 } from "./mentor-interview.constants";
+export { PendingScheduleApprovals } from "./PendingScheduleApprovals";
 export { SessionCard } from "./SessionCard";
 export type { SessionCardActionBag, SessionCardProps } from "./SessionCard";

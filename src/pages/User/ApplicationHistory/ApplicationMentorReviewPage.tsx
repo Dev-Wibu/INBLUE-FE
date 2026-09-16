@@ -15,6 +15,11 @@ import {
 import { useCurrentRound } from "@/hooks/useRound";
 import { useCreateRoundSession } from "@/hooks/useSession";
 import { fetchClient } from "@/lib/api";
+import {
+  formatDateTimeWithSeconds,
+  formatUtcNaiveDateTime,
+  treatZuluAsVietnamLocal,
+} from "@/lib/formatting";
 import { getSessionJoinAvailability } from "@/lib/session-join";
 import {
   ArrowLeft,
@@ -27,6 +32,7 @@ import {
   Linkedin,
   LogIn,
   MapPin,
+  RefreshCw,
   Send,
   Star,
   UserCheck,
@@ -57,7 +63,8 @@ type ApplicationDetailStatus =
   | "COMPLETED"
   | "ERROR"
   | "AWAITING_MENTOR"
-  | "AWAITING_CANDIDATE_SELECT_MENTOR";
+  | "AWAITING_CANDIDATE_SELECT_MENTOR"
+  | "AWAITING_MENTOR_SCHEDULE_APPROVAL";
 
 interface ApplicationDetail {
   id?: number;
@@ -80,6 +87,11 @@ interface ApplicationDetail {
     meetingType?: "ONLINE" | "OFFLINE" | null;
     startTime?: string | null;
     endTime?: string | null;
+    pendingJoinTime?: string | null;
+    pendingDurationMinutes?: number | null;
+    mentorRejectReason?: string | null;
+    mentorRejectedAt?: string | null;
+    rejectedMentorId?: number | null;
   } | null;
   finalScore?: number;
   finalResult?: string;
@@ -995,7 +1007,7 @@ function TimingChip({
   endAt?: string | null;
   durationSeconds?: number | null;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   if (!startAt) {
     return (
       <div className="rounded-lg border border-blue-200 bg-white/60 px-3 py-2 text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
@@ -1009,12 +1021,12 @@ function TimingChip({
       <p className="font-semibold">{label}</p>
       <p>
         <span className="text-blue-500 dark:text-blue-400">{t("userMentorReview.joinedAt")}: </span>
-        {formatDateTimeForLocale(startAt, i18n.resolvedLanguage || i18n.language)}
+        {formatAttendanceDateTime(startAt)}
       </p>
       {endAt && (
         <p>
           <span className="text-blue-500 dark:text-blue-400">{t("userMentorReview.leftAt")}: </span>
-          {formatDateTimeForLocale(endAt, i18n.resolvedLanguage || i18n.language)}
+          {formatAttendanceDateTime(endAt)}
         </p>
       )}
       {typeof durationSeconds === "number" && (
@@ -1043,20 +1055,9 @@ function formatDuration(seconds: number, t: (_key: string) => string): string {
  * Backend records timestamps as naive "yyyy-MM-dd HH:mm:ss.SSS" in UTC+7.
  * Append the offset so `new Date(...)` parses to the intended instant.
  */
-function formatDateTimeForLocale(input: string | null | undefined, locale: string): string {
+function formatAttendanceDateTime(input: string | null | undefined): string {
   if (!input) return "-";
-  const parsed = new Date(input.includes("T") ? input : input.replace(" ", "T") + "+07:00");
-  if (Number.isNaN(parsed.getTime())) return input;
-  return parsed.toLocaleString(locale, {
-    timeZone: "Asia/Ho_Chi_Minh",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour12: false,
-  });
+  return formatDateTimeWithSeconds(treatZuluAsVietnamLocal(input), input);
 }
 
 // ============================================================
@@ -1336,7 +1337,7 @@ export function ApplicationMentorReviewPage() {
   // a manual Retry button; the button has been removed in 2026-07-17, but
   // we keep the dependency in the fetch effect so future re-introductions
   // of a Retry CTA only have to call the setter).
-  const [retryToken] = useState(0);
+  const [retryToken, setRetryToken] = useState(0);
   // Tracks an explicit "no ApplicationDetail exists for this round" outcome
   // — surfaces a different UX (legacy data warning) than a network error.
   // 2026-07-17: legacy "Booking is not ready" empty-state card has been
@@ -1524,7 +1525,8 @@ export function ApplicationMentorReviewPage() {
     if (!applicationDetail?.id) return;
     if (booking?.status === "COMPLETED" || booking?.status === "CANCELED") return;
 
-    const interval = setInterval(async () => {
+    const refreshVisibleState = async () => {
+      if (document.visibilityState !== "visible") return;
       if (!applicationDetail?.id) return;
       try {
         const fresh = await fetchApplicationDetail(applicationDetail.id);
@@ -1580,9 +1582,10 @@ export function ApplicationMentorReviewPage() {
       } catch {
         // Intentionally ignored.
       }
-    }, 5000);
+    };
 
-    return () => clearInterval(interval);
+    document.addEventListener("visibilitychange", refreshVisibleState);
+    return () => document.removeEventListener("visibilitychange", refreshVisibleState);
   }, [applicationDetail?.id, booking?.status]);
 
   // ============================================================
@@ -1948,6 +1951,31 @@ export function ApplicationMentorReviewPage() {
             />
           )}
 
+        {applicationDetail?.sessionInfo?.mentorRejectReason &&
+          ["AWAITING_MENTOR", "AWAITING_CANDIDATE_SELECT_MENTOR", "PENDING"].includes(
+            applicationDetail.status ?? ""
+          ) && (
+            <Card className="border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
+              <CardContent className="p-5">
+                <p className="font-semibold text-amber-950 dark:text-amber-100">
+                  {t("mentorSchedule.rejectedBanner")}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-amber-900 dark:text-amber-200">
+                  {applicationDetail.sessionInfo.mentorRejectReason}
+                </p>
+                {applicationDetail.sessionInfo.mentorRejectedAt && (
+                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+                    {t("mentorSchedule.lastRejectedAt", {
+                      time: new Date(
+                        applicationDetail.sessionInfo.mentorRejectedAt
+                      ).toLocaleString(),
+                    })}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
         {/* Mentor Selection Step (Option 2) — admin has assigned multiple mentors, candidate needs to select one */}
         {applicationDetail?.status === "AWAITING_CANDIDATE_SELECT_MENTOR" &&
           !isReviewed &&
@@ -1967,6 +1995,32 @@ export function ApplicationMentorReviewPage() {
         {applicationDetail?.status === "AWAITING_MENTOR" && !isReviewed && !bookingSnapshot && (
           <AwaitingMentorAssignmentStep />
         )}
+
+        {applicationDetail?.status === "AWAITING_MENTOR_SCHEDULE_APPROVAL" &&
+          !isReviewed &&
+          !bookingSnapshot && (
+            <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40">
+              <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-semibold text-amber-950 dark:text-amber-100">
+                    {t("mentorSchedule.waitingApproval")}
+                  </p>
+                  <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+                    {applicationDetail.sessionInfo?.pendingJoinTime
+                      ? formatUtcNaiveDateTime(applicationDetail.sessionInfo.pendingJoinTime)
+                      : t("mentorSchedule.waitingApprovalDescription")}
+                    {applicationDetail.sessionInfo?.pendingDurationMinutes
+                      ? ` · ${t("mentorSchedule.duration", { count: applicationDetail.sessionInfo.pendingDurationMinutes })}`
+                      : ""}
+                  </p>
+                </div>
+                <Button variant="outline" onClick={() => setRetryToken((value) => value + 1)}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {t("common.refresh")}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
         {/* Awaiting Mentor — slot picked but mentor has NOT been assigned yet
             (mentorId is still null on ApplicationDetail). Show the explainer

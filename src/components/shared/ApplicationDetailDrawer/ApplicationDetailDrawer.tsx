@@ -83,7 +83,7 @@ function renderAiFeedback(feedback: NormalizedAiFeedback | null, t: any) {
             <div key={`${metric.code || "metric"}-${index}`}>
               <strong>
                 {metric.code || t("adminApplicationManagement.metric", "Tiêu chí")}
-                {metric.definition?.name ? ` - ${metric.definition.name}` : ""}:
+                {metric.name ? ` - ${metric.name}` : ""}:
               </strong>{" "}
               {formatScoreLabel(t("structuredAiFeedback.score"), metric.score) ||
                 t("structuredAiFeedback.notAvailable")}
@@ -125,10 +125,14 @@ function renderAiFeedback(feedback: NormalizedAiFeedback | null, t: any) {
           {feedback.weaknesses.join(", ")}
         </div>
       )}
-      {feedback.improvementAdvice && (
-        <div className="whitespace-pre-line text-slate-700 dark:text-slate-300">
-          <strong>{t("structuredAiFeedback.improvementAdvice")}:</strong>{" "}
-          {feedback.improvementAdvice}
+      {feedback.improvementAdvice.length > 0 && (
+        <div className="text-slate-700 dark:text-slate-300">
+          <strong>{t("structuredAiFeedback.improvementAdvice")}:</strong>
+          <ul className="mt-1 list-disc space-y-1 pl-5">
+            {feedback.improvementAdvice.map((advice) => (
+              <li key={advice}>{advice}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

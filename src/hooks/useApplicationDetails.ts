@@ -1,5 +1,9 @@
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import i18n from "@/lib/i18n";
+import type {
+  MentorPendingScheduleResponse,
+  ScheduleDecisionRequest,
+} from "@/services/application-detail.manager";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -69,6 +73,59 @@ export const useApplicationDetailsForReviewer = (enabled = true) => {
     },
     enabled,
     staleTime: 30_000,
+  });
+};
+
+export const usePendingMentorSchedules = (enabled = true) => {
+  return useQuery({
+    queryKey: ["mentorPendingSchedules"],
+    queryFn: async (): Promise<MentorPendingScheduleResponse[]> => {
+      const result = await applicationDetailManager.getPendingMentorSchedules();
+      if (!result.success) throw new Error(result.error);
+      return result.data ?? [];
+    },
+    enabled,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+  });
+};
+
+export const useMentorScheduleDecision = (options?: {
+  onSuccess?: (_detail: ApplicationDetail) => void;
+  onError?: (_message: string) => void;
+}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: {
+      applicationDetailId: number;
+      request: ScheduleDecisionRequest;
+    }) => {
+      const result = await applicationDetailManager.decideMentorSchedule(
+        params.applicationDetailId,
+        params.request
+      );
+      if (!result.success) throw new Error(result.error);
+      return result.data!;
+    },
+    onSuccess: (detail, variables) => {
+      queryClient.setQueryData(
+        ["applicationDetails", "byId", variables.applicationDetailId],
+        detail
+      );
+      void queryClient.invalidateQueries({ queryKey: ["mentorPendingSchedules"] });
+      void queryClient.invalidateQueries({ queryKey: ["mentorSchedule"] });
+      void queryClient.invalidateQueries({ queryKey: ["assignedMentors"] });
+      void queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin", "application-details"] });
+      options?.onSuccess?.(detail);
+    },
+    onError: (error: Error) => {
+      const message = getNormalizedErrorMessage(error);
+      toast.error(message);
+      void queryClient.invalidateQueries({ queryKey: ["mentorPendingSchedules"] });
+      options?.onError?.(message);
+    },
   });
 };
 
@@ -183,6 +240,7 @@ export const useAssignMentor = (options?: {
         queryKey: ["applicationDetails", "forReviewer"],
         refetchType: "none",
       });
+      queryClient.invalidateQueries({ queryKey: ["admin", "application-details"] });
 
       options?.onSuccess?.();
     },
@@ -236,6 +294,8 @@ export const useAssignMentors = (options?: {
           );
         }
       }
+
+      queryClient.invalidateQueries({ queryKey: ["admin", "application-details"] });
 
       options?.onSuccess?.();
     },
