@@ -10,6 +10,7 @@ export type MentorStepKey =
   | "AWAITING_MENTOR"
   | "SELECT_MENTOR"
   | "SCHEDULE"
+  | "AWAITING_SCHEDULE_APPROVAL"
   | "WAITING"
   | "IN_CALL"
   | "RESULT";
@@ -48,6 +49,8 @@ export function MentorReviewSubheader({
         return <Video className="h-5 w-5" />;
       case "WAITING":
         return <Clock className="h-5 w-5" />;
+      case "AWAITING_SCHEDULE_APPROVAL":
+        return <Hourglass className="h-5 w-5" />;
       case "SCHEDULE":
         return <Calendar className="h-5 w-5" />;
       case "SELECT_MENTOR":
@@ -76,6 +79,8 @@ export function MentorReviewSubheader({
         return t("userApplication.mentorReview.inCallRoom");
       case "WAITING":
         return t("userApplication.mentorReview.waitingForInterview");
+      case "AWAITING_SCHEDULE_APPROVAL":
+        return t("mentorSchedule.waitingApproval");
       case "SCHEDULE":
         return t("userApplication.mentorReview.scheduleInterview");
       case "SELECT_MENTOR":
@@ -136,6 +141,11 @@ export function MentorReviewSubheader({
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:shadow-emerald-950/40">
             <span className="h-2 w-2 animate-ping rounded-full bg-emerald-400" />
             <span>{t("userApplication.mentorReview.interviewRoomOpen")}</span>
+          </span>
+        ) : activeStep === "AWAITING_SCHEDULE_APPROVAL" ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-extrabold text-amber-700 shadow-sm dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-300 dark:shadow-amber-950/40">
+            <Hourglass className="h-3.5 w-3.5 text-amber-500" />
+            <span>{t("mentorSchedule.waitingApproval")}</span>
           </span>
         ) : activeStep === "WAITING" ? (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-extrabold text-amber-700 shadow-sm dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-300 dark:shadow-amber-950/40">

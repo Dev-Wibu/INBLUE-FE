@@ -31,6 +31,11 @@ import {
 } from "@/hooks/useMentorFeedback";
 import { useCreateRoundSession, useSessionById } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
+import {
+  formatTime as formatBackendTime,
+  formatUtcNaiveDateTime,
+  treatZuluAsVietnamLocal,
+} from "@/lib/formatting";
 import { getMentorReviewScoreBand, normalizeMentorReviewScore } from "@/lib/mentor-review-score";
 import { isMentorScheduleTimeValid } from "@/lib/mentor-schedule";
 import { getSessionJoinAvailability } from "@/lib/session-join";
@@ -80,23 +85,19 @@ import { applicationTheme } from "../applicationTheme";
 import type { JdRound } from "../HorizontalPipeline";
 import {
   collectEmbeddedMentors,
+  deriveMentorReviewStep,
   mergeMentorResponses,
   resolvePersistedMentorId,
   resolveSelectedMentor,
+  type MentorReviewDetailStatus,
+  type MentorReviewStep,
 } from "./mentorReview.utils";
 import { MentorReviewSubheader } from "./MentorReviewSubheader";
 import { localizeRoundName } from "./round-localization";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
-type DetailStatus =
-  | "PENDING"
-  | "AWAITING_MENTOR"
-  | "AWAITING_CANDIDATE_SELECT_MENTOR"
-  | "SLOT_PICKED"
-  | "SUBMITTED"
-  | "AI_EVALUATED"
-  | "COMPLETED";
+type DetailStatus = MentorReviewDetailStatus;
 
 interface MentorReviewModuleProps {
   round: JdRound;
@@ -111,7 +112,7 @@ interface MentorReviewModuleProps {
 // Step model
 // ============================================================================
 
-type StepKey = "AWAITING_MENTOR" | "SELECT_MENTOR" | "SCHEDULE" | "WAITING" | "IN_CALL" | "RESULT";
+type StepKey = MentorReviewStep;
 
 interface StepDef {
   key: StepKey;
@@ -129,6 +130,12 @@ const STEP_DEFS: StepDef[] = [
   },
   { key: "SELECT_MENTOR", title: "Select mentor", short: "Select", icon: Users },
   { key: "SCHEDULE", title: "Schedule interview", short: "Schedule", icon: Calendar },
+  {
+    key: "AWAITING_SCHEDULE_APPROVAL",
+    title: "Waiting for mentor approval",
+    short: "Approval",
+    icon: Hourglass,
+  },
   { key: "WAITING", title: "Waiting for interview time", short: "Waiting", icon: Clock },
   { key: "IN_CALL", title: "In interview", short: "Interviewing", icon: Video },
   { key: "RESULT", title: "Evaluation results", short: "Results", icon: BadgeCheck },
@@ -176,9 +183,7 @@ export function MentorReviewModule({
   // `AWAITING_MENTOR` because staff haven't flipped it to COMPLETED yet.
   // We always trust `sessionStatus === 'COMPLETED'` as the source of truth
   // for "the interview happened" and force-step to RESULT.
-  const sessionInfo = (
-    detail as unknown as { sessionInfo?: { sessionId?: number | null } } | undefined
-  )?.sessionInfo;
+  const sessionInfo = detail?.sessionInfo;
   const sessionId = sessionInfo?.sessionId ?? detail?.sessionId ?? null;
   const { data: session, refetch: refetchSession } = useSessionById(sessionId ?? 0);
   const sessionStatus = session?.status ?? null;
@@ -191,54 +196,20 @@ export function MentorReviewModule({
   );
   const fallbackMentorsLoading = mentorLookupId > 0 && mentorByIdLoading;
 
-  const activeStep = useMemo<StepKey>(() => {
-    // 1. The interview actually happened + completed -> RESULT
-    if (status === "COMPLETED" || status === "AI_EVALUATED" || sessionStatus === "COMPLETED") {
-      return "RESULT";
-    }
-    // 2. The room is live right now -> IN_CALL
-    if (sessionStatus === "ONGOING") {
-      return "IN_CALL";
-    }
-    // 3. Session created, paid (or coming up soon) -> WAITING
-    if (
-      sessionId &&
-      (sessionStatus === "PAID" || sessionStatus === "SCHEDULED" || sessionStatus === "DRAFT")
-    ) {
-      return "WAITING";
-    }
-    // 4. No session yet: show pre-session steps
-    // Note: Option 2 (multi-mentor proposal) flips detail.status to
-    // "PENDING" once the candidate confirms their pick — at that point
-    // the session doesn't exist yet and the candidate still needs to
-    // schedule an interview slot. Treat PENDING the same as SLOT_PICKED
-    // so the ScheduleStep renders instead of falling through to the
-    // AWAITING_MENTOR default (which previously trapped candidates in
-    // "Đang chờ Admin gán mentor" forever after they'd already picked).
-    if (status === "AWAITING_MENTOR") return "AWAITING_MENTOR";
-    if (status === "AWAITING_CANDIDATE_SELECT_MENTOR") return "SELECT_MENTOR";
-    if (status === "PENDING" || status === "SLOT_PICKED" || status === "SUBMITTED") {
-      return "SCHEDULE";
-    }
-    return "AWAITING_MENTOR";
-  }, [status, sessionId, sessionStatus]);
+  const activeStep = useMemo<StepKey>(
+    () => deriveMentorReviewStep({ detailStatus: status, sessionId, sessionStatus }),
+    [status, sessionId, sessionStatus]
+  );
 
-  // Polling — refresh detail (for status flips) AND session (for COMPLETED
-  // flip via Daily.co webhook) on different intervals.
   useEffect(() => {
-    if (activeStep === "AWAITING_MENTOR" && !sessionId) {
-      const id = setInterval(() => void refetchDetail(), 30_000);
-      return () => clearInterval(id);
-    }
-    if (sessionId) {
-      if (sessionStatus === "CANCELED" || sessionStatus === "REJECTED") {
-        return undefined;
-      }
-      const id = setInterval(() => void refetchSession(), 30_000);
-      return () => clearInterval(id);
-    }
-    return undefined;
-  }, [activeStep, sessionId, sessionStatus, refetchDetail, refetchSession]);
+    const refreshVisibleState = () => {
+      if (document.visibilityState !== "visible") return;
+      if (sessionId) void refetchSession();
+      else void refetchDetail();
+    };
+    document.addEventListener("visibilitychange", refreshVisibleState);
+    return () => document.removeEventListener("visibilitychange", refreshVisibleState);
+  }, [sessionId, refetchDetail, refetchSession]);
 
   // ===== Header ===========================================================
   const finalScore = detail?.finalScore ?? detail?.hrScore ?? null;
@@ -261,6 +232,12 @@ export function MentorReviewModule({
     resetPreviewRef.current();
   }, [activeStep]);
 
+  useEffect(() => {
+    if (createSessionMutation.isSuccess && previewStep === "SCHEDULE") {
+      setPreviewStep(null);
+    }
+  }, [createSessionMutation.isSuccess, previewStep]);
+
   return (
     <div className="space-y-6">
       <MentorReviewSubheader
@@ -281,6 +258,11 @@ export function MentorReviewModule({
         viewedIndex={viewedIndex}
         onSelectStep={setPreviewStep}
       />
+
+      {sessionInfo?.mentorRejectReason &&
+        ["AWAITING_MENTOR", "SELECT_MENTOR", "SCHEDULE"].includes(activeStep) && (
+          <RejectedScheduleBanner sessionInfo={sessionInfo} />
+        )}
 
       {/* ============== Step body ============== */}
       {viewedStep === "AWAITING_MENTOR" && <AwaitingMentorStep />}
@@ -303,7 +285,7 @@ export function MentorReviewModule({
           fallbackMentors={fallbackMentors}
           fallbackMentorsLoading={fallbackMentorsLoading}
           submitting={createSessionMutation.isPending}
-          readOnly={isPreviewingStep}
+          readOnly={isPreviewingStep && activeStep !== "AWAITING_SCHEDULE_APPROVAL"}
           onSubmit={(payload) =>
             createSessionMutation.mutate({
               applicationDetailId: detailId,
@@ -312,6 +294,15 @@ export function MentorReviewModule({
               offline: payload.offline,
             })
           }
+        />
+      )}
+      {viewedStep === "AWAITING_SCHEDULE_APPROVAL" && (
+        <AwaitingScheduleApprovalStep
+          sessionInfo={sessionInfo}
+          mentor={resolveSelectedMentor(fallbackMentors, detail?.mentorId)}
+          refreshing={false}
+          onRefresh={() => void refetchDetail()}
+          onChangeProposal={() => setPreviewStep("SCHEDULE")}
         />
       )}
       {(viewedStep === "WAITING" || viewedStep === "IN_CALL" || viewedStep === "RESULT") && (
@@ -418,6 +409,167 @@ function ProgressHub({
 // ============================================================================
 // SUB-COMPONENT: AwaitingMentorStep
 // ============================================================================
+
+function RejectedScheduleBanner({
+  sessionInfo,
+}: {
+  sessionInfo: components["schemas"]["RoundSessionInfo"];
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+      <div className="min-w-0">
+        <p className="text-sm font-semibold">{t("mentorSchedule.rejectedBanner")}</p>
+        <p className="mt-1 text-sm leading-6">{sessionInfo.mentorRejectReason}</p>
+        {sessionInfo.mentorRejectedAt && (
+          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+            {t("mentorSchedule.lastRejectedAt", {
+              time: new Date(sessionInfo.mentorRejectedAt).toLocaleString(),
+            })}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AwaitingScheduleApprovalStep({
+  sessionInfo,
+  mentor,
+  refreshing,
+  onRefresh,
+  onChangeProposal,
+}: {
+  sessionInfo?: components["schemas"]["RoundSessionInfo"];
+  mentor: MentorResponse | null;
+  refreshing: boolean;
+  onRefresh: () => void;
+  onChangeProposal: () => void;
+}) {
+  const { t } = useTranslation();
+  const proposedTime = sessionInfo?.pendingJoinTime
+    ? formatUtcNaiveDateTime(sessionInfo.pendingJoinTime)
+    : "—";
+
+  return (
+    <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+      <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50/80 px-5 py-5 sm:flex-row sm:items-start sm:justify-between sm:px-6 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-indigo-200 bg-indigo-500/10 text-indigo-600 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
+            <Hourglass className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-base font-semibold tracking-tight text-slate-900 dark:text-white">
+              {t("mentorSchedule.waitingApproval")}
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+              {t("mentorSchedule.waitingApprovalDescription")}
+            </p>
+          </div>
+        </div>
+        <span className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+          <span className="h-2 w-2 rounded-full bg-amber-500" />
+          {t("mentorSchedule.approvalBadge")}
+        </span>
+      </div>
+
+      <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+        <div className="px-5 py-6 sm:px-6">
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {t("mentorSchedule.proposalSummary")}
+          </p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
+                <CalendarCheck className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {t("mentorSchedule.proposedTime")}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {proposedTime}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 sm:border-l sm:border-slate-200 sm:pl-4 dark:sm:border-slate-800">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <Clock className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t("common.duration")}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {t("mentorSchedule.duration", {
+                    count: sessionInfo?.pendingDurationMinutes ?? 60,
+                  })}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 sm:border-l sm:border-slate-200 sm:pl-4 dark:sm:border-slate-800">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <Video className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {t("mentorSchedule.meetingType")}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {sessionInfo?.meetingType === "OFFLINE"
+                    ? t("mentorSchedule.offline")
+                    : t("mentorSchedule.online")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-200 bg-slate-50/50 px-5 py-5 lg:border-t-0 lg:border-l dark:border-slate-800 dark:bg-slate-950/20">
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {t("mentorSchedule.assignedMentor")}
+          </p>
+          <div className="mt-3 flex items-center gap-3">
+            <Avatar className="h-11 w-11 rounded-xl border border-slate-200 dark:border-slate-700">
+              <AvatarImage src={mentor?.avatarUrl} alt={mentor?.name || "Mentor"} />
+              <AvatarFallback className="rounded-xl bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                {(mentor?.name || "M").charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                {mentor?.name || t("common.mentor")}
+              </p>
+              <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                {mentor?.currentCompany || mentor?.expertise || mentor?.email || "—"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col-reverse gap-2 border-t border-slate-200 bg-slate-50/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6 dark:border-slate-800 dark:bg-slate-900/60">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-9 gap-2 rounded-xl"
+          onClick={onRefresh}
+          disabled={refreshing}>
+          <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
+          {t("common.refresh")}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          className="h-9 gap-2 rounded-xl bg-indigo-600 px-4 text-white hover:bg-indigo-700"
+          onClick={onChangeProposal}>
+          <Calendar className="h-4 w-4" />
+          {t("mentorSchedule.changeProposal")}
+        </Button>
+      </div>
+    </Card>
+  );
+}
 
 function AwaitingMentorStep() {
   const { t } = useTranslation();
@@ -2266,7 +2418,7 @@ function CompletedResultView({
                 label={t("userApplicationhistory.mentorSessionFieldParticipation")}
                 value={
                   candidateStart && candidateEnd
-                    ? `${formatTimeOnly(candidateStart)} - ${formatTimeOnly(candidateEnd)}`
+                    ? `${formatAttendanceTimeOnly(candidateStart)} - ${formatAttendanceTimeOnly(candidateEnd)}`
                     : "-"
                 }
               />
@@ -2984,6 +3136,10 @@ function formatTimeOnly(iso: string): string {
   } catch {
     return iso;
   }
+}
+
+function formatAttendanceTimeOnly(value: string): string {
+  return formatBackendTime(treatZuluAsVietnamLocal(value), value);
 }
 
 function formatCountdown(ms: number): string {

@@ -1,4 +1,52 @@
 import type { MentorResponse } from "@/hooks/useApplicationDetails";
+import type { SessionStatus } from "@/interfaces";
+
+export type MentorReviewDetailStatus =
+  | "PENDING"
+  | "AWAITING_MENTOR"
+  | "AWAITING_CANDIDATE_SELECT_MENTOR"
+  | "AWAITING_MENTOR_SCHEDULE_APPROVAL"
+  | "SLOT_PICKED"
+  | "SUBMITTED"
+  | "AI_EVALUATED"
+  | "COMPLETED";
+
+export type MentorReviewStep =
+  | "AWAITING_MENTOR"
+  | "SELECT_MENTOR"
+  | "SCHEDULE"
+  | "AWAITING_SCHEDULE_APPROVAL"
+  | "WAITING"
+  | "IN_CALL"
+  | "RESULT";
+
+export function deriveMentorReviewStep(params: {
+  detailStatus?: MentorReviewDetailStatus | null;
+  sessionId?: number | null;
+  sessionStatus?: SessionStatus | null;
+}): MentorReviewStep {
+  const { detailStatus, sessionId, sessionStatus } = params;
+  if (
+    detailStatus === "COMPLETED" ||
+    detailStatus === "AI_EVALUATED" ||
+    sessionStatus === "COMPLETED"
+  ) {
+    return "RESULT";
+  }
+  if (sessionStatus === "ONGOING") return "IN_CALL";
+  if (sessionId && ["PAID", "SCHEDULED", "DRAFT"].includes(sessionStatus ?? "")) {
+    return "WAITING";
+  }
+  if (detailStatus === "AWAITING_MENTOR_SCHEDULE_APPROVAL") {
+    return "AWAITING_SCHEDULE_APPROVAL";
+  }
+  if (detailStatus === "AWAITING_MENTOR") return "AWAITING_MENTOR";
+  if (detailStatus === "AWAITING_CANDIDATE_SELECT_MENTOR") return "SELECT_MENTOR";
+  if (["PENDING", "SLOT_PICKED", "SUBMITTED"].includes(detailStatus ?? "")) {
+    return "SCHEDULE";
+  }
+  return "AWAITING_MENTOR";
+}
 
 type UnknownRecord = Record<string, unknown>;
 

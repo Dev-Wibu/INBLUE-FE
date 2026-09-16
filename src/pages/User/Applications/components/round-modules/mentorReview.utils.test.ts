@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   collectEmbeddedMentors,
+  deriveMentorReviewStep,
   mergeMentorResponses,
   resolvePersistedMentorId,
   resolveSelectedMentor,
@@ -99,5 +100,32 @@ describe("mentor review display utilities", () => {
         { mentorId: null, userId2: 9, status: "COMPLETED" }
       )
     ).toBe(9);
+  });
+
+  it("derives the new approval step without treating placeholder session id 0 as a room", () => {
+    expect(
+      deriveMentorReviewStep({
+        detailStatus: "AWAITING_MENTOR_SCHEDULE_APPROVAL",
+        sessionId: 0,
+        sessionStatus: null,
+      })
+    ).toBe("AWAITING_SCHEDULE_APPROVAL");
+  });
+
+  it("prioritizes the real session lifecycle over a stale detail status", () => {
+    expect(
+      deriveMentorReviewStep({
+        detailStatus: "AWAITING_MENTOR_SCHEDULE_APPROVAL",
+        sessionId: 88,
+        sessionStatus: "SCHEDULED",
+      })
+    ).toBe("WAITING");
+    expect(
+      deriveMentorReviewStep({
+        detailStatus: "PENDING",
+        sessionId: 88,
+        sessionStatus: "COMPLETED",
+      })
+    ).toBe("RESULT");
   });
 });
