@@ -29,10 +29,12 @@ import type { Session } from "@/interfaces";
 import { getSessionJoinAvailability } from "@/lib/session-join";
 import { filterSessionsForMentor } from "@/lib/session-mentor";
 import { getSessionStatusBadge } from "@/lib/status-utils";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, LogIn, Pencil, Search, Video, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { PendingScheduleApprovals } from "./components";
 
 type SortableSession = Session & { sessionSortValue: number };
 type SessionStatus =
@@ -56,6 +58,7 @@ const getSessionSortValue = (session: Session): number => {
 export function MentorSessionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<SessionStatus>("all");
   const [now, setNow] = useState(() => Date.now());
@@ -240,7 +243,12 @@ export function MentorSessionsPage() {
               </Select>
               <ReloadButton
                 onReload={async () => {
-                  await Promise.all([refetchSessions(), refetchReviews(), refetchCandidates()]);
+                  await Promise.all([
+                    refetchSessions(),
+                    refetchReviews(),
+                    refetchCandidates(),
+                    queryClient.invalidateQueries({ queryKey: ["mentorPendingSchedules"] }),
+                  ]);
                 }}
                 isLoading={isRefetching}
                 tooltip={t("mentorSessions.reloadInterviewSessionList")}
@@ -256,6 +264,8 @@ export function MentorSessionsPage() {
               </div>
             )}
           </section>
+
+          <PendingScheduleApprovals />
 
           <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
             {pageData.length === 0 ? (
