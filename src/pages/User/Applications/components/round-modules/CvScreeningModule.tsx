@@ -537,7 +537,7 @@ export function CvScreeningModule({
                         <div className="min-w-0">
                           <span className="font-semibold text-slate-700 dark:text-slate-200">
                             {metric.code || t("userApplication.cvScreening.metric", "Metric")}
-                            {metric.definition?.name ? ` - ${metric.definition.name}` : ""}
+                            {metric.name ? ` - ${metric.name}` : ""}
                           </span>
                           {metric.feedback && (
                             <p className="mt-0.5 text-slate-500 dark:text-slate-400">
@@ -577,10 +577,12 @@ export function CvScreeningModule({
                   ))}
                 </div>
               )}
-            {structuredAiFeedback?.improvementAdvice && (
-              <p className="border-t border-slate-200 pt-3 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-300">
-                {structuredAiFeedback.improvementAdvice}
-              </p>
+            {structuredAiFeedback && structuredAiFeedback.improvementAdvice.length > 0 && (
+              <ul className="list-disc space-y-1 border-t border-slate-200 pt-3 pl-4 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-300">
+                {structuredAiFeedback.improvementAdvice.map((advice) => (
+                  <li key={advice}>{advice}</li>
+                ))}
+              </ul>
             )}
           </Card>
 

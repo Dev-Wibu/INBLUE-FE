@@ -232,7 +232,7 @@ function AIFeedbackView({
               <div className="flex items-center justify-between gap-2 font-semibold text-slate-700 dark:text-slate-200">
                 <span>
                   {metric.code ?? t("structuredAiFeedback.unknownMetric")}
-                  {metric.definition?.name ? ` - ${metric.definition.name}` : ""}
+                  {metric.name ? ` - ${metric.name}` : ""}
                 </span>
                 <span>
                   {metric.score !== null
@@ -267,10 +267,14 @@ function AIFeedbackView({
         </div>
       )}
 
-      {feedback?.improvementAdvice && (
+      {feedback && feedback.improvementAdvice.length > 0 && (
         <div className="text-xs text-slate-600 dark:text-slate-300">
-          <strong>{t("structuredAiFeedback.improvementAdvice")}:</strong>{" "}
-          <span className="whitespace-pre-line">{feedback.improvementAdvice}</span>
+          <strong>{t("structuredAiFeedback.improvementAdvice")}:</strong>
+          <ul className="mt-1 list-disc space-y-1 pl-5">
+            {feedback.improvementAdvice.map((advice) => (
+              <li key={advice}>{advice}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

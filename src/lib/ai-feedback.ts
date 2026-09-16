@@ -4,6 +4,7 @@ export type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 export type EvaluationMetric = components["schemas"]["EvaluationMetric"];
 
 export interface NormalizedMetricResult {
+  name: string | null;
   code: string | null;
   score: number | null;
   weightedScore: number | null;
@@ -19,7 +20,7 @@ export interface NormalizedAiFeedback {
   overallFeedback: string | null;
   strengths: string[];
   weaknesses: string[];
-  improvementAdvice: string | null;
+  improvementAdvice: string[];
   metricResults: NormalizedMetricResult[];
   legacyExtraMetrics: Record<string, unknown> | null;
 }
@@ -67,6 +68,14 @@ function stringArray(value: unknown): string[] {
     : [];
 }
 
+function legacyCompatibleStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map(nullableString).filter((item): item is string => item !== null);
+  }
+  const single = nullableString(value);
+  return single ? [single] : [];
+}
+
 function getEvaluationMetrics(value: unknown): EvaluationMetric[] {
   const config = parseObject(value);
   const evaluationPlan = parseObject(config?.evaluationPlan);
@@ -102,6 +111,7 @@ export function joinMetricResults(
           }
         : null;
       return {
+        name: nullableString(item.name) ?? nullableString(definition?.name),
         code,
         score: nullableNumber(item.score),
         weightedScore: nullableNumber(item.weightedScore),
@@ -120,7 +130,7 @@ function hasStructuredData(
   return (
     nullableNumber(value.overallScore) !== null ||
     nullableString(value.overallFeedback) !== null ||
-    nullableString(value.improvementAdvice) !== null ||
+    legacyCompatibleStringArray(value.improvementAdvice).length > 0 ||
     stringArray(value.strengths).length > 0 ||
     stringArray(value.weaknesses).length > 0 ||
     (Array.isArray(value.metricResults) && value.metricResults.length > 0)
@@ -139,7 +149,7 @@ export function normalizeAiFeedback(
       overallFeedback: nullableString(structured.overallFeedback),
       strengths: stringArray(structured.strengths),
       weaknesses: stringArray(structured.weaknesses),
-      improvementAdvice: nullableString(structured.improvementAdvice),
+      improvementAdvice: legacyCompatibleStringArray(structured.improvementAdvice),
       metricResults: joinMetricResults(structured.metricResults, getEvaluationMetrics(roundConfig)),
       legacyExtraMetrics: null,
     };
@@ -154,7 +164,7 @@ export function normalizeAiFeedback(
     overallFeedback: nullableString(legacy.generalComment),
     strengths: stringArray(legacy.strengths),
     weaknesses: stringArray(legacy.weaknesses),
-    improvementAdvice: null,
+    improvementAdvice: [],
     metricResults: [],
     legacyExtraMetrics: extraMetrics,
   };
