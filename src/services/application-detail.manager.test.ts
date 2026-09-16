@@ -101,4 +101,28 @@ describe("ApplicationDetailManager backend contract", () => {
     );
     expect(String(request.body.get("compileRequest"))).not.toContain("[object Object]");
   });
+
+  it("loads the current mentor pending schedule queue without a mentor id", async () => {
+    const schedules = [{ applicationDetailId: 123, proposedDurationMinutes: 45 }];
+    mockGet.mockResolvedValueOnce({ data: schedules });
+
+    const result = await applicationDetailManager.getPendingMentorSchedules();
+
+    expect(result).toEqual({ success: true, data: schedules });
+    expect(mockGet).toHaveBeenCalledWith("/api/application-details/mentor/pending-schedules");
+  });
+
+  it("sends an explicit schedule decision body", async () => {
+    mockPost.mockResolvedValueOnce({ data: { id: 123, status: "AWAITING_MENTOR" } });
+
+    await applicationDetailManager.decideMentorSchedule(123, {
+      approved: false,
+      reason: "Khung giờ này bị trùng lịch",
+    });
+
+    expect(mockPost).toHaveBeenCalledWith("/api/application-details/{id}/schedule-decision", {
+      params: { path: { id: 123 } },
+      body: { approved: false, reason: "Khung giờ này bị trùng lịch" },
+    });
+  });
 });

@@ -8,6 +8,9 @@ const t = i18n.t.bind(i18n);
 export type SubmissionResult = components["schemas"]["SubmissionResult"];
 export type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
+export type MentorPendingScheduleResponse = components["schemas"]["MentorPendingScheduleResponse"];
+export type ScheduleDecisionRequest = components["schemas"]["ScheduleDecisionRequest"];
+
 export interface SubmitApplicationDetailParams {
   applicationId: number;
   textContent?: string;
@@ -372,6 +375,43 @@ export class ApplicationDetailManager {
       return {
         success: false,
         error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  async getPendingMentorSchedules(): Promise<ApiResponse<MentorPendingScheduleResponse[]>> {
+    try {
+      const response = await fetchClient.GET("/api/application-details/mentor/pending-schedules");
+      return {
+        success: true,
+        data: Array.isArray(response.data)
+          ? (response.data as MentorPendingScheduleResponse[])
+          : [],
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+        statusCode: this.extractErrorStatus(error),
+      };
+    }
+  }
+
+  async decideMentorSchedule(
+    applicationDetailId: number,
+    request: ScheduleDecisionRequest
+  ): Promise<ApiResponse<ApplicationDetail>> {
+    try {
+      const response = await fetchClient.POST("/api/application-details/{id}/schedule-decision", {
+        params: { path: { id: applicationDetailId } },
+        body: request,
+      });
+      return { success: true, data: response.data as ApplicationDetail };
+    } catch (error) {
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+        statusCode: this.extractErrorStatus(error),
       };
     }
   }
