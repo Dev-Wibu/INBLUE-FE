@@ -22,7 +22,7 @@ import { $api } from "@/lib/api";
 import { formatUtcNaiveDateTime, toUtcNaiveTimestamp } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { AlertCircle, Bot, ChevronRight, History, Play, Plus, Search } from "lucide-react";
+import { AlertCircle, Bot, ChevronRight, History, Play, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -125,7 +125,7 @@ export function AIInterviewListPage() {
   return (
     <div className="w-full space-y-6 px-5 py-6 pb-16 md:px-8">
       <header className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
               {t("userAiinterview.historyNavigation", "Lịch sử phỏng vấn AI")}
@@ -137,12 +137,6 @@ export function AIInterviewListPage() {
               )}
             </p>
           </div>
-          <Button
-            className="h-9 shrink-0 gap-2 rounded-lg bg-indigo-600 px-4 text-xs font-bold text-white hover:bg-indigo-700"
-            onClick={() => navigate("/user/ai-interview/setup")}>
-            <Plus className="h-4 w-4" />
-            {t("userAiinterview.startNewInterview", "Tạo lượt phỏng vấn mới")}
-          </Button>
         </div>
 
         <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
