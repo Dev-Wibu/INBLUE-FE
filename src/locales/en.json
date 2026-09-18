@@ -4618,6 +4618,8 @@
     "recreate": "Recreate",
     "regime": "Regime",
     "reloadAiInterviewHistory": "Reload AI interview history",
+    "resumeFailedRefresh": "The interview session may have expired. The history has been refreshed; please try again.",
+    "resumeMissingApplication": "The application round for this interview session could not be found.",
     "requestCreated": "Request created",
     "resultsAchieved": "Results achieved",
     "reviewPreviousInterviews": "Review previous interviews",

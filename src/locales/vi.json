@@ -4618,6 +4618,8 @@
     "recreate": "Tạo lại",
     "regime": "Chế độ",
     "reloadAiInterviewHistory": "Tải lại lịch sử phỏng vấn AI",
+    "resumeFailedRefresh": "Phiên phỏng vấn có thể đã hết hạn. Lịch sử đã được cập nhật, vui lòng thử lại.",
+    "resumeMissingApplication": "Không tìm thấy vòng ứng tuyển của phiên phỏng vấn này.",
     "requestCreated": "Đã tạo yêu cầu",
     "resultsAchieved": "Kết quả đạt được",
     "reviewPreviousInterviews": "Xem lại các buổi phỏng vấn trước đây",

@@ -4607,6 +4607,8 @@
     "recreate": "再作成",
     "regime": "体制",
     "reloadAiInterviewHistory": "AI面接履歴をリロード",
+    "resumeFailedRefresh": "面接セッションの有効期限が切れている可能性があります。履歴を更新しました。もう一度お試しください。",
+    "resumeMissingApplication": "この面接セッションに対応する応募ラウンドが見つかりません。",
     "requestCreated": "リクエストが作成されました",
     "resultsAchieved": "達成された成果",
     "reviewPreviousInterviews": "過去の面接を確認",
