@@ -18,14 +18,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { $api } from "@/lib/api";
+import { $api, fetchClient } from "@/lib/api";
 import { formatUtcNaiveDateTime, toUtcNaiveTimestamp } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { AlertCircle, Bot, ChevronRight, History, Play, Search } from "lucide-react";
+import { AlertCircle, Bot, ChevronRight, History, Loader2, Play, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
   getAiInterviewDomain,
   getAiInterviewJobTitle,
@@ -42,6 +43,7 @@ export function AIInterviewListPage() {
   const userId = useAuthStore((state) => state.user?.id);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [resumingSessionId, setResumingSessionId] = useState<number | null>(null);
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "ai_interview_history_page_size",
     defaultPageSize: 10,
@@ -121,6 +123,31 @@ export function AIInterviewListPage() {
   const pagination = usePagination({ totalCount: sessions.length, pageSize });
   const pageData = sessions.slice(pagination.startIndex, pagination.endIndex + 1);
   const resetPagination = () => pagination.goToFirstPage();
+
+  const handleResume = async (sessionId: number, sessionKey: string) => {
+    if (resumingSessionId !== null) return;
+    setResumingSessionId(sessionId);
+    try {
+      const { data: questionResponse, error } = await fetchClient.GET(
+        "/api/v1/interview/start/{sessionKey}",
+        { params: { path: { sessionKey } } }
+      );
+      if (error || !questionResponse) throw error ?? new Error("Unable to resume interview");
+      navigate(`/user/ai-interview/session?sessionKey=${encodeURIComponent(sessionKey)}`, {
+        state: { resumedQuestion: questionResponse },
+      });
+    } catch {
+      await refetch();
+      toast.error(
+        t(
+          "userAiinterview.resumeFailedRefresh",
+          "Phiên phỏng vấn có thể đã hết hạn. Lịch sử đã được cập nhật, vui lòng thử lại."
+        )
+      );
+    } finally {
+      setResumingSessionId(null);
+    }
+  };
 
   return (
     <div className="w-full space-y-6 px-5 py-6 pb-16 md:px-8">
@@ -263,7 +290,11 @@ export function AIInterviewListPage() {
                 pageData.map((session) => {
                   const mode = getAiInterviewMode(session);
                   const domain = getAiInterviewDomain(session);
-                  const resumable = isAiInterviewResumable(session);
+                  const submittedFinalAnswer = Boolean(
+                    session.sessionKey &&
+                    localStorage.getItem(`interview-finished-${session.sessionKey}`) === "true"
+                  );
+                  const resumable = isAiInterviewResumable(session, submittedFinalAnswer);
                   const scoreAvailable = hasAiInterviewScore(session);
                   const sessionId = session.id;
                   return (
@@ -330,12 +361,17 @@ export function AIInterviewListPage() {
                           <Button
                             size="sm"
                             className="h-8 gap-1.5 rounded-lg bg-indigo-600 px-3 text-xs font-bold text-white hover:bg-indigo-700"
+                            disabled={resumingSessionId !== null}
                             onClick={() =>
-                              navigate(
-                                `/user/ai-interview/session?sessionKey=${session.sessionKey}`
-                              )
+                              sessionId != null &&
+                              session.sessionKey &&
+                              void handleResume(sessionId, session.sessionKey)
                             }>
-                            <Play className="h-3.5 w-3.5" />
+                            {resumingSessionId === sessionId ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Play className="h-3.5 w-3.5" />
+                            )}
                             {t("common.continue", "Tiếp tục")}
                           </Button>
                         ) : (

@@ -16,8 +16,13 @@ export function getAiInterviewJobTitle(session: InterviewSession): string | null
   return basicInfo?.job_title?.trim() || session.candidateProfile?.targetRole?.trim() || null;
 }
 
-export function isAiInterviewResumable(session: InterviewSession): boolean {
-  return session.status === "IN_PROGRESS" && Boolean(session.sessionKey?.trim());
+export function isAiInterviewResumable(
+  session: InterviewSession,
+  submittedFinalAnswer = false
+): boolean {
+  return (
+    session.status === "IN_PROGRESS" && Boolean(session.sessionKey?.trim()) && !submittedFinalAnswer
+  );
 }
 
 export function hasAiInterviewScore(session: InterviewSession): boolean {

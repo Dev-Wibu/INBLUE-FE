@@ -46,6 +46,9 @@ describe("AI interview history helpers", () => {
       false
     );
     expect(isAiInterviewResumable(session({ status: "IN_PROGRESS" }))).toBe(false);
+    expect(
+      isAiInterviewResumable(session({ status: "IN_PROGRESS", sessionKey: "session-key" }), true)
+    ).toBe(false);
   });
 
   it("keeps zero as a valid score and rejects missing values", () => {
