@@ -125,4 +125,17 @@ describe("ApplicationDetailManager backend contract", () => {
       body: { approved: false, reason: "Khung giờ này bị trùng lịch" },
     });
   });
+
+  it("cancels a mentor schedule with an optional reason", async () => {
+    mockPost.mockResolvedValueOnce({ data: { id: 123, status: "PENDING", sessionId: null } });
+
+    await applicationDetailManager.cancelMentorSchedule(123, {
+      reason: "Tôi cần đổi lịch",
+    });
+
+    expect(mockPost).toHaveBeenCalledWith("/api/application-details/{id}/cancel-schedule", {
+      params: { path: { id: 123 } },
+      body: { reason: "Tôi cần đổi lịch" },
+    });
+  });
 });

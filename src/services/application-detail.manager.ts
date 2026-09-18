@@ -11,6 +11,8 @@ export type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 export type MentorPendingScheduleResponse = components["schemas"]["MentorPendingScheduleResponse"];
 export type ScheduleDecisionRequest = components["schemas"]["ScheduleDecisionRequest"];
 
+export type CancelMentorScheduleRequest = components["schemas"]["CancelScheduleRequest"];
+
 export interface SubmitApplicationDetailParams {
   applicationId: number;
   textContent?: string;
@@ -403,6 +405,25 @@ export class ApplicationDetailManager {
   ): Promise<ApiResponse<ApplicationDetail>> {
     try {
       const response = await fetchClient.POST("/api/application-details/{id}/schedule-decision", {
+        params: { path: { id: applicationDetailId } },
+        body: request,
+      });
+      return { success: true, data: response.data as ApplicationDetail };
+    } catch (error) {
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+        statusCode: this.extractErrorStatus(error),
+      };
+    }
+  }
+
+  async cancelMentorSchedule(
+    applicationDetailId: number,
+    request: CancelMentorScheduleRequest = {}
+  ): Promise<ApiResponse<ApplicationDetail>> {
+    try {
+      const response = await fetchClient.POST("/api/application-details/{id}/cancel-schedule", {
         params: { path: { id: applicationDetailId } },
         body: request,
       });

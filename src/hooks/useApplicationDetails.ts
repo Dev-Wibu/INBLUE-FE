@@ -129,6 +129,55 @@ export const useMentorScheduleDecision = (options?: {
   });
 };
 
+export const useCancelMentorSchedule = (options?: {
+  onSuccess?: (_detail: ApplicationDetail) => void;
+  onError?: (_message: string) => void;
+}) => {
+  const queryClient = useQueryClient();
+
+  const refreshRelatedQueries = async (applicationDetailId: number) => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: ["applicationDetails", "byId", applicationDetailId],
+      }),
+      queryClient.invalidateQueries({ queryKey: ["applicationDetails", "byApplicationId"] }),
+      queryClient.invalidateQueries({ queryKey: ["mentorPendingSchedules"] }),
+      queryClient.invalidateQueries({ queryKey: ["sessions"] }),
+      queryClient.invalidateQueries({ queryKey: ["assignedMentors", applicationDetailId] }),
+    ]);
+  };
+
+  return useMutation({
+    mutationFn: async (params: { applicationDetailId: number; reason?: string }) => {
+      const reason = params.reason?.trim();
+      if (reason && reason.length > 1000) {
+        throw new Error(t("mentorSchedule.reasonTooLong"));
+      }
+      const result = await applicationDetailManager.cancelMentorSchedule(
+        params.applicationDetailId,
+        reason ? { reason } : {}
+      );
+      if (!result.success) throw new Error(result.error);
+      return result.data!;
+    },
+    onSuccess: async (detail, variables) => {
+      queryClient.setQueryData(
+        ["applicationDetails", "byId", variables.applicationDetailId],
+        detail
+      );
+      await refreshRelatedQueries(variables.applicationDetailId);
+      toast.success(t("mentorSchedule.cancelSuccess", "Đã hủy lịch phỏng vấn"));
+      options?.onSuccess?.(detail);
+    },
+    onError: async (error: Error, variables) => {
+      const message = getNormalizedErrorMessage(error);
+      toast.error(message);
+      await refreshRelatedQueries(variables.applicationDetailId);
+      options?.onError?.(message);
+    },
+  });
+};
+
 // ============================================================
 // Mutation Hooks
 // ============================================================
@@ -151,7 +200,7 @@ export const useMentorScheduleDecision = (options?: {
  */
 export const useHrScore = (options?: {
   onSuccess?: () => void;
-  onError?: (message: string) => void;
+  onError?: (_message: string) => void;
 }) => {
   const queryClient = useQueryClient();
 
@@ -203,7 +252,7 @@ export const useHrScore = (options?: {
  */
 export const useAssignMentor = (options?: {
   onSuccess?: () => void;
-  onError?: (message: string) => void;
+  onError?: (_message: string) => void;
 }) => {
   const queryClient = useQueryClient();
 
@@ -262,7 +311,7 @@ export const useAssignMentor = (options?: {
  */
 export const useAssignMentors = (options?: {
   onSuccess?: () => void;
-  onError?: (message: string) => void;
+  onError?: (_message: string) => void;
 }) => {
   const queryClient = useQueryClient();
 
@@ -330,7 +379,7 @@ export const useAssignedMentors = (applicationDetailId: number, enabled = true) 
  */
 export const useSelectMentor = (options?: {
   onSuccess?: () => void;
-  onError?: (message: string) => void;
+  onError?: (_message: string) => void;
 }) => {
   const queryClient = useQueryClient();
 
