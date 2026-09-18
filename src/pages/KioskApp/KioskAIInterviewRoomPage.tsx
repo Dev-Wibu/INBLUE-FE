@@ -1,8 +1,10 @@
+import type { InterviewSessionRedis } from "@/interfaces";
 import {
   generateTtsAudioApi,
   startInterviewApi,
   submitAnswerApi,
   type ChatMessage,
+  type InterviewStartResponse,
   type VoiceOption,
 } from "@/services/kiosk/kioskApi.service";
 import {
@@ -11,12 +13,15 @@ import {
 } from "@/services/kiosk/realtimeTranscription";
 import { playTtsAudioBlob, type TtsPlayback } from "@/services/kiosk/ttsAudio";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { buildKioskResumeMessages } from "./kiosk-interview-resume";
 
 interface KioskAIInterviewRoomPageProps {
   sessionKey: string;
   durationMinutes?: number;
   selectedVoiceId?: string;
   voices?: VoiceOption[];
+  initialStartResponse?: InterviewStartResponse;
+  initialSessionCache?: InterviewSessionRedis;
   experienceMode?: "kiosk" | "web";
   onFinish?: () => void;
 }
@@ -281,20 +286,31 @@ function LineIcon({
 export function KioskAIInterviewRoomPage({
   sessionKey,
   selectedVoiceId = "",
+  initialStartResponse,
+  initialSessionCache,
   experienceMode = "kiosk",
   onFinish,
 }: KioskAIInterviewRoomPageProps) {
   const [aiState, setAiState] = useState<AIState>("IDLE");
-  const [messages, setMessages] = useState<ChatMessage[]>(DEFAULT_MESSAGES);
-  const [currentQuestionContent, setCurrentQuestionContent] = useState(INITIAL_QUESTION);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1);
-  const [totalQuestions, setTotalQuestions] = useState(1);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const resumedMessages = buildKioskResumeMessages(initialSessionCache, initialStartResponse);
+    return resumedMessages.length > 0 ? resumedMessages : DEFAULT_MESSAGES;
+  });
+  const [currentQuestionContent, setCurrentQuestionContent] = useState(
+    initialStartResponse?.questionContent ?? INITIAL_QUESTION
+  );
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
+    initialStartResponse?.currentQuestionIndex ?? 1
+  );
+  const [totalQuestions, setTotalQuestions] = useState(
+    initialStartResponse?.totalQuestionsInPhase ?? 1
+  );
 
   const [liveTranscript, setLiveTranscript] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
-  const [isFinished, setIsFinished] = useState(false);
+  const [isFinished, setIsFinished] = useState(initialStartResponse?.finished === true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [isTranscriptEditing, setIsTranscriptEditing] = useState(false);
 
@@ -564,6 +580,12 @@ export function KioskAIInterviewRoomPage({
   useEffect(() => {
     let mounted = true;
     async function init() {
+      if (initialStartResponse) {
+        if (initialStartResponse.questionContent) {
+          void speakQuestion(initialStartResponse.questionContent);
+        }
+        return;
+      }
       try {
         const res = await startInterviewApi(sessionKey);
         if (mounted && res.questionContent) {
@@ -595,7 +617,7 @@ export function KioskAIInterviewRoomPage({
       if (transcriptionHandleRef.current) void transcriptionHandleRef.current.stop();
       stopMicVolumeMeter();
     };
-  }, [sessionKey, speakQuestion, stopMicVolumeMeter]);
+  }, [initialStartResponse, sessionKey, speakQuestion, stopMicVolumeMeter]);
 
   return (
     <div

@@ -1,8 +1,10 @@
+import type { InterviewSessionRedis } from "@/interfaces";
 import {
   enterKioskApi,
   generateTtsAudioApi,
   getAvailableVoicesApi,
   resolveApiAssetUrl,
+  type InterviewStartResponse,
   type Kiosk,
   type VoiceOption,
 } from "@/services/kiosk/kioskApi.service";
@@ -40,6 +42,8 @@ type AppScreenState = "PIN_ENTRY" | "VOICE_SELECT" | "AI_ROOM";
 interface StandaloneKioskPageProps {
   initialSessionKey?: string;
   initialDurationMinutes?: number;
+  initialStartResponse?: InterviewStartResponse;
+  initialSessionCache?: InterviewSessionRedis;
   experienceMode?: "kiosk" | "web";
   onExit?: () => void;
 }
@@ -292,6 +296,8 @@ function RealTimeDateWidget() {
 export function StandaloneKioskPage({
   initialSessionKey = "",
   initialDurationMinutes = 15,
+  initialStartResponse,
+  initialSessionCache,
   experienceMode = "kiosk",
   onExit,
 }: StandaloneKioskPageProps = {}) {
@@ -607,6 +613,8 @@ export function StandaloneKioskPage({
           durationMinutes={interviewDurationMinutes || 15}
           selectedVoiceId={selectedVoiceId}
           voices={voices}
+          initialStartResponse={initialStartResponse}
+          initialSessionCache={initialSessionCache}
           experienceMode={experienceMode}
           onFinish={handleFinishAIRoom}
         />
