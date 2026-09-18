@@ -89,9 +89,12 @@ interface ApplicationDetail {
     endTime?: string | null;
     pendingJoinTime?: string | null;
     pendingDurationMinutes?: number | null;
-    mentorRejectReason?: string | null;
-    mentorRejectedAt?: string | null;
-    rejectedMentorId?: number | null;
+    scheduleHistory?: Array<{
+      type: "MENTOR_REJECTED" | "CANDIDATE_CANCELED";
+      mentorId?: number | null;
+      reason?: string | null;
+      occurredAt?: string | null;
+    }> | null;
   } | null;
   finalScore?: number;
   finalResult?: string;
@@ -1951,27 +1954,38 @@ export function ApplicationMentorReviewPage() {
             />
           )}
 
-        {applicationDetail?.sessionInfo?.mentorRejectReason &&
+        {(applicationDetail?.sessionInfo?.scheduleHistory?.length ?? 0) > 0 &&
           ["AWAITING_MENTOR", "AWAITING_CANDIDATE_SELECT_MENTOR", "PENDING"].includes(
-            applicationDetail.status ?? ""
+            applicationDetail?.status ?? ""
           ) && (
             <Card className="border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
               <CardContent className="p-5">
                 <p className="font-semibold text-amber-950 dark:text-amber-100">
-                  {t("mentorSchedule.rejectedBanner")}
+                  {t("mentorSchedule.historyTitle", "Lịch sử thay đổi lịch")}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-amber-900 dark:text-amber-200">
-                  {applicationDetail.sessionInfo.mentorRejectReason}
-                </p>
-                {applicationDetail.sessionInfo.mentorRejectedAt && (
-                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-                    {t("mentorSchedule.lastRejectedAt", {
-                      time: new Date(
-                        applicationDetail.sessionInfo.mentorRejectedAt
-                      ).toLocaleString(),
-                    })}
-                  </p>
-                )}
+                <div className="mt-2 space-y-2">
+                  {[...(applicationDetail?.sessionInfo?.scheduleHistory ?? [])]
+                    .sort(
+                      (a, b) =>
+                        new Date(b.occurredAt ?? 0).getTime() -
+                        new Date(a.occurredAt ?? 0).getTime()
+                    )
+                    .map((entry, index) => (
+                      <div key={`${entry.occurredAt ?? "event"}-${index}`}>
+                        <p className="text-sm leading-6 text-amber-900 dark:text-amber-200">
+                          {entry.reason ||
+                            (entry.type === "MENTOR_REJECTED"
+                              ? t("mentorSchedule.mentorRejectedEvent")
+                              : t("mentorSchedule.candidateCanceledEvent"))}
+                        </p>
+                        {entry.occurredAt && (
+                          <p className="text-xs text-amber-700 dark:text-amber-300">
+                            {formatUtcNaiveDateTime(entry.occurredAt)}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                </div>
               </CardContent>
             </Card>
           )}
