@@ -1406,6 +1406,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/application-details/{id}/cancel-schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ứng viên huỷ lịch hẹn đã đề xuất (dù mentor đã duyệt hay chưa)
+         * @description Nếu mentor chưa duyệt: xoá đề xuất, quay lại chọn mentor/đặt lịch. Nếu mentor đã duyệt: xoá luôn phòng Daily.co thật, set Session=CANCELED, rồi quay lại chọn mentor/đặt lịch. Không cho huỷ nếu buổi phỏng vấn đã diễn ra/hoàn thành.
+         */
+        post: operations["cancelSchedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/application-details/submit": {
         parameters: {
             query?: never;
@@ -3852,10 +3872,15 @@ export interface components {
             pendingJoinTime?: string;
             /** Format: int32 */
             pendingDurationMinutes?: number;
-            mentorRejectReason?: string;
-            mentorRejectedAt?: string;
+            scheduleHistory?: components["schemas"]["ScheduleHistoryEntry"][];
+        };
+        ScheduleHistoryEntry: {
+            /** @enum {string} */
+            type?: "MENTOR_REJECTED" | "CANDIDATE_CANCELED";
             /** Format: int32 */
-            rejectedMentorId?: number;
+            mentorId?: number;
+            reason?: string;
+            occurredAt?: string;
         };
         StructuredAiFeedback: {
             /** Format: double */
@@ -4754,6 +4779,9 @@ export interface components {
             approved?: boolean;
             reason?: string;
         };
+        CancelScheduleRequest: {
+            reason?: string;
+        };
         SubmissionResult: {
             /** @enum {string} */
             status?: "PENDING" | "COMPLETED";
@@ -4945,14 +4973,14 @@ export interface components {
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            first?: boolean;
-            last?: boolean;
             empty?: boolean;
         };
         PageableObject: {
@@ -5354,23 +5382,23 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            deferredSyntaxAllowedAsLiteral?: string;
+            isXml?: string;
             trimDirectiveWhitespaces?: string;
-            errorOnUndeclaredNamespace?: string;
             defaultContentType?: string;
             urlPatterns?: string[];
+            elIgnored?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
             buffer?: string;
-            isXml?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -5424,8 +5452,8 @@ export interface components {
             serverInfo?: string;
             /** Format: int32 */
             sessionTimeout?: number;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -5506,9 +5534,9 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
+            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -8564,6 +8592,32 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ScheduleDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApplicationDetail"];
+                };
+            };
+        };
+    };
+    cancelSchedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CancelScheduleRequest"];
             };
         };
         responses: {
