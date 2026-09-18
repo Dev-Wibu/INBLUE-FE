@@ -1,11 +1,11 @@
 import { useSpeechRecognition, useSpeechSynthesis } from "@/hooks";
-import { $api } from "@/lib/api";
+import { $api, fetchClient } from "@/lib/api";
 import { formatTime, formatUtcNaiveTime } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
 import { useAuthStore } from "@/stores/authStore";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { resolveAutoSendDraft } from "./speech.utils";
 import { buildSpeechLanguageLabels, type ChatMessage, type SpeechLanguageCode } from "./types";
@@ -70,6 +70,8 @@ const removeMergedDuplicates = (messages: ChatMessage[]): ChatMessage[] => {
   }
   return deduped;
 };
+const wait = (milliseconds: number) =>
+  new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds));
 const applyStableMessageIds = (
   nextMessages: ChatMessage[],
   previousMessages: ChatMessage[],
@@ -168,6 +170,19 @@ const buildMessagesFromCache = (
 export function useAIInterviewSession(isSessionActivated = false) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const resumedQuestion = (
+    location.state as {
+      resumedQuestion?: {
+        finished?: boolean;
+        phaseName?: string;
+        currentQuestionIndex?: number;
+        totalQuestionsInPhase?: number;
+        questionContent?: string;
+        questionType?: string;
+      };
+    } | null
+  )?.resumedQuestion;
   const user = useAuthStore((s) => s.user);
   const [speechLanguage, setSpeechLanguage] = useState<SpeechLanguageCode>("vi-VN");
 
@@ -233,23 +248,44 @@ export function useAIInterviewSession(isSessionActivated = false) {
     if (!sessionKey) return false;
     return localStorage.getItem(`interview-finished-${sessionKey}`) === "true";
   });
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() =>
+    resumedQuestion?.questionContent
+      ? [
+          {
+            id: 1,
+            role: "ai",
+            content: resumedQuestion.questionContent,
+            timestamp: formatTime(new Date()),
+            meta: {
+              phaseName: resumedQuestion.phaseName,
+              questionIndex: resumedQuestion.currentQuestionIndex,
+              totalQuestions: resumedQuestion.totalQuestionsInPhase,
+              questionType: resumedQuestion.questionType,
+            },
+          },
+        ]
+      : []
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   // isEvaluating = true trong khoảng 3 giây sau khi trả lời xong câu hỏi cuối cùng
   const [isEvaluating, setIsEvaluating] = useState(false);
   // Khôi phục trạng thái finished nếu phiên đã hoàn thành trước đó
-  const [interviewFinished, setInterviewFinished] = useState(isAlreadyFinished);
+  const [interviewFinished, setInterviewFinished] = useState(
+    isAlreadyFinished || resumedQuestion?.finished === true
+  );
   const [shouldAutoStartMicAfterDeviceCheck, setShouldAutoStartMicAfterDeviceCheck] =
     useState(false);
-  const [currentPhase, setCurrentPhase] = useState("");
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [currentPhase, setCurrentPhase] = useState(resumedQuestion?.phaseName ?? "");
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
+    resumedQuestion?.currentQuestionIndex ?? 0
+  );
+  const [totalQuestions, setTotalQuestions] = useState(resumedQuestion?.totalQuestionsInPhase ?? 0);
   // hasStarted = true ngay nếu phiên đã hoàn thành — lịch sử chat luôn lấy từ /cache
-  const [hasStarted, setHasStarted] = useState<boolean>(isAlreadyFinished);
+  const [hasStarted, setHasStarted] = useState<boolean>(isAlreadyFinished || !!resumedQuestion);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const msgIdCounter = useRef(1);
+  const msgIdCounter = useRef(resumedQuestion?.questionContent ? 2 : 1);
   // Dùng ref thay vì state để guard khỏi StrictMode double-invocation
-  const hasProcessedStartRef = useRef(false);
+  const hasProcessedStartRef = useRef(!!resumedQuestion);
   // Ref đồng bộ với messages state để tránh stale closure trong các useEffect
   const messagesRef = useRef<ChatMessage[]>([]);
   const chatInputValueRef = useRef(chatInputValue);
@@ -338,6 +374,39 @@ export function useAIInterviewSession(isSessionActivated = false) {
       behavior: "smooth",
     });
   }, [messages, isSubmitting]);
+
+  const waitForCompletedResult = useCallback(async (): Promise<boolean> => {
+    const persistedSessionId = sessionKey
+      ? Number(localStorage.getItem(`interview-session-id-${sessionKey}`))
+      : 0;
+    const resolvedSessionId = sessionId ?? (persistedSessionId > 0 ? persistedSessionId : null);
+    if (!resolvedSessionId) return false;
+
+    for (const delayMs of [1500, 3000, 5000, 8000]) {
+      await wait(delayMs);
+      try {
+        const { data } = await fetchClient.GET("/api/interview-sessions/{sessionId}", {
+          params: { path: { sessionId: resolvedSessionId } },
+        });
+        if (data?.status === "COMPLETED") {
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: ["get", "/api/interview-sessions/user/{userId}"],
+            }),
+            queryClient.invalidateQueries({
+              queryKey: ["get", "/api/interview-sessions/{sessionId}"],
+            }),
+            queryClient.invalidateQueries({ queryKey: ["applicationDetails"] }),
+          ]);
+          return true;
+        }
+      } catch {
+        // Grading is asynchronous; a transient read failure is retried by the next bounded attempt.
+      }
+    }
+    return false;
+  }, [sessionId, sessionKey]);
+
   const addAIMessage = useCallback(
     (data: {
       questionContent?: string;
@@ -370,11 +439,19 @@ export function useAIInterviewSession(isSessionActivated = false) {
         void queryClient.invalidateQueries({
           queryKey: ["get", "/api/interview-sessions/user/{userId}"],
         });
-        // Sau 3 giây ẩn evaluating và hiện completion card
-        setTimeout(() => {
+        setInterviewFinished(true);
+        void waitForCompletedResult().then((completed) => {
+          if (!completed) {
+            toast.info(
+              t(
+                "userAiinterview.resultStillProcessing",
+                "Kết quả vẫn đang được xử lý. Bạn có thể quay lại lịch sử để kiểm tra sau."
+              )
+            );
+            return;
+          }
           setIsEvaluating(false);
           setIsSubmitting(false);
-          setInterviewFinished(true);
           setMessages((prev) => [
             ...prev,
             {
@@ -384,7 +461,7 @@ export function useAIInterviewSession(isSessionActivated = false) {
               timestamp: getNow(),
             },
           ]);
-        }, 3000);
+        });
         return;
       }
       if (data.questionContent) {
@@ -419,7 +496,17 @@ export function useAIInterviewSession(isSessionActivated = false) {
       }
     },
 
-    [cancelSpeech, getNow, isMuted, isSessionActivated, isTTSSupported, sessionKey, speak, t]
+    [
+      cancelSpeech,
+      getNow,
+      isMuted,
+      isSessionActivated,
+      isTTSSupported,
+      sessionKey,
+      speak,
+      t,
+      waitForCompletedResult,
+    ]
   );
 
   // Start interview — GET /api/v1/interview/start/{sessionKey}
