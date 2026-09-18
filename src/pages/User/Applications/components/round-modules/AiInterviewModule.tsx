@@ -65,6 +65,7 @@ import {
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
@@ -323,6 +324,9 @@ function AiInterviewSubheader({
   status,
   finalResult,
   sessionResult,
+  showInterviewChoices,
+  onChooseKiosk,
+  onStartWebInterview,
 }: {
   round: JdRound;
   aiScore?: number | null;
@@ -332,6 +336,9 @@ function AiInterviewSubheader({
   status?: string | null;
   finalResult?: string | null;
   sessionResult?: string | null;
+  showInterviewChoices?: boolean;
+  onChooseKiosk?: () => void;
+  onStartWebInterview?: () => void;
 }) {
   const { t } = useTranslation();
   const roundOrder = round.roundOrder ?? 7;
@@ -405,15 +412,31 @@ function AiInterviewSubheader({
             </span>
           )}
 
-        {!isCompleted &&
-          !effectiveResult &&
-          status !== "COMPLETED" &&
-          status !== "AI_EVALUATED" && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-extrabold text-indigo-700 shadow-2xs dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300">
-              <CalendarClock className="h-3.5 w-3.5 text-indigo-500" />
-              <span>{t("userApplication.aiInterview.bookKiosk")}</span>
-            </span>
-          )}
+        {showInterviewChoices && !effectiveResult && (
+          <div
+            className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row"
+            role="group"
+            aria-label={t(
+              "userApplication.aiInterview.chooseInterviewMethod",
+              "Choose interview method"
+            )}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onChooseKiosk}
+              className="h-9 justify-center gap-2 border-indigo-200 bg-white px-3 text-xs font-extrabold text-indigo-700 hover:bg-indigo-50 dark:border-indigo-500/40 dark:bg-slate-900 dark:text-indigo-300 dark:hover:bg-indigo-500/10">
+              <MapPin className="h-3.5 w-3.5" />
+              {t("userApplication.aiInterview.interviewAtKiosk", "Interview at Kiosk")}
+            </Button>
+            <Button
+              type="button"
+              onClick={onStartWebInterview}
+              className="h-9 justify-center gap-2 bg-indigo-600 px-3 text-xs font-extrabold text-white hover:bg-indigo-700 focus-visible:ring-indigo-500">
+              <Laptop className="h-3.5 w-3.5" />
+              {t("userApplication.aiInterview.interviewOnWeb", "Interview now on web")}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2427,6 +2450,7 @@ function StaffAiInterviewWaitingView({
 export function AiInterviewModule({
   round,
   detail,
+  applicationId,
   jdInfo,
   isCompleted,
   isCurrent,
@@ -2434,6 +2458,7 @@ export function AiInterviewModule({
   onSuccess,
 }: AiInterviewModuleProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -2665,6 +2690,18 @@ export function AiInterviewModule({
   const sessionData = fetchedSessionData ?? matchedSessionFromUser;
   const sessionResult = sessionData?.result ?? detail?.finalResult ?? null;
 
+  const handleChooseKiosk = () => {
+    const target = document.getElementById("ai-interview-kiosk-booking");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  };
+
+  const handleStartWebInterview = () => {
+    const detailId = detail?.id;
+    const query = detailId ? `?applicationDetailId=${detailId}` : "";
+    navigate(`/user/application/${applicationId}/ai-interview${query}`);
+  };
+
   return (
     <div className="space-y-6">
       <AiInterviewSubheader
@@ -2676,6 +2713,9 @@ export function AiInterviewModule({
         status={detail?.status}
         finalResult={detail?.finalResult}
         sessionResult={sessionResult}
+        showInterviewChoices={isCurrent && !isStaffView && !isCompletedEffective}
+        onChooseKiosk={handleChooseKiosk}
+        onStartWebInterview={handleStartWebInterview}
       />
 
       {isCompletedEffective ? (
@@ -2688,7 +2728,9 @@ export function AiInterviewModule({
       ) : isStaffInProgress ? (
         <StaffAiInterviewWaitingView detail={detail} round={round} />
       ) : (
-        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+        <div
+          id="ai-interview-kiosk-booking"
+          className="grid scroll-mt-24 items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
           <div className="space-y-6">
             <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
               <div className="border-b border-slate-200 px-4 pt-3 pb-3.5 sm:px-5 sm:pt-3 sm:pb-4 dark:border-slate-800">

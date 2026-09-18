@@ -37,6 +37,13 @@ const KIOSK_INIT_STATES = [
 
 type AppScreenState = "PIN_ENTRY" | "VOICE_SELECT" | "AI_ROOM";
 
+interface StandaloneKioskPageProps {
+  initialSessionKey?: string;
+  initialDurationMinutes?: number;
+  experienceMode?: "kiosk" | "web";
+  onExit?: () => void;
+}
+
 const C = {
   bg: "#050A1A",
   surface: "#121414",
@@ -282,7 +289,12 @@ function RealTimeDateWidget() {
   );
 }
 
-export function StandaloneKioskPage() {
+export function StandaloneKioskPage({
+  initialSessionKey = "",
+  initialDurationMinutes = 15,
+  experienceMode = "kiosk",
+  onExit,
+}: StandaloneKioskPageProps = {}) {
   const [windowWidth, setWindowWidth] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth : 1280
   );
@@ -296,10 +308,15 @@ export function StandaloneKioskPage() {
   const isWide = windowWidth >= 768;
   const isTablet = windowWidth >= 768 && windowWidth < 1200;
 
-  const [screenState, setScreenState] = useState<AppScreenState>("PIN_ENTRY");
+  const isWebExperience = experienceMode === "web";
+  const [screenState, setScreenState] = useState<AppScreenState>(() =>
+    initialSessionKey ? "VOICE_SELECT" : "PIN_ENTRY"
+  );
   const [pin, setPin] = useState("");
-  const [aiSessionKey, setAiSessionKey] = useState("");
-  const [interviewDurationMinutes, setInterviewDurationMinutes] = useState(15);
+  const [aiSessionKey, setAiSessionKey] = useState(initialSessionKey);
+  const [interviewDurationMinutes, setInterviewDurationMinutes] = useState(
+    initialDurationMinutes || 15
+  );
   const [voices, setVoices] = useState<VoiceOption[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState("");
   const [isLoadingVoices, setIsLoadingVoices] = useState(false);
@@ -373,6 +390,14 @@ export function StandaloneKioskPage() {
       setIsLoadingVoices(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!initialSessionKey) return;
+    setAiSessionKey(initialSessionKey);
+    setInterviewDurationMinutes(initialDurationMinutes || 15);
+    setScreenState("VOICE_SELECT");
+    void loadVoices();
+  }, [initialDurationMinutes, initialSessionKey, loadVoices]);
 
   // Submit PIN Handler (Real Production Flow)
   const handlePinSubmit = useCallback(
@@ -550,6 +575,10 @@ export function StandaloneKioskPage() {
   );
 
   const handleFinishAIRoom = () => {
+    if (isWebExperience && onExit) {
+      onExit();
+      return;
+    }
     setPin("");
     setAiSessionKey("");
     setInterviewDurationMinutes(0);
@@ -578,6 +607,7 @@ export function StandaloneKioskPage() {
           durationMinutes={interviewDurationMinutes || 15}
           selectedVoiceId={selectedVoiceId}
           voices={voices}
+          experienceMode={experienceMode}
           onFinish={handleFinishAIRoom}
         />
       </div>
@@ -664,7 +694,7 @@ export function StandaloneKioskPage() {
                 marginBottom: isTablet ? 14 : 20,
                 whiteSpace: "pre-line",
               }}>
-              {`Phỏng Vấn\nAI Tại Kiosk`}
+              {isWebExperience ? `Phỏng Vấn\nAI Trên Web` : `Phỏng Vấn\nAI Tại Kiosk`}
             </div>
 
             {/* System Online Badge (Hugging its content, no stretch) */}

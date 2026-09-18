@@ -17,6 +17,7 @@ interface KioskAIInterviewRoomPageProps {
   durationMinutes?: number;
   selectedVoiceId?: string;
   voices?: VoiceOption[];
+  experienceMode?: "kiosk" | "web";
   onFinish?: () => void;
 }
 
@@ -280,6 +281,7 @@ function LineIcon({
 export function KioskAIInterviewRoomPage({
   sessionKey,
   selectedVoiceId = "",
+  experienceMode = "kiosk",
   onFinish,
 }: KioskAIInterviewRoomPageProps) {
   const [aiState, setAiState] = useState<AIState>("IDLE");
@@ -774,8 +776,9 @@ export function KioskAIInterviewRoomPage({
                   marginBottom: 28,
                   maxWidth: 440,
                 }}>
-                Cảm ơn bạn đã hoàn thành bài phỏng vấn tại Kiosk. Kết quả đánh giá đã được lưu an
-                toàn vào hệ thống.
+                {experienceMode === "web"
+                  ? "Cảm ơn bạn đã hoàn thành bài phỏng vấn trực tuyến. Kết quả đánh giá đã được lưu an toàn vào hệ thống."
+                  : "Cảm ơn bạn đã hoàn thành bài phỏng vấn tại Kiosk. Kết quả đánh giá đã được lưu an toàn vào hệ thống."}
               </p>
               <button
                 type="button"
@@ -791,7 +794,7 @@ export function KioskAIInterviewRoomPage({
                   boxShadow: "0 0 20px rgba(0, 163, 255, 0.45)",
                   cursor: "pointer",
                 }}>
-                Trở Về Trang Chủ Kiosk →
+                {experienceMode === "web" ? "Trở về hồ sơ ứng tuyển" : "Trở Về Trang Chủ Kiosk →"}
               </button>
             </div>
           ) : isEvaluating ? (

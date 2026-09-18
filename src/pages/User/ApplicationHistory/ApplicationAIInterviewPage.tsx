@@ -1,21 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useApplicationDetails } from "@/hooks/useApplicationDetails";
 import { useCurrentRound } from "@/hooks/useRound";
-import { $api } from "@/lib/api";
+import { $api, fetchClient } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
-import { ArrowLeft, Bot, Clock } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { AlertCircle, ArrowLeft, Bot, Clock } from "lucide-react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+
+const StandaloneKioskPage = lazy(() =>
+  import("@/pages/KioskApp").then((module) => ({ default: module.StandaloneKioskPage }))
+);
 
 export function ApplicationAIInterviewPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
+  const [searchParams] = useSearchParams();
   const user = useAuthStore((s) => s.user);
 
   const applicationId = Number(params.applicationId);
+  const requestedApplicationDetailId = Number(searchParams.get("applicationDetailId")) || 0;
 
   // Fetch current round config for instruction + time limit
   const { data: currentRound, isLoading: roundLoading } = useCurrentRound(
@@ -26,13 +33,41 @@ export function ApplicationAIInterviewPage() {
     | { instruction?: string; timeLimitMinutes?: number }
     | undefined;
 
+  const { data: applicationDetails = [], isLoading: detailsLoading } = useApplicationDetails(
+    applicationId,
+    !!applicationId && requestedApplicationDetailId === 0
+  );
+  const { data: candidateProfile, isLoading: profileLoading } = $api.useQuery(
+    "get",
+    "/api/candidate-profiles/application/{applicationId}",
+    { params: { path: { applicationId } } },
+    { enabled: applicationId > 0 }
+  );
+  const applicationDetailId = useMemo(() => {
+    if (requestedApplicationDetailId > 0) return requestedApplicationDetailId;
+
+    const matchingDetail =
+      applicationDetails.find((item) => currentRound?.id && item.roundId === currentRound.id) ??
+      applicationDetails.find((item) => item.roundType === "AI_INTERVIEW");
+    return matchingDetail?.id ?? 0;
+  }, [applicationDetails, currentRound?.id, requestedApplicationDetailId]);
+
   const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [sessionKey, setSessionKey] = useState("");
   const createAttemptedRef = useRef(false);
 
-  const createSessionMutation = $api.useMutation("post", "/api/interview-sessions/create-session");
-
   useEffect(() => {
-    if (!applicationId || !user?.id || isCreatingSession || createAttemptedRef.current) return;
+    if (
+      !applicationId ||
+      !user?.id ||
+      !applicationDetailId ||
+      roundLoading ||
+      detailsLoading ||
+      profileLoading ||
+      isCreatingSession ||
+      createAttemptedRef.current
+    )
+      return;
     createAttemptedRef.current = true;
     setIsCreatingSession(true);
 
@@ -40,7 +75,18 @@ export function ApplicationAIInterviewPage() {
       try {
         const body = {
           user_id: user.id,
-          application_id: applicationId,
+          application_detail_id: applicationDetailId,
+          candidate_profile: candidateProfile ?? {
+            applicationId,
+            technicalSkills: [],
+            softSkills: [],
+            tools: [],
+            projects: [],
+            workExperiences: [],
+            educations: [],
+            certifications: [],
+            achievements: [],
+          },
           job_requirement: {
             basic_info: {
               job_title: "Application Interview",
@@ -63,34 +109,49 @@ export function ApplicationAIInterviewPage() {
           },
         };
 
-        const result = await createSessionMutation.mutateAsync({ body } as never);
-        const rawKey = (result as unknown as string)?.trim?.() ?? "";
+        const { data, error } = await fetchClient.POST("/api/interview-sessions/create-session", {
+          body: body as never,
+          parseAs: "text",
+        });
+        if (error || !data) {
+          throw new Error(t("userAiinterview.unableToCreateInterviewSession"));
+        }
+        const rawKey = String(data).trim().replace(/^"|"$/g, "");
 
         let key = "";
         if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawKey)) {
           key = rawKey;
-        } else if (typeof result === "object" && result !== null && "sessionKey" in result) {
-          key = String((result as { sessionKey: string }).sessionKey);
         } else {
           throw new Error("Invalid session key: " + rawKey.slice(0, 50));
         }
 
-        sessionStorage.setItem(`app-session-return:${key}`, `/user/application-history`);
-        navigate(`/user/ai-interview/session?sessionKey=${key}`);
+        setSessionKey(key);
       } catch (err) {
         toast.error(
           err instanceof Error ? err.message : t("userAiinterview.unableToCreateInterviewSession")
         );
-        navigate(-1);
+        navigate(`/user/application/${applicationId}`, { replace: true });
       } finally {
         setIsCreatingSession(false);
       }
     })();
-  }, [applicationId, user, isCreatingSession, roundConfig, createSessionMutation, navigate, t]);
+  }, [
+    applicationDetailId,
+    applicationId,
+    candidateProfile,
+    detailsLoading,
+    isCreatingSession,
+    navigate,
+    profileLoading,
+    roundConfig,
+    roundLoading,
+    t,
+    user,
+  ]);
 
   const handleBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
+    navigate(`/user/application/${applicationId}`);
+  }, [applicationId, navigate]);
 
   if (!applicationId) {
     return (
@@ -100,10 +161,51 @@ export function ApplicationAIInterviewPage() {
     );
   }
 
-  const isLoading = roundLoading || isCreatingSession;
+  if (sessionKey) {
+    return (
+      <Suspense
+        fallback={
+          <div className="flex min-h-screen items-center justify-center bg-slate-950">
+            <Spinner size="lg" tone="white" />
+          </div>
+        }>
+        <StandaloneKioskPage
+          initialSessionKey={sessionKey}
+          initialDurationMinutes={roundConfig?.timeLimitMinutes ?? 30}
+          experienceMode="web"
+          onExit={handleBack}
+        />
+      </Suspense>
+    );
+  }
+
+  const isLoading = roundLoading || detailsLoading || profileLoading || isCreatingSession;
+
+  if (!isLoading && !applicationDetailId) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50 px-4 text-center dark:bg-slate-950">
+        <AlertCircle className="h-10 w-10 text-rose-500" />
+        <div className="max-w-md">
+          <h1 className="text-lg font-bold text-slate-950 dark:text-white">
+            {t("userApplication.aiInterview.webInterviewUnavailable", "Interview is not ready")}
+          </h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            {t(
+              "userApplication.aiInterview.webInterviewUnavailableDescription",
+              "The AI interview round could not be found for this application. Please return and refresh the application."
+            )}
+          </p>
+        </div>
+        <Button type="button" variant="outline" onClick={handleBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {t("general.back")}
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gradient-to-b from-slate-50 to-white px-4 dark:from-slate-900 dark:to-slate-800">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-slate-50 px-4 dark:bg-slate-950">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
