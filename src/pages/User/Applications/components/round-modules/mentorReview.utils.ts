@@ -18,6 +18,7 @@ export type MentorReviewStep =
   | "AWAITING_SCHEDULE_APPROVAL"
   | "WAITING"
   | "IN_CALL"
+  | "POST_INTERVIEW_FORMS"
   | "RESULT";
 
 export function deriveMentorReviewStep(params: {
@@ -26,13 +27,7 @@ export function deriveMentorReviewStep(params: {
   sessionStatus?: SessionStatus | null;
 }): MentorReviewStep {
   const { detailStatus, sessionId, sessionStatus } = params;
-  if (
-    detailStatus === "COMPLETED" ||
-    detailStatus === "AI_EVALUATED" ||
-    sessionStatus === "COMPLETED"
-  ) {
-    return "RESULT";
-  }
+  if (detailStatus === "COMPLETED") return "RESULT";
   if (sessionStatus === "ONGOING") return "IN_CALL";
   if (sessionId && ["PAID", "SCHEDULED", "DRAFT"].includes(sessionStatus ?? "")) {
     return "WAITING";
@@ -42,10 +37,29 @@ export function deriveMentorReviewStep(params: {
   }
   if (detailStatus === "AWAITING_MENTOR") return "AWAITING_MENTOR";
   if (detailStatus === "AWAITING_CANDIDATE_SELECT_MENTOR") return "SELECT_MENTOR";
-  if (["PENDING", "SLOT_PICKED", "SUBMITTED"].includes(detailStatus ?? "")) {
+  if (detailStatus === "PENDING" && sessionId && sessionStatus === "COMPLETED") {
+    return "POST_INTERVIEW_FORMS";
+  }
+  if (detailStatus === "PENDING" && !sessionId) {
     return "SCHEDULE";
   }
   return "AWAITING_MENTOR";
+}
+
+export function canCancelMentorSchedule(params: {
+  detailStatus?: MentorReviewDetailStatus | null;
+  sessionId?: number | null;
+  sessionStatus?: SessionStatus | null;
+  meetingType?: "ONLINE" | "OFFLINE" | null;
+}): boolean {
+  const { detailStatus, sessionId, sessionStatus, meetingType } = params;
+  if (detailStatus === "AWAITING_MENTOR_SCHEDULE_APPROVAL") return true;
+  return (
+    detailStatus === "PENDING" &&
+    Boolean(sessionId) &&
+    meetingType === "ONLINE" &&
+    ["DRAFT", "SCHEDULED", "PAID"].includes(sessionStatus ?? "")
+  );
 }
 
 type UnknownRecord = Record<string, unknown>;

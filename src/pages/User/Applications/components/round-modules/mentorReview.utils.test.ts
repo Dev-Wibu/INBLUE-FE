@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canCancelMentorSchedule,
   collectEmbeddedMentors,
   deriveMentorReviewStep,
   mergeMentorResponses,
@@ -123,6 +124,51 @@ describe("mentor review display utilities", () => {
     expect(
       deriveMentorReviewStep({
         detailStatus: "PENDING",
+        sessionId: 88,
+        sessionStatus: "COMPLETED",
+      })
+    ).toBe("POST_INTERVIEW_FORMS");
+  });
+
+  it("only allows cancellation before an online mentor session starts", () => {
+    expect(
+      canCancelMentorSchedule({
+        detailStatus: "AWAITING_MENTOR_SCHEDULE_APPROVAL",
+        sessionId: null,
+        sessionStatus: null,
+        meetingType: "ONLINE",
+      })
+    ).toBe(true);
+    expect(
+      canCancelMentorSchedule({
+        detailStatus: "PENDING",
+        sessionId: 88,
+        sessionStatus: "SCHEDULED",
+        meetingType: "ONLINE",
+      })
+    ).toBe(true);
+    expect(
+      canCancelMentorSchedule({
+        detailStatus: "PENDING",
+        sessionId: 88,
+        sessionStatus: "ONGOING",
+        meetingType: "ONLINE",
+      })
+    ).toBe(false);
+    expect(
+      canCancelMentorSchedule({
+        detailStatus: "PENDING",
+        sessionId: 88,
+        sessionStatus: "COMPLETED",
+        meetingType: "ONLINE",
+      })
+    ).toBe(false);
+  });
+
+  it("keeps final result separate from completed meeting forms", () => {
+    expect(
+      deriveMentorReviewStep({
+        detailStatus: "COMPLETED",
         sessionId: 88,
         sessionStatus: "COMPLETED",
       })
