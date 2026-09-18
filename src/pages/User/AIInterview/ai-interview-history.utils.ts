@@ -28,3 +28,15 @@ export function isAiInterviewResumable(
 export function hasAiInterviewScore(session: InterviewSession): boolean {
   return typeof session.overallScore === "number" && Number.isFinite(session.overallScore);
 }
+
+export function buildApplicationAiInterviewResumePath(
+  applicationId: number,
+  applicationDetailId: number,
+  sessionKey: string
+): string {
+  const query = new URLSearchParams({
+    applicationDetailId: String(applicationDetailId),
+    sessionKey,
+  });
+  return `/user/application/${applicationId}/ai-interview?${query.toString()}`;
+}

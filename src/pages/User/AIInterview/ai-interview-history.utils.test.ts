@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { InterviewSession } from "@/interfaces";
 import {
+  buildApplicationAiInterviewResumePath,
   getAiInterviewDomain,
   getAiInterviewJobTitle,
   getAiInterviewMode,
@@ -54,5 +55,11 @@ describe("AI interview history helpers", () => {
   it("keeps zero as a valid score and rejects missing values", () => {
     expect(hasAiInterviewScore(session({ overallScore: 0 }))).toBe(true);
     expect(hasAiInterviewScore(session())).toBe(false);
+  });
+
+  it("builds the application interview UI route for resume", () => {
+    expect(buildApplicationAiInterviewResumePath(210, 527, "existing-session-key")).toBe(
+      "/user/application/210/ai-interview?applicationDetailId=527&sessionKey=existing-session-key"
+    );
   });
 });
