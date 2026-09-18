@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
+import type { InterviewSession } from "@/interfaces";
 import { $api, fetchClient } from "@/lib/api";
 import { formatUtcNaiveDateTime, toUtcNaiveTimestamp } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
+  buildApplicationAiInterviewResumePath,
   getAiInterviewDomain,
   getAiInterviewJobTitle,
   getAiInterviewMode,
@@ -51,41 +53,41 @@ export function AIInterviewListPage() {
 
   const modeLabels = useMemo<Record<string, string>>(
     () => ({
-      STANDARD_MOCK: t("common.trialInterview", "Phỏng vấn thử"),
-      THEORY_CHECK: t("common.testTheTheory", "Kiểm tra lý thuyết"),
-      PROJECT_DEFENSE: t("common.projectProtection", "Bảo vệ dự án"),
+      STANDARD_MOCK: t("common.trialInterview"),
+      THEORY_CHECK: t("common.testTheTheory"),
+      PROJECT_DEFENSE: t("common.projectProtection"),
     }),
     [t]
   );
   const statusLabels = useMemo<Record<string, string>>(
     () => ({
-      CREATED: t("common.created", "Mới tạo"),
-      IN_PROGRESS: t("common.ongoing", "Đang diễn ra"),
-      COMPLETED: t("general.completed", "Hoàn thành"),
-      CANCELLED: t("common.canceled", "Đã hủy"),
+      CREATED: t("common.created"),
+      IN_PROGRESS: t("common.ongoing"),
+      COMPLETED: t("general.completed"),
+      CANCELLED: t("common.canceled"),
     }),
     [t]
   );
   const resultLabels = useMemo<Record<string, string>>(
     () => ({
-      STRONG_HIRE: t("common.excellent", "Xuất sắc"),
-      HIRE: t("common.obtain", "Đạt"),
-      CONSIDER: t("common.needToConsider", "Cân nhắc"),
-      REJECT: t("common.failed", "Chưa đạt"),
+      STRONG_HIRE: t("common.excellent"),
+      HIRE: t("common.obtain"),
+      CONSIDER: t("common.needToConsider"),
+      REJECT: t("common.failed"),
     }),
     [t]
   );
   const difficultyLabels = useMemo<Record<string, string>>(
     () => ({
-      FRESHER_BASIC: t("userAiinterview.basic", "Cơ bản"),
-      FRESHER_ADVANCED: t("userAiinterview.advanced", "Nâng cao"),
+      FRESHER_BASIC: t("userAiinterview.basic"),
+      FRESHER_ADVANCED: t("userAiinterview.advanced"),
     }),
     [t]
   );
   const languageLabels = useMemo<Record<string, string>>(
     () => ({
-      VI: t("common.vietnamese", "Tiếng Việt"),
-      EN: t("common.english", "Tiếng Anh"),
+      VI: t("common.vietnamese"),
+      EN: t("common.english"),
     }),
     [t]
   );
@@ -124,26 +126,45 @@ export function AIInterviewListPage() {
   const pageData = sessions.slice(pagination.startIndex, pagination.endIndex + 1);
   const resetPagination = () => pagination.goToFirstPage();
 
-  const handleResume = async (sessionId: number, sessionKey: string) => {
+  const handleResume = async (session: InterviewSession) => {
     if (resumingSessionId !== null) return;
+    const sessionId = session.id;
+    const sessionKey = session.sessionKey?.trim();
+    const applicationDetailId = session.applicationDetailId;
+    if (!sessionId || !sessionKey || !applicationDetailId) {
+      toast.error(t("userAiinterview.resumeMissingApplication"));
+      return;
+    }
     setResumingSessionId(sessionId);
     try {
+      let applicationId = Number(session.candidateProfile?.applicationId) || 0;
+      if (!applicationId) {
+        const { data: detail, error: detailError } = await fetchClient.GET(
+          "/api/application-details/{id}",
+          { params: { path: { id: applicationDetailId } } }
+        );
+        if (detailError || !detail?.applicationId) {
+          throw detailError ?? new Error("Application detail is unavailable");
+        }
+        applicationId = detail.applicationId;
+      }
       const { data: questionResponse, error } = await fetchClient.GET(
         "/api/v1/interview/start/{sessionKey}",
         { params: { path: { sessionKey } } }
       );
       if (error || !questionResponse) throw error ?? new Error("Unable to resume interview");
-      navigate(`/user/ai-interview/session?sessionKey=${encodeURIComponent(sessionKey)}`, {
-        state: { resumedQuestion: questionResponse },
-      });
+      navigate(
+        buildApplicationAiInterviewResumePath(applicationId, applicationDetailId, sessionKey),
+        {
+          state: {
+            resumedQuestion: questionResponse,
+            resumeDurationMinutes: session.sessionConfig?.duration_minutes ?? 30,
+          },
+        }
+      );
     } catch {
       await refetch();
-      toast.error(
-        t(
-          "userAiinterview.resumeFailedRefresh",
-          "Phiên phỏng vấn có thể đã hết hạn. Lịch sử đã được cập nhật, vui lòng thử lại."
-        )
-      );
+      toast.error(t("userAiinterview.resumeFailedRefresh"));
     } finally {
       setResumingSessionId(null);
     }
@@ -155,13 +176,10 @@ export function AIInterviewListPage() {
         <div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {t("userAiinterview.historyNavigation", "Lịch sử phỏng vấn AI")}
+              {t("userAiinterview.historyNavigation")}
             </h1>
             <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
-              {t(
-                "userAiinterview.reviewPreviousInterviews",
-                "Xem lại các bài phỏng vấn đã thực hiện và kết quả chi tiết"
-              )}
+              {t("userAiinterview.reviewPreviousInterviews")}
             </p>
           </div>
         </div>
@@ -170,7 +188,7 @@ export function AIInterviewListPage() {
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-              {t("common.interviewHistory", "Lịch sử phỏng vấn")}
+              {t("common.interviewHistory")}
             </span>
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               {sessions.length}
@@ -186,7 +204,7 @@ export function AIInterviewListPage() {
                   resetPagination();
                 }}
                 className="h-9 pl-9 text-xs"
-                placeholder={t("userAiinterview.searchByModeField", "Tìm theo vị trí, chế độ...")}
+                placeholder={t("userAiinterview.searchByModeField")}
               />
             </div>
             <Select
@@ -199,7 +217,7 @@ export function AIInterviewListPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">{t("common.all", "Tất cả trạng thái")}</SelectItem>
+                <SelectItem value="ALL">{t("common.all")}</SelectItem>
                 {Object.entries(statusLabels).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
@@ -210,7 +228,7 @@ export function AIInterviewListPage() {
             <ReloadButton
               onReload={async () => void (await refetch())}
               isLoading={isRefetching}
-              tooltip={t("userAiinterview.reloadAiInterviewHistory", "Tải lại lịch sử")}
+              tooltip={t("userAiinterview.reloadAiInterviewHistory")}
             />
           </div>
         </div>
@@ -222,25 +240,25 @@ export function AIInterviewListPage() {
             <TableHeader>
               <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
                 <TableHead className="h-11 min-w-[210px] pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-                  {t("common.position", "Vị trí")}
+                  {t("common.position")}
                 </TableHead>
                 <TableHead className="h-11 min-w-[180px] text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-                  {t("userAiinterview.regime", "Chế độ")}
+                  {t("userAiinterview.regime")}
                 </TableHead>
                 <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-                  {t("common.status", "Trạng thái")}
+                  {t("common.status")}
                 </TableHead>
                 <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-                  {t("common.result", "Kết quả")}
+                  {t("common.result")}
                 </TableHead>
                 <TableHead className="h-11 text-center text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-                  {t("userAiinterview.score", "Điểm")}
+                  {t("userAiinterview.score")}
                 </TableHead>
                 <TableHead className="h-11 min-w-[145px] text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-                  {t("userAiinterview.createdAtLabel", "Thời gian")}
+                  {t("userAiinterview.createdAtLabel")}
                 </TableHead>
                 <TableHead className="h-11 min-w-[125px] pr-6 text-right text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-                  {t("common.actions", "Thao tác")}
+                  {t("common.actions")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -250,7 +268,7 @@ export function AIInterviewListPage() {
                   <TableCell colSpan={7} className="h-48 text-center">
                     <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-                      {t("common.loadingData", "Đang tải dữ liệu...")}
+                      {t("common.loadingData")}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -261,10 +279,10 @@ export function AIInterviewListPage() {
                     <div className="flex flex-col items-center gap-3 text-slate-500">
                       <AlertCircle className="h-8 w-8 text-rose-500" />
                       <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        {t("common.unableToDownloadInterviewHistory", "Không thể tải lịch sử")}
+                        {t("common.unableToDownloadInterviewHistory")}
                       </span>
                       <Button variant="outline" size="sm" onClick={() => void refetch()}>
-                        {t("common.tryAgain", "Thử lại")}
+                        {t("common.tryAgain")}
                       </Button>
                     </div>
                   </TableCell>
@@ -276,10 +294,7 @@ export function AIInterviewListPage() {
                     <div className="flex flex-col items-center gap-2 text-slate-500">
                       <Bot className="h-8 w-8 text-slate-400" />
                       <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        {t(
-                          "userAiinterview.thereHaveBeenNoInterviews",
-                          "Chưa có lịch sử phỏng vấn"
-                        )}
+                        {t("userAiinterview.thereHaveBeenNoInterviews")}
                       </span>
                     </div>
                   </TableCell>
@@ -306,8 +321,7 @@ export function AIInterviewListPage() {
                       className="group cursor-pointer border-b border-slate-100 bg-white transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
                       <TableCell className="py-3 pl-6">
                         <p className="text-xs font-extrabold text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                          {getAiInterviewJobTitle(session) ??
-                            t("common.aiInterview", "Phỏng vấn AI")}
+                          {getAiInterviewJobTitle(session) ?? t("common.aiInterview")}
                         </p>
                         <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                           {[
@@ -362,17 +376,13 @@ export function AIInterviewListPage() {
                             size="sm"
                             className="h-8 gap-1.5 rounded-lg bg-indigo-600 px-3 text-xs font-bold text-white hover:bg-indigo-700"
                             disabled={resumingSessionId !== null}
-                            onClick={() =>
-                              sessionId != null &&
-                              session.sessionKey &&
-                              void handleResume(sessionId, session.sessionKey)
-                            }>
+                            onClick={() => void handleResume(session)}>
                             {resumingSessionId === sessionId ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             ) : (
                               <Play className="h-3.5 w-3.5" />
                             )}
-                            {t("common.continue", "Tiếp tục")}
+                            {t("common.continue")}
                           </Button>
                         ) : (
                           <Button
@@ -384,7 +394,7 @@ export function AIInterviewListPage() {
                               sessionId != null &&
                               navigate(`/user/ai-interview/result/${sessionId}`)
                             }>
-                            {t("common.seeDetails", "Xem chi tiết")}
+                            {t("common.seeDetails")}
                             <ChevronRight className="ml-1 h-3.5 w-3.5" />
                           </Button>
                         )}
