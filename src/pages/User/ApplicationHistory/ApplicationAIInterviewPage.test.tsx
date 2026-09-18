@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   createSession: vi.fn(),
+  sessionCache: vi.fn(),
 }));
 
 vi.mock("@/hooks/useApplicationDetails", () => ({
@@ -22,15 +23,18 @@ vi.mock("@/lib/api", () => ({
     POST: mocks.createSession,
   },
   $api: {
-    useQuery: () => ({
-      data: {
-        id: 21,
-        applicationId: 12,
-        targetRole: "Backend Engineer",
-        technicalSkills: ["Java"],
-      },
-      isLoading: false,
-    }),
+    useQuery: (_method: string, path: string) =>
+      path === "/api/interview-sessions/cache/{sessionKey}"
+        ? mocks.sessionCache()
+        : {
+            data: {
+              id: 21,
+              applicationId: 12,
+              targetRole: "Backend Engineer",
+              technicalSkills: ["Java"],
+            },
+            isLoading: false,
+          },
   },
 }));
 
@@ -39,16 +43,22 @@ vi.mock("@/pages/KioskApp", () => ({
     initialSessionKey,
     initialDurationMinutes,
     experienceMode,
+    initialStartResponse,
+    initialSessionCache,
   }: {
     initialSessionKey: string;
     initialDurationMinutes: number;
     experienceMode: string;
+    initialStartResponse?: { questionContent?: string };
+    initialSessionCache?: { chatHistory?: unknown[] };
   }) => (
     <div
       data-testid="voice-selector"
       data-session-key={initialSessionKey}
       data-duration={initialDurationMinutes}
       data-experience-mode={experienceMode}
+      data-question={initialStartResponse?.questionContent ?? ""}
+      data-history-count={initialSessionCache?.chatHistory?.length ?? 0}
     />
   ),
 }));
@@ -73,6 +83,7 @@ describe("ApplicationAIInterviewPage web flow", () => {
       data: "123e4567-e89b-12d3-a456-426614174000",
       error: undefined,
     });
+    mocks.sessionCache.mockReturnValue({ data: undefined, isLoading: false });
   });
 
   it("creates the session for the application detail and opens voice selection", async () => {
@@ -115,5 +126,42 @@ describe("ApplicationAIInterviewPage web flow", () => {
     );
     expect(voiceSelector).toHaveAttribute("data-duration", "25");
     expect(voiceSelector).toHaveAttribute("data-experience-mode", "web");
+  });
+
+  it("resumes the existing session in the application interview UI without creating another one", async () => {
+    mocks.sessionCache.mockReturnValue({
+      data: {
+        chatHistory: [{ questionText: "Câu hỏi cũ", answerText: "Câu trả lời cũ" }],
+        currentQuestionText: "Câu hỏi đang trả lời",
+      },
+      isLoading: false,
+    });
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: "/user/application/210/ai-interview",
+            search: "?applicationDetailId=527&sessionKey=existing-session-key",
+            state: {
+              resumedQuestion: { questionContent: "Câu hỏi đang trả lời" },
+              resumeDurationMinutes: 45,
+            },
+          },
+        ]}>
+        <Routes>
+          <Route
+            path="/user/application/:applicationId/ai-interview"
+            element={<ApplicationAIInterviewPage />}
+          />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const voiceSelector = await screen.findByTestId("voice-selector");
+    expect(voiceSelector).toHaveAttribute("data-session-key", "existing-session-key");
+    expect(voiceSelector).toHaveAttribute("data-duration", "45");
+    expect(voiceSelector).toHaveAttribute("data-question", "Câu hỏi đang trả lời");
+    expect(voiceSelector).toHaveAttribute("data-history-count", "1");
+    expect(mocks.createSession).not.toHaveBeenCalled();
   });
 });

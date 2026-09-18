@@ -3,11 +3,12 @@ import { Spinner } from "@/components/ui/spinner";
 import { useApplicationDetails } from "@/hooks/useApplicationDetails";
 import { useCurrentRound } from "@/hooks/useRound";
 import { $api, fetchClient } from "@/lib/api";
+import type { InterviewStartResponse } from "@/services/kiosk/kioskApi.service";
 import { useAuthStore } from "@/stores/authStore";
 import { AlertCircle, ArrowLeft, Bot, Clock } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 const StandaloneKioskPage = lazy(() =>
@@ -17,12 +18,19 @@ const StandaloneKioskPage = lazy(() =>
 export function ApplicationAIInterviewPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const params = useParams();
   const [searchParams] = useSearchParams();
   const user = useAuthStore((s) => s.user);
 
   const applicationId = Number(params.applicationId);
   const requestedApplicationDetailId = Number(searchParams.get("applicationDetailId")) || 0;
+  const resumeSessionKey = searchParams.get("sessionKey")?.trim() ?? "";
+  const resumeState = location.state as {
+    resumedQuestion?: InterviewStartResponse;
+    resumeDurationMinutes?: number;
+  } | null;
+  const isResume = Boolean(resumeSessionKey);
 
   // Fetch current round config for instruction + time limit
   const { data: currentRound, isLoading: roundLoading } = useCurrentRound(
@@ -41,7 +49,13 @@ export function ApplicationAIInterviewPage() {
     "get",
     "/api/candidate-profiles/application/{applicationId}",
     { params: { path: { applicationId } } },
-    { enabled: applicationId > 0 }
+    { enabled: applicationId > 0 && !isResume }
+  );
+  const { data: resumeCache, isLoading: resumeCacheLoading } = $api.useQuery(
+    "get",
+    "/api/interview-sessions/cache/{sessionKey}",
+    { params: { path: { sessionKey: resumeSessionKey } } },
+    { enabled: isResume }
   );
   const applicationDetailId = useMemo(() => {
     if (requestedApplicationDetailId > 0) return requestedApplicationDetailId;
@@ -53,12 +67,13 @@ export function ApplicationAIInterviewPage() {
   }, [applicationDetails, currentRound?.id, requestedApplicationDetailId]);
 
   const [isCreatingSession, setIsCreatingSession] = useState(false);
-  const [sessionKey, setSessionKey] = useState("");
+  const [sessionKey, setSessionKey] = useState(resumeSessionKey);
   const createAttemptedRef = useRef(false);
 
   useEffect(() => {
     if (
       !applicationId ||
+      isResume ||
       !user?.id ||
       !applicationDetailId ||
       roundLoading ||
@@ -141,6 +156,7 @@ export function ApplicationAIInterviewPage() {
     candidateProfile,
     detailsLoading,
     isCreatingSession,
+    isResume,
     navigate,
     profileLoading,
     roundConfig,
@@ -162,6 +178,13 @@ export function ApplicationAIInterviewPage() {
   }
 
   if (sessionKey) {
+    if (isResume && resumeCacheLoading) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-slate-950">
+          <Spinner size="lg" tone="white" />
+        </div>
+      );
+    }
     return (
       <Suspense
         fallback={
@@ -171,7 +194,11 @@ export function ApplicationAIInterviewPage() {
         }>
         <StandaloneKioskPage
           initialSessionKey={sessionKey}
-          initialDurationMinutes={roundConfig?.timeLimitMinutes ?? 30}
+          initialDurationMinutes={
+            resumeState?.resumeDurationMinutes ?? roundConfig?.timeLimitMinutes ?? 30
+          }
+          initialStartResponse={resumeState?.resumedQuestion}
+          initialSessionCache={resumeCache}
           experienceMode="web"
           onExit={handleBack}
         />
