@@ -1,5 +1,5 @@
 import { MentorScoreDisplay } from "@/components/review";
-import { DateTimePicker } from "@/components/shared";
+import { DateTimePicker, ReloadButton } from "@/components/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   useApplicationDetail,
   useAssignedMentors,
+  useCancelMentorSchedule,
   useSelectMentor,
   type MentorResponse,
 } from "@/hooks/useApplicationDetails";
@@ -32,8 +33,8 @@ import {
 import { useCreateRoundSession, useSessionById } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import {
+  formatDateTime as formatBackendDateTime,
   formatTime as formatBackendTime,
-  formatUtcNaiveDateTime,
   treatZuluAsVietnamLocal,
 } from "@/lib/formatting";
 import { getMentorReviewScoreBand, normalizeMentorReviewScore } from "@/lib/mentor-review-score";
@@ -52,6 +53,7 @@ import {
   Building2,
   Calendar,
   CalendarCheck,
+  CalendarX2,
   CheckCircle2,
   ChevronRight,
   CircleDollarSign,
@@ -84,6 +86,7 @@ import type { components } from "../../../../../../schema-from-be";
 import { applicationTheme } from "../applicationTheme";
 import type { JdRound } from "../HorizontalPipeline";
 import {
+  canCancelMentorSchedule,
   collectEmbeddedMentors,
   deriveMentorReviewStep,
   mergeMentorResponses,
@@ -94,6 +97,7 @@ import {
 } from "./mentorReview.utils";
 import { MentorReviewSubheader } from "./MentorReviewSubheader";
 import { localizeRoundName } from "./round-localization";
+import { ScheduleHistoryTable } from "./ScheduleHistoryTable";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -161,7 +165,11 @@ export function MentorReviewModule({
   // We always have a detail passed in from the parent, but we want to
   // re-fetch on interval while waiting on the Admin (Step 1).
   const detailId = initialDetail?.id ?? 0;
-  const { data: liveDetail, refetch: refetchDetail } = useApplicationDetail(detailId, detailId > 0);
+  const {
+    data: liveDetail,
+    refetch: refetchDetail,
+    isFetching: detailRefreshing,
+  } = useApplicationDetail(detailId, detailId > 0);
   const detail = liveDetail ?? initialDetail;
   const status = (detail?.status ?? "PENDING") as DetailStatus;
 
@@ -181,8 +189,8 @@ export function MentorReviewModule({
   // independent and can drift — see issue: candidate joined the room, both
   // sides left, session.status = COMPLETED, but detail.status may still be
   // `AWAITING_MENTOR` because staff haven't flipped it to COMPLETED yet.
-  // We always trust `sessionStatus === 'COMPLETED'` as the source of truth
-  // for "the interview happened" and force-step to RESULT.
+  // A completed meeting opens post-interview forms. The round only reaches
+  // RESULT after both mentor review and candidate feedback complete the detail.
   const sessionInfo = detail?.sessionInfo;
   const sessionId = sessionInfo?.sessionId ?? detail?.sessionId ?? null;
   const { data: session, refetch: refetchSession } = useSessionById(sessionId ?? 0);
@@ -214,11 +222,15 @@ export function MentorReviewModule({
   // ===== Header ===========================================================
   const finalScore = detail?.finalScore ?? detail?.hrScore ?? null;
 
-  const activeIndex = STEP_DEFS.findIndex((s) => s.key === activeStep);
+  const activeIndex = STEP_DEFS.findIndex(
+    (s) => s.key === (activeStep === "POST_INTERVIEW_FORMS" ? "RESULT" : activeStep)
+  );
   const roundOrder = round.roundOrder ?? activeIndex + 1;
   const [previewStep, setPreviewStep] = useState<StepKey | null>(null);
   const viewedStep = previewStep ?? activeStep;
-  const viewedIndex = STEP_DEFS.findIndex((s) => s.key === viewedStep);
+  const viewedIndex = STEP_DEFS.findIndex(
+    (s) => s.key === (viewedStep === "POST_INTERVIEW_FORMS" ? "RESULT" : viewedStep)
+  );
   const isPreviewingStep = previewStep !== null;
 
   // Reset preview when active step changes
@@ -256,13 +268,18 @@ export function MentorReviewModule({
       <ProgressHub
         activeIndex={activeIndex}
         viewedIndex={viewedIndex}
-        onSelectStep={setPreviewStep}
+        onSelectStep={(step) =>
+          setPreviewStep(step === "RESULT" && activeStep === "POST_INTERVIEW_FORMS" ? null : step)
+        }
       />
 
-      {sessionInfo?.mentorRejectReason &&
-        ["AWAITING_MENTOR", "SELECT_MENTOR", "SCHEDULE"].includes(activeStep) && (
-          <RejectedScheduleBanner sessionInfo={sessionInfo} />
-        )}
+      {(sessionInfo?.scheduleHistory?.length ?? 0) > 0 && (
+        <ScheduleHistoryTable
+          entries={sessionInfo?.scheduleHistory ?? []}
+          detailId={detailId}
+          fallbackMentors={fallbackMentors}
+        />
+      )}
 
       {/* ============== Step body ============== */}
       {viewedStep === "AWAITING_MENTOR" && <AwaitingMentorStep />}
@@ -300,12 +317,20 @@ export function MentorReviewModule({
         <AwaitingScheduleApprovalStep
           sessionInfo={sessionInfo}
           mentor={resolveSelectedMentor(fallbackMentors, detail?.mentorId)}
-          refreshing={false}
-          onRefresh={() => void refetchDetail()}
+          refreshing={detailRefreshing}
+          onRefresh={() => refetchDetail()}
           onChangeProposal={() => setPreviewStep("SCHEDULE")}
+          detailId={detailId}
+          onCanceled={() => {
+            setPreviewStep(null);
+            void refetchDetail();
+            onSuccess?.();
+          }}
         />
       )}
-      {(viewedStep === "WAITING" || viewedStep === "IN_CALL" || viewedStep === "RESULT") && (
+      {(["WAITING", "IN_CALL", "POST_INTERVIEW_FORMS", "RESULT"] as StepKey[]).includes(
+        viewedStep
+      ) && (
         <SessionRoomStep
           detailId={detailId}
           sessionId={sessionId}
@@ -315,6 +340,7 @@ export function MentorReviewModule({
           applicationId={applicationId}
           finalScore={finalScore}
           finalResult={detail?.finalResult ?? null}
+          meetingType={sessionInfo?.meetingType ?? null}
           viewStep={viewedStep}
           readOnly={isPreviewingStep}
           onStatusChange={() => {
@@ -353,7 +379,6 @@ function ProgressHub({
 
           return (
             <div key={step.key} className="relative flex flex-1 flex-col items-center gap-2">
-              {/* Connector line */}
               {i < STEP_DEFS.length - 1 && (
                 <div
                   className={cn(
@@ -363,7 +388,6 @@ function ProgressHub({
                 />
               )}
 
-              {/* Icon Circle */}
               <button
                 type="button"
                 onClick={() => onSelectStep(step.key)}
@@ -380,13 +404,11 @@ function ProgressHub({
                 )}>
                 {isDone ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
 
-                {/* Active indicator dot */}
                 {isCurrent && (
                   <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.35)] ring-2 ring-white dark:ring-slate-900" />
                 )}
               </button>
 
-              {/* Label */}
               <span
                 className={cn(
                   "text-[10px] font-extrabold tracking-wider uppercase transition-colors duration-300",
@@ -410,27 +432,107 @@ function ProgressHub({
 // SUB-COMPONENT: AwaitingMentorStep
 // ============================================================================
 
-function RejectedScheduleBanner({
-  sessionInfo,
+function CancelScheduleButton({
+  applicationDetailId,
+  onCanceled,
+  hasApprovedRoom = false,
 }: {
-  sessionInfo: components["schemas"]["RoundSessionInfo"];
+  applicationDetailId: number;
+  onCanceled: () => void;
+  hasApprovedRoom?: boolean;
 }) {
   const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const cancelSchedule = useCancelMentorSchedule({
+    onSuccess: () => {
+      setOpen(false);
+      setReason("");
+      onCanceled();
+    },
+  });
+  const trimmedReason = reason.trim();
+
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
-      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-      <div className="min-w-0">
-        <p className="text-sm font-semibold">{t("mentorSchedule.rejectedBanner")}</p>
-        <p className="mt-1 text-sm leading-6">{sessionInfo.mentorRejectReason}</p>
-        {sessionInfo.mentorRejectedAt && (
-          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-            {t("mentorSchedule.lastRejectedAt", {
-              time: new Date(sessionInfo.mentorRejectedAt).toLocaleString(),
-            })}
-          </p>
-        )}
-      </div>
-    </div>
+    <AlertDialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!cancelSchedule.isPending) setOpen(nextOpen);
+      }}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className={
+          hasApprovedRoom
+            ? "h-11 gap-2 border-slate-300 px-4 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+            : "h-9 gap-2 border-rose-300 bg-rose-50 px-3 text-xs font-semibold text-rose-700 hover:border-rose-400 hover:bg-rose-100 hover:text-rose-800 dark:border-rose-700 dark:bg-rose-950/30 dark:text-rose-200 dark:hover:border-rose-600 dark:hover:bg-rose-950/60"
+        }
+        onClick={() => setOpen(true)}>
+        <CalendarX2 className="h-4 w-4" />
+        {t("mentorSchedule.cancelSchedule", "Hủy lịch")}
+      </Button>
+      <AlertDialogContent
+        className={
+          hasApprovedRoom
+            ? undefined
+            : "border-slate-200 bg-white text-slate-900 sm:max-w-md dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        }>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {t("mentorSchedule.cancelTitle", "Hủy lịch phỏng vấn?")}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {hasApprovedRoom
+              ? t("mentorSchedule.cancelDescription")
+              : t("mentorSchedule.cancelPendingDescription")}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="space-y-2">
+          <Label htmlFor={`cancel-schedule-reason-${applicationDetailId}`}>
+            {t("mentorSchedule.cancelReason", "Lý do (không bắt buộc)")}
+          </Label>
+          <Textarea
+            id={`cancel-schedule-reason-${applicationDetailId}`}
+            value={reason}
+            maxLength={1000}
+            rows={4}
+            className={hasApprovedRoom ? undefined : "dark:border-slate-700 dark:bg-slate-800"}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder={t("mentorSchedule.cancelReasonPlaceholder", "Ví dụ: Tôi cần đổi lịch")}
+          />
+          <p className="text-right text-xs text-slate-500">{reason.length}/1000</p>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel
+            disabled={cancelSchedule.isPending}
+            className={
+              hasApprovedRoom
+                ? undefined
+                : "dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            }>
+            {t("common.back", "Quay lại")}
+          </AlertDialogCancel>
+          <AlertDialogAction
+            disabled={cancelSchedule.isPending || trimmedReason.length > 1000}
+            className={
+              hasApprovedRoom
+                ? "bg-rose-600 text-white hover:bg-rose-700"
+                : "bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            }
+            onClick={(event) => {
+              event.preventDefault();
+              cancelSchedule.mutate({
+                applicationDetailId,
+                reason: trimmedReason || undefined,
+              });
+            }}>
+            {cancelSchedule.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {t("mentorSchedule.confirmCancel", "Xác nhận hủy")}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -440,128 +542,101 @@ function AwaitingScheduleApprovalStep({
   refreshing,
   onRefresh,
   onChangeProposal,
+  detailId,
+  onCanceled,
 }: {
   sessionInfo?: components["schemas"]["RoundSessionInfo"];
   mentor: MentorResponse | null;
   refreshing: boolean;
-  onRefresh: () => void;
+  onRefresh: () => void | Promise<unknown>;
   onChangeProposal: () => void;
+  detailId: number;
+  onCanceled: () => void;
 }) {
   const { t } = useTranslation();
   const proposedTime = sessionInfo?.pendingJoinTime
-    ? formatUtcNaiveDateTime(sessionInfo.pendingJoinTime)
-    : "—";
+    ? formatBackendDateTime(sessionInfo.pendingJoinTime)
+    : t("mentorSchedule.timeUnavailable", "Chưa có thời gian đề xuất");
 
   return (
-    <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-      <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50/80 px-5 py-5 sm:flex-row sm:items-start sm:justify-between sm:px-6 dark:border-slate-800 dark:bg-slate-900/60">
-        <div className="flex min-w-0 items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-indigo-200 bg-indigo-500/10 text-indigo-600 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
-            <Hourglass className="h-5 w-5" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-base font-semibold tracking-tight text-slate-900 dark:text-white">
-              {t("mentorSchedule.waitingApproval")}
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
-              {t("mentorSchedule.waitingApprovalDescription")}
-            </p>
-          </div>
+    <Card className="gap-0 overflow-hidden rounded-xl border-slate-200 bg-white py-0 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-5 py-4 sm:px-6 dark:border-slate-800">
+        <div className="min-w-0">
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            {t("mentorSchedule.waitingApproval")}
+          </h3>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            {t("mentorSchedule.waitingApprovalDescription")}
+          </p>
         </div>
-        <span className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
-          <span className="h-2 w-2 rounded-full bg-amber-500" />
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-400/10 dark:text-amber-300">
+          <Clock className="h-3.5 w-3.5" />
           {t("mentorSchedule.approvalBadge")}
         </span>
       </div>
 
-      <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
-        <div className="px-5 py-6 sm:px-6">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            {t("mentorSchedule.proposalSummary")}
-          </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
-                <CalendarCheck className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {t("mentorSchedule.proposedTime")}
-                </p>
-                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  {proposedTime}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 sm:border-l sm:border-slate-200 sm:pl-4 dark:sm:border-slate-800">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                <Clock className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{t("common.duration")}</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  {t("mentorSchedule.duration", {
-                    count: sessionInfo?.pendingDurationMinutes ?? 60,
-                  })}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 sm:border-l sm:border-slate-200 sm:pl-4 dark:sm:border-slate-800">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                <Video className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {t("mentorSchedule.meetingType")}
-                </p>
-                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  {sessionInfo?.meetingType === "OFFLINE"
-                    ? t("mentorSchedule.offline")
-                    : t("mentorSchedule.online")}
-                </p>
-              </div>
-            </div>
-          </div>
+      <dl className="grid gap-x-8 gap-y-5 px-5 py-5 sm:grid-cols-2 sm:px-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.8fr)_minmax(0,1fr)]">
+        <div className="min-w-0">
+          <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {t("mentorSchedule.proposedTime")}
+          </dt>
+          <dd className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <Calendar className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+            <span
+              className={cn(!sessionInfo?.pendingJoinTime && "text-amber-700 dark:text-amber-300")}>
+              {proposedTime}
+            </span>
+          </dd>
         </div>
-
-        <div className="border-t border-slate-200 bg-slate-50/50 px-5 py-5 lg:border-t-0 lg:border-l dark:border-slate-800 dark:bg-slate-950/20">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            {t("mentorSchedule.assignedMentor")}
+        <div className="min-w-0">
+          <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {t("mentorSchedule.meetingType")}
+          </dt>
+          <dd className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+            {sessionInfo?.meetingType === "OFFLINE"
+              ? t("mentorSchedule.offline")
+              : t("mentorSchedule.online")}
+          </dd>
+          <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+            {t("mentorSchedule.duration", { count: sessionInfo?.pendingDurationMinutes ?? 60 })}
           </p>
-          <div className="mt-3 flex items-center gap-3">
-            <Avatar className="h-11 w-11 rounded-xl border border-slate-200 dark:border-slate-700">
+        </div>
+        <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+          <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {t("mentorSchedule.assignedMentor")}
+          </dt>
+          <dd className="mt-2 flex min-w-0 items-center gap-2.5">
+            <Avatar className="h-8 w-8 shrink-0 rounded-md">
               <AvatarImage src={mentor?.avatarUrl} alt={mentor?.name || "Mentor"} />
-              <AvatarFallback className="rounded-xl bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+              <AvatarFallback className="rounded-md bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                 {(mentor?.name || "M").charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {mentor?.name || t("common.mentor")}
               </p>
-              <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-                {mentor?.currentCompany || mentor?.expertise || mentor?.email || "—"}
-              </p>
+              {(mentor?.currentCompany || mentor?.expertise) && (
+                <p className="truncate text-xs text-slate-600 dark:text-slate-400">
+                  {mentor.currentCompany || mentor.expertise}
+                </p>
+              )}
             </div>
-          </div>
+          </dd>
         </div>
-      </div>
-
-      <div className="flex flex-col-reverse gap-2 border-t border-slate-200 bg-slate-50/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6 dark:border-slate-800 dark:bg-slate-900/60">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-9 gap-2 rounded-xl"
-          onClick={onRefresh}
-          disabled={refreshing}>
-          <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-          {t("common.refresh")}
-        </Button>
+      </dl>
+      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-slate-50/60 px-5 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+        <CancelScheduleButton applicationDetailId={detailId} onCanceled={onCanceled} />
+        <ReloadButton
+          onReload={onRefresh}
+          isLoading={refreshing}
+          tooltip={t("common.refresh")}
+          className="border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
+        />
         <Button
           type="button"
           size="sm"
-          className="h-9 gap-2 rounded-xl bg-indigo-600 px-4 text-white hover:bg-indigo-700"
+          className="h-9 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
           onClick={onChangeProposal}>
           <Calendar className="h-4 w-4" />
           {t("mentorSchedule.changeProposal")}
@@ -1998,6 +2073,7 @@ function SessionRoomStep({
   fallbackMentorsLoading,
   finalScore,
   finalResult,
+  meetingType,
   viewStep,
   readOnly = false,
   onStatusChange,
@@ -2010,6 +2086,7 @@ function SessionRoomStep({
   applicationId: number;
   finalScore: number | null;
   finalResult: string | null;
+  meetingType: "ONLINE" | "OFFLINE" | null;
   viewStep: StepKey;
   readOnly?: boolean;
   onStatusChange: () => void;
@@ -2255,6 +2332,19 @@ function SessionRoomStep({
                 <RefreshCw className="h-4 w-4" />
                 {t("userApplicationhistory.mentorSessionRefresh")}
               </Button>
+              {canCancelMentorSchedule({
+                detailStatus: "PENDING",
+                sessionId,
+                sessionStatus: session.status,
+                meetingType,
+              }) &&
+                !readOnly && (
+                  <CancelScheduleButton
+                    applicationDetailId={detailId}
+                    hasApprovedRoom
+                    onCanceled={onStatusChange}
+                  />
+                )}
             </div>
           </div>
         </section>

@@ -13,6 +13,7 @@ export type MentorStepKey =
   | "AWAITING_SCHEDULE_APPROVAL"
   | "WAITING"
   | "IN_CALL"
+  | "POST_INTERVIEW_FORMS"
   | "RESULT";
 
 export interface MentorReviewSubheaderProps {
@@ -47,6 +48,8 @@ export function MentorReviewSubheader({
     switch (activeStep) {
       case "IN_CALL":
         return <Video className="h-5 w-5" />;
+      case "POST_INTERVIEW_FORMS":
+        return <CheckCircle2 className="h-5 w-5" />;
       case "WAITING":
         return <Clock className="h-5 w-5" />;
       case "AWAITING_SCHEDULE_APPROVAL":
@@ -77,6 +80,11 @@ export function MentorReviewSubheader({
     switch (activeStep) {
       case "IN_CALL":
         return t("userApplication.mentorReview.inCallRoom");
+      case "POST_INTERVIEW_FORMS":
+        return t(
+          "mentorSchedule.postInterviewForms",
+          "Buổi phỏng vấn đã kết thúc. Vui lòng hoàn tất đánh giá sau phỏng vấn."
+        );
       case "WAITING":
         return t("userApplication.mentorReview.waitingForInterview");
       case "AWAITING_SCHEDULE_APPROVAL":
