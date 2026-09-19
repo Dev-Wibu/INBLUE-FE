@@ -1,3 +1,8 @@
+import {
+  MetricCodeBadge,
+  MetricEvidence,
+  MetricResultIcon,
+} from "@/components/shared/MetricResultDetails";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,7 +30,6 @@ import {
   Maximize2,
   MessageSquareText,
   Paperclip,
-  Quote,
   RefreshCw,
   Send,
   ShieldCheck,
@@ -907,11 +911,7 @@ export function EmailSimulatorModule({
                         className="space-y-4 px-5 py-5">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                           <div className="flex min-w-0 items-start gap-3">
-                            {showCodeChip && (
-                              <span className="inline-flex h-8 min-w-10 shrink-0 items-center justify-center rounded-md bg-slate-900 px-2 font-mono text-xs font-bold text-white dark:bg-slate-100 dark:text-slate-950">
-                                {metric.code}
-                              </span>
-                            )}
+                            {showCodeChip && <MetricCodeBadge code={metric.code!} />}
                             <div className="min-w-0 pt-0.5">
                               <h5 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                                 {metric.name ??
@@ -947,29 +947,7 @@ export function EmailSimulatorModule({
                             />
                           )}
                           <div className="flex flex-wrap items-center gap-2">
-                            <Badge
-                              className={
-                                metric.passed === true
-                                  ? "rounded-md border-emerald-200 bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-                                  : metric.passed === false
-                                    ? "rounded-md border-rose-200 bg-rose-50 px-2.5 py-1 font-semibold text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-                                    : "rounded-md border-slate-200 bg-slate-100 px-2.5 py-1 font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                              }>
-                              {metric.passed === true ? (
-                                <CheckCircle2 />
-                              ) : metric.passed === false ? (
-                                <X />
-                              ) : (
-                                <AlertCircle />
-                              )}
-                              {t(
-                                metric.passed === true
-                                  ? "structuredAiFeedback.passed"
-                                  : metric.passed === false
-                                    ? "structuredAiFeedback.failed"
-                                    : "structuredAiFeedback.notAssessed"
-                              )}
-                            </Badge>
+                            <MetricResultIcon passed={metric.passed} />
                             {metric.weightedScore !== null && (
                               <Badge
                                 variant="outline"
@@ -996,17 +974,7 @@ export function EmailSimulatorModule({
                           </div>
                         )}
 
-                        {metric.evidence && (
-                          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950/50">
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
-                              <Quote className="h-3.5 w-3.5 text-slate-400" />
-                              {t("structuredAiFeedback.evidence")}
-                            </div>
-                            <blockquote className="mt-2 text-sm leading-6 text-slate-600 italic dark:text-slate-300">
-                              {metric.evidence}
-                            </blockquote>
-                          </div>
-                        )}
+                        {metric.evidence && <MetricEvidence evidence={metric.evidence} />}
                       </article>
                     );
                   })}
