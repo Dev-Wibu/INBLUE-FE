@@ -13,7 +13,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,23 +26,20 @@ import {
   type MentorResponse,
 } from "@/hooks/useApplicationDetails";
 import { useMentorById } from "@/hooks/useMentor";
-import {
-  useCreateMentorFeedback,
-  useMentorFeedbacksByMentor,
-  useUpdateMentorFeedback,
-} from "@/hooks/useMentorFeedback";
+import { useCreateMentorFeedback, useUpdateMentorFeedback } from "@/hooks/useMentorFeedback";
 import { useCreateRoundSession, useSessionById } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import {
   formatDateTime as formatBackendDateTime,
   formatTime as formatBackendTime,
+  formatCurrency,
   treatZuluAsVietnamLocal,
 } from "@/lib/formatting";
 import { getMentorReviewScoreBand, normalizeMentorReviewScore } from "@/lib/mentor-review-score";
 import { isMentorScheduleTimeValid } from "@/lib/mentor-schedule";
+import { toSafeUrl } from "@/lib/safe-url";
 import { getSessionJoinAvailability } from "@/lib/session-join";
 import { cn } from "@/lib/utils";
-import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
   AlertCircle,
@@ -57,6 +55,7 @@ import {
   CheckCircle2,
   ChevronRight,
   CircleDollarSign,
+  CircleEllipsis,
   CircleUser,
   Clock,
   ExternalLink,
@@ -651,9 +650,7 @@ function AwaitingMentorStep() {
   return (
     <Card className={`overflow-hidden ${applicationTheme.card}`}>
       {/* Hero Visual Section */}
-      <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-white via-slate-50 to-slate-100/80 px-6 py-8 sm:px-8 dark:border-slate-800/80 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-950/90">
-        <div className="pointer-events-none absolute -top-16 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-amber-400/15 blur-3xl dark:bg-amber-500/10" />
-
+      <div className="relative overflow-hidden border-b border-slate-200 bg-slate-50 px-6 py-8 sm:px-8 dark:border-slate-800/80 dark:bg-slate-900">
         <div className="relative mx-auto flex flex-col items-center text-center">
           {/* Animated Hero Radar Icon */}
           <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:shadow-[0_0_30px_rgba(245,158,11,0.15)]">
@@ -992,16 +989,11 @@ function MentorCard({
   onRequestConfirm: () => void;
 }) {
   const { t } = useTranslation();
-  const mentorId = mentor.id ?? 0;
-  const { data: feedbacks = [], isLoading } = useMentorFeedbacksByMentor(mentorId);
   const rating = mentor.averageRating ?? 0;
   const bio = mentor.bio?.trim() ?? "";
-  const feedbackCountLabel =
-    isLoading || !mentorId
-      ? t("userApplicationhistory.mentorSelectFeedbackLoading", "Loading...")
-      : t("userApplicationhistory.mentorSelectFeedbackCountValue", {
-          count: feedbacks.length,
-        });
+  const feedbackCountLabel = t("userApplicationhistory.mentorSelectFeedbackCountValue", {
+    count: mentor.feedbacks?.length ?? 0,
+  });
 
   return (
     <article
@@ -1030,11 +1022,16 @@ function MentorCard({
 
           <div className="mt-2.5 flex flex-col items-center text-center">
             <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-200/70 dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-950/50">
-              <img
-                src={mentor.avatarUrl || "/placeholder.png"}
-                alt={mentor.name ?? "Mentor"}
-                className="h-full w-full object-cover"
-              />
+              <Avatar className="h-full w-full rounded-2xl">
+                <AvatarImage
+                  src={mentor.avatarUrl || undefined}
+                  alt={mentor.name ?? "Mentor"}
+                  className="object-cover"
+                />
+                <AvatarFallback className="rounded-2xl">
+                  {(mentor.name || "M").charAt(0)}
+                </AvatarFallback>
+              </Avatar>
             </div>
 
             <div className="mt-2 min-h-[4rem] space-y-0.5">
@@ -1104,18 +1101,29 @@ function MentorDetailDialog({
   onOpenChange: (_open: boolean) => void;
 }) {
   const { t } = useTranslation();
-  const mentorId = mentor?.id ?? 0;
-  const { data: feedbacks = [], isLoading } = useMentorFeedbacksByMentor(mentorId);
 
   if (!mentor) {
     return null;
   }
+  const profile = mentor.profileData;
+  const feedbacks = mentor.feedbacks ?? [];
+  const present = (value: string | null | undefined) =>
+    Boolean(value?.trim() && value.trim().toLowerCase() !== "null");
+  const safeLink = (value: string | null | undefined) => {
+    if (!present(value) || !/^https:\/\//i.test(value!.trim())) return null;
+    return toSafeUrl(value) ?? null;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-h-[90vh] max-w-5xl overflow-hidden border border-slate-200 bg-white p-0 text-slate-900 shadow-xl dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:shadow-none">
+        className="flex h-[min(90vh,800px)] max-h-[90vh] max-w-6xl flex-col overflow-hidden border border-slate-200 bg-white p-0 text-slate-900 shadow-xl dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:shadow-none">
+        <DialogTitle className="sr-only">
+          {t("userApplication.mentorReview.mentorProfileTitle", {
+            name: mentor.name || t("common.mentor"),
+          })}
+        </DialogTitle>
         <div className="flex items-center justify-end border-b border-slate-200 bg-slate-50/70 px-4 py-3 dark:border-slate-800/80 dark:bg-slate-900/70">
           <DialogClose className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white">
             <X className="h-4 w-4" />
@@ -1123,33 +1131,45 @@ function MentorDetailDialog({
           </DialogClose>
         </div>
 
-        <div className="max-h-[calc(90vh-57px)] overflow-y-auto px-6 py-6">
-          <div className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr]">
-            <section className="space-y-4 self-start">
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5 lg:overflow-hidden">
+          <div className="grid h-full min-h-0 gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+            <section className="min-h-0 space-y-4 overflow-y-auto pr-1 lg:pr-3">
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80">
                 <div className="border-b border-slate-200 px-5 py-5 dark:border-slate-800">
-                  <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                      <img
-                        src={mentor.avatarUrl || "/placeholder.png"}
-                        alt={mentor.name ?? "Mentor"}
-                        className="h-full w-full object-cover"
-                      />
+                  <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                      <Avatar className="h-full w-full rounded-2xl">
+                        <AvatarImage
+                          src={mentor.avatarUrl || undefined}
+                          alt={mentor.name ?? t("common.mentor")}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="rounded-xl text-2xl">
+                          {(mentor.name || "M").charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
 
-                    <div className="space-y-1">
-                      <h3 className="text-2xl font-bold text-slate-950 dark:text-white">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <h3 className="text-xl font-bold text-slate-950 dark:text-white">
                         {mentor.name || "—"}
                       </h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        {mentor.currentCompany || "—"}
-                      </p>
+                      {present(profile?.jobTitle) && (
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                          {profile?.jobTitle}
+                        </p>
+                      )}
+                      {present(mentor.currentCompany) && (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          {mentor.currentCompany}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 sm:flex-col sm:items-end">
                       <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300">
                         <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                        {mentor.averageRating ? mentor.averageRating.toFixed(1) : "—"}
+                        {mentor.averageRating ?? "—"}
                       </span>
                       <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
                         {t(
@@ -1164,42 +1184,128 @@ function MentorDetailDialog({
                   </div>
                 </div>
 
-                <div className="space-y-4 p-5">
-                  <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                    <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                      {t("userApplicationhistory.mentorSelectExpertise", "Chuyên môn")}
+                <div className="grid gap-4 p-5 sm:grid-cols-2">
+                  {present(mentor.expertise) && (
+                    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/70 p-4 sm:col-span-2 dark:border-slate-800 dark:bg-slate-950/70">
+                      <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                        {t("userApplication.mentorReview.profileExpertise")}
+                      </div>
+                      {present(mentor.expertise) && (
+                        <p className="text-sm leading-6 text-slate-800 dark:text-slate-100">
+                          {mentor.expertise}
+                        </p>
+                      )}
                     </div>
-                    <p className="text-sm leading-6 text-slate-800 dark:text-slate-100">
-                      {mentor.expertise || "—"}
-                    </p>
+                  )}
+
+                  <div className="space-y-3 rounded-lg border border-slate-200 p-4 text-sm text-slate-700 dark:border-slate-800 dark:text-slate-200">
+                    {typeof mentor.yearsOfExperience === "number" && (
+                      <p>
+                        <strong>{t("userApplication.mentorReview.profileExperience")}:</strong>{" "}
+                        {t("userApplication.mentorReview.yearsValue", {
+                          count: mentor.yearsOfExperience,
+                        })}
+                      </p>
+                    )}
+                    {typeof mentor.pricePerMinute === "number" && (
+                      <p>
+                        <strong>{t("userApplication.mentorReview.profilePrice")}:</strong>{" "}
+                        {t("userApplication.mentorReview.pricePerMinuteValue", {
+                          price: formatCurrency(mentor.pricePerMinute),
+                        })}
+                      </p>
+                    )}
+                    {present(profile?.education) && (
+                      <p>
+                        <strong>{t("userApplication.mentorReview.profileEducation")}:</strong>{" "}
+                        {profile?.education}
+                      </p>
+                    )}
+                    {(
+                      [
+                        ["skills", t("userApplication.mentorReview.profileSkills")],
+                        ["certifications", t("userApplication.mentorReview.profileCertifications")],
+                        ["languages", t("userApplication.mentorReview.profileLanguages")],
+                      ] as const
+                    ).map(([field, label]) => {
+                      const values = profile?.[field]?.filter(present) ?? [];
+                      return (
+                        values.length > 0 && (
+                          <div key={field}>
+                            <p className="mb-1 font-semibold">{label}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {values.map((value) => (
+                                <span
+                                  key={value}
+                                  className="rounded border border-slate-200 px-2 py-1 text-xs dark:border-slate-700">
+                                  {value}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      );
+                    })}
+                    {[mentor.linkedInUrl, profile?.portfolioUrl, profile?.githubUrl].some(
+                      safeLink
+                    ) && (
+                      <div className="flex flex-wrap gap-3">
+                        {(
+                          [
+                            [mentor.linkedInUrl, t("userApplication.mentorReview.profileLinkedIn")],
+                            [
+                              profile?.portfolioUrl,
+                              t("userApplication.mentorReview.profilePortfolio"),
+                            ],
+                            [profile?.githubUrl, t("userApplication.mentorReview.profileGithub")],
+                          ] as const
+                        ).map(
+                          ([url, label]) =>
+                            safeLink(url) && (
+                              <a
+                                key={label}
+                                href={safeLink(url)!}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-indigo-600 hover:underline dark:text-indigo-300">
+                                {label}
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            )
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                    <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                      {t("userApplicationhistory.mentorSelectContact", "Liên hệ")}
+                  {present(mentor.email) && (
+                    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                      <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                        {t("userApplication.mentorReview.profileContact")}
+                      </div>
+                      <p className="text-sm leading-6 text-slate-800 dark:text-slate-100">
+                        {mentor.email || "—"}
+                      </p>
                     </div>
-                    <p className="text-sm leading-6 text-slate-800 dark:text-slate-100">
-                      {mentor.email || "—"}
-                    </p>
-                  </div>
+                  )}
 
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                    <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                      {t("userApplicationhistory.mentorSelectBioLabel", "Bio")}
+                  {present(mentor.bio) && (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4 sm:col-span-2 dark:border-slate-800 dark:bg-slate-950/70">
+                      <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                        {t("userApplication.mentorReview.profileBio")}
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-slate-700 italic dark:text-slate-200">
+                        <span className="mr-1 text-indigo-500 dark:text-indigo-300">“</span>
+                        {mentor.bio}
+                        <span className="ml-1 text-indigo-500 dark:text-indigo-300">”</span>
+                      </p>
                     </div>
-                    <p className="mt-3 text-sm leading-7 text-slate-700 italic dark:text-slate-200">
-                      <span className="mr-1 text-indigo-500 dark:text-indigo-300">“</span>
-                      {mentor.bio ||
-                        t("userApplicationhistory.mentorSelectNoBio", "No bio available.")}
-                      <span className="ml-1 text-indigo-500 dark:text-indigo-300">”</span>
-                    </p>
-                  </div>
+                  )}
                 </div>
               </div>
             </section>
 
-            <section className="space-y-3">
-              <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900/80">
+            <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40">
+              <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900/80">
                 <h4 className="text-sm font-semibold text-slate-950 dark:text-white">
                   {t("userApplicationhistory.mentorFeedbackTitle", "Feedback history")}
                 </h4>
@@ -1210,20 +1316,13 @@ function MentorDetailDialog({
                 </span>
               </div>
 
-              <div className="max-h-[58vh] space-y-3 overflow-y-auto pr-1">
-                {isLoading ? (
-                  <div className="flex items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-10 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
-                    {t("userApplicationhistory.mentorFeedbackLoading", "Loading feedback...")}
-                  </div>
-                ) : feedbacks.length > 0 ? (
-                  feedbacks.map((feedback: MentorFeedback) => (
-                    <MentorFeedbackCard
-                      key={feedback.id ?? `${feedback.createdAt ?? ""}-${feedback.rating ?? 0}`}
-                      feedback={feedback}
-                    />
+              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
+                {feedbacks.length > 0 ? (
+                  feedbacks.map((feedback, index) => (
+                    <MentorFeedbackCard key={index} feedback={feedback} />
                   ))
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-8 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
+                  <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                     {t(
                       "userApplicationhistory.mentorFeedbackEmpty",
                       "No feedback has been shared yet."
@@ -1239,28 +1338,26 @@ function MentorDetailDialog({
   );
 }
 
-function MentorFeedbackCard({ feedback }: { feedback: MentorFeedback }) {
+function MentorFeedbackCard({
+  feedback,
+}: {
+  feedback: NonNullable<MentorResponse["feedbacks"]>[number];
+}) {
   const { t } = useTranslation();
   const rating = feedback.rating ?? 0;
-  const session = feedback.session;
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
       <div className="flex items-start gap-3">
-        <img
-          src={feedback.user?.avatarUrl || "/placeholder.png"}
-          alt={feedback.user?.name || "User"}
-          className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
-        />
+        <Avatar className="h-10 w-10 shrink-0">
+          <AvatarImage src={feedback.userAvatarUrl || undefined} alt={feedback.userName || ""} />
+          <AvatarFallback>{(feedback.userName || "?").charAt(0)}</AvatarFallback>
+        </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold text-slate-950 dark:text-white">
-                {feedback.user?.name || "—"}
-              </div>
-              <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                {t("userApplicationhistory.mentorFeedbackSessionLabel", "Session")}
-                {session?.joinTime ? ` · ${formatDateTime(session.joinTime)}` : ""}
+                {feedback.userName || "—"}
               </div>
             </div>
             <div className="flex items-center gap-1 text-xs font-semibold text-amber-300">
@@ -1363,6 +1460,7 @@ function ScheduleStep({
 
   const [joinDateTime, setJoinDateTime] = useState<Date | null>(defaultJoinDateTime);
   const [duration, setDuration] = useState<number>(45);
+  const [customDuration, setCustomDuration] = useState(false);
   const [offline, setOffline] = useState(false);
   const hasInvalidJoinTime = Boolean(
     joinDateTime && !isMentorScheduleTimeValid(joinDateTime, new Date())
@@ -1370,6 +1468,10 @@ function ScheduleStep({
 
   const handleSubmit = () => {
     if (readOnly) return;
+    if (!Number.isInteger(duration) || duration < 1 || duration > 480) {
+      toast.error(t("userApplication.mentorReview.durationRange", { min: 1, max: 480 }));
+      return;
+    }
     if (!joinDateTime) {
       toast.error(
         t("userApplicationhistory.mentorScheduleMissingDateTime", "Please select a date and time")
@@ -1556,16 +1658,19 @@ function ScheduleStep({
                 "How long should the interview run?"
               )}
             />
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
               {durationPresets.map((d) => {
-                const active = duration === d.value;
+                const active = !customDuration && duration === d.value;
                 const fill = Math.min(100, (d.value / DURATION_MAX) * 100);
                 return (
                   <button
                     key={d.value}
                     type="button"
                     onClick={() => {
-                      if (!readOnly) setDuration(d.value);
+                      if (!readOnly) {
+                        setDuration(d.value);
+                        setCustomDuration(false);
+                      }
                     }}
                     disabled={readOnly}
                     aria-pressed={active}
@@ -1613,7 +1718,73 @@ function ScheduleStep({
                   </button>
                 );
               })}
+              <div
+                className={cn(
+                  "group relative overflow-hidden rounded-2xl border-2 px-3 py-3 text-left transition-all duration-200",
+                  customDuration
+                    ? "border-indigo-500 bg-indigo-500/10 shadow-sm dark:border-indigo-400 dark:bg-indigo-950/30"
+                    : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600"
+                )}>
+                {!customDuration && (
+                  <button
+                    type="button"
+                    disabled={readOnly}
+                    onClick={() => setCustomDuration(true)}
+                    className="absolute inset-0 z-10 rounded-2xl focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none">
+                    <span className="sr-only">
+                      {t("userApplication.mentorReview.otherDuration")}
+                    </span>
+                  </button>
+                )}
+                <div className="flex items-center justify-between gap-2">
+                  {customDuration ? (
+                    <Input
+                      type="number"
+                      min={1}
+                      max={480}
+                      step={1}
+                      autoFocus
+                      value={duration || ""}
+                      disabled={readOnly}
+                      onClick={(event) => event.stopPropagation()}
+                      onChange={(event) =>
+                        setDuration(event.target.value === "" ? 0 : Number(event.target.value))
+                      }
+                      aria-label={t("userApplication.mentorReview.customDuration")}
+                      className="h-8 min-w-0 border-0 bg-transparent px-0 text-2xl font-black text-indigo-700 tabular-nums shadow-none focus-visible:ring-0 dark:text-indigo-200"
+                    />
+                  ) : (
+                    <CircleEllipsis className="h-6 w-6 text-slate-500 dark:text-slate-300" />
+                  )}
+                  <span
+                    className={cn(
+                      "shrink-0 text-[10px] font-extrabold tracking-wider uppercase",
+                      customDuration
+                        ? "text-indigo-500 dark:text-indigo-300"
+                        : "text-slate-400 dark:text-slate-500"
+                    )}>
+                    {customDuration
+                      ? t("userApplication.mentorReview.minuteShort")
+                      : t("userApplication.mentorReview.otherDuration")}
+                  </span>
+                </div>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-200/70 dark:bg-slate-800">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-300",
+                      customDuration
+                        ? "w-full bg-indigo-500"
+                        : "w-1/3 bg-slate-300 group-hover:bg-indigo-300 dark:bg-slate-700 dark:group-hover:bg-indigo-700"
+                    )}
+                  />
+                </div>
+              </div>
             </div>
+            {customDuration && (
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t("userApplication.mentorReview.customDurationHint", { min: 1, max: 480 })}
+              </p>
+            )}
           </section>
 
           {/* ===== WHERE: Mode ===== */}
@@ -1661,7 +1832,7 @@ function ScheduleStep({
 
           {/* ===== CTA ===== */}
           <div className="relative mt-auto pt-1">
-            <div className="pointer-events-none absolute inset-x-0 -top-2 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-800" />
+            <div className="pointer-events-none absolute inset-x-0 -top-2 h-px bg-slate-200 dark:bg-slate-800" />
             <Button
               onClick={handleSubmit}
               disabled={readOnly || submitting}
@@ -1877,7 +2048,7 @@ function ScheduleStep({
                   <SummaryLine
                     icon={<CircleDollarSign className="h-4 w-4" />}
                     label={t("userApplication.mentorReview.summaryEstimateLabel", "Ước tính")}
-                    value={formatRate(selectedMentor.rate, duration)}
+                    value={formatRate(selectedMentor.pricePerMinute ?? 0, duration)}
                   />
                 )}
               </div>
@@ -2273,22 +2444,22 @@ function SessionRoomStep({
             </div>
 
             {joinAt > 0 && (
-              <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50/60 p-4 dark:border-sky-900/60 dark:bg-sky-950/25">
-                <div className="text-[10px] font-semibold tracking-wide text-sky-600 uppercase dark:text-sky-400">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-sky-200 bg-sky-50/60 px-3 py-2.5 dark:border-sky-900/60 dark:bg-sky-950/25">
+                <div className="text-xs font-medium text-sky-700 dark:text-sky-300">
                   {joinAvailability.isAfterJoinWindow
                     ? t("userApplicationhistory.mentorSessionWindowClosed")
                     : canEnter
                       ? t("userApplicationhistory.mentorSessionRoomOpen")
                       : t("userApplicationhistory.mentorSessionCountdownLabel")}
                 </div>
-                <div className="mt-2 text-3xl font-black text-sky-700 tabular-nums dark:text-sky-200">
+                <div className="text-lg font-semibold text-sky-800 tabular-nums dark:text-sky-200">
                   {joinAvailability.isAfterJoinWindow
                     ? t("userApplicationhistory.mentorSessionWindowClosed")
                     : canEnter
                       ? t("userApplicationhistory.mentorSessionReady")
                       : formatCountdown(Math.max(0, (joinAvailability.opensAt ?? joinAt) - now))}
                 </div>
-                <p className="mt-2 text-xs leading-relaxed text-sky-700/80 dark:text-sky-300/80">
+                <p className="w-full text-xs text-sky-700/80 dark:text-sky-300/80">
                   {joinAvailability.isAfterJoinWindow
                     ? t("userApplicationhistory.mentorSessionWindowClosedHint")
                     : canEnter
