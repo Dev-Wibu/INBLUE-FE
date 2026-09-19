@@ -235,11 +235,12 @@ function AIFeedbackView({
           {feedback.metricResults.map((metric, index) => (
             <div key={`${metric.code ?? "metric"}-${index}`} className="text-xs">
               <div className="flex items-center justify-between gap-2 font-semibold text-slate-700 dark:text-slate-200">
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-sm">
                   {metric.code && <MetricCodeBadge code={metric.code} />}
                   <span>
                     {metric.name || (!metric.code && t("structuredAiFeedback.unknownMetric"))}
                   </span>
+                  <MetricResultIcon passed={metric.passed} />
                 </span>
                 <span>
                   {metric.score !== null
@@ -247,9 +248,6 @@ function AIFeedbackView({
                     : t("structuredAiFeedback.notAvailable")}
                 </span>
               </div>
-              <p className="mt-2">
-                <MetricResultIcon passed={metric.passed} />
-              </p>
               {metric.feedback && (
                 <p className="mt-1 text-slate-600 dark:text-slate-400">{metric.feedback}</p>
               )}

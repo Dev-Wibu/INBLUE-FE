@@ -540,12 +540,13 @@ export function CvScreeningModule({
                     <div key={`${metric.code ?? "metric"}-${index}`} className="text-xs">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <span className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200">
+                          <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
                             {metric.code && <MetricCodeBadge code={metric.code} />}
                             <span>
                               {metric.name ||
                                 (!metric.code && t("userApplication.cvScreening.metric"))}
                             </span>
+                            <MetricResultIcon passed={metric.passed} />
                           </span>
                           {metric.feedback && (
                             <p className="mt-0.5 text-slate-500 dark:text-slate-400">
@@ -560,9 +561,6 @@ export function CvScreeningModule({
                           </span>
                         )}
                       </div>
-                      <p className="mt-2">
-                        <MetricResultIcon passed={metric.passed} />
-                      </p>
                     </div>
                   ))}
                 </div>

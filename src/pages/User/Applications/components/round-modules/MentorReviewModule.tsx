@@ -1118,7 +1118,7 @@ function MentorDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="flex h-[min(90vh,800px)] max-h-[90vh] max-w-6xl flex-col overflow-hidden border border-slate-200 bg-white p-0 text-slate-900 shadow-xl dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:shadow-none">
+        className="flex h-[min(90vh,800px)] max-h-[90vh] w-[calc(100vw-2rem)] max-w-6xl flex-col overflow-hidden border border-slate-200 bg-white p-0 text-slate-900 shadow-xl sm:w-[min(72rem,calc(100vw-3rem))] md:w-[min(72rem,calc(100vw-3rem))] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:shadow-none">
         <DialogTitle className="sr-only">
           {t("userApplication.mentorReview.mentorProfileTitle", {
             name: mentor.name || t("common.mentor"),
@@ -1131,9 +1131,9 @@ function MentorDetailDialog({
           </DialogClose>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5 lg:overflow-hidden">
-          <div className="grid h-full min-h-0 gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-            <section className="min-h-0 space-y-4 overflow-y-auto pr-1 lg:pr-3">
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+          <div className="space-y-5">
+            <section>
               <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80">
                 <div className="border-b border-slate-200 px-5 py-5 dark:border-slate-800">
                   <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
@@ -1184,9 +1184,9 @@ function MentorDetailDialog({
                   </div>
                 </div>
 
-                <div className="grid gap-4 p-5 sm:grid-cols-2">
+                <div className="grid gap-4 p-5 md:grid-cols-2">
                   {present(mentor.expertise) && (
-                    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/70 p-4 sm:col-span-2 dark:border-slate-800 dark:bg-slate-950/70">
+                    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/70 p-4 md:col-span-2 dark:border-slate-800 dark:bg-slate-950/70">
                       <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                         {t("userApplication.mentorReview.profileExpertise")}
                       </div>
@@ -1237,7 +1237,7 @@ function MentorDetailDialog({
                               {values.map((value) => (
                                 <span
                                   key={value}
-                                  className="rounded border border-slate-200 px-2 py-1 text-xs dark:border-slate-700">
+                                  className="max-w-full rounded border border-slate-200 px-2 py-1 text-xs break-words dark:border-slate-700">
                                   {value}
                                 </span>
                               ))}
@@ -1282,14 +1282,14 @@ function MentorDetailDialog({
                       <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                         {t("userApplication.mentorReview.profileContact")}
                       </div>
-                      <p className="text-sm leading-6 text-slate-800 dark:text-slate-100">
+                      <p className="text-sm leading-6 break-all text-slate-800 dark:text-slate-100">
                         {mentor.email || "—"}
                       </p>
                     </div>
                   )}
 
                   {present(mentor.bio) && (
-                    <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4 sm:col-span-2 dark:border-slate-800 dark:bg-slate-950/70">
+                    <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4 md:col-span-2 dark:border-slate-800 dark:bg-slate-950/70">
                       <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                         {t("userApplication.mentorReview.profileBio")}
                       </div>
@@ -1304,7 +1304,7 @@ function MentorDetailDialog({
               </div>
             </section>
 
-            <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40">
+            <section className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40">
               <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900/80">
                 <h4 className="text-sm font-semibold text-slate-950 dark:text-white">
                   {t("userApplicationhistory.mentorFeedbackTitle", "Feedback history")}
@@ -1316,13 +1316,13 @@ function MentorDetailDialog({
                 </span>
               </div>
 
-              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
+              <div className="grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-3">
                 {feedbacks.length > 0 ? (
                   feedbacks.map((feedback, index) => (
                     <MentorFeedbackCard key={index} feedback={feedback} />
                   ))
                 ) : (
-                  <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                  <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600 md:col-span-2 xl:col-span-3 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                     {t(
                       "userApplicationhistory.mentorFeedbackEmpty",
                       "No feedback has been shared yet."
@@ -1347,7 +1347,7 @@ function MentorFeedbackCard({
   const rating = feedback.rating ?? 0;
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+    <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarImage src={feedback.userAvatarUrl || undefined} alt={feedback.userName || ""} />

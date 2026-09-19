@@ -86,19 +86,17 @@ function renderAiFeedback(feedback: NormalizedAiFeedback | null, t: any) {
         <div className="space-y-1 text-slate-700 dark:text-slate-300">
           {feedback.metricResults.map((metric, index) => (
             <div key={`${metric.code || "metric"}-${index}`}>
-              <strong className="inline-flex items-center gap-2">
+              <strong className="inline-flex items-center gap-2 text-sm">
                 {metric.code && <MetricCodeBadge code={metric.code} />}
                 <span>
                   {metric.name || (!metric.code && t("adminApplicationManagement.metric"))}:
                 </span>
+                <MetricResultIcon passed={metric.passed} />
               </strong>{" "}
               {formatScoreLabel(t("structuredAiFeedback.score"), metric.score) ||
                 t("structuredAiFeedback.notAvailable")}
               {metric.feedback ? ` - ${metric.feedback}` : ""}
               {metric.evidence && <MetricEvidence evidence={metric.evidence} />}
-              <div className="mt-2">
-                <MetricResultIcon passed={metric.passed} />
-              </div>
             </div>
           ))}
         </div>
