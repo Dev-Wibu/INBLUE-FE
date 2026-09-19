@@ -349,41 +349,38 @@ function InlineGradingForm({
   // Edit note mode (has existing grade but editing)
   if (hasExistingGrade && isEditing) {
     return (
-      <div className="space-y-4">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <ClipboardCheck className="h-4 w-4 text-indigo-600" />
-          <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+      <div className="space-y-4 p-1">
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-3 dark:border-slate-700">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
+            <ClipboardCheck className="h-4 w-4" />
+          </span>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
             {t("grading.editScore")}
           </h4>
         </div>
 
-        {/* 2 Columns: Overall Score (readonly) | Recommendation */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Left: Overall Score (readonly) */}
+        <div className="grid gap-4 md:grid-cols-[150px_230px_minmax(240px,1fr)]">
           <div className="space-y-2">
-            <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
               {t("grading.hrScore")}
             </label>
-            <div className="flex h-9 items-center justify-center rounded-lg border-2 border-slate-200 bg-slate-50 text-base font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <div className="flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 text-base font-semibold text-slate-700 tabular-nums dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
               <Lock className="mr-1.5 h-3.5 w-3.5 text-slate-400" />
               {detail.hrScore}/100
             </div>
           </div>
 
-          {/* Right: Recommendation */}
           <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-              <Lock className="h-3 w-3" />
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
               {t("grading.decision")}
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 disabled
                 aria-pressed={isPass}
                 className={cn(
-                  "flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold",
+                  "flex h-11 cursor-not-allowed items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold",
                   isPass
                     ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
                     : "border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500"
@@ -398,7 +395,7 @@ function InlineGradingForm({
                 disabled
                 aria-pressed={!isPass}
                 className={cn(
-                  "flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold",
+                  "flex h-11 cursor-not-allowed items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold",
                   !isPass
                     ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
                     : "border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500"
@@ -408,36 +405,36 @@ function InlineGradingForm({
               </button>
             </div>
           </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="staff-edit-note"
+              className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+              {t("general.notes")}
+            </label>
+            <Textarea
+              id="staff-edit-note"
+              value={note}
+              onChange={(e) => handleNoteChange(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
+              placeholder={t("grading.enterHrNotes")}
+              rows={2}
+              className="min-h-11 resize-none rounded-lg border border-slate-300 bg-white text-sm shadow-xs dark:border-slate-600 dark:bg-slate-900"
+            />
+          </div>
         </div>
 
-        {/* Comments & Notes */}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-            {t("general.notes")}
-          </label>
-          <Textarea
-            value={note}
-            onChange={(e) => handleNoteChange(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
-            placeholder={t("grading.enterHrNotes")}
-            rows={2}
-            className="resize-none rounded-lg border border-slate-200 text-xs dark:border-slate-700 dark:bg-slate-900"
-          />
-        </div>
-
-        {/* Action Buttons - Right aligned */}
-        <div className="flex justify-end gap-2 pt-1">
+        <div className="flex justify-end gap-2 border-t border-slate-200 pt-3 dark:border-slate-700">
           <Button
             variant="outline"
             onClick={onCancel}
-            className="h-8 rounded-lg border-slate-200 px-4 text-xs font-medium dark:border-slate-700">
+            className="h-9 rounded-lg border-slate-300 px-4 text-sm font-medium dark:border-slate-600">
             {t("common.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
             className={cn(
-              "h-8 gap-1.5 rounded-lg px-4 text-xs font-medium text-white transition-all disabled:opacity-50",
+              "h-9 gap-1.5 rounded-lg px-4 text-sm font-semibold text-white transition-colors disabled:opacity-50",
               isPass ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
             )}>
             {isSubmitting ? (
@@ -459,39 +456,51 @@ function InlineGradingForm({
 
   // New grading mode (no existing grade)
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <ClipboardCheck className="h-4 w-4 text-indigo-600" />
-        <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-          {t("grading.hrGrading")}
-        </h4>
+    <div className="space-y-4 p-1">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-700">
+        <div className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
+            <ClipboardCheck className="h-4 w-4" />
+          </span>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
+            {t("grading.hrGrading")}
+          </h4>
+        </div>
+        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          {t("grading.scoreRangeLabel", { min: 0, max: 100 })}
+        </span>
       </div>
 
-      {/* 2 Columns: Overall Score | Recommendation */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Left: Overall Score */}
+      <div className="grid gap-4 lg:grid-cols-[150px_230px_minmax(240px,1fr)]">
         <div className="space-y-2">
-          <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+          <label
+            htmlFor="staff-score"
+            className="text-xs font-semibold text-slate-700 dark:text-slate-200">
             {t("grading.hrScore")}
           </label>
-          <Input
-            type="number"
-            min="0"
-            max="100"
-            value={score}
-            onChange={(e) => handleScoreChange(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-            placeholder="0"
-            className={cn(
-              "h-9 rounded-lg border-2 text-center text-base font-bold",
-              scoreError
-                ? "border-rose-400"
-                : "border-slate-200 focus:border-indigo-500 dark:border-slate-700"
-            )}
-          />
+          <div className="relative">
+            <Input
+              id="staff-score"
+              type="number"
+              min="0"
+              max="100"
+              value={score}
+              onChange={(e) => handleScoreChange(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+              placeholder="0"
+              className={cn(
+                "h-11 rounded-lg border bg-white pr-12 text-center text-lg font-semibold tabular-nums shadow-xs dark:bg-slate-900",
+                scoreError
+                  ? "border-rose-400"
+                  : "border-slate-300 focus:border-indigo-500 dark:border-slate-600"
+              )}
+            />
+            <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400">
+              /100
+            </span>
+          </div>
           {scoreError && (
-            <p className="flex items-center gap-1 text-[10px] font-semibold text-rose-600">
+            <p className="flex items-center gap-1 text-xs font-medium text-rose-600">
               <AlertTriangle className="h-3 w-3" />
               {scoreError}
             </p>
@@ -504,7 +513,7 @@ function InlineGradingForm({
                   formatAiInterviewScore(aiEvaluationScore, aiScoreScale ?? "auto") ?? "0"
                 )
               }
-              className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700 transition-all hover:bg-purple-100 dark:border-purple-500/30 dark:bg-purple-500/15 dark:text-purple-300">
+              className="inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
               <Sparkles className="h-3 w-3" />
               {t("staffGrading.aiScore", {
                 score: formatAiInterviewScore(aiEvaluationScore, aiScoreScale ?? "auto") ?? 0,
@@ -513,17 +522,16 @@ function InlineGradingForm({
           )}
         </div>
 
-        {/* Right: Recommendation */}
         <div className="space-y-2">
-          <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+          <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
             {t("grading.decision")}
           </label>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => handlePassChange(true)}
               className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold transition-all",
+                "flex h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors",
                 isPass
                   ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
                   : "border-slate-200 bg-white text-slate-500 hover:border-emerald-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
@@ -537,7 +545,7 @@ function InlineGradingForm({
               type="button"
               onClick={() => handlePassChange(false)}
               className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2 text-xs font-bold transition-all",
+                "flex h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors",
                 !isPass
                   ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
                   : "border-slate-200 bg-white text-slate-500 hover:border-rose-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
@@ -547,36 +555,36 @@ function InlineGradingForm({
             </button>
           </div>
         </div>
+        <div className="space-y-2">
+          <label
+            htmlFor="staff-note"
+            className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+            {t("general.notes")}
+          </label>
+          <Textarea
+            id="staff-note"
+            value={note}
+            onChange={(e) => handleNoteChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
+            placeholder={t("grading.enterHrNotes")}
+            rows={2}
+            className="min-h-11 resize-none rounded-lg border border-slate-300 bg-white text-sm shadow-xs dark:border-slate-600 dark:bg-slate-900"
+          />
+        </div>
       </div>
 
-      {/* Comments & Notes */}
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-          {t("general.notes")}
-        </label>
-        <Textarea
-          value={note}
-          onChange={(e) => handleNoteChange(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
-          placeholder={t("grading.enterHrNotes")}
-          rows={2}
-          className="resize-none rounded-lg border border-slate-200 text-xs dark:border-slate-700 dark:bg-slate-900"
-        />
-      </div>
-
-      {/* Action Buttons - Right aligned */}
-      <div className="flex justify-end gap-2 pt-1">
+      <div className="flex justify-end gap-2 border-t border-slate-200 pt-3 dark:border-slate-700">
         <Button
           variant="outline"
           onClick={onCancel}
-          className="h-8 rounded-lg border-slate-200 px-4 text-xs font-medium dark:border-slate-700">
+          className="h-9 rounded-lg border-slate-300 px-4 text-sm font-medium dark:border-slate-600">
           {t("common.cancel")}
         </Button>
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || scoreError !== null || score.trim() === ""}
           className={cn(
-            "h-8 gap-1.5 rounded-lg px-4 text-xs font-medium text-white transition-all disabled:cursor-not-allowed disabled:opacity-50",
+            "h-9 gap-1.5 rounded-lg px-4 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50",
             isPass ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
           )}>
           {isSubmitting ? (
@@ -597,7 +605,7 @@ function InlineGradingForm({
 }
 
 // ============================================================
-// Staff Grading Summary Header Card with Sticker Score Badge
+// Staff grading summary header
 // ============================================================
 
 function StaffGradingWorkspaceHeaderCard({
@@ -665,10 +673,6 @@ function StaffGradingWorkspaceHeaderCard({
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
-      {/* Background Subtle Ambient Glow */}
-      <div className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/15" />
-      <div className="pointer-events-none absolute -right-24 -bottom-24 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl dark:bg-purple-500/15" />
-
       {/* Main Staff Grading Header Content */}
       <div className="relative flex flex-col gap-6 p-6 sm:p-7 lg:flex-row lg:items-center lg:justify-between">
         {/* LEFT SIDE: Staff Grading Info */}
@@ -774,8 +778,8 @@ function StaffGradingWorkspaceHeaderCard({
 
           {/* Expanded Grading Form - drops down from header */}
           {isEditing && detail && (
-            <div className="overflow-hidden rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20">
-              <div className="flex items-center justify-between bg-white/80 px-4 py-2 dark:bg-slate-900/80">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-950/40">
+              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2 dark:border-slate-700 dark:bg-slate-900">
                 <span className="text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
                   {hasHrScore
                     ? t("grading.editScore", "Chỉnh sửa điểm")
@@ -803,101 +807,36 @@ function StaffGradingWorkspaceHeaderCard({
           )}
         </div>
 
-        {/* RIGHT SIDE: Score Sticker Badge (Mentor Review Result Style) */}
-        <div className="flex shrink-0 items-center justify-center pt-2 lg:pt-0">
-          <div className="group relative transition-transform duration-300 hover:scale-105">
-            {/* Ambient Sticker Glow */}
-            <div
-              className={cn(
-                "absolute -inset-1 rounded-3xl opacity-80 blur-md transition-all duration-300 group-hover:opacity-100",
-                hasHrScore
-                  ? isPass
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-400"
-                    : "bg-gradient-to-r from-rose-500 to-amber-500"
-                  : "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+        <div className="flex shrink-0 items-center lg:justify-end">
+          <div className="min-w-40 rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-700 dark:bg-slate-950/50">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {hasHrScore ? t("staffGrading.roundResult") : t("staffGrading.roundScore")}
+            </p>
+            <div className="mt-1 flex items-baseline gap-1 text-slate-950 dark:text-white">
+              <span className="text-3xl font-semibold tabular-nums">
+                {hasHrScore ? hrScore : (normalizedAiScore ?? "—")}
+              </span>
+              {(hasHrScore || normalizedAiScore !== null) && (
+                <span className="text-sm text-slate-500">/100</span>
               )}
-            />
-
-            {/* Main Sticker Box */}
-            <div
+            </div>
+            <p
               className={cn(
-                "relative flex h-36 w-44 rotate-1 flex-col justify-between overflow-hidden rounded-2xl p-4 shadow-xl backdrop-blur-md transition-transform duration-300 group-hover:rotate-0",
+                "mt-2 text-xs font-medium",
                 hasHrScore
                   ? isPass
-                    ? "border-2 border-emerald-400/60 bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white"
-                    : "border-2 border-rose-400/60 bg-gradient-to-br from-rose-950 via-slate-900 to-rose-900 text-white"
-                  : "border-2 border-indigo-400/60 bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 text-white"
+                    ? "text-emerald-700 dark:text-emerald-400"
+                    : "text-rose-700 dark:text-rose-400"
+                  : "text-slate-500 dark:text-slate-400"
               )}>
-              {/* Decorative Glass Reflection */}
-              <div className="pointer-events-none absolute -top-8 -right-8 h-20 w-20 rotate-45 bg-white/10 blur-xs" />
-
-              {/* Sticker Header */}
-              <div className="flex items-center justify-between border-b border-white/15 pb-1.5">
-                <span className="flex items-center gap-1 text-[10px] font-black tracking-widest text-white/80 uppercase">
-                  <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
-                  {hasHrScore
-                    ? t("staffGrading.roundResult", "KẾT QUẢ CHẤM")
-                    : t("staffGrading.roundScore", "ĐIỂM ĐÁNH GIÁ")}
-                </span>
-                <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[9px] font-extrabold text-white/90 uppercase">
-                  {t("common.staff")}
-                </span>
-              </div>
-
-              {/* Score Number Display */}
-              <div className="my-auto text-center">
-                {hasHrScore ? (
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-black tracking-tight text-white drop-shadow-md">
-                      {hrScore}
-                    </span>
-                    <span className="text-sm font-bold text-white/60">/100</span>
-                  </div>
-                ) : normalizedAiScore !== null && detail?.status !== "PENDING" ? (
-                  <div className="flex flex-col items-center justify-center">
-                    <span className="text-[10px] font-extrabold tracking-wider text-purple-200 uppercase">
-                      {t("staffGrading.referenceAi", "Tham chiếu AI")}
-                    </span>
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-3xl font-black tracking-tight text-purple-100">
-                        {normalizedAiScore}
-                      </span>
-                      <span className="text-xs font-bold text-purple-300/60">/100</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <span className="text-2xl font-black text-white/40">---</span>
-                    <p className="text-[10px] font-semibold text-white/60">
-                      {t("staffGrading.scoreAwaiting", "Chưa nhập điểm")}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Bottom Stamp Ribbon */}
-              <div className="flex items-center justify-between border-t border-white/15 pt-1.5">
-                <span className="flex items-center gap-1 text-[10px] font-bold text-white/80">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  {hasHrScore
-                    ? isPass
-                      ? t("staffGrading.roundPassed", "ĐẠT YÊU CẦU")
-                      : t("staffGrading.roundFailed", "KHÔNG ĐẠT")
-                    : t("staffGrading.roundAwaiting", "CHỜ CHẤM")}
-                </span>
-                {hasHrScore && (
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-[9px] font-black uppercase shadow-xs",
-                      isPass ? "bg-emerald-400 text-slate-950" : "bg-rose-500 text-white"
-                    )}>
-                    {isPass
-                      ? t("staffGrading.roundVerified", "VERIFIED")
-                      : t("staffGrading.roundRejected", "REJECTED")}
-                  </span>
-                )}
-              </div>
-            </div>
+              {hasHrScore
+                ? isPass
+                  ? t("staffGrading.roundPassed")
+                  : t("staffGrading.roundFailed")
+                : normalizedAiScore !== null
+                  ? t("staffGrading.referenceAi")
+                  : t("staffGrading.roundAwaiting")}
+            </p>
           </div>
         </div>
       </div>
@@ -1301,7 +1240,7 @@ export function StaffGradingWorkspacePage() {
 
       {/* Main Studio Body */}
       <div className="mx-auto w-full max-w-[1700px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-        {/* Staff Assessment Summary Header Card & Score Sticker Badge */}
+        {/* Staff assessment summary */}
         <StaffGradingWorkspaceHeaderCard
           selectedRoundOrder={activeRound?.roundOrder ?? 0}
           staffActiveDetail={staffActiveDetail}
@@ -1366,7 +1305,7 @@ export function StaffGradingWorkspacePage() {
                   <div className="border-b border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-[#0F172A]/70">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-3.5">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white shadow-sm">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white dark:bg-indigo-500">
                           {/* eslint-disable-next-line react-hooks/static-components */}
                           <RoundIcon className="h-6 w-6" />
                         </div>
