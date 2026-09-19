@@ -2172,6 +2172,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/mentors/dashboard/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Thông tin sơ bộ cho dashboard của Mentor đang đăng nhập
+         * @description Trả về tổng số session mentor tham gia (kèm thông tin ngắn gọn và số lượng theo từng trạng thái), và danh sách application mà mentor đã đánh giá (ứng viên, điểm + nhận xét của mentor, feedback của ứng viên dành cho mentor).
+         */
+        get: operations["getDashboardSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/mentor-reviews/{id}": {
         parameters: {
             query?: never;
@@ -4966,15 +4986,15 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -4984,19 +5004,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
+            /** Format: int32 */
+            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int32 */
-            pageNumber?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
+            unpaged?: boolean;
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -5026,6 +5046,76 @@ export interface components {
             content?: string;
             /** Format: date-time */
             timestamp?: string;
+        };
+        FeedbackItem: {
+            /** Format: int32 */
+            sessionId?: number;
+            user?: components["schemas"]["UserBasicInfo"];
+            /** Format: int32 */
+            rating?: number;
+            comment?: string;
+        };
+        MentorDashboardSummaryResponse: {
+            /** Format: int32 */
+            totalSessions?: number;
+            sessionCountByStatus?: {
+                [key: string]: number;
+            };
+            sessions?: components["schemas"]["SessionItem"][];
+            /** Format: int32 */
+            totalReviewedApplications?: number;
+            reviewedApplications?: components["schemas"]["ReviewedApplicationItem"][];
+            /** Format: int32 */
+            totalFeedbacks?: number;
+            feedbacks?: components["schemas"]["FeedbackItem"][];
+            /** Format: int32 */
+            totalReviewedCandidates?: number;
+            reviewedCandidates?: components["schemas"]["ReviewedCandidateItem"][];
+        };
+        ReviewedApplicationItem: {
+            /** Format: int64 */
+            applicationDetailId?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            jobTitle?: string;
+            /** Format: int32 */
+            sessionId?: number;
+            /** Format: int32 */
+            candidateId?: number;
+            candidateName?: string;
+            candidateEmail?: string;
+            candidateAvatarUrl?: string;
+            mentorReview?: components["schemas"]["MentorReviewResponse"];
+            candidateFeedback?: components["schemas"]["MentorFeedbackResponse"];
+        };
+        ReviewedCandidateItem: {
+            /** Format: int32 */
+            sessionId?: number;
+            candidate?: components["schemas"]["UserBasicInfo"];
+            review?: components["schemas"]["MentorReviewResponse"];
+        };
+        SessionItem: {
+            /** Format: int32 */
+            sessionId?: number;
+            /** @enum {string} */
+            status?: "DRAFT" | "SCHEDULED" | "PAID" | "REJECTED" | "ONGOING" | "COMPLETED" | "CANCELED";
+            /** Format: int32 */
+            menteeId?: number;
+            menteeName?: string;
+            menteeAvatarUrl?: string;
+            /** Format: date-time */
+            joinTime?: string;
+            /** Format: int32 */
+            duration?: number;
+            /** Format: int32 */
+            totalPrice?: number;
+        };
+        UserBasicInfo: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            email?: string;
+            avatarUrl?: string;
         };
         UserCompetencyResponse: {
             /** Format: int64 */
@@ -5282,10 +5372,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -5382,22 +5472,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            includeCodas?: string[];
-            trimDirectiveWhitespaces?: string;
-            elIgnored?: string;
-            isXml?: string;
-            urlPatterns?: string[];
-            defaultContentType?: string;
+            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
-            errorOnELNotFound?: string;
+            includeCodas?: string[];
+            elIgnored?: string;
+            isXml?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            trimDirectiveWhitespaces?: string;
+            urlPatterns?: string[];
+            defaultContentType?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -5432,17 +5522,19 @@ export interface components {
             };
         };
         ServletContext: {
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
+            serverInfo?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             servletContextName?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
@@ -5451,10 +5543,8 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
+            virtualServerName?: string;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -5545,8 +5635,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */
@@ -9679,6 +9769,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["MentorResponse"][];
+                };
+            };
+        };
+    };
+    getDashboardSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MentorDashboardSummaryResponse"];
                 };
             };
         };

@@ -83,6 +83,7 @@ export const API_ENDPOINTS = {
   // GET /api/mentors/toggle/{id} - toggleActive
   MENTOR: {
     LIST: "/api/mentors",
+    DASHBOARD_SUMMARY: "/api/mentors/dashboard/summary",
     DETAIL: "/api/mentors/:id",
     CREATE: "/api/mentors",
     UPDATE: "/api/mentors/:id",
