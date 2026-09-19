@@ -4,6 +4,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+import {
+  MetricCodeBadge,
+  MetricEvidence,
+  MetricResultIcon,
+} from "@/components/shared/MetricResultDetails";
 import { CodeReviewGrader } from "@/components/ui/code-review-grader";
 import { CodingRoundGrader } from "@/components/ui/coding-round-grader";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
@@ -629,9 +634,11 @@ function AIFeedbackPanel({
           {feedback.metricResults.map((metric, index) => (
             <div key={`${metric.code ?? "metric"}-${index}`} className="text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-semibold text-slate-800 dark:text-slate-100">
-                  {metric.code ?? t("structuredAiFeedback.unknownMetric")}
-                  {metric.name ? ` - ${metric.name}` : ""}
+                <span className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100">
+                  {metric.code && <MetricCodeBadge code={metric.code} />}
+                  <span>
+                    {metric.name || (!metric.code && t("structuredAiFeedback.unknownMetric"))}
+                  </span>
                 </span>
                 <span className="font-bold text-indigo-600 dark:text-indigo-400">
                   {metric.score !== null
@@ -645,22 +652,12 @@ function AIFeedbackPanel({
                     {t("structuredAiFeedback.weightedScore", { score: metric.weightedScore })}
                   </span>
                 )}
-                {t(
-                  metric.passed === true
-                    ? "structuredAiFeedback.passed"
-                    : metric.passed === false
-                      ? "structuredAiFeedback.failed"
-                      : "structuredAiFeedback.notAssessed"
-                )}
+                <MetricResultIcon passed={metric.passed} />
               </p>
               {metric.feedback && (
                 <p className="mt-1 text-slate-600 dark:text-slate-300">{metric.feedback}</p>
               )}
-              {metric.evidence && (
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  <strong>{t("structuredAiFeedback.evidence")}:</strong> {metric.evidence}
-                </p>
-              )}
+              {metric.evidence && <MetricEvidence evidence={metric.evidence} />}
             </div>
           ))}
         </div>
@@ -1437,7 +1434,6 @@ export function ApplicationGradingPage({
                 [staffSummary.total, t("adminApplicationGrading.assignedTotal")],
                 [staffSummary.needsGrading, t("adminApplicationGrading.pendingGrading")],
                 [staffSummary.graded, t("adminApplicationGrading.gradedTotal")],
-                [staffSummary.averageScore, t("adminApplicationGrading.averageScore")],
               ].map(([value, label], index) => (
                 <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
                   {index > 0 && (
@@ -1675,7 +1671,7 @@ export function ApplicationGradingPage({
                         <div className="flex items-center gap-3.5">
                           <Avatar className="h-12 w-12 shrink-0 rounded-2xl shadow-sm ring-2 ring-slate-100 dark:ring-slate-800">
                             <AvatarImage src={userAvatar ?? undefined} alt={userName} />
-                            <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-base font-black text-white">
+                            <AvatarFallback className="rounded-2xl bg-indigo-600 text-base font-bold text-white dark:bg-indigo-500">
                               {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
                             </AvatarFallback>
                           </Avatar>
@@ -1971,97 +1967,36 @@ function StaffGradingHeaderCard({
           </div>
         </div>
 
-        {/* RIGHT SIDE: Score Sticker Badge (Mentor Review Result Style) */}
-        <div className="flex shrink-0 items-center justify-center pt-2 lg:pt-0">
-          <div className="group relative transition-transform duration-300 hover:scale-105">
-            {/* Ambient Sticker Glow */}
-            <div
-              className={cn(
-                "absolute -inset-1 rounded-3xl opacity-80 blur-md transition-all duration-300 group-hover:opacity-100",
-                hasHrScore
-                  ? isPass
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-400"
-                    : "bg-gradient-to-r from-rose-500 to-amber-500"
-                  : "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+        <div className="flex shrink-0 items-center lg:justify-end">
+          <div className="min-w-44 rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 shadow-xs dark:border-slate-700 dark:bg-slate-950/50">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {hasHrScore ? t("staffGrading.gradeResult") : t("staffGrading.gradeScore")}
+            </p>
+            <div className="mt-1 flex items-baseline gap-1 text-slate-950 dark:text-white">
+              <span className="text-3xl font-semibold tabular-nums">
+                {hasHrScore ? hrScore : (displayAiScore ?? "—")}
+              </span>
+              {(hasHrScore || displayAiScore !== null) && (
+                <span className="text-sm text-slate-500">/100</span>
               )}
-            />
-
-            {/* Main Sticker Box */}
-            <div
+            </div>
+            <p
               className={cn(
-                "relative flex h-36 w-44 rotate-1 flex-col justify-between overflow-hidden rounded-2xl p-4 shadow-xl backdrop-blur-md transition-transform duration-300 group-hover:rotate-0",
+                "mt-2 text-xs font-medium",
                 hasHrScore
                   ? isPass
-                    ? "border-2 border-emerald-400/60 bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white"
-                    : "border-2 border-rose-400/60 bg-gradient-to-br from-rose-950 via-slate-900 to-rose-900 text-white"
-                  : "border-2 border-indigo-400/60 bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 text-white"
+                    ? "text-emerald-700 dark:text-emerald-400"
+                    : "text-rose-700 dark:text-rose-400"
+                  : "text-slate-500 dark:text-slate-400"
               )}>
-              {/* Decorative Glass Reflection */}
-              <div className="pointer-events-none absolute -top-8 -right-8 h-20 w-20 rotate-45 bg-white/10 blur-xs" />
-
-              {/* Sticker Header */}
-              <div className="flex items-center justify-between border-b border-white/15 pb-1.5">
-                <span className="flex items-center gap-1 text-[10px] font-black tracking-widest text-white/80 uppercase">
-                  <Sparkles className="h-3 w-3 text-amber-300" />
-                  {hasHrScore ? t("staffGrading.gradeResult") : t("staffGrading.gradeScore")}
-                </span>
-                <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[9px] font-extrabold text-white/90 uppercase">
-                  {t("common.staff")}
-                </span>
-              </div>
-
-              {/* Score Number Display */}
-              <div className="my-auto text-center">
-                {hasHrScore ? (
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-black tracking-tight text-white drop-shadow-md">
-                      {hrScore}
-                    </span>
-                    <span className="text-sm font-bold text-white/60">/100</span>
-                  </div>
-                ) : displayAiScore !== null ? (
-                  <div className="flex flex-col items-center justify-center">
-                    <span className="text-[10px] font-extrabold tracking-wider text-purple-200 uppercase">
-                      {t("adminLabels.aiReference")}
-                    </span>
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-3xl font-black tracking-tight text-purple-100">
-                        {displayAiScore}
-                      </span>
-                      <span className="text-xs font-bold text-purple-300/60">/100</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <span className="text-2xl font-black text-white/40">---</span>
-                    <p className="text-[10px] font-semibold text-white/60">
-                      {t("adminLabels.scoreMissing")}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Bottom Stamp Ribbon */}
-              <div className="flex items-center justify-between border-t border-white/15 pt-1.5">
-                <span className="flex items-center gap-1 text-[10px] font-bold text-white/80">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  {hasHrScore
-                    ? isPass
-                      ? t("resultPass")
-                      : t("resultFail")
-                    : t("grading.gradingInProgress")}
-                </span>
-                {hasHrScore && (
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-[9px] font-black uppercase shadow-xs",
-                      isPass ? "bg-emerald-400 text-slate-950" : "bg-rose-500 text-white"
-                    )}>
-                    {isPass ? "VERIFIED" : "REJECTED"}
-                  </span>
-                )}
-              </div>
-            </div>
+              {hasHrScore
+                ? isPass
+                  ? t("resultPass")
+                  : t("resultFail")
+                : displayAiScore !== null
+                  ? t("adminLabels.aiReference")
+                  : t("adminLabels.scoreMissing")}
+            </p>
           </div>
         </div>
       </div>
@@ -2278,7 +2213,7 @@ export function ApplicationGradingDetailPage({
             <div className="flex items-start gap-4 sm:items-center">
               <Avatar className="h-16 w-16 shrink-0 rounded-2xl shadow-md ring-4 ring-white dark:ring-indigo-500/20">
                 <AvatarImage src={candidateAvatar ?? undefined} alt={candidateName} />
-                <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-xl font-black text-white">
+                <AvatarFallback className="rounded-2xl bg-indigo-600 text-xl font-bold text-white dark:bg-indigo-500">
                   {(candidateName ?? "?")[0]?.toUpperCase() ?? "?"}
                 </AvatarFallback>
               </Avatar>
@@ -2421,7 +2356,7 @@ export function ApplicationGradingDetailPage({
 
               {/* AI Evaluation Insights Card */}
               {(getDisplayAiScoreValue(activeDetail) !== undefined || activeAiFeedback) && (
-                <div className="overflow-hidden rounded-2xl border border-purple-200/80 bg-gradient-to-b from-purple-50/40 via-white to-white p-6 shadow-xs dark:border-purple-500/20 dark:from-purple-950/20 dark:via-slate-900 dark:to-slate-900">
+                <div className="overflow-hidden rounded-xl border border-indigo-200 bg-white p-6 shadow-xs dark:border-indigo-500/20 dark:bg-slate-900">
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300">
@@ -2598,7 +2533,7 @@ function ActiveRoundGradingPanel({
         {/* Existing Grade View (when graded and not editing) */}
         {hasExistingGrade && !isEditing ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/50 p-5 dark:border-emerald-500/20 dark:from-emerald-950/30 dark:to-teal-950/10">
+            <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-500/20 dark:bg-emerald-950/30">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400/20 text-amber-500 shadow-2xs">
                   <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
