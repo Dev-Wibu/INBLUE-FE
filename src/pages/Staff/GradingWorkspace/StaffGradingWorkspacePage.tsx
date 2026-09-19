@@ -668,7 +668,7 @@ function StaffGradingWorkspaceHeaderCard({
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
       {/* Main Staff Grading Header Content */}
-      <div className="relative flex flex-col gap-6 p-6 sm:p-7 lg:flex-row lg:items-center lg:justify-between">
+      <div className="relative grid gap-6 p-6 sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         {/* LEFT SIDE: Staff Grading Info */}
         <div className="min-w-0 flex-1 space-y-4">
           {/* Top Pill Badges */}
@@ -762,34 +762,9 @@ function StaffGradingWorkspaceHeaderCard({
               {roundName}
             </span>
           </div>
-
-          {/* Expanded Grading Form - drops down from header */}
-          {isEditing && detail && (
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-950/40">
-              <div className="border-b border-slate-200 bg-white px-4 py-2 dark:border-slate-700 dark:bg-slate-900">
-                <span className="text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
-                  {hasHrScore
-                    ? t("grading.editScore", "Chỉnh sửa điểm")
-                    : t("grading.hrGrading", "Chấm điểm HR")}
-                </span>
-              </div>
-              <div className="p-4">
-                <InlineGradingForm
-                  detail={detail}
-                  onSuccess={() => {
-                    onSuccess?.();
-                  }}
-                  isEditing={true}
-                  onCancel={onCancel ?? (() => {})}
-                  onDirtyChange={onDirtyChange ?? (() => {})}
-                  aiScoreScale={isAiInterviewRound ? "auto" : "hundred"}
-                />
-              </div>
-            </div>
-          )}
         </div>
 
-        <div className="flex shrink-0 items-center lg:justify-end">
+        <div className="flex shrink-0 items-start lg:justify-end">
           <div className="min-w-40 rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-700 dark:bg-slate-950/50">
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {hasHrScore ? t("staffGrading.roundResult") : t("staffGrading.roundScore")}
@@ -832,6 +807,30 @@ function StaffGradingWorkspaceHeaderCard({
             </p>
           </div>
         </div>
+
+        {isEditing && detail && (
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/60 lg:col-span-2 dark:border-slate-700 dark:bg-slate-950/40">
+            <div className="border-b border-slate-200 bg-white px-4 py-2 dark:border-slate-700 dark:bg-slate-900">
+              <span className="text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
+                {hasHrScore
+                  ? t("grading.editScore", "Chỉnh sửa điểm")
+                  : t("grading.hrGrading", "Chấm điểm HR")}
+              </span>
+            </div>
+            <div className="p-4">
+              <InlineGradingForm
+                detail={detail}
+                onSuccess={() => {
+                  onSuccess?.();
+                }}
+                isEditing={true}
+                onCancel={onCancel ?? (() => {})}
+                onDirtyChange={onDirtyChange ?? (() => {})}
+                aiScoreScale={isAiInterviewRound ? "auto" : "hundred"}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

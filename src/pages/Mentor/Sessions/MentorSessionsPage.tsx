@@ -63,7 +63,7 @@ export function MentorSessionsPage() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<SessionStatus>("all");
-  const [activeView, setActiveView] = useState<"sessions" | "approvals">("sessions");
+  const [activeView, setActiveView] = useState<"sessions" | "approvals">("approvals");
   const { data: pendingSchedules = [] } = usePendingMentorSchedules();
   const [now, setNow] = useState(() => Date.now());
 
@@ -209,19 +209,6 @@ export function MentorSessionsPage() {
               <button
                 type="button"
                 role="tab"
-                aria-selected={activeView === "sessions"}
-                onClick={() => setActiveView("sessions")}
-                className={cn(
-                  "rounded-md px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors",
-                  activeView === "sessions"
-                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white"
-                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                )}>
-                {t("mentorSessions.interviewSessions")}
-              </button>
-              <button
-                type="button"
-                role="tab"
                 aria-selected={activeView === "approvals"}
                 onClick={() => setActiveView("approvals")}
                 className={cn(
@@ -232,6 +219,19 @@ export function MentorSessionsPage() {
                 )}>
                 {t("mentorSchedule.pendingTitle")}{" "}
                 <span className="ml-1 text-xs text-slate-500">{pendingSchedules.length}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeView === "sessions"}
+                onClick={() => setActiveView("sessions")}
+                className={cn(
+                  "rounded-md px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors",
+                  activeView === "sessions"
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white"
+                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                )}>
+                {t("mentorSessions.interviewSessions")}
               </button>
             </div>
 
